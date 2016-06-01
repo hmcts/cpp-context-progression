@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseProgressionId": {
+            "type": "string"
+          },
+          "courtCentreId": {
+            "type": "string"
+          },
+          "caseId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "dateOfSending": {
+            "type": "string"
+          },
+          "dateCMISubmissionDeadline": {
+            "type": "string"
+          },
+          "noOfDaysForCMISubmission": {
+            "type": "integer"
+          },
+          "defenceIssues": {
+            "type": "string"
+          },
+          "sfrIssues": {
+            "type": "string"
+          },
+          "isAllStatementsIdentified": {
+            "type": "boolean"
+          },
+          "isAllStatementsServed": {
+            "type": "boolean"
+          },
+          "defenceTrialEstimate": {
+            "type": "integer"
+          },
+          "prosecutionTrialEstimate": {
+            "type": "integer"
+          },
+          "ptpHearingVacatedDate": {
+            "type": "string"
+          },
+          "directionIssuedOn": {
+            "type": "string"
+          },
+          "fromCourtCentre": {
+            "type": "string"
+          },
+          "sendingCommittalDate": {
+            "type": "string"
+          },
+          "isPSROrdered": {
+            "type": "boolean"
+          },
+          "sentenceHearingDate": {
+            "type": "string"
+          },
+          "sentenceReviewDeadlineDate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseProgressionId",
+          "courtCentreId",
+          "caseId",
+          "version",
+          "dateOfSending",
+          "dateCMISubmissionDeadline",
+          "noOfDaysForCMISubmission",
+          "defenceIssues",
+          "sfrIssues",
+          "isAllStatementsIdentified",
+          "isAllStatementsServed",
+          "defenceTrialEstimate",
+          "prosecutionTrialEstimate",
+          "ptpHearingVacatedDate",
+          "directionIssuedOn",
+          "fromCourtCentre",
+          "sendingCommittalDate",
+          "isPSROrdered",
+          "sentenceHearingDate",
+          "sentenceReviewDeadlineDate",
+          "status"
+        ]
+      }
+    }
+  },
+  "required": [
+    "cases"
+  ]
+}

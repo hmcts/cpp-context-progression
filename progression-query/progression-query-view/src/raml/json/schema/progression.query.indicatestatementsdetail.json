@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "isKeyEvidence": {
+      "type": "string"
+    },
+    "evidenceName": {
+      "type": "string"
+    },
+    "planDate": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "caseId",
+    "isKeyEvidence",
+    "evidenceName",
+    "planDate"
+  ]
+}

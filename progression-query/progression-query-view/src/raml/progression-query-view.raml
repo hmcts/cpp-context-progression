@@ -1,0 +1,83 @@
+#%RAML 0.8
+title: Progression Query view
+baseUri: http://localhost:8080/progression-query-view/query/view/rest/progression
+protocols: [ HTTP, HTTPS ]
+                       
+/cases/{caseId}:
+  uriParameters:
+        caseId:
+          description: ID of case to get
+          type: string
+  get:
+      description: Find progression details for the case.
+      responses:
+            200:
+                description: OK        
+                body: 
+                  application/vnd.progression.query.caseprogressiondetail+json:
+                    example:  !include json/progression.query.caseprogressiondetail.json
+                    schema:  !include json/schema/progression.query.caseprogressiondetail.json
+                    
+/cases/{caseId}/timeline:
+  uriParameters:
+        caseId:
+          description: ID of case to get
+          type: string
+  get:
+      description: Get list of timeline dates.
+      responses:
+            200:
+                description: OK        
+                body:
+                  application/vnd.progression.query.timeline+json: 
+                      example: !include json/progression.query.timeline.json
+                      schema: !include json/schema/progression.query.timeline.json
+                        
+/cases/{caseId}/indicatestatements:
+  uriParameters:
+        caseId:
+          description: ID of case to get
+          type: string
+  get:
+      description: Find list of  indicate statements details for the case.
+      responses:
+            200:
+                description: OK        
+                body:
+                  application/vnd.progression.query.indicatestatementsdetails+json: 
+                      example: !include json/progression.query.indicatestatementsdetails.json
+                      schema: !include json/schema/progression.query.indicatestatementsdetails.json   
+                                           
+                       
+/indicatestatement/{indicatestatementId}:
+  uriParameters:
+        indicatestatementId:
+          description: ID of indicatestatement to get
+          type: string
+  get:
+      description: Find  indicate statements details for the case.
+      responses:
+            200:
+                description: OK        
+                body:
+                  application/vnd.progression.query.indicatestatementsdetail+json: 
+                      example: !include json/progression.query.indicatestatementsdetail.json
+                      schema: !include json/schema/progression.query.indicatestatementsdetail.json
+                                           
+                       
+/cases:
+  get:
+      description: List of Cases available.
+      queryParameters:
+        status:
+          description: comma separated list of case status ex ?status=xxx,yyy
+          type: string
+          example: xxx,yyy
+      responses:
+            200:
+                description: OK        
+                body: 
+                  application/vnd.progression.query.cases+json:
+                    example:  !include json/progression.query.cases.json
+                    schema:  !include json/schema/progression.query.cases.json
+                                                            

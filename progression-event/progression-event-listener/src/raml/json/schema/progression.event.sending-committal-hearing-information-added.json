@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseProgressionId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "fromCourtCentre": {
+      "type": "string"
+    },
+    "sendingCommittalDate": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseProgressionId",
+    "version",
+    "fromCourtCentre",
+    "sendingCommittalDate"
+  ]
+}

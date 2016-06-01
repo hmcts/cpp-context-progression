@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "indicateEvidenceServedId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "isKeyEvidence": {
+      "type": "boolean"
+    },
+    "evidenceName": {
+      "type": "string"
+    },
+    "planDate": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "indicateEvidenceServedId",
+    "version",
+    "caseId",
+    "isKeyEvidence",
+    "evidenceName",
+    "planDate"
+  ]
+}

@@ -1,0 +1,41 @@
+package uk.gov.moj.cpp.progression.domain.event;
+
+import java.util.UUID;
+
+import uk.gov.justice.domain.annotation.Event;
+
+/**
+ * 
+ * @author jchondig
+ *
+ */
+@Event("progression.event.pre-sentence-report-ordered")
+public class PreSentenceReportOrdered  {
+
+	private UUID caseProgressionId;
+	
+	private Boolean isPSROrdered;
+	
+    private long version;
+    
+    public UUID getCaseProgressionId() {
+		return caseProgressionId;
+	}
+
+    public Boolean getIsPSROrdered() {
+        return isPSROrdered;
+    }
+    
+	public long getVersion() {
+		return version;
+	}
+
+    public PreSentenceReportOrdered(UUID caseProgressionId,
+            Boolean isPSROrdered, long version) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.isPSROrdered = isPSROrdered;
+        this.version = version;
+    }
+
+}

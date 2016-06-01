@@ -1,0 +1,60 @@
+Configuring PostgreSQL Datasource
+
+Good, now the database is configured correctly. Now let's download the PostGreSQL JDBC Driver: http://jdbc.postgresql.org/
+
+
+Now start up JBoss / Wildfly application server and launch the CLI:
+./jboss-cli.sh
+
+
+Install module containing the JDBC Driver. Specify the module name and the location where the jdbc driver has been downloaded:
+module add --name=org.postgres --resources=/tmp/postgresql-9.3-1101.jdbc41.jar --dependencies=javax.api,javax.transaction.api
+
+============ on my machine
+module add --name=org.postgres --resources=/home/ian/Downloads/postgresql-9.4-1201.jdbc41.jar --dependencies=javax.api,javax.transaction.api
+============
+
+
+
+Now install the JDBC Driver on the application server:
+/subsystem=datasources/jdbc-driver=postgres:add(driver-name="postgres",driver-module-name="org.postgres",driver-class-name=org.postgresql.Driver)
+
+
+
+Finally install the datasource which will connect to the default "postgres" database on localhost:
+data-source add --jndi-name=java:/PostGreDS --name=PostgrePool --connection-url=jdbc:postgresql://localhost/postgres --driver-name=postgres --user-name=postgres --password=postgres
+
+============ on my machine
+data-source add --jndi-name=java:jboss/datasources/CppsiDS --name=PostgrePool --connection-url=jdbc:postgresql://centos:5432/cppsi --driver-name=postgres --user-name=cppsi --password=cppsi
+============
+
+
+Data source is disabled -- I enabled in GUI
+
+
+
+Tuning PostgreSQL 
+
+Once you have tested the connectivity with PostgreSQL, you can move from the basics and set up the Connection pool size for the PostgrePool:
+/subsystem=datasources/data-source=PostgrePool/:write-attribute(name=max-pool-size,value=50)
+/subsystem=datasources/data-source=PostgrePool/:write-attribute(name=max-pool-size,value=10)
+
+The amount of connections configured in the pool should not be anyway be greater than the maximum number of connections which are allowed by PostGreSQL. This value is configured in the file /etc/postgres/postgresql.conf file as follows:
+max_connections = 60  
+
+Besides the maximum number of connections, when you are going in production with PostGreSQL you should consider tweaking other parameters as outlined in PostGreSQL wiki (http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server) in particular the shared_buffers configuration parameter which controls the amount of memory PostgreSQL uses for its private buffer cache. Experience has shown that it's usually best to set this parameter to about 25% of system memory on UNIX and Linux systems, but not more than about 8GB.
+An initial configuration could be:
+shared_buffers = 30MB
+
+On a production system running a 16GB machine you could set this parameter to:
+shared_buffers = 4096MB
+
+Consider that in order to allocate such a large shared memory process, you must be running a 64 bit machine with a kernel which allows a SHMMAX of that size. To determine the maximum size of a shared memory segment, run:
+# cat /proc/sys/kernel/shmmax
+2147483648
+
+The default shared memory limit for SHMMAX can be changed in the proc file system without reboot:
+# echo 2147483648 > /proc/sys/kernel/shmmax
+
+Alternatively, you can use sysctl to change it:
+# sysctl -w kernel.shmmax=2147483648

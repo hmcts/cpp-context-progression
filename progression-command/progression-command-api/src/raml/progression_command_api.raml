@@ -1,0 +1,230 @@
+#%RAML 0.8
+title: Progression Command API
+version: 1.0
+baseUri:  http://localhost/progression-command-api/command/api/rest/progression
+
+/cases/sendcasetocrowncourt:
+  post:
+      description:  Service to send case to crown court.
+      body:
+        application/vnd.progression.command.send-to-crown-court+json:
+            example: 
+             !include json/progression.command.send-to-crown-court.json          
+             
+            schema: 
+             !include json/schema/progression.command.send-to-crown-court.json
+              
+      responses:
+            202:
+                description: OK
+                
+/cases/addcasetocrowncourt:
+  post:
+      description:  Service to add cse to crown court.
+      body:
+        application/vnd.progression.command.add-case-to-crown-court+json:
+            example: 
+             !include json/progression.command.add-case-to-crown-court.json          
+             
+            schema: 
+             !include json/schema/progression.command.add-case-to-crown-court.json
+              
+      responses:
+            202:
+                description: OK                
+                
+/cases/adddefenceissues:
+  post:
+      description:  Service to add defence issues.
+      body:
+        application/vnd.progression.command.add-defence-issues+json:
+            example: 
+             !include json/progression.command.add-defence-issues.json         
+             
+            schema: 
+             !include json/schema/progression.command.add-defence-issues.json
+              
+      responses:
+            202:
+                description: OK
+                
+/cases/sentencehearingdate :
+  post:
+      description:  Service to add sentence hearing date.
+      body:
+        application/vnd.progression.command.sentence-hearing-date+json:
+            example: 
+             !include json/progression.command.sentence-hearing-date.json         
+             
+            schema: 
+             !include json/schema/progression.command.sentence-hearing-date.json
+              
+      responses:
+            202:
+                description: OK    
+                
+/cases/addsfrissues:
+  post:
+      description:  Service to Add issues with Streamlined Forensics Report
+      body:
+        application/vnd.progression.command.addsfrissues+json:
+            example: 
+             !include json/progression.command.addsfrissues.json         
+             
+            schema: 
+             !include json/schema/progression.command.addsfrissues.json
+              
+      responses:
+            202:
+                description: OK   
+                
+                                         
+/cases/casetobeassigned:
+  post:
+      description:  Service to update case status
+      body:
+        application/vnd.progression.command.case-to-be-assigned+json:
+            example: 
+             !include json/progression.command.case-to-be-assigned.json         
+             
+            schema: 
+             !include json/schema/progression.command.case-to-be-assigned.json
+              
+      responses:
+            202:
+                description: OK 
+                
+/cases/sendingcommittalhearinginformation:
+  post:
+      description:  Service to Sending/Committal Hearing Information
+      body:
+        application/vnd.progression.command.sending-committal-hearing-information+json:
+            example: 
+             !include json/progression.command.sending-committal-hearing-information.json         
+             
+            schema: 
+             !include json/schema/progression.command.sending-committal-hearing-information.json
+              
+      responses:
+            202:
+                description: OK                 
+
+/cases/defencetrialestimate:
+  post:
+      description:  Provide trial time estimate -Defence
+      body:
+        application/vnd.progression.command.defence-trial-estimate+json:
+            example: 
+             !include json/progression.command.defence-trial-estimate.json         
+             
+            schema: 
+             !include json/schema/progression.command.defence-trial-estimate.json
+              
+      responses:
+            202:
+                description: OK    
+
+/cases/issuedirection:
+  post:
+      description:  issue direction
+      body:
+        application/vnd.progression.command.issue-direction+json:
+            example: 
+             !include json/progression.command.issue-direction.json         
+             
+            schema: 
+             !include json/schema/progression.command.issue-direction.json
+              
+      responses:
+            202:
+                description: OK  
+                
+/cases/presentencereport:
+  post:
+      description:  pre sentence report ordered
+      body:
+        application/vnd.progression.command.pre-sentence-report+json:
+            example: 
+             !include json/progression.command.pre-sentence-report.json         
+             
+            schema: 
+             !include json/schema/progression.command.pre-sentence-report.json
+              
+      responses:
+            202:
+                description: OK                                                         
+
+/cases/indicatestatement:
+  post:
+      description:  Services for Indicate Statements to be served.
+      body:
+        application/vnd.progression.command.indicate-statement+json:
+            example: 
+             !include json/progression.command.indicate-statement.json         
+             
+            schema: 
+             !include json/schema/progression.command.indicate-statement.json
+              
+      responses:
+            202:
+                description: OK                  
+                
+/cases/indicateallstatementsidentified:
+  post:
+      description:  Indicate that all statements have been identified.
+      body:
+        application/vnd.progression.command.indicate-all-statements-identified+json:
+            example: 
+             !include json/progression.command.indicate-all-statements-identified.json         
+             
+            schema: 
+             !include json/schema/progression.command.indicate-all-statements-identified.json
+              
+      responses:
+            202:
+                description: OK   
+                             
+/cases/indicateallstatementsserved:
+  post:
+      description:  Indicate that all statements have been served.
+      body:
+        application/vnd.progression.command.indicate-all-statements-served+json:
+            example: 
+             !include json/progression.command.indicate-all-statements-served.json         
+             
+            schema: 
+             !include json/schema/progression.command.indicate-all-statements-served.json
+              
+      responses:
+            202:
+                description: OK           
+                                         
+/cases/prosecutiontrialestimate:
+  post:
+      description:  Provide trial time estimate -Prosecution.
+      body:
+        application/vnd.progression.command.prosecution-trial-estimate+json:
+            example: 
+             !include json/progression.command.prosecution-trial-estimate.json         
+             
+            schema: 
+             !include json/schema/progression.command.prosecution-trial-estimate.json
+              
+      responses:
+            202:
+                description: OK                                             
+    
+/cases/vacateptphearing:
+  post:
+      description:  Services vacate  a ptp Hearing..
+      body:
+        application/vnd.progression.command.vacate-ptp-hearing+json:
+            example: 
+             !include json/progression.command.vacate-ptp-hearing.json         
+             
+            schema: 
+             !include json/schema/progression.command.vacate-ptp-hearing.json
+              
+      responses:
+            202:
+                description: OK                                       

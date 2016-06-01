@@ -1,0 +1,104 @@
+package uk.gov.moj.cpp.progression.query.view;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.json.Json;
+
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.dispatcher.Requester;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.IndicateStatement;
+import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
+import uk.gov.moj.cpp.progression.query.view.converter.IndicateStatementsDetailToViewConverter;
+import uk.gov.moj.cpp.progression.query.view.converter.TimelineDateToTimeLineDateViewConverter;
+import uk.gov.moj.cpp.progression.query.view.response.IndicateStatementsDetailView;
+import uk.gov.moj.cpp.progression.query.view.response.TimeLineDateView;
+import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
+import uk.gov.moj.cpp.progression.query.view.service.IndicateStatementsDetailService;
+import uk.gov.moj.cpp.progression.query.view.service.ProgressionHelperService;
+
+@ServiceComponent(Component.QUERY_VIEW)
+public class ProgressionQueryView {
+
+
+	@Inject
+	private CaseProgressionDetailService caseProgressionDetailService;
+
+	@Inject
+	private CaseProgressionDetailToViewConverter caseProgressionDetailToViewConverter;
+
+	@Inject
+	private TimelineDateToTimeLineDateViewConverter timelineDateToTimeLineDateVOConverter;
+
+	static final String FIELD_CASE_ID = "caseId";
+	static final String FIELD_INDICATE_STATEMENT_ID = "indicatestatementId";
+	static final String TIMELINE_RESPONSE = "progression.query.timeline-response";
+	static final String CASE_PROGRESSION_DETAILS_RESPONSE = "progression.query.caseprogressiondetails-response";
+	static final String INDICATE_STATEMENT_RESPONSE_LIST = "progression.query.indicatestatement-response-list";
+	static final String INDICATE_STATEMENT_RESPONSE = "progression.query.indicatestatement-response";
+
+	@Inject
+	Enveloper enveloper;
+
+	@Inject
+	private ProgressionHelperService progressionHelperService;
+	
+	@Inject
+	private IndicateStatementsDetailToViewConverter indicateStatementsDetailToVOConverter;
+	
+	@Inject
+	private IndicateStatementsDetailService indicateStatementsDetailService;
+
+	@Handles("progression.query.caseprogressiondetail")
+	public JsonEnvelope getCaseProgressionDetails(final JsonEnvelope envelope) {
+		Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), FIELD_CASE_ID);
+		Optional<CaseProgressionDetail> caseProgressionDetail = caseProgressionDetailService
+				.getCaseProgressionDetail(caseId.get());
+		return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE)
+				.apply(caseProgressionDetailToViewConverter.convert(caseProgressionDetail.get()));
+	}
+
+	@Handles("progression.query.timeline")
+	public JsonEnvelope getTimeLineForProgression(final JsonEnvelope envelope) {
+		Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), FIELD_CASE_ID);
+		Optional<CaseProgressionDetail> caseProgressionDetail = caseProgressionDetailService
+				.getCaseProgressionDetail(caseId.get());
+		List<TimeLineDateView> listTimeLineDateVO = caseProgressionDetail.get().getTimeLine().stream()
+				.map(timeLineDate -> timelineDateToTimeLineDateVOConverter.convert(timeLineDate))
+				.collect(Collectors.toList());
+		return enveloper.withMetadataFrom(envelope, TIMELINE_RESPONSE).apply(Json.createObjectBuilder()
+				.add("timeline", progressionHelperService.arraysToJsonArray(listTimeLineDateVO)).build());
+
+	}
+
+	@Handles("progression.query.indicatestatementsdetails")
+	public JsonEnvelope getIndicatestatementsdetails(final JsonEnvelope envelope) {
+		Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), FIELD_CASE_ID);
+		List<IndicateStatement> indicateStatements = indicateStatementsDetailService.getIndicateStatements(caseId.get());
+		List<IndicateStatementsDetailView> listIndicateStatementsDetailVO = indicateStatements.stream()
+				.map(indicateStatementObj -> indicateStatementsDetailToVOConverter.convert(indicateStatementObj))
+				.collect(Collectors.toList());
+		return enveloper.withMetadataFrom(envelope, INDICATE_STATEMENT_RESPONSE_LIST).apply(Json.createObjectBuilder()
+				.add("indicatestatements", progressionHelperService.arraysToJsonArray(listIndicateStatementsDetailVO)).build());
+
+	}
+	
+	@Handles("progression.query.indicatestatementsdetail")
+	public JsonEnvelope getIndicatestatementsdetail(final JsonEnvelope envelope) {
+		Optional<UUID> statementId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), FIELD_INDICATE_STATEMENT_ID);
+		Optional<IndicateStatement> indicateStatement = indicateStatementsDetailService.getIndicateStatementById(statementId.get());
+		IndicateStatementsDetailView indicateStatementView = indicateStatementsDetailToVOConverter.convert(indicateStatement.get());
+		return enveloper.withMetadataFrom(envelope, INDICATE_STATEMENT_RESPONSE).apply(indicateStatementView);
+
+	}
+	
+}

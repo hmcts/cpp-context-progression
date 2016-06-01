@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseProgressionId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "defenceTrialEstimate": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "caseProgressionId",
+    "version",
+    "defenceTrialEstimate"
+  ]
+}

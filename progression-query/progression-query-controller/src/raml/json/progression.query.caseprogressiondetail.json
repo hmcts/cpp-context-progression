@@ -1,0 +1,23 @@
+{
+  "id" : "1",
+  "courtCentreId":"404",
+  "caseId" : "22C22222222",
+  "version" : "1",
+  "dateOfSending" : "2016-01-27",
+  "dateCMISubmissionDeadline" : "2016-01-17",
+  "noOfDaysForCMISubmission" : 20,
+  "defenceIssues" : "man who involved in crime",
+  "sfrIssues" : "blood spots on fingerprints",
+  "isAllStatementsIdentified" : true,
+  "isAllStatementsServed" : true,
+  "defenceTrialEstimate" : 1,
+  "prosecutionTrialEstimate": 1,
+  "ptpHearingVacatedDate" : "2016-02-25",
+  "directionIssuedOn": "2016-03-08",
+  "fromCourtCentre" : "Magistrate court liverpool",
+  "sendingCommittalDate" : "2016-04-20",
+  "isPSROrdered" : true,
+  "sentenceHearingDate" : "2016-05-19",
+  "sentenceReviewDeadlineDate" : "2016-05-23",
+  "status" : "To be Assigned"
+}

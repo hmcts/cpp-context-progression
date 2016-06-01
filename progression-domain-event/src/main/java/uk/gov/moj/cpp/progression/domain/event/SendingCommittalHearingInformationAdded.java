@@ -1,0 +1,48 @@
+package uk.gov.moj.cpp.progression.domain.event;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import uk.gov.justice.domain.annotation.Event;
+
+/**
+ * 
+ * @author jchondig
+ *
+ */
+@Event("progression.event.sending-committal-hearing-information-added")
+public class SendingCommittalHearingInformationAdded {
+
+	private UUID caseProgressionId;
+
+	private String fromCourtCentre;
+
+	private LocalDate sendingCommittalDate;
+
+	private Long version;
+
+	public SendingCommittalHearingInformationAdded(UUID caseProgressionId, String fromCourtCentre,
+			LocalDate sendingCommittalDate, Long version) {
+		super();
+		this.caseProgressionId = caseProgressionId;
+		this.fromCourtCentre = fromCourtCentre;
+		this.sendingCommittalDate = sendingCommittalDate;
+		this.version = version;
+	}
+
+	public UUID getCaseProgressionId() {
+		return caseProgressionId;
+	}
+
+	public String getFromCourtCentre() {
+		return fromCourtCentre;
+	}
+
+	public LocalDate getSendingCommittalDate() {
+		return sendingCommittalDate;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+}

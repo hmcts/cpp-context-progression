@@ -1,0 +1,59 @@
+#%RAML 0.8
+title: API Using media type in the URL
+baseUri: message://event/listener/message/progression
+version: v1
+/progression.event:
+  post:
+    body:            
+        application/vnd.progression.event.all-statements-identified+json:
+            schema: !include json/schema/progression.event.all-statements-identified.json
+            example: !include json/progression.event.all-statements-identified.json
+            
+        application/vnd.progression.event.all-statements-served+json:
+            schema: !include json/schema/progression.event.all-statements-served.json
+            example: !include json/progression.event.all-statements-served.json
+            
+        application/vnd.progression.event.case-sent-to-crown-court+json:
+            schema: !include json/schema/progression.event.case-sent-to-crown-court.json
+            example: !include json/progression.event.case-sent-to-crown-court.json
+            
+        application/vnd.progression.event.case-added-to-crown-court+json:
+            schema: !include json/schema/progression.event.case-added-to-crown-court.json
+            example: !include json/progression.event.case-added-to-crown-court.json
+
+        application/vnd.progression.event.defence-issues-added+json:
+            schema: !include json/schema/progression.event.defence-issues-added.json
+            example: !include json/progression.event.all-statements-served.json
+
+        application/vnd.progression.event.direction-issued+json:
+            schema: !include json/schema/progression.event.direction-issued.json
+            example: !include json/progression.event.direction-issued.json
+
+        application/vnd.progression.event.indicate-evidence-served+json:
+            schema: !include json/schema/progression.event.indicate-evidence-served.json
+            example: !include json/progression.event.indicate-evidence-served.json
+
+        application/vnd.progression.event.pre-sentence-report-ordered+json:
+            schema: !include json/schema/progression.event.pre-sentence-report-ordered.json
+            example: !include json/progression.event.pre-sentence-report-ordered.json
+
+        application/vnd.progression.event.ptp-hearing-vacated+json:
+            schema: !include json/schema/progression.event.ptp-hearing-vacated.json
+            example: !include json/progression.event.ptp-hearing-vacated.json
+
+        application/vnd.progression.event.sending-committal-hearing-information-added+json:
+            schema: !include json/schema/progression.event.sending-committal-hearing-information-added.json
+            example: !include json/progression.event.sending-committal-hearing-information-added.json
+
+        application/vnd.progression.event.sfr-issues-added+json:
+            schema: !include json/schema/progression.event.sfr-issues-added.json
+            example: !include json/progression.event.sfr-issues-added.json
+
+        application/vnd.progression.event.defence-trial-estimate-added+json:
+            schema: !include json/schema/progression.event.defence-trial-estimate-added.json
+            example: !include json/progression.event.defence-trial-estimate-added.json
+
+        application/vnd.progression.event.prosecution-trial-estimate-added+json:
+            schema: !include json/schema/progression.event.prosecution-trial-estimate-added.json
+            example: !include json/progression.event.prosecution-trial-estimate-added.json
+            
