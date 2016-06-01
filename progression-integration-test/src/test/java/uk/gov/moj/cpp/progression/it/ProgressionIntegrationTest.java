@@ -130,7 +130,7 @@ public class ProgressionIntegrationTest extends AbstractIT {
 
     private String getJsonBodyStr(String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset()).replace("RANDOM_ID", caseProgressionId)
-                .replace("RANDOM_CASE_ID", caseId).replace("VERSION", String.valueOf(version)).replace("TODAY", LocalDate.now().toString());
+                .replace("RANDOM_CASE_ID", caseId).replace("VERSION", String.valueOf(version+1)).replace("TODAY", LocalDate.now().toString());
     }
 
     private String getCommandUri(String path) {
