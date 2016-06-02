@@ -12,9 +12,9 @@ public class AbstractIT {
 
     protected Properties prop;
     protected RequestSpecification reqSpec;
-    private String baseUri;
+    protected String baseUri;
 
-    public AbstractIT() {
+  	public AbstractIT() {
         readConfig();
         setRequestSpecification();
     }
@@ -35,4 +35,6 @@ public class AbstractIT {
     private void setRequestSpecification() {
         reqSpec = new RequestSpecBuilder().setBaseUri(baseUri).build();
     }
+    
+    
 }

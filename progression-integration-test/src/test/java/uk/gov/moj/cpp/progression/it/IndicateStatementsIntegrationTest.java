@@ -73,10 +73,10 @@ public class IndicateStatementsIntegrationTest extends AbstractIT {
     }
 
     private String getCommandUri(String path) {
-        return prop.getProperty("base-uri") + prop.getProperty("base-uri-command") + path;
+        return baseUri + prop.getProperty("base-uri-command") + path;
     }
 
     private String getQueryUri(String path) {
-        return prop.getProperty("base-uri") + prop.getProperty("base-uri-query") + path;
+        return baseUri + prop.getProperty("base-uri-query") + path;
     }
 }
