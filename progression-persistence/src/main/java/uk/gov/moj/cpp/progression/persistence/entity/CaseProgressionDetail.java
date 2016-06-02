@@ -64,6 +64,9 @@ public class CaseProgressionDetail {
     
     @Column(name = "ispsrordered")
     private Boolean isPSROrdered;
+    
+    @Column(name = "sentencehearingdate")
+    private LocalDate sentenceHearingDate;
 
     public CaseProgressionDetail() {
         super();
@@ -219,6 +222,14 @@ public class CaseProgressionDetail {
 	public void setIsPSROrdered(Boolean isPSROrdered) {
 		this.isPSROrdered = isPSROrdered;
 	}
+
+    public LocalDate getSentenceHearingDate() {
+        return sentenceHearingDate;
+    }
+
+    public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
+        this.sentenceHearingDate = sentenceHearingDate;
+    }
 
 	
 

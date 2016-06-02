@@ -102,4 +102,10 @@ public class ProgressionCommandcontrollerTest {
        progressionCommandcontroller.vacatePTPHearing(command);
        verify(sender, times(1)).send(command);
    }
+   
+   @Test
+   public void shouldSentenceHearingDate() throws Exception {
+       progressionCommandcontroller.addSentenceHearingDate(command);
+       verify(sender, times(1)).send(command);
+   }
 }

@@ -1,0 +1,157 @@
+package uk.gov.moj.cpp.progression.command.handler;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
+import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
+import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
+import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
+import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
+import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
+import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
+import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
+import uk.gov.moj.cpp.progression.domain.event.IndicateEvidenceServed;
+import uk.gov.moj.cpp.progression.domain.event.PTPHearingVacated;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
+import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
+import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
+import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ProgressionEventFactoryTest {
+
+	@Mock
+	JsonEnvelope envelope;
+	@Mock
+	JsonObject jsonObj;
+
+	@InjectMocks
+	ProgressionEventFactory progressionEventFactory;
+
+	@Before
+	public void SetUp() {
+		when(envelope.payloadAsJsonObject()).thenReturn(jsonObj);
+		when(jsonObj.getString(Mockito.eq("caseProgressionId"))).thenReturn(UUID.randomUUID().toString());
+		when(jsonObj.getString(Mockito.eq("caseId"))).thenReturn(UUID.randomUUID().toString());
+		when(jsonObj.getString(Mockito.eq("version"))).thenReturn("1");
+		when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
+		when(jsonObj.getString(Mockito.eq("indicateStatementId"))).thenReturn(UUID.randomUUID().toString());
+		when(jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
+		when(jsonObj.getString(Mockito.eq("sendingCommittalDate"))).thenReturn(LocalDate.now().toString());
+		when(jsonObj.getString(Mockito.eq("sentenceHearingDate"))).thenReturn(LocalDate.now().toString());
+	}
+
+	@Test
+	public void testCreateCaseSentToCrownCourt() {
+		Object obj = progressionEventFactory.createCaseSentToCrownCourt(envelope);
+		assertThat(obj, instanceOf(CaseSentToCrownCourt.class));
+	}
+
+	@Test
+	public void testCreateCaseAddedToCrownCourt() {
+		Object obj = progressionEventFactory.createCaseAddedToCrownCourt(envelope);
+		assertThat(obj, instanceOf(CaseAddedToCrownCourt.class));
+	}
+
+	@Test
+	public void testCreateDefenceIssuesAdded() {
+		Object obj = progressionEventFactory.createDefenceIssuesAdded(envelope);
+		assertThat(obj, instanceOf(DefenceIssuesAdded.class));
+	}
+
+	@Test
+	public void testCreateSfrIssuesAdded() {
+		Object obj = progressionEventFactory.createSfrIssuesAdded(envelope);
+		assertThat(obj, instanceOf(SfrIssuesAdded.class));
+	}
+
+	@Test
+	public void testCreateSendingCommittalHearingInformationAdded() {
+		Object obj = progressionEventFactory.createSendingCommittalHearingInformationAdded(envelope);
+		assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
+	}
+
+	@Test
+	public void testCreateDefenceTrialEstimateAdded() {
+		Object obj = progressionEventFactory.createDefenceTrialEstimateAdded(envelope);
+		assertThat(obj, instanceOf(DefenceTrialEstimateAdded.class));
+	}
+
+	@Test
+	public void testCreateProsecutionTrialEstimateAdded() {
+		Object obj = progressionEventFactory.createProsecutionTrialEstimateAdded(envelope);
+		assertThat(obj, instanceOf(ProsecutionTrialEstimateAdded.class));
+	}
+
+	@Test
+	public void testCreateDirectionIssued() {
+		Object obj = progressionEventFactory.createDirectionIssued(envelope);
+		assertThat(obj, instanceOf(DirectionIssued.class));
+	}
+
+	@Test
+	public void testCreatePreSentenceReportOrdered() {
+		Object obj = progressionEventFactory.createPreSentenceReportOrdered(envelope);
+		assertThat(obj, instanceOf(PreSentenceReportOrdered.class));
+	}
+
+	@Test
+	public void testCreateIndicateEvidenceServed() {
+		Object obj = progressionEventFactory.createIndicateEvidenceServed(envelope);
+		assertThat(obj, instanceOf(IndicateEvidenceServed.class));
+	}
+
+	@Test
+	public void testCreateAllStatementsIdentified() {
+		Object obj = progressionEventFactory.createAllStatementsIdentified(envelope);
+		assertThat(obj, instanceOf(AllStatementsIdentified.class));
+	}
+
+	@Test
+	public void testCreateAllStatementsServed() {
+		Object obj = progressionEventFactory.createAllStatementsServed(envelope);
+		assertThat(obj, instanceOf(AllStatementsServed.class));
+	}
+
+	@Test
+	public void testCreatePTPHearingVacated() {
+		Object obj = progressionEventFactory.createPTPHearingVacated(envelope);
+		assertThat(obj, instanceOf(PTPHearingVacated.class));
+	}
+
+	@Test
+	public void testCreateSentenceHearingDateAdded() {
+		Object obj = progressionEventFactory.createSentenceHearingDateAdded(envelope);
+		assertThat(obj, instanceOf(SentenceHearingDateAdded.class));
+	}
+
+	private JsonEnvelope createJsonCommand() {
+		final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, UUID.randomUUID().toString()).add(NAME, "SomeName").build();
+
+		final JsonObject payloadAsJsonObject = Json.createObjectBuilder().build();
+
+		return DefaultJsonEnvelope.envelopeFrom(JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);
+
+	}
+}
