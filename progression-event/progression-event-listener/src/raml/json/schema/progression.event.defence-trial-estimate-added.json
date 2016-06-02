@@ -5,16 +5,12 @@
     "caseProgressionId": {
       "type": "string"
     },
-    "version": {
-      "type": "integer"
-    },
     "defenceTrialEstimate": {
       "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "version",
     "defenceTrialEstimate"
   ]
 }

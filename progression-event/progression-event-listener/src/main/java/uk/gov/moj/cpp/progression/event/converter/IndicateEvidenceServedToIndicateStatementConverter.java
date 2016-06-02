@@ -10,13 +10,11 @@ public class IndicateEvidenceServedToIndicateStatementConverter implements Conve
     public IndicateStatement convert(IndicateEvidenceServed event) {
     	
         IndicateStatement indicateStatement = new IndicateStatement();
-        indicateStatement.setVersion(event.getVersion());
         indicateStatement.setCaseId(event.getCaseId());
         indicateStatement.setIsKeyEvidence(event.getIsKeyEvidence());
         indicateStatement.setPlanDate(event.getPlanDate());
         indicateStatement.setEvidenceName(event.getEvidenceName());
         indicateStatement.setId(event.getIndicateEvidenceServedId());
-        
         return indicateStatement;
     }
 }

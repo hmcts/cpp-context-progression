@@ -28,6 +28,6 @@ public class SFRIssuesAddedEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addSFRIssues(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), SfrIssuesAdded.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), SfrIssuesAdded.class),event.metadata().version().get());
 	}
 }

@@ -28,6 +28,6 @@ public class AllStatementsServedEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.indicateAllStatementsServed(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), AllStatementsServed.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), AllStatementsServed.class),event.metadata().version().get());
 	}
 }

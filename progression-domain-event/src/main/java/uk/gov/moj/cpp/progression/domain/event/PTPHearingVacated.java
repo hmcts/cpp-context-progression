@@ -13,15 +13,12 @@ public class PTPHearingVacated {
 
 	private UUID caseProgressionId;
 
-	private Long version;
-
 	private LocalDate ptpHearingVacatedDate;
 
-	public PTPHearingVacated(UUID caseProgressionId, LocalDate ptpHearingVacatedDate, Long version) {
+	public PTPHearingVacated(UUID caseProgressionId, LocalDate ptpHearingVacatedDate) {
 
 		super();
 		this.caseProgressionId = caseProgressionId;
-		this.version = version;
 		this.ptpHearingVacatedDate = ptpHearingVacatedDate;
 	}
 
@@ -31,10 +28,6 @@ public class PTPHearingVacated {
 
 	public UUID getCaseProgressionId() {
 		return caseProgressionId;
-	}
-
-	public Long getVersion() {
-		return version;
 	}
 
 	public LocalDate getPtpHearingVacatedDate() {

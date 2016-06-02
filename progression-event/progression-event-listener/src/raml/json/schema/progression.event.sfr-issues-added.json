@@ -7,14 +7,10 @@
     },
     "sfrIssues": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "sfrIssues",
-    "version"
+    "sfrIssues"
   ]
 }

@@ -21,8 +21,6 @@ public class CaseSentToCrownCourtToCaseProgressionDetailConverterTest {
 
 	private static final LocalDate DATE_OF_SENDING = LocalDate.now();
 	
-	private static final Long VERSION = 0L;
-
     private CaseSentToCrownCourtToCaseProgressionDetailConverter converter;
     
     private CaseSentToCrownCourt event;
@@ -31,7 +29,7 @@ public class CaseSentToCrownCourtToCaseProgressionDetailConverterTest {
     public void setUp() throws Exception {
         converter = new CaseSentToCrownCourtToCaseProgressionDetailConverter();
         
-        event = new CaseSentToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, DATE_OF_SENDING, VERSION);
+        event = new CaseSentToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, DATE_OF_SENDING);
     }
 
     @Test
@@ -41,7 +39,6 @@ public class CaseSentToCrownCourtToCaseProgressionDetailConverterTest {
         assertThat(cpd.getId(), equalTo(CASE_PROGRESSION_ID));
         assertThat(cpd.getCaseId(), equalTo(CASE_ID));
         assertThat(cpd.getDateOfSending(), equalTo(DATE_OF_SENDING));
-        assertThat(cpd.getVersion(), equalTo(VERSION));
     }
 
 }

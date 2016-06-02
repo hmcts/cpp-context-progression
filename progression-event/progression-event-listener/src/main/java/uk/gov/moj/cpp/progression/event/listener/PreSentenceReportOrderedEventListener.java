@@ -28,6 +28,6 @@ public class PreSentenceReportOrderedEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.preSentenceReportOrdered(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), PreSentenceReportOrdered.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), PreSentenceReportOrdered.class),event.metadata().version().get());
 	}
 }

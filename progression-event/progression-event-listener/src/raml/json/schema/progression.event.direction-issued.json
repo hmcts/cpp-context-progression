@@ -7,14 +7,10 @@
     },
     "directionIssuedDate": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "directionIssuedDate",
-    "version"
+    "directionIssuedDate"
   ]
 }

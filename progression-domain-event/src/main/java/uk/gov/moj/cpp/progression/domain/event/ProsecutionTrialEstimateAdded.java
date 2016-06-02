@@ -16,25 +16,18 @@ public class ProsecutionTrialEstimateAdded  {
 	
 	private int prosecutionTrialEstimate;
 	
-    private Long version;
-    
     public UUID getCaseProgressionId() {
 		return caseProgressionId;
-	}
-
-	public Long getVersion() {
-		return version;
 	}
 
 	public int getprosecutionTrialEstimate() {
 		return prosecutionTrialEstimate;
 	}
 
-	public ProsecutionTrialEstimateAdded(UUID caseProgressionId, int prosecutionTrialEstimate, Long version) {
+	public ProsecutionTrialEstimateAdded(UUID caseProgressionId, int prosecutionTrialEstimate) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.prosecutionTrialEstimate = prosecutionTrialEstimate;
-		this.version = version;
 	}
   
 }

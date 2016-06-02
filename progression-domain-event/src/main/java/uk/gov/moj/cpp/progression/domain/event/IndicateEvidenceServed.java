@@ -16,8 +16,6 @@ public class IndicateEvidenceServed {
 
 	private UUID indicateEvidenceServedId;
 
-	private long version;
-
 	private UUID caseId;
 
 	private Boolean isKeyEvidence;
@@ -26,11 +24,10 @@ public class IndicateEvidenceServed {
 
 	private LocalDate planDate;
 
-	public IndicateEvidenceServed(UUID indicateEvidenceServedId, Long version, UUID caseId, LocalDate planDate,
+	public IndicateEvidenceServed(UUID indicateEvidenceServedId, UUID caseId, LocalDate planDate,
 			String evidenceName, Boolean isKeyEvidence) {
 		super();
 		this.indicateEvidenceServedId = indicateEvidenceServedId;
-		this.version = version;
 		this.caseId = caseId;
 		this.isKeyEvidence = isKeyEvidence;
 		this.evidenceName = evidenceName;
@@ -39,11 +36,6 @@ public class IndicateEvidenceServed {
 
 	public UUID getIndicateEvidenceServedId() {
 	    return indicateEvidenceServedId;
-	}
-	
-
-	public long getVersion() {
-		return version;
 	}
 
 	public UUID getCaseId() {
@@ -61,9 +53,5 @@ public class IndicateEvidenceServed {
 	public LocalDate getPlanDate() {
 		return planDate;
 	}
-
-
-
-   
 
 }

@@ -23,12 +23,9 @@ public class IndicateStatement implements Aggregate {
 	private String evidenceName;
     private Boolean isKeyEvidence;
     
-    private static final Long INITIAL_VERSION = 0l;
-    
-
 	public Stream<Object> serveIndicateEvidence(final UUID indicateStatementId, final UUID caseId,final LocalDate planDate, String evidenceName, Boolean isKeyEvidence) {
 		assertPrecondition(this.indicateStatementId == null).orElseThrow("Indicate statement already added");
-		return apply(Stream.of(new IndicateEvidenceServed(indicateStatementId, INITIAL_VERSION, caseId, planDate,evidenceName,isKeyEvidence)));
+		return apply(Stream.of(new IndicateEvidenceServed(indicateStatementId,  caseId, planDate,evidenceName,isKeyEvidence)));
 	}
     
 	@Override

@@ -20,7 +20,6 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
 
 	private static final String COURT_CENTRE_ID = "Liverpool";
 	
-	private static final Long VERSION = 0L;
 
     private CaseAddedToCrownCourtToCaseProgressionDetailConverter converter;
     
@@ -30,7 +29,7 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
     public void setUp() throws Exception {
         converter = new CaseAddedToCrownCourtToCaseProgressionDetailConverter();
         
-        event = new CaseAddedToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, COURT_CENTRE_ID, VERSION);
+        event = new CaseAddedToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, COURT_CENTRE_ID);
     }
 
     @Test
@@ -40,7 +39,6 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
         assertThat(cpd.getId(), equalTo(CASE_PROGRESSION_ID));
         assertThat(cpd.getCaseId(), equalTo(CASE_ID));
         assertThat(cpd.getCourtCentreId(), equalTo(COURT_CENTRE_ID));
-        assertThat(cpd.getVersion(), equalTo(VERSION));
     }
 
 }

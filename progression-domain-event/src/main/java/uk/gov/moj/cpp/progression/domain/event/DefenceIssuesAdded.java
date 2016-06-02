@@ -16,13 +16,10 @@ public class DefenceIssuesAdded  {
 	
     private String defenceIssues;
 
-    private Long version;
-
-	public DefenceIssuesAdded(UUID caseProgressionId, String defenceIssues, Long version) {
+	public DefenceIssuesAdded(UUID caseProgressionId, String defenceIssues) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.defenceIssues = defenceIssues;
-		this.version = version;
 	}
 
 	public UUID getCaseProgressionId() {
@@ -33,7 +30,4 @@ public class DefenceIssuesAdded  {
 		return defenceIssues;
 	}
 
-	public Long getVersion() {
-		return version;
-	}
 }

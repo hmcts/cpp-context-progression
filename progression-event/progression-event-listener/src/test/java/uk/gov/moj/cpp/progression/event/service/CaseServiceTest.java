@@ -49,6 +49,8 @@ public class CaseServiceTest {
     @InjectMocks
     private CaseService service;
     
+    final static Long VERSION = 1l;
+    
     @Test
     public void addDefenceIssuesTest() {
         DefenceIssuesAdded event = mock(DefenceIssuesAdded.class, RETURNS_DEEP_STUBS);
@@ -56,7 +58,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
 
-        service.addDefenceIssues(event);
+        service.addDefenceIssues(event, VERSION);
         verify(repository, times(1)).findById(event.getCaseProgressionId());
         verify(repository, times(1)).save(entity);
 
@@ -69,7 +71,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.addSendingCommittalHearingInformation(event);
+        service.addSendingCommittalHearingInformation(event, VERSION);
         verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -82,7 +84,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.addTrialEstimateDefence(event);
+        service.addTrialEstimateDefence(event, VERSION);
         verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -95,7 +97,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.addTrialEstimateProsecution(event);
+        service.addTrialEstimateProsecution(event, VERSION);
         verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -107,7 +109,7 @@ public class CaseServiceTest {
         CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
 
-        service.addSFRIssues(event);
+        service.addSFRIssues(event, VERSION);
         verify(repository, times(1)).findById(event.getCaseProgressionId());
         verify(repository, times(1)).save(entity);
 
@@ -120,7 +122,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.indicateAllStatementsServed(event);
+        service.indicateAllStatementsServed(event,VERSION);
         verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -133,7 +135,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.directionIssued(event);
+        service.directionIssued(event, VERSION);
         verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -146,7 +148,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.indicateAllStatementsIdentified(event);
+        service.indicateAllStatementsIdentified(event, VERSION);
         verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -158,7 +160,7 @@ public class CaseServiceTest {
         CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
 
-        service.vacatePtpHeaing(event);
+        service.vacatePtpHeaing(event, VERSION);
         verify(repository, times(1)).findById(event.getCaseProgressionId());
         verify(repository, times(1)).save(entity);
 

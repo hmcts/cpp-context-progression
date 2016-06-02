@@ -16,13 +16,10 @@ public class SfrIssuesAdded  {
 	
     private String sfrIssues;
 
-    private Long version;
-
-	public SfrIssuesAdded(UUID caseProgressionId, String sfrIssues, Long version) {
+	public SfrIssuesAdded(UUID caseProgressionId, String sfrIssues) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.sfrIssues = sfrIssues;
-		this.version = version;
 	}
 
 	public UUID getCaseProgressionId() {
@@ -33,7 +30,4 @@ public class SfrIssuesAdded  {
 		return sfrIssues;
 	}
 
-	public Long getVersion() {
-		return version;
-	}
 }

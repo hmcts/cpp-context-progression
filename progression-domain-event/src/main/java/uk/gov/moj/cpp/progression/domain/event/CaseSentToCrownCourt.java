@@ -14,14 +14,12 @@ public class CaseSentToCrownCourt {
 
 	private LocalDate dateOfSending;
 	
-	private Long version;
 
-	public CaseSentToCrownCourt(UUID caseProgressionId, UUID caseId, LocalDate dateOfSending, Long version) {
+	public CaseSentToCrownCourt(UUID caseProgressionId, UUID caseId, LocalDate dateOfSending) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.caseId = caseId;
 		this.dateOfSending = dateOfSending;
-		this.version = version;
 	}
 
 	public UUID getCaseProgressionId() {
@@ -36,7 +34,4 @@ public class CaseSentToCrownCourt {
 		return dateOfSending;
 	}
 
-	public Long getVersion() {
-		return version;
-	}
 }

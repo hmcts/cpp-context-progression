@@ -7,14 +7,10 @@
     },
     "ptpHearingVacatedDate": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "ptpHearingVacatedDate",
-    "version"
+    "ptpHearingVacatedDate"
   ]
 }

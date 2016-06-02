@@ -18,14 +18,12 @@ public class CaseAddedToCrownCourt {
 
 	private String courtCentreId;
 	
-	private Long version;
 
-	public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId, Long version) {
+	public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.caseId = caseId;
 		this.courtCentreId = courtCentreId;
-		this.version = version;
 	}
 
 	public UUID getCaseProgressionId() {
@@ -40,7 +38,4 @@ public class CaseAddedToCrownCourt {
 		return courtCentreId;
 	}
 
-	public Long getVersion() {
-		return version;
-	}
 }

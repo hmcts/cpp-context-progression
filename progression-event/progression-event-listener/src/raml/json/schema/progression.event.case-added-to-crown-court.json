@@ -10,15 +10,11 @@
     },
     "courtCentreId": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
     "caseId",
-    "courtCentreId",
-    "version"
+    "courtCentreId"
   ]
 }

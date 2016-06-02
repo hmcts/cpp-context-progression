@@ -16,8 +16,6 @@ public class PreSentenceReportOrdered  {
 	
 	private Boolean isPSROrdered;
 	
-    private long version;
-    
     public UUID getCaseProgressionId() {
 		return caseProgressionId;
 	}
@@ -26,16 +24,11 @@ public class PreSentenceReportOrdered  {
         return isPSROrdered;
     }
     
-	public long getVersion() {
-		return version;
-	}
-
     public PreSentenceReportOrdered(UUID caseProgressionId,
-            Boolean isPSROrdered, long version) {
+            Boolean isPSROrdered) {
         super();
         this.caseProgressionId = caseProgressionId;
         this.isPSROrdered = isPSROrdered;
-        this.version = version;
     }
 
 }

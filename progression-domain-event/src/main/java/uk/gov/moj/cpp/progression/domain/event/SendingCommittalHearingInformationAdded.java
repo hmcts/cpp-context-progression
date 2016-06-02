@@ -19,15 +19,12 @@ public class SendingCommittalHearingInformationAdded {
 
 	private LocalDate sendingCommittalDate;
 
-	private Long version;
-
 	public SendingCommittalHearingInformationAdded(UUID caseProgressionId, String fromCourtCentre,
-			LocalDate sendingCommittalDate, Long version) {
+			LocalDate sendingCommittalDate) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.fromCourtCentre = fromCourtCentre;
 		this.sendingCommittalDate = sendingCommittalDate;
-		this.version = version;
 	}
 
 	public UUID getCaseProgressionId() {
@@ -42,7 +39,4 @@ public class SendingCommittalHearingInformationAdded {
 		return sendingCommittalDate;
 	}
 
-	public Long getVersion() {
-		return version;
-	}
 }

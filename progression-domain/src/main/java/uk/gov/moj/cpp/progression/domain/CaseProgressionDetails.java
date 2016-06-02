@@ -27,14 +27,11 @@ public class CaseProgressionDetails implements Aggregate {
 	
 	private static final String CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST = "Case progression details does not exist";
 
-    private static final Long INITIAL_VERSION = 0L;
-
 	private UUID caseProgressionId;
 	private UUID caseId;
 	private LocalDate dateOfSendng;
 	private String defenceIssues;
 	private String sfrIssues;
-	private Long version;
 	private String courtCentreId;
 	private String fromCourtCentre;
     private LocalDate sendingCommittalDate;
@@ -43,22 +40,22 @@ public class CaseProgressionDetails implements Aggregate {
 
 	public Stream<Object> sendCaseToCrownCourt(final UUID caseProgressionId, final UUID caseId) {
 		//assertPrecondition(this.caseProgressionId == null).orElseThrow("Case progression details already added");
-		return apply(Stream.of(new CaseSentToCrownCourt(caseProgressionId, caseId, LocalDate.now(), INITIAL_VERSION)));
+		return apply(Stream.of(new CaseSentToCrownCourt(caseProgressionId, caseId, LocalDate.now())));
 	}
 	
 	public Stream<Object> addCaseToCrownCourt(final UUID caseProgressionId, final UUID caseId, final String courtCentreId) {
 		//assertPrecondition(this.caseProgressionId == null).orElseThrow("Case progression details already added");
-		return apply(Stream.of(new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId, INITIAL_VERSION)));
+		return apply(Stream.of(new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId)));
 	}
 	
 	public Stream<Object> addDefenceIssues(final UUID caseProgressionId, final String defenceIssues, final Long version) {
 		assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-		return apply(Stream.of(new DefenceIssuesAdded(caseProgressionId, defenceIssues, version)));
+		return apply(Stream.of(new DefenceIssuesAdded(caseProgressionId, defenceIssues)));
 	}
 	
 	public Stream<Object> addSfrIssues(final UUID caseProgressionId, final String sfrIssues, final Long version) {
 		assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-		return apply(Stream.of(new SfrIssuesAdded(caseProgressionId, sfrIssues, version)));
+		return apply(Stream.of(new SfrIssuesAdded(caseProgressionId, sfrIssues)));
 	}
 
     public Stream<Object> sendCommittalHearingInformation(UUID caseProgressionId,  String fromCourtCentre,
@@ -66,47 +63,47 @@ public class CaseProgressionDetails implements Aggregate {
         assertPrecondition(this.caseProgressionId != null)
                 .orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
         return apply(Stream.of(new SendingCommittalHearingInformationAdded(
-                caseProgressionId,fromCourtCentre, sendingCommittalDate, version)));
+                caseProgressionId,fromCourtCentre, sendingCommittalDate)));
     }
 	
     public Stream<Object> addDefenceTrialEstimate(final UUID caseProgressionId, final int defenceTrialEstimate, final Long version) {
 		assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-		return apply(Stream.of(new DefenceTrialEstimateAdded(caseProgressionId, defenceTrialEstimate, version)));
+		return apply(Stream.of(new DefenceTrialEstimateAdded(caseProgressionId, defenceTrialEstimate)));
 	}
     
     public Stream<Object> addProsecutionTrialEstimate(final UUID caseProgressionId, final int prosecutionTrialEstimate, final Long version) {
         assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-        return apply(Stream.of(new ProsecutionTrialEstimateAdded(caseProgressionId, prosecutionTrialEstimate, version)));
+        return apply(Stream.of(new ProsecutionTrialEstimateAdded(caseProgressionId, prosecutionTrialEstimate)));
     }
     
     public Stream<Object> issueDirection(UUID caseProgressionId,
             Long version) {
         assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-        return apply(Stream.of(new DirectionIssued(caseProgressionId,  version, LocalDate.now())));
+        return apply(Stream.of(new DirectionIssued(caseProgressionId,   LocalDate.now())));
     }
     
     public Stream<Object> preSentenceReport(UUID caseProgressionId, Boolean isPSROrdered,
             Long version) {
         assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-        return apply(Stream.of(new PreSentenceReportOrdered(caseProgressionId,isPSROrdered,  version)));
+        return apply(Stream.of(new PreSentenceReportOrdered(caseProgressionId,isPSROrdered)));
     }
     
     public Stream<Object> allStatementsIdentified(UUID caseProgressionId,
             Long version) {
         assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-        return apply(Stream.of(new AllStatementsIdentified(caseProgressionId,  version)));
+        return apply(Stream.of(new AllStatementsIdentified(caseProgressionId)));
     }
     
     public Stream<Object> allStatementsServed(UUID caseProgressionId,
             Long version) {
         assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-        return apply(Stream.of(new AllStatementsServed(caseProgressionId,  version)));
+        return apply(Stream.of(new AllStatementsServed(caseProgressionId)));
     }
     
     public Stream<Object> vacatePTPHearing(UUID caseProgressionId, LocalDate ptpHearingVacatedDate,
             Long version) {
         assertPrecondition(this.caseProgressionId != null).orElseThrow(CASE_PROGRESSION_DETAILS_DOES_NOT_EXIST);
-        return apply(Stream.of(new PTPHearingVacated(caseProgressionId, ptpHearingVacatedDate,  version)));
+        return apply(Stream.of(new PTPHearingVacated(caseProgressionId, ptpHearingVacatedDate)));
     }
     
 	@Override
@@ -122,40 +119,30 @@ public class CaseProgressionDetails implements Aggregate {
 		}), when(DefenceIssuesAdded.class).apply(caseSentToCrownCourt -> {
 			caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
 			defenceIssues = caseSentToCrownCourt.getDefenceIssues();
-			version = caseSentToCrownCourt.getVersion();
 		}), when(SendingCommittalHearingInformationAdded.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
             fromCourtCentre = caseSentToCrownCourt.getFromCourtCentre();
             sendingCommittalDate= caseSentToCrownCourt.getSendingCommittalDate();
-            version = caseSentToCrownCourt.getVersion();
 		}), when(SfrIssuesAdded.class).apply(caseSentToCrownCourt -> {
 			caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
 			sfrIssues = caseSentToCrownCourt.getSfrIssues();
-			version = caseSentToCrownCourt.getVersion();
 		}), when(DefenceTrialEstimateAdded.class).apply(caseSentToCrownCourt -> {
 			caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
 			defenceTrialEstimate = caseSentToCrownCourt.getDefenceTrialEstimate();
-			version = caseSentToCrownCourt.getVersion();
 	    }), when(ProsecutionTrialEstimateAdded.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
             defenceTrialEstimate = caseSentToCrownCourt.getprosecutionTrialEstimate();
-            version = caseSentToCrownCourt.getVersion();			
 	    }), when(DirectionIssued.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
-            version = caseSentToCrownCourt.getVersion();	
 	    }), when(PreSentenceReportOrdered.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
-            version = caseSentToCrownCourt.getVersion();  
             isPSROrdered = caseSentToCrownCourt.getIsPSROrdered();
         }), when(AllStatementsIdentified.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
-            version = caseSentToCrownCourt.getVersion();    
         }), when(AllStatementsServed.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
-            version = caseSentToCrownCourt.getVersion();   
         }), when(PTPHearingVacated.class).apply(caseSentToCrownCourt -> {
             caseProgressionId = caseSentToCrownCourt.getCaseProgressionId();
-            version = caseSentToCrownCourt.getVersion();   
 		}));
 	}
    

@@ -13,8 +13,6 @@ public class CaseSentToCrownCourtToCaseProgressionDetailConverter implements Con
 		caseProgressionDetail.setCaseId(event.getCaseId());
 		caseProgressionDetail.setDateOfSending(event.getDateOfSending());
 		caseProgressionDetail.setId(event.getCaseProgressionId());
-		caseProgressionDetail.setVersion(event.getVersion());
-
         return caseProgressionDetail;
     }
 }

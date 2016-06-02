@@ -16,14 +16,14 @@ public class AllStatementsServed {
 	
 	private UUID caseProgressionId;
 	
-	private long version;
-	
+	public AllStatementsServed(){
+	    super();
+	}
 
-    public AllStatementsServed(UUID caseProgressionId, Long version) {
+    public AllStatementsServed(UUID caseProgressionId) {
     	
         super();
         this.caseProgressionId = caseProgressionId;
-        this.version = version;
     }
 
 
@@ -32,7 +32,4 @@ public class AllStatementsServed {
 	}
 
 
-	public long getVersion() {
-		return version;
-	}
 }

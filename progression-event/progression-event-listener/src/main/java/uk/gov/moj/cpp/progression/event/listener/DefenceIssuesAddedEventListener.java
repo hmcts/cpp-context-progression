@@ -27,6 +27,6 @@ public class DefenceIssuesAddedEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addDefenceIssues(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), DefenceIssuesAdded.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), DefenceIssuesAdded.class),event.metadata().version().get());
 	}
 }

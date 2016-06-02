@@ -24,6 +24,6 @@ public class TrialTimeEstimatedByProsecutionEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addTrialEstimateProsecution(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionTrialEstimateAdded.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionTrialEstimateAdded.class),event.metadata().version().get());
 	}
 }

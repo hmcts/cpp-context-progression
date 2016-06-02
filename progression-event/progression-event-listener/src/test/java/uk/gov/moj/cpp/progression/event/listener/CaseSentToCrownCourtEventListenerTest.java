@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.progression.event.listener;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -13,6 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
 import uk.gov.moj.cpp.progression.event.converter.CaseSentToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.event.listener.CaseSentToCrownCourtEventListener;
@@ -42,6 +45,9 @@ public class CaseSentToCrownCourtEventListenerTest {
 
 	@Mock
 	private JsonObject payload;
+	
+	@Mock
+	private Metadata metadata;
 
 	@InjectMocks
 	private CaseSentToCrownCourtEventListener eventListener;
@@ -52,7 +58,8 @@ public class CaseSentToCrownCourtEventListenerTest {
 		when(envelope.payloadAsJsonObject()).thenReturn(payload);
 		when(jsonObjectToObjectConverter.convert(payload, CaseSentToCrownCourt.class)).thenReturn(caseSentToCrownCourt);
 		when(caseSentToCrownCourtConverter.convert(caseSentToCrownCourt)).thenReturn(caseProgressionDetail);
-		
+		when(envelope.metadata()).thenReturn(metadata);
+        when(envelope.metadata().version()).thenReturn(Optional.of(0l));
 		eventListener.sentToCrownCourt(envelope);
 
 		verify(repository).save(caseProgressionDetail);

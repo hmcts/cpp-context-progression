@@ -5,16 +5,12 @@
     "caseProgressionId": {
       "type": "string"
     },
-    "version": {
-      "type": "integer"
-    },
     "isPSROrdered": {
       "type": "boolean"
     }
   },
   "required": [
     "caseProgressionId",
-    "version",
     "isPSROrdered"
   ]
 }

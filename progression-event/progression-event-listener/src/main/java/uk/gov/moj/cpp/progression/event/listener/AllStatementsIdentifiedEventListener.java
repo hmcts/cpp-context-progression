@@ -28,6 +28,6 @@ public class AllStatementsIdentifiedEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.indicateAllStatementsIdentified(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), AllStatementsIdentified.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), AllStatementsIdentified.class),event.metadata().version().get());
 	}
 }

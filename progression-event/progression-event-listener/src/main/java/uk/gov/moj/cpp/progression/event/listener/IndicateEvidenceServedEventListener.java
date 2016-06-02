@@ -11,6 +11,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.IndicateEvidenceServed;
 import uk.gov.moj.cpp.progression.event.converter.IndicateEvidenceServedToIndicateStatementConverter;
+import uk.gov.moj.cpp.progression.persistence.entity.IndicateStatement;
 import uk.gov.moj.progression.persistence.repository.IndicateStatementRepository;
 
 /**
@@ -33,9 +34,9 @@ public class IndicateEvidenceServedEventListener {
 	@Transactional
 	@Handles("progression.event.indicate-evidence-served")
     public void processEvent(final JsonEnvelope event) {
-		
 		IndicateEvidenceServed caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), IndicateEvidenceServed.class);
-		
-		repository.save(entityConverter.convert(caseSentToCrownCourt));
+		IndicateStatement indicateStatement =entityConverter.convert(caseSentToCrownCourt);
+		indicateStatement.setVersion(event.metadata().version().get());
+		repository.save(indicateStatement);
     }
 }

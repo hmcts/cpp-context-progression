@@ -24,8 +24,6 @@ public class IndicateEvidenceServedToIndicateStatementConverterTest {
 	
 	private static final LocalDate PLAN_DATE = LocalDate.now();
 	
-	private static final long VERSION = 1l;
-
     private IndicateEvidenceServedToIndicateStatementConverter converter;
     
     private IndicateEvidenceServed event;
@@ -34,7 +32,7 @@ public class IndicateEvidenceServedToIndicateStatementConverterTest {
     public void setUp() throws Exception {
         converter = new IndicateEvidenceServedToIndicateStatementConverter();
         
-        event = new IndicateEvidenceServed(CASE_PROGRESSION_ID, VERSION, CASE_ID, PLAN_DATE, EVIDENCE_NAME, KEY_EVIDENCE);
+        event = new IndicateEvidenceServed(CASE_PROGRESSION_ID,  CASE_ID, PLAN_DATE, EVIDENCE_NAME, KEY_EVIDENCE);
     }
 
     @Test
@@ -46,7 +44,6 @@ public class IndicateEvidenceServedToIndicateStatementConverterTest {
         assertThat(cpd.getEvidenceName(), equalTo(EVIDENCE_NAME));
         assertThat(cpd.getIsKeyEvidence(), equalTo(KEY_EVIDENCE));
         assertThat(cpd.getPlanDate(), equalTo(PLAN_DATE));
-        assertThat(cpd.getVersion(), equalTo(VERSION));
     }
 
 }

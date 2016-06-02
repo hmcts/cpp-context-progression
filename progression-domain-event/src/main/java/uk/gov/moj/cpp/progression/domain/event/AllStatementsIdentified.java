@@ -15,20 +15,18 @@ public class AllStatementsIdentified {
 	
 	private UUID caseProgressionId;
 	
-	private long version;
 
-    public AllStatementsIdentified(UUID caseProgressionId, long version) {
-    	
+	public AllStatementsIdentified() {
+	    super();
+	}
+	 
+    public AllStatementsIdentified(UUID caseProgressionId) {
         super();
         this.caseProgressionId = caseProgressionId;
-        this.version = version;
     }
 
 	public UUID getCaseProgressionId() {
 		return caseProgressionId;
 	}
 
-	public long getVersion() {
-		return version;
-	}
 }

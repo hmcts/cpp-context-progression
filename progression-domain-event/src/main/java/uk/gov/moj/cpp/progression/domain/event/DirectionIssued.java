@@ -17,13 +17,10 @@ public class DirectionIssued  {
 	
 	private LocalDate directionIssuedDate;
 	
-    private Long version;
-
-	public DirectionIssued(UUID caseProgressionId,  Long version, LocalDate directionIssuedDate) {
+	public DirectionIssued(UUID caseProgressionId, LocalDate directionIssuedDate) {
 		super();
 		this.caseProgressionId = caseProgressionId;
 		this.directionIssuedDate = directionIssuedDate;
-		this.version = version;
 	}
 
 	public UUID getCaseProgressionId() {
@@ -34,7 +31,4 @@ public class DirectionIssued  {
 		return directionIssuedDate;
 	}
 
-	public Long getVersion() {
-		return version;
-	}
 }

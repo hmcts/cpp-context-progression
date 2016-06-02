@@ -13,8 +13,6 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverter implements Co
         caseProgressionDetail.setId(event.getCaseProgressionId());
         caseProgressionDetail.setCaseId(event.getCaseId());
         caseProgressionDetail.setCourtCentreId(event.getCourtCentreId());
-        caseProgressionDetail.setVersion(event.getVersion());
-        
         return caseProgressionDetail;
     }
 }

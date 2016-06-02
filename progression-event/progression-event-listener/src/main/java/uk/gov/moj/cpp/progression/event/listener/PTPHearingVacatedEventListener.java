@@ -29,6 +29,6 @@ public class PTPHearingVacatedEventListener {
     public void processEvent(final JsonEnvelope event	) {
 
 		caseService.vacatePtpHeaing(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), PTPHearingVacated.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), PTPHearingVacated.class),event.metadata().version().get());
 	}
 }

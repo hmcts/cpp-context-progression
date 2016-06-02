@@ -28,6 +28,6 @@ public class DirectionIssuedEventListener {
     public void processEvent(final JsonEnvelope event) {
 
 		caseService.directionIssued(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), DirectionIssued.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), DirectionIssued.class),event.metadata().version().get());
 	}
 }

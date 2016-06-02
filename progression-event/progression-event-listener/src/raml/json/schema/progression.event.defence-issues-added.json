@@ -7,14 +7,10 @@
     },
     "defenceIssues": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "defenceIssues",
-    "version"
+    "defenceIssues"
   ]
 }

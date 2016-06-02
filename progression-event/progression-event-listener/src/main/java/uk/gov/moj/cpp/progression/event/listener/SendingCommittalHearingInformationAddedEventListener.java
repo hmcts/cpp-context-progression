@@ -28,6 +28,6 @@ public class SendingCommittalHearingInformationAddedEventListener {
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addSendingCommittalHearingInformation(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), SendingCommittalHearingInformationAdded.class));
+				jsonObjectConverter.convert(event.payloadAsJsonObject(), SendingCommittalHearingInformationAdded.class),event.metadata().version().get());
 	}
 }

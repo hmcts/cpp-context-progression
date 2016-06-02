@@ -10,15 +10,11 @@
     },
     "dateOfSending": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
     "caseId",
-    "dateOfSending",
-    "version"
+    "dateOfSending"
   ]
 }
