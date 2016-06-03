@@ -1,7 +1,7 @@
 {
   "indicateStatementId": "35b0c3fe-afe6-4652-882f-7882d79eadd9",
   "caseId": "35b0c3fe-afe6-4652-882f-7882d79eadd8",
-  "isKeyEvidence": true,
+  "isKeyEvidence": "TRUE",
   "evidenceName": "evidence name",
   "planDate": "2016-01-01"
 }

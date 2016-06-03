@@ -1,7 +1,7 @@
 {
   "indicateStatementId": "RANDOM_ID",
   "caseId": "RANDOM_CASE_ID",
-  "isKeyEvidence": true,
+  "isKeyEvidence": "true",
   "evidenceName": "evidence name",
   "planDate": "2016-01-01"
 }
