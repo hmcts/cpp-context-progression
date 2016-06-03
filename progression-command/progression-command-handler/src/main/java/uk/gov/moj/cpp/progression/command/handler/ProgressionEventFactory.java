@@ -42,21 +42,21 @@ public class ProgressionEventFactory {
     public Object createCaseSentToCrownCourt(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
-        return (new CaseSentToCrownCourt(caseProgressionId, caseId, LocalDate.now(), INITIAL_VERSION));
+		return (new CaseSentToCrownCourt(caseProgressionId, caseId, LocalDate.now()));
     }
 
 	public Object createCaseAddedToCrownCourt(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final String courtCentreId = envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTER_ID_);
-        return (new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId, INITIAL_VERSION));
+		return (new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId));
     }
 
 	public Object createDefenceIssuesAdded(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final String defenceIssues = envelope.payloadAsJsonObject().getString(FIELD_DEFENCE_ISSUES);
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new DefenceIssuesAdded(caseProgressionId, defenceIssues, version));
+		return (new DefenceIssuesAdded(caseProgressionId, defenceIssues));
 
     }
 
@@ -64,7 +64,7 @@ public class ProgressionEventFactory {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final String sfrIssues = envelope.payloadAsJsonObject().getString(FIELD_SFR_ISSUES);
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new SfrIssuesAdded(caseProgressionId, sfrIssues, version));
+		return (new SfrIssuesAdded(caseProgressionId, sfrIssues));
 
     }
 
@@ -73,34 +73,34 @@ public class ProgressionEventFactory {
         final String fromCourtCentre = envelope.payloadAsJsonObject().getString(FIELD_FROM_COURT_CENTRE);
         final LocalDate sendingCommittalDate = LocalDate.parse(envelope.payloadAsJsonObject().getString(FIELD_SENDING_COMMITTAL_DATE));
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new SendingCommittalHearingInformationAdded(caseProgressionId, fromCourtCentre, sendingCommittalDate, version));
+		return (new SendingCommittalHearingInformationAdded(caseProgressionId, fromCourtCentre, sendingCommittalDate));
     }
 
 	public Object createDefenceTrialEstimateAdded(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final int defenceTrialEstimate = envelope.payloadAsJsonObject().getInt(FIELD_DEFENCE_TRIAL_ESTIMATE);
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new DefenceTrialEstimateAdded(caseProgressionId, defenceTrialEstimate, version));
+		return (new DefenceTrialEstimateAdded(caseProgressionId, defenceTrialEstimate));
     }
 
 	public Object createProsecutionTrialEstimateAdded(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final int prosecutionTrialEstimate = envelope.payloadAsJsonObject().getInt(FIELD_PROSECUTION_TRIAL_ESTIMATE);
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new ProsecutionTrialEstimateAdded(caseProgressionId, prosecutionTrialEstimate, version));
+		return (new ProsecutionTrialEstimateAdded(caseProgressionId, prosecutionTrialEstimate));
     }
 
 	public Object createDirectionIssued(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new DirectionIssued(caseProgressionId, version, LocalDate.now()));
+		return (new DirectionIssued(caseProgressionId, LocalDate.now()));
     }
 
 	public Object createPreSentenceReportOrdered(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
         final Boolean isPSROrdered = envelope.payloadAsJsonObject().getBoolean(FIELD_IS_PSR_ORDERED);
-        return (new PreSentenceReportOrdered(caseProgressionId, isPSROrdered, version));
+		return (new PreSentenceReportOrdered(caseProgressionId, isPSROrdered));
     }
 
 	public Object createIndicateEvidenceServed(final JsonEnvelope envelope) {
@@ -109,26 +109,26 @@ public class ProgressionEventFactory {
         final String evidenceName = envelope.payloadAsJsonObject().getString(FIELD_EVIDENCE_NAME);
         final Boolean isKeyEvidence = Boolean.valueOf(envelope.payloadAsJsonObject().getString(FIELD_IS_KEY_EVIDENCE));
         final LocalDate planDate = LocalDate.parse(envelope.payloadAsJsonObject().getString(FIELD_PLAN_DATE));
-        return (new IndicateEvidenceServed(indicateStatementId, INITIAL_VERSION, caseId, planDate, evidenceName, isKeyEvidence));
+		return (new IndicateEvidenceServed(indicateStatementId, caseId, planDate, evidenceName, isKeyEvidence));
 
     }
 
 	public Object createAllStatementsIdentified(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new AllStatementsIdentified(caseProgressionId, version));
+		return (new AllStatementsIdentified(caseProgressionId));
     }
 
 	public Object createAllStatementsServed(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new AllStatementsServed(caseProgressionId, version));
+		return (new AllStatementsServed(caseProgressionId));
     }
 
 	public Object createPTPHearingVacated(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final Long version = new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
-        return (new PTPHearingVacated(caseProgressionId, LocalDate.now(), version));
+		return (new PTPHearingVacated(caseProgressionId, LocalDate.now()));
     }
 
 	public Object createSentenceHearingDateAdded(final JsonEnvelope envelope) {

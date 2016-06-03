@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.progression.domain.event.PTPHearingVacated;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
 import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
@@ -151,5 +152,17 @@ public class CaseService {
 		}else{
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
         }
+	}
+
+	@Transactional
+	public void addSentenceHearingDate(SentenceHearingDateAdded event, Long version) {
+		CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+		if (caseProgressionDetail != null) {
+			caseProgressionDetail.setSentenceHearingDate(event.getSentenceHearingDate());
+			caseProgressionDetail.setVersion(version);
+			caseProgressionDetailRepo.save(caseProgressionDetail);
+		} else {
+			throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+		}
 	}
 }

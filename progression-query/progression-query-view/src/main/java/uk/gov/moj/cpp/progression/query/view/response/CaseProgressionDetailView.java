@@ -36,7 +36,9 @@ public class CaseProgressionDetailView {
     
     private  LocalDate sendingCommittalDate;
     
-    private Boolean isPSROrdered;
+	private LocalDate sentenceHearingDate;
+
+	private Boolean isPSROrdered;
 
     public Long getVersion() {
         return version;
@@ -174,4 +176,11 @@ public class CaseProgressionDetailView {
 		this.isPSROrdered = isPSROrdered;
 	}
 
+	public LocalDate getSentenceHearingDate() {
+		return sentenceHearingDate;
+	}
+
+	public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
+		this.sentenceHearingDate = sentenceHearingDate;
+	}
 }

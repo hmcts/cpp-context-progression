@@ -17,12 +17,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
+import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
 import uk.gov.moj.cpp.progression.domain.event.PTPHearingVacated;
-import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
-import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
+import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
+import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.event.converter.CaseSentToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
@@ -165,5 +166,17 @@ public class CaseServiceTest {
         verify(repository, times(1)).save(entity);
 
     }
+
+	@Test
+	public void addSentenceHearingDateTest() {
+		SentenceHearingDateAdded event = mock(SentenceHearingDateAdded.class);
+		CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+		when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
+
+		service.addSentenceHearingDate(event, VERSION);
+		verify(repository, times(1)).findById(event.getCaseProgressionId());
+		verify(repository, times(1)).save(entity);
+
+	}
 
 }

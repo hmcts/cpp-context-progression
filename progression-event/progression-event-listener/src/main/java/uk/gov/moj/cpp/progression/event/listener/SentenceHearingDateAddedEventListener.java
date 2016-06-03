@@ -22,7 +22,6 @@ public class SentenceHearingDateAddedEventListener {
 
     @Handles("progression.event.sentence-hearing-date-added")
     public void processEvent(final JsonEnvelope event) {
-
         SentenceHearingDateAdded sentenceHearingDateAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(),
                 SentenceHearingDateAdded.class);
         caseService.addSentenceHearingDate(sentenceHearingDateAdded, event.metadata().version().get());

@@ -43,6 +43,7 @@ public class CaseProgressionDetailToViewConverter {
 		caseProgressionDetailVo.setFromCourtCentre(caseProgressionDetail.getFromCourtCentre());
 		caseProgressionDetailVo.setSendingCommittalDate(caseProgressionDetail.getSendingCommittalDate());
 		caseProgressionDetailVo.setIsPSROrdered(caseProgressionDetail.getIsPSROrdered());
+		caseProgressionDetailVo.setSentenceHearingDate(caseProgressionDetail.getSentenceHearingDate());
 
 		return caseProgressionDetailVo;
 	}

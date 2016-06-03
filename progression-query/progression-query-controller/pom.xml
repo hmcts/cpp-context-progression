@@ -12,7 +12,6 @@
 		<cpp.service-component>QUERY_CONTROLLER</cpp.service-component>
 	</properties>
 	<build>
-		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>uk.gov.justice.maven</groupId>
