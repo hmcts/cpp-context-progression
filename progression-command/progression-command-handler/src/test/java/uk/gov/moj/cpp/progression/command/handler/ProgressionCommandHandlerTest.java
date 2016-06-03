@@ -59,7 +59,7 @@ public class ProgressionCommandHandlerTest {
 	private static int PROSECUTION_TRIAL_ESTIMATE = 2;
 	private static final  Boolean IS_PSR_ORDERED = true;
 	private static final UUID INDICATE_STATEMENT_ID = UUID.randomUUID();;
-    private static final String IS_KEY_EVIDENCE = "true";
+    private static final Boolean IS_KEY_EVIDENCE = true;
     private static final String EVIDENCE_NAME = "main evidence";
     private static final LocalDate PLAN_DATE = LocalDate.now();
 
@@ -258,7 +258,7 @@ public class ProgressionCommandHandlerTest {
 
         when(eventSource.getStreamById(INDICATE_STATEMENT_ID)).thenReturn(stubEventStream);
         when(aggregateService.get(stubEventStream, IndicateStatement.class)).thenReturn(indicateStatement);
-        when(indicateStatement.serveIndicateEvidence(INDICATE_STATEMENT_ID, CASE_ID, PLAN_DATE, EVIDENCE_NAME, true)).thenReturn(events);
+        when(indicateStatement.serveIndicateEvidence(INDICATE_STATEMENT_ID, CASE_ID, PLAN_DATE, EVIDENCE_NAME, IS_KEY_EVIDENCE)).thenReturn(events);
         when(events.map(enveloperFunction)).thenReturn(Arrays.asList(envelope).stream());
 
         progressionCommandHandler.indicatestatement(command);
