@@ -77,26 +77,14 @@
 							<skipITs>false</skipITs>
 							<systemProperties>
 								<property>
-									<name>baseUri</name>
-									<value>${baseUri}</value>
+									<name>INTEGRATION_HOST_KEY</name>
+									<value>${INTEGRATION_HOST_KEY}</value>
 								</property>
 							</systemProperties>
 						</configuration>
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-		<profile>
-			<id>validation-test-config</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-				<property>
-					<name>INTEGRATION_HOST_KEY</name>
-				</property>
-			</activation>
-			<properties>
-				<baseUri>http://${INTEGRATION_HOST_KEY}:8080</baseUri>
-			</properties>
 		</profile>
 
 	</profiles>
