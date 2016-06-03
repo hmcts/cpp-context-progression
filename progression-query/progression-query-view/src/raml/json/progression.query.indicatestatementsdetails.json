@@ -3,14 +3,14 @@
     {
       "id": "1001",
       "caseId": "caseId",
-      "isKeyEvidence": "TRUE",
+      "isKeyEvidence": true,
       "evidenceName": "evidence name",
       "planDate": "2016-01-01"
     },
     {
       "id": "1002",
       "caseId": "caseId",
-      "isKeyEvidence": "TRUE",
+      "isKeyEvidence": true,
       "evidenceName": "evidence name2",
       "planDate": "2016-01-01"
     }

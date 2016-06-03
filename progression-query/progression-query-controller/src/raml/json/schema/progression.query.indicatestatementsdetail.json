@@ -9,7 +9,7 @@
       "type": "string"
     },
     "isKeyEvidence": {
-      "type": "string"
+      "type": "boolean"
     },
     "evidenceName": {
       "type": "string"

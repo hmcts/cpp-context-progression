@@ -107,7 +107,7 @@ public class ProgressionEventFactory {
         final UUID indicateStatementId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_INDICATE_STATEMENT_ID));
         final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final String evidenceName = envelope.payloadAsJsonObject().getString(FIELD_EVIDENCE_NAME);
-        final Boolean isKeyEvidence = Boolean.valueOf(envelope.payloadAsJsonObject().getString(FIELD_IS_KEY_EVIDENCE));
+		final Boolean isKeyEvidence = envelope.payloadAsJsonObject().getBoolean(FIELD_IS_KEY_EVIDENCE);
         final LocalDate planDate = LocalDate.parse(envelope.payloadAsJsonObject().getString(FIELD_PLAN_DATE));
 		return (new IndicateEvidenceServed(indicateStatementId, caseId, planDate, evidenceName, isKeyEvidence));
 
