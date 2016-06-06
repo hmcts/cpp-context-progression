@@ -28,7 +28,6 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
-import uk.gov.moj.cpp.progression.domain.IndicateStatement;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandHandlerTest {
@@ -51,9 +50,6 @@ public class ProgressionCommandHandlerTest {
 
 	@Mock
 	Object event;
-
-	@Mock
-	IndicateStatement indicateStatement;
 
 	@InjectMocks
 	private ProgressionCommandHandler progressionCommandHandler;

@@ -23,7 +23,7 @@
         <module>progression-event</module>
         <module>progression-domain</module>
         <module>progression-integration-test</module>
-		<module>progression-performance-test</module>
+        <module>progression-performance-test</module>
     </modules>
 
     <properties>
@@ -33,4 +33,28 @@
         <deltaspike.version>1.6.1</deltaspike.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
     </properties>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>1.0-m5.1</version>
+                <configuration>
+                    <flowInitContext>
+                        <masterBranchName>dev/people-release</masterBranchName>
+                        <developBranchName>master</developBranchName>
+                        <featureBranchPrefix>dev/people-feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>dev/people-release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>dev/people-hotfix-</hotfixBranchPrefix>
+                        <versionTagPrefix>people-tag-</versionTagPrefix>
+                    </flowInitContext>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <enableSshAgent>true</enableSshAgent>
+                    <pushReleases>true</pushReleases>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>
