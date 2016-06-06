@@ -10,7 +10,7 @@ import uk.gov.justice.domain.annotation.Event;
  * @author Jchondig
  *
  */
-@Event("progression.event.all-statements-served")
+@Event("progression.events.all-statements-served")
 public class AllStatementsServed {
 	
 	

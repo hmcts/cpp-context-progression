@@ -32,7 +32,7 @@ public class IndicateEvidenceServedEventListener {
 	IndicateStatementRepository repository;
 
 	@Transactional
-	@Handles("progression.event.indicate-evidence-served")
+	@Handles("progression.events.indicate-evidence-served")
     public void processEvent(final JsonEnvelope event) {
 		IndicateEvidenceServed caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), IndicateEvidenceServed.class);
 		IndicateStatement indicateStatement =entityConverter.convert(caseSentToCrownCourt);

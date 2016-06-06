@@ -20,7 +20,7 @@ public class TrialTimeEstimatedByProsecutionEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.prosecution-trial-estimate-added")
+	@Handles("progression.events.prosecution-trial-estimate-added")
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addTrialEstimateProsecution(

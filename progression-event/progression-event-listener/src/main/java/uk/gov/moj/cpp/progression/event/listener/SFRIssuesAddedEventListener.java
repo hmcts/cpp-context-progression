@@ -24,7 +24,7 @@ public class SFRIssuesAddedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.sfr-issues-added")
+	@Handles("progression.events.sfr-issues-added")
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addSFRIssues(

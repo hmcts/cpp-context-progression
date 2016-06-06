@@ -28,7 +28,7 @@ public class CaseSentToCrownCourtEventListener {
 
 
 	@Transactional
-	@Handles("progression.event.case-sent-to-crown-court")
+	@Handles("progression.events.case-sent-to-crown-court")
 	public void sentToCrownCourt(final JsonEnvelope event) {
 		
 		CaseSentToCrownCourt caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseSentToCrownCourt.class);

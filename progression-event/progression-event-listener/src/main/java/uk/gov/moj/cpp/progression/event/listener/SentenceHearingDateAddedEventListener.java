@@ -20,7 +20,7 @@ public class SentenceHearingDateAddedEventListener {
     @Inject
     JsonObjectToObjectConverter jsonObjectConverter;
 
-    @Handles("progression.event.sentence-hearing-date-added")
+    @Handles("progression.events.sentence-hearing-date-added")
     public void processEvent(final JsonEnvelope event) {
         SentenceHearingDateAdded sentenceHearingDateAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(),
                 SentenceHearingDateAdded.class);

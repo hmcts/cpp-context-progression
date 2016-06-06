@@ -10,7 +10,7 @@ import uk.gov.justice.domain.annotation.Event;
  * @author hasan shaik
  *
  */
-@Event("progression.event.all-statements-identified")
+@Event("progression.events.all-statements-identified")
 public class AllStatementsIdentified {
 	
 	private UUID caseProgressionId;

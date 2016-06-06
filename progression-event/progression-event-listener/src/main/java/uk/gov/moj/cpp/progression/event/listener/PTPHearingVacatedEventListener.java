@@ -25,7 +25,7 @@ public class PTPHearingVacatedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.ptp-hearing-vacated")
+	@Handles("progression.events.ptp-hearing-vacated")
     public void processEvent(final JsonEnvelope event	) {
 
 		caseService.vacatePtpHeaing(

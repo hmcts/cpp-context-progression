@@ -24,7 +24,7 @@ public class DirectionIssuedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.direction-issued")
+	@Handles("progression.events.direction-issued")
     public void processEvent(final JsonEnvelope event) {
 
 		caseService.directionIssued(

@@ -9,7 +9,7 @@ import uk.gov.justice.domain.annotation.Event;
  * @author jchondig
  *
  */
-@Event("progression.event.case-added-to-crown-court")
+@Event("progression.events.case-added-to-crown-court")
 public class CaseAddedToCrownCourt {
 	
 	private UUID caseProgressionId;

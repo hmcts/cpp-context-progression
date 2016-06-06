@@ -11,7 +11,7 @@ import uk.gov.justice.domain.annotation.Event;
  * @author jchondig
  *
  */
-@Event("progression.event.indicate-evidence-served")
+@Event("progression.events.indicate-evidence-served")
 public class IndicateEvidenceServed {
 
 	private UUID indicateEvidenceServedId;

@@ -24,7 +24,7 @@ public class AllStatementsIdentifiedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.all-statements-identified")
+	@Handles("progression.events.all-statements-identified")
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.indicateAllStatementsIdentified(

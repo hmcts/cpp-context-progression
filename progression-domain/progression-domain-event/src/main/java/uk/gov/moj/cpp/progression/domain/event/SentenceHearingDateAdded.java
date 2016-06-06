@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("progression.event.sentence-hearing-date-added")
+@Event("progression.events.sentence-hearing-date-added")
 public class SentenceHearingDateAdded {
 
 	public final static String EVENT_NAME = "progression.events.ptp-hearing-vacated";

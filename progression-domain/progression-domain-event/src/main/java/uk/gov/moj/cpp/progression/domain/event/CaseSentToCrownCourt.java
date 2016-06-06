@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("progression.event.case-sent-to-crown-court")
+@Event("progression.events.case-sent-to-crown-court")
 public class CaseSentToCrownCourt {
 	
 	private UUID caseProgressionId;

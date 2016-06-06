@@ -10,7 +10,7 @@ import uk.gov.justice.domain.annotation.Event;
  * @author jchondig
  *
  */
-@Event("progression.event.sending-committal-hearing-information-added")
+@Event("progression.events.sending-committal-hearing-information-added")
 public class SendingCommittalHearingInformationAdded {
 
 	private UUID caseProgressionId;

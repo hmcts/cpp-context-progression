@@ -24,7 +24,7 @@ public class SendingCommittalHearingInformationAddedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.sending-committal-hearing-information-added")
+	@Handles("progression.events.sending-committal-hearing-information-added")
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addSendingCommittalHearingInformation(

@@ -10,7 +10,7 @@ import uk.gov.justice.domain.annotation.Event;
  * @author jchondig
  *
  */
-@Event("progression.event.direction-issued")
+@Event("progression.events.direction-issued")
 public class DirectionIssued  {
 
 	private UUID caseProgressionId;

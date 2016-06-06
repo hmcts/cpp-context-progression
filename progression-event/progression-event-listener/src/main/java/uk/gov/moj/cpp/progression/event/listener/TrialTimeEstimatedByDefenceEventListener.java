@@ -20,7 +20,7 @@ public class TrialTimeEstimatedByDefenceEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.defence-trial-estimate-added")
+	@Handles("progression.events.defence-trial-estimate-added")
 	public void processEvent(final JsonEnvelope event) {
 		caseService.addTrialEstimateDefence(
 				jsonObjectConverter.convert(event.payloadAsJsonObject(), DefenceTrialEstimateAdded.class),event.metadata().version().get());

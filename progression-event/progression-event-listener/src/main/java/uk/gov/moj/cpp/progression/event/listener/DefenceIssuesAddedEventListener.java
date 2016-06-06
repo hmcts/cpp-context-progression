@@ -23,7 +23,7 @@ public class DefenceIssuesAddedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.defence-issues-added")
+	@Handles("progression.events.defence-issues-added")
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.addDefenceIssues(
