@@ -42,12 +42,12 @@
                 <version>1.0-m5.1</version>
                 <configuration>
                     <flowInitContext>
-                        <masterBranchName>dev/people-release</masterBranchName>
+                        <masterBranchName>dev/progression-release</masterBranchName>
                         <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/people-feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/people-release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/people-hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>people-tag-</versionTagPrefix>
+                        <featureBranchPrefix>dev/progression-feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>dev/progression-release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>dev/progression-hotfix-</hotfixBranchPrefix>
+                        <versionTagPrefix>progression-tag-</versionTagPrefix>
                     </flowInitContext>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <enableSshAgent>true</enableSshAgent>
