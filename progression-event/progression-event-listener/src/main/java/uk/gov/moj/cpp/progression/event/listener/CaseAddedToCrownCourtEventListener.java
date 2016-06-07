@@ -32,7 +32,7 @@ public class CaseAddedToCrownCourtEventListener {
 
 
 	@Transactional
-	@Handles("progression.event.case-added-to-crown-court")
+	@Handles("progression.events.case-added-to-crown-court")
 	public void addedToCrownCourt(final JsonEnvelope event) {
 		
 		CaseAddedToCrownCourt caseAddedToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseAddedToCrownCourt.class);

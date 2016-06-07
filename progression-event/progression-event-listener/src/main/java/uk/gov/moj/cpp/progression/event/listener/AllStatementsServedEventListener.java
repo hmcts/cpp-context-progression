@@ -24,7 +24,7 @@ public class AllStatementsServedEventListener {
 	@Inject
 	JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.event.all-statements-served")
+	@Handles("progression.events.all-statements-served")
 	public void processEvent(final JsonEnvelope event) {
 
 		caseService.indicateAllStatementsServed(
