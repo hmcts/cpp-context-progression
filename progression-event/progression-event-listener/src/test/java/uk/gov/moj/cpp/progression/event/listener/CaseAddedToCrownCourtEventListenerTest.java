@@ -24,44 +24,45 @@ import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailReposi
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAddedToCrownCourtEventListenerTest {
 
-	@Mock
-	private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-	
-	@Mock
-	private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourtConverter;
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-	@Mock
-	private CaseProgressionDetailRepository repository;
+    @Mock
+    private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourtConverter;
 
-	@Mock
-	private JsonEnvelope envelope;
+    @Mock
+    private CaseProgressionDetailRepository repository;
 
-	@Mock
-	private CaseAddedToCrownCourt caseAddedToCrownCourt;
+    @Mock
+    private JsonEnvelope envelope;
 
-	@Mock
-	private CaseProgressionDetail caseProgressionDetail;
+    @Mock
+    private CaseAddedToCrownCourt caseAddedToCrownCourt;
 
-	@Mock
-	private JsonObject payload;
-	
-	@Mock
-	private Metadata metadata;
-	
-	@InjectMocks
-	private CaseAddedToCrownCourtEventListener eventListener;
+    @Mock
+    private CaseProgressionDetail caseProgressionDetail;
 
-	@Test
-	public void shouldHandleHearingListedEvent() throws Exception {
+    @Mock
+    private JsonObject payload;
 
-		when(envelope.payloadAsJsonObject()).thenReturn(payload);
-		when(jsonObjectToObjectConverter.convert(payload, CaseAddedToCrownCourt.class)).thenReturn(caseAddedToCrownCourt);
-		when(caseAddedToCrownCourtConverter.convert(caseAddedToCrownCourt)).thenReturn(caseProgressionDetail);
-		when(envelope.metadata()).thenReturn(metadata);
-		when(envelope.metadata().version()).thenReturn(Optional.of(0l));
-		eventListener.addedToCrownCourt(envelope);
+    @Mock
+    private Metadata metadata;
 
-		verify(repository).save(caseProgressionDetail);
+    @InjectMocks
+    private CaseAddedToCrownCourtEventListener eventListener;
 
-	}
+    @Test
+    public void shouldHandleHearingListedEvent() throws Exception {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CaseAddedToCrownCourt.class))
+                .thenReturn(caseAddedToCrownCourt);
+        when(caseAddedToCrownCourtConverter.convert(caseAddedToCrownCourt)).thenReturn(caseProgressionDetail);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(envelope.metadata().version()).thenReturn(Optional.of(0l));
+        eventListener.addedToCrownCourt(envelope);
+
+        verify(repository).save(caseProgressionDetail);
+
+    }
 }

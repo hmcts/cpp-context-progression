@@ -16,31 +16,27 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
-import uk.gov.moj.cpp.progression.event.converter.CaseSentToCrownCourtToCaseProgressionDetailConverter;
+import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
+import uk.gov.moj.cpp.progression.event.service.CaseService;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CaseSentToCrownCourtEventListenerTest {
+public class SentenceHearingDateAddedEventListenerTest {
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Mock
-    private CaseSentToCrownCourtToCaseProgressionDetailConverter caseSentToCrownCourtConverter;
-
-    @Mock
-    private CaseProgressionDetailRepository repository;
-
-    @Mock
     private JsonEnvelope envelope;
 
     @Mock
-    private CaseSentToCrownCourt caseSentToCrownCourt;
+    private SentenceHearingDateAdded sentenceHearingDateAdded;
 
     @Mock
     private CaseProgressionDetail caseProgressionDetail;
+
+    @Mock
+    CaseService caseService;
 
     @Mock
     private JsonObject payload;
@@ -49,19 +45,19 @@ public class CaseSentToCrownCourtEventListenerTest {
     private Metadata metadata;
 
     @InjectMocks
-    private CaseSentToCrownCourtEventListener eventListener;
+    private SentenceHearingDateAddedEventListener eventListener;
 
     @Test
-    public void shouldHandleHearingListedEvent() throws Exception {
+    public void shouldHandleSentenceHearingDateAddedEvent() throws Exception {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, CaseSentToCrownCourt.class)).thenReturn(caseSentToCrownCourt);
-        when(caseSentToCrownCourtConverter.convert(caseSentToCrownCourt)).thenReturn(caseProgressionDetail);
+        when(jsonObjectToObjectConverter.convert(payload, SentenceHearingDateAdded.class))
+                .thenReturn(sentenceHearingDateAdded);
         when(envelope.metadata()).thenReturn(metadata);
         when(envelope.metadata().version()).thenReturn(Optional.of(0l));
-        eventListener.sentToCrownCourt(envelope);
 
-        verify(repository).save(caseProgressionDetail);
+        eventListener.processEvent(envelope);
 
+        verify(caseService).addSentenceHearingDate(sentenceHearingDateAdded, 0l);
     }
 }
