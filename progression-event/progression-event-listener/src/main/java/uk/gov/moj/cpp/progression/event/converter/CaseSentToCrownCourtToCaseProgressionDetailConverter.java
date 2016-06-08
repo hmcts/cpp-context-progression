@@ -8,11 +8,11 @@ public class CaseSentToCrownCourtToCaseProgressionDetailConverter implements Con
 
     @Override
     public CaseProgressionDetail convert(CaseSentToCrownCourt event) {
-    	
-		CaseProgressionDetail caseProgressionDetail=new CaseProgressionDetail();
-		caseProgressionDetail.setCaseId(event.getCaseId());
-		caseProgressionDetail.setDateOfSending(event.getDateOfSending());
-		caseProgressionDetail.setId(event.getCaseProgressionId());
+
+        CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+        caseProgressionDetail.setCaseId(event.getCaseId());
+        caseProgressionDetail.setDateOfSending(event.getDateOfSending());
+        caseProgressionDetail.setId(event.getCaseProgressionId());
         return caseProgressionDetail;
     }
 }

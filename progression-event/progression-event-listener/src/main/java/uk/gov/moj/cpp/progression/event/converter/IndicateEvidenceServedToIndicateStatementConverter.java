@@ -8,7 +8,7 @@ public class IndicateEvidenceServedToIndicateStatementConverter implements Conve
 
     @Override
     public IndicateStatement convert(IndicateEvidenceServed event) {
-    	
+
         IndicateStatement indicateStatement = new IndicateStatement();
         indicateStatement.setCaseId(event.getCaseId());
         indicateStatement.setIsKeyEvidence(event.getIsKeyEvidence());

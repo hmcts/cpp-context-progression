@@ -17,24 +17,23 @@ import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailReposi
 @ServiceComponent(EVENT_LISTENER)
 public class CaseSentToCrownCourtEventListener {
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
-	
-	@Inject
-	CaseSentToCrownCourtToCaseProgressionDetailConverter entityConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Inject
-	CaseProgressionDetailRepository repository;
+    @Inject
+    CaseSentToCrownCourtToCaseProgressionDetailConverter entityConverter;
 
+    @Inject
+    CaseProgressionDetailRepository repository;
 
-	@Transactional
-	@Handles("progression.events.case-sent-to-crown-court")
-	public void sentToCrownCourt(final JsonEnvelope event) {
-		
-		CaseSentToCrownCourt caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseSentToCrownCourt.class);
-		CaseProgressionDetail caseProgressionDetail = entityConverter.convert(caseSentToCrownCourt);
+    @Transactional
+    @Handles("progression.events.case-sent-to-crown-court")
+    public void sentToCrownCourt(final JsonEnvelope event) {
+
+        CaseSentToCrownCourt caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseSentToCrownCourt.class);
+        CaseProgressionDetail caseProgressionDetail = entityConverter.convert(caseSentToCrownCourt);
         caseProgressionDetail.setVersion(event.metadata().version().get());
         repository.save(caseProgressionDetail);
-	}
+    }
 
 }

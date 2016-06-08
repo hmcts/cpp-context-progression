@@ -18,16 +18,15 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class AllStatementsServedEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.all-statements-served")
-	public void processEvent(final JsonEnvelope event) {
+    @Handles("progression.events.all-statements-served")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.indicateAllStatementsServed(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), AllStatementsServed.class),event.metadata().version().get());
-	}
+        caseService.indicateAllStatementsServed(jsonObjectConverter.convert(event.payloadAsJsonObject(), AllStatementsServed.class), event.metadata().version().get());
+    }
 }

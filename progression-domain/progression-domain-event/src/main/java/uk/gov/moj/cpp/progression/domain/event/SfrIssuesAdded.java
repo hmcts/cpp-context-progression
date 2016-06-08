@@ -10,24 +10,24 @@ import uk.gov.justice.domain.annotation.Event;
  *
  */
 @Event("progression.events.sfr-issues-added")
-public class SfrIssuesAdded  {
+public class SfrIssuesAdded {
 
-	private UUID caseProgressionId;
-	
+    private UUID caseProgressionId;
+
     private String sfrIssues;
 
-	public SfrIssuesAdded(UUID caseProgressionId, String sfrIssues) {
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.sfrIssues = sfrIssues;
-	}
+    public SfrIssuesAdded(UUID caseProgressionId, String sfrIssues) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.sfrIssues = sfrIssues;
+    }
 
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
 
-	public String getSfrIssues() {
-		return sfrIssues;
-	}
+    public String getSfrIssues() {
+        return sfrIssues;
+    }
 
 }

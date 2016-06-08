@@ -6,46 +6,44 @@ import java.util.UUID;
 import uk.gov.moj.cpp.progression.domain.constant.HearingTypeEnum;
 
 public class ListHearing {
-	private UUID caseId;
+    private UUID caseId;
 
-	private HearingTypeEnum hearingType;
+    private HearingTypeEnum hearingType;
 
-	private String courtCentreName;
+    private String courtCentreName;
 
-	private LocalDate dateOfSending;
+    private LocalDate dateOfSending;
 
-	private Integer duration;
-	
-	public ListHearing(UUID caseId, HearingTypeEnum hearingType, String courtCentreName, LocalDate dateOfSending,
-			Integer duration) {
-		super();
-		this.caseId = caseId;
-		this.hearingType = hearingType;
-		this.courtCentreName = courtCentreName;
-		this.dateOfSending = dateOfSending;
-		this.duration = duration;
-	}
+    private Integer duration;
 
-	public UUID getCaseId() {
-		return caseId;
-	}
+    public ListHearing(UUID caseId, HearingTypeEnum hearingType,
+            String courtCentreName, LocalDate dateOfSending, Integer duration) {
+        super();
+        this.caseId = caseId;
+        this.hearingType = hearingType;
+        this.courtCentreName = courtCentreName;
+        this.dateOfSending = dateOfSending;
+        this.duration = duration;
+    }
 
-	public HearingTypeEnum getHearingType() {
-		return hearingType;
-	}
+    public UUID getCaseId() {
+        return caseId;
+    }
 
-	public String getCourtCentreName() {
-		return courtCentreName;
-	}
+    public HearingTypeEnum getHearingType() {
+        return hearingType;
+    }
 
-	public LocalDate getDateOfSending() {
-		return dateOfSending;
-	}
+    public String getCourtCentreName() {
+        return courtCentreName;
+    }
 
-	public Integer getDuration() {
-		return duration;
-	}
+    public LocalDate getDateOfSending() {
+        return dateOfSending;
+    }
 
-
+    public Integer getDuration() {
+        return duration;
+    }
 
 }

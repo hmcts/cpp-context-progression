@@ -12,21 +12,21 @@ import uk.gov.moj.progression.persistence.repository.IndicateStatementRepository
 
 public class IndicateStatementsDetailService {
 
-	@Inject
-	private IndicateStatementRepository indicateStatementDetailRepo;
+    @Inject
+    private IndicateStatementRepository indicateStatementDetailRepo;
 
-	@Transactional
-	public List<IndicateStatement> getIndicateStatements(UUID caseId) {
-		return indicateStatementDetailRepo.findByCaseId(caseId);
-	}
+    @Transactional
+    public List<IndicateStatement> getIndicateStatements(UUID caseId) {
+        return indicateStatementDetailRepo.findByCaseId(caseId);
+    }
 
-	@Transactional
-	public Optional<IndicateStatement> getIndicateStatementById(UUID id) {
-		IndicateStatement indicateStatement = indicateStatementDetailRepo.findById(id);
-		if (indicateStatement == null) {
-			return Optional.empty();
-		}
-		return Optional.of(indicateStatement);
-	}
+    @Transactional
+    public Optional<IndicateStatement> getIndicateStatementById(UUID id) {
+        IndicateStatement indicateStatement = indicateStatementDetailRepo.findById(id);
+        if (indicateStatement == null) {
+            return Optional.empty();
+        }
+        return Optional.of(indicateStatement);
+    }
 
 }

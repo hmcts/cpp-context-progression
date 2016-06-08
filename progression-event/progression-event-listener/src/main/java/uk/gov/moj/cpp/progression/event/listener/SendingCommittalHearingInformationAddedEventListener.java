@@ -18,16 +18,17 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class SendingCommittalHearingInformationAddedEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.sending-committal-hearing-information-added")
-	public void processEvent(final JsonEnvelope event) {
+    @Handles("progression.events.sending-committal-hearing-information-added")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.addSendingCommittalHearingInformation(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), SendingCommittalHearingInformationAdded.class),event.metadata().version().get());
-	}
+        caseService.addSendingCommittalHearingInformation(
+                jsonObjectConverter.convert(event.payloadAsJsonObject(), SendingCommittalHearingInformationAdded.class),
+                event.metadata().version().get());
+    }
 }

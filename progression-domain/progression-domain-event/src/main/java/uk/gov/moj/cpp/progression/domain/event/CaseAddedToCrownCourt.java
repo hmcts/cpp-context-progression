@@ -11,31 +11,30 @@ import uk.gov.justice.domain.annotation.Event;
  */
 @Event("progression.events.case-added-to-crown-court")
 public class CaseAddedToCrownCourt {
-	
-	private UUID caseProgressionId;
 
-	private UUID caseId;
+    private UUID caseProgressionId;
 
-	private String courtCentreId;
-	
+    private UUID caseId;
 
-	public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId) {
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.caseId = caseId;
-		this.courtCentreId = courtCentreId;
-	}
+    private String courtCentreId;
 
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+    public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.caseId = caseId;
+        this.courtCentreId = courtCentreId;
+    }
 
-	public UUID getCaseId() {
-		return caseId;
-	}
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
 
-	public String getCourtCentreId() {
-		return courtCentreId;
-	}
+    public UUID getCaseId() {
+        return caseId;
+    }
+
+    public String getCourtCentreId() {
+        return courtCentreId;
+    }
 
 }

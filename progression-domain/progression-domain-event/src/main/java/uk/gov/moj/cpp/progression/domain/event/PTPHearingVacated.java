@@ -8,29 +8,28 @@ import uk.gov.justice.domain.annotation.Event;
 @Event("progression.events.ptp-hearing-vacated")
 public class PTPHearingVacated {
 
-	public final static String EVENT_NAME = "progression.events.ptp-hearing-vacated";
+    public final static String EVENT_NAME = "progression.events.ptp-hearing-vacated";
 
+    private UUID caseProgressionId;
 
-	private UUID caseProgressionId;
+    private LocalDate ptpHearingVacatedDate;
 
-	private LocalDate ptpHearingVacatedDate;
+    public PTPHearingVacated(UUID caseProgressionId, LocalDate ptpHearingVacatedDate) {
 
-	public PTPHearingVacated(UUID caseProgressionId, LocalDate ptpHearingVacatedDate) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.ptpHearingVacatedDate = ptpHearingVacatedDate;
+    }
 
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.ptpHearingVacatedDate = ptpHearingVacatedDate;
-	}
+    public static String getEventName() {
+        return EVENT_NAME;
+    }
 
-	public static String getEventName() {
-		return EVENT_NAME;
-	}
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
 
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
-
-	public LocalDate getPtpHearingVacatedDate() {
-		return ptpHearingVacatedDate;
-	}
+    public LocalDate getPtpHearingVacatedDate() {
+        return ptpHearingVacatedDate;
+    }
 }

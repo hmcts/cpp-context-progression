@@ -10,24 +10,24 @@ import uk.gov.justice.domain.annotation.Event;
  *
  */
 @Event("progression.events.defence-trial-estimate-added")
-public class DefenceTrialEstimateAdded  {
+public class DefenceTrialEstimateAdded {
 
-	private UUID caseProgressionId;
-	
-	private int defenceTrialEstimate;
-	
+    private UUID caseProgressionId;
+
+    private int defenceTrialEstimate;
+
+    public DefenceTrialEstimateAdded(UUID caseProgressionId, int defenceTrialEstimate) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.defenceTrialEstimate = defenceTrialEstimate;
+    }
+
     public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+        return caseProgressionId;
+    }
 
-	public int getDefenceTrialEstimate() {
-		return defenceTrialEstimate;
-	}
+    public int getDefenceTrialEstimate() {
+        return defenceTrialEstimate;
+    }
 
-	public DefenceTrialEstimateAdded(UUID caseProgressionId, int defenceTrialEstimate) {
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.defenceTrialEstimate = defenceTrialEstimate;
-	}
-  
 }

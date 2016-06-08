@@ -17,16 +17,16 @@ import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 @ServiceComponent(EVENT_LISTENER)
 public class DefenceIssuesAddedEventListener {
 
-	@Inject
-	private uk.gov.moj.cpp.progression.event.service.CaseService caseService;
+    @Inject
+    private uk.gov.moj.cpp.progression.event.service.CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.defence-issues-added")
-	public void processEvent(final JsonEnvelope event) {
+    @Handles("progression.events.defence-issues-added")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.addDefenceIssues(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), DefenceIssuesAdded.class),event.metadata().version().get());
-	}
+        caseService.addDefenceIssues(jsonObjectConverter.convert(event.payloadAsJsonObject(), DefenceIssuesAdded.class),
+                event.metadata().version().get());
+    }
 }

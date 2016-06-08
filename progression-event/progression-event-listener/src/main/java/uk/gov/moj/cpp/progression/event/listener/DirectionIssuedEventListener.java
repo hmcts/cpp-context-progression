@@ -18,16 +18,16 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class DirectionIssuedEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.direction-issued")
+    @Handles("progression.events.direction-issued")
     public void processEvent(final JsonEnvelope event) {
 
-		caseService.directionIssued(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), DirectionIssued.class),event.metadata().version().get());
-	}
+        caseService.directionIssued(jsonObjectConverter.convert(event.payloadAsJsonObject(), DirectionIssued.class),
+                event.metadata().version().get());
+    }
 }

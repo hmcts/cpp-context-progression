@@ -11,7 +11,8 @@ public class EntityManagerProducer {
     @PersistenceUnit
     private EntityManagerFactory emf;
 
-    //TODO: Switch to a container based entity manager instead of application based.
+    // TODO: Switch to a container based entity manager instead of application
+    // based.
     @Produces // you can also make this @RequestScoped
     public EntityManager create() {
         return emf.createEntityManager();

@@ -19,16 +19,16 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class PTPHearingVacatedEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.ptp-hearing-vacated")
-    public void processEvent(final JsonEnvelope event	) {
+    @Handles("progression.events.ptp-hearing-vacated")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.vacatePtpHeaing(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), PTPHearingVacated.class),event.metadata().version().get());
-	}
+        caseService.vacatePtpHeaing(jsonObjectConverter.convert(event.payloadAsJsonObject(), PTPHearingVacated.class),
+                event.metadata().version().get());
+    }
 }

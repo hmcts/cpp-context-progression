@@ -23,7 +23,7 @@ public class CaseProgressionDetail {
 
     @Column(name = "courtcentreid")
     private String courtCentreId;
-    
+
     @Column(name = "caseid", unique = true, nullable = false)
     private UUID caseId;
 
@@ -59,37 +59,24 @@ public class CaseProgressionDetail {
 
     @Column(name = "ptphearingvacateddate")
     private LocalDate ptpHearingVacatedDate;
-    
+
     @Column(name = "fromcourtcentre")
     private String fromCourtCentre;
-    
+
     @Column(name = "sendingcommittaldate")
     private LocalDate sendingCommittalDate;
-    
+
     @Column(name = "ispsrordered")
     private Boolean isPSROrdered;
-    
+
     @Column(name = "sentencehearingdate")
     private LocalDate sentenceHearingDate;
 
     @Enumerated(EnumType.STRING)
     private CaseStatusEnum status;
-    
+
     public CaseProgressionDetail() {
         super();
-    }
-
-    public CaseProgressionDetail(UUID id, UUID caseId, Long version, LocalDate dateOfSending, String defenceIssue, String sfrIssue,
-            Long trialEstimateDefence, Long trialEstimateProsecution) {
-        super();
-        this.id = id;
-        this.caseId = caseId;
-        this.version = version;
-        this.dateOfSending = dateOfSending;
-        this.defenceIssue = defenceIssue;
-        this.sfrIssue = sfrIssue;
-        this.trialEstimateDefence = trialEstimateDefence;
-        this.trialEstimateProsecution = trialEstimateProsecution;
     }
 
     public UUID getCaseId() {
@@ -198,13 +185,13 @@ public class CaseProgressionDetail {
         this.ptpHearingVacatedDate = ptpHearingVacatedDate;
     }
 
-	public String getCourtCentreId() {
-		return courtCentreId;
-	}
+    public String getCourtCentreId() {
+        return courtCentreId;
+    }
 
-	public void setCourtCentreId(String courtCentreId) {
-		this.courtCentreId = courtCentreId;
-	}
+    public void setCourtCentreId(String courtCentreId) {
+        this.courtCentreId = courtCentreId;
+    }
 
     public String getFromCourtCentre() {
         return fromCourtCentre;
@@ -222,13 +209,13 @@ public class CaseProgressionDetail {
         this.sendingCommittalDate = sendingCommittalDate;
     }
 
-	public Boolean getIsPSROrdered() {
-		return isPSROrdered;
-	}
+    public Boolean getIsPSROrdered() {
+        return isPSROrdered;
+    }
 
-	public void setIsPSROrdered(Boolean isPSROrdered) {
-		this.isPSROrdered = isPSROrdered;
-	}
+    public void setIsPSROrdered(Boolean isPSROrdered) {
+        this.isPSROrdered = isPSROrdered;
+    }
 
     public LocalDate getSentenceHearingDate() {
         return sentenceHearingDate;
@@ -238,12 +225,12 @@ public class CaseProgressionDetail {
         this.sentenceHearingDate = sentenceHearingDate;
     }
 
-	public CaseStatusEnum getStatus() {
-		return status;
-	}
+    public CaseStatusEnum getStatus() {
+        return status;
+    }
 
-	public void setStatus(CaseStatusEnum status) {
-		this.status = status;
-	}
+    public void setStatus(CaseStatusEnum status) {
+        this.status = status;
+    }
 
 }

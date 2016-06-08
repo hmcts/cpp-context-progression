@@ -7,31 +7,30 @@ import uk.gov.justice.domain.annotation.Event;
 
 @Event("progression.events.case-sent-to-crown-court")
 public class CaseSentToCrownCourt {
-	
-	private UUID caseProgressionId;
 
-	private UUID caseId;
+    private UUID caseProgressionId;
 
-	private LocalDate dateOfSending;
-	
+    private UUID caseId;
 
-	public CaseSentToCrownCourt(UUID caseProgressionId, UUID caseId, LocalDate dateOfSending) {
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.caseId = caseId;
-		this.dateOfSending = dateOfSending;
-	}
+    private LocalDate dateOfSending;
 
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+    public CaseSentToCrownCourt(UUID caseProgressionId, UUID caseId, LocalDate dateOfSending) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.caseId = caseId;
+        this.dateOfSending = dateOfSending;
+    }
 
-	public UUID getCaseId() {
-		return caseId;
-	}
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
 
-	public LocalDate getDateOfSending() {
-		return dateOfSending;
-	}
+    public UUID getCaseId() {
+        return caseId;
+    }
+
+    public LocalDate getDateOfSending() {
+        return dateOfSending;
+    }
 
 }

@@ -10,25 +10,24 @@ import uk.gov.justice.domain.annotation.Event;
  *
  */
 @Event("progression.events.pre-sentence-report-ordered")
-public class PreSentenceReportOrdered  {
+public class PreSentenceReportOrdered {
 
-	private UUID caseProgressionId;
-	
-	private Boolean isPSROrdered;
-	
-    public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+    private UUID caseProgressionId;
 
-    public Boolean getIsPSROrdered() {
-        return isPSROrdered;
-    }
-    
-    public PreSentenceReportOrdered(UUID caseProgressionId,
-            Boolean isPSROrdered) {
+    private Boolean isPSROrdered;
+
+    public PreSentenceReportOrdered(UUID caseProgressionId, Boolean isPSROrdered) {
         super();
         this.caseProgressionId = caseProgressionId;
         this.isPSROrdered = isPSROrdered;
+    }
+
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
+
+    public Boolean getIsPSROrdered() {
+        return isPSROrdered;
     }
 
 }

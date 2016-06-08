@@ -11,24 +11,24 @@ import uk.gov.justice.domain.annotation.Event;
  *
  */
 @Event("progression.events.direction-issued")
-public class DirectionIssued  {
+public class DirectionIssued {
 
-	private UUID caseProgressionId;
-	
-	private LocalDate directionIssuedDate;
-	
-	public DirectionIssued(UUID caseProgressionId, LocalDate directionIssuedDate) {
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.directionIssuedDate = directionIssuedDate;
-	}
+    private UUID caseProgressionId;
 
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+    private LocalDate directionIssuedDate;
 
-	public LocalDate getDirectionIssuedDate() {
-		return directionIssuedDate;
-	}
+    public DirectionIssued(UUID caseProgressionId, LocalDate directionIssuedDate) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.directionIssuedDate = directionIssuedDate;
+    }
+
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
+
+    public LocalDate getDirectionIssuedDate() {
+        return directionIssuedDate;
+    }
 
 }
