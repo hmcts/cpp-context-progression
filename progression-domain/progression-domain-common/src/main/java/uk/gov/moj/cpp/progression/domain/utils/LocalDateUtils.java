@@ -21,4 +21,21 @@ public class LocalDateUtils {
 
     }
 
+    public static LocalDate addWorkingDays(final LocalDate startDate, int noOfDays) {
+        
+        if (noOfDays < 1) {
+            return startDate;
+        }
+
+        return startDate.plusDays(getActualNumberOfDaysToAdd(noOfDays, startDate.getDayOfWeek().getValue()));
+    }
+    
+    private static long getActualNumberOfDaysToAdd(long workdays, int dayOfWeek) {
+        if (dayOfWeek < 6) { // date is a workday
+            return workdays + (workdays + dayOfWeek - 1) / 5 * 2;
+        } else { // date is a weekend
+            return workdays + (workdays - 1) / 5 * 2 + (7 - dayOfWeek);
+        }
+    }
+    
 }

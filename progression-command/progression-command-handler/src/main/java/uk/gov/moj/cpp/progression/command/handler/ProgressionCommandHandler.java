@@ -132,6 +132,13 @@ public class ProgressionCommandHandler {
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
         eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)), getVersion(envelope));
     }
+    
+    @Handles("progression.command.case-to-be-assigned")
+    public void updateCaseToBeAssigned(final JsonEnvelope envelope) throws EventStreamException {
+        Stream<Object> events = streamOf(progressionEventFactory.createCaseToBeAssignedUpdated(envelope));
+        EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
+        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)), getVersion(envelope));
+    }
 
     private Long getVersion(final JsonEnvelope envelope) {
         return new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));

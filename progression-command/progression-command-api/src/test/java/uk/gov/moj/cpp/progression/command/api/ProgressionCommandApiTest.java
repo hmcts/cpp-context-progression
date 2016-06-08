@@ -107,4 +107,10 @@ public class ProgressionCommandApiTest {
         progressionCommandApi.addSentenceHearingDate(command);
         verify(sender, times(1)).send(command);
     }
+    
+    @Test
+    public void shouldCaseToBeAssigned() throws Exception {
+        progressionCommandApi.updateCaseToBeAssigned(command);
+        verify(sender, times(1)).send(command);
+    }
 }

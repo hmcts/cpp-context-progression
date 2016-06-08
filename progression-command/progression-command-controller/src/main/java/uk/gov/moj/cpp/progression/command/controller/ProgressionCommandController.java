@@ -82,4 +82,9 @@ public class ProgressionCommandController {
     public void addSentenceHearingDate(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+    
+    @Handles("progression.command.case-to-be-assigned")
+    public void updateCaseToBeAssigned(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 }

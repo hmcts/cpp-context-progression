@@ -39,6 +39,10 @@ public class CaseProgressionDetailView {
 	private LocalDate sentenceHearingDate;
 
 	private Boolean isPSROrdered;
+	
+	private LocalDate sentenceReviewDeadlineDate;
+	
+	private String status;
 
     public Long getVersion() {
         return version;
@@ -183,4 +187,21 @@ public class CaseProgressionDetailView {
 	public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
 		this.sentenceHearingDate = sentenceHearingDate;
 	}
+
+    public LocalDate getSentenceReviewDeadlineDate() {
+        return sentenceReviewDeadlineDate;
+    }
+
+    public void setSentenceReviewDeadlineDate(
+            LocalDate sentenceReviewDeadlineDate) {
+        this.sentenceReviewDeadlineDate = sentenceReviewDeadlineDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

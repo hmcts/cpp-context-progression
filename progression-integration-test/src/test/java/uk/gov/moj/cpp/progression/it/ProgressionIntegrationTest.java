@@ -112,6 +112,14 @@ public class ProgressionIntegrationTest extends AbstractIT {
 		queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId), "application/vnd.progression.query.caseprogressiondetail+json");
 		assertTrue(queryResponse.getBody().path("sentenceHearingDate").equals(LocalDate.now().toString()));
 		version = (queryResponse.getBody().path("version"));
+		
+		writeResponse = postCommand(getCommandUri("/cases/casetobeassigned"), "application/vnd.progression.command.case-to-be-assigned+json",
+				getJsonBodyStr("progression.command.case-to-be-assigned.json"));
+		assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+		waitForResponse(5);
+		queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId), "application/vnd.progression.query.caseprogressiondetail+json");
+		assertTrue(queryResponse.getBody().path("status").equals("READY_FOR_REVIEW"));
+		version = (queryResponse.getBody().path("version"));
 	}
 
 	private void waitForResponse(int i) throws InterruptedException {
