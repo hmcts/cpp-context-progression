@@ -18,16 +18,17 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class PreSentenceReportOrderedEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.pre-sentence-report-ordered")
-	public void processEvent(final JsonEnvelope event) {
+    @Handles("progression.events.pre-sentence-report-ordered")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.preSentenceReportOrdered(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), PreSentenceReportOrdered.class),event.metadata().version().get());
-	}
+        caseService.preSentenceReportOrdered(
+                jsonObjectConverter.convert(event.payloadAsJsonObject(), PreSentenceReportOrdered.class),
+                event.metadata().version().get());
+    }
 }

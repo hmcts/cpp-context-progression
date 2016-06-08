@@ -14,16 +14,17 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class TrialTimeEstimatedByProsecutionEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.prosecution-trial-estimate-added")
-	public void processEvent(final JsonEnvelope event) {
+    @Handles("progression.events.prosecution-trial-estimate-added")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.addTrialEstimateProsecution(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionTrialEstimateAdded.class),event.metadata().version().get());
-	}
+        caseService.addTrialEstimateProsecution(
+                jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionTrialEstimateAdded.class),
+                event.metadata().version().get());
+    }
 }

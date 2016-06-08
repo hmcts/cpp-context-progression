@@ -21,23 +21,23 @@ import uk.gov.moj.progression.persistence.repository.IndicateStatementRepository
 @ServiceComponent(EVENT_LISTENER)
 public class IndicateEvidenceServedEventListener {
 
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
-	
-	@Inject
-	IndicateEvidenceServedToIndicateStatementConverter entityConverter;
+    @Inject
+    IndicateEvidenceServedToIndicateStatementConverter entityConverter;
 
-	@Inject
-	IndicateStatementRepository repository;
+    @Inject
+    IndicateStatementRepository repository;
 
-	@Transactional
-	@Handles("progression.events.indicate-evidence-served")
+    @Transactional
+    @Handles("progression.events.indicate-evidence-served")
     public void processEvent(final JsonEnvelope event) {
-		
-		IndicateEvidenceServed caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), IndicateEvidenceServed.class);
-		IndicateStatement indicateStatement = entityConverter.convert(caseSentToCrownCourt);
-		indicateStatement.setVersion(event.metadata().version().get());
-		repository.save(indicateStatement);
+
+        IndicateEvidenceServed caseSentToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(),
+                IndicateEvidenceServed.class);
+        IndicateStatement indicateStatement = entityConverter.convert(caseSentToCrownCourt);
+        indicateStatement.setVersion(event.metadata().version().get());
+        repository.save(indicateStatement);
     }
 }

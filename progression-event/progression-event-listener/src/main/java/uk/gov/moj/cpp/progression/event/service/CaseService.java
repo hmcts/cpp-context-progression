@@ -25,149 +25,149 @@ import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailReposi
 
 public class CaseService {
 
-	private static final String CASE_PROGRESSION_DETAIL_NOT_FOUND = "CaseProgressionDetail not found";
-	@Inject
-	private CaseProgressionDetailRepository caseProgressionDetailRepo;
+    private static final String CASE_PROGRESSION_DETAIL_NOT_FOUND = "CaseProgressionDetail not found";
+    @Inject
+    private CaseProgressionDetailRepository caseProgressionDetailRepo;
 
-	@Transactional
-	public void indicateAllStatementsIdentified(AllStatementsIdentified event, Long version) {
+    @Transactional
+    public void indicateAllStatementsIdentified(AllStatementsIdentified event, Long version) {
 
-		CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-    		caseProgressionDetail.setIsAllStatementsIdentified(Boolean.TRUE);
-    		caseProgressionDetail.setVersion(version);
-    		caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
-            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-		}
-	}
-
-	@Transactional
-	public void preSentenceReportOrdered(PreSentenceReportOrdered event, Long version) {
-	    CaseProgressionDetail caseProgressionDetail= caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-	    if(caseProgressionDetail != null){
-    		caseProgressionDetail.setIsPSROrdered(event.getIsPSROrdered());
-    		caseProgressionDetail.setVersion(version);
-    		caseProgressionDetailRepo.save(caseProgressionDetail);
-	    }else{
-            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-	    }
-	}
-
-	@Transactional
-	public void directionIssued(DirectionIssued event, Long version) {
-		CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-		     caseProgressionDetail.setVersion(version);
-		     caseProgressionDetail.setDirectionIssuedOn(event.getDirectionIssuedDate());
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
-		    throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-		}
-	}
-
-	@Transactional
-	public void indicateAllStatementsServed(AllStatementsServed event, Long version) {
-	    CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId()); 
-		if(caseProgressionDetail != null){
-    		caseProgressionDetail.setIsAllStatementsServed(Boolean.TRUE);
-    		caseProgressionDetail.setVersion(version);
-    		caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
-            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-		}
-	}
-
-	@Transactional
-	public void addDefenceIssues(DefenceIssuesAdded event, Long version) {
-
-		CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-		    caseProgressionDetail.setVersion(version);
-		    caseProgressionDetail.setDefenceIssue(event.getDefenceIssues());
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
-            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-		}
-	}
-
-	@Transactional
-	public void addSFRIssues(SfrIssuesAdded event, Long version) {
-
-		CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-		    caseProgressionDetail.setVersion(version);
-		    caseProgressionDetail.setSfrIssue(event.getSfrIssues());
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setIsAllStatementsIdentified(Boolean.TRUE);
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
         }
-	}
+    }
 
-	@Transactional
-	public void addTrialEstimateDefence(DefenceTrialEstimateAdded event, Long version) {
-
-	    CaseProgressionDetail caseProgressionDetail =  caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-		    caseProgressionDetail.setVersion(version);
-		    caseProgressionDetail.setTrialEstimateDefence( Long.valueOf(event.getDefenceTrialEstimate()));
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
+    @Transactional
+    public void preSentenceReportOrdered(PreSentenceReportOrdered event, Long version) {
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setIsPSROrdered(event.getIsPSROrdered());
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
         }
-	}
+    }
 
-	@Transactional
-	public void addTrialEstimateProsecution(ProsecutionTrialEstimateAdded event, Long version) {
-
-	    CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-		    caseProgressionDetail.setVersion(version);
-		    caseProgressionDetail.setTrialEstimateProsecution(Long.valueOf(event.getprosecutionTrialEstimate()));
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
+    @Transactional
+    public void directionIssued(DirectionIssued event, Long version) {
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setDirectionIssuedOn(event.getDirectionIssuedDate());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
         }
-	}
+    }
 
-	public void vacatePtpHeaing(PTPHearingVacated event, Long version) {
-	    CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-	    if(caseProgressionDetail != null){
-    		caseProgressionDetail.setPtpHearingVacatedDate(event.getPtpHearingVacatedDate());
-    		caseProgressionDetail.setVersion(version);
-    		caseProgressionDetailRepo.save(caseProgressionDetail);
-    	}else{
+    @Transactional
+    public void indicateAllStatementsServed(AllStatementsServed event, Long version) {
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setIsAllStatementsServed(Boolean.TRUE);
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
         }
-	}
+    }
 
-	@Transactional
-	public void addSendingCommittalHearingInformation(SendingCommittalHearingInformationAdded event, Long version) {
+    @Transactional
+    public void addDefenceIssues(DefenceIssuesAdded event, Long version) {
 
-	    CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if(caseProgressionDetail != null){
-		    caseProgressionDetail.setVersion(version);
-		    caseProgressionDetail.setFromCourtCentre(event.getFromCourtCentre());
-		    caseProgressionDetail.setSendingCommittalDate(event.getSendingCommittalDate());
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		}else{
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setDefenceIssue(event.getDefenceIssues());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
         }
-	}
+    }
 
-	@Transactional
-	public void addSentenceHearingDate(SentenceHearingDateAdded event, Long version) {
-		CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
-		if (caseProgressionDetail != null) {
-			caseProgressionDetail.setSentenceHearingDate(event.getSentenceHearingDate());
-			caseProgressionDetail.setVersion(version);
-			caseProgressionDetailRepo.save(caseProgressionDetail);
-		} else {
-			throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-		}
-	}
-	
-	@Transactional
+    @Transactional
+    public void addSFRIssues(SfrIssuesAdded event, Long version) {
+
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setSfrIssue(event.getSfrIssues());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void addTrialEstimateDefence(DefenceTrialEstimateAdded event, Long version) {
+
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setTrialEstimateDefence(Long.valueOf(event.getDefenceTrialEstimate()));
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void addTrialEstimateProsecution(ProsecutionTrialEstimateAdded event, Long version) {
+
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setTrialEstimateProsecution(Long.valueOf(event.getprosecutionTrialEstimate()));
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    public void vacatePtpHeaing(PTPHearingVacated event, Long version) {
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setPtpHearingVacatedDate(event.getPtpHearingVacatedDate());
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void addSendingCommittalHearingInformation(SendingCommittalHearingInformationAdded event, Long version) {
+
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setFromCourtCentre(event.getFromCourtCentre());
+            caseProgressionDetail.setSendingCommittalDate(event.getSendingCommittalDate());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void addSentenceHearingDate(SentenceHearingDateAdded event, Long version) {
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setSentenceHearingDate(event.getSentenceHearingDate());
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
     public void caseToBeAssigned(CaseToBeAssignedUpdated event, Long version) {
         CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {

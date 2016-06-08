@@ -22,24 +22,23 @@ import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailReposi
 @ServiceComponent(EVENT_LISTENER)
 public class CaseAddedToCrownCourtEventListener {
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
-	
-	@Inject
-	CaseAddedToCrownCourtToCaseProgressionDetailConverter entityConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Inject
-	CaseProgressionDetailRepository repository;
+    @Inject
+    CaseAddedToCrownCourtToCaseProgressionDetailConverter entityConverter;
 
+    @Inject
+    CaseProgressionDetailRepository repository;
 
-	@Transactional
-	@Handles("progression.events.case-added-to-crown-court")
-	public void addedToCrownCourt(final JsonEnvelope event) {
-		
-		CaseAddedToCrownCourt caseAddedToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseAddedToCrownCourt.class);
-		CaseProgressionDetail caseProgressionDetail = entityConverter.convert(caseAddedToCrownCourt);
-		caseProgressionDetail.setStatus(CaseStatusEnum.INCOMPLETE);
-		caseProgressionDetail.setVersion(event.metadata().version().get());
-		repository.save(caseProgressionDetail);
-	}
+    @Transactional
+    @Handles("progression.events.case-added-to-crown-court")
+    public void addedToCrownCourt(final JsonEnvelope event) {
+
+        CaseAddedToCrownCourt caseAddedToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseAddedToCrownCourt.class);
+        CaseProgressionDetail caseProgressionDetail = entityConverter.convert(caseAddedToCrownCourt);
+        caseProgressionDetail.setStatus(CaseStatusEnum.INCOMPLETE);
+        caseProgressionDetail.setVersion(event.metadata().version().get());
+        repository.save(caseProgressionDetail);
+    }
 }

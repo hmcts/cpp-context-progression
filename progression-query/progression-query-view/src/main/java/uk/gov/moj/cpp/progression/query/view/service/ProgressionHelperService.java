@@ -32,5 +32,4 @@ public class ProgressionHelperService {
         return jsonArrayBuilder.build();
     }
 
-  
 }

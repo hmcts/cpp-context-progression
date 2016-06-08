@@ -12,24 +12,20 @@ import uk.gov.justice.domain.annotation.Event;
  */
 @Event("progression.events.all-statements-served")
 public class AllStatementsServed {
-	
-	
-	private UUID caseProgressionId;
-	
-	public AllStatementsServed(){
-	    super();
-	}
+
+    private UUID caseProgressionId;
+
+    public AllStatementsServed() {
+        super();
+    }
 
     public AllStatementsServed(UUID caseProgressionId) {
-    	
         super();
         this.caseProgressionId = caseProgressionId;
     }
 
-
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
-
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
 
 }

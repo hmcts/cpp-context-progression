@@ -19,5 +19,5 @@
   "isPSROrdered" : true,
   "sentenceHearingDate" : "2016-05-19",
   "sentenceReviewDeadlineDate" : "2016-05-23",
-  "status" : "To be Assigned"
+  "status" : "READY_FOR_REVIEW"
 }

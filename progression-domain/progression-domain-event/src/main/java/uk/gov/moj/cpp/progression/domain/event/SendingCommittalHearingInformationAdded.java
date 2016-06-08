@@ -13,30 +13,29 @@ import uk.gov.justice.domain.annotation.Event;
 @Event("progression.events.sending-committal-hearing-information-added")
 public class SendingCommittalHearingInformationAdded {
 
-	private UUID caseProgressionId;
+    private UUID caseProgressionId;
 
-	private String fromCourtCentre;
+    private String fromCourtCentre;
 
-	private LocalDate sendingCommittalDate;
+    private LocalDate sendingCommittalDate;
 
-	public SendingCommittalHearingInformationAdded(UUID caseProgressionId, String fromCourtCentre,
-			LocalDate sendingCommittalDate) {
-		super();
-		this.caseProgressionId = caseProgressionId;
-		this.fromCourtCentre = fromCourtCentre;
-		this.sendingCommittalDate = sendingCommittalDate;
-	}
+    public SendingCommittalHearingInformationAdded(UUID caseProgressionId, String fromCourtCentre, LocalDate sendingCommittalDate) {
+        super();
+        this.caseProgressionId = caseProgressionId;
+        this.fromCourtCentre = fromCourtCentre;
+        this.sendingCommittalDate = sendingCommittalDate;
+    }
 
-	public UUID getCaseProgressionId() {
-		return caseProgressionId;
-	}
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
 
-	public String getFromCourtCentre() {
-		return fromCourtCentre;
-	}
+    public String getFromCourtCentre() {
+        return fromCourtCentre;
+    }
 
-	public LocalDate getSendingCommittalDate() {
-		return sendingCommittalDate;
-	}
+    public LocalDate getSendingCommittalDate() {
+        return sendingCommittalDate;
+    }
 
 }

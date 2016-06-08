@@ -8,7 +8,7 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverter implements Co
 
     @Override
     public CaseProgressionDetail convert(CaseAddedToCrownCourt event) {
-    	
+
         CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setId(event.getCaseProgressionId());
         caseProgressionDetail.setCaseId(event.getCaseId());

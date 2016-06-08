@@ -18,16 +18,16 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @ServiceComponent(EVENT_LISTENER)
 public class SFRIssuesAddedEventListener {
 
-	@Inject
-	private CaseService caseService;
+    @Inject
+    private CaseService caseService;
 
-	@Inject
-	JsonObjectToObjectConverter jsonObjectConverter;
+    @Inject
+    JsonObjectToObjectConverter jsonObjectConverter;
 
-	@Handles("progression.events.sfr-issues-added")
-	public void processEvent(final JsonEnvelope event) {
+    @Handles("progression.events.sfr-issues-added")
+    public void processEvent(final JsonEnvelope event) {
 
-		caseService.addSFRIssues(
-				jsonObjectConverter.convert(event.payloadAsJsonObject(), SfrIssuesAdded.class),event.metadata().version().get());
-	}
+        caseService.addSFRIssues(jsonObjectConverter.convert(event.payloadAsJsonObject(), SfrIssuesAdded.class),
+                event.metadata().version().get());
+    }
 }

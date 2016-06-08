@@ -17,8 +17,8 @@ public class TimeLineDateView {
     private LocalDate startDate;
 
     public TimeLineDateView(@JsonProperty("type") String type, @JsonProperty("startDate") LocalDate startDate,
-            @JsonProperty("daysFromStartDate") long daysFromStartDate, @JsonProperty("deadlineDate") LocalDate deadlineDate,
-            @JsonProperty("daysToDeadline") long daysToDeadline) {
+            @JsonProperty("daysFromStartDate") long daysFromStartDate,
+            @JsonProperty("deadlineDate") LocalDate deadlineDate, @JsonProperty("daysToDeadline") long daysToDeadline) {
         super();
         this.type = type;
         this.deadlineDate = deadlineDate;

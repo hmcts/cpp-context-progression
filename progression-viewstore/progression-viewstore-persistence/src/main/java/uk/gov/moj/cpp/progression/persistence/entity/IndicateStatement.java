@@ -34,7 +34,8 @@ public class IndicateStatement {
         super();
     }
 
-    public IndicateStatement(UUID id, UUID caseId, Long version, LocalDate planDate, Boolean isKeyEvidence, String evidenceName) {
+    public IndicateStatement(UUID id, UUID caseId, Long version, LocalDate planDate, Boolean isKeyEvidence,
+            String evidenceName) {
         super();
         this.id = id;
         this.caseId = caseId;

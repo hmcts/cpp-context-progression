@@ -31,18 +31,18 @@ public class CaseProgressionDetailView {
     private LocalDate directionIssuedOn;
 
     private LocalDate ptpHearingVacatedDate;
-    
-    private  String fromCourtCentre;
-    
-    private  LocalDate sendingCommittalDate;
-    
-	private LocalDate sentenceHearingDate;
 
-	private Boolean isPSROrdered;
-	
-	private LocalDate sentenceReviewDeadlineDate;
-	
-	private String status;
+    private String fromCourtCentre;
+
+    private LocalDate sendingCommittalDate;
+
+    private LocalDate sentenceHearingDate;
+
+    private Boolean isPSROrdered;
+
+    private LocalDate sentenceReviewDeadlineDate;
+
+    private String status;
 
     public Long getVersion() {
         return version;
@@ -172,28 +172,27 @@ public class CaseProgressionDetailView {
         this.sendingCommittalDate = sendingCommittalDate;
     }
 
-	public Boolean getIsPSROrdered() {
-		return isPSROrdered;
-	}
+    public Boolean getIsPSROrdered() {
+        return isPSROrdered;
+    }
 
-	public void setIsPSROrdered(Boolean isPSROrdered) {
-		this.isPSROrdered = isPSROrdered;
-	}
+    public void setIsPSROrdered(Boolean isPSROrdered) {
+        this.isPSROrdered = isPSROrdered;
+    }
 
-	public LocalDate getSentenceHearingDate() {
-		return sentenceHearingDate;
-	}
+    public LocalDate getSentenceHearingDate() {
+        return sentenceHearingDate;
+    }
 
-	public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
-		this.sentenceHearingDate = sentenceHearingDate;
-	}
+    public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
+        this.sentenceHearingDate = sentenceHearingDate;
+    }
 
     public LocalDate getSentenceReviewDeadlineDate() {
         return sentenceReviewDeadlineDate;
     }
 
-    public void setSentenceReviewDeadlineDate(
-            LocalDate sentenceReviewDeadlineDate) {
+    public void setSentenceReviewDeadlineDate(LocalDate sentenceReviewDeadlineDate) {
         this.sentenceReviewDeadlineDate = sentenceReviewDeadlineDate;
     }
 

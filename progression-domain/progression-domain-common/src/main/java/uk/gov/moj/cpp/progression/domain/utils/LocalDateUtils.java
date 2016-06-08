@@ -8,6 +8,10 @@ import java.util.stream.IntStream;
 
 public class LocalDateUtils {
 
+	private LocalDateUtils() {
+
+    }
+	
     public static List<LocalDate> getNoOfDatesFromStartDate(final LocalDate startDate, final Integer noOfDays) {
         return IntStream.range(0, noOfDays).mapToObj(action -> startDate.plusDays(action)).collect(Collectors.toList());
     }
@@ -17,9 +21,7 @@ public class LocalDateUtils {
         return ChronoUnit.DAYS.between(LocalDate.now(), endDate);
     }
 
-    private LocalDateUtils() {
-
-    }
+    
 
     public static LocalDate addWorkingDays(final LocalDate startDate, int noOfDays) {
         
