@@ -50,4 +50,10 @@ public class ProgressionQueryApiTest {
         when(requester.request(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getIndicatestatementsdetail(query), equalTo(response));
     }
+    
+    @Test
+    public void shouldHandleCaseaQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getCases(query), equalTo(response));
+    }
 }

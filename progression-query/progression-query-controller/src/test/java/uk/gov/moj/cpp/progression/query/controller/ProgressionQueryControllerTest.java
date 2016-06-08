@@ -15,39 +15,51 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionQueryControllerTest {
-	 @Mock
-	    private JsonEnvelope query;
-	    @Mock
-	    private JsonEnvelope response;
+    @Mock
+    private JsonEnvelope query;
+    @Mock
+    private JsonEnvelope response;
 
-	    @Mock
-	    private Requester requester;
+    @Mock
+    private Requester requester;
 
-	    @InjectMocks
-	    private ProgressionQueryController progressionQueryController;
+    @InjectMocks
+    private ProgressionQueryController progressionQueryController;
 
-	    @Test
-	    public void shouldHandleCaseprogressiondetailQuery() {
-	        when(requester.request(query)).thenReturn(response);
-	        assertThat(progressionQueryController.getCaseprogressiondetail(query), equalTo(response));
-	    }
+    @Test
+    public void shouldHandleCaseprogressiondetailQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionQueryController.getCaseprogressiondetail(query),
+                equalTo(response));
+    }
 
-	    @Test
-	    public void shouldHandleTimelineQuery() {
-	        when(requester.request(query)).thenReturn(response);
-	        assertThat(progressionQueryController.getTimeline(query), equalTo(response));
-	    }
-	    
-	    @Test
-	    public void shouldHandleIndicatestatementsdetailsQuery() {
-	        when(requester.request(query)).thenReturn(response);
-	        assertThat(progressionQueryController.getIndicatestatementsdetails(query), equalTo(response));
-	    }
-	    
-	    @Test
-	    public void shouldHandleIndicatestatementsdetailQuery() {
-	        when(requester.request(query)).thenReturn(response);
-	        assertThat(progressionQueryController.getIndicatestatementsdetail(query), equalTo(response));
-	    }
+    @Test
+    public void shouldHandleTimelineQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionQueryController.getTimeline(query),
+                equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleIndicatestatementsdetailsQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(
+                progressionQueryController.getIndicatestatementsdetails(query),
+                equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleIndicatestatementsdetailQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(
+                progressionQueryController.getIndicatestatementsdetail(query),
+                equalTo(response));
+    }
+    
+    @Test
+    public void shouldHandleCaseaQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionQueryController.getCases(query), equalTo(response));
+    }
 
 }

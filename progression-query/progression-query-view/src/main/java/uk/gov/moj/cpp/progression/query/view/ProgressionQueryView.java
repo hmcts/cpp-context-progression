@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -7,11 +8,15 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
@@ -29,6 +34,14 @@ import uk.gov.moj.cpp.progression.query.view.service.ProgressionHelperService;
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProgressionQueryView {
 
+    static final String FIELD_CASE_ID = "caseId";
+    static final String FIELD_INDICATE_STATEMENT_ID = "indicatestatementId";
+    static final String TIMELINE_RESPONSE = "progression.query.timeline-response";
+    static final String CASE_PROGRESSION_DETAILS_RESPONSE = "progression.query.caseprogressiondetails-response";
+    static final String INDICATE_STATEMENT_RESPONSE_LIST = "progression.query.indicatestatement-response-list";
+    static final String INDICATE_STATEMENT_RESPONSE = "progression.query.indicatestatement-response";
+    static final String FIELD_STATUS = "status";
+    static final String CASES_RESPONSE_LIST = "progression.query.cases-response-list";
 
 	@Inject
 	private CaseProgressionDetailService caseProgressionDetailService;
@@ -39,13 +52,12 @@ public class ProgressionQueryView {
 	@Inject
 	private TimelineDateToTimeLineDateViewConverter timelineDateToTimeLineDateVOConverter;
 
-	static final String FIELD_CASE_ID = "caseId";
-	static final String FIELD_INDICATE_STATEMENT_ID = "indicatestatementId";
-	static final String TIMELINE_RESPONSE = "progression.query.timeline-response";
-	static final String CASE_PROGRESSION_DETAILS_RESPONSE = "progression.query.caseprogressiondetails-response";
-	static final String INDICATE_STATEMENT_RESPONSE_LIST = "progression.query.indicatestatement-response-list";
-	static final String INDICATE_STATEMENT_RESPONSE = "progression.query.indicatestatement-response";
+	@Inject
+	StringToJsonObjectConverter stringToJsonObjectConverter;
 
+	@Inject
+	ObjectMapper objectMapper;
+	
 	@Inject
 	Enveloper enveloper;
 
@@ -101,4 +113,19 @@ public class ProgressionQueryView {
 
 	}
 	
+	@Handles("progression.query.cases")
+    public JsonEnvelope getCases(final JsonEnvelope envelope) {
+        Optional<String> status = JsonObjects.getString(envelope.payloadAsJsonObject(), FIELD_STATUS);
+        
+        List<CaseProgressionDetail> cases = caseProgressionDetailService.getCases(status);
+        
+        return enveloper.withMetadataFrom(envelope, CASES_RESPONSE_LIST)
+                .apply(Json.createObjectBuilder()
+                       .add("cases",
+                               progressionHelperService.arraysToJsonArray(
+                                       cases   ))
+                        .build());
+        
+    }
+   
 }

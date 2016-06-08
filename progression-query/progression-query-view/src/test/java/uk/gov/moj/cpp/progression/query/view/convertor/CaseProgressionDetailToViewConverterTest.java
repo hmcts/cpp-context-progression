@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
@@ -41,6 +43,7 @@ public class CaseProgressionDetailToViewConverterTest {
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetail.setIsPSROrdered(true);
 		caseProgressionDetail.setSentenceHearingDate(now);
+		caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
         
         CaseProgressionDetailView caseProgressionDetailVO = caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
         assertTrue(caseProgressionDetailVO.getCaseId().equals(CASEID.toString()));
@@ -61,7 +64,8 @@ public class CaseProgressionDetailToViewConverterTest {
         assertTrue(caseProgressionDetailVO.getSendingCommittalDate().equals(now));
         assertTrue(caseProgressionDetailVO.getIsPSROrdered().equals(true));
 		assertTrue(caseProgressionDetailVO.getSentenceHearingDate().equals(now));
-
+		assertTrue(caseProgressionDetailVO.getStatus().equals(CaseStatusEnum.READY_FOR_REVIEW.toString()));
+		assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate().equals(LocalDateUtils.addWorkingDays(caseProgressionDetail.getDateOfSending(),7)));
     }
 
 }

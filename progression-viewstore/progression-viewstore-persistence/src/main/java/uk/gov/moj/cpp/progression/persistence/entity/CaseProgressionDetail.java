@@ -6,9 +6,13 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 @Entity
 @Table(name = "CaseProgressionDetail")
@@ -68,6 +72,9 @@ public class CaseProgressionDetail {
     @Column(name = "sentencehearingdate")
     private LocalDate sentenceHearingDate;
 
+    @Enumerated(EnumType.STRING)
+    private CaseStatusEnum status;
+    
     public CaseProgressionDetail() {
         super();
     }
@@ -231,6 +238,12 @@ public class CaseProgressionDetail {
         this.sentenceHearingDate = sentenceHearingDate;
     }
 
-	
+	public CaseStatusEnum getStatus() {
+		return status;
+	}
+
+	public void setStatus(CaseStatusEnum status) {
+		this.status = status;
+	}
 
 }

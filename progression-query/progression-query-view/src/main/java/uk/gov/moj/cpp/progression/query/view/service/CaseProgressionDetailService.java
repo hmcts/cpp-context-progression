@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.TimeLineDateType;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.TimeLineDate;
@@ -32,6 +35,9 @@ public class CaseProgressionDetailService {
 
 	private List<TimeLineDate> getTimeline(CaseProgressionDetail cpd) {
 
+	    if(cpd.getDateOfSending() == null){
+	        return null;
+	    }
 		LocalDate dateNow = LocalDate.now();
 
 		TimeLineDate dateOfSending = new TimeLineDate(TimeLineDateType.dateOfSending, cpd.getDateOfSending(), dateNow,
@@ -56,4 +62,32 @@ public class CaseProgressionDetailService {
 				defenceCaseStatement, kpiDateForCommencementOfTrial);
 	}
 
+	@Transactional
+    public List<CaseProgressionDetail> getCases(Optional<String> status) {
+	    
+	    List<CaseProgressionDetail> caseProgressionDetails;
+	    
+	    if(status.isPresent()){
+	        
+	        caseProgressionDetails = caseProgressionDetailRepo.findByStatus(getCaseStatusList(status.get()));
+	    }else{
+	        caseProgressionDetails = caseProgressionDetailRepo.findOpenStatus();
+	        
+	    }
+        caseProgressionDetails.stream().forEach((caseProgressionDetail) -> {
+            caseProgressionDetail
+                    .setTimeLine(getTimeline(caseProgressionDetail));
+        });
+	   return caseProgressionDetails;
+
+    }
+	
+	List<CaseStatusEnum> getCaseStatusList(String status){
+	    List<CaseStatusEnum> listOfStatus = new ArrayList<>();
+	    StringTokenizer st = new StringTokenizer(status, ",");
+	    while(st.hasMoreTokens()){
+	        listOfStatus.add(CaseStatusEnum.getCaseStatusk(st.nextToken()));
+	    }
+	    return listOfStatus;
+	}
 }

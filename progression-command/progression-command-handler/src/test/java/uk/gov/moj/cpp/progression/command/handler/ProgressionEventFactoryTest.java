@@ -27,6 +27,7 @@ import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
+import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
@@ -145,6 +146,12 @@ public class ProgressionEventFactoryTest {
 		Object obj = progressionEventFactory.createSentenceHearingDateAdded(envelope);
 		assertThat(obj, instanceOf(SentenceHearingDateAdded.class));
 	}
+	
+	@Test
+    public void testCreateCaseToBeAssignedUpdated() {
+        Object obj = progressionEventFactory.createCaseToBeAssignedUpdated(envelope);
+        assertThat(obj, instanceOf(CaseToBeAssignedUpdated.class));
+    }
 
 	private JsonEnvelope createJsonCommand() {
 		final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, UUID.randomUUID().toString()).add(NAME, "SomeName").build();

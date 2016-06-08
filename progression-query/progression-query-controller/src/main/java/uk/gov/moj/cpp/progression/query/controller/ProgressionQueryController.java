@@ -36,6 +36,11 @@ public class ProgressionQueryController {
 	    public JsonEnvelope getIndicatestatementsdetail(final JsonEnvelope query) {
 	        return requester.request(query);
 	    }
+	    
+	    @Handles("progression.query.cases")
+	    public JsonEnvelope getCases(final JsonEnvelope query) {
+	        return requester.request(query);
+	    }
 
    
 }

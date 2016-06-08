@@ -8,9 +8,6 @@ import uk.gov.justice.domain.annotation.Event;
 @Event("progression.events.sentence-hearing-date-added")
 public class SentenceHearingDateAdded {
 
-	public final static String EVENT_NAME = "progression.events.ptp-hearing-vacated";
-
-
 	private UUID caseProgressionId;
 
 
@@ -23,9 +20,6 @@ public class SentenceHearingDateAdded {
 		this.sentenceHearingDate = sentenceHearingDate;
 	}
 
-	public static String getEventName() {
-		return EVENT_NAME;
-	}
 
 	public UUID getCaseProgressionId() {
 		return caseProgressionId;

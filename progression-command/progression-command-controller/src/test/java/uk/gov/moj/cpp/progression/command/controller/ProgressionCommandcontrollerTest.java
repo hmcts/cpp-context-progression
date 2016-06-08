@@ -108,4 +108,10 @@ public class ProgressionCommandcontrollerTest {
        progressionCommandcontroller.addSentenceHearingDate(command);
        verify(sender, times(1)).send(command);
    }
+   
+   @Test
+   public void shouldCaseToBeAssigned() throws Exception {
+       progressionCommandcontroller.updateCaseToBeAssigned(command);
+       verify(sender, times(1)).send(command);
+   }
 }

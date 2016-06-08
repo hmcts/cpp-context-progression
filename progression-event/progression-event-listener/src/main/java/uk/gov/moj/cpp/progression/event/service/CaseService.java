@@ -5,6 +5,7 @@ import javax.transaction.Transactional;
 
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
+import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
@@ -165,4 +166,16 @@ public class CaseService {
 			throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
 		}
 	}
+	
+	@Transactional
+    public void caseToBeAssigned(CaseToBeAssignedUpdated event, Long version) {
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findById(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setStatus(event.getStatus());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
 }

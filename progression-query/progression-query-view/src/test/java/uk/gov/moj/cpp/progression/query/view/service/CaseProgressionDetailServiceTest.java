@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
@@ -71,6 +72,7 @@ public class CaseProgressionDetailServiceTest {
         caseProgressionDetail.setFromCourtCentre(COURT_CENTRE);
         caseProgressionDetail.setSendingCommittalDate(LocalDate.now());
         caseProgressionDetail.setIsPSROrdered(true);
+        caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
         when(this.caseProgressionDetailRepository.findByCaseId(CASEID)).thenReturn(caseProgressionDetail);
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getCaseId().equals(CASEID));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getId().equals(ID));
@@ -89,5 +91,6 @@ public class CaseProgressionDetailServiceTest {
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getFromCourtCentre().equals(COURT_CENTRE));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getSendingCommittalDate().equals(LocalDate.now()));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getIsPSROrdered().equals(true));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getStatus().equals(CaseStatusEnum.READY_FOR_REVIEW));
     }
 }

@@ -284,6 +284,21 @@ public class ProgressionCommandHandlerTest {
 		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
 	}
 
+	@Test
+	public void shouldCaseToBeAssigned() throws Exception {
+	    final JsonEnvelope command = createJsonCommand();
+        final StubEventStream stubEventStream = new StubEventStream();
+        when(progressionEventFactory.createCaseToBeAssignedUpdated(command)).thenReturn(event);
+        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(event)).thenReturn(envelope);
+        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+
+        progressionCommandHandler.updateCaseToBeAssigned(command);
+
+        assertThat(stubEventStream.events, notNullValue());
+        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	}
+	  
 	private JsonEnvelope createJsonCommand() {
 		final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, UUID.randomUUID().toString()).add(NAME, "SomeName").build();
 
