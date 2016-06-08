@@ -1,0 +1,45 @@
+<testSet>
+    <passedTransactionsTest>
+        <testName>ProgressionCaseDetails - failed transactions</testName>
+        <transactionName>ProgressionCaseDetails</transactionName>
+        <allowedNumberOfFailedTransactions>0</allowedNumberOfFailedTransactions>
+    </passedTransactionsTest>
+    <avgRespTimeTest>
+        <testName>ProgressionCaseDetails - average response time</testName>
+        <transactionName>ProgressionCaseDetails</transactionName>
+        <maxAvgRespTime>2000</maxAvgRespTime>
+    </avgRespTimeTest>
+
+    <passedTransactionsTest>
+        <testName>ProgressionTimeline - failed transactions</testName>
+        <transactionName>ProgressionTimeline</transactionName>
+        <allowedNumberOfFailedTransactions>0</allowedNumberOfFailedTransactions>
+    </passedTransactionsTest>
+    <avgRespTimeTest>
+        <testName>ProgressionTimeline - average response time</testName>
+        <transactionName>ProgressionTimeline</transactionName>
+        <maxAvgRespTime>2000</maxAvgRespTime>
+    </avgRespTimeTest>
+
+    <passedTransactionsTest>
+        <testName>ProgressionIndicateStatementCaseId - failed transactions</testName>
+        <transactionName>ProgressionIndicateStatementCaseId</transactionName>
+        <allowedNumberOfFailedTransactions>0</allowedNumberOfFailedTransactions>
+    </passedTransactionsTest>
+    <avgRespTimeTest>
+        <testName>ProgressionIndicateStatementCaseId - average response time</testName>
+        <transactionName>ProgressionIndicateStatementCaseId</transactionName>
+        <maxAvgRespTime>2000</maxAvgRespTime>
+    </avgRespTimeTest>
+
+    <passedTransactionsTest>
+        <testName>ProgresionIndicateStatementId - failed transactions</testName>
+        <transactionName>ProgresionIndicateStatementId</transactionName>
+        <allowedNumberOfFailedTransactions>0</allowedNumberOfFailedTransactions>
+    </passedTransactionsTest>
+    <avgRespTimeTest>
+        <testName>ProgresionIndicateStatementId - average response time</testName>
+        <transactionName>ProgresionIndicateStatementId</transactionName>
+        <maxAvgRespTime>2000</maxAvgRespTime>
+    </avgRespTimeTest>
+</testSet>
