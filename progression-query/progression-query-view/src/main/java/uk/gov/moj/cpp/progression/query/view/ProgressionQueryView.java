@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,8 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,6 +22,7 @@ import uk.gov.moj.cpp.progression.persistence.entity.IndicateStatement;
 import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.converter.IndicateStatementsDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.converter.TimelineDateToTimeLineDateViewConverter;
+import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 import uk.gov.moj.cpp.progression.query.view.response.IndicateStatementsDetailView;
 import uk.gov.moj.cpp.progression.query.view.response.TimeLineDateView;
 import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
@@ -119,11 +117,15 @@ public class ProgressionQueryView {
         
         List<CaseProgressionDetail> cases = caseProgressionDetailService.getCases(status);
         
+        List<CaseProgressionDetailView> caseProgressionDetailView = cases.stream()
+                .map(caseProgressionDetail -> caseProgressionDetailToViewConverter.convert(caseProgressionDetail))
+                .collect(Collectors.toList());
+        
         return enveloper.withMetadataFrom(envelope, CASES_RESPONSE_LIST)
                 .apply(Json.createObjectBuilder()
                        .add("cases",
                                progressionHelperService.arraysToJsonArray(
-                                       cases   ))
+                                       caseProgressionDetailView   ))
                         .build());
         
     }
