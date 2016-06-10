@@ -31,7 +31,7 @@ public class IndicateStatementsDetailToVOConverterTest {
 
         IndicateStatementsDetailView caseProgressionDetailVO = indicateStatementsDetailToVOConverter.convert(indicateStatement);
         assertTrue(caseProgressionDetailVO.getCaseId().equals(CASEID.toString()));
-        assertTrue(caseProgressionDetailVO.getId().equals(ID.toString()));
+        assertTrue(caseProgressionDetailVO.getIndicateStatementId().equals(ID.toString()));
         assertTrue(caseProgressionDetailVO.getPlanDate().equals((LocalDate.now())));
         assertTrue(caseProgressionDetailVO.getEvidenceName().equals(EVIDENCENAME));
         assertTrue(caseProgressionDetailVO.getIsKeyEvidence().equalsIgnoreCase("true"));

@@ -9,7 +9,7 @@ public class IndicateStatementsDetailToViewConverter {
         IndicateStatementsDetailView indicateStatementsDetailVo = null;
         if (indicateStatements != null) {
             indicateStatementsDetailVo = new IndicateStatementsDetailView();
-            indicateStatementsDetailVo.setId(indicateStatements.getId().toString());
+            indicateStatementsDetailVo.setIndicateStatementId(indicateStatements.getId().toString());
             indicateStatementsDetailVo.setCaseId(indicateStatements.getCaseId().toString());
             indicateStatementsDetailVo.setPlanDate(indicateStatements.getPlanDate());
             indicateStatementsDetailVo.setIsKeyEvidence(indicateStatements.getIsKeyEvidence().toString());
