@@ -25,7 +25,7 @@
           </elementProp>
           <elementProp name="threadCounter" elementType="Argument">
             <stringProp name="Argument.name">threadCounter</stringProp>
-            <stringProp name="Argument.value">${__P(jmeter.get.progression.read.test.threads,1)}</stringProp>
+            <stringProp name="Argument.value">${__P(jmeter.get.progression.read.test.threads,5)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
