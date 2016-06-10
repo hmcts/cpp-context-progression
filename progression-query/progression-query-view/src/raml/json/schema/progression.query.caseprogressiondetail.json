@@ -3,8 +3,8 @@
   "id": "http://progression-context-url/rest/cases/caseId",
   "type": "object",
   "properties": {
-    "id": {
-      "id": "http://progression-context-url/rest/cases/caseId/id",
+    "idcaseProgressionId": {
+      "id": "http://progression-context-url/rest/cases/caseId/caseProgressionId",
       "type": "string"
     },
     "courtCentreId": {
@@ -89,7 +89,7 @@
     }
   },
   "required": [
-    "id",
+    "caseProgressionId",
     "courtCentreId",
     "caseId",
     "version",

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class IndicateStatementsDetailView {
 
-    private String id;
+    private String indicateStatementId;
 
     private String caseId;
 
@@ -22,12 +22,12 @@ public class IndicateStatementsDetailView {
         this.caseId = caseId;
     }
 
-    public String getId() {
-        return id;
+    public String getIndicateStatementId() {
+        return indicateStatementId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setIndicateStatementId(String indicateStatementId) {
+        this.indicateStatementId = indicateStatementId;
     }
 
     public String getIsKeyEvidence() {

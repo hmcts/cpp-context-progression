@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "id": {
+    "indicateStatementId": {
       "type": "string"
     },
     "caseId": {
@@ -19,7 +19,7 @@
     }
   },
   "required": [
-    "id",
+    "indicateStatementId",
     "caseId",
     "isKeyEvidence",
     "evidenceName",
