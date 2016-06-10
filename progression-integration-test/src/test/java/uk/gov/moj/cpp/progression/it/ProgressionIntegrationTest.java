@@ -27,13 +27,13 @@ public class ProgressionIntegrationTest extends AbstractIT {
 
 	private String caseId;
 	private String caseProgressionId;
-	private int version;
+	private String version;
 
 	@Before
 	public void setUp() {
 		caseId = UUID.randomUUID().toString();
 		caseProgressionId = UUID.randomUUID().toString();
-		version = 0;
+		version = "0";
 	}
 
 	@Test

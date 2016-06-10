@@ -57,7 +57,7 @@ public class CaseProgressionDetailToViewConverterTest {
         assertTrue(caseProgressionDetailVO.getDefenceTrialEstimate() == 10l);
         assertTrue(caseProgressionDetailVO.getProsecutionTrialEstimate() == 20l);
         assertTrue(caseProgressionDetailVO.getPtpHearingVacatedDate().equals(now));
-        assertTrue(caseProgressionDetailVO.getVersion() == 1l);
+        assertTrue(caseProgressionDetailVO.getVersion().equals("1"));
         assertTrue(caseProgressionDetailVO.getIsAllStatementsIdentified().equals(true));
         assertTrue(caseProgressionDetailVO.getIsAllStatementsServed().equals(true));
         assertTrue(caseProgressionDetailVO.getFromCourtCentre().equals(COURT_CENTRE));
