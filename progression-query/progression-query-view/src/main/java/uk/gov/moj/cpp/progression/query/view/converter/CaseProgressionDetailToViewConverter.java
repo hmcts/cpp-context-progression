@@ -21,7 +21,7 @@ public class CaseProgressionDetailToViewConverter {
     public CaseProgressionDetailView convert(CaseProgressionDetail caseProgressionDetail) {
         CaseProgressionDetailView caseProgressionDetailVo = null;
         caseProgressionDetailVo = new CaseProgressionDetailView();
-        caseProgressionDetailVo.setId(caseProgressionDetail.getId().toString());
+        caseProgressionDetailVo.setCaseProgressionId(caseProgressionDetail.getId().toString());
         caseProgressionDetailVo.setCaseId(caseProgressionDetail.getCaseId().toString());
         if (caseProgressionDetail.getStatus() != null) {
             caseProgressionDetailVo.setStatus(caseProgressionDetail.getStatus().toString());

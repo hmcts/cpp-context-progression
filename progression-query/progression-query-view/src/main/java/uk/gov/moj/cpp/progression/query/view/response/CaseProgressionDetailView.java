@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class CaseProgressionDetailView {
 
-    private String id;
+    private String caseProgressionId;
 
     private String caseId;
 
@@ -84,12 +84,12 @@ public class CaseProgressionDetailView {
         this.dateOfSending = dateOfSending;
     }
 
-    public String getId() {
-        return id;
+    public String getCaseProgressionId() {
+        return caseProgressionId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setCaseProgressionId(String caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
     }
 
     public String getDefenceIssues() {

@@ -7,7 +7,7 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": {
+          "indicateStatementId": {
             "type": "string"
           },
           "caseId": {
@@ -24,7 +24,7 @@
           }
         },
         "required": [
-          "id",
+          "indicateStatementId",
           "caseId",
           "isKeyEvidence",
           "evidenceName",

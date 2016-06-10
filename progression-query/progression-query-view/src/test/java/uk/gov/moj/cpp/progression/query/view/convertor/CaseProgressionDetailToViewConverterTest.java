@@ -47,7 +47,7 @@ public class CaseProgressionDetailToViewConverterTest {
         
         CaseProgressionDetailView caseProgressionDetailVO = caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
         assertTrue(caseProgressionDetailVO.getCaseId().equals(CASEID.toString()));
-        assertTrue(caseProgressionDetailVO.getId().equals(ID.toString()));
+        assertTrue(caseProgressionDetailVO.getCaseProgressionId().equals(ID.toString()));
         assertTrue(caseProgressionDetailVO.getDateOfSending().equals(now));
         assertTrue((caseProgressionDetailVO.getNoOfDaysForCMISubmission()) == cmiSubmissionDeadlineDate);
         assertTrue(caseProgressionDetailVO.getDateCMISubmissionDeadline().equals(

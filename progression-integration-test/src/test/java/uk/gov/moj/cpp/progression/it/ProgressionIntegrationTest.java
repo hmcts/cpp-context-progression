@@ -46,7 +46,7 @@ public class ProgressionIntegrationTest extends AbstractIT {
 		Response queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId), "application/vnd.progression.query.caseprogressiondetail+json");
 
 		assertThat(queryResponse.getStatusCode(), is(200));
-		assertTrue(queryResponse.getBody().path("id").equals(caseProgressionId));
+		assertTrue(queryResponse.getBody().path("caseProgressionId").equals(caseProgressionId));
 		assertTrue(queryResponse.getBody().path("caseId").equals(caseId));
 		version = (queryResponse.getBody().path("version"));
 
