@@ -43,7 +43,7 @@ public class CaseProgressionDetailToViewConverter {
         caseProgressionDetailVo.setDefenceTrialEstimate(caseProgressionDetail.getTrialEstimateDefence());
         caseProgressionDetailVo.setProsecutionTrialEstimate(caseProgressionDetail.getTrialEstimateProsecution());
         caseProgressionDetailVo.setIsAllStatementsIdentified(caseProgressionDetail.getIsAllStatementsIdentified());
-        caseProgressionDetailVo.setVersion(caseProgressionDetail.getVersion());
+        caseProgressionDetailVo.setVersion(caseProgressionDetail.getVersion().toString());
         caseProgressionDetailVo.setIsAllStatementsServed(caseProgressionDetail.getIsAllStatementsServed());
         caseProgressionDetailVo.setDirectionIssuedOn(caseProgressionDetail.getDirectionIssuedOn());
         if (caseProgressionDetail.getPtpHearingVacatedDate() != null) {
