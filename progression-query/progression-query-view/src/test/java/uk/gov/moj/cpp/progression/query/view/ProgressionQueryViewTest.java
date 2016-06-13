@@ -14,6 +14,7 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.persistence.NoResultException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -110,6 +111,21 @@ public class ProgressionQueryViewTest {
 		when(function.apply(caseProgressionDetailView)).thenReturn(responceJson);
 		assertThat(queryView.getCaseProgressionDetails(query), equalTo(responceJson));
 	}
+	
+	@Test
+	public void shouldHandleProgressionQueryOnNoresult() {
+		UUID caseId = UUID.randomUUID();
+		String now = LocalDate.now().toString();
+		JsonObject jsonObject = Json.createObjectBuilder().add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString())
+				.build();
+
+		when(query.payloadAsJsonObject()).thenReturn(jsonObject);
+		when(casePrgDetailService.getCaseProgressionDetail(caseId)).thenThrow(new NoResultException());
+		when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE)).thenReturn(function);
+
+		when(function.apply(null)).thenReturn(responceJson);
+		assertThat(queryView.getCaseProgressionDetails(query), equalTo(responceJson));
+	}
 
 	@Test
 	public void shouldHandleIndicateStmtQuery() {
@@ -146,6 +162,21 @@ public class ProgressionQueryViewTest {
 		when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE)).thenReturn(function);
 		when(helperService.arraysToJsonArray(Arrays.asList(timeLineDateView))).thenReturn(jsonArray);
 		when(function.apply(jsonObjectTimeline)).thenReturn(responceJson);
+		assertThat(queryView.getTimeLineForProgression(query), equalTo(responceJson));
+	}
+	
+	@Test
+	public void shouldHandleProgressionSQueryOnNoResult() {
+		UUID caseId = UUID.randomUUID();
+		String now = LocalDate.now().toString();
+		JsonObject jsonObject = Json.createObjectBuilder().add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString())
+				.build();
+
+
+		when(query.payloadAsJsonObject()).thenReturn(jsonObject);
+		when(casePrgDetailService.getCaseProgressionDetail(caseId)).thenThrow(new NoResultException());
+		when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE)).thenReturn(function);
+		when(function.apply(null)).thenReturn(responceJson);
 		assertThat(queryView.getTimeLineForProgression(query), equalTo(responceJson));
 	}
 
