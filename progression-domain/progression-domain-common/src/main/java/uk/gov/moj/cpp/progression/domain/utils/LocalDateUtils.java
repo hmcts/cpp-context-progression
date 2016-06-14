@@ -8,12 +8,14 @@ import java.util.stream.IntStream;
 
 public class LocalDateUtils {
 
-	private LocalDateUtils() {
+    private LocalDateUtils() {
 
     }
-	
-    public static List<LocalDate> getNoOfDatesFromStartDate(final LocalDate startDate, final Integer noOfDays) {
-        return IntStream.range(0, noOfDays).mapToObj(action -> startDate.plusDays(action)).collect(Collectors.toList());
+
+    public static List<LocalDate> getNoOfDatesFromStartDate(final LocalDate startDate,
+                    final Integer noOfDays) {
+        return IntStream.range(0, noOfDays).mapToObj(action -> startDate.plusDays(action))
+                        .collect(Collectors.toList());
     }
 
 
@@ -21,17 +23,18 @@ public class LocalDateUtils {
         return ChronoUnit.DAYS.between(LocalDate.now(), endDate);
     }
 
-    
+
 
     public static LocalDate addWorkingDays(final LocalDate startDate, int noOfDays) {
-        
-        if (noOfDays < 1) {
+
+        if (noOfDays < 1 || startDate == null) {
             return startDate;
         }
 
-        return startDate.plusDays(getActualNumberOfDaysToAdd(noOfDays, startDate.getDayOfWeek().getValue()));
+        return startDate.plusDays(
+                        getActualNumberOfDaysToAdd(noOfDays, startDate.getDayOfWeek().getValue()));
     }
-    
+
     private static long getActualNumberOfDaysToAdd(long workdays, int dayOfWeek) {
         if (dayOfWeek < 6) { // date is a workday
             return workdays + (workdays + dayOfWeek - 1) / 5 * 2;
@@ -39,5 +42,5 @@ public class LocalDateUtils {
             return workdays + (workdays - 1) / 5 * 2 + (7 - dayOfWeek);
         }
     }
-    
+
 }
