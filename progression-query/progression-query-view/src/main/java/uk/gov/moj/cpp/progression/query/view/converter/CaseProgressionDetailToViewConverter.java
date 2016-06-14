@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.converter;
 
+import java.time.LocalDate;
+
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
@@ -32,14 +34,9 @@ public class CaseProgressionDetailToViewConverter {
             caseProgressionDetailVo.setNoOfDaysForCMISubmission(
                             LocalDateUtils.noOfDaysUntil(caseProgressionDetail.getDateOfSending()
                                             .plusDays(cmiSubmissionDeadlineDate)));
-            caseProgressionDetailVo.setSentenceReviewDeadlineDate(LocalDateUtils.addWorkingDays(
-                            caseProgressionDetail.getDateOfSending(),
-                            ProgressionDataConstant.sentenceReviewDeadlineDateDaysFromDateOfSending));
-        } else {
-            caseProgressionDetailVo.setSentenceReviewDeadlineDate(LocalDateUtils.addWorkingDays(
-                            caseProgressionDetail.getSendingCommittalDate(),
-                            ProgressionDataConstant.sentenceReviewDeadlineDateDaysFromDateOfSending));
         }
+        caseProgressionDetailVo.setSentenceReviewDeadlineDate(
+                        calcSentenceReviewDeadlineDate(caseProgressionDetail));
 
         caseProgressionDetailVo.setDefenceIssues(caseProgressionDetail.getDefenceIssue());
         caseProgressionDetailVo.setSfrIssues(caseProgressionDetail.getSfrIssue());
@@ -65,5 +62,16 @@ public class CaseProgressionDetailToViewConverter {
                         .setSentenceHearingDate(caseProgressionDetail.getSentenceHearingDate());
 
         return caseProgressionDetailVo;
+    }
+
+    private LocalDate calcSentenceReviewDeadlineDate(CaseProgressionDetail caseProgressionDetail) {
+        LocalDate basedOnDate = null;
+        if (caseProgressionDetail.getDateOfSending() != null) {
+            basedOnDate = caseProgressionDetail.getDateOfSending();
+        } else if (caseProgressionDetail.getSendingCommittalDate() != null) {
+            basedOnDate = caseProgressionDetail.getSendingCommittalDate();
+        }
+        return LocalDateUtils.addWorkingDays(basedOnDate,
+                        ProgressionDataConstant.sentenceReviewDeadlineDateDaysFromDateOfSending);
     }
 }
