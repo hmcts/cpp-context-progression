@@ -27,10 +27,8 @@
     </modules>
 
     <properties>
-        <cqrs.version>0.2.0</cqrs.version>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
-        <deltaspike.version>1.6.1</deltaspike.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
     </properties>
     
