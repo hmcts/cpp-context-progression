@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.query.view.convertor;
+package uk.gov.moj.cpp.progression.query.view.converter;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.progression.persistence.entity.TimeLineDate;
 import uk.gov.moj.cpp.progression.query.view.converter.TimelineDateToTimeLineDateViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.TimeLineDateView;
 
-public class TimelineDateToToTimeLineVOConverterTest {
+public class TimelineDateToTimeLineDateViewConverterTest {
 
     private TimelineDateToTimeLineDateViewConverter converter;
 
