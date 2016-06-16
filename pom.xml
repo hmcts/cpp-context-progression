@@ -27,6 +27,7 @@
     </modules>
 
     <properties>
+        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
