@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.persistence.NoResultException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -61,11 +63,13 @@ public class CaseProgressionDetailServiceTest {
     private CaseProgressionDetailService caseProgressionDetailService;
 
 
-    @Test
+    @Test(expected = NoResultException.class)
     public void getCaseProgressionDetailTestIsEmpty() {
 
-        when(this.caseProgressionDetailRepository.findByCaseId(CASEID)).thenReturn(null);
-        assertTrue(!this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).isPresent());
+        when(this.caseProgressionDetailRepository.findByCaseId(CASEID))
+        .thenThrow(new NoResultException());
+
+        this.caseProgressionDetailService.getCaseProgressionDetail(CASEID);
     }
 
     @Test
@@ -89,24 +93,39 @@ public class CaseProgressionDetailServiceTest {
 
         when(this.caseProgressionDetailRepository.findByCaseId(CASEID)).thenReturn(caseProgressionDetail);
 
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getCaseId().equals(CASEID));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getId().equals(ID));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getDateOfSending().equals(LocalDate.now()));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getDefenceIssue().equals(DEFENCEISSUE));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getSfrIssue().equals(SFRISSUE));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getCaseId()
+                        .equals(CASEID));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getId()
+                        .equals(ID));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getDateOfSending().equals(LocalDate.now()));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getDefenceIssue().equals(DEFENCEISSUE));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getSfrIssue()
+                        .equals(SFRISSUE));
 
-        assertThat(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getTimeLine(), hasSize(5));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getDateOfSending().equals(LocalDate.now()));
+        assertThat(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getTimeLine(),
+                        hasSize(5));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getDateOfSending().equals(LocalDate.now()));
 
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getIsAllStatementsServed().equals(true));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getIsAllStatementsIdentified().equals(true));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getTrialEstimateDefence() == 10l);
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getPtpHearingVacatedDate()
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getIsAllStatementsServed().equals(true));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getIsAllStatementsIdentified().equals(true));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getTrialEstimateDefence() == 10l);
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getPtpHearingVacatedDate()
                         .equals(LocalDate.now()));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getFromCourtCentre().equals(COURT_CENTRE));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getSendingCommittalDate().equals(LocalDate.now()));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getIsPSROrdered().equals(true));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).get().getStatus().equals(CaseStatusEnum.READY_FOR_REVIEW));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getFromCourtCentre().equals(COURT_CENTRE));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getSendingCommittalDate().equals(LocalDate.now()));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
+                        .getIsPSROrdered().equals(true));
+        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getStatus()
+                        .equals(CaseStatusEnum.READY_FOR_REVIEW));
     }
 
     @Test
