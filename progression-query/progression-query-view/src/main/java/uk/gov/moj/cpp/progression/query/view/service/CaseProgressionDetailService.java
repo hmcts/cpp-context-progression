@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query.view.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
@@ -23,43 +24,41 @@ public class CaseProgressionDetailService {
     private CaseProgressionDetailRepository caseProgressionDetailRepo;
 
     @Transactional
-    public Optional<CaseProgressionDetail> getCaseProgressionDetail(UUID caseId) {
-        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findByCaseId(caseId);
-        if (caseProgressionDetail == null) {
-            return Optional.empty();
-        }
+    public CaseProgressionDetail getCaseProgressionDetail(UUID caseId) {
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findByCaseId(caseId);
         caseProgressionDetail.setTimeLine(this.getTimeline(caseProgressionDetail));
-        return Optional.of(caseProgressionDetail);
+
+        return caseProgressionDetail;
 
     }
 
     private List<TimeLineDate> getTimeline(CaseProgressionDetail cpd) {
 
         if (cpd.getDateOfSending() == null) {
-            return null;
+            return Collections.emptyList();
         }
-        LocalDate dateNow = LocalDate.now();
+        final LocalDate dateNow = LocalDate.now();
 
-        TimeLineDate dateOfSending = new TimeLineDate(TimeLineDateType.dateOfSending, cpd.getDateOfSending(), dateNow,
-                0);
+        final TimeLineDate dateOfSending = new TimeLineDate(TimeLineDateType.dateOfSending, cpd.getDateOfSending(), dateNow,
+                        0);
 
-        TimeLineDate cmiSubmissionDeadline = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline,
-                cpd.getDateOfSending(), dateNow,
-                ProgressionDataConstant.cmiSubmissionDeadlineDateDaysFromDateOfSending);
+        final TimeLineDate cmiSubmissionDeadline = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline,
+                        cpd.getDateOfSending(), dateNow,
+                        ProgressionDataConstant.cmiSubmissionDeadlineDateDaysFromDateOfSending);
 
-        TimeLineDate serviceOfProsecutionCaseForBailCases = new TimeLineDate(
-                TimeLineDateType.serviceOfProsecutionCaseForBailCases, cpd.getDateOfSending(), dateNow,
-                ProgressionDataConstant.serviceOfProsecutionCaseForBailCasesDaysFromDateOfSending);
+        final TimeLineDate serviceOfProsecutionCaseForBailCases = new TimeLineDate(
+                        TimeLineDateType.serviceOfProsecutionCaseForBailCases, cpd.getDateOfSending(), dateNow,
+                        ProgressionDataConstant.serviceOfProsecutionCaseForBailCasesDaysFromDateOfSending);
 
-        TimeLineDate defenceCaseStatement = new TimeLineDate(TimeLineDateType.defenceCaseStatement,
-                cpd.getDateOfSending(), dateNow, ProgressionDataConstant.defenceCaseStatementDaysFromDateOfSending);
+        final TimeLineDate defenceCaseStatement = new TimeLineDate(TimeLineDateType.defenceCaseStatement,
+                        cpd.getDateOfSending(), dateNow, ProgressionDataConstant.defenceCaseStatementDaysFromDateOfSending);
 
-        TimeLineDate kpiDateForCommencementOfTrial = new TimeLineDate(TimeLineDateType.kpiDateForCommencementOfTrial,
-                cpd.getDateOfSending(), dateNow,
-                ProgressionDataConstant.kpiDateForCommencementOfTrialDaysFromDateOfSending);
+        final TimeLineDate kpiDateForCommencementOfTrial = new TimeLineDate(TimeLineDateType.kpiDateForCommencementOfTrial,
+                        cpd.getDateOfSending(), dateNow,
+                        ProgressionDataConstant.kpiDateForCommencementOfTrialDaysFromDateOfSending);
 
         return Arrays.asList(dateOfSending, cmiSubmissionDeadline, serviceOfProsecutionCaseForBailCases,
-                defenceCaseStatement, kpiDateForCommencementOfTrial);
+                        defenceCaseStatement, kpiDateForCommencementOfTrial);
     }
 
     @Transactional
@@ -82,8 +81,8 @@ public class CaseProgressionDetailService {
     }
 
     List<CaseStatusEnum> getCaseStatusList(String status) {
-        List<CaseStatusEnum> listOfStatus = new ArrayList<>();
-        StringTokenizer st = new StringTokenizer(status, ",");
+        final List<CaseStatusEnum> listOfStatus = new ArrayList<>();
+        final StringTokenizer st = new StringTokenizer(status, ",");
         while (st.hasMoreTokens()) {
             listOfStatus.add(CaseStatusEnum.getCaseStatusk(st.nextToken()));
         }

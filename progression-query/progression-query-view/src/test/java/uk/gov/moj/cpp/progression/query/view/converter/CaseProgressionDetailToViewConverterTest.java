@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.query.view.convertor;
+package uk.gov.moj.cpp.progression.query.view.converter;
 
 import static org.junit.Assert.assertTrue;
 

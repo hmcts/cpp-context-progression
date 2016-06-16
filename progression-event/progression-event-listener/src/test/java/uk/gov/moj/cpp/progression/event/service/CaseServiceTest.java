@@ -37,146 +37,146 @@ import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailReposi
 public class CaseServiceTest {
 
     private static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
-    
-	@Mock
-	private CaseProgressionDetailRepository repository;
 
-	@Mock
-	private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourt;
+    @Mock
+    private CaseProgressionDetailRepository repository;
 
-	@Mock
-	private CaseSentToCrownCourtToCaseProgressionDetailConverter caseSentToCrownCourt;
+    @Mock
+    private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourt;
+
+    @Mock
+    private CaseSentToCrownCourtToCaseProgressionDetailConverter caseSentToCrownCourt;
 
     @InjectMocks
     private CaseService service;
-    
+
     final static Long VERSION = 1l;
-    
+
     @Test
     public void addDefenceIssuesTest() {
-        DefenceIssuesAdded event = mock(DefenceIssuesAdded.class, RETURNS_DEEP_STUBS);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class, RETURNS_DEEP_STUBS);
+        final DefenceIssuesAdded event = mock(DefenceIssuesAdded.class, RETURNS_DEEP_STUBS);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class, RETURNS_DEEP_STUBS);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
+        when(repository.findBy(event.getCaseProgressionId())).thenReturn(entity);
 
         service.addDefenceIssues(event, VERSION);
-        verify(repository, times(1)).findById(event.getCaseProgressionId());
+        verify(repository, times(1)).findBy(event.getCaseProgressionId());
         verify(repository, times(1)).save(entity);
 
     }
-    
+
     @Test
     public void addSendingCommittalHearingInformationTest() {
-        SendingCommittalHearingInformationAdded event = mock(SendingCommittalHearingInformationAdded.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        final SendingCommittalHearingInformationAdded event = mock(SendingCommittalHearingInformationAdded.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
         service.addSendingCommittalHearingInformation(event, VERSION);
-        verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void addTrialEstimateDefenceTest() {
-        DefenceTrialEstimateAdded event = mock(DefenceTrialEstimateAdded.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        final DefenceTrialEstimateAdded event = mock(DefenceTrialEstimateAdded.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
         service.addTrialEstimateDefence(event, VERSION);
-        verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void addTrialEstimateProsecutionTest() {
-        ProsecutionTrialEstimateAdded event = mock(ProsecutionTrialEstimateAdded.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        final ProsecutionTrialEstimateAdded event = mock(ProsecutionTrialEstimateAdded.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
         service.addTrialEstimateProsecution(event, VERSION);
-        verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void addSFRIssuesTest() {
-        SfrIssuesAdded event = mock(SfrIssuesAdded.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
-        when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
+        final SfrIssuesAdded event = mock(SfrIssuesAdded.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(repository.findBy(event.getCaseProgressionId())).thenReturn(entity);
 
         service.addSFRIssues(event, VERSION);
-        verify(repository, times(1)).findById(event.getCaseProgressionId());
+        verify(repository, times(1)).findBy(event.getCaseProgressionId());
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void indicateAllStatementsServedTest() {
-        AllStatementsServed event = mock(AllStatementsServed.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        final AllStatementsServed event = mock(AllStatementsServed.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
         service.indicateAllStatementsServed(event,VERSION);
-        verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void directionIssuedTest() {
-        DirectionIssued event = mock(DirectionIssued.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        final DirectionIssued event = mock(DirectionIssued.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
         service.directionIssued(event, VERSION);
-        verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void indicateAllStatementsIdentifiedTest() {
-        AllStatementsIdentified event = mock(AllStatementsIdentified.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        final AllStatementsIdentified event = mock(AllStatementsIdentified.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findById(CASE_PROGRESSION_ID)).thenReturn(entity);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
         service.indicateAllStatementsIdentified(event, VERSION);
-        verify(repository, times(1)).findById(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }
 
     @Test
     public void ptpHearingVacatedTest() {
-        PTPHearingVacated event = mock(PTPHearingVacated.class);
-        CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
-        when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
+        final PTPHearingVacated event = mock(PTPHearingVacated.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(repository.findBy(event.getCaseProgressionId())).thenReturn(entity);
 
         service.vacatePtpHeaing(event, VERSION);
-        verify(repository, times(1)).findById(event.getCaseProgressionId());
+        verify(repository, times(1)).findBy(event.getCaseProgressionId());
         verify(repository, times(1)).save(entity);
 
     }
 
-	@Test
-	public void addSentenceHearingDateTest() {
-		SentenceHearingDateAdded event = mock(SentenceHearingDateAdded.class);
-		CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
-		when(repository.findById(event.getCaseProgressionId())).thenReturn(entity);
+    @Test
+    public void addSentenceHearingDateTest() {
+        final SentenceHearingDateAdded event = mock(SentenceHearingDateAdded.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(repository.findBy(event.getCaseProgressionId())).thenReturn(entity);
 
-		service.addSentenceHearingDate(event, VERSION);
-		verify(repository, times(1)).findById(event.getCaseProgressionId());
-		verify(repository, times(1)).save(entity);
+        service.addSentenceHearingDate(event, VERSION);
+        verify(repository, times(1)).findBy(event.getCaseProgressionId());
+        verify(repository, times(1)).save(entity);
 
-	}
+    }
 
 }

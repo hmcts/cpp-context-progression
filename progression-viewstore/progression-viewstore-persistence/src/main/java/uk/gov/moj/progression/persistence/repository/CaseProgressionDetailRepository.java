@@ -18,8 +18,6 @@ public interface CaseProgressionDetailRepository extends EntityRepository<CasePr
 
     CaseProgressionDetail findByCaseId(UUID caseId);
 
-    CaseProgressionDetail findById(UUID id);
-
     @Query(value = "from CaseProgressionDetail c where c.status IN  (?1) ")
     List<CaseProgressionDetail> findByStatus(List<CaseStatusEnum> status);
 

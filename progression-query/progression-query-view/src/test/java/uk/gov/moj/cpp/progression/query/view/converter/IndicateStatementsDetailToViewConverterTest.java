@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.query.view.convertor;
+package uk.gov.moj.cpp.progression.query.view.converter;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.progression.persistence.entity.IndicateStatement;
 import uk.gov.moj.cpp.progression.query.view.converter.IndicateStatementsDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.IndicateStatementsDetailView;
 
-public class IndicateStatementsDetailToVOConverterTest {
+public class IndicateStatementsDetailToViewConverterTest {
     private static final UUID ID = UUID.randomUUID();
     private static final UUID CASEID = UUID.randomUUID();
     private static final String EVIDENCENAME = "evidence name";
