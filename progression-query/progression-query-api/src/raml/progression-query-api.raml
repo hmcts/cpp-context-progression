@@ -9,12 +9,7 @@ protocols: [ HTTP, HTTPS ]
           description: ID of case to get
           type: string
   get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.caseprogressiondetail+json
-            name: progression.query.caseprogressiondetail
-        ...
+      description: Find progression details for the case.
       responses:
             200:
                 description: OK        
@@ -29,12 +24,7 @@ protocols: [ HTTP, HTTPS ]
           description: ID of case to get
           type: string
   get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.timeline+json
-            name: progression.query.timeline
-        ...
+      description: Get list of timeline dates.
       responses:
             200:
                 description: OK        
@@ -49,12 +39,7 @@ protocols: [ HTTP, HTTPS ]
           description: ID of case to get
           type: string
   get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.indicatestatementsdetails+json
-            name: progression.query.indicatestatementsdetails
-        ...
+      description: Find list of  indicate statements details for the case.
       responses:
             200:
                 description: OK        
@@ -70,12 +55,7 @@ protocols: [ HTTP, HTTPS ]
           description: ID of indicatestatement to get
           type: string
   get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.indicatestatementsdetail+json
-            name: progression.query.indicatestatementsdetail
-        ...
+      description: Find  indicate statements details for the case.
       responses:
             200:
                 description: OK        
@@ -87,14 +67,10 @@ protocols: [ HTTP, HTTPS ]
 
 /cases:
   get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.cases+json
-            name: progression.query.cases
-        ...
+      description: List of Cases available.
       queryParameters:
         status:
+          description: comma separated list of case status ex ?status=xxx,yyy
           type: string
           example: xxx,yyy
           required: false
@@ -105,3 +81,4 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.cases+json:
                     example:  !include json/progression.query.cases.json
                     schema:  !include json/schema/progression.query.cases.json
+                                                            

@@ -5,12 +5,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 /cases/sendcasetocrowncourt:
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.send-to-crown-court+json
-            name: progression.command.send-to-crown-court
-        ...
+      description:  Service to send case to crown court.
       body:
         application/vnd.progression.command.send-to-crown-court+json:
             example: 
@@ -25,12 +20,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/addcasetocrowncourt:
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.add-case-to-crown-court+json
-            name: progression.command.add-case-to-crown-court
-        ...
+      description:  Service to add cse to crown court.
       body:
         application/vnd.progression.command.add-case-to-crown-court+json:
             example: 
@@ -45,12 +35,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/adddefenceissues:
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.add-defence-issues+json
-            name: progression.command.add-defence-issues
-        ...
+      description:  Service to add defence issues.
       body:
         application/vnd.progression.command.add-defence-issues+json:
             example: 
@@ -65,12 +50,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/sentencehearingdate :
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.sentence-hearing-date+json
-            name: progression.command.sentence-hearing-date
-        ...
+      description:  Service to add sentence hearing date.
       body:
         application/vnd.progression.command.sentence-hearing-date+json:
             example: 
@@ -85,12 +65,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/addsfrissues:
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.addsfrissues+json
-            name: progression.command.addsfrissues
-        ...
+      description:  Service to Add issues with Streamlined Forensics Report
       body:
         application/vnd.progression.command.addsfrissues+json:
             example: 
@@ -106,12 +81,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                                          
 /cases/casetobeassigned:
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.case-to-be-assigned+json
-            name: progression.command.case-to-be-assigned
-        ...
+      description:  Service to update case status
       body:
         application/vnd.progression.command.case-to-be-assigned+json:
             example: 
@@ -126,12 +96,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/sendingcommittalhearinginformation:
   post:
-      description:  |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.sending-committal-hearing-information+json
-            name: progression.command.sending-committal-hearing-information
-        ...
+      description:  Service to Sending/Committal Hearing Information
       body:
         application/vnd.progression.command.sending-committal-hearing-information+json:
             example: 
@@ -146,12 +111,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 /cases/defencetrialestimate:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.defence-trial-estimate+json
-            name: progression.command.defence-trial-estimate
-        ...
+      description:  Provide trial time estimate -Defence
       body:
         application/vnd.progression.command.defence-trial-estimate+json:
             example: 
@@ -166,12 +126,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 /cases/issuedirection:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.issue-direction+json
-            name: progression.command.issue-direction
-        ...
+      description:  issue direction
       body:
         application/vnd.progression.command.issue-direction+json:
             example: 
@@ -186,12 +141,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/presentencereport:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.pre-sentence-report+json
-            name: progression.command.pre-sentence-report
-        ...
+      description:  pre sentence report ordered
       body:
         application/vnd.progression.command.pre-sentence-report+json:
             example: 
@@ -206,12 +156,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 /cases/indicatestatement:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.indicate-statement+json
-            name: progression.command.indicate-statement
-        ...
+      description:  Services for Indicate Statements to be served.
       body:
         application/vnd.progression.command.indicate-statement+json:
             example: 
@@ -226,12 +171,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/indicateallstatementsidentified:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.indicate-all-statements-identified+json
-            name: progression.command.indicate-all-statements-identified
-        ...
+      description:  Indicate that all statements have been identified.
       body:
         application/vnd.progression.command.indicate-all-statements-identified+json:
             example: 
@@ -246,12 +186,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                              
 /cases/indicateallstatementsserved:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.indicate-all-statements-served+json
-            name: progression.command.indicate-all-statements-served
-        ...
+      description:  Indicate that all statements have been served.
       body:
         application/vnd.progression.command.indicate-all-statements-served+json:
             example: 
@@ -266,12 +201,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                                          
 /cases/prosecutiontrialestimate:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.prosecution-trial-estimate+json
-            name: progression.command.prosecution-trial-estimate
-        ...
+      description:  Provide trial time estimate -Prosecution.
       body:
         application/vnd.progression.command.prosecution-trial-estimate+json:
             example: 
@@ -286,12 +216,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
     
 /cases/vacateptphearing:
   post:
-      description: |
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.vacate-ptp-hearing+json
-            name: progression.command.vacate-ptp-hearing
-        ...
+      description:  Services vacate  a ptp Hearing..
       body:
         application/vnd.progression.command.vacate-ptp-hearing+json:
             example: 
