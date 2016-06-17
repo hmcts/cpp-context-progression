@@ -24,6 +24,11 @@
 						<classifier>raml</classifier>
 					</dependency>
 				</dependencies>
+				<configuration>
+					<generatorProperties>
+						<actionMapping>${cpp.framework.action.mapping.enabled}</actionMapping>
+					</generatorProperties>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
