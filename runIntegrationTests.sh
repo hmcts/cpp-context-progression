@@ -34,7 +34,7 @@ function deleteAndDeployWars {
   sleep 10
 
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.undeployed
-  find . -name "*.war"  -print | xargs cp -t $WILDFLY_DEPLOYMENT_DIR
+  find . -name "*.war" -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
   echo "Copied wars to $WILDFLY_DEPLOYMENT_DIR"
 }
 

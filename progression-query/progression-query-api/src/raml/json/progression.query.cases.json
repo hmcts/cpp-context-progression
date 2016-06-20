@@ -3,7 +3,7 @@
 	[
 	{
 	  "caseProgressionId" : "4daefec6-5f77-4109-82d9-1e60544a6c08",
-	  "courtCentreId":"404",
+	  "courtCentreId":"Liverpool",
 	  "caseId" : "22C22222222",
 	  "version" : "1",
 	  "dateOfSending" : "2016-01-27",
@@ -26,7 +26,7 @@
 	},
 	{
 	  "caseProgressionId" : "4daefec6-5f77-4109-82d9-1e60544a6c05",
-	  "courtCentreId":"404",
+	  "courtCentreId":"Liverpool",
 	  "caseId" : "22C22222222",
 	  "version" : "1",
 	  "dateOfSending" : "2016-01-27",
