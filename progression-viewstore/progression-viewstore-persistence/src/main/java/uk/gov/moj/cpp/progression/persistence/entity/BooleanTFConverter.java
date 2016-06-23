@@ -7,6 +7,9 @@ import javax.persistence.Converter;
 public class BooleanTFConverter implements AttributeConverter<Boolean, String> {
     @Override
     public String convertToDatabaseColumn(Boolean value) {
+        if (value == null) {
+            return null;
+        }
         if (Boolean.TRUE.equals(value)) {
             return "T";
         } else {
