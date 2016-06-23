@@ -131,7 +131,7 @@ public class ProgressionIntegrationTest extends AbstractIT {
 	}
 
 	private Response getCaseProgressionDetail(String uri, String mediaType) throws IOException {
-		return given().spec(reqSpec).and().contentType(mediaType).when().get(uri).then().extract().response();
+		return given().spec(reqSpec).and().accept(mediaType).when().get(uri).then().extract().response();
 	}
 
 	private String getJsonBodyStr(String fileName) throws IOException {
