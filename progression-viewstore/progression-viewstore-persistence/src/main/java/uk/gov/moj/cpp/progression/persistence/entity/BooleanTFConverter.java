@@ -18,6 +18,9 @@ public class BooleanTFConverter implements AttributeConverter<Boolean, String> {
     }
     @Override
     public Boolean convertToEntityAttribute(String value) {
+        if (value == null) {
+            return null;
+        }
         return "T".equals(value);
     }
 }
