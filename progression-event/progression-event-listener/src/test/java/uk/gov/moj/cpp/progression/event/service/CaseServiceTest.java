@@ -8,7 +8,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -39,6 +41,9 @@ import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailReposi
 public class CaseServiceTest {
 
     private static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Mock
     private CaseProgressionDetailRepository repository;
@@ -205,6 +210,16 @@ public class CaseServiceTest {
         verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
+    }
+
+    @Test
+    public void caseAssignedForReviewShouldThrowExceptionTest() throws Exception {
+        final CaseAssignedForReviewUpdated event = mock(CaseAssignedForReviewUpdated.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(null);
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("CaseProgressionDetail not found");
+        service.caseAssignedForReview(event, VERSION);
     }
 
 }
