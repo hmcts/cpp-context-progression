@@ -16,6 +16,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
+import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
@@ -123,7 +125,7 @@ public class CaseServiceTest {
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
 
-        service.indicateAllStatementsServed(event,VERSION);
+        service.indicateAllStatementsServed(event, VERSION);
         verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
@@ -175,6 +177,32 @@ public class CaseServiceTest {
 
         service.addSentenceHearingDate(event, VERSION);
         verify(repository, times(1)).findBy(event.getCaseProgressionId());
+        verify(repository, times(1)).save(entity);
+
+    }
+
+    @Test
+    public void caseToBeAssignedUpdatedTest() {
+        final CaseToBeAssignedUpdated event = mock(CaseToBeAssignedUpdated.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
+
+        service.caseToBeAssigned(event, VERSION);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).save(entity);
+
+    }
+
+    @Test
+    public void caseAssignedForReviewUpdatedTest() {
+        final CaseAssignedForReviewUpdated event = mock(CaseAssignedForReviewUpdated.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
+
+        service.caseAssignedForReview(event, VERSION);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
         verify(repository, times(1)).save(entity);
 
     }

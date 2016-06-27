@@ -5,6 +5,7 @@ import javax.transaction.Transactional;
 
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
+import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
@@ -32,8 +33,8 @@ public class CaseService {
     @Transactional
     public void indicateAllStatementsIdentified(AllStatementsIdentified event, Long version) {
 
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setIsAllStatementsIdentified(Boolean.TRUE);
             caseProgressionDetail.setVersion(version);
@@ -45,8 +46,8 @@ public class CaseService {
 
     @Transactional
     public void preSentenceReportOrdered(PreSentenceReportOrdered event, Long version) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setIsPSROrdered(event.getIsPSROrdered());
             caseProgressionDetail.setVersion(version);
@@ -58,8 +59,8 @@ public class CaseService {
 
     @Transactional
     public void directionIssued(DirectionIssued event, Long version) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setDirectionIssuedOn(event.getDirectionIssuedDate());
@@ -71,8 +72,8 @@ public class CaseService {
 
     @Transactional
     public void indicateAllStatementsServed(AllStatementsServed event, Long version) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setIsAllStatementsServed(Boolean.TRUE);
             caseProgressionDetail.setVersion(version);
@@ -85,8 +86,8 @@ public class CaseService {
     @Transactional
     public void addDefenceIssues(DefenceIssuesAdded event, Long version) {
 
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setDefenceIssue(event.getDefenceIssues());
@@ -99,8 +100,8 @@ public class CaseService {
     @Transactional
     public void addSFRIssues(SfrIssuesAdded event, Long version) {
 
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setSfrIssue(event.getSfrIssues());
@@ -113,8 +114,8 @@ public class CaseService {
     @Transactional
     public void addTrialEstimateDefence(DefenceTrialEstimateAdded event, Long version) {
 
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setTrialEstimateDefence(Long.valueOf(event.getDefenceTrialEstimate()));
@@ -127,8 +128,8 @@ public class CaseService {
     @Transactional
     public void addTrialEstimateProsecution(ProsecutionTrialEstimateAdded event, Long version) {
 
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setTrialEstimateProsecution(Long.valueOf(event.getprosecutionTrialEstimate()));
@@ -139,8 +140,8 @@ public class CaseService {
     }
 
     public void vacatePtpHeaing(PTPHearingVacated event, Long version) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setPtpHearingVacatedDate(event.getPtpHearingVacatedDate());
             caseProgressionDetail.setVersion(version);
@@ -153,8 +154,8 @@ public class CaseService {
     @Transactional
     public void addSendingCommittalHearingInformation(SendingCommittalHearingInformationAdded event, Long version) {
 
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setFromCourtCentre(event.getFromCourtCentre());
@@ -167,8 +168,8 @@ public class CaseService {
 
     @Transactional
     public void addSentenceHearingDate(SentenceHearingDateAdded event, Long version) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setSentenceHearingDate(event.getSentenceHearingDate());
             caseProgressionDetail.setVersion(version);
@@ -180,8 +181,21 @@ public class CaseService {
 
     @Transactional
     public void caseToBeAssigned(CaseToBeAssignedUpdated event, Long version) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setStatus(event.getStatus());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void caseAssignedForReview(CaseAssignedForReviewUpdated event, Long version) {
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setStatus(event.getStatus());

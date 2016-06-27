@@ -1,16 +1,16 @@
 package uk.gov.moj.cpp.progression.command.api;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.command.api.ProgressionCommandApi;
-
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandApiTest {
@@ -107,10 +107,16 @@ public class ProgressionCommandApiTest {
         progressionCommandApi.addSentenceHearingDate(command);
         verify(sender, times(1)).send(command);
     }
-    
+
     @Test
     public void shouldCaseToBeAssigned() throws Exception {
         progressionCommandApi.updateCaseToBeAssigned(command);
+        verify(sender, times(1)).send(command);
+    }
+
+    @Test
+    public void shouldCaseAssignedForReview() throws Exception {
+        progressionCommandApi.updateCaseAssignedForReview(command);
         verify(sender, times(1)).send(command);
     }
 }
