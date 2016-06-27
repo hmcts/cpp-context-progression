@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.progression.command.api;
 
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+
+import javax.inject.Inject;
+
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.inject.Inject;
-
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 
 @ServiceComponent(COMMAND_API)
 public class ProgressionCommandApi {
@@ -83,9 +83,14 @@ public class ProgressionCommandApi {
     public void addSentenceHearingDate(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
-    
+
     @Handles("progression.command.case-to-be-assigned")
     public void updateCaseToBeAssigned(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
+    @Handles("progression.command.case-assigned-for-review")
+    public void updateCaseAssignedForReview(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 }
