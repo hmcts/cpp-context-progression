@@ -145,9 +145,9 @@ public class CaseProgressionDetailServiceTest {
     @Test
     public void shouldReturnCasesForStatus() throws Exception {
 
-        final String status = "COMPLETED,IN_REVIEW";
+        final String status = "COMPLETED,ASSIGNED_FOR_REVIEW";
         final List<CaseStatusEnum> statusList =
-                        Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.IN_REVIEW);
+                        Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
 
         when(caseProgressionDetailRepository.findByStatus(statusList)).thenReturn(Arrays.asList(
                         caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
