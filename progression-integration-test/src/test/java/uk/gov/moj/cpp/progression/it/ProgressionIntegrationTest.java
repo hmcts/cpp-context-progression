@@ -126,7 +126,7 @@ public class ProgressionIntegrationTest extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         waitForResponse(5);
         queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId), "application/vnd.progression.query.caseprogressiondetail+json");
-        assertTrue(queryResponse.getBody().path("status").equals("IN_REVIEW"));
+        assertTrue(queryResponse.getBody().path("status").equals("ASSIGNED_FOR_REVIEW"));
         version = (queryResponse.getBody().path("version"));
     }
 

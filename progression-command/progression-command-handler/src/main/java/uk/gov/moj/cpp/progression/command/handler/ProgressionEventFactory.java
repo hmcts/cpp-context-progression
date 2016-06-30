@@ -166,6 +166,6 @@ public class ProgressionEventFactory {
     public Object createCaseAssignedForReviewUpdated(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
-        return new CaseAssignedForReviewUpdated(caseProgressionId, CaseStatusEnum.IN_REVIEW);
+        return new CaseAssignedForReviewUpdated(caseProgressionId, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
     }
 }
