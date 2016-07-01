@@ -9,7 +9,7 @@
       "type": "integer"
     },
     "version": {
-      "type": "string"
+      "type": "integer"
     }
   },
   "required": [

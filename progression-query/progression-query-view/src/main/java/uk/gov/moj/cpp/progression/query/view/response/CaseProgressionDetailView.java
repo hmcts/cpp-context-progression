@@ -24,7 +24,7 @@ public class CaseProgressionDetailView {
 
     private Boolean isAllStatementsIdentified;
 
-    private String version;
+    private Long version;
 
     private Boolean isAllStatementsServed;
 
@@ -44,11 +44,11 @@ public class CaseProgressionDetailView {
 
     private String status;
 
-    public String getVersion() {
+    public Long getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(Long version) {
         this.version = version;
     }
 

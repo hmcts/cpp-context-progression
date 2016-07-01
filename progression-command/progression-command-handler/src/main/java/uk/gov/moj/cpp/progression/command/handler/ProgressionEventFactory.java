@@ -40,7 +40,6 @@ public class ProgressionEventFactory {
     public static final String FIELD_EVIDENCE_NAME = "evidenceName";
     public static final String FIELD_PLAN_DATE = "planDate";
     public static final String FIELD_SENTENCE_HEARING_DATE = "sentenceHearingDate";
-    public static final Long INITIAL_VERSION = 0L;
 
     public Object createCaseSentToCrownCourt(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
@@ -167,7 +166,8 @@ public class ProgressionEventFactory {
     public Object createCaseAssignedForReviewUpdated(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
-        return new CaseAssignedForReviewUpdated(caseProgressionId, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
+        return new CaseAssignedForReviewUpdated(caseProgressionId,
+                        CaseStatusEnum.ASSIGNED_FOR_REVIEW);
     }
 
     public Object createCaseReadyForSentenceHearing(final JsonEnvelope envelope) {

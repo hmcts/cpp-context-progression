@@ -46,7 +46,7 @@ public class CaseProgressionDetailToViewConverter {
                         caseProgressionDetail.getTrialEstimateProsecution());
         caseProgressionDetailVo.setIsAllStatementsIdentified(
                         caseProgressionDetail.getIsAllStatementsIdentified());
-        caseProgressionDetailVo.setVersion(caseProgressionDetail.getVersion().toString());
+        caseProgressionDetailVo.setVersion(caseProgressionDetail.getVersion());
         caseProgressionDetailVo
                         .setIsAllStatementsServed(caseProgressionDetail.getIsAllStatementsServed());
         caseProgressionDetailVo.setDirectionIssuedOn(caseProgressionDetail.getDirectionIssuedOn());

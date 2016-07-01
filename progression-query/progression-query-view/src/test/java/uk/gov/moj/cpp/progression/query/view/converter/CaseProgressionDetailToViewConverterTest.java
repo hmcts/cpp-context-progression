@@ -10,7 +10,6 @@ import org.junit.Test;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 
 public class CaseProgressionDetailToViewConverterTest {
@@ -61,7 +60,7 @@ public class CaseProgressionDetailToViewConverterTest {
         assertTrue(caseProgressionDetailVO.getDefenceTrialEstimate() == 10l);
         assertTrue(caseProgressionDetailVO.getProsecutionTrialEstimate() == 20l);
         assertTrue(caseProgressionDetailVO.getPtpHearingVacatedDate().equals(now));
-        assertTrue(caseProgressionDetailVO.getVersion().equals("1"));
+        assertTrue(caseProgressionDetailVO.getVersion().equals(1L));
         assertTrue(caseProgressionDetailVO.getIsAllStatementsIdentified().equals(true));
         assertTrue(caseProgressionDetailVO.getIsAllStatementsServed().equals(true));
         assertTrue(caseProgressionDetailVO.getFromCourtCentre().equals(COURT_CENTRE));
