@@ -189,7 +189,7 @@ public class ProgressionCommandHandler {
     }
 
     private Long getVersion(final JsonEnvelope envelope) {
-        return new Long(envelope.payloadAsJsonObject().getString(FIELD_VERSION));
+        return new Long(envelope.payloadAsJsonObject().getInt(FIELD_VERSION));
     }
 
     private UUID getCaseProgressionId(final JsonEnvelope envelope) {

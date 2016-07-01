@@ -17,7 +17,7 @@
     },
     "version": {
       "id": "http://progression-context-url/rest/cases/caseId/version",
-      "type": "string"
+      "type": "integer"
     },
     "dateOfSending": {
       "id": "http://progression-context-url/rest/cases/caseId/dateOfSending",

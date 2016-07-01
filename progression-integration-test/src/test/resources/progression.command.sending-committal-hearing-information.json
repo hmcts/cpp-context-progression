@@ -1,6 +1,6 @@
 {
   "caseProgressionId": "RANDOM_ID",
-  "version": "VERSION",
+  "version": VERSION,
   "fromCourtCentre":"fromCourtCentre",
   "sendingCommittalDate" : "TODAY"
 }

@@ -40,7 +40,7 @@ import uk.gov.justice.services.messaging.JsonObjectMetadata;
 public class ProgressionCommandHandlerTest {
 
     private static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
-    private static final String VERSION = "1";
+    private static final int VERSION = 1;
     private static final UUID INDICATE_STATEMENT_ID = UUID.randomUUID();
     public static final Long FIELD_VERSION_VALUE = 1L;
 
@@ -343,8 +343,7 @@ public class ProgressionCommandHandlerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObject.getString(ProgressionCommandHandler.FIELD_CASE_PROGRESSION_ID))
                         .thenReturn(CASE_PROGRESSION_ID.toString());
-        when(jsonObject.getString(ProgressionCommandHandler.FIELD_VERSION))
-                        .thenReturn(FIELD_VERSION_VALUE.toString());
+        when(jsonObject.getInt(ProgressionCommandHandler.FIELD_VERSION)).thenReturn(1);
         progressionCommandHandler.prepareForSentenceHearing(envelope);
 
         verify(progressionEventFactory).createCaseReadyForSentenceHearing(eq(envelope));
@@ -370,7 +369,7 @@ public class ProgressionCommandHandlerTest {
                                         .add("caseProgressionId", CASE_PROGRESSION_ID.toString())
                                         .add("indicateStatementId",
                                                         INDICATE_STATEMENT_ID.toString())
-                                        .add("version", VERSION.toString()).build();
+                                        .add("version", VERSION).build();
 
         return DefaultJsonEnvelope.envelopeFrom(
                         JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);

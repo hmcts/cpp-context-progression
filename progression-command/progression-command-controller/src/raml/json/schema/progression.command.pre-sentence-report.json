@@ -9,7 +9,7 @@
       "type": "boolean"
     },
     "version": {
-      "type": "string"
+      "type": "integer"
     }
   },
   "required": [
