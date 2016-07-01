@@ -17,7 +17,7 @@
             "type": "string"
           },
           "version": {
-            "type": "string"
+            "type": "integer"
           },
           "dateOfSending": {
             "type": "string"
