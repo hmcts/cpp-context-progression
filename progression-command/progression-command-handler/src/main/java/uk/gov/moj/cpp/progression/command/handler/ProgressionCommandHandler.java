@@ -19,9 +19,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ProgressionCommandHandler {
 
-    private static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
-    private static final String FIELD_VERSION = "version";
-    private static final String FIELD_INDICATE_STATEMENT_ID = "indicateStatementId";
+    public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
+    public static final String FIELD_VERSION = "version";
+    public static final String FIELD_INDICATE_STATEMENT_ID = "indicateStatementId";
 
     @Inject
     EventSource eventSource;
@@ -174,6 +174,15 @@ public class ProgressionCommandHandler {
                     throws EventStreamException {
         Stream<Object> events = streamOf(
                         progressionEventFactory.createCaseAssignedForReviewUpdated(envelope));
+        EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
+        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
+                        getVersion(envelope));
+    }
+
+    @Handles("progression.command.prepare-for-sentence-hearing")
+    public void prepareForSentenceHearing(final JsonEnvelope envelope) throws EventStreamException {
+        Stream<Object> events = streamOf(
+                        progressionEventFactory.createCaseReadyForSentenceHearing(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
         eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
                         getVersion(envelope));

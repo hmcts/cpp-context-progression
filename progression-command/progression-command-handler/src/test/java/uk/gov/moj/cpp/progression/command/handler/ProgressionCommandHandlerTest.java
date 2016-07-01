@@ -3,6 +3,11 @@ package uk.gov.moj.cpp.progression.command.handler;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
@@ -16,6 +21,7 @@ import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -29,12 +35,22 @@ import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
 
+
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandHandlerTest {
 
     private static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
     private static final String VERSION = "1";
     private static final UUID INDICATE_STATEMENT_ID = UUID.randomUUID();
+    public static final Long FIELD_VERSION_VALUE = 1L;
+
+    @Mock
+    private EventStream eventStream;
+    @Mock
+    private JsonEnvelope mappedJsonEnvelope;
+
+    @Mock
+    private JsonObject jsonObject;
 
     @Mock
     JsonEnvelope envelope;
@@ -314,6 +330,35 @@ public class ProgressionCommandHandlerTest {
 
         assertThat(stubEventStream.events, notNullValue());
         assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+    }
+
+
+
+    @Test
+    public void shouldHandleCaseReadyForSentenceHearing() throws Exception {
+        when(progressionEventFactory.createCaseReadyForSentenceHearing(envelope)).thenReturn(event);
+        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(eventStream);
+        when(enveloper.withMetadataFrom(envelope)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(event)).thenReturn(mappedJsonEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(ProgressionCommandHandler.FIELD_CASE_PROGRESSION_ID))
+                        .thenReturn(CASE_PROGRESSION_ID.toString());
+        when(jsonObject.getString(ProgressionCommandHandler.FIELD_VERSION))
+                        .thenReturn(FIELD_VERSION_VALUE.toString());
+        progressionCommandHandler.prepareForSentenceHearing(envelope);
+
+        verify(progressionEventFactory).createCaseReadyForSentenceHearing(eq(envelope));
+        verify(eventSource).getStreamById(any());
+        verify(enveloper).withMetadataFrom(envelope);
+
+        ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
+        verify(eventStream).appendAfter(captor.capture(), eq(FIELD_VERSION_VALUE));
+        assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
+
+        verifyNoMoreInteractions(progressionEventFactory);
+        verifyNoMoreInteractions(eventSource);
+        verifyNoMoreInteractions(enveloper);
+        verifyNoMoreInteractions(eventStream);
     }
 
     private JsonEnvelope createJsonCommand() {

@@ -93,4 +93,9 @@ public class ProgressionCommandApi {
     public void updateCaseAssignedForReview(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+
+    @Handles("progression.command.prepare-for-sentence-hearing")
+    public void prepareForSentenceHearing(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 }

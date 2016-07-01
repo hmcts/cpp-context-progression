@@ -72,6 +72,9 @@ public class CaseProgressionDetail {
     @Column(name = "sentencehearingdate")
     private LocalDate sentenceHearingDate;
 
+    @Column(name = "readyforsentencehearingdate")
+    private LocalDate readyForSentenceHearingDate;
+
     @Enumerated(EnumType.STRING)
     private CaseStatusEnum status;
 
@@ -187,6 +190,14 @@ public class CaseProgressionDetail {
 
     public String getCourtCentreId() {
         return courtCentreId;
+    }
+
+    public LocalDate getReadyForSentenceHearingDate() {
+        return readyForSentenceHearingDate;
+    }
+
+    public void setReadyForSentenceHearingDate(LocalDate readyForSentenceHearingDate) {
+        this.readyForSentenceHearingDate = readyForSentenceHearingDate;
     }
 
     public void setCourtCentreId(String courtCentreId) {
