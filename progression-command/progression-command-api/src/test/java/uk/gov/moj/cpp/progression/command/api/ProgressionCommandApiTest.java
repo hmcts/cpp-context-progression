@@ -119,4 +119,10 @@ public class ProgressionCommandApiTest {
         progressionCommandApi.updateCaseAssignedForReview(command);
         verify(sender, times(1)).send(command);
     }
+
+    @Test
+    public void shouldPrepareForSentenceHearing() throws Exception {
+        progressionCommandApi.prepareForSentenceHearing(command);
+        verify(sender, times(1)).send(command);
+    }
 }

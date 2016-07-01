@@ -10,6 +10,7 @@ import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
@@ -167,5 +168,12 @@ public class ProgressionEventFactory {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         return new CaseAssignedForReviewUpdated(caseProgressionId, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
+    }
+
+    public Object createCaseReadyForSentenceHearing(final JsonEnvelope envelope) {
+        final UUID caseProgressionId = UUID.fromString(
+                        envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
+        return new CaseReadyForSentenceHearing(caseProgressionId, CaseStatusEnum.REVIEW_COMPLETE,
+                        LocalDate.now());
     }
 }

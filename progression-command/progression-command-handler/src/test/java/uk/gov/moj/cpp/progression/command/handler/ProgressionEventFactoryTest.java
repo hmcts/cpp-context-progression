@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
@@ -23,10 +24,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
@@ -43,6 +46,8 @@ import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
 
+    private static final String PROGRESSION_ID = UUID.randomUUID().toString();
+    private static final String CASE_ID = UUID.randomUUID().toString();
     @Mock
     JsonEnvelope envelope;
     @Mock
@@ -54,9 +59,8 @@ public class ProgressionEventFactoryTest {
     @Before
     public void SetUp() {
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObj);
-        when(jsonObj.getString(Mockito.eq("caseProgressionId")))
-                        .thenReturn(UUID.randomUUID().toString());
-        when(jsonObj.getString(Mockito.eq("caseId"))).thenReturn(UUID.randomUUID().toString());
+        when(jsonObj.getString(Mockito.eq("caseProgressionId"))).thenReturn(PROGRESSION_ID);
+        when(jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
         when(jsonObj.getString(Mockito.eq("version"))).thenReturn("1");
         when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
         when(jsonObj.getString(Mockito.eq("indicateStatementId")))
@@ -165,9 +169,21 @@ public class ProgressionEventFactoryTest {
         assertThat(obj, instanceOf(CaseAssignedForReviewUpdated.class));
     }
 
+    @Test
+    public void testCreateCaseReadyForSentenceHearing() {
+        CaseReadyForSentenceHearing obj = (CaseReadyForSentenceHearing) progressionEventFactory
+                        .createCaseReadyForSentenceHearing(envelope);
+
+        assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
+        assertThat(CaseStatusEnum.REVIEW_COMPLETE, equalTo(obj.getStatus()));
+        assertThat(LocalDate.now().toString(),
+                        equalTo(obj.getReadyForSentenceHearingDate().toString()));
+
+    }
+
     private JsonEnvelope createJsonCommand() {
-        final JsonObject metadataAsJsonObject = Json.createObjectBuilder()
-                        .add(ID, UUID.randomUUID().toString()).add(NAME, "SomeName").build();
+        final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, PROGRESSION_ID)
+                        .add(NAME, "SomeName").build();
 
         final JsonObject payloadAsJsonObject = Json.createObjectBuilder().build();
 

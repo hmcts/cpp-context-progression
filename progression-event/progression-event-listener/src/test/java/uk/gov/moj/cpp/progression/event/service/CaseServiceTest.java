@@ -4,6 +4,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
@@ -74,7 +76,8 @@ public class CaseServiceTest {
 
     @Test
     public void addSendingCommittalHearingInformationTest() {
-        final SendingCommittalHearingInformationAdded event = mock(SendingCommittalHearingInformationAdded.class);
+        final SendingCommittalHearingInformationAdded event =
+                        mock(SendingCommittalHearingInformationAdded.class);
         final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
@@ -220,6 +223,31 @@ public class CaseServiceTest {
         exception.expect(RuntimeException.class);
         exception.expectMessage("CaseProgressionDetail not found");
         service.caseAssignedForReview(event, VERSION);
+    }
+
+    @Test
+    public void caseReadyForScentenceHearingUpdatedTest() {
+        final CaseReadyForSentenceHearing event = mock(CaseReadyForSentenceHearing.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
+
+        service.caseReadyForSentenceHearing(event, VERSION);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).save(entity);
+
+    }
+
+
+    @Test
+    public void caseReadyForSentenceHearingShouldThrowExceptionTest() throws Exception {
+        final CaseReadyForSentenceHearing event = mock(CaseReadyForSentenceHearing.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(null);
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("CaseProgressionDetail not found");
+        service.caseReadyForSentenceHearing(event, VERSION);
+        verifyNoMoreInteractions(repository);
     }
 
 }

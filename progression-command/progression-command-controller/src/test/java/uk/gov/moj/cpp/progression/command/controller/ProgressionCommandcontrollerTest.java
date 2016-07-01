@@ -120,4 +120,10 @@ public class ProgressionCommandcontrollerTest {
         progressionCommandcontroller.updateCaseAssignedForReview(command);
         verify(sender, times(1)).send(command);
     }
+
+    @Test
+    public void shouldPrepareForSentenceHearing() throws Exception {
+        progressionCommandcontroller.prepareForSentenceHearing(command);
+        verify(sender, times(1)).send(command);
+    }
 }
