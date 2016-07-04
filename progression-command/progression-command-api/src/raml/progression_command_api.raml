@@ -3,9 +3,11 @@ title: Progression Command API
 version: 1.0
 baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progression
 
+
 /cases/sendcasetocrowncourt:
   post:
-      description:  |
+      description: |
+        Case is sent to a Crown Court for Hearing by a Magistrates Court
         ...
         (mapping):
             requestType: application/vnd.progression.command.send-to-crown-court+json
@@ -25,7 +27,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/addcasetocrowncourt:
   post:
-      description:  |
+      description: |
+        Case is sent to a Crown Court for Hearing by a Magistrates Court,The Case is identified on the Common Platform  and added to appropriate Crown Court 
         ...
         (mapping):
             requestType: application/vnd.progression.command.add-case-to-crown-court+json
@@ -45,8 +48,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/adddefenceissues:
   post:
-      description:  |
-        ...
+      description: |
+        Add Defence Issues to the Case
+        ... 
         (mapping):
             requestType: application/vnd.progression.command.add-defence-issues+json
             name: progression.command.add-defence-issues
@@ -65,7 +69,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/sentencehearingdate :
   post:
-      description:  |
+      description: |
+        Add sentence hearing date.
         ...
         (mapping):
             requestType: application/vnd.progression.command.sentence-hearing-date+json
@@ -85,7 +90,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/addsfrissues:
   post:
-      description:  |
+      description: |
+        Add issues with Streamlined Forensics Report
         ...
         (mapping):
             requestType: application/vnd.progression.command.addsfrissues+json
@@ -106,6 +112,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/sendingcommittalhearinginformation:
   post:
       description:  |
+        sending committal hearing information to be added to the case
         ...
         (mapping):
             requestType: application/vnd.progression.command.sending-committal-hearing-information+json
@@ -126,6 +133,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/defencetrialestimate:
   post:
       description: |
+        Add trail estimate required for hearing given by the defence
         ...
         (mapping):
             requestType: application/vnd.progression.command.defence-trial-estimate+json
@@ -145,7 +153,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 /cases/issuedirection:
   post:
-      description: |
+      description:  |
+        Add direction issued by the judge
         ...
         (mapping):
             requestType: application/vnd.progression.command.issue-direction+json
@@ -166,6 +175,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/presentencereport:
   post:
       description: |
+        Add pre scentence reports
         ...
         (mapping):
             requestType: application/vnd.progression.command.pre-sentence-report+json
@@ -186,6 +196,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/indicatestatement:
   post:
       description: |
+        Add indicatestatement for thee case
         ...
         (mapping):
             requestType: application/vnd.progression.command.indicate-statement+json
@@ -205,7 +216,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 /cases/indicateallstatementsidentified:
   post:
-      description: |
+      description:  |
+        indicate that all statements has been identified 
         ...
         (mapping):
             requestType: application/vnd.progression.command.indicate-all-statements-identified+json
@@ -225,7 +237,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                              
 /cases/indicateallstatementsserved:
   post:
-      description: |
+      description:  |
+        indicate that all statements has been served
         ...
         (mapping):
             requestType: application/vnd.progression.command.indicate-all-statements-served+json
@@ -245,7 +258,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                                          
 /cases/prosecutiontrialestimate:
   post:
-      description: |
+      description:   |
+        Add trail estimate required for hearing given by the prosecution
         ...
         (mapping):
             requestType: application/vnd.progression.command.prosecution-trial-estimate+json
@@ -266,6 +280,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/vacateptphearing:
   post:
       description: |
+        Vacate the booked PTP Hearing
         ...
         (mapping):
             requestType: application/vnd.progression.command.vacate-ptp-hearing+json
@@ -286,6 +301,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/casetobeassigned:
   post:
       description:  |
+        Assign the status Ready for Review which signifies that a case is ready to be assigned to a Judge for Sentencing Hearing Review.
         ...
         (mapping):
             requestType: application/vnd.progression.command.case-to-be-assigned+json
@@ -306,6 +322,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/caseassignedforreview:
   post:
       description:  |
+        Moves a case with a  to status "Assigned for Review " once the case is referred to a named Judge/Judicial Officer
         ...
         (mapping):
             requestType: application/vnd.progression.command.case-assigned-for-review+json
@@ -326,6 +343,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /cases/prepareforsentencehearing:
   post:
       description:  |
+        Marks a  case as Ready for Sentencing when a Judge/Judicial Officer following a SHR, confirms the decision 
         ...
         (mapping):
             requestType: application/vnd.progression.command.prepare-for-sentence-hearing+json

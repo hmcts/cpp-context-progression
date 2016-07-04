@@ -10,6 +10,7 @@ protocols: [ HTTP, HTTPS ]
           type: string
   get:
       description: |
+        Return the case progression details for the case Id.
         ...
         (mapping):
             responseType: application/vnd.progression.query.caseprogressiondetail+json
@@ -30,6 +31,7 @@ protocols: [ HTTP, HTTPS ]
           type: string
   get:
       description: |
+        Timeline (progression date's) for the case progression detail
         ...
         (mapping):
             responseType: application/vnd.progression.query.timeline+json
@@ -50,6 +52,7 @@ protocols: [ HTTP, HTTPS ]
           type: string
   get:
       description: |
+        List of indicatestatements for the case.
         ...
         (mapping):
             responseType: application/vnd.progression.query.indicatestatementsdetails+json
@@ -71,6 +74,7 @@ protocols: [ HTTP, HTTPS ]
           type: string
   get:
       description: |
+        Indicatestatement for the indicatestatementId.
         ...
         (mapping):
             responseType: application/vnd.progression.query.indicatestatementsdetail+json
@@ -88,6 +92,7 @@ protocols: [ HTTP, HTTPS ]
 /cases:
   get:
       description: |
+        List of case progression details
         ...
         (mapping):
             responseType: application/vnd.progression.query.cases+json
