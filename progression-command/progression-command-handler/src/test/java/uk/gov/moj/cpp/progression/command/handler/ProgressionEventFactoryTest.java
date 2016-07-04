@@ -175,7 +175,7 @@ public class ProgressionEventFactoryTest {
                         .createCaseReadyForSentenceHearing(envelope);
 
         assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
-        assertThat(CaseStatusEnum.REVIEW_COMPLETE, equalTo(obj.getStatus()));
+        assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
         assertThat(LocalDate.now().toString(),
                         equalTo(obj.getReadyForSentenceHearingDate().toString()));
 

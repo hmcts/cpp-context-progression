@@ -8,8 +8,8 @@ package uk.gov.moj.cpp.progression.domain.constant;
 public enum CaseStatusEnum {
 
     INCOMPLETE("INCOMPLETE"), READY_FOR_REVIEW("READY_FOR_REVIEW"), ASSIGNED_FOR_REVIEW(
-                    "ASSIGNED_FOR_REVIEW"), REVIEW_COMPLETE(
-                                    "REVIEW_COMPLETE"), COMPLETED("COMPLETED");
+                    "ASSIGNED_FOR_REVIEW"), READY_FOR_SENTENCING_HEARING(
+                                    "READY_FOR_SENTENCING_HEARING"), COMPLETED("COMPLETED");
     // ASSIGNED_FOR_REVIEW is ASSIGNED_TO_JUDGE
     // READY_FOR_REVIEW is TO_BE_ASSIGNED
 
