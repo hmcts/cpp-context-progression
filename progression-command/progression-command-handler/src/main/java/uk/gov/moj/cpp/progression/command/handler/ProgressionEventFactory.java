@@ -173,7 +173,7 @@ public class ProgressionEventFactory {
     public Object createCaseReadyForSentenceHearing(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
-        return new CaseReadyForSentenceHearing(caseProgressionId, CaseStatusEnum.REVIEW_COMPLETE,
+        return new CaseReadyForSentenceHearing(caseProgressionId, CaseStatusEnum.READY_FOR_SENTENCING_HEARING,
                         LocalDate.now());
     }
 }
