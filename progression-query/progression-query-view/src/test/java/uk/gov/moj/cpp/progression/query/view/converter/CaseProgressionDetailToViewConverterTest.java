@@ -20,11 +20,10 @@ public class CaseProgressionDetailToViewConverterTest {
     private static final String SFRISSUE = "streamlined forensics report one";
     private static final String COURT_CENTRE = "liverpool";
 
-
     @Test
     public void getCaseProgressionDetailTest() {
-        CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter =
-                        new CaseProgressionDetailToViewConverter(21);
+        CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter = new CaseProgressionDetailToViewConverter(
+                21);
 
         CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setId(ID);
@@ -44,17 +43,16 @@ public class CaseProgressionDetailToViewConverterTest {
         caseProgressionDetail.setIsPSROrdered(true);
         caseProgressionDetail.setSentenceHearingDate(now);
         caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
+        caseProgressionDetail.setDirectionIssuedOn(now);
 
-        CaseProgressionDetailView caseProgressionDetailVO =
-                        caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
+        CaseProgressionDetailView caseProgressionDetailVO = caseProgressionDetailToVOConverter
+                .convert(caseProgressionDetail);
         assertTrue(caseProgressionDetailVO.getCaseId().equals(CASEID.toString()));
         assertTrue(caseProgressionDetailVO.getCaseProgressionId().equals(ID.toString()));
         assertTrue(caseProgressionDetailVO.getDateOfSending().equals(now));
-        assertTrue((caseProgressionDetailVO
-                        .getNoOfDaysForCMISubmission()) == cmiSubmissionDeadlineDate);
+        assertTrue((caseProgressionDetailVO.getNoOfDaysForCMISubmission()) == cmiSubmissionDeadlineDate);
         assertTrue(caseProgressionDetailVO.getDateCMISubmissionDeadline()
-                        .equals(caseProgressionDetail.getDateOfSending()
-                                        .plusDays(cmiSubmissionDeadlineDate)));
+                .equals(caseProgressionDetail.getDateOfSending().plusDays(cmiSubmissionDeadlineDate)));
         assertTrue(caseProgressionDetailVO.getDefenceIssues().equals(DEFENCEISSUE));
         assertTrue(caseProgressionDetailVO.getSfrIssues().equals(SFRISSUE));
         assertTrue(caseProgressionDetailVO.getDefenceTrialEstimate() == 10l);
@@ -67,16 +65,16 @@ public class CaseProgressionDetailToViewConverterTest {
         assertTrue(caseProgressionDetailVO.getSendingCommittalDate().equals(now));
         assertTrue(caseProgressionDetailVO.getIsPSROrdered().equals(true));
         assertTrue(caseProgressionDetailVO.getSentenceHearingDate().equals(now));
-        assertTrue(caseProgressionDetailVO.getStatus()
-                        .equals(CaseStatusEnum.READY_FOR_REVIEW.toString()));
-        assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate().equals(LocalDateUtils
-                        .addWorkingDays(caseProgressionDetail.getDateOfSending(), 7)));
+        assertTrue(caseProgressionDetailVO.getDirectionIssuedOn().equals(now));
+        assertTrue(caseProgressionDetailVO.getStatus().equals(CaseStatusEnum.READY_FOR_REVIEW.toString()));
+        assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate()
+                .equals(LocalDateUtils.addWorkingDays(caseProgressionDetail.getDateOfSending(), 7)));
 
         caseProgressionDetail.setDateOfSending(null);
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetailVO = caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
-        assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate().equals(LocalDateUtils
-                        .addWorkingDays(caseProgressionDetail.getSendingCommittalDate(), 7)));
+        assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate()
+                .equals(LocalDateUtils.addWorkingDays(caseProgressionDetail.getSendingCommittalDate(), 7)));
     }
 
 }

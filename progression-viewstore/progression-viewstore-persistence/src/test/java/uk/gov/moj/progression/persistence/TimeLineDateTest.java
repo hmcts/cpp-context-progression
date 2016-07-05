@@ -1,4 +1,4 @@
-package uk.gov.moj.progression.view.db.entity;
+package uk.gov.moj.progression.persistence;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;

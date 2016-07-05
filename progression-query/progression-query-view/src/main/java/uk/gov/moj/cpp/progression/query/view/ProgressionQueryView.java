@@ -86,7 +86,7 @@ public class ProgressionQueryView {
             caseProgressionDetail =
                             caseProgressionDetailService.getCaseProgressionDetail(caseId.get());
         } catch (final NoResultException nre) {
-            logger.warn("No CaseProgressionDetail found for caseId: {}", caseId);
+            logger.warn("No CaseProgressionDetail found for caseId: {}", caseId +", " + nre.getMessage());
             return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE)
                             .apply(null);
         }
@@ -105,7 +105,7 @@ public class ProgressionQueryView {
             caseProgressionDetail =
                             caseProgressionDetailService.getCaseProgressionDetail(caseId.get());
         } catch (final NoResultException nre) {
-            logger.warn("No CaseProgressionDetail found for caseId: {}", caseId);
+            logger.warn("No CaseProgressionDetail found for caseId: {}", caseId +", " + nre.getMessage());
             return enveloper.withMetadataFrom(envelope, TIMELINE_RESPONSE).apply(null);
         }
         final List<TimeLineDateView> listTimeLineDateVO =
