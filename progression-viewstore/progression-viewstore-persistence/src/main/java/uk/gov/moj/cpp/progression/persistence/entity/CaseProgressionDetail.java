@@ -154,12 +154,10 @@ public class CaseProgressionDetail {
         this.trialEstimateProsecution = trialEstimateProsecution;
     }
 
-    @Transient
     public List<TimeLineDate> getTimeLine() {
         return timeLine;
     }
 
-    @Transient
     public void setTimeLine(List<TimeLineDate> timeLine) {
         this.timeLine = timeLine;
     }

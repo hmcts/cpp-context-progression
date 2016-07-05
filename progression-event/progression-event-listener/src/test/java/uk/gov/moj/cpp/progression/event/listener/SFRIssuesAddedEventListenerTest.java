@@ -16,7 +16,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
+import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 
 /**
@@ -27,18 +27,18 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 @RunWith(MockitoJUnitRunner.class)
 public class SFRIssuesAddedEventListenerTest {
 
-	@Mock
-	private DefenceIssuesAdded defenceIssuesAdded;
-	
-	@Mock
-	private JsonEnvelope envelope;
-    
+    @Mock
+    private SfrIssuesAdded sfrIssuesAdded;
+
+    @Mock
+    private JsonEnvelope envelope;
+
     @Mock
     private JsonObject payload;
-    
+
     @Mock
     private Metadata metadata;
-    
+
     @Mock
     private JsonObjectToObjectConverter jsonObjectConverter;
 
@@ -46,19 +46,19 @@ public class SFRIssuesAddedEventListenerTest {
     private CaseService service;
 
     @InjectMocks
-    private DefenceIssuesAddedEventListener listener;
+    private SFRIssuesAddedEventListener listener;
 
     @Test
     public void testProcessEvent() throws Exception {
 
-    	when(envelope.payloadAsJsonObject()).thenReturn(payload);
-    	when(envelope.metadata()).thenReturn(metadata);
-    	when(metadata.version()).thenReturn(Optional.of(0l));
-    	when(jsonObjectConverter.convert(payload, DefenceIssuesAdded.class)).thenReturn(defenceIssuesAdded);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(metadata.version()).thenReturn(Optional.of(0l));
+        when(jsonObjectConverter.convert(payload, SfrIssuesAdded.class)).thenReturn(sfrIssuesAdded);
 
         listener.processEvent(envelope);
 
-        verify(service).addDefenceIssues(defenceIssuesAdded, 0l);
+        verify(service).addSFRIssues(sfrIssuesAdded, 0l);
     }
 
 }

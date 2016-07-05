@@ -99,16 +99,13 @@ public class ProgressionQueryViewTest {
     public void shouldHandleProgressionQuery() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId))
-        .thenReturn(caseProgressionDetail);
-        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail))
-        .thenReturn(caseProgressionDetailView);
-        when(enveloper.withMetadataFrom(query,
-                        ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
-        .thenReturn(function);
+        when(casePrgDetailService.getCaseProgressionDetail(caseId)).thenReturn(caseProgressionDetail);
+        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail)).thenReturn(caseProgressionDetailView);
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
+                .thenReturn(function);
 
         when(function.apply(caseProgressionDetailView)).thenReturn(responceJson);
         assertThat(queryView.getCaseProgressionDetails(query), equalTo(responceJson));
@@ -119,14 +116,12 @@ public class ProgressionQueryViewTest {
         final UUID caseId = UUID.randomUUID();
         final String now = LocalDate.now().toString();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId))
-        .thenThrow(new NoResultException());
-        when(enveloper.withMetadataFrom(query,
-                        ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
-        .thenReturn(function);
+        when(casePrgDetailService.getCaseProgressionDetail(caseId)).thenThrow(new NoResultException());
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
+                .thenReturn(function);
 
         when(function.apply(null)).thenReturn(responceJson);
         assertThat(queryView.getCaseProgressionDetails(query), equalTo(responceJson));
@@ -136,17 +131,13 @@ public class ProgressionQueryViewTest {
     public void shouldHandleIndicateStmtQuery() {
         final UUID statementId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_INDICATE_STATEMENT_ID,
-                                        statementId.toString())
-                        .build();
+                .add(ProgressionQueryView.FIELD_INDICATE_STATEMENT_ID, statementId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
         when(indicateStmtDetailService.getIndicateStatementById(statementId))
-        .thenReturn(Optional.of(indicateStatement));
-        when(indicateStatementsDetailToViewConverter.convert(indicateStatement))
-        .thenReturn(indicateStatementView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.INDICATE_STATEMENT_RESPONSE))
-        .thenReturn(function);
+                .thenReturn(Optional.of(indicateStatement));
+        when(indicateStatementsDetailToViewConverter.convert(indicateStatement)).thenReturn(indicateStatementView);
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.INDICATE_STATEMENT_RESPONSE)).thenReturn(function);
 
         when(function.apply(indicateStatementView)).thenReturn(responceJson);
         assertThat(queryView.getIndicatestatementsdetail(query), equalTo(responceJson));
@@ -156,26 +147,20 @@ public class ProgressionQueryViewTest {
     public void shouldHandleProgressionSQuery() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
-        final TimeLineDate timeLineDate = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline,
-                        LocalDate.now(), LocalDate.now(), 2);
+        final TimeLineDate timeLineDate = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline, LocalDate.now(),
+                LocalDate.now(), 2);
         caseProgressionDetail.setTimeLine(Arrays.asList(timeLineDate));
 
-        final JsonArray jsonArray =
-                        Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectTimeline =
-                        Json.createObjectBuilder().add("timeline", jsonArray).build();
+        final JsonArray jsonArray = Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
+        final JsonObject jsonObjectTimeline = Json.createObjectBuilder().add("timeline", jsonArray).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId))
-        .thenReturn(caseProgressionDetail);
-        when(timelineDateToTimeLineDateVOConverter.convert(timeLineDate))
-        .thenReturn(timeLineDateView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE))
-        .thenReturn(function);
-        when(listToJsonArrayConverter.convert(Arrays.asList(timeLineDateView)))
-        .thenReturn(jsonArray);
+        when(casePrgDetailService.getCaseProgressionDetail(caseId)).thenReturn(caseProgressionDetail);
+        when(timelineDateToTimeLineDateVOConverter.convert(timeLineDate)).thenReturn(timeLineDateView);
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE)).thenReturn(function);
+        when(listToJsonArrayConverter.convert(Arrays.asList(timeLineDateView))).thenReturn(jsonArray);
         when(function.apply(jsonObjectTimeline)).thenReturn(responceJson);
         assertThat(queryView.getTimeLineForProgression(query), equalTo(responceJson));
     }
@@ -184,14 +169,11 @@ public class ProgressionQueryViewTest {
     public void shouldHandleProgressionSQueryOnNoResult() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
-
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId))
-        .thenThrow(new NoResultException());
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE))
-        .thenReturn(function);
+        when(casePrgDetailService.getCaseProgressionDetail(caseId)).thenThrow(new NoResultException());
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE)).thenReturn(function);
         when(function.apply(null)).thenReturn(responceJson);
         assertThat(queryView.getTimeLineForProgression(query), equalTo(responceJson));
     }
@@ -200,24 +182,44 @@ public class ProgressionQueryViewTest {
     public void shouldHandleIndicateStmtSQuery() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
-        final JsonArray jsonArray =
-                        Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectindicatestatements =
-                        Json.createObjectBuilder().add("indicatestatements", jsonArray).build();
+        final JsonArray jsonArray = Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
+        final JsonObject jsonObjectindicatestatements = Json.createObjectBuilder().add("indicatestatements", jsonArray)
+                .build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(indicateStmtDetailService.getIndicateStatements(caseId))
-        .thenReturn(Arrays.asList(indicateStatement));
-        when(indicateStatementsDetailToViewConverter.convert(indicateStatement))
-        .thenReturn(indicateStatementView);
-        when(enveloper.withMetadataFrom(query,
-                        ProgressionQueryView.INDICATE_STATEMENT_RESPONSE_LIST))
-        .thenReturn(function);
-        when(listToJsonArrayConverter.convert(Arrays.asList(indicateStatementView)))
-        .thenReturn(jsonArray);
+        when(indicateStmtDetailService.getIndicateStatements(caseId)).thenReturn(Arrays.asList(indicateStatement));
+        when(indicateStatementsDetailToViewConverter.convert(indicateStatement)).thenReturn(indicateStatementView);
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.INDICATE_STATEMENT_RESPONSE_LIST))
+                .thenReturn(function);
+        when(listToJsonArrayConverter.convert(Arrays.asList(indicateStatementView))).thenReturn(jsonArray);
         when(function.apply(jsonObjectindicatestatements)).thenReturn(responceJson);
         assertThat(queryView.getIndicatestatementsdetails(query), equalTo(responceJson));
+    }
+
+    @Test
+    public void shouldHandleGetCasesQuery() {
+        Optional<String> status = Optional.ofNullable("READY_FOR_REVIEW");
+        final JsonObject jsonObject = Json.createObjectBuilder().add(ProgressionQueryView.FIELD_STATUS, status.get())
+                .build();
+
+        final JsonArray jsonArray = Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
+        final JsonObject jsonObjectcases = Json.createObjectBuilder().add("cases", jsonArray).build();
+
+        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+        final TimeLineDate timeLineDate = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline, LocalDate.now(),
+                LocalDate.now(), 2);
+        caseProgressionDetail.setTimeLine(Arrays.asList(timeLineDate));
+
+        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(casePrgDetailService.getCases(Optional.ofNullable("READY_FOR_REVIEW")))
+                .thenReturn(Arrays.asList(caseProgressionDetail));
+        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail)).thenReturn(caseProgressionDetailView);
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASES_RESPONSE_LIST)).thenReturn(function);
+
+        when(listToJsonArrayConverter.convert(Arrays.asList(caseProgressionDetailView))).thenReturn(jsonArray);
+        when(function.apply(jsonObjectcases)).thenReturn(responceJson);
+        assertThat(queryView.getCases(query), equalTo(responceJson));
     }
 }

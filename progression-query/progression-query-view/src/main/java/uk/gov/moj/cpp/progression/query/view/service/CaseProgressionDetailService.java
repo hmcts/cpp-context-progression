@@ -39,26 +39,26 @@ public class CaseProgressionDetailService {
         }
         final LocalDate dateNow = LocalDate.now();
 
-        final TimeLineDate dateOfSending = new TimeLineDate(TimeLineDateType.dateOfSending, cpd.getDateOfSending(), dateNow,
-                        0);
+        final TimeLineDate dateOfSending = new TimeLineDate(TimeLineDateType.dateOfSending, cpd.getDateOfSending(),
+                dateNow, 0);
 
         final TimeLineDate cmiSubmissionDeadline = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline,
-                        cpd.getDateOfSending(), dateNow,
-                        ProgressionDataConstant.cmiSubmissionDeadlineDateDaysFromDateOfSending);
+                cpd.getDateOfSending(), dateNow,
+                ProgressionDataConstant.cmiSubmissionDeadlineDateDaysFromDateOfSending);
 
         final TimeLineDate serviceOfProsecutionCaseForBailCases = new TimeLineDate(
-                        TimeLineDateType.serviceOfProsecutionCaseForBailCases, cpd.getDateOfSending(), dateNow,
-                        ProgressionDataConstant.serviceOfProsecutionCaseForBailCasesDaysFromDateOfSending);
+                TimeLineDateType.serviceOfProsecutionCaseForBailCases, cpd.getDateOfSending(), dateNow,
+                ProgressionDataConstant.serviceOfProsecutionCaseForBailCasesDaysFromDateOfSending);
 
         final TimeLineDate defenceCaseStatement = new TimeLineDate(TimeLineDateType.defenceCaseStatement,
-                        cpd.getDateOfSending(), dateNow, ProgressionDataConstant.defenceCaseStatementDaysFromDateOfSending);
+                cpd.getDateOfSending(), dateNow, ProgressionDataConstant.defenceCaseStatementDaysFromDateOfSending);
 
-        final TimeLineDate kpiDateForCommencementOfTrial = new TimeLineDate(TimeLineDateType.kpiDateForCommencementOfTrial,
-                        cpd.getDateOfSending(), dateNow,
-                        ProgressionDataConstant.kpiDateForCommencementOfTrialDaysFromDateOfSending);
+        final TimeLineDate kpiDateForCommencementOfTrial = new TimeLineDate(
+                TimeLineDateType.kpiDateForCommencementOfTrial, cpd.getDateOfSending(), dateNow,
+                ProgressionDataConstant.kpiDateForCommencementOfTrialDaysFromDateOfSending);
 
         return Arrays.asList(dateOfSending, cmiSubmissionDeadline, serviceOfProsecutionCaseForBailCases,
-                        defenceCaseStatement, kpiDateForCommencementOfTrial);
+                defenceCaseStatement, kpiDateForCommencementOfTrial);
     }
 
     @Transactional
@@ -73,7 +73,7 @@ public class CaseProgressionDetailService {
             caseProgressionDetails = caseProgressionDetailRepo.findOpenStatus();
 
         }
-        caseProgressionDetails.stream().forEach((caseProgressionDetail) -> {
+        caseProgressionDetails.stream().forEach(caseProgressionDetail -> {
             caseProgressionDetail.setTimeLine(getTimeline(caseProgressionDetail));
         });
         return caseProgressionDetails;

@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import uk.gov.moj.cpp.progression.domain.constant.TimeLineDateType;
 import uk.gov.moj.cpp.progression.persistence.entity.TimeLineDate;
-import uk.gov.moj.cpp.progression.query.view.converter.TimelineDateToTimeLineDateViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.TimeLineDateView;
 
 public class TimelineDateToTimeLineDateViewConverterTest {
@@ -27,7 +26,8 @@ public class TimelineDateToTimeLineDateViewConverterTest {
         LocalDate startDate = LocalDate.now().minusDays(5);
         LocalDate referenceDate = LocalDate.now();
         int daysFromStartDate = 10;
-        TimeLineDate tld = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline, startDate, referenceDate, daysFromStartDate);
+        TimeLineDate tld = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline, startDate, referenceDate,
+                daysFromStartDate);
 
         TimeLineDateView tldvo = converter.convert(tld);
 
@@ -35,6 +35,7 @@ public class TimelineDateToTimeLineDateViewConverterTest {
         assertThat(tldvo.getDaysToDeadline(), equalTo(tld.getDaysToDeadline()));
         assertThat(tldvo.getDeadlineDate(), equalTo(tld.getDeadLineDate()));
         assertThat(tldvo.getStartDate(), equalTo(tld.getStartDate()));
+        assertThat(tldvo.getType(), equalTo(tld.getType().toString()));
     }
 
 }

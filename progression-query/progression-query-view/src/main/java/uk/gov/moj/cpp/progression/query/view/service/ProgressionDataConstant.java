@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
 public class ProgressionDataConstant {
+
+    private ProgressionDataConstant() {
+
+    }
     public static final int cmiSubmissionDeadlineDateDaysFromDateOfSending = 21;
     public static final int serviceOfProsecutionCaseForBailCasesDaysFromDateOfSending = 70;
     public static final int defenceCaseStatementDaysFromDateOfSending = 98;
