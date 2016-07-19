@@ -47,19 +47,20 @@ public class CaseProgressionDetailRepositoryTest {
     @Before
     public void setup() {
         now = LocalDate.now();
-        CaseProgressionDetail caseProgressionDetailOne = createCaseProgressionDetail(ID_ONE, CASE_ID_ONE,
-                CaseStatusEnum.INCOMPLETE);
+        CaseProgressionDetail caseProgressionDetailOne =
+                        createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
         repository.save(caseProgressionDetailOne);
 
-        CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(ID_TWO, CASE_ID_TWO,
-                CaseStatusEnum.READY_FOR_REVIEW);
+        CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(ID_TWO,
+                        CASE_ID_TWO, CaseStatusEnum.READY_FOR_REVIEW);
         caseProgressionDetails.add(caseProgressionDetailTwo);
         repository.save(caseProgressionDetailTwo);
 
     }
 
-    private CaseProgressionDetail createCaseProgressionDetail(UUID id, UUID caseId, CaseStatusEnum status) {
+    private CaseProgressionDetail createCaseProgressionDetail(UUID id, UUID caseId,
+                    CaseStatusEnum status) {
         CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
         caseProgressionDetail.setId(id);
@@ -73,7 +74,7 @@ public class CaseProgressionDetailRepositoryTest {
         caseProgressionDetail.setIsAllStatementsIdentified(true);
         caseProgressionDetail.setIsAllStatementsServed(true);
         caseProgressionDetail.setIsPSROrdered(true);
-        caseProgressionDetail.setReadyForSentenceHearingDate(now.plusDays(7));
+        caseProgressionDetail.setReadyForSentenceHearingDate(now.plusDays(7).atStartOfDay());
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetail.setSentenceHearingDate(now);
         caseProgressionDetail.setSfrIssue(ISSUE);
@@ -85,12 +86,13 @@ public class CaseProgressionDetailRepositoryTest {
 
     @After
     public void teardown() {
-        caseProgressionDetails.forEach(
-                caseProgressionDetail -> repository.attachAndRemove(repository.findBy(caseProgressionDetail.getId())));
+        caseProgressionDetails.forEach(caseProgressionDetail -> repository
+                        .attachAndRemove(repository.findBy(caseProgressionDetail.getId())));
     }
 
     private List<TimeLineDate> getTimeLine() {
-        final TimeLineDate timeLineDate = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline, now, now, 2);
+        final TimeLineDate timeLineDate =
+                        new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline, now, now, 2);
         return Arrays.asList(timeLineDate);
     }
 
@@ -103,7 +105,8 @@ public class CaseProgressionDetailRepositoryTest {
         assertThat(result.getTimeLine().get(0).getDaysToDeadline(), equalTo(2l));
         assertThat(result.getTimeLine().get(0).getDeadLineDate(), equalTo(now.plusDays(2)));
         assertThat(result.getTimeLine().get(0).getStartDate(), equalTo(now));
-        assertThat(result.getTimeLine().get(0).getType(), equalTo(TimeLineDateType.cmiSubmissionDeadline));
+        assertThat(result.getTimeLine().get(0).getType(),
+                        equalTo(TimeLineDateType.cmiSubmissionDeadline));
         assertThat(result.getDateOfSending(), equalTo(now));
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
         assertThat(result.getPtpHearingVacatedDate(), equalTo(now));
@@ -114,7 +117,8 @@ public class CaseProgressionDetailRepositoryTest {
         assertThat(result.getIsAllStatementsIdentified(), equalTo(true));
         assertThat(result.getIsAllStatementsServed(), equalTo(true));
         assertThat(result.getIsPSROrdered(), equalTo(true));
-        assertThat(result.getReadyForSentenceHearingDate(), equalTo(now.plusDays(7)));
+        assertThat(result.getReadyForSentenceHearingDate(),
+                        equalTo(now.plusDays(7).atStartOfDay()));
         assertThat(result.getSendingCommittalDate(), equalTo(now));
         assertThat(result.getSentenceHearingDate(), equalTo(now));
         assertThat(result.getSfrIssue(), equalTo(ISSUE));
@@ -134,7 +138,8 @@ public class CaseProgressionDetailRepositoryTest {
 
     @Test
     public void shouldFindByStatus() throws Exception {
-        List<CaseProgressionDetail> results = repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));
+        List<CaseProgressionDetail> results =
+                        repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));
         assertThat(results.size(), equalTo(1));
         CaseProgressionDetail result = results.get(0);
         assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));

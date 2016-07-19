@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,7 +74,7 @@ public class CaseProgressionDetail {
     private LocalDate sentenceHearingDate;
 
     @Column(name = "readyforsentencehearingdate")
-    private LocalDate readyForSentenceHearingDate;
+    private LocalDateTime readyForSentenceHearingDate;
 
     @Enumerated(EnumType.STRING)
     private CaseStatusEnum status;
@@ -190,11 +191,11 @@ public class CaseProgressionDetail {
         return courtCentreId;
     }
 
-    public LocalDate getReadyForSentenceHearingDate() {
+    public LocalDateTime getReadyForSentenceHearingDate() {
         return readyForSentenceHearingDate;
     }
 
-    public void setReadyForSentenceHearingDate(LocalDate readyForSentenceHearingDate) {
+    public void setReadyForSentenceHearingDate(LocalDateTime readyForSentenceHearingDate) {
         this.readyForSentenceHearingDate = readyForSentenceHearingDate;
     }
 

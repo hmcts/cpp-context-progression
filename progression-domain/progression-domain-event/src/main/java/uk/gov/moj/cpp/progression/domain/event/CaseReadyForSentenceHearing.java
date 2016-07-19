@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -17,17 +17,17 @@ public class CaseReadyForSentenceHearing {
 
     private CaseStatusEnum status;
 
-    private LocalDate readyForSentenceHearingDate;
+    private LocalDateTime readyForSentenceHearingDate;
 
     public CaseReadyForSentenceHearing(UUID caseProgressionId, CaseStatusEnum status,
-                    LocalDate readyForSentenceHearingDate) {
+                    LocalDateTime readyForSentenceHearingDate) {
         super();
         this.caseProgressionId = caseProgressionId;
         this.status = status;
         this.readyForSentenceHearingDate = readyForSentenceHearingDate;
     }
 
-    public LocalDate getReadyForSentenceHearingDate() {
+    public LocalDateTime getReadyForSentenceHearingDate() {
         return readyForSentenceHearingDate;
     }
 

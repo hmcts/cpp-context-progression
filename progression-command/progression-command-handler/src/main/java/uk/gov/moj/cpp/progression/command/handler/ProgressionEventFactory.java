@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command.handler;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -173,7 +174,7 @@ public class ProgressionEventFactory {
     public Object createCaseReadyForSentenceHearing(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
-        return new CaseReadyForSentenceHearing(caseProgressionId, CaseStatusEnum.READY_FOR_SENTENCING_HEARING,
-                        LocalDate.now());
+        return new CaseReadyForSentenceHearing(caseProgressionId,
+                        CaseStatusEnum.READY_FOR_SENTENCING_HEARING, LocalDateTime.now());
     }
 }
