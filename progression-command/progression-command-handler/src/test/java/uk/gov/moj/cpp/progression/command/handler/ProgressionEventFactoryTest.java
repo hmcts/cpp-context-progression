@@ -8,6 +8,7 @@ import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -176,8 +177,8 @@ public class ProgressionEventFactoryTest {
 
         assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
         assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
-        assertThat(LocalDate.now().toString(),
-                        equalTo(obj.getReadyForSentenceHearingDate().toString()));
+        assertThat(LocalDateTime.now().toLocalDate(),
+                        equalTo(obj.getReadyForSentenceHearingDate().toLocalDate()));
 
     }
 
