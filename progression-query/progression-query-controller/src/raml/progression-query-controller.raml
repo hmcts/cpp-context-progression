@@ -105,3 +105,24 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.cases+json:
                     example:  !include json/progression.query.cases.json
                     schema:  !include json/schema/progression.query.cases.json
+
+/defendantprogression/{defendantId}:
+  uriParameters:
+        defendantId:
+          description: ID of defendant
+          type: string
+  get:
+      description: |
+        Return the defendant progression details for the defendant Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.defendant+json
+            name: progression.query.defendant
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.defendant+json:
+                    example:  !include json/progression.query.defendant.json
+                    schema:  !include json/schema/progression.query.defendant.json

@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "defendantProgressionId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "additionalInformation": {
+      "type": "object",
+      "properties": {
+        "probation": {
+          "type": "object",
+          "properties": {
+            "preSentenceReport": {
+              "type": "object",
+              "properties": {
+                "provideGuidance": {
+                  "type": "string"
+                },
+                "drugAssessment": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "dangerousnessAssessment": {
+              "type": "boolean"
+            }
+          }
+        },
+        "defence": {
+          "type": "object",
+          "properties": {
+            "statementOfMeans": {
+              "type": "object",
+              "properties": {
+                "details": {
+                  "type": "string"
+                }
+              }
+            },
+            "medicalDocumentation": {
+              "type": "object",
+              "properties": {
+                "details": {
+                  "type": "string"
+                }
+              }
+            },
+            "others": {
+              "type": "object",
+              "properties": {
+                "details": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "prosecution": {
+          "type": "object",
+          "properties": {
+            "ancillaryOrders": {
+              "type": "object",
+              "properties": {
+                "details": {
+                  "type": "string"
+                }
+              }
+            },
+            "others": {
+              "type": "object",
+              "properties": {
+                "details": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "defendantProgressionId",
+    "defendantId"
+  ]
+}
