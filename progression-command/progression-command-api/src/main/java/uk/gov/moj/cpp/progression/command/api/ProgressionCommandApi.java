@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.progression.command.api;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 
-import javax.inject.Inject;
-
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import javax.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class ProgressionCommandApi {
@@ -96,6 +96,11 @@ public class ProgressionCommandApi {
 
     @Handles("progression.command.prepare-for-sentence-hearing")
     public void prepareForSentenceHearing(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
+    @Handles("progression.command.defendant")
+    public void addDefendant(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 }

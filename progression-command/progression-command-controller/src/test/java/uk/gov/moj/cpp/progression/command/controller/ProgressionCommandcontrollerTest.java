@@ -126,4 +126,10 @@ public class ProgressionCommandcontrollerTest {
         progressionCommandcontroller.prepareForSentenceHearing(command);
         verify(sender, times(1)).send(command);
     }
+
+    @Test
+    public void shouldAddDefendant() throws Exception {
+        progressionCommandcontroller.addDefendant(command);
+        verify(sender, times(1)).send(command);
+    }
 }
