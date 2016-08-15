@@ -2,29 +2,27 @@ package uk.gov.moj.cpp.progression.command.handler;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import static uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand.AdditionalInformationCommandBuilder.anAdditionalInformationCommand;
+import static uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand.AncillaryOrdersCommandBuilder.anAncillaryOrdersCommandAdded;
+import static uk.gov.moj.cpp.progression.command.defendant.DefenceCommand.DefenceCommandBuilder.aDefenceCommand;
+import static uk.gov.moj.cpp.progression.command.defendant.DefendantCommand.DefendantCommandBuilder.aDefendantCommand;
+import static uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand.MedicalDocumentationCommandBuilder.aMedicalDocumentationCommand;
+import static uk.gov.moj.cpp.progression.command.defendant.ProbationCommand.ProbationCommandBuilder.aProbationCommand;
+import static uk.gov.moj.cpp.progression.command.defendant.ProsecutionCommand.ProsecutionCommandBuilder.aProsecutionCommand;
 
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
+import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
+import uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand;
+import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
+import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
+import uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand;
+import uk.gov.moj.cpp.progression.command.handler.matchers.DefendantEventMatcher;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
@@ -43,6 +41,26 @@ import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
@@ -65,12 +83,12 @@ public class ProgressionEventFactoryTest {
         when(jsonObj.getString(Mockito.eq("version"))).thenReturn("1");
         when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
         when(jsonObj.getString(Mockito.eq("indicateStatementId")))
-                        .thenReturn(UUID.randomUUID().toString());
+                .thenReturn(UUID.randomUUID().toString());
         when(jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sendingCommittalDate")))
-                        .thenReturn(LocalDate.now().toString());
+                .thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                        .thenReturn(LocalDate.now().toString());
+                .thenReturn(LocalDate.now().toString());
     }
 
     @Test
@@ -100,7 +118,7 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
         Object obj = progressionEventFactory
-                        .createSendingCommittalHearingInformationAdded(envelope);
+                .createSendingCommittalHearingInformationAdded(envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
     }
 
@@ -173,23 +191,80 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateCaseReadyForSentenceHearing() {
         CaseReadyForSentenceHearing obj = (CaseReadyForSentenceHearing) progressionEventFactory
-                        .createCaseReadyForSentenceHearing(envelope);
+                .createCaseReadyForSentenceHearing(envelope);
 
         assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
         assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
         assertThat(LocalDateTime.now().toLocalDate(),
-                        equalTo(obj.getReadyForSentenceHearingDate().toLocalDate()));
+                equalTo(obj.getReadyForSentenceHearingDate().toLocalDate()));
 
+    }
+
+    @Test
+    @Ignore //TODO fix it
+    public void shouldAddDefendantEvent() {
+        // given
+        UUID defendantId = randomUUID();
+        UUID defendantProgressionId = randomUUID();
+        MedicalDocumentationCommand medicalDocumentation = aMedicalDocumentationCommand()
+                .details(randomString())
+                .build();
+        DefenceCommand defence = aDefenceCommand()
+                .medicalDocumentation(medicalDocumentation)
+                .build();
+        AncillaryOrdersCommand ancillaryOrders = anAncillaryOrdersCommandAdded()
+                .details(randomString())
+                .build();
+        AdditionalInformationCommand additionalInformation = anAdditionalInformationCommand()
+                .defence(defence)
+                .probation(aProbationCommand()
+                        .dangerousnessAssessment(randomBoolean())
+                        .build())
+                .prosecution(aProsecutionCommand()
+                        .ancillaryOrders(ancillaryOrders)
+                        .build())
+                .build();
+        DefendantCommand defendantCommand = aDefendantCommand()
+                .defendantId(defendantId)
+                .defendantProgressionId(defendantProgressionId)
+                .additionalInformation(additionalInformation)
+                .build();
+
+        // when
+        DefendantEvent defendantEvent = (DefendantEvent) progressionEventFactory.addDefendantEvent(defendantCommand);
+
+        // then
+        assertThat(defendantEvent, sameAs(defendantCommand));
+    }
+
+    private Matcher<DefendantEvent> sameAs(final DefendantCommand defendantCommand) {
+        return new DefendantEventMatcher(defendantCommand);
+    }
+
+    private String randomString() {
+        return RandomStringUtils.randomAlphanumeric(5);
+    }
+
+    private LocalDate randomDate() {
+        return LocalDate.now();
+    }
+
+    private Boolean randomBoolean() {
+        return new Random().nextBoolean();
+    }
+
+    private UUID randomUUID() {
+        return UUID.randomUUID();
     }
 
     private JsonEnvelope createJsonCommand() {
         final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, PROGRESSION_ID)
-                        .add(NAME, "SomeName").build();
+                .add(NAME, "SomeName").build();
 
         final JsonObject payloadAsJsonObject = Json.createObjectBuilder().build();
 
         return DefaultJsonEnvelope.envelopeFrom(
-                        JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);
+                JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);
 
     }
 }

@@ -97,4 +97,9 @@ public class ProgressionCommandController {
     public void prepareForSentenceHearing(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+
+    @Handles("progression.command.defendant")
+    public void addDefendant(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 }

@@ -1,16 +1,30 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
+
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
+import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 
 import java.util.UUID;
 import java.util.function.Function;
@@ -27,21 +41,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.eventsourcing.source.core.EventSource;
-import uk.gov.justice.services.eventsourcing.source.core.EventStream;
-import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandHandlerTest {
 
-    private static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
+    private static final UUID CASE_PROGRESSION_ID = randomUUID();
     private static final int VERSION = 1;
-    private static final UUID INDICATE_STATEMENT_ID = UUID.randomUUID();
+    private static final UUID INDICATE_STATEMENT_ID = randomUUID();
     public static final Long FIELD_VERSION_VALUE = 1L;
 
     @Mock
@@ -72,6 +78,9 @@ public class ProgressionCommandHandlerTest {
 
     @Mock
     ProgressionEventFactory progressionEventFactory;
+
+    @Mock
+    JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Test
     public void shouldHandlerSendCaseToCrownCourtCommand() throws Exception {
@@ -148,7 +157,7 @@ public class ProgressionCommandHandlerTest {
         final StubEventStream stubEventStream = new StubEventStream();
 
         when(progressionEventFactory.createSendingCommittalHearingInformationAdded(command))
-                        .thenReturn(event);
+                .thenReturn(event);
         when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(event)).thenReturn(envelope);
         when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
@@ -183,7 +192,7 @@ public class ProgressionCommandHandlerTest {
         final JsonEnvelope command = createJsonCommand();
         final StubEventStream stubEventStream = new StubEventStream();
         when(progressionEventFactory.createProsecutionTrialEstimateAdded(command))
-                        .thenReturn(event);
+                .thenReturn(event);
         when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(event)).thenReturn(envelope);
         when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
@@ -333,7 +342,6 @@ public class ProgressionCommandHandlerTest {
     }
 
 
-
     @Test
     public void shouldHandleCaseReadyForSentenceHearing() throws Exception {
         when(progressionEventFactory.createCaseReadyForSentenceHearing(envelope)).thenReturn(event);
@@ -342,7 +350,7 @@ public class ProgressionCommandHandlerTest {
         when(enveloperFunction.apply(event)).thenReturn(mappedJsonEnvelope);
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObject.getString(ProgressionCommandHandler.FIELD_CASE_PROGRESSION_ID))
-                        .thenReturn(CASE_PROGRESSION_ID.toString());
+                .thenReturn(CASE_PROGRESSION_ID.toString());
         when(jsonObject.getInt(ProgressionCommandHandler.FIELD_VERSION)).thenReturn(1);
         progressionCommandHandler.prepareForSentenceHearing(envelope);
 
@@ -358,6 +366,39 @@ public class ProgressionCommandHandlerTest {
         verifyNoMoreInteractions(eventSource);
         verifyNoMoreInteractions(enveloper);
         verifyNoMoreInteractions(eventStream);
+    }
+
+    @Test
+    public void shouldHandleDefendantEvent() throws Exception {
+        UUID ID = UUID.randomUUID();
+        given(envelope.payloadAsJsonObject()).willReturn(jsonObject);
+        DefendantCommand defendant = mock(DefendantCommand.class);
+        given(jsonObjectToObjectConverter.convert(jsonObject, DefendantCommand.class)).willReturn(defendant);
+        given(defendant.getDefendantProgressionId()).willReturn(ID);
+        given(progressionEventFactory.addDefendantEvent(defendant)).willReturn(event);
+        given(eventSource.getStreamById(ID)).willReturn(eventStream);
+        given(enveloper.withMetadataFrom(envelope)).willReturn(enveloperFunction);
+        given(enveloperFunction.apply(event)).willReturn(mappedJsonEnvelope);
+
+        // when
+        progressionCommandHandler.addDefendant(envelope);
+
+        verify(progressionEventFactory).addDefendantEvent(eq(defendant));
+        verify(eventSource).getStreamById(any());
+        verify(enveloper).withMetadataFrom(envelope);
+
+        ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
+        verify(eventStream).append(captor.capture());
+        assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
+
+        verifyNoMoreInteractions(progressionEventFactory);
+        verifyNoMoreInteractions(eventSource);
+        verifyNoMoreInteractions(enveloper);
+        verifyNoMoreInteractions(eventStream);
+    }
+
+    private String randomString() {
+        return randomAlphabetic(10);
     }
 
     private JsonEnvelope createJsonCommand() {
