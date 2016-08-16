@@ -108,8 +108,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createPreSentenceReportOrdered(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.indicate-statement")
@@ -156,8 +155,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createSentenceHearingDateAdded(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.case-to-be-assigned")
