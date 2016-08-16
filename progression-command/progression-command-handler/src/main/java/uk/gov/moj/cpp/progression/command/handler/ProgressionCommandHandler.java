@@ -53,16 +53,14 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createDefenceIssuesAdded(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.addsfrissues")
     public void addSfrIssues(final JsonEnvelope envelope) throws EventStreamException {
         Stream<Object> events = streamOf(progressionEventFactory.createSfrIssuesAdded(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
 
     }
 
@@ -72,8 +70,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events = streamOf(progressionEventFactory
                         .createSendingCommittalHearingInformationAdded(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.defence-trial-estimate")
@@ -81,8 +78,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createDefenceTrialEstimateAdded(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.prosecution-trial-estimate")
@@ -91,16 +87,14 @@ public class ProgressionCommandHandler {
         Stream<Object> events = streamOf(
                         progressionEventFactory.createProsecutionTrialEstimateAdded(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.issue-direction")
     public void issueDirection(final JsonEnvelope envelope) throws EventStreamException {
         Stream<Object> events = streamOf(progressionEventFactory.createDirectionIssued(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.pre-sentence-report")
@@ -128,8 +122,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createAllStatementsIdentified(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.indicate-all-statements-served")
@@ -138,16 +131,14 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createAllStatementsServed(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.vacate-ptp-hearing")
     public void vacatePTPHearing(final JsonEnvelope envelope) throws EventStreamException {
         Stream<Object> events = streamOf(progressionEventFactory.createPTPHearingVacated(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.sentence-hearing-date")
@@ -163,8 +154,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events =
                         streamOf(progressionEventFactory.createCaseToBeAssignedUpdated(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.case-assigned-for-review")
@@ -173,8 +163,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events = streamOf(
                         progressionEventFactory.createCaseAssignedForReviewUpdated(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     @Handles("progression.command.prepare-for-sentence-hearing")
@@ -182,8 +171,7 @@ public class ProgressionCommandHandler {
         Stream<Object> events = streamOf(
                         progressionEventFactory.createCaseReadyForSentenceHearing(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-        eventStream.appendAfter(events.map(enveloper.withMetadataFrom(envelope)),
-                        getVersion(envelope));
+        eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
     private Long getVersion(final JsonEnvelope envelope) {

@@ -1,0 +1,32 @@
+{
+  "sentenceHearingReviewDecision": false,
+  "sentenceHearingReviewDecisionDateTime": "2016-01-01 20:12",
+  "additionalInformation": {
+    "probation": {
+      "preSentenceReport": {
+        "provideGuidance": "guidance",
+        "drugAssessment": true
+      },
+      "dangerousnessAssessment": true
+    },
+    "defence": {
+      "statementOfMeans": {
+        "details": "meansDetails"
+      },
+      "medicalDocumentation": {
+        "details": "medicalDetails"
+      },
+      "others": {
+        "details": "otherDetails"
+      }
+    },
+    "prosecution": {
+      "ancillaryOrders": {
+        "details": "ancillaryOrdersDetails"
+      },
+      "others": {
+        "details": "otherDetails"
+      }
+    }
+  }
+}
