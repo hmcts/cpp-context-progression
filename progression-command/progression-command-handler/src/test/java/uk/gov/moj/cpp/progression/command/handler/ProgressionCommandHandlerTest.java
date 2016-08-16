@@ -351,7 +351,7 @@ public class ProgressionCommandHandlerTest {
         verify(enveloper).withMetadataFrom(envelope);
 
         ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
-        verify(eventStream).appendAfter(captor.capture(), eq(FIELD_VERSION_VALUE));
+        verify(eventStream).append(captor.capture());
         assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
 
         verifyNoMoreInteractions(progressionEventFactory);
