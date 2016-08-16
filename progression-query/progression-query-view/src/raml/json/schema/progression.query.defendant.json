@@ -2,15 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "defendantProgressionId": {
-      "type": "string"
-    },
-    "caseId": {
-      "type": "string"
-    },
-    "defendantId": {
-      "type": "string"
-    },
     "sentenceHearingReviewDecision": {
       "type": "boolean"
     },
@@ -93,9 +84,6 @@
     }
   },
   "required": [
-    "defendantProgressionId",
-    "caseId",
-    "defendantId",
     "sentenceHearingReviewDecision",
     "sentenceHearingReviewDecisionDateTime"
   ]
