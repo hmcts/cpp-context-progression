@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,6 +58,9 @@ public class ProgressionCommandHandlerTest {
 
     @Mock
     private JsonObject jsonObject;
+
+    @Mock
+    private JsonString jsonString;
 
     @Mock
     JsonEnvelope envelope;
@@ -372,6 +376,7 @@ public class ProgressionCommandHandlerTest {
     public void shouldHandleDefendantEvent() throws Exception {
         UUID ID = UUID.randomUUID();
         given(envelope.payloadAsJsonObject()).willReturn(jsonObject);
+        given(envelope.payloadAsJsonString()).willReturn(jsonString);
         DefendantCommand defendant = mock(DefendantCommand.class);
         given(jsonObjectToObjectConverter.convert(jsonObject, DefendantCommand.class)).willReturn(defendant);
         given(defendant.getDefendantProgressionId()).willReturn(ID);
@@ -452,5 +457,4 @@ public class ProgressionCommandHandlerTest {
             return null;
         }
     }
-
 }

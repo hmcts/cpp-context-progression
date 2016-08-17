@@ -18,8 +18,13 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ProgressionCommandHandler {
+
+    private static Logger logger = LoggerFactory.getLogger(ProgressionCommandHandler.class);
 
     public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
     public static final String FIELD_VERSION = "version";
@@ -183,6 +188,8 @@ public class ProgressionCommandHandler {
 
     @Handles("progression.command.defendant")
     public void addDefendant(final JsonEnvelope envelope) throws EventStreamException {
+
+        logger.info("DEFENDANT:COMMAND HANDLER");
 
         final DefendantCommand defendant = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantCommand.class);
 

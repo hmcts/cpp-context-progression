@@ -58,7 +58,8 @@ public class DefendantEvent {
         }
 
         public DefendantEvent build() {
-            DefendantEvent defendantEvent = new DefendantEvent(defendantProgressionId, defendantId, additionalInformationEvent);
+            DefendantEvent defendantEvent = new DefendantEvent(defendantProgressionId, defendantId,
+                    additionalInformationEvent);
             return defendantEvent;
         }
     }

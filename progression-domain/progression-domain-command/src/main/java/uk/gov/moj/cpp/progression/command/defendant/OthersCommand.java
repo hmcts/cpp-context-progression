@@ -1,34 +1,20 @@
 package uk.gov.moj.cpp.progression.command.defendant;
 
 public class OthersCommand {
-    private final String details;
-
-    private OthersCommand(String details) {
-        this.details = details;
-    }
+    private  String details;
 
     public String getDetails() {
         return details;
     }
 
-    public static final class OthersCommandBuilder {
-        private String details;
+    public void setDetails(String details) {
+        this.details = details;
+    }
 
-        private OthersCommandBuilder() {
-        }
-
-        public static OthersCommandBuilder anOthersAdded() {
-            return new OthersCommandBuilder();
-        }
-
-        public OthersCommandBuilder details(String details) {
-            this.details = details;
-            return this;
-        }
-
-        public OthersCommand build() {
-            OthersCommand others = new OthersCommand(details);
-            return others;
-        }
+    @Override
+    public String toString() {
+        return "OthersCommand{" +
+                "details='" + details + '\'' +
+                '}';
     }
 }

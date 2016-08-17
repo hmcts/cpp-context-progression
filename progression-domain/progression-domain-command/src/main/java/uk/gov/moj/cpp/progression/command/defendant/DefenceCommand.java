@@ -1,57 +1,40 @@
 package uk.gov.moj.cpp.progression.command.defendant;
 
 public class DefenceCommand {
-    private final StatementOfMeansCommand statementOfMeans;
-    private final MedicalDocumentationCommand medicalDocumentation;
-    private OthersCommand others;
+    private  StatementOfMeansCommand statementOfMeans;
+    private  MedicalDocumentationCommand medicalDocumentation;
+    private  OthersCommand others;
 
-    public DefenceCommand(StatementOfMeansCommand statementOfMeans, MedicalDocumentationCommand medicalDocumentation, OthersCommand others) {
-        this.statementOfMeans = statementOfMeans;
-        this.medicalDocumentation = medicalDocumentation;
-        this.others = others;
-    }
-
-    public StatementOfMeansCommand getStatementOfMeansCommand() {
+    public StatementOfMeansCommand getStatementOfMeans() {
         return statementOfMeans;
     }
 
-    public MedicalDocumentationCommand getMedicalDocumentationCommand() {
+    public void setStatementOfMeans(StatementOfMeansCommand statementOfMeans) {
+        this.statementOfMeans = statementOfMeans;
+    }
+
+    public MedicalDocumentationCommand getMedicalDocumentation() {
         return medicalDocumentation;
+    }
+
+    public void setMedicalDocumentation(MedicalDocumentationCommand medicalDocumentation) {
+        this.medicalDocumentation = medicalDocumentation;
     }
 
     public OthersCommand getOthers() {
         return others;
     }
 
-    public static final class DefenceCommandBuilder {
-        private StatementOfMeansCommand statementOfMeans;
-        private MedicalDocumentationCommand medicalDocumentation;
-        private OthersCommand others;
+    public void setOthers(OthersCommand others) {
+        this.others = others;
+    }
 
-        private DefenceCommandBuilder() {
-        }
-
-        public DefenceCommandBuilder statementOfMeans(StatementOfMeansCommand statementOfMeans) {
-            this.statementOfMeans = statementOfMeans;
-            return this;
-        }
-
-        public DefenceCommandBuilder medicalDocumentation(MedicalDocumentationCommand medicalDocumentation) {
-            this.medicalDocumentation = medicalDocumentation;
-            return this;
-        }
-
-        public DefenceCommandBuilder others(OthersCommand others) {
-            this.others = others;
-            return this;
-        }
-
-        public static DefenceCommandBuilder aDefenceCommand() {
-            return new DefenceCommandBuilder();
-        }
-
-        public DefenceCommand build() {
-            return new DefenceCommand(statementOfMeans, medicalDocumentation, others);
-        }
+    @Override
+    public String toString() {
+        return "DefenceCommand{" +
+                "statementOfMeans=" + statementOfMeans +
+                ", medicalDocumentation=" + medicalDocumentation +
+                ", others=" + others +
+                '}';
     }
 }

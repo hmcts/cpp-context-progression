@@ -13,5 +13,6 @@
 	<include file="liquibase/add-sentence-hearing.xml" />
 	<include file="liquibase/add-case-status.xml" />
 	<include file="liquibase/add-readyforsentencehearingdate.xml" />
-	
+	<include file="liquibase/create-defendant.xml" />
+
 </databaseChangeLog>

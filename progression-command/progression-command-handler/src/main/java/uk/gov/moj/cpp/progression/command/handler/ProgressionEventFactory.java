@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command.handler;
 
 
 import static uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder.anAdditionalInformationEvent;
+import static uk.gov.moj.cpp.progression.domain.event.defendant.AncillaryOrdersEvent.AncillaryOrdersEventBuilder.anAncillaryOrdersEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent.DefenceEventBuilder.aDefenceEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent.DefendantEventBuilder.aDefendantEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.MedicalDocumentationEvent.MedicalDocumentationBuilder.aMedicalDocumentationEvent;
@@ -36,12 +37,11 @@ import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformatio
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
-import uk.gov.moj.cpp.progression.domain.event.defendant.AncillaryOrdersEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
-import uk.gov.moj.cpp.progression.domain.event.defendant.StatementOfMeansEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -213,11 +213,11 @@ public class ProgressionEventFactory {
     };
 
     private void buildAdditionalInformationEvent(DefendantCommand defendant, DefendantEvent.DefendantEventBuilder defendantEventBuilder) {
-        AdditionalInformationCommand additionalInformation = defendant.getAdditionalInformationCommand();
+        AdditionalInformationCommand additionalInformation = defendant.getAdditionalInformation();
 
         if (additionalInformation != null) {
 
-            AdditionalInformationEvent.AdditionalInformationEventBuilder additionalInformationEventBuilder = anAdditionalInformationEvent();
+            AdditionalInformationEventBuilder additionalInformationEventBuilder = anAdditionalInformationEvent();
             buildProbationEvent(additionalInformation, additionalInformationEventBuilder);
             buildDefenceEvent(additionalInformation, additionalInformationEventBuilder);
             buildProsecutionEvent(additionalInformation, additionalInformationEventBuilder);
@@ -227,46 +227,61 @@ public class ProgressionEventFactory {
         }
     }
 
-    private void buildProsecutionEvent(AdditionalInformationCommand additionalInformation, AdditionalInformationEvent.AdditionalInformationEventBuilder additionalInformationEventBuilder) {
-        ProsecutionCommand prosecution = additionalInformation.getProsecutionCommand();
+    private void buildProsecutionEvent(AdditionalInformationCommand additionalInformation, AdditionalInformationEventBuilder additionalInformationEventBuilder) {
+        ProsecutionCommand prosecution = additionalInformation.getProsecution();
         if (prosecution != null) {
-            additionalInformationEventBuilder.prosecution(ProsecutionEvent.ProsecutionEventBuilder.aProsecutionEvent()
-                    .ancillaryOrders(AncillaryOrdersEvent.AncillaryOrdersEventBuilder.anAncillaryOrdersEvent()
-                            .details(prosecution.getAncillaryOrdersCommand() == null ? null : prosecution.getAncillaryOrdersCommand().getDetails())
-                            .build())
-                    .others(anOthersEvent()
-                            .details(prosecution.getOthersCommand() == null ? null : prosecution.getOthersCommand().getDetails())
-                            .build())
-                    .build());
+            ProsecutionEvent.ProsecutionEventBuilder prosecutionEventBuilder = ProsecutionEvent.ProsecutionEventBuilder.aProsecutionEvent();
 
+            if (prosecution.getAncillaryOrders() != null) {
+                prosecutionEventBuilder.ancillaryOrders(anAncillaryOrdersEvent()
+                        .details(prosecution.getAncillaryOrders().getDetails())
+                        .build());
+            }
+
+            if (prosecution.getOthers() != null) {
+                prosecutionEventBuilder.others(anOthersEvent()
+                        .details(prosecution.getOthers().getDetails())
+                        .build());
+            }
+
+            additionalInformationEventBuilder.prosecution(prosecutionEventBuilder.build());
         }
     }
 
-    private void buildDefenceEvent(AdditionalInformationCommand additionalInformation, AdditionalInformationEvent.AdditionalInformationEventBuilder additionalInformationEventBuilder) {
-        DefenceCommand defence = additionalInformation.getDefenceEvent();
+    private void buildDefenceEvent(AdditionalInformationCommand additionalInformation, AdditionalInformationEventBuilder additionalInformationEventBuilder) {
+
+        DefenceCommand defence = additionalInformation.getDefence();
         if (defence != null) {
-            StatementOfMeansEvent statementOfMeansEvent = aStatementOfMeansEvent()
-                    .details(defence.getStatementOfMeansCommand() == null ? null : defence.getStatementOfMeansCommand().getDetails())
-                    .build();
-            DefenceEvent defenceEvent = aDefenceEvent()
-                    .statementOfMeans(statementOfMeansEvent)
-                    .medicalDocumentation(aMedicalDocumentationEvent()
-                            .details(defence.getMedicalDocumentationCommand() == null ? null : defence.getMedicalDocumentationCommand().getDetails())
-                            .build())
-                    .others(anOthersEvent()
-                            .details(defence.getOthers() == null ? null : defence.getOthers().getDetails())
-                            .build())
-                    .build();
-            additionalInformationEventBuilder.defence(defenceEvent);
+            DefenceEvent.DefenceEventBuilder defenceEventBuilder = aDefenceEvent();
+
+            if (defence.getStatementOfMeans() != null) {
+                defenceEventBuilder.statementOfMeans(aStatementOfMeansEvent()
+                        .details(defence.getStatementOfMeans().getDetails())
+                        .build());
+            }
+
+            if (defence.getMedicalDocumentation() != null) {
+                defenceEventBuilder.medicalDocumentation(aMedicalDocumentationEvent()
+                        .details(defence.getMedicalDocumentation().getDetails())
+                        .build());
+            }
+
+            if (defence.getOthers() != null) {
+                defenceEventBuilder.others(anOthersEvent()
+                        .details(defence.getOthers().getDetails())
+                        .build());
+            }
+
+            additionalInformationEventBuilder.defence(defenceEventBuilder.build());
         }
     }
 
-    private void buildProbationEvent(AdditionalInformationCommand additionalInformation, AdditionalInformationEvent.AdditionalInformationEventBuilder additionalInformationEventBuilder) {
-        ProbationCommand probation = additionalInformation.getProbationCommand();
+    private void buildProbationEvent(AdditionalInformationCommand additionalInformation, AdditionalInformationEventBuilder additionalInformationEventBuilder) {
+        ProbationCommand probation = additionalInformation.getProbation();
 
         if (probation != null) {
             ProbationEvent.ProbationEventBuilder probationEventBuilder = aProbationEvent();
-            PreSentenceReportCommand preSentenceReportCommand = probation.getPreSentenceReportCommand();
+            PreSentenceReportCommand preSentenceReportCommand = probation.getPreSentenceReport();
 
             if (preSentenceReportCommand != null) {
                 probationEventBuilder

@@ -1,64 +1,43 @@
 package uk.gov.moj.cpp.progression.command.defendant;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 public class DefendantCommand {
-    private final UUID defendantProgressionId;
-    private final UUID defendantId;
-    private final AdditionalInformationCommand additionalInformation;
-
-
-    public DefendantCommand(UUID defendantProgressionId, UUID defendantId,
-                            AdditionalInformationCommand additionalInformation) {
-        this.defendantProgressionId = defendantProgressionId;
-        this.defendantId = defendantId;
-        this.additionalInformation = additionalInformation;
-    }
+    private UUID defendantProgressionId;
+    private UUID defendantId;
+    private AdditionalInformationCommand additionalInformation;
 
     public UUID getDefendantProgressionId() {
         return defendantProgressionId;
+    }
+
+    public void setDefendantProgressionId(UUID defendantProgressionId) {
+        this.defendantProgressionId = defendantProgressionId;
     }
 
     public UUID getDefendantId() {
         return defendantId;
     }
 
-    public AdditionalInformationCommand getAdditionalInformationCommand() {
+    public void setDefendantId(UUID defendantId) {
+        this.defendantId = defendantId;
+    }
+
+    public AdditionalInformationCommand getAdditionalInformation() {
         return additionalInformation;
     }
 
-    public static final class DefendantCommandBuilder {
-        private UUID defendantProgressionId;
-        private UUID defendantId;
-        private AdditionalInformationCommand additionalInformation;
+    public void setAdditionalInformation(AdditionalInformationCommand additionalInformation) {
+        this.additionalInformation = additionalInformation;
+    }
 
-        private DefendantCommandBuilder() {
-        }
-
-        public static DefendantCommandBuilder aDefendantCommand() {
-            return new DefendantCommandBuilder();
-        }
-
-        public DefendantCommandBuilder defendantProgressionId(UUID defendantProgressionId) {
-            this.defendantProgressionId = defendantProgressionId;
-            return this;
-        }
-
-        public DefendantCommandBuilder defendantId(UUID defendantId) {
-            this.defendantId = defendantId;
-            return this;
-        }
-
-        public DefendantCommandBuilder additionalInformation(AdditionalInformationCommand additionalInformation) {
-            this.additionalInformation = additionalInformation;
-            return this;
-        }
-
-        public DefendantCommand build() {
-            DefendantCommand defendant = new DefendantCommand(defendantProgressionId, defendantId, additionalInformation);
-            return defendant;
-        }
+    @Override
+    public String toString() {
+        return "DefendantCommand{" +
+                "defendantProgressionId=" + defendantProgressionId +
+                ", defendantId=" + defendantId +
+                ", additionalInformation=" + additionalInformation +
+                '}';
     }
 }
 
