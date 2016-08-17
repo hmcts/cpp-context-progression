@@ -128,7 +128,7 @@ public class ProgressionCommandApiTest {
 
     @Test
     public void shouldAddDefendantProgression() throws Exception {
-        progressionCommandApi.addDefendant(command);
+        progressionCommandApi.addAdditionalInformationForDefendant(command);
         verify(sender, times(1)).send(command);
     }
 }

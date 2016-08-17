@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "defendantProgressionId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "caseProgressionId": {
+      "type": "string"
+    },
+    "additionalInformation": {
+      "type": "object",
+      "properties": {
+        "probation": {
+          "type": "object",
+          "properties": {
+            "provideGuidance": {
+              "type": "string"
+            },
+            "drugAssessment": {
+              "type": "boolean"
+            },
+            "dangerousnessAssessment": {
+              "type": "boolean"
+            }
+          },
+        },
+        "defence": {
+          "type": "object",
+          "properties": {
+            "statementOfMeans": {
+              "type": "string"
+            },
+            "medicalDocumentation": {
+              "type": "string"
+            },
+            "others": {
+              "type": "string"
+            }
+          },
+        },
+        "prosecution": {
+          "type": "object",
+          "properties": {
+            "ancillaryOrders": {
+              "type": "string"
+            },
+            "others": {
+              "type": "string"
+            }
+          },
+        }
+      },
+    }
+  },
+  "required": [
+    "defendantProgressionId",
+    "defendantId",
+    "caseProgressionId"
+  ]
+}

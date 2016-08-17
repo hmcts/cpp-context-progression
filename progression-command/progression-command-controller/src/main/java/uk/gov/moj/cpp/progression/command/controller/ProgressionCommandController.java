@@ -98,8 +98,8 @@ public class ProgressionCommandController {
         sender.send(envelope);
     }
 
-    @Handles("progression.command.defendant")
-    public void addDefendant(final JsonEnvelope envelope) {
+    @Handles("progression.command.add-additionalInformation")
+    public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 }

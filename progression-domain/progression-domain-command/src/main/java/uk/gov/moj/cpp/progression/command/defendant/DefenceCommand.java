@@ -1,40 +1,37 @@
 package uk.gov.moj.cpp.progression.command.defendant;
 
 public class DefenceCommand {
-    private  StatementOfMeansCommand statementOfMeans;
-    private  MedicalDocumentationCommand medicalDocumentation;
-    private  OthersCommand others;
+    private String statementOfMeans;
+    private String medicalDocumentation;
+    private String others;
 
-    public StatementOfMeansCommand getStatementOfMeans() {
+    public String getStatementOfMeans() {
         return statementOfMeans;
     }
 
-    public void setStatementOfMeans(StatementOfMeansCommand statementOfMeans) {
+    public void setStatementOfMeans(String statementOfMeans) {
         this.statementOfMeans = statementOfMeans;
     }
 
-    public MedicalDocumentationCommand getMedicalDocumentation() {
+    public String getMedicalDocumentation() {
         return medicalDocumentation;
     }
 
-    public void setMedicalDocumentation(MedicalDocumentationCommand medicalDocumentation) {
+    public void setMedicalDocumentation(String medicalDocumentation) {
         this.medicalDocumentation = medicalDocumentation;
     }
 
-    public OthersCommand getOthers() {
+    public String getOthers() {
         return others;
     }
 
-    public void setOthers(OthersCommand others) {
+    public void setOthers(String others) {
         this.others = others;
     }
 
     @Override
     public String toString() {
-        return "DefenceCommand{" +
-                "statementOfMeans=" + statementOfMeans +
-                ", medicalDocumentation=" + medicalDocumentation +
-                ", others=" + others +
-                '}';
+        return "DefenceCommand{" + "statementOfMeans=" + statementOfMeans + ", medicalDocumentation="
+                + medicalDocumentation + ", others=" + others + '}';
     }
 }

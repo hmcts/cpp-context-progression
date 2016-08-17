@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public class DefendantCommand {
     private UUID defendantProgressionId;
+    private UUID caseProgressionId;
     private UUID defendantId;
     private AdditionalInformationCommand additionalInformation;
 
@@ -31,29 +32,17 @@ public class DefendantCommand {
         this.additionalInformation = additionalInformation;
     }
 
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
+
+    public void setCaseProgressionId(UUID caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
+    }
+
     @Override
     public String toString() {
-        return "DefendantCommand{" +
-                "defendantProgressionId=" + defendantProgressionId +
-                ", defendantId=" + defendantId +
-                ", additionalInformation=" + additionalInformation +
-                '}';
+        return "DefendantCommand{" + "defendantProgressionId=" + defendantProgressionId + ", defendantId=" + defendantId
+                + ", additionalInformation=" + additionalInformation + '}';
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

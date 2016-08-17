@@ -2,25 +2,25 @@ package uk.gov.moj.cpp.progression.domain.event.defendant;
 
 public class ProsecutionEvent {
 
-    private final AncillaryOrdersEvent ancillaryOrdersEvent;
-    private final OtherEvent others;
+    private final String ancillaryOrders;
+    private final String others;
 
-    public ProsecutionEvent(AncillaryOrdersEvent ancillaryOrdersEvent, OtherEvent others) {
-        this.ancillaryOrdersEvent = ancillaryOrdersEvent;
+    public ProsecutionEvent(String ancillaryOrders, String others) {
+        this.ancillaryOrders = ancillaryOrders;
         this.others = others;
     }
 
-    public AncillaryOrdersEvent getAncillaryOrdersEvent() {
-        return ancillaryOrdersEvent;
+    public String getAncillaryOrders() {
+        return ancillaryOrders;
     }
 
-    public OtherEvent getOthersEvent() {
+    public String getOthers() {
         return others;
     }
 
     public static final class ProsecutionEventBuilder {
-        private AncillaryOrdersEvent ancillaryOrdersEvent;
-        private OtherEvent others;
+        private String ancillaryOrders;
+        private String others;
 
         private ProsecutionEventBuilder() {
         }
@@ -29,18 +29,18 @@ public class ProsecutionEvent {
             return new ProsecutionEventBuilder();
         }
 
-        public ProsecutionEventBuilder ancillaryOrders(AncillaryOrdersEvent ancillaryOrdersEvent) {
-            this.ancillaryOrdersEvent = ancillaryOrdersEvent;
+        public ProsecutionEventBuilder ancillaryOrders(String ancillaryOrders) {
+            this.ancillaryOrders = ancillaryOrders;
             return this;
         }
 
-        public ProsecutionEventBuilder others(OtherEvent others) {
+        public ProsecutionEventBuilder others(String others) {
             this.others = others;
             return this;
         }
 
         public ProsecutionEvent build() {
-            ProsecutionEvent prosecution = new ProsecutionEvent(ancillaryOrdersEvent, others);
+            ProsecutionEvent prosecution = new ProsecutionEvent(ancillaryOrders, others);
             return prosecution;
         }
     }

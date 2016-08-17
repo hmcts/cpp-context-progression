@@ -2,30 +2,27 @@ package uk.gov.moj.cpp.progression.command.defendant;
 
 public class ProsecutionCommand {
 
-    private  AncillaryOrdersCommand ancillaryOrders;
-    private  OthersCommand others;
+    private String ancillaryOrders;
+    private String others;
 
-    public AncillaryOrdersCommand getAncillaryOrders() {
+    public String getAncillaryOrders() {
         return ancillaryOrders;
     }
 
-    public void setAncillaryOrders(AncillaryOrdersCommand ancillaryOrders) {
+    public void setAncillaryOrders(String ancillaryOrders) {
         this.ancillaryOrders = ancillaryOrders;
     }
 
-    public OthersCommand getOthers() {
+    public String getOthers() {
         return others;
     }
 
-    public void setOthers(OthersCommand others) {
+    public void setOthers(String others) {
         this.others = others;
     }
 
     @Override
     public String toString() {
-        return "ProsecutionCommand{" +
-                "ancillaryOrders=" + ancillaryOrders +
-                ", others=" + others +
-                '}';
+        return "ProsecutionCommand{" + "ancillaryOrders=" + ancillaryOrders + ", others=" + others + '}';
     }
 }

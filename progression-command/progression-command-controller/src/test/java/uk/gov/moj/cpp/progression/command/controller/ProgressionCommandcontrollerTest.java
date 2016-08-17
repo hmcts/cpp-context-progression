@@ -129,7 +129,7 @@ public class ProgressionCommandcontrollerTest {
 
     @Test
     public void shouldAddDefendant() throws Exception {
-        progressionCommandcontroller.addDefendant(command);
+        progressionCommandcontroller.addAdditionalInformationForDefendant(command);
         verify(sender, times(1)).send(command);
     }
 }

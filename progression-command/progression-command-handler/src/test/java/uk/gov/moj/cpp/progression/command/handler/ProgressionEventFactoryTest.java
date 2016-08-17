@@ -7,15 +7,30 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
-import uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
-import uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand;
-import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.handler.matchers.DefendantEventMatcher;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -38,24 +53,6 @@ import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Random;
-import java.util.UUID;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
 
@@ -77,12 +74,12 @@ public class ProgressionEventFactoryTest {
         when(jsonObj.getString(Mockito.eq("version"))).thenReturn("1");
         when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
         when(jsonObj.getString(Mockito.eq("indicateStatementId")))
-                .thenReturn(UUID.randomUUID().toString());
+                        .thenReturn(UUID.randomUUID().toString());
         when(jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sendingCommittalDate")))
-                .thenReturn(LocalDate.now().toString());
+                        .thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                .thenReturn(LocalDate.now().toString());
+                        .thenReturn(LocalDate.now().toString());
     }
 
     @Test
@@ -112,7 +109,7 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
         Object obj = progressionEventFactory
-                .createSendingCommittalHearingInformationAdded(envelope);
+                        .createSendingCommittalHearingInformationAdded(envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
     }
 
@@ -185,12 +182,12 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateCaseReadyForSentenceHearing() {
         CaseReadyForSentenceHearing obj = (CaseReadyForSentenceHearing) progressionEventFactory
-                .createCaseReadyForSentenceHearing(envelope);
+                        .createCaseReadyForSentenceHearing(envelope);
 
         assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
         assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
         assertThat(LocalDateTime.now().toLocalDate(),
-                equalTo(obj.getReadyForSentenceHearingDate().toLocalDate()));
+                        equalTo(obj.getReadyForSentenceHearingDate().toLocalDate()));
 
     }
 
@@ -199,25 +196,20 @@ public class ProgressionEventFactoryTest {
         // given
         UUID defendantId = randomUUID();
         UUID defendantProgressionId = randomUUID();
-        MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
-        medicalDocumentation.setDetails(randomString());
+        String medicalDocumentation = randomString();
 
         DefenceCommand defence = new DefenceCommand();
         defence.setMedicalDocumentation(medicalDocumentation);
 
-        AncillaryOrdersCommand ancillaryOrders = new AncillaryOrdersCommand();
-        ancillaryOrders.setDetails(randomString());
+        String ancillaryOrders = randomString();
 
         AdditionalInformationCommand additionalInformation = new AdditionalInformationCommand();
         additionalInformation.setDefence(defence);
 
-        PreSentenceReportCommand preSentenceReport = new PreSentenceReportCommand();
-        preSentenceReport.setDrugAssessment(randomBoolean());
-        preSentenceReport.setProvideGuidance(randomString());
-
         ProbationCommand probation = new ProbationCommand();
         probation.setDangerousnessAssessment(randomBoolean());
-        probation.setPreSentenceReport(preSentenceReport);
+        probation.setDrugAssessment(randomBoolean());
+        probation.setProvideGuidance(randomString());
 
         additionalInformation.setProbation(probation);
 
@@ -227,7 +219,8 @@ public class ProgressionEventFactoryTest {
         defendant.setAdditionalInformation(additionalInformation);
 
         // when
-        DefendantEvent defendantEvent = (DefendantEvent) progressionEventFactory.addDefendantEvent(defendant);
+        DefendantEvent defendantEvent =
+                        (DefendantEvent) progressionEventFactory.addDefendantEvent(defendant);
 
         // then
         assertThat(defendantEvent, sameAs(defendant));
@@ -255,12 +248,12 @@ public class ProgressionEventFactoryTest {
 
     private JsonEnvelope createJsonCommand() {
         final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, PROGRESSION_ID)
-                .add(NAME, "SomeName").build();
+                        .add(NAME, "SomeName").build();
 
         final JsonObject payloadAsJsonObject = Json.createObjectBuilder().build();
 
         return DefaultJsonEnvelope.envelopeFrom(
-                JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);
+                        JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);
 
     }
 }
