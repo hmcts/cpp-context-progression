@@ -5,7 +5,7 @@
 3. Create a database called progression-view-store-db
 4. Run with the following command:
 
-    mvn resources:resources liquibase:update -Dliquibase.url=jdbc:postgresql://localhost:5432/progression-view-store-db -Dliquibase.username=postgres -Dliquibase.password=postgres -Dliquibase.logLevel=info
+    mvn resources:resources liquibase:update -Dliquibase.url=jdbc:postgresql://localhost:5432/progressionviewstore -Dliquibase.username=postgres -Dliquibase.password=postgres -Dliquibase.logLevel=info
     
    Or
    

@@ -21,6 +21,8 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.StatementOfMeansEvent;
 
+import java.util.UUID;
+
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
@@ -50,15 +52,15 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEv
         }
 
         AdditionalInformationEvent additionalInformationEvent = defendantEvent.getAdditionalInformationEvent();
-        AdditionalInformationCommand additionalInformationCommand = defendantCommand.getAdditionalInformationCommand();
+        AdditionalInformationCommand additionalInformationCommand = defendantCommand.getAdditionalInformation();
 
         DefenceEvent defenceEvent = additionalInformationEvent.getDefenceEvent();
 
         if (defenceEvent != null) {
-            DefenceCommand defenceCommand = additionalInformationCommand.getDefenceEvent();
+            DefenceCommand defenceCommand = additionalInformationCommand.getDefence();
             MedicalDocumentationEvent medicalDocumentationEvent = defenceEvent.getMedicalDocumentationEvent();
             if (medicalDocumentationEvent != null) {
-                MedicalDocumentationCommand medicalDocumentationCommand = defenceCommand.getMedicalDocumentationCommand();
+                MedicalDocumentationCommand medicalDocumentationCommand = defenceCommand.getMedicalDocumentation();
                 if (!medicalDocumentationEvent.getDetails().equals(medicalDocumentationCommand.getDetails())) {
                     mismatchDescription.appendText(" was ").appendValue(medicalDocumentationEvent.getDetails());
                     return false;
@@ -67,7 +69,7 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEv
 
             StatementOfMeansEvent statementOfMeansEvent = defenceEvent.getStatementOfMeansEvent();
             if (statementOfMeansEvent != null) {
-                StatementOfMeansCommand statementOfMeansCommand = defenceCommand.getStatementOfMeansCommand();
+                StatementOfMeansCommand statementOfMeansCommand = defenceCommand.getStatementOfMeans();
                 if (!statementOfMeansEvent.getDetails().equals(statementOfMeansCommand.getDetails())) {
                     mismatchDescription.appendText(" was ").appendValue(statementOfMeansEvent.getDetails());
                     return false;
@@ -86,14 +88,14 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEv
 
         ProbationEvent probationEvent = additionalInformationEvent.getProbationEvent();
         if (probationEvent != null) {
-            ProbationCommand probationCommand = additionalInformationCommand.getProbationCommand();
+            ProbationCommand probationCommand = additionalInformationCommand.getProbation();
             if (probationEvent.getDangerousnessAssessment() != probationCommand.getDangerousnessAssessment()) {
                 mismatchDescription.appendText(" was ").appendValue(probationEvent.getDangerousnessAssessment());
                 return false;
             }
             PreSentenceReportEvent preSentenceReportEvent = probationEvent.getPreSentenceReportEvent();
             if (preSentenceReportEvent != null) {
-                PreSentenceReportCommand preSentenceReportCommand = probationCommand.getPreSentenceReportCommand();
+                PreSentenceReportCommand preSentenceReportCommand = probationCommand.getPreSentenceReport();
                 if (preSentenceReportEvent.getDrugAssessment() != preSentenceReportCommand.getDrugAssessment()) {
                     mismatchDescription.appendText(" was ").appendValue(probationEvent.getDangerousnessAssessment());
                     return false;
@@ -110,10 +112,10 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEv
 
         ProsecutionEvent prosecutionEvent = additionalInformationEvent.getProsecutionEvent();
         if (prosecutionEvent != null) {
-            ProsecutionCommand prosecutionCommand = additionalInformationCommand.getProsecutionCommand();
+            ProsecutionCommand prosecutionCommand = additionalInformationCommand.getProsecution();
             AncillaryOrdersEvent ancillaryOrdersEvent = prosecutionEvent.getAncillaryOrdersEvent();
             if (ancillaryOrdersEvent != null) {
-                AncillaryOrdersCommand ancillaryOrdersCommand = prosecutionCommand.getAncillaryOrdersCommand();
+                AncillaryOrdersCommand ancillaryOrdersCommand = prosecutionCommand.getAncillaryOrders();
                 if (!ancillaryOrdersEvent.getDetails().equals(ancillaryOrdersCommand.getDetails())) {
                     mismatchDescription.appendText(" was ").appendValue(ancillaryOrdersEvent.getDetails());
                     return false;
@@ -122,7 +124,7 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEv
 
             OtherEvent othersEvent = prosecutionEvent.getOthersEvent();
             if (othersEvent != null) {
-                OthersCommand othersCommand = prosecutionCommand.getOthersCommand();
+                OthersCommand othersCommand = prosecutionCommand.getOthers();
                 if (!othersEvent.getDetails().equals(othersCommand.getDetails())) {
                     mismatchDescription.appendText(" was ").appendValue(othersEvent.getDetails());
                     return false;

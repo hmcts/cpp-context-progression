@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+	<changeSet author="sibyg" id="12"	logicalFilePath="liquibase/changelog.xml">
+		<createTable tableName="defendant">
+			<column name="id" type="UUID">
+				<constraints nullable="false" />
+			</column>
+			<column name="defendant_id" type="UUID">
+				<constraints nullable="false" />
+			</column>
+			<column name="sentence_hearing_review_decision" type="BPCHAR(1)">
+				<constraints nullable="false" />
+			</column>
+			<column name="sentence_hearing_review_decision_date_time" type="date">
+				<constraints nullable="false" />
+			</column>
+			<column name="drug_assessment" type="BPCHAR(1)"/>
+			<column name="dangerousness_assessment" type="BPCHAR(1)"/>
+			<column name="pre_sentence_report" type="VARCHAR(255)"/>
+			<column name="statement_of_means" type="VARCHAR(255)"/>
+			<column name="medical_documentation" type="VARCHAR(255)"/>
+			<column name="defence_others" type="VARCHAR(255)"/>
+			<column name="ancillary_orders" type="VARCHAR(255)"/>
+			<column name="prosecution_others" type="VARCHAR(255)"/>
+			<column name="version" type="BIGINT"/>
+		</createTable>
+	</changeSet>
+	
+	<changeSet author="sibyg" id="12a">
+		<addPrimaryKey columnNames="id" constraintName="defendant_pkey"
+			tableName="defendant" />
+	</changeSet>
+</databaseChangeLog>

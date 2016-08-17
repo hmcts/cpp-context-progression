@@ -6,13 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
-import static uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand.AdditionalInformationCommandBuilder.anAdditionalInformationCommand;
-import static uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand.AncillaryOrdersCommandBuilder.anAncillaryOrdersCommandAdded;
-import static uk.gov.moj.cpp.progression.command.defendant.DefenceCommand.DefenceCommandBuilder.aDefenceCommand;
-import static uk.gov.moj.cpp.progression.command.defendant.DefendantCommand.DefendantCommandBuilder.aDefendantCommand;
-import static uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand.MedicalDocumentationCommandBuilder.aMedicalDocumentationCommand;
-import static uk.gov.moj.cpp.progression.command.defendant.ProbationCommand.ProbationCommandBuilder.aProbationCommand;
-import static uk.gov.moj.cpp.progression.command.defendant.ProsecutionCommand.ProsecutionCommandBuilder.aProsecutionCommand;
 
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -22,6 +15,8 @@ import uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand;
+import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
+import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.handler.matchers.DefendantEventMatcher;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
@@ -54,7 +49,6 @@ import javax.json.JsonObject;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -201,40 +195,42 @@ public class ProgressionEventFactoryTest {
     }
 
     @Test
-    @Ignore //TODO fix it
     public void shouldAddDefendantEvent() {
         // given
         UUID defendantId = randomUUID();
         UUID defendantProgressionId = randomUUID();
-        MedicalDocumentationCommand medicalDocumentation = aMedicalDocumentationCommand()
-                .details(randomString())
-                .build();
-        DefenceCommand defence = aDefenceCommand()
-                .medicalDocumentation(medicalDocumentation)
-                .build();
-        AncillaryOrdersCommand ancillaryOrders = anAncillaryOrdersCommandAdded()
-                .details(randomString())
-                .build();
-        AdditionalInformationCommand additionalInformation = anAdditionalInformationCommand()
-                .defence(defence)
-                .probation(aProbationCommand()
-                        .dangerousnessAssessment(randomBoolean())
-                        .build())
-                .prosecution(aProsecutionCommand()
-                        .ancillaryOrders(ancillaryOrders)
-                        .build())
-                .build();
-        DefendantCommand defendantCommand = aDefendantCommand()
-                .defendantId(defendantId)
-                .defendantProgressionId(defendantProgressionId)
-                .additionalInformation(additionalInformation)
-                .build();
+        MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
+        medicalDocumentation.setDetails(randomString());
+
+        DefenceCommand defence = new DefenceCommand();
+        defence.setMedicalDocumentation(medicalDocumentation);
+
+        AncillaryOrdersCommand ancillaryOrders = new AncillaryOrdersCommand();
+        ancillaryOrders.setDetails(randomString());
+
+        AdditionalInformationCommand additionalInformation = new AdditionalInformationCommand();
+        additionalInformation.setDefence(defence);
+
+        PreSentenceReportCommand preSentenceReport = new PreSentenceReportCommand();
+        preSentenceReport.setDrugAssessment(randomBoolean());
+        preSentenceReport.setProvideGuidance(randomString());
+
+        ProbationCommand probation = new ProbationCommand();
+        probation.setDangerousnessAssessment(randomBoolean());
+        probation.setPreSentenceReport(preSentenceReport);
+
+        additionalInformation.setProbation(probation);
+
+        DefendantCommand defendant = new DefendantCommand();
+        defendant.setDefendantId(defendantId);
+        defendant.setDefendantProgressionId(defendantProgressionId);
+        defendant.setAdditionalInformation(additionalInformation);
 
         // when
-        DefendantEvent defendantEvent = (DefendantEvent) progressionEventFactory.addDefendantEvent(defendantCommand);
+        DefendantEvent defendantEvent = (DefendantEvent) progressionEventFactory.addDefendantEvent(defendant);
 
         // then
-        assertThat(defendantEvent, sameAs(defendantCommand));
+        assertThat(defendantEvent, sameAs(defendant));
     }
 
     private Matcher<DefendantEvent> sameAs(final DefendantCommand defendantCommand) {

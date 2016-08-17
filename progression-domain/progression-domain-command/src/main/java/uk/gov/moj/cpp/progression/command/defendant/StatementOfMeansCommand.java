@@ -1,34 +1,20 @@
 package uk.gov.moj.cpp.progression.command.defendant;
 
 public class StatementOfMeansCommand {
-    private final String details;
-
-    private StatementOfMeansCommand(String details) {
-        this.details = details;
-    }
+    private String details;
 
     public String getDetails() {
         return details;
     }
 
-    public static final class StatementOfMeansCommandBuilder {
-        private String details;
+    public void setDetails(String details) {
+        this.details = details;
+    }
 
-        private StatementOfMeansCommandBuilder() {
-        }
-
-        public static StatementOfMeansCommandBuilder aStatementOfMeansCommand() {
-            return new StatementOfMeansCommandBuilder();
-        }
-
-        public StatementOfMeansCommandBuilder details(String details) {
-            this.details = details;
-            return this;
-        }
-
-        public StatementOfMeansCommand build() {
-            StatementOfMeansCommand statementOfMeans = new StatementOfMeansCommand(details);
-            return statementOfMeans;
-        }
+    @Override
+    public String toString() {
+        return "StatementOfMeansCommand{" +
+                "details='" + details + '\'' +
+                '}';
     }
 }
