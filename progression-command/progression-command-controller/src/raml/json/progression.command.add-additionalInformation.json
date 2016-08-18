@@ -1,19 +1,33 @@
 {
   "defendantId": "3daefec6-5f77-4109-82d9-1e60544a6c12",
+  "sentenceHearingReviewDecision": false,
+  "sentenceHearingReviewDecisionDateTime": "2016-01-01 20:12",
   "additionalInformation": {
     "probation": {
+      "preSentenceReport": {
+        "psrIsRequested": true,
         "provideGuidance": "guidance",
-        "drugAssessment": true,
-        "dangerousnessAssessment": true
+        "drugAssessment": true
+      },
+      "dangerousnessAssessment": true
     },
     "defence": {
-      "statementOfMeans": "meansDetails",
-      "medicalDocumentation":  "medicalDetails",
-      "others": "otherDetails"
+      "statementOfMeans": {
+        "isStatementOfMeans": true,
+        "details": "meansDetails"
+      },
+      "medicalDocumentation": {
+        "isMedicalDocumentation": true,
+        "details": "medicalDetails"
+      },
+      "otherDetails": "otherDetails"
     },
     "prosecution": {
-      "ancillaryOrders": "ancillaryOrdersDetails",
-      "others":  "otherDetails"
+      "ancillaryOrders": {
+        "isAncillaryOrders": true,
+        "details": "ancillaryOrdersDetails"
+      },
+      "otherDetails": "otherDetails"
     }
   }
 }
