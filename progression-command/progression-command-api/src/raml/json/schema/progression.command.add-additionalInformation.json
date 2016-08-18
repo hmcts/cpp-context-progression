@@ -30,11 +30,17 @@
                   "type": "boolean"
                 }
               },
+              "required": [
+                "psrIsRequested"
+              ]
             },
             "dangerousnessAssessment": {
               "type": "boolean"
             }
           },
+          "required": [
+            "preSentenceReport"
+          ]
         },
         "defence": {
           "type": "object",
@@ -49,6 +55,9 @@
                   "type": "string"
                 }
               },
+              "required": [
+                "isStatementOfMeans"
+              ]
             },
             "medicalDocumentation": {
               "type": "object",
@@ -60,11 +69,17 @@
                   "type": "string"
                 }
               },
+              "required": [
+                "isMedicalDocumentation"
+              ]
             },
             "otherDetails": {
               "type": "string"
             }
           },
+          "required": [
+            "statementOfMeans"
+          ]
         },
         "prosecution": {
           "type": "object",
@@ -79,13 +94,22 @@
                   "type": "string"
                 }
               },
+              "required": [
+                "isAncillaryOrders"
+              ]
             },
             "otherDetails": {
               "type": "string"
             }
           },
+          "required": [
+            "ancillaryOrders"
+          ]
         }
       },
+      "required": [
+        "probation"
+      ]
     }
   },
   "required": [
