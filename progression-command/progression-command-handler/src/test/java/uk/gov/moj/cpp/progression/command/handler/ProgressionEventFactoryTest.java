@@ -29,8 +29,11 @@ import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
+import uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
+import uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand;
+import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.handler.matchers.DefendantEventMatcher;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -196,20 +199,25 @@ public class ProgressionEventFactoryTest {
         // given
         UUID defendantId = randomUUID();
         UUID defendantProgressionId = randomUUID();
-        String medicalDocumentation = randomString();
+        MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
+        medicalDocumentation.setDetails(randomString());
 
         DefenceCommand defence = new DefenceCommand();
         defence.setMedicalDocumentation(medicalDocumentation);
 
-        String ancillaryOrders = randomString();
+        AncillaryOrdersCommand ancillaryOrders = new AncillaryOrdersCommand();
+        ancillaryOrders.setDetails(randomString());
 
         AdditionalInformationCommand additionalInformation = new AdditionalInformationCommand();
         additionalInformation.setDefence(defence);
 
+        PreSentenceReportCommand preSentenceReport = new PreSentenceReportCommand();
+        preSentenceReport.setDrugAssessment(randomBoolean());
+        preSentenceReport.setProvideGuidance(randomString());
+
         ProbationCommand probation = new ProbationCommand();
         probation.setDangerousnessAssessment(randomBoolean());
-        probation.setDrugAssessment(randomBoolean());
-        probation.setProvideGuidance(randomString());
+        probation.setPreSentenceReport(preSentenceReport);
 
         additionalInformation.setProbation(probation);
 

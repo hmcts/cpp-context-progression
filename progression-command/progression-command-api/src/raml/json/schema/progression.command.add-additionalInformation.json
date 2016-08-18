@@ -5,12 +5,6 @@
     "defendantId": {
       "type": "string"
     },
-    "sentenceHearingReviewDecision": {
-      "type": "boolean"
-    },
-    "sentenceHearingReviewDecisionDateTime": {
-      "type": "string"
-    },
     "additionalInformation": {
       "type": "object",
       "properties": {
@@ -89,8 +83,6 @@
     }
   },
   "required": [
-    "defendantId",
-    "sentenceHearingReviewDecision",
-    "sentenceHearingReviewDecisionDateTime"
+    "defendantId"
   ]
 }

@@ -2,24 +2,15 @@ package uk.gov.moj.cpp.progression.command.defendant;
 
 public class ProbationCommand {
 
-    private String provideGuidance;
-    private Boolean drugAssessment;
+    private PreSentenceReportCommand preSentenceReport;
     private Boolean dangerousnessAssessment;
 
-    public String getProvideGuidance() {
-        return provideGuidance;
+    public PreSentenceReportCommand getPreSentenceReport() {
+        return preSentenceReport;
     }
 
-    public void setProvideGuidance(String provideGuidance) {
-        this.provideGuidance = provideGuidance;
-    }
-
-    public Boolean getDrugAssessment() {
-        return drugAssessment;
-    }
-
-    public void setDrugAssessment(Boolean drugAssessment) {
-        this.drugAssessment = drugAssessment;
+    public void setPreSentenceReport(PreSentenceReportCommand preSentenceReport) {
+        this.preSentenceReport = preSentenceReport;
     }
 
     public Boolean getDangerousnessAssessment() {
@@ -32,7 +23,7 @@ public class ProbationCommand {
 
     @Override
     public String toString() {
-        return "ProbationCommand{" + "provideGuidance=" + provideGuidance + ", dangerousnessAssessment="
-                + dangerousnessAssessment + ", drugAssessment=" + drugAssessment + '}';
+        return "ProbationCommand{" + "preSentenceReport=" + preSentenceReport + ", dangerousnessAssessment="
+                + dangerousnessAssessment + '}';
     }
 }

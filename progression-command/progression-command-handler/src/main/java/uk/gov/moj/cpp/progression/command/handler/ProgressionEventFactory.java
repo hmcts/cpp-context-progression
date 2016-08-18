@@ -2,9 +2,13 @@ package uk.gov.moj.cpp.progression.command.handler;
 
 
 import static uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder.anAdditionalInformationEvent;
+import static uk.gov.moj.cpp.progression.domain.event.defendant.AncillaryOrdersEvent.AncillaryOrdersEventBuilder.anAncillaryOrdersEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent.DefenceEventBuilder.aDefenceEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent.DefendantEventBuilder.aDefendantEvent;
+import static uk.gov.moj.cpp.progression.domain.event.defendant.MedicalDocumentationEvent.MedicalDocumentationBuilder.aMedicalDocumentationEvent;
+import static uk.gov.moj.cpp.progression.domain.event.defendant.PreSentenceReportEvent.PreSentenceReportEventBuilder.aPreSentenceReportEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent.ProbationEventBuilder.aProbationEvent;
+import static uk.gov.moj.cpp.progression.domain.event.defendant.StatementOfMeansEvent.StatementOfMeansEventBuilder.aStatementOfMeansEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +19,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
+import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProsecutionCommand;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -203,8 +208,12 @@ public class ProgressionEventFactory {
                                             aDefendantEvent()
                                                             .defendantProgressionId(
                                                                             defendant.getDefendantProgressionId())
-                                                            .defendantId(defendant
-                                                                            .getDefendantId());
+                                                            .defendantId(defendant.getDefendantId())
+                                                            .caseProgressionId(
+                                                                            defendant.getCaseProgressionId())
+                                                            .sentenceHearingReviewDecision(true)
+                                                            .sentenceHearingReviewDecisionDateTime(
+                                                                            LocalDateTime.now());
                             buildAdditionalInformationEvent(defendant, defendantEventBuilder);
                             return defendantEventBuilder.build();
                         }
@@ -236,11 +245,14 @@ public class ProgressionEventFactory {
                             ProsecutionEvent.ProsecutionEventBuilder.aProsecutionEvent();
 
             if (prosecution.getAncillaryOrders() != null) {
-                prosecutionEventBuilder.ancillaryOrders(prosecution.getAncillaryOrders()).build();
+                prosecutionEventBuilder.ancillaryOrders(anAncillaryOrdersEvent()
+                                .isAncillaryOrders(prosecution.getAncillaryOrders()
+                                                .getIsAncillaryOrders())
+                                .details(prosecution.getAncillaryOrders().getDetails()).build());
             }
 
-            if (prosecution.getOthers() != null) {
-                prosecutionEventBuilder.others(prosecution.getOthers()).build();
+            if (prosecution.getOtherDetails() != null) {
+                prosecutionEventBuilder.otherDetails(prosecution.getOtherDetails()).build();
             }
 
             additionalInformationEventBuilder.prosecution(prosecutionEventBuilder.build());
@@ -255,15 +267,21 @@ public class ProgressionEventFactory {
             DefenceEvent.DefenceEventBuilder defenceEventBuilder = aDefenceEvent();
 
             if (defence.getStatementOfMeans() != null) {
-                defenceEventBuilder.statementOfMeans(defence.getStatementOfMeans()).build();
+                defenceEventBuilder.statementOfMeans(aStatementOfMeansEvent()
+                                .isStatementOfMeans(defence.getStatementOfMeans()
+                                                .getIsStatementOfMeans())
+                                .details(defence.getStatementOfMeans().getDetails()).build());
             }
 
             if (defence.getMedicalDocumentation() != null) {
-                defenceEventBuilder.medicalDocumentation(defence.getMedicalDocumentation()).build();
+                defenceEventBuilder.medicalDocumentation(aMedicalDocumentationEvent()
+                                .isMedicalDocumentation(defence.getMedicalDocumentation()
+                                                .getIsMedicalDocumentation())
+                                .details(defence.getMedicalDocumentation().getDetails()).build());
             }
 
-            if (defence.getOthers() != null) {
-                defenceEventBuilder.others(defence.getOthers()).build();
+            if (defence.getOtherDetails() != null) {
+                defenceEventBuilder.otherDetails(defence.getOtherDetails()).build();
             }
 
             additionalInformationEventBuilder.defence(defenceEventBuilder.build());
@@ -276,19 +294,17 @@ public class ProgressionEventFactory {
 
         if (probation != null) {
             ProbationEvent.ProbationEventBuilder probationEventBuilder = aProbationEvent();
+            PreSentenceReportCommand preSentenceReportCommand = probation.getPreSentenceReport();
 
-            if (probation.getDangerousnessAssessment() != null) {
-                probationEventBuilder
-                                .dangerousnessAssessment(probation.getDangerousnessAssessment());
+            if (preSentenceReportCommand != null) {
+                probationEventBuilder.preSentenceReport(aPreSentenceReportEvent()
+                                .psrIsRequested(preSentenceReportCommand.getPsrIsRequested())
+                                .drugAssessment(preSentenceReportCommand.getDrugAssessment())
+                                .provideGuidance(preSentenceReportCommand.getProvideGuidance())
+                                .build());
             }
 
-            if (probation.getDrugAssessment() != null) {
-                probationEventBuilder.drugAssessment(probation.getDrugAssessment());
-            }
-
-            if (probation.getProvideGuidance() != null) {
-                probationEventBuilder.provideGuidance(probation.getProvideGuidance());
-            }
+            probationEventBuilder.dangerousnessAssessment(probation.getDangerousnessAssessment());
             additionalInformationEventBuilder.probation(probationEventBuilder.build());
         }
     }

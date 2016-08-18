@@ -2,25 +2,25 @@ package uk.gov.moj.cpp.progression.domain.event.defendant;
 
 public class ProsecutionEvent {
 
-    private final String ancillaryOrders;
-    private final String others;
+    private final AncillaryOrdersEvent ancillaryOrdersEvent;
+    private final String otherDetails;
 
-    public ProsecutionEvent(String ancillaryOrders, String others) {
-        this.ancillaryOrders = ancillaryOrders;
-        this.others = others;
+    public ProsecutionEvent(AncillaryOrdersEvent ancillaryOrdersEvent, String otherDetails) {
+        this.ancillaryOrdersEvent = ancillaryOrdersEvent;
+        this.otherDetails = otherDetails;
     }
 
-    public String getAncillaryOrders() {
-        return ancillaryOrders;
+    public AncillaryOrdersEvent getAncillaryOrdersEvent() {
+        return ancillaryOrdersEvent;
     }
 
-    public String getOthers() {
-        return others;
+    public String getOtherDetails() {
+        return otherDetails;
     }
 
     public static final class ProsecutionEventBuilder {
-        private String ancillaryOrders;
-        private String others;
+        private AncillaryOrdersEvent ancillaryOrdersEvent;
+        private String otherDetails;
 
         private ProsecutionEventBuilder() {
         }
@@ -29,18 +29,18 @@ public class ProsecutionEvent {
             return new ProsecutionEventBuilder();
         }
 
-        public ProsecutionEventBuilder ancillaryOrders(String ancillaryOrders) {
-            this.ancillaryOrders = ancillaryOrders;
+        public ProsecutionEventBuilder ancillaryOrders(AncillaryOrdersEvent ancillaryOrdersEvent) {
+            this.ancillaryOrdersEvent = ancillaryOrdersEvent;
             return this;
         }
 
-        public ProsecutionEventBuilder others(String others) {
-            this.others = others;
+        public ProsecutionEventBuilder otherDetails(String otherDetails) {
+            this.otherDetails = otherDetails;
             return this;
         }
 
         public ProsecutionEvent build() {
-            ProsecutionEvent prosecution = new ProsecutionEvent(ancillaryOrders, others);
+            ProsecutionEvent prosecution = new ProsecutionEvent(ancillaryOrdersEvent, otherDetails);
             return prosecution;
         }
     }
