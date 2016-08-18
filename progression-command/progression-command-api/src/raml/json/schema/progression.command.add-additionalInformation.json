@@ -29,18 +29,12 @@
                 "drugAssessment": {
                   "type": "boolean"
                 }
-              },
-              "required": [
-                "psrIsRequested"
-              ]
+              }
             },
             "dangerousnessAssessment": {
               "type": "boolean"
             }
-          },
-          "required": [
-            "preSentenceReport"
-          ]
+          }
         },
         "defence": {
           "type": "object",
@@ -54,10 +48,7 @@
                 "details": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "isStatementOfMeans"
-              ]
+              }
             },
             "medicalDocumentation": {
               "type": "object",
@@ -68,18 +59,12 @@
                 "details": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "isMedicalDocumentation"
-              ]
+              }
             },
             "otherDetails": {
               "type": "string"
             }
-          },
-          "required": [
-            "statementOfMeans"
-          ]
+          }
         },
         "prosecution": {
           "type": "object",
@@ -93,23 +78,14 @@
                 "details": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "isAncillaryOrders"
-              ]
+              }
             },
             "otherDetails": {
               "type": "string"
             }
-          },
-          "required": [
-            "ancillaryOrders"
-          ]
+          }
         }
-      },
-      "required": [
-        "probation"
-      ]
+      }
     }
   },
   "required": [
