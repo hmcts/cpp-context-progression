@@ -3,7 +3,12 @@ package uk.gov.moj.cpp.progression.command.handler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -16,6 +21,7 @@ import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
+import uk.gov.moj.cpp.progression.domain.event.Defendant;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
 import uk.gov.moj.cpp.progression.domain.event.IndicateEvidenceServed;
 import uk.gov.moj.cpp.progression.domain.event.PTPHearingVacated;
@@ -57,7 +63,13 @@ public class ProgressionEventFactory {
                         UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final String courtCentreId =
                         envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTER_ID_);
-        return new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId);
+        final JsonArray defendants = envelope.payloadAsJsonObject().getJsonArray("defendants");
+        List<Defendant> defendantIds =
+                        defendants.stream()
+                                        .map(s -> new Defendant(UUID.fromString(
+                                                        ((JsonObject) s).getString("id"))))
+                        .collect(Collectors.toList());
+        return new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId, defendantIds);
     }
 
     public Object createDefenceIssuesAdded(final JsonEnvelope envelope) {

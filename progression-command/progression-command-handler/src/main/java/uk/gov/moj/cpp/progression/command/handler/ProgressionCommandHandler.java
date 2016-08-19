@@ -40,7 +40,7 @@ public class ProgressionCommandHandler {
         eventStream.append((caseSentToCrownCourt).map(enveloper.withMetadataFrom(envelope)));
     }
 
-    @Handles("progression.command.add-case-to-crown-court")
+    @Handles("progression.command.add-case-to-progression")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) throws EventStreamException {
         Stream<Object> caseAddedToCrownCourt =
                         streamOf(progressionEventFactory.createCaseAddedToCrownCourt(envelope));

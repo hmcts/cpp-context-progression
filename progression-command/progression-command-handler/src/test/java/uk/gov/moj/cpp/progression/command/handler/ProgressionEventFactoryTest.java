@@ -71,6 +71,12 @@ public class ProgressionEventFactoryTest {
                         .thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sentenceHearingDate")))
                         .thenReturn(LocalDate.now().toString());
+        when(jsonObj.getJsonArray(Mockito.eq("defendants")))
+                        .thenReturn(Json.createArrayBuilder()
+                                        .add(Json.createObjectBuilder()
+                                                        .add("id", UUID.randomUUID().toString())
+                                                        .build())
+                                        .build());
     }
 
     @Test

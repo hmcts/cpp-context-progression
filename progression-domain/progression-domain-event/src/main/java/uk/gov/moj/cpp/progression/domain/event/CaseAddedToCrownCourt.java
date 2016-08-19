@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
+import java.util.List;
 import java.util.UUID;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -18,11 +19,19 @@ public class CaseAddedToCrownCourt {
 
     private String courtCentreId;
 
-    public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId) {
+    private List<Defendant> defendants;
+
+    public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId,
+                    List<Defendant> defendantIds) {
         super();
         this.caseProgressionId = caseProgressionId;
         this.caseId = caseId;
         this.courtCentreId = courtCentreId;
+        this.defendants = defendantIds;
+    }
+
+    public List<Defendant> getDefendants() {
+        return defendants;
     }
 
     public UUID getCaseProgressionId() {

@@ -3,14 +3,25 @@ package uk.gov.moj.cpp.progression.command.controller;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Function;
+
+import static org.mockito.Mockito.*;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.controller.service.StructureReadService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandcontrollerTest {
@@ -20,6 +31,18 @@ public class ProgressionCommandcontrollerTest {
 
     @Mock
     private JsonEnvelope command;
+
+    @Mock
+    private Enveloper enveloper;
+
+    @Mock
+    private Function<Object, JsonEnvelope> function;
+
+    @Mock
+    JsonEnvelope modifiedJsonEnvelope;
+
+    @Mock
+    private StructureReadService structureCaseService;
 
     @InjectMocks
     private ProgressionCommandController progressionCommandcontroller;
@@ -32,8 +55,20 @@ public class ProgressionCommandcontrollerTest {
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
+
+        String caseId = UUID.randomUUID().toString();
+        String defendantId = UUID.randomUUID().toString();
+        JsonObject value = mock(JsonObject.class);
+        when(command.payloadAsJsonObject()).thenReturn(value);
+        when(value.getString("caseId")).thenReturn(caseId);
+        when(structureCaseService.getStructureCaseDefendentsId(caseId))
+                        .thenReturn(Arrays.asList(defendantId));
+        when(enveloper.withMetadataFrom(command, "progression.command.add-case-to-progression"))
+                        .thenReturn(function);
+        when(function.apply(any())).thenReturn(modifiedJsonEnvelope);
         progressionCommandcontroller.addCaseToCrownCourt(command);
-        verify(sender, times(1)).send(command);
+        verify(sender, times(1)).send(modifiedJsonEnvelope);
+
     }
 
 
