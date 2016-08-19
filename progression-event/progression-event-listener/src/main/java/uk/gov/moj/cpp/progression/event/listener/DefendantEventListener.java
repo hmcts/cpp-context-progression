@@ -14,7 +14,9 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 @ServiceComponent(EVENT_LISTENER)
@@ -31,6 +33,9 @@ public class DefendantEventListener {
     @Inject
     DefendantRepository defendantRepository;
 
+    @Inject
+    CaseProgressionDetailRepository caseProgressionDetailRepository;
+
     @Handles("progression.events.additional-information-added")
     public void addDefendant(final JsonEnvelope envelope) {
 
@@ -38,7 +43,15 @@ public class DefendantEventListener {
 
         JsonObject payload = envelope.payloadAsJsonObject();
         DefendantEvent defendantEvent = jsonObjectConverter.convert(payload, DefendantEvent.class);
+
         Defendant defendant = defendantEventToDefendantConverter.convert(defendantEvent);
+        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepository
+                .findBy(defendantEvent.getCaseProgressionId());
+        if (null == caseProgressionDetail) {
+            throw new IllegalArgumentException(
+                    "No case progression found with ID " + defendantEvent.getCaseProgressionId());
+        }
+        defendant.setCaseProgressionDetail(caseProgressionDetail);
         defendantRepository.save(defendant);
     }
 }

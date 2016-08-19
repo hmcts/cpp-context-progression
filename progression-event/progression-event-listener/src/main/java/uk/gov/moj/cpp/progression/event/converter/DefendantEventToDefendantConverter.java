@@ -30,12 +30,15 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantEv
 
         ProbationEvent probationEvent = additionalInformationEvent.getProbationEvent();
         if (probationEvent != null) {
-            defendant.setPreSentenceReport(probationEvent.getPreSentenceReportEvent() == null
+            defendant.setIsPSRRequested(probationEvent.getPreSentenceReportEvent() == null
                     ? null
-                    : probationEvent.getPreSentenceReportEvent().getProvideGuidance());
+                    : probationEvent.getPreSentenceReportEvent().getPsrIsRequested());
             defendant.setDrugAssessment(probationEvent.getPreSentenceReportEvent() == null
                     ? null
                     : probationEvent.getPreSentenceReportEvent().getDrugAssessment());
+            defendant.setProsecutionOthers(probationEvent.getPreSentenceReportEvent() == null
+                    ? null
+                    : probationEvent.getPreSentenceReportEvent().getProvideGuidance());
             defendant.setDangerousnessAssessment(probationEvent.getDangerousnessAssessment());
         }
 
@@ -44,9 +47,15 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantEv
             defendant.setStatementOfMeans(defenceEvent.getStatementOfMeansEvent() == null
                     ? null
                     : defenceEvent.getStatementOfMeansEvent().getDetails());
+            defendant.setIsStatementOffMeans(defenceEvent.getStatementOfMeansEvent() == null
+                    ? null
+                    : defenceEvent.getStatementOfMeansEvent().getIsStatementOfMeans());
             defendant.setMedicalDocumentation(defenceEvent.getMedicalDocumentationEvent() == null
                     ? null
                     : defenceEvent.getMedicalDocumentationEvent().getDetails());
+            defendant.setIsMedicalDocumentation(defenceEvent.getMedicalDocumentationEvent() == null
+                    ? null
+                    : defenceEvent.getMedicalDocumentationEvent().getIsMedicalDocumentation());
             defendant.setDefenceOthers(defenceEvent.getOtherDetails() == null ? null : defenceEvent.getOtherDetails());
         }
 
@@ -55,6 +64,9 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantEv
             defendant.setAncillaryOrders(prosecutionEvent.getAncillaryOrdersEvent() == null
                     ? null
                     : prosecutionEvent.getAncillaryOrdersEvent().getDetails());
+            defendant.setIsAncillaryOrders(prosecutionEvent.getAncillaryOrdersEvent() == null
+                    ? null
+                    : prosecutionEvent.getAncillaryOrdersEvent().getIsAncillaryOrders());
             defendant.setProsecutionOthers(
                     prosecutionEvent.getOtherDetails() == null ? null : prosecutionEvent.getOtherDetails());
         }

@@ -7,6 +7,8 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -20,6 +22,10 @@ public class Defendant {
     @Column(name = "defendant_id", unique = true, nullable = false)
     private UUID defendantId;
 
+    @ManyToOne
+    @JoinColumn(name = "case_progression_id", nullable = false)
+    CaseProgressionDetail caseProgressionDetail;
+
     @Column(name = "sentence_hearing_review_decision", nullable = false)
     private Boolean sentenceHearingReviewDecision;
 
@@ -31,9 +37,6 @@ public class Defendant {
 
     @Column(name = "dangerousness_assessment")
     private Boolean dangerousnessAssessment;
-
-    @Column(name = "pre_sentence_report")
-    private String preSentenceReport;
 
     @Column(name = "statement_of_means")
     private String statementOfMeans;
@@ -50,8 +53,17 @@ public class Defendant {
     @Column(name = "prosecution_others")
     private String prosecutionOthers;
 
-    @Column(name = "version", nullable = false)
-    private Long version;
+    @Column(name = "is_psr_requested")
+    private Boolean isPSRRequested;
+
+    @Column(name = "is_statement_off_means")
+    private Boolean isStatementOffMeans;
+
+    @Column(name = "is_medical_documentation")
+    private Boolean isMedicalDocumentation;
+
+    @Column(name = "is_ancillary_orders")
+    private Boolean isAncillaryOrders;
 
     public UUID getId() {
         return id;
@@ -67,6 +79,14 @@ public class Defendant {
 
     public void setDefendantId(UUID defendantId) {
         this.defendantId = defendantId;
+    }
+
+    public CaseProgressionDetail getCaseProgressionDetail() {
+        return caseProgressionDetail;
+    }
+
+    public void setCaseProgressionDetail(CaseProgressionDetail caseProgressionDetail) {
+        this.caseProgressionDetail = caseProgressionDetail;
     }
 
     public Boolean getSentenceHearingReviewDecision() {
@@ -99,14 +119,6 @@ public class Defendant {
 
     public void setDangerousnessAssessment(Boolean dangerousnessAssessment) {
         this.dangerousnessAssessment = dangerousnessAssessment;
-    }
-
-    public String getPreSentenceReport() {
-        return preSentenceReport;
-    }
-
-    public void setPreSentenceReport(String preSentenceReport) {
-        this.preSentenceReport = preSentenceReport;
     }
 
     public String getStatementOfMeans() {
@@ -149,55 +161,78 @@ public class Defendant {
         this.prosecutionOthers = prosecutionOthers;
     }
 
-    public Long getVersion() {
-        return version;
+    public Boolean getIsPSRRequested() {
+        return isPSRRequested;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    public void setIsPSRRequested(Boolean isPSRRequested) {
+        this.isPSRRequested = isPSRRequested;
+    }
+
+    public Boolean getIsStatementOffMeans() {
+        return isStatementOffMeans;
+    }
+
+    public void setIsStatementOffMeans(Boolean isStatementOffMeans) {
+        this.isStatementOffMeans = isStatementOffMeans;
+    }
+
+    public Boolean getIsMedicalDocumentation() {
+        return isMedicalDocumentation;
+    }
+
+    public void setIsMedicalDocumentation(Boolean isMedicalDocumentation) {
+        this.isMedicalDocumentation = isMedicalDocumentation;
+    }
+
+    public Boolean getIsAncillaryOrders() {
+        return isAncillaryOrders;
+    }
+
+    public void setIsAncillaryOrders(Boolean isAncillaryOrders) {
+        this.isAncillaryOrders = isAncillaryOrders;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Defendant)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Defendant))
+            return false;
         Defendant defendant = (Defendant) o;
-        return Objects.equals(getDefendantId(), defendant.getDefendantId()) &&
-                Objects.equals(getSentenceHearingReviewDecision(), defendant.getSentenceHearingReviewDecision()) &&
-                Objects.equals(getSentenceHearingReviewDecisionDateTime(), defendant.getSentenceHearingReviewDecisionDateTime()) &&
-                Objects.equals(getDrugAssessment(), defendant.getDrugAssessment()) &&
-                Objects.equals(getDangerousnessAssessment(), defendant.getDangerousnessAssessment()) &&
-                Objects.equals(getPreSentenceReport(), defendant.getPreSentenceReport()) &&
-                Objects.equals(getStatementOfMeans(), defendant.getStatementOfMeans()) &&
-                Objects.equals(getDefenceOthers(), defendant.getDefenceOthers()) &&
-                Objects.equals(getAncillaryOrders(), defendant.getAncillaryOrders()) &&
-                Objects.equals(getProsecutionOthers(), defendant.getProsecutionOthers()) &&
-                Objects.equals(getVersion(), defendant.getVersion());
+        return Objects.equals(getDefendantId(), defendant.getDefendantId())
+                && Objects.equals(getSentenceHearingReviewDecision(), defendant.getSentenceHearingReviewDecision())
+                && Objects.equals(getSentenceHearingReviewDecisionDateTime(),
+                        defendant.getSentenceHearingReviewDecisionDateTime())
+                && Objects.equals(getDrugAssessment(), defendant.getDrugAssessment())
+                && Objects.equals(getDangerousnessAssessment(), defendant.getDangerousnessAssessment())
+                && Objects.equals(getIsPSRRequested(), defendant.getIsPSRRequested())
+                && Objects.equals(getIsStatementOffMeans(), defendant.getIsStatementOffMeans())
+                && Objects.equals(getIsMedicalDocumentation(), defendant.getIsMedicalDocumentation())
+                && Objects.equals(getIsAncillaryOrders(), defendant.getIsAncillaryOrders())
+                && Objects.equals(getStatementOfMeans(), defendant.getStatementOfMeans())
+                && Objects.equals(getDefenceOthers(), defendant.getDefenceOthers())
+                && Objects.equals(getAncillaryOrders(), defendant.getAncillaryOrders())
+                && Objects.equals(getProsecutionOthers(), defendant.getProsecutionOthers());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getDefendantId(), getSentenceHearingReviewDecision(),
                 getSentenceHearingReviewDecisionDateTime(), getDrugAssessment(), getDangerousnessAssessment(),
-                getPreSentenceReport(), getStatementOfMeans(), getDefenceOthers(), getAncillaryOrders(),
-                getProsecutionOthers(), getVersion());
+                getIsAncillaryOrders(), getStatementOfMeans(), getDefenceOthers(), getAncillaryOrders(),
+                getProsecutionOthers(), getIsAncillaryOrders(), getIsMedicalDocumentation(), getIsPSRRequested());
     }
 
     @Override
     public String toString() {
-        return "Defendant{" +
-                "id=" + id +
-                ", defendantId=" + defendantId +
-                ", sentenceHearingReviewDecision=" + sentenceHearingReviewDecision +
-                ", sentenceHearingReviewDecisionDateTime=" + sentenceHearingReviewDecisionDateTime +
-                ", drugAssessment=" + drugAssessment +
-                ", dangerousnessAssessment=" + dangerousnessAssessment +
-                ", preSentenceReport='" + preSentenceReport + '\'' +
-                ", statementOfMeans='" + statementOfMeans + '\'' +
-                ", defenceOthers='" + defenceOthers + '\'' +
-                ", ancillaryOrders='" + ancillaryOrders + '\'' +
-                ", prosecutionOthers='" + prosecutionOthers + '\'' +
-                ", version=" + version +
-                '}';
+        return "Defendant{" + "id=" + id + ", defendantId=" + defendantId + ", sentenceHearingReviewDecision="
+                + sentenceHearingReviewDecision + ", sentenceHearingReviewDecisionDateTime="
+                + sentenceHearingReviewDecisionDateTime + ", drugAssessment=" + drugAssessment
+                + ", dangerousnessAssessment=" + dangerousnessAssessment + ", isAncillaryOrders='" + isAncillaryOrders
+                + '\'' + ", statementOfMeans='" + statementOfMeans + '\'' + ", defenceOthers='" + defenceOthers + '\''
+                + ", ancillaryOrders='" + ancillaryOrders + '\'' + ", prosecutionOthers='" + prosecutionOthers + '\''
+                + ", isStatementOffMeans='" + isStatementOffMeans + '\'' + ", isPSRRequested='" + isPSRRequested + '\''
+                + ", isMedicalDocumentation=" + isMedicalDocumentation + '}';
     }
 }
