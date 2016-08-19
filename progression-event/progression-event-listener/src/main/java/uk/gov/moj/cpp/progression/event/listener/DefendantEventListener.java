@@ -31,7 +31,7 @@ public class DefendantEventListener {
     @Inject
     DefendantRepository defendantRepository;
 
-    @Handles("progression.events.additionalInformation-added")
+    @Handles("progression.events.additional-information-added")
     public void addDefendant(final JsonEnvelope envelope) {
 
         logger.info("DEFENDANT:LISTENER");
@@ -39,8 +39,6 @@ public class DefendantEventListener {
         JsonObject payload = envelope.payloadAsJsonObject();
         DefendantEvent defendantEvent = jsonObjectConverter.convert(payload, DefendantEvent.class);
         Defendant defendant = defendantEventToDefendantConverter.convert(defendantEvent);
-        logger.info("-------------------------------------------");
-        logger.info(defendant.toString());
-        // defendantRepository.save(defendant);
+        defendantRepository.save(defendant);
     }
 }

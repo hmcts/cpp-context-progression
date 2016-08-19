@@ -2,13 +2,14 @@ package uk.gov.moj.cpp.progression.domain.event.defendant;
 
 public class AdditionalInformationEvent {
     private final ProbationEvent probationEvent;
-    private final DefenceEvent defence;
-    private final ProsecutionEvent prosecution;
+    private final DefenceEvent defenceEvent;
+    private final ProsecutionEvent prosecutionEvent;
 
-    private AdditionalInformationEvent(ProbationEvent probationEvent, DefenceEvent defence, ProsecutionEvent prosecution) {
+    private AdditionalInformationEvent(ProbationEvent probationEvent, DefenceEvent defence,
+            ProsecutionEvent prosecution) {
         this.probationEvent = probationEvent;
-        this.defence = defence;
-        this.prosecution = prosecution;
+        this.defenceEvent = defence;
+        this.prosecutionEvent = prosecution;
     }
 
     public ProbationEvent getProbationEvent() {
@@ -16,17 +17,17 @@ public class AdditionalInformationEvent {
     }
 
     public DefenceEvent getDefenceEvent() {
-        return defence;
+        return defenceEvent;
     }
 
     public ProsecutionEvent getProsecutionEvent() {
-        return prosecution;
+        return prosecutionEvent;
     }
 
     public static final class AdditionalInformationEventBuilder {
         private ProbationEvent probationEvent;
-        private DefenceEvent defence;
-        private ProsecutionEvent prosecution;
+        private DefenceEvent defenceEvent;
+        private ProsecutionEvent prosecutionEvent;
 
         private AdditionalInformationEventBuilder() {
         }
@@ -41,17 +42,17 @@ public class AdditionalInformationEvent {
         }
 
         public AdditionalInformationEventBuilder defence(DefenceEvent defence) {
-            this.defence = defence;
+            this.defenceEvent = defence;
             return this;
         }
 
         public AdditionalInformationEventBuilder prosecution(ProsecutionEvent prosecution) {
-            this.prosecution = prosecution;
+            this.prosecutionEvent = prosecution;
             return this;
         }
 
         public AdditionalInformationEvent build() {
-            return new AdditionalInformationEvent(probationEvent, defence, prosecution);
+            return new AdditionalInformationEvent(probationEvent, defenceEvent, prosecutionEvent);
         }
     }
 }
