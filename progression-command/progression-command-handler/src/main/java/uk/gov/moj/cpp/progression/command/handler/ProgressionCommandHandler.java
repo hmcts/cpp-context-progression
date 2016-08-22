@@ -181,7 +181,7 @@ public class ProgressionCommandHandler {
     }
 
 
-    @Handles("progression.command.add-additional-information")
+    @Handles("progression.command.add-defendant-additional-information")
     public void addAdditionalInformationForDefendant(final JsonEnvelope envelope)
                     throws EventStreamException {
 

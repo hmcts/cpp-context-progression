@@ -1,9 +1,6 @@
 package uk.gov.moj.cpp.progression.command.controller;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -129,7 +126,7 @@ public class ProgressionCommandController {
         sender.send(envelope);
     }
 
-    @Handles("progression.command.add-additional-information")
+    @Handles("progression.command.add-defendant-additional-information")
     public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
         sender.send(envelope);
     }

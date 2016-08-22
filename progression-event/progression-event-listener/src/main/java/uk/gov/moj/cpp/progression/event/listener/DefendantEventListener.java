@@ -36,7 +36,7 @@ public class DefendantEventListener {
     @Inject
     CaseProgressionDetailRepository caseProgressionDetailRepository;
 
-    @Handles("progression.events.additional-information-added")
+    @Handles("progression.events.defendant-additional-information-added")
     public void addDefendant(final JsonEnvelope envelope) {
 
         logger.info("DEFENDANT:LISTENER");

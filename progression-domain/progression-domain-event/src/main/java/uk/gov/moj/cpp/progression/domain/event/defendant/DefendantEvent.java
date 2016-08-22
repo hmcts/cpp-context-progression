@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("progression.events.additional-information-added")
+@Event("progression.events.defendant-additional-information-added")
 public class DefendantEvent {
     private final UUID defendantProgressionId;
     private final UUID defendantId;

@@ -374,16 +374,16 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         the defendant progression details
         ...
         (mapping):
-            requestType: application/vnd.progression.command.add-additional-information+json
-            name: progression.command.add-additional-information
+            requestType: application/vnd.progression.command.add-defendant-additional-information+json
+            name: progression.command.add-defendant-additional-information
         ...
       body:
-        application/vnd.progression.command.add-additional-information+json:
+        application/vnd.progression.command.add-defendant-additional-information+json:
             example:
-             !include json/progression.command.add-additional-information.json
+             !include json/progression.command.add-defendant-additional-information.json
 
             schema:
-             !include json/schema/progression.command.add-additional-information.json
+             !include json/schema/progression.command.add-defendant-additional-information.json
 
       responses:
             202:
