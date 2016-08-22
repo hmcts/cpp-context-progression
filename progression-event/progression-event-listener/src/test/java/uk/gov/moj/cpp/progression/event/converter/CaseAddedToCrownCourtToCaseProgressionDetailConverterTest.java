@@ -3,12 +3,14 @@ package uk.gov.moj.cpp.progression.event.converter;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
+import uk.gov.moj.cpp.progression.domain.event.Defendant;
 import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 
@@ -29,7 +31,7 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
     public void setUp() throws Exception {
         converter = new CaseAddedToCrownCourtToCaseProgressionDetailConverter();
         
-        event = new CaseAddedToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, COURT_CENTRE_ID);
+        event = new CaseAddedToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, COURT_CENTRE_ID,Arrays.asList(new Defendant(UUID.randomUUID())));
     }
 
     @Test

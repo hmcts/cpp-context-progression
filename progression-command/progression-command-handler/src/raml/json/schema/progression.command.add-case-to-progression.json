@@ -10,11 +10,26 @@
     },
     "courtCentreId": {
       "type": "string"
+    },
+    "defendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
     }
   },
   "required": [
     "caseProgressionId",
     "caseId",
-    "courtCentreId"
+    "courtCentreId",
+    "defendants"
   ]
 }
