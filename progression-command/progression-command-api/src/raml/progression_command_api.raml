@@ -361,12 +361,12 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-/caseprogression/{caseprogressionid}/defendantprogression/{defendantprogressionid}:
+/caseprogression/{caseProgressionId}/defendantprogression/{defendantProgressionId}:
   uriParameters:
-    caseprogressionid:
+    caseProgressionId:
       description: The ID of the case progression
       type: string
-    defendantprogressionid:
+    defendantProgressionId:
       description: The ID of the defendant progression
       type: string
   post:
@@ -374,16 +374,16 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         the defendant progression details
         ...
         (mapping):
-            requestType: application/vnd.progression.command.add-additionalInformation+json
-            name: progression.command.add-additionalInformation
+            requestType: application/vnd.progression.command.add-additional-information+json
+            name: progression.command.add-additional-information
         ...
       body:
-        application/vnd.progression.command.add-additionalInformation+json:
+        application/vnd.progression.command.add-additional-information+json:
             example:
-             !include json/progression.command.add-additionalInformation.json
+             !include json/progression.command.add-additional-information.json
 
             schema:
-             !include json/schema/progression.command.add-additionalInformation.json
+             !include json/schema/progression.command.add-additional-information.json
 
       responses:
             202:

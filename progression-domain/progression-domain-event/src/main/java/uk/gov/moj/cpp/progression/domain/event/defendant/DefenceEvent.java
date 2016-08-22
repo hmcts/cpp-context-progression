@@ -1,48 +1,49 @@
 package uk.gov.moj.cpp.progression.domain.event.defendant;
 
 public class DefenceEvent {
-    private final String statementOfMeans;
-    private final String medicalDocumentation;
-    private final String others;
+    private final StatementOfMeansEvent statementOfMeansEvent;
+    private final MedicalDocumentationEvent medicalDocumentationEvent;
+    private String otherDetails;
 
-    public DefenceEvent(String statementOfMeans, String medicalDocumentation, String others) {
-        this.statementOfMeans = statementOfMeans;
-        this.medicalDocumentation = medicalDocumentation;
-        this.others = others;
+    public DefenceEvent(StatementOfMeansEvent statementOfMeansEvent,
+            MedicalDocumentationEvent medicalDocumentationEvent, String otherDetails) {
+        this.statementOfMeansEvent = statementOfMeansEvent;
+        this.medicalDocumentationEvent = medicalDocumentationEvent;
+        this.otherDetails = otherDetails;
     }
 
-    public String getStatementOfMeansEvent() {
-        return statementOfMeans;
+    public StatementOfMeansEvent getStatementOfMeansEvent() {
+        return statementOfMeansEvent;
     }
 
-    public String getMedicalDocumentationEvent() {
-        return medicalDocumentation;
+    public MedicalDocumentationEvent getMedicalDocumentationEvent() {
+        return medicalDocumentationEvent;
     }
 
-    public String getOthersEvent() {
-        return others;
+    public String getOtherDetails() {
+        return otherDetails;
     }
 
     public static final class DefenceEventBuilder {
-        private String statementOfMeans;
-        private String medicalDocumentation;
-        private String others;
+        private StatementOfMeansEvent statementOfMeansEvent;
+        private MedicalDocumentationEvent medicalDocumentationEvent;
+        private String otherDetails;
 
         private DefenceEventBuilder() {
         }
 
-        public DefenceEventBuilder statementOfMeans(String statementOfMeansEvent) {
-            this.statementOfMeans = statementOfMeansEvent;
+        public DefenceEventBuilder statementOfMeans(StatementOfMeansEvent statementOfMeansEvent) {
+            this.statementOfMeansEvent = statementOfMeansEvent;
             return this;
         }
 
-        public DefenceEventBuilder medicalDocumentation(String medicalDocumentationEvent) {
-            this.medicalDocumentation = medicalDocumentationEvent;
+        public DefenceEventBuilder medicalDocumentation(MedicalDocumentationEvent medicalDocumentationEvent) {
+            this.medicalDocumentationEvent = medicalDocumentationEvent;
             return this;
         }
 
-        public DefenceEventBuilder others(String others) {
-            this.others = others;
+        public DefenceEventBuilder otherDetails(String otherDetails) {
+            this.otherDetails = otherDetails;
             return this;
         }
 
@@ -51,7 +52,7 @@ public class DefenceEvent {
         }
 
         public DefenceEvent build() {
-            return new DefenceEvent(statementOfMeans, medicalDocumentation, others);
+            return new DefenceEvent(statementOfMeansEvent, medicalDocumentationEvent, otherDetails);
         }
     }
 }

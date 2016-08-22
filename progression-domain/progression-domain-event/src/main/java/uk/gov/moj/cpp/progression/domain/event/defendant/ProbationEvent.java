@@ -2,31 +2,24 @@ package uk.gov.moj.cpp.progression.domain.event.defendant;
 
 public class ProbationEvent {
 
-    private final String provideGuidance;
-    private final Boolean drugAssessment;
+    private final PreSentenceReportEvent preSentenceReportEvent;
     private final Boolean dangerousnessAssessment;
 
-    private ProbationEvent(String provideGuidance, Boolean drugAssessment, Boolean dangerousnessAssessment) {
-        this.provideGuidance = provideGuidance;
-        this.drugAssessment = drugAssessment;
+    private ProbationEvent(PreSentenceReportEvent preSentenceReportEvent, Boolean dangerousnessAssessment) {
+        this.preSentenceReportEvent = preSentenceReportEvent;
         this.dangerousnessAssessment = dangerousnessAssessment;
+    }
+
+    public PreSentenceReportEvent getPreSentenceReportEvent() {
+        return preSentenceReportEvent;
     }
 
     public Boolean getDangerousnessAssessment() {
         return dangerousnessAssessment;
     }
 
-    public String getProvideGuidance() {
-        return provideGuidance;
-    }
-
-    public Boolean getDrugAssessment() {
-        return drugAssessment;
-    }
-
     public static final class ProbationEventBuilder {
-        private String provideGuidance;
-        private Boolean drugAssessment;
+        private PreSentenceReportEvent preSentenceReportEvent;
         private Boolean dangerousnessAssessment;
 
         private ProbationEventBuilder() {
@@ -36,13 +29,8 @@ public class ProbationEvent {
             return new ProbationEventBuilder();
         }
 
-        public ProbationEventBuilder provideGuidance(String provideGuidance) {
-            this.provideGuidance = provideGuidance;
-            return this;
-        }
-
-        public ProbationEventBuilder drugAssessment(Boolean drugAssessment) {
-            this.drugAssessment = drugAssessment;
+        public ProbationEventBuilder preSentenceReport(PreSentenceReportEvent preSentenceReportEvent) {
+            this.preSentenceReportEvent = preSentenceReportEvent;
             return this;
         }
 
@@ -52,7 +40,7 @@ public class ProbationEvent {
         }
 
         public ProbationEvent build() {
-            return new ProbationEvent(provideGuidance, drugAssessment, dangerousnessAssessment);
+            return new ProbationEvent(preSentenceReportEvent, dangerousnessAssessment);
         }
     }
 }
