@@ -2,6 +2,15 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
+    "defendantProgressionId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "caseProgressionId": {
+      "type": "string"
+    },
     "sentenceHearingReviewDecision": {
       "type": "boolean"
     },
@@ -17,6 +26,9 @@
             "preSentenceReport": {
               "type": "object",
               "properties": {
+                "psrIsRequested": {
+                  "type": "boolean"
+                },
                 "provideGuidance": {
                   "type": "string"
                 },
@@ -36,6 +48,9 @@
             "statementOfMeans": {
               "type": "object",
               "properties": {
+                "isStatementOfMeans": {
+                  "type": "boolean"
+                },
                 "details": {
                   "type": "string"
                 }
@@ -44,18 +59,16 @@
             "medicalDocumentation": {
               "type": "object",
               "properties": {
+                "isMedicalDocumentation": {
+                  "type": "boolean"
+                },
                 "details": {
                   "type": "string"
                 }
               }
             },
-            "others": {
-              "type": "object",
-              "properties": {
-                "details": {
-                  "type": "string"
-                }
-              }
+            "otherDetails": {
+              "type": "string"
             }
           }
         },
@@ -65,18 +78,16 @@
             "ancillaryOrders": {
               "type": "object",
               "properties": {
+                "isAncillaryOrders": {
+                  "type": "boolean"
+                },
                 "details": {
                   "type": "string"
                 }
               }
             },
-            "others": {
-              "type": "object",
-              "properties": {
-                "details": {
-                  "type": "string"
-                }
-              }
+            "otherDetails": {
+              "type": "string"
             }
           }
         }
@@ -84,6 +95,9 @@
     }
   },
   "required": [
+    "defendantProgressionId",
+    "defendantId",
+    "caseProgressionId",
     "sentenceHearingReviewDecision",
     "sentenceHearingReviewDecisionDateTime"
   ]
