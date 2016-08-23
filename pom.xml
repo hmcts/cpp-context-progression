@@ -1,60 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>uk.gov.moj.cpp.common</groupId>
-        <artifactId>service-parent-pom</artifactId>
-        <version>2.0.8</version>
-    </parent>
+	<parent>
+		<groupId>uk.gov.moj.cpp.common</groupId>
+		<artifactId>service-parent-pom</artifactId>
+		<version>2.0.8</version>
+	</parent>
 
-    <groupId>uk.gov.moj.cpp.progression</groupId>
-    <artifactId>progression-parent</artifactId>
-    <version>2.0.38</version>
-    <packaging>pom</packaging>
+	<groupId>uk.gov.moj.cpp.progression</groupId>
+	<artifactId>progression-parent</artifactId>
+	<version>2.0.39</version>
+	<packaging>pom</packaging>
 
-    <name>Progression services application</name>
-    <description>A applications for progression service.</description>
+	<name>Progression services application</name>
+	<description>A applications for progression service.</description>
 
-    <modules>
-        <module>progression-query</module>
-        <module>progression-viewstore</module>
-        <module>progression-command</module>
-        <module>progression-event</module>
-        <module>progression-domain</module>
-        <module>progression-integration-test</module>
-        <module>progression-performance-test</module>
-    </modules>
+	<modules>
+		<module>progression-query</module>
+		<module>progression-viewstore</module>
+		<module>progression-command</module>
+		<module>progression-event</module>
+		<module>progression-domain</module>
+		<module>progression-integration-test</module>
+		<module>progression-performance-test</module>
+	</modules>
 
-    <properties>
-        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
-        <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
-        <sonar.scm.provider>git</sonar.scm.provider>
-        <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
-        <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
-    </properties>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
-                <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>1.0-m5.1</version>
-                <configuration>
-                    <flowInitContext>
-                        <masterBranchName>dev/progression-release</masterBranchName>
-                        <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/progression-feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/progression-release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/progression-hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>progression-tag-</versionTagPrefix>
-                    </flowInitContext>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <enableSshAgent>true</enableSshAgent>
-                    <pushReleases>true</pushReleases>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    
+	<properties>
+		<sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+		<sonar.report.export.path>sonar-report.json</sonar.report.export.path>
+		<sonar.scm.provider>git</sonar.scm.provider>
+		<cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
+		<cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
+		<structure.version>2.0.67</structure.version>
+		<wiremock.version>1.57</wiremock.version>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>1.0-m5.1</version>
+				<configuration>
+					<flowInitContext>
+						<masterBranchName>dev/progression-release</masterBranchName>
+						<developBranchName>master</developBranchName>
+						<featureBranchPrefix>dev/progression-feature-</featureBranchPrefix>
+						<releaseBranchPrefix>dev/progression-release-</releaseBranchPrefix>
+						<hotfixBranchPrefix>dev/progression-hotfix-</hotfixBranchPrefix>
+						<versionTagPrefix>progression-tag-</versionTagPrefix>
+					</flowInitContext>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<enableSshAgent>true</enableSshAgent>
+					<pushReleases>true</pushReleases>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>

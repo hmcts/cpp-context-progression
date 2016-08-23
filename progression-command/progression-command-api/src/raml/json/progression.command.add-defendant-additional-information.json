@@ -1,9 +1,9 @@
 {
-  "defendantProgressionId": "4daefec6-5f77-4109-82d9-1e60544a6c05",
   "defendantId": "3daefec6-5f77-4109-82d9-1e60544a6c12",
   "additionalInformation": {
     "probation": {
       "preSentenceReport": {
+        "psrIsRequested": true,
         "provideGuidance": "guidance",
         "drugAssessment": true
       },
@@ -11,22 +11,21 @@
     },
     "defence": {
       "statementOfMeans": {
+        "isStatementOfMeans": true,
         "details": "meansDetails"
       },
       "medicalDocumentation": {
+        "isMedicalDocumentation": true,
         "details": "medicalDetails"
       },
-      "others": {
-        "details": "otherDetails"
-      }
+      "otherDetails": "otherDetails"
     },
     "prosecution": {
       "ancillaryOrders": {
+        "isAncillaryOrders": true,
         "details": "ancillaryOrdersDetails"
       },
-      "others": {
-        "details": "otherDetails"
-      }
+      "otherDetails": "otherDetails"
     }
   }
 }

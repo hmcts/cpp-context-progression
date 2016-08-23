@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -15,12 +16,13 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ProgressionCommandHandler {
 
+
     public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
-    public static final String FIELD_VERSION = "version";
     public static final String FIELD_INDICATE_STATEMENT_ID = "indicateStatementId";
 
     @Inject
@@ -32,6 +34,10 @@ public class ProgressionCommandHandler {
     @Inject
     ProgressionEventFactory progressionEventFactory;
 
+    @Inject
+    JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+
     @Handles("progression.command.send-to-crown-court")
     public void sendToCrownCourt(final JsonEnvelope envelope) throws EventStreamException {
         Stream<Object> caseSentToCrownCourt =
@@ -40,7 +46,7 @@ public class ProgressionCommandHandler {
         eventStream.append((caseSentToCrownCourt).map(enveloper.withMetadataFrom(envelope)));
     }
 
-    @Handles("progression.command.add-case-to-crown-court")
+    @Handles("progression.command.add-case-to-progression")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) throws EventStreamException {
         Stream<Object> caseAddedToCrownCourt =
                         streamOf(progressionEventFactory.createCaseAddedToCrownCourt(envelope));
@@ -174,8 +180,24 @@ public class ProgressionCommandHandler {
         eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
     }
 
-    private Long getVersion(final JsonEnvelope envelope) {
-        return new Long(envelope.payloadAsJsonObject().getInt(FIELD_VERSION));
+
+    @Handles("progression.command.add-defendant-additional-information")
+    public void addAdditionalInformationForDefendant(final JsonEnvelope envelope)
+                    throws EventStreamException {
+
+        final DefendantCommand defendant = jsonObjectToObjectConverter
+                        .convert(envelope.payloadAsJsonObject(), DefendantCommand.class);
+
+        final UUID streamId = defendant.getDefendantProgressionId();
+
+        final Stream<Object> events =
+                        streamOf(progressionEventFactory.addDefendantEvent(defendant));
+        try {
+            EventStream eventStream = eventSource.getStreamById(streamId);
+            eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("Error while adding event to EventStream", e);
+        }
     }
 
     private UUID getCaseProgressionId(final JsonEnvelope envelope) {

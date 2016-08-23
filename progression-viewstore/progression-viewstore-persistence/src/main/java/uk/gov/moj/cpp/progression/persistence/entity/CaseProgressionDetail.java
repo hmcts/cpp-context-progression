@@ -2,14 +2,19 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -78,6 +83,11 @@ public class CaseProgressionDetail {
 
     @Enumerated(EnumType.STRING)
     private CaseStatusEnum status;
+
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+                    mappedBy = "caseProgressionDetail")
+    private Set<Defendant> defendants = new HashSet<>();
 
     public CaseProgressionDetail() {
         super();
@@ -241,6 +251,14 @@ public class CaseProgressionDetail {
 
     public void setStatus(CaseStatusEnum status) {
         this.status = status;
+    }
+
+    public Set<Defendant> getDefendants() {
+        return defendants;
+    }
+
+    public void setDefendants(Set<Defendant> defendants) {
+        this.defendants = defendants;
     }
 
 }

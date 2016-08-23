@@ -125,4 +125,10 @@ public class ProgressionCommandApiTest {
         progressionCommandApi.prepareForSentenceHearing(command);
         verify(sender, times(1)).send(command);
     }
+
+    @Test
+    public void shouldAddDefendantProgression() throws Exception {
+        progressionCommandApi.addAdditionalInformationForDefendant(command);
+        verify(sender, times(1)).send(command);
+    }
 }

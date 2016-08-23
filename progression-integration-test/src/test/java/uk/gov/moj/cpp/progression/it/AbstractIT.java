@@ -11,30 +11,36 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 public class AbstractIT {
 
-	protected Properties prop;
-	protected RequestSpecification reqSpec;
-	protected String baseUri;
+    protected Properties prop;
+    protected RequestSpecification reqSpec;
+    protected String baseUri;
+    protected String HOST = "localhost";
+    protected int PORT = 8080;
 
-	public AbstractIT() {
-		readConfig();
-		setRequestSpecification();
-	}
+    public AbstractIT() {
+        readConfig();
+        setRequestSpecification();
+    }
 
-	private void readConfig() {
-		prop = new Properties();
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		InputStream stream = loader.getResourceAsStream("endpoint.properties");
-		try {
-			prop.load(stream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		String baseUriProp = System.getProperty("INTEGRATION_HOST_KEY");
-		baseUri = (StringUtils.isNotEmpty(baseUriProp) ? "http://" + baseUriProp + ":8080" : prop.getProperty("base-uri"));
-	}
+    private void readConfig() {
+        prop = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("endpoint.properties");
+        try {
+            prop.load(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String configuredHost = System.getProperty("INTEGRATION_HOST_KEY");
+        if (StringUtils.isNotBlank(configuredHost)) {
+            HOST = configuredHost;
+        }
+        baseUri = (StringUtils.isNotEmpty(HOST) ? "http://" + HOST + ":" + PORT
+                        : prop.getProperty("base-uri"));
+    }
 
-	private void setRequestSpecification() {
-		reqSpec = new RequestSpecBuilder().setBaseUri(baseUri).build();
-	}
+    private void setRequestSpecification() {
+        reqSpec = new RequestSpecBuilder().setBaseUri(baseUri).build();
+    }
 
 }

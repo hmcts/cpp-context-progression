@@ -3,15 +3,38 @@
 	<parent>
 		<groupId>uk.gov.moj.cpp.progression</groupId>
 		<artifactId>progression-command</artifactId>
-		<version>2.0.38</version>
+		<version>2.0.39</version>
 	</parent>
 	<artifactId>progression-command-controller</artifactId>
 	<packaging>war</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>uk.gov.justice.maven</groupId>
+				<artifactId>raml-maven-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>uk.gov.moj.cpp.structure</groupId>
+						<artifactId>structure-query-api</artifactId>
+						<version>${structure.version}</version>
+						<classifier>raml</classifier>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<generatorProperties>
+						<actionMapping>${cpp.framework.action.mapping.enabled}</actionMapping>
+					</generatorProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>uk.gov.justice.services</groupId>
 			<artifactId>command-controller</artifactId>
-			
+
 		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
@@ -34,6 +57,11 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
 			<scope>test</scope>
 		</dependency>
 
