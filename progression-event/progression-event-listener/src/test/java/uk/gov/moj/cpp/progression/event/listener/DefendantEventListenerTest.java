@@ -13,7 +13,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -42,7 +42,7 @@ public class DefendantEventListenerTest {
     private JsonObject payload;
 
     @Mock
-    private DefendantEvent defendantEvent;
+    private DefendantAdditionalInformationAdded defendantEvent;
 
     @Mock
     private Defendant defendant;
@@ -58,7 +58,7 @@ public class DefendantEventListenerTest {
         // given
         given(envelope.payloadAsJsonObject()).willReturn(payload);
         // and
-        given(jsonObjectConverter.convert(payload, DefendantEvent.class)).willReturn(defendantEvent);
+        given(jsonObjectConverter.convert(payload, DefendantAdditionalInformationAdded.class)).willReturn(defendantEvent);
         given(defendantEventToDefendantConverter.convert(defendantEvent)).willReturn(defendant);
         given(caseProgressionDetailRepository.findBy(defendantEvent.getCaseProgressionId()))
                 .willReturn(caseProgressionDetail);

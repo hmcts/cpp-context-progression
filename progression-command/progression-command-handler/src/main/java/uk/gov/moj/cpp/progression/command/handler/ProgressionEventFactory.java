@@ -4,7 +4,7 @@ package uk.gov.moj.cpp.progression.command.handler;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder.anAdditionalInformationEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.AncillaryOrdersEvent.AncillaryOrdersEventBuilder.anAncillaryOrdersEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent.DefenceEventBuilder.aDefenceEvent;
-import static uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent.DefendantEventBuilder.aDefendantEvent;
+import static uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded.DefendantEventBuilder.aDefendantEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.MedicalDocumentationEvent.MedicalDocumentationBuilder.aMedicalDocumentationEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.PreSentenceReportEvent.PreSentenceReportEventBuilder.aPreSentenceReportEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent.ProbationEventBuilder.aProbationEvent;
@@ -49,7 +49,7 @@ import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 
@@ -213,10 +213,10 @@ public class ProgressionEventFactory {
                         CaseStatusEnum.READY_FOR_SENTENCING_HEARING, LocalDateTime.now());
     }
 
-    Function<DefendantCommand, DefendantEvent> defendantToDefendantAdded =
-                    new Function<DefendantCommand, DefendantEvent>() {
-                        public DefendantEvent apply(DefendantCommand defendant) {
-                            DefendantEvent.DefendantEventBuilder defendantEventBuilder =
+    Function<DefendantCommand, DefendantAdditionalInformationAdded> defendantToDefendantAdded =
+                    new Function<DefendantCommand, DefendantAdditionalInformationAdded>() {
+                        public DefendantAdditionalInformationAdded apply(DefendantCommand defendant) {
+                            DefendantAdditionalInformationAdded.DefendantEventBuilder defendantEventBuilder =
                                             aDefendantEvent()
                                                             .defendantProgressionId(
                                                                             defendant.getDefendantProgressionId())
@@ -232,7 +232,7 @@ public class ProgressionEventFactory {
                     };
 
     private void buildAdditionalInformationEvent(DefendantCommand defendant,
-                    DefendantEvent.DefendantEventBuilder defendantEventBuilder) {
+                    DefendantAdditionalInformationAdded.DefendantEventBuilder defendantEventBuilder) {
         AdditionalInformationCommand additionalInformation = defendant.getAdditionalInformation();
 
         if (additionalInformation != null) {

@@ -6,7 +6,7 @@ import java.util.UUID;
 import uk.gov.justice.domain.annotation.Event;
 
 @Event("progression.events.defendant-additional-information-added")
-public class DefendantEvent {
+public class DefendantAdditionalInformationAdded {
     private final UUID defendantProgressionId;
     private final UUID defendantId;
     private final UUID caseProgressionId;
@@ -14,7 +14,7 @@ public class DefendantEvent {
     private LocalDateTime sentenceHearingReviewDecisionDateTime;
     private final AdditionalInformationEvent additionalInformationEvent;
 
-    public DefendantEvent(UUID defendantProgressionId, UUID defendantId, UUID caseProgressionId,
+    public DefendantAdditionalInformationAdded(UUID defendantProgressionId, UUID defendantId, UUID caseProgressionId,
             AdditionalInformationEvent additionalInformationEvent, Boolean sentenceHearingReviewDecision,
             LocalDateTime sentenceHearingReviewDecisionDateTime) {
         this.defendantProgressionId = defendantProgressionId;
@@ -94,8 +94,8 @@ public class DefendantEvent {
             return this;
         }
 
-        public DefendantEvent build() {
-            DefendantEvent defendantEvent = new DefendantEvent(defendantProgressionId, defendantId, caseProgressionId,
+        public DefendantAdditionalInformationAdded build() {
+            DefendantAdditionalInformationAdded defendantEvent = new DefendantAdditionalInformationAdded(defendantProgressionId, defendantId, caseProgressionId,
                     additionalInformationEvent, sentenceHearingReviewDecision, sentenceHearingReviewDecisionDateTime);
             return defendantEvent;
         }

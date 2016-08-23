@@ -12,7 +12,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -42,7 +42,7 @@ public class DefendantEventListener {
         logger.info("DEFENDANT:LISTENER");
 
         JsonObject payload = envelope.payloadAsJsonObject();
-        DefendantEvent defendantEvent = jsonObjectConverter.convert(payload, DefendantEvent.class);
+        DefendantAdditionalInformationAdded defendantEvent = jsonObjectConverter.convert(payload, DefendantAdditionalInformationAdded.class);
 
         Defendant defendant = defendantEventToDefendantConverter.convert(defendantEvent);
         CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepository
