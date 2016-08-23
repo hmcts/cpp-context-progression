@@ -20,8 +20,10 @@ import org.junit.runner.RunWith;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.TimeLineDateType;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.TimeLineDate;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 /**
  * 
@@ -37,10 +39,15 @@ public class CaseProgressionDetailRepositoryTest {
     private static final UUID ID_TWO = UUID.randomUUID();
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID CASE_ID_TWO = UUID.randomUUID();
+    private static final UUID DEF_PRG_ID = UUID.randomUUID();
+    private static final UUID DEF_ID = UUID.randomUUID();
     private List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
 
     @Inject
     private CaseProgressionDetailRepository repository;
+
+    @Inject
+    private DefendantRepository defendantRepository;
 
     private static LocalDate now;
 
@@ -50,6 +57,8 @@ public class CaseProgressionDetailRepositoryTest {
         CaseProgressionDetail caseProgressionDetailOne =
                         createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
+        Defendant defendant = new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
+        caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
         CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(ID_TWO,
@@ -82,6 +91,16 @@ public class CaseProgressionDetailRepositoryTest {
         caseProgressionDetail.setTrialEstimateProsecution(6L);
         caseProgressionDetail.setStatus(status);
         return caseProgressionDetail;
+    }
+
+
+    private Defendant createDefendantDetail(UUID id, UUID defendantId,
+                    CaseProgressionDetail caseProgressionDetail) {
+        Defendant defendant = new Defendant();
+        defendant.setDefendantId(defendantId);
+        defendant.setId(id);
+        defendant.setCaseProgressionDetail(caseProgressionDetail);
+        return defendant;
     }
 
     @After
@@ -152,4 +171,12 @@ public class CaseProgressionDetailRepositoryTest {
         CaseProgressionDetail result = results.get(0);
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
     }
+
+
+    @Test
+    public void shouldFindDefendantByProgressionId() throws Exception {
+        CaseProgressionDetail results = repository.findBy(ID_ONE);
+        assertThat(results.getDefendants().size(), equalTo(1));
+    }
+
 }
