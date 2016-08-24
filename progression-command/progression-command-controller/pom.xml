@@ -7,9 +7,7 @@
 	</parent>
 	<artifactId>progression-command-controller</artifactId>
 	<packaging>war</packaging>
-    <properties>
-        <cpp.service-component>COMMAND_CONTROLLER</cpp.service-component>
-    </properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -36,8 +34,10 @@
 		<dependency>
 			<groupId>uk.gov.justice.services</groupId>
 			<artifactId>command-controller</artifactId>
-
 		</dependency>
+		
+		
+		
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
