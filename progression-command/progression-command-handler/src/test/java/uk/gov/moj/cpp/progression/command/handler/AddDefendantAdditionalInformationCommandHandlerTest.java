@@ -34,12 +34,12 @@ public class AddDefendantAdditionalInformationCommandHandlerTest
     public void shouldAddDefendant() throws EventStreamException {
         when(converter.convert(jsonObject, DefendantCommand.class)).thenReturn(defendant);
         when(factory.addDefendantEvent(defendant)).thenReturn(defendantEvent);
-        when(caseProgressionAggregate.addAdditionalInformationForDefendant(defendantEvent))
+        when(caseProgressionAggregate.addAdditionalInformationForDefendant(defendant))
                         .thenReturn(events);
 
         addDefendantHandler.addAdditionalInformationForDefendant(jsonEnvelope);
 
         verify(converter).convert(jsonObject, DefendantCommand.class);
-        verify(caseProgressionAggregate).addAdditionalInformationForDefendant(defendantEvent);
+        verify(caseProgressionAggregate).addAdditionalInformationForDefendant(defendant);
     }
 }
