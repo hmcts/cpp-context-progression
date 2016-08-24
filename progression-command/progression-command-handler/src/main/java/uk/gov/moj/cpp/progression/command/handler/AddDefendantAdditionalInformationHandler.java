@@ -19,8 +19,7 @@ public class AddDefendantAdditionalInformationHandler extends CaseProgressionCom
     public void addAdditionalInformationForDefendant(final JsonEnvelope command)
                     throws EventStreamException {
         applyToCaseProgressionAggregate(command,
-                        aCase -> aCase.addAdditionalInformationForDefendant(
-                                        progressionEventFactory.addDefendantEvent(converter.convert(
-                                                        command.payloadAsJsonObject(), DefendantCommand.class))));
+                        aCase -> aCase.addAdditionalInformationForDefendant(converter.convert(
+                                        command.payloadAsJsonObject(), DefendantCommand.class)));
     }
 }
