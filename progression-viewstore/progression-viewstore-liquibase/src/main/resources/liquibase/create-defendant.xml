@@ -21,9 +21,7 @@
 				<constraints nullable="false" />
 			</column>
 			<column name="is_psr_requested" type="BPCHAR(1)"/>
-			<column name="sentence_hearing_review_decision_date_time" type="date">
-				<constraints nullable="false" />
-			</column>
+			<column name="sentence_hearing_review_decision_date_time" type="date"/>
 			<column name="drug_assessment" type="BPCHAR(1)"/>
 			<column name="dangerousness_assessment" type="BPCHAR(1)"/>
 			<column name="statement_of_means" type="VARCHAR(2000)"/>

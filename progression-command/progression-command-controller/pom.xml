@@ -7,7 +7,9 @@
 	</parent>
 	<artifactId>progression-command-controller</artifactId>
 	<packaging>war</packaging>
-
+    <properties>
+        <cpp.service-component>COMMAND_CONTROLLER</cpp.service-component>
+    </properties>
 	<build>
 		<plugins>
 			<plugin>

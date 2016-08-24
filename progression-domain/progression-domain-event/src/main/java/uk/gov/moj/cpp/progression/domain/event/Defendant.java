@@ -19,4 +19,8 @@ public class Defendant {
         this.id = id;
     }
 
+    public Defendant() {
+        super();
+    }
+
 }
