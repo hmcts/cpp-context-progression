@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static uk.gov.justice.domain.aggregate.condition.Precondition.assertPrecondition;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
@@ -42,8 +43,8 @@ public class CaseProgressionAggregate implements Aggregate {
     public Stream<Object> addAdditionalInformationForDefendant(DefendantCommand defendant) {
 
         UUID defendantId = defendant.getDefendantId();
-        // assertPrecondition(defendantIds.contains(defendantId)).orElseThrow(
-        // "Cannot add additional information without defendant " + defendantId);
+        assertPrecondition(defendantIds.contains(defendantId)).orElseThrow(
+                        "Cannot add additional information without defendant " + defendantId);
 
         // check if all defendant's sentence hearing review is true
 

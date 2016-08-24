@@ -17,7 +17,6 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInfo
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,9 +27,6 @@ public class DefendantEventListenerTest {
 
     @Mock
     private DefendantRepository defendantRepository;
-
-    @Mock
-    private CaseProgressionDetailRepository caseProgressionDetailRepository;
 
     @Mock
     private JsonEnvelope envelope;
@@ -58,10 +54,11 @@ public class DefendantEventListenerTest {
         // given
         given(envelope.payloadAsJsonObject()).willReturn(payload);
         // and
-        given(jsonObjectConverter.convert(payload, DefendantAdditionalInformationAdded.class)).willReturn(defendantEvent);
-        given(defendantEventToDefendantConverter.convert(defendantEvent)).willReturn(defendant);
-        given(caseProgressionDetailRepository.findBy(defendantEvent.getCaseProgressionId()))
-                .willReturn(caseProgressionDetail);
+        given(jsonObjectConverter.convert(payload, DefendantAdditionalInformationAdded.class))
+                .willReturn(defendantEvent);
+        given(defendantEventToDefendantConverter.populateAdditionalInformation(defendant, defendantEvent))
+                .willReturn(defendant);
+        given(defendantRepository.findBy(defendantEvent.getDefendantId())).willReturn(defendant);
         listener.addDefendant(envelope);
 
         verify(defendantRepository).save(defendant);
