@@ -65,6 +65,9 @@ public class Defendant {
     @Column(name = "is_ancillary_orders")
     private Boolean isAncillaryOrders;
 
+    @Column(name = "provide_guidance")
+    private String provideGuidance;
+
     public Defendant(UUID id, UUID defendantId, CaseProgressionDetail caseProgressionDetail,
             Boolean sentenceHearingReviewDecision) {
         super();
@@ -206,6 +209,14 @@ public class Defendant {
         this.isAncillaryOrders = isAncillaryOrders;
     }
 
+    public String getProvideGuidance() {
+        return provideGuidance;
+    }
+
+    public void setProvideGuidance(String provideGuidance) {
+        this.provideGuidance = provideGuidance;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -226,6 +237,7 @@ public class Defendant {
                 && Objects.equals(getStatementOfMeans(), defendant.getStatementOfMeans())
                 && Objects.equals(getDefenceOthers(), defendant.getDefenceOthers())
                 && Objects.equals(getAncillaryOrders(), defendant.getAncillaryOrders())
+                && Objects.equals(getProvideGuidance(), defendant.getProvideGuidance())
                 && Objects.equals(getProsecutionOthers(), defendant.getProsecutionOthers());
     }
 
@@ -234,7 +246,8 @@ public class Defendant {
         return Objects.hash(getDefendantId(), getSentenceHearingReviewDecision(),
                 getSentenceHearingReviewDecisionDateTime(), getDrugAssessment(), getDangerousnessAssessment(),
                 getIsAncillaryOrders(), getStatementOfMeans(), getDefenceOthers(), getAncillaryOrders(),
-                getProsecutionOthers(), getIsAncillaryOrders(), getIsMedicalDocumentation(), getIsPSRRequested());
+                getProsecutionOthers(), getIsAncillaryOrders(), getIsMedicalDocumentation(), getIsPSRRequested(),
+                getProvideGuidance());
     }
 
     @Override
@@ -246,6 +259,6 @@ public class Defendant {
                 + '\'' + ", statementOfMeans='" + statementOfMeans + '\'' + ", defenceOthers='" + defenceOthers + '\''
                 + ", ancillaryOrders='" + ancillaryOrders + '\'' + ", prosecutionOthers='" + prosecutionOthers + '\''
                 + ", isStatementOffMeans='" + isStatementOffMeans + '\'' + ", isPSRRequested='" + isPSRRequested + '\''
-                + ", isMedicalDocumentation=" + isMedicalDocumentation + '}';
+                + ", isMedicalDocumentation=" + isMedicalDocumentation + ", provideGuidance=" + provideGuidance + '}';
     }
 }

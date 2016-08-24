@@ -24,7 +24,12 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantAd
         defendant.setDefendantId(event.getDefendantId());
         defendant.setSentenceHearingReviewDecision(true);
         defendant.setSentenceHearingReviewDecisionDateTime(LocalDateTime.now());
+        return populateAdditionalInformation(defendant, event);
+    }
+
+    public Defendant populateAdditionalInformation(Defendant defendant, DefendantAdditionalInformationAdded event) {
         AdditionalInformationEvent additionalInformationEvent = event.getAdditionalInformationEvent();
+
         if (additionalInformationEvent == null)
             return defendant;
 
@@ -36,7 +41,7 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantAd
             defendant.setDrugAssessment(probationEvent.getPreSentenceReportEvent() == null
                     ? null
                     : probationEvent.getPreSentenceReportEvent().getDrugAssessment());
-            defendant.setProsecutionOthers(probationEvent.getPreSentenceReportEvent() == null
+            defendant.setProvideGuidance(probationEvent.getPreSentenceReportEvent() == null
                     ? null
                     : probationEvent.getPreSentenceReportEvent().getProvideGuidance());
             defendant.setDangerousnessAssessment(probationEvent.getDangerousnessAssessment());

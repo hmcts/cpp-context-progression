@@ -1,17 +1,18 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.test.utils.DefendantBuilder;
 
 /**
@@ -19,20 +20,27 @@ import uk.gov.moj.cpp.progression.test.utils.DefendantBuilder;
  * @author jchondig
  *
  */
+@RunWith(MockitoJUnitRunner.class)
 public class AddAdditionalInformationForDefendantTest extends CaseProgressionAggregateBaseTest {
 
     private static final DefendantCommand defendant = DefendantBuilder.defaultDefendant();
 
 
+    @Mock
+    private Set<UUID> defendantIds;
+
     @Test
-    public void shouldUpdateDefenceSolicitorFirm() {
+    public void shouldThowExceptionAdditionalInformationForDefendant() {
 
-        Stream<Object> eventStream =
-                        caseProgressionAggregate.addAdditionalInformationForDefendant(defendant);
-        List<Object> events = asList(eventStream.toArray());
+        try {
+            caseProgressionAggregate.addAdditionalInformationForDefendant(defendant);
+        } catch (Exception e) {
+            assertThat(e.getMessage(), is("Cannot add additional information without defendant "
+                            + defendant.getDefendantId()));
+            return;
+        }
 
-        assertThat("Has PleaUpdated event", events,
-                        hasItem(isA(DefendantAdditionalInformationAdded.class)));
+        fail("Expected exception not thrown.");
     }
 
 
