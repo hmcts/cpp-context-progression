@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.event.converter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,23 +8,28 @@ import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 
-public class DefendantEventToDefendantConverter implements Converter<DefendantEvent, Defendant> {
+public class DefendantEventToDefendantConverter implements Converter<DefendantAdditionalInformationAdded, Defendant> {
     private static Logger logger = LoggerFactory.getLogger(DefendantEventToDefendantConverter.class);
 
     @Override
-    public Defendant convert(DefendantEvent event) {
+    public Defendant convert(DefendantAdditionalInformationAdded event) {
         logger.info("DEFENDANT:CONVERT:DefendantEvent");
         Defendant defendant = new Defendant();
         defendant.setId(event.getDefendantProgressionId());
         defendant.setDefendantId(event.getDefendantId());
         defendant.setSentenceHearingReviewDecision(true);
-        defendant.setSentenceHearingReviewDecisionDateTime(LocalDate.now());
+        defendant.setSentenceHearingReviewDecisionDateTime(LocalDateTime.now());
+        return populateAdditionalInformation(defendant, event);
+    }
+
+    public Defendant populateAdditionalInformation(Defendant defendant, DefendantAdditionalInformationAdded event) {
         AdditionalInformationEvent additionalInformationEvent = event.getAdditionalInformationEvent();
+
         if (additionalInformationEvent == null)
             return defendant;
 
@@ -36,7 +41,7 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantEv
             defendant.setDrugAssessment(probationEvent.getPreSentenceReportEvent() == null
                     ? null
                     : probationEvent.getPreSentenceReportEvent().getDrugAssessment());
-            defendant.setProsecutionOthers(probationEvent.getPreSentenceReportEvent() == null
+            defendant.setProvideGuidance(probationEvent.getPreSentenceReportEvent() == null
                     ? null
                     : probationEvent.getPreSentenceReportEvent().getProvideGuidance());
             defendant.setDangerousnessAssessment(probationEvent.getDangerousnessAssessment());

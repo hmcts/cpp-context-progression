@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class Defendant {
 
-
     private UUID id;
+    private Boolean sentenceHearingReviewDecision;
 
     /**
      * @return the id
@@ -21,6 +21,14 @@ public class Defendant {
 
     public Defendant() {
         super();
+    }
+
+    public Boolean getSentenceHearingReviewDecision() {
+        return sentenceHearingReviewDecision;
+    }
+
+    public void setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
+        this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
 }

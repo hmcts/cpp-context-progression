@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
@@ -25,8 +25,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 /**
  * Unit tests for the CaseProgressionDetailTest class.
@@ -36,13 +38,13 @@ public class CaseProgressionDetailServiceTest {
 
     private static final UUID ID = UUID.randomUUID();
 
-    private static final UUID CASEID =  UUID.randomUUID();
+    private static final UUID CASEID = UUID.randomUUID();
 
     private static final String DEFENCEISSUE = "defence issue one";
 
     private static final String SFRISSUE = "streamlined forensics report one";
 
-    private static final String COURT_CENTRE="liverpool";
+    private static final String COURT_CENTRE = "liverpool";
 
     @Mock
     private CaseProgressionDetail caseProgressionDetail1;
@@ -54,10 +56,14 @@ public class CaseProgressionDetailServiceTest {
     private CaseProgressionDetail caseProgressionDetail3;
 
     @Mock
+    private DefendantRepository defendantRepository;
+
+    @Mock
     private CaseProgressionDetailRepository caseProgressionDetailRepository;
 
     @Spy
-    private final CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter = new CaseProgressionDetailToViewConverter();
+    private final CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter =
+                    new CaseProgressionDetailToViewConverter();
 
     @InjectMocks
     private CaseProgressionDetailService caseProgressionDetailService;
@@ -67,7 +73,7 @@ public class CaseProgressionDetailServiceTest {
     public void getCaseProgressionDetailTestIsEmpty() {
 
         when(this.caseProgressionDetailRepository.findByCaseId(CASEID))
-        .thenThrow(new NoResultException());
+                        .thenThrow(new NoResultException());
 
         this.caseProgressionDetailService.getCaseProgressionDetail(CASEID);
     }
@@ -76,7 +82,7 @@ public class CaseProgressionDetailServiceTest {
     public void getCaseProgressionDetailTest() throws IOException {
 
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
-        caseProgressionDetail.setId( ID);
+        caseProgressionDetail.setId(ID);
         caseProgressionDetail.setDateOfSending(LocalDate.now());
         caseProgressionDetail.setCaseId(CASEID);
         caseProgressionDetail.setDefenceIssue(DEFENCEISSUE);
@@ -91,7 +97,8 @@ public class CaseProgressionDetailServiceTest {
         caseProgressionDetail.setIsPSROrdered(true);
         caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
 
-        when(this.caseProgressionDetailRepository.findByCaseId(CASEID)).thenReturn(caseProgressionDetail);
+        when(this.caseProgressionDetailRepository.findByCaseId(CASEID))
+                        .thenReturn(caseProgressionDetail);
 
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getCaseId()
                         .equals(CASEID));
@@ -116,8 +123,7 @@ public class CaseProgressionDetailServiceTest {
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
                         .getTrialEstimateDefence() == 10l);
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
-                        .getPtpHearingVacatedDate()
-                        .equals(LocalDate.now()));
+                        .getPtpHearingVacatedDate().equals(LocalDate.now()));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
                         .getFromCourtCentre().equals(COURT_CENTRE));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
@@ -131,9 +137,8 @@ public class CaseProgressionDetailServiceTest {
     @Test
     public void shouldReturnAllCases() throws Exception {
 
-        when(caseProgressionDetailRepository.findOpenStatus())
-        .thenReturn(Arrays.asList(caseProgressionDetail1, caseProgressionDetail2,
-                        caseProgressionDetail3));
+        when(caseProgressionDetailRepository.findOpenStatus()).thenReturn(Arrays.asList(
+                        caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
 
         final List<CaseProgressionDetail> cases =
                         caseProgressionDetailService.getCases(Optional.ofNullable(null));
@@ -157,5 +162,42 @@ public class CaseProgressionDetailServiceTest {
 
         verify(caseProgressionDetailRepository, times(1)).findByStatus(statusList);
         assertThat(cases, hasSize(3));
+    }
+
+    @Test
+    public void shouldReturnDefendant() throws Exception {
+
+        final UUID defendantId = UUID.randomUUID();
+
+        Defendant value = new Defendant();
+        value.setId(defendantId);
+        when(defendantRepository.findByDefendantId(defendantId)).thenReturn(value);
+
+        final Optional<Defendant> defendant = caseProgressionDetailService
+                        .getDefendant(Optional.ofNullable(defendantId.toString()));
+
+        verify(defendantRepository, times(1)).findByDefendantId(defendantId);
+        assertThat(defendant.get().getId(), equalTo(defendantId));
+    }
+
+    @Test
+    public void shouldReturnListOfDefendant() throws Exception {
+
+        final UUID defendantId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+        caseProgressionDetail.setCaseId(caseId);
+        Defendant value = new Defendant();
+        value.setId(defendantId);
+        caseProgressionDetail.getDefendants().add(value);
+
+
+        when(caseProgressionDetailRepository.findByCaseId(caseId))
+                        .thenReturn(caseProgressionDetail);
+
+        final List<Defendant> defendant = caseProgressionDetailService.getDefendantsByCase(caseId);
+
+        verify(caseProgressionDetailRepository, times(1)).findByCaseId(caseId);
+        assertThat(defendant.get(0).getId(), equalTo(defendantId));
     }
 }
