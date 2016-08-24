@@ -6,10 +6,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -40,7 +38,6 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
-import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -358,37 +355,6 @@ public class ProgressionCommandHandlerTest {
         progressionCommandHandler.prepareForSentenceHearing(envelope);
 
         verify(progressionEventFactory).createCaseReadyForSentenceHearing(eq(envelope));
-        verify(eventSource).getStreamById(any());
-        verify(enveloper).withMetadataFrom(envelope);
-
-        ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
-        verify(eventStream).append(captor.capture());
-        assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
-
-        verifyNoMoreInteractions(progressionEventFactory);
-        verifyNoMoreInteractions(eventSource);
-        verifyNoMoreInteractions(enveloper);
-        verifyNoMoreInteractions(eventStream);
-    }
-
-    @Test
-    public void shouldHandleDefendantEvent() throws Exception {
-        UUID ID = UUID.randomUUID();
-        given(envelope.payloadAsJsonObject()).willReturn(jsonObject);
-        given(envelope.payloadAsJsonString()).willReturn(jsonString);
-        DefendantCommand defendant = mock(DefendantCommand.class);
-        given(jsonObjectToObjectConverter.convert(jsonObject, DefendantCommand.class))
-                        .willReturn(defendant);
-        given(defendant.getDefendantProgressionId()).willReturn(ID);
-        given(progressionEventFactory.addDefendantEvent(defendant)).willReturn(event);
-        given(eventSource.getStreamById(ID)).willReturn(eventStream);
-        given(enveloper.withMetadataFrom(envelope)).willReturn(enveloperFunction);
-        given(enveloperFunction.apply(event)).willReturn(mappedJsonEnvelope);
-
-        // when
-        progressionCommandHandler.addAdditionalInformationForDefendant(envelope);
-
-        verify(progressionEventFactory).addDefendantEvent(eq(defendant));
         verify(eventSource).getStreamById(any());
         verify(enveloper).withMetadataFrom(envelope);
 

@@ -16,7 +16,6 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ProgressionCommandHandler {
@@ -178,26 +177,6 @@ public class ProgressionCommandHandler {
                         progressionEventFactory.createCaseReadyForSentenceHearing(envelope));
         EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
         eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
-    }
-
-
-    @Handles("progression.command.add-defendant-additional-information")
-    public void addAdditionalInformationForDefendant(final JsonEnvelope envelope)
-                    throws EventStreamException {
-
-        final DefendantCommand defendant = jsonObjectToObjectConverter
-                        .convert(envelope.payloadAsJsonObject(), DefendantCommand.class);
-
-        final UUID streamId = defendant.getDefendantProgressionId();
-
-        final Stream<Object> events =
-                        streamOf(progressionEventFactory.addDefendantEvent(defendant));
-        try {
-            EventStream eventStream = eventSource.getStreamById(streamId);
-            eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("Error while adding event to EventStream", e);
-        }
     }
 
     private UUID getCaseProgressionId(final JsonEnvelope envelope) {

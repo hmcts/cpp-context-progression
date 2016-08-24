@@ -15,14 +15,14 @@ import uk.gov.moj.cpp.progression.command.defendant.StatementOfMeansCommand;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AncillaryOrdersEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.MedicalDocumentationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.PreSentenceReportEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.StatementOfMeansEvent;
 
-public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEvent> {
+public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantAdditionalInformationAdded> {
 
     private final DefendantCommand defendantCommand;
 
@@ -36,7 +36,7 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantEv
     }
 
     @Override
-    protected boolean matchesSafely(final DefendantEvent defendantEvent,
+    protected boolean matchesSafely(final DefendantAdditionalInformationAdded defendantEvent,
                     final Description mismatchDescription) {
         if (defendantEvent.getDefendantId() != defendantCommand.getDefendantId()) {
             mismatchDescription.appendText(" was ").appendValue(defendantEvent.getDefendantId());

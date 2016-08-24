@@ -54,7 +54,7 @@ import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
@@ -233,14 +233,14 @@ public class ProgressionEventFactoryTest {
         defendant.setAdditionalInformation(additionalInformation);
 
         // when
-        DefendantEvent defendantEvent =
-                        (DefendantEvent) progressionEventFactory.addDefendantEvent(defendant);
+        DefendantAdditionalInformationAdded defendantEvent =
+                        (DefendantAdditionalInformationAdded) progressionEventFactory.addDefendantEvent(defendant);
 
         // then
         assertThat(defendantEvent, sameAs(defendant));
     }
 
-    private Matcher<DefendantEvent> sameAs(final DefendantCommand defendantCommand) {
+    private Matcher<DefendantAdditionalInformationAdded> sameAs(final DefendantCommand defendantCommand) {
         return new DefendantEventMatcher(defendantCommand);
     }
 
