@@ -20,6 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
@@ -379,6 +380,30 @@ public class CaseServiceTest {
         exception.expect(RuntimeException.class);
         exception.expectMessage("CaseProgressionDetail not found");
         service.caseReadyForSentenceHearing(event, VERSION);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    public void casePendingForScentenceHearingUpdatedTest() {
+        final CasePendingForSentenceHearing event = mock(CasePendingForSentenceHearing.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
+
+        service.casePendingForSentenceHearing(event, VERSION);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).save(entity);
+
+    }
+
+    @Test
+    public void casePendingForSentenceHearingShouldThrowExceptionTest() throws Exception {
+        final CasePendingForSentenceHearing event = mock(CasePendingForSentenceHearing.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(null);
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("CaseProgressionDetail not found");
+        service.casePendingForSentenceHearing(event, VERSION);
         verifyNoMoreInteractions(repository);
     }
 

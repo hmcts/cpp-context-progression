@@ -4,6 +4,7 @@ import static uk.gov.justice.domain.aggregate.condition.Precondition.assertPreco
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -14,7 +15,8 @@ import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.command.handler.ProgressionEventFactory;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
 
 public class CaseProgressionAggregate implements Aggregate {
@@ -38,7 +40,11 @@ public class CaseProgressionAggregate implements Aggregate {
                                             defendantIds = defendants.stream().map(Defendant::getId)
                                                             .collect(Collectors.toSet());
                                         }),
-                        when(uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated.class)
+                        when(uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing.class)
+                                        .apply(e -> {
+
+                                        }),
+                        when(uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing.class)
                                         .apply(e -> {
 
                                         }),
@@ -99,13 +105,11 @@ public class CaseProgressionAggregate implements Aggregate {
 
         if (isAllDefendantReviewed) {
             if (isAnyDefendantPending) {
-                // TODO raise Pending Sentencing Hearing event
-                streamBuilder.add(new CaseAssignedForReviewUpdated(caseProgressionId,
-                                CaseStatusEnum.ASSIGNED_FOR_REVIEW));
+                streamBuilder.add(new CasePendingForSentenceHearing(caseProgressionId,
+                                CaseStatusEnum.PENDING_FOR_SENTENCING_HEARING));
             } else {
-                // TODO raise Ready for Sentencing Hearing event
-                streamBuilder.add(new CaseAssignedForReviewUpdated(caseProgressionId,
-                                CaseStatusEnum.ASSIGNED_FOR_REVIEW));
+                streamBuilder.add(new CaseReadyForSentenceHearing(caseProgressionId,
+                                CaseStatusEnum.READY_FOR_SENTENCING_HEARING, LocalDateTime.now()));
             }
         }
 

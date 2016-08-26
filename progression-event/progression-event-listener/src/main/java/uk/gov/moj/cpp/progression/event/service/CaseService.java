@@ -6,6 +6,7 @@ import javax.transaction.Transactional;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
@@ -224,6 +225,19 @@ public class CaseService {
             caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setStatus(event.getStatus());
             caseProgressionDetail.setReadyForSentenceHearingDate(event.getReadyForSentenceHearingDate());
+            caseProgressionDetailRepo.save(caseProgressionDetail);
+        } else {
+            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void casePendingForSentenceHearing(CasePendingForSentenceHearing event, Long version) {
+        final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo
+                .findBy(event.getCaseProgressionId());
+        if (caseProgressionDetail != null) {
+            caseProgressionDetail.setVersion(version);
+            caseProgressionDetail.setStatus(event.getStatus());
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
