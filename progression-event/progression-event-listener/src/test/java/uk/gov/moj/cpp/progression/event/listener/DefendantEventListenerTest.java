@@ -15,6 +15,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
+import uk.gov.moj.cpp.progression.event.service.CaseService;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.progression.persistence.repository.DefendantRepository;
@@ -49,6 +50,9 @@ public class DefendantEventListenerTest {
     @InjectMocks
     private DefendantEventListener listener;
 
+    @Mock
+    private CaseService service;
+
     @Test
     public void shouldAddDefendant() throws Exception {
         // given
@@ -59,9 +63,8 @@ public class DefendantEventListenerTest {
         given(defendantEventToDefendantConverter.populateAdditionalInformation(defendant, defendantEvent))
                 .willReturn(defendant);
         given(defendantRepository.findBy(defendantEvent.getDefendantId())).willReturn(defendant);
-        listener.addDefendant(envelope);
-
-        verify(defendantRepository).save(defendant);
+        listener.addAdditionalInformationForDefendant(envelope);
+        verify(service).addAdditionalInformationForDefendant(defendantEvent);
     }
 
 }
