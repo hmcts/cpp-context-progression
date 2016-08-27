@@ -6,7 +6,7 @@ public class Defendant {
 
     private UUID id;
     private Boolean sentenceHearingReviewDecision;
-
+    private Boolean isAdditionalInfoAvilable;
     /**
      * @return the id
      */
@@ -29,6 +29,14 @@ public class Defendant {
 
     public void setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
+    }
+
+    public Boolean getIsAdditionalInfoAvilable() {
+        return isAdditionalInfoAvilable;
+    }
+
+    public void setIsAdditionalInfoAvilable(Boolean isAdditionalInfoAvilable) {
+        this.isAdditionalInfoAvilable = isAdditionalInfoAvilable;
     }
 
 }

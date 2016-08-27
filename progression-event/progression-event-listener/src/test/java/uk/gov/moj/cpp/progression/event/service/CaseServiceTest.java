@@ -20,6 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
 import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
+import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
@@ -31,10 +32,14 @@ import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.event.converter.CaseSentToCrownCourtToCaseProgressionDetailConverter;
+import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 /**
  * @author Ted Pritchard
@@ -45,6 +50,8 @@ public class CaseServiceTest {
 
     private static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
 
+    private static final UUID DEFENDANT_ID = UUID.randomUUID();
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -52,10 +59,16 @@ public class CaseServiceTest {
     private CaseProgressionDetailRepository repository;
 
     @Mock
+    private DefendantRepository defendantRepository;
+
+    @Mock
     private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourt;
 
     @Mock
     private CaseSentToCrownCourtToCaseProgressionDetailConverter caseSentToCrownCourt;
+
+    @Mock
+    private DefendantEventToDefendantConverter defendantEventToDefendantConverter;
 
     @InjectMocks
     private CaseService service;
@@ -371,6 +384,30 @@ public class CaseServiceTest {
     }
 
     @Test
+    public void casePendingForScentenceHearingUpdatedTest() {
+        final CasePendingForSentenceHearing event = mock(CasePendingForSentenceHearing.class);
+        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
+
+        service.casePendingForSentenceHearing(event, VERSION);
+        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
+        verify(repository, times(1)).save(entity);
+
+    }
+
+    @Test
+    public void casePendingForSentenceHearingShouldThrowExceptionTest() throws Exception {
+        final CasePendingForSentenceHearing event = mock(CasePendingForSentenceHearing.class);
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(null);
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("CaseProgressionDetail not found");
+        service.casePendingForSentenceHearing(event, VERSION);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
     public void preSentenceReportOrderedTest() {
         final PreSentenceReportOrdered event = mock(PreSentenceReportOrdered.class);
         final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
@@ -390,5 +427,28 @@ public class CaseServiceTest {
         exception.expectMessage("CaseProgressionDetail not found");
         service.preSentenceReportOrdered(event, VERSION);
         verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    public void addAdditionalInformationForDefendantTest() {
+        final DefendantAdditionalInformationAdded event = mock(DefendantAdditionalInformationAdded.class);
+        final Defendant entity = mock(Defendant.class);
+        when(event.getDefendantProgressionId()).thenReturn(DEFENDANT_ID);
+        when(defendantRepository.findBy(DEFENDANT_ID)).thenReturn(entity);
+        when(defendantEventToDefendantConverter.populateAdditionalInformation(entity, event)).thenReturn(entity);
+        service.addAdditionalInformationForDefendant(event);
+        verify(defendantRepository, times(1)).findBy(DEFENDANT_ID);
+        verify(defendantRepository, times(1)).save(entity);
+    }
+
+    @Test
+    public void addAdditionalInformationForDefendantShouldThrowExceptionTest() throws Exception {
+        final DefendantAdditionalInformationAdded event = mock(DefendantAdditionalInformationAdded.class);
+        when(event.getDefendantProgressionId()).thenReturn(DEFENDANT_ID);
+        when(defendantRepository.findBy(DEFENDANT_ID)).thenReturn(null);
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("No case progression defendant found with ID " + DEFENDANT_ID);
+        service.addAdditionalInformationForDefendant(event);
+        verifyNoMoreInteractions(defendantRepository);
     }
 }

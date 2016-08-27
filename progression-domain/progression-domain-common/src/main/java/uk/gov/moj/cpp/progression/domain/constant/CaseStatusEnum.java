@@ -9,7 +9,9 @@ public enum CaseStatusEnum {
 
     INCOMPLETE("INCOMPLETE"), READY_FOR_REVIEW("READY_FOR_REVIEW"), ASSIGNED_FOR_REVIEW(
                     "ASSIGNED_FOR_REVIEW"), READY_FOR_SENTENCING_HEARING(
-                                    "READY_FOR_SENTENCING_HEARING"), COMPLETED("COMPLETED");
+                                    "READY_FOR_SENTENCING_HEARING"), COMPLETED(
+                                                    "COMPLETED"), PENDING_FOR_SENTENCING_HEARING(
+                                                                    "PENDING_FOR_SENTENCING_HEARING");
     // ASSIGNED_FOR_REVIEW is ASSIGNED_TO_JUDGE
     // READY_FOR_REVIEW is TO_BE_ASSIGNED
 
