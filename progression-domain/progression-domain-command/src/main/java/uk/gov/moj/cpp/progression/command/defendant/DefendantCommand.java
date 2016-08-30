@@ -6,6 +6,7 @@ public class DefendantCommand {
     private UUID defendantProgressionId;
     private UUID caseProgressionId;
     private UUID defendantId;
+    private UUID caseId;
     private AdditionalInformationCommand additionalInformation;
 
     public UUID getDefendantProgressionId() {
@@ -40,9 +41,18 @@ public class DefendantCommand {
         this.caseProgressionId = caseProgressionId;
     }
 
+    public UUID getCaseId() {
+        return caseId;
+    }
+
+    public void setCaseId(UUID caseId) {
+        this.caseId = caseId;
+    }
+
     @Override
     public String toString() {
         return "DefendantCommand{" + "defendantProgressionId=" + defendantProgressionId + ", defendantId=" + defendantId
                 + ", additionalInformation=" + additionalInformation + '}';
     }
+
 }

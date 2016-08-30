@@ -48,6 +48,10 @@ public class CaseProgressionAggregate implements Aggregate {
                                         .apply(e -> {
 
                                         }),
+                        when(uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated.class)
+                                        .apply(e -> {
+
+                                        }),
                         when(uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded.class)
                                         .apply(e -> {
                                             caseProgressionId = e.getCaseProgressionId();
