@@ -361,13 +361,13 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-/caseprogression/{caseProgressionId}/defendantprogression/{defendantProgressionId}:
+/cases/{caseId}/defendants/{defendantId}:
   uriParameters:
-    caseProgressionId:
-      description: The ID of the case progression
+    caseId:
+      description: The ID of the case
       type: string
-    defendantProgressionId:
-      description: The ID of the defendant progression
+    defendantId:
+      description: The ID of the defendant
       type: string
   post:
       description:  |

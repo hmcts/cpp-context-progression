@@ -5,6 +5,12 @@
     "defendantId": {
       "type": "string"
     },
+    "caseProgressionId": {
+      "type": "string"
+    },
+    "defendantProgressionId": {
+      "type": "string"
+    },
     "additionalInformation": {
       "type": "object",
       "properties": {
@@ -83,6 +89,8 @@
     }
   },
   "required": [
-    "defendantId"
+    "caseProgressionId",
+    "defendantId",
+    "defendantProgressionId"
   ]
 }
