@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -27,16 +29,21 @@ import com.jayway.restassured.response.Response;
 import uk.gov.moj.cpp.progression.helper.Endpoint;
 import uk.gov.moj.cpp.progression.helper.WireMockHelper;
 
-public class AddCaseToCrownCourtIT extends AbstractIT {
+public class AddDefendantAdditionalInfoIT extends AbstractIT {
 
     private String caseId;
     private String caseProgressionId;
+    private String defendantId;
+    private String defendantProgressionId;
 
     @Before
     public void createMockEndpoints() throws IOException {
         WireMock.configureFor(HOST, PORT);
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
+        defendantId = UUID.randomUUID().toString();
+        defendantProgressionId = "";
+
     }
 
     @Test
@@ -54,11 +61,39 @@ public class AddCaseToCrownCourtIT extends AbstractIT {
                         getJsonBodyStr("progression.command.add-case-to-crown-court.json"));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         waitForResponse(5);
-        Response queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
-                        "application/vnd.progression.query.caseprogressiondetail+json");
+        Response queryResponse =
+                        getCaseProgressionDetail(
+                                        getQueryUri("/cases/" + caseId + "/defendants/"
+                                                        + defendantId),
+                                        "application/vnd.progression.query.defendant+json");
         assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-    }
 
+        JsonObject defendantsJsonObject =
+                        WireMockHelper.getJsonObject(queryResponse.getBody().asString());
+
+        defendantProgressionId = defendantsJsonObject.getString("defendantProgressionId");
+        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
+                        equalTo(Boolean.FALSE));
+
+        writeResponse = postCommand(
+                        getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
+                        "application/vnd.progression.command.add-defendant-additional-information+json",
+                        getJsonBodyStr("progression.command.add-defendant-additional-information.json"));
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        waitForResponse(5);
+
+        queryResponse = getCaseProgressionDetail(
+                        getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
+                        "application/vnd.progression.query.defendant+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+        defendantsJsonObject = WireMockHelper.getJsonObject(queryResponse.getBody().asString());
+
+        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
+                        equalTo(Boolean.TRUE));
+    }
 
     @After
     public void tearDown() {
@@ -91,8 +126,9 @@ public class AddCaseToCrownCourtIT extends AbstractIT {
     private String getJsonBodyStr(String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                         .replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
-                        .replace("DEF_ID_1", UUID.randomUUID().toString())
+                        .replace("DEF_ID_1", defendantId)
                         .replace("DEF_ID_2", UUID.randomUUID().toString())
+                        .replace("DEF_PRG_ID", defendantProgressionId)
                         .replace("TODAY", LocalDate.now().toString());
     }
 }
