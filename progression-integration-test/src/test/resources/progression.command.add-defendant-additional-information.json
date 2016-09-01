@@ -1,0 +1,32 @@
+{
+  "caseProgressionId": "RANDOM_ID",
+  "defendantProgressionId": "DEF_PRG_ID",
+  "additionalInformation": {
+    "probation": {
+      "preSentenceReport": {
+        "psrIsRequested": true,
+        "provideGuidance": "guidance",
+        "drugAssessment": true
+      },
+      "dangerousnessAssessment": true
+    },
+    "defence": {
+      "statementOfMeans": {
+        "isStatementOfMeans": true,
+        "details": "meansDetails"
+      },
+      "medicalDocumentation": {
+        "isMedicalDocumentation": true,
+        "details": "medicalDetails"
+      },
+      "otherDetails": "otherDetails"
+    },
+    "prosecution": {
+      "ancillaryOrders": {
+        "isAncillaryOrders": true,
+        "details": "ancillaryOrdersDetails"
+      },
+      "otherDetails": "otherDetails"
+    }
+  }
+}
