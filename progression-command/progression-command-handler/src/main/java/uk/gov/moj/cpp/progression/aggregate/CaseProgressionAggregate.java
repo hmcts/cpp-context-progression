@@ -106,7 +106,9 @@ public class CaseProgressionAggregate implements Aggregate {
         }
         // check if all defendant's reviewed
         checkAllDefendant();
-
+        if (caseProgressionId == null) {
+            caseProgressionId = defendant.getCaseProgressionId();
+        }
         if (isAllDefendantReviewed) {
             if (isAnyDefendantPending) {
                 streamBuilder.add(new CasePendingForSentenceHearing(caseProgressionId,
