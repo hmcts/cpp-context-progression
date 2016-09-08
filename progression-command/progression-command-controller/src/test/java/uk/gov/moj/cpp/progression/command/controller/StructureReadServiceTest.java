@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.progression.command.controller;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static java.util.Optional.of;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +17,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -28,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.controller.service.StructureReadService;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StructureReadServiceTest {
@@ -35,9 +37,14 @@ public class StructureReadServiceTest {
 
     private static final String CASE_ID = UUID.randomUUID().toString();
 
+    private static final UUID SYSTEM_USER_ID = UUID.randomUUID();
+
     @InjectMocks
     private StructureReadService service;
 
+    @Mock
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
+    
     @Mock
     private Requester requester;
 
@@ -53,7 +60,11 @@ public class StructureReadServiceTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> jsonCapture;
 
-
+    @Before
+    public void setUp(){
+    when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(SYSTEM_USER_ID));
+    }
+    
     @Test
     public void shouldReturnListOfDefendantsForGivenCaseTest() {
         String defendantId = UUID.randomUUID().toString();
