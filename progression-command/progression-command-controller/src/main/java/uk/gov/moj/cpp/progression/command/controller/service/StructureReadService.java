@@ -20,7 +20,9 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 
 
@@ -35,15 +37,19 @@ public class StructureReadService {
     @ServiceComponent(Component.COMMAND_CONTROLLER)
     private Requester requester;
 
+    
+    @Inject
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
 
     public List<String> getStructureCaseDefendentsId(final String caseId) {
 
-        // return Arrays.asList(UUID.randomUUID().toString());
-
-        final Metadata metadata = metadataFrom(
-                        Json.createObjectBuilder().add(ID, UUID.randomUUID().toString())
-                                        .add(NAME, GET_CASE_DEFENDANT_QUERY).build());
+        UUID systemUserId = serviceContextSystemUserProvider.getContextSystemUserId()
+                        .orElseThrow(() -> new RuntimeException("System User Id for progression Context not found."));
+       
+        Metadata metadata = JsonObjectMetadata.metadataOf(UUID.randomUUID(), GET_CASE_DEFENDANT_QUERY)
+                        .withUserId(systemUserId.toString())
+                        .build();
         final JsonEnvelope requestEnvelope = envelopeFrom(metadata, buildRequestPayload(caseId));
 
 
