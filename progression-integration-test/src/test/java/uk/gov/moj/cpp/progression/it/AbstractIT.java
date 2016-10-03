@@ -24,14 +24,14 @@ public class AbstractIT {
 
     private void readConfig() {
         prop = new Properties();
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        InputStream stream = loader.getResourceAsStream("endpoint.properties");
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        final InputStream stream = loader.getResourceAsStream("endpoint.properties");
         try {
             prop.load(stream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
-        String configuredHost = System.getProperty("INTEGRATION_HOST_KEY");
+        final String configuredHost = System.getProperty("INTEGRATION_HOST_KEY");
         if (StringUtils.isNotBlank(configuredHost)) {
             HOST = configuredHost;
         }

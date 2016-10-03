@@ -20,6 +20,8 @@ import org.junit.Test;
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 
+import uk.gov.moj.cpp.progression.helper.StubUtil;
+
 /**
  * @author hshaik
  */
@@ -30,10 +32,11 @@ public class ProgressionIntegrationTest extends AbstractIT {
     private int version;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
         version = 0;
+        StubUtil.setupUsersGroupDataActionClassificationStub();
     }
 
     @Test
@@ -151,33 +154,38 @@ public class ProgressionIntegrationTest extends AbstractIT {
         version = (queryResponse.getBody().path("version"));
     }
 
-    private void waitForResponse(int i) throws InterruptedException {
+    private void waitForResponse(final int i) throws InterruptedException {
         TimeUnit.SECONDS.sleep(i);
     }
 
-    private Response postCommand(String uri, String mediaType, String jsonStringBody)
+    private Response postCommand(final String uri, final String mediaType,
+                    final String jsonStringBody) throws IOException {
+        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
+                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().post(uri).then()
+                        .extract().response();
+    }
+
+    private Response getCaseProgressionDetail(final String uri, final String mediaType)
                     throws IOException {
-        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody).when()
-                        .post(uri).then().extract().response();
+        return given().spec(reqSpec).and().accept(mediaType)
+                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().get(uri).then()
+                        .extract().response();
     }
 
-    private Response getCaseProgressionDetail(String uri, String mediaType) throws IOException {
-        return given().spec(reqSpec).and().accept(mediaType).when().get(uri).then().extract()
-                        .response();
-    }
-
-    private String getJsonBodyStr(String fileName) throws IOException {
+    private String getJsonBodyStr(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                         .replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
                         .replace("VERSION", String.valueOf(version))
                         .replace("TODAY", LocalDate.now().toString());
     }
 
-    private String getCommandUri(String path) {
+    private String getCommandUri(final String path) {
         return baseUri + prop.getProperty("base-uri-command") + path;
     }
 
-    private String getQueryUri(String path) {
+    private String getQueryUri(final String path) {
         return baseUri + prop.getProperty("base-uri-query") + path;
     }
+
+
 }
