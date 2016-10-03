@@ -5,17 +5,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -39,6 +34,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
     @Before
     public void createMockEndpoints() throws IOException {
         WireMock.configureFor(HOST, PORT);
+        WireMock.reset();
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
@@ -49,23 +45,29 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
 
-        JsonObject object = WireMockHelper
+        final JsonObject structurePayload = WireMockHelper
                         .getJsonObject(getJsonBodyStr("structure.query.case-defendants.json"));
         WireMockHelper.stub(new Endpoint.EndpointBuilder()
                         .endpoint("/structure-query-api/query/api/rest/structure/case.*")
                         .forRequestType(WireMock::get).willReturnStatus(HttpStatus.SC_OK)
+                        .withContentType("application/json").andBody(structurePayload).build());
+
+        final JsonObject object = WireMockHelper
+                        .getJsonObject(getJsonBodyStr("users-groups-system-user.json"));
+        WireMockHelper.stub(new Endpoint.EndpointBuilder()
+                        .endpoint("/usersgroups-query-api/query/api/rest/usersgroups/users/.*")
+                        .forRequestType(WireMock::get).willReturnStatus(HttpStatus.SC_OK)
                         .withContentType("application/json").andBody(object).build());
+
 
         Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
                         "application/vnd.progression.command.add-case-to-crown-court+json",
                         getJsonBodyStr("progression.command.add-case-to-crown-court.json"));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         waitForResponse(5);
-        Response queryResponse =
-                        getCaseProgressionDetail(
-                                        getQueryUri("/cases/" + caseId + "/defendants/"
-                                                        + defendantId),
-                                        "application/vnd.progression.query.defendant+json");
+        Response queryResponse = getCaseProgressionDetail(
+                        getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
+                        "application/vnd.progression.query.defendant+json");
         assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
 
         JsonObject defendantsJsonObject =
@@ -100,30 +102,33 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
         WireMock.reset();
     }
 
-    private void waitForResponse(int i) throws InterruptedException {
+    private void waitForResponse(final int i) throws InterruptedException {
         TimeUnit.SECONDS.sleep(i);
     }
 
-    private String getQueryUri(String path) {
+    private String getQueryUri(final String path) {
         return baseUri + prop.getProperty("base-uri-query") + path;
     }
 
-    private String getCommandUri(String path) {
+    private String getCommandUri(final String path) {
         return baseUri + prop.getProperty("base-uri-command") + path;
     }
 
-    private Response postCommand(String uri, String mediaType, String jsonStringBody)
+    private Response postCommand(final String uri, final String mediaType,
+                    final String jsonStringBody) throws IOException {
+        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
+                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().post(uri).then()
+                        .extract().response();
+    }
+
+    private Response getCaseProgressionDetail(final String uri, final String mediaType)
                     throws IOException {
-        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody).when()
-                        .post(uri).then().extract().response();
+        return given().spec(reqSpec).and().accept(mediaType)
+                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().get(uri).then()
+                        .extract().response();
     }
 
-    private Response getCaseProgressionDetail(String uri, String mediaType) throws IOException {
-        return given().spec(reqSpec).and().accept(mediaType).when().get(uri).then().extract()
-                        .response();
-    }
-
-    private String getJsonBodyStr(String fileName) throws IOException {
+    private String getJsonBodyStr(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                         .replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
                         .replace("DEF_ID_1", defendantId)
