@@ -44,8 +44,7 @@ public class StructureReadService {
 
     public List<String> getStructureCaseDefendentsId(final String caseId) {
 
-        UUID systemUserId = serviceContextSystemUserProvider.getContextSystemUserId()
-                        .orElseThrow(() -> new RuntimeException("System User Id for progression Context not found."));
+        UUID systemUserId = serviceContextSystemUserProvider.getContextSystemUserId().get();
        
         Metadata metadata = JsonObjectMetadata.metadataOf(UUID.randomUUID(), GET_CASE_DEFENDANT_QUERY)
                         .withUserId(systemUserId.toString())
