@@ -1,10 +1,6 @@
 package uk.gov.moj.cpp.progression.test.utils;
 
-import java.util.Random;
-import java.util.UUID;
-
 import org.apache.commons.lang3.RandomStringUtils;
-
 import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
@@ -13,11 +9,17 @@ import uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 
-public class DefendantBuilder {
+import java.util.Random;
+import java.util.UUID;
 
+public class DefendantBuilder {
 
     public static DefendantCommand defaultDefendant() {
         UUID defendantId = randomUUID();
+        return defaultDefendantWith(defendantId);
+    }
+
+    public static DefendantCommand defaultDefendantWith(UUID defendantId) {
         UUID defendantProgressionId = randomUUID();
         MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
         medicalDocumentation.setDetails(randomString());
