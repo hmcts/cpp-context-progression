@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 
 public class DefendantEventToDefendantConverter implements Converter<DefendantAdditionalInformationAdded, Defendant> {
-    private static Logger logger = LoggerFactory.getLogger(DefendantEventToDefendantConverter.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefendantEventToDefendantConverter.class);
 
     @Override
     public Defendant convert(DefendantAdditionalInformationAdded event) {
@@ -30,8 +30,9 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantAd
     public Defendant populateAdditionalInformation(Defendant defendant, DefendantAdditionalInformationAdded event) {
         AdditionalInformationEvent additionalInformationEvent = event.getAdditionalInformationEvent();
 
-        if (additionalInformationEvent == null)
+        if (additionalInformationEvent == null){
             return defendant;
+        }
 
         ProbationEvent probationEvent = additionalInformationEvent.getProbationEvent();
         if (probationEvent != null) {
