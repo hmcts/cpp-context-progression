@@ -219,10 +219,12 @@ public class Defendant {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o){
             return true;
-        if (!(o instanceof Defendant))
+        }
+        if (!(o instanceof Defendant)){
             return false;
+        }
         Defendant defendant = (Defendant) o;
         return Objects.equals(getDefendantId(), defendant.getDefendantId())
                 && Objects.equals(getSentenceHearingReviewDecision(), defendant.getSentenceHearingReviewDecision())
