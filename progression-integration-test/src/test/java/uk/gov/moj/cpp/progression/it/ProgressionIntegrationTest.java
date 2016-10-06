@@ -36,7 +36,8 @@ public class ProgressionIntegrationTest extends AbstractIT {
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
         version = 0;
-        StubUtil.setupUsersGroupDataActionClassificationStub();
+        StubUtil.resetStubs();
+        StubUtil.setupUsersGroupQueryStub();
     }
 
     @Test

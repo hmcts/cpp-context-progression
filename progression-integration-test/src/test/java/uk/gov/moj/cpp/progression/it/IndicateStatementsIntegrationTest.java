@@ -38,7 +38,8 @@ public class IndicateStatementsIntegrationTest extends AbstractIT {
         caseId = UUID.randomUUID().toString();
         indicatestatementId = UUID.randomUUID().toString();
         version = 0;
-        StubUtil.setupUsersGroupDataActionClassificationStub();
+        StubUtil.resetStubs();
+        StubUtil.setupUsersGroupQueryStub();
     }
 
     @Test

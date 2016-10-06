@@ -101,7 +101,8 @@ public class CaseServiceTest {
 
     @Test
     public void addSendingCommittalHearingInformationTest() {
-        final SendingCommittalHearingInformationAdded event = mock(SendingCommittalHearingInformationAdded.class);
+        final SendingCommittalHearingInformationAdded event =
+                        mock(SendingCommittalHearingInformationAdded.class);
         final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
@@ -114,7 +115,8 @@ public class CaseServiceTest {
 
     @Test
     public void addSendingCommittalHearingInformationShouldThrowExceptionTest() throws Exception {
-        final SendingCommittalHearingInformationAdded event = mock(SendingCommittalHearingInformationAdded.class);
+        final SendingCommittalHearingInformationAdded event =
+                        mock(SendingCommittalHearingInformationAdded.class);
         when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
         when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(null);
         exception.expect(RuntimeException.class);
@@ -431,24 +433,26 @@ public class CaseServiceTest {
 
     @Test
     public void addAdditionalInformationForDefendantTest() {
-        final DefendantAdditionalInformationAdded event = mock(DefendantAdditionalInformationAdded.class);
+        final DefendantAdditionalInformationAdded event =
+                        mock(DefendantAdditionalInformationAdded.class);
         final Defendant entity = mock(Defendant.class);
-        when(event.getDefendantProgressionId()).thenReturn(DEFENDANT_ID);
-        when(defendantRepository.findBy(DEFENDANT_ID)).thenReturn(entity);
-        when(defendantEventToDefendantConverter.populateAdditionalInformation(entity, event)).thenReturn(entity);
+        when(event.getDefendantId()).thenReturn(DEFENDANT_ID);
+        when(defendantRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(entity);
+        when(defendantEventToDefendantConverter.populateAdditionalInformation(entity, event))
+                        .thenReturn(entity);
         service.addAdditionalInformationForDefendant(event);
-        verify(defendantRepository, times(1)).findBy(DEFENDANT_ID);
+        verify(defendantRepository, times(1)).findByDefendantId(DEFENDANT_ID);
         verify(defendantRepository, times(1)).save(entity);
     }
 
     @Test
     public void addAdditionalInformationForDefendantShouldThrowExceptionTest() throws Exception {
-        final DefendantAdditionalInformationAdded event = mock(DefendantAdditionalInformationAdded.class);
-        when(event.getDefendantProgressionId()).thenReturn(DEFENDANT_ID);
-        when(defendantRepository.findBy(DEFENDANT_ID)).thenReturn(null);
-        exception.expect(RuntimeException.class);
-        exception.expectMessage("No case progression defendant found with ID " + DEFENDANT_ID);
+        final DefendantAdditionalInformationAdded event =
+                        mock(DefendantAdditionalInformationAdded.class);
+        when(event.getDefendantId()).thenReturn(DEFENDANT_ID);
+        when(defendantRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(null);
         service.addAdditionalInformationForDefendant(event);
+        verify(defendantRepository, times(1)).findByDefendantId(DEFENDANT_ID);
         verifyNoMoreInteractions(defendantRepository);
     }
 }
