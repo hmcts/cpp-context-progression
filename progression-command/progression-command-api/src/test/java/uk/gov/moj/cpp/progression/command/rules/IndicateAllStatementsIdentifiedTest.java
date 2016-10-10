@@ -32,7 +32,7 @@ public class IndicateAllStatementsIdentifiedTest extends BaseDroolsAccessControl
                     "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group");
 
     private static final String MEDIA_TYPE =
-                    "progression.command.indicate-all-statements-identifed";
+                    "progression.command.indicate-all-statements-identified";
     private Action action;
 
     @Mock

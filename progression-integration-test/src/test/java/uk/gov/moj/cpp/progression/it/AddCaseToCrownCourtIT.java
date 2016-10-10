@@ -11,11 +11,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpStatus;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 
@@ -29,16 +27,14 @@ public class AddCaseToCrownCourtIT extends AbstractIT {
     @Before
     public void createMockEndpoints() throws IOException {
         caseId = UUID.randomUUID().toString();
-        StubUtil.setupStructureCaseStub(caseId, UUID.randomUUID().toString());
-        StubUtil.setupUsersGroupDataActionClassificationStub();
+        StubUtil.resetStubs();
+        StubUtil.setupStructureCaseStub(caseId, UUID.randomUUID().toString(),
+                        UUID.randomUUID().toString());
+        StubUtil.setupUsersGroupQueryStub();
         caseProgressionId = UUID.randomUUID().toString();
 
     }
 
-    @After
-    public void tearDown() {
-        WireMock.reset();
-    }
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {

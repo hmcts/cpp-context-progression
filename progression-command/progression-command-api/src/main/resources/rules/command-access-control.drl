@@ -16,15 +16,6 @@ rule "Command - Access control for progression.command.vacate-ptp-hearing"
     $outcome.setSuccess(true);
 end
 
-rule "Command - Access control for progression.command.indicate-all-statements-identified"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.indicate-all-statements-identified");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users")))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "Command - Access control for progression.command.add-defendant-additional-information"
   when
     $outcome: Outcome();
@@ -73,10 +64,10 @@ rule "Command - Access control for progression.command.indicate-all-statements-s
 end
 
 
-rule "Command - Access control for progression.command.indicate-all-statements-identifed"
+rule "Command - Access control for progression.command.indicate-all-statements-identified"
   when
     $outcome: Outcome();
-    $action: Action(name == "progression.command.indicate-all-statements-identifed");
+    $action: Action(name == "progression.command.indicate-all-statements-identified");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
   then
     $outcome.setSuccess(true);
