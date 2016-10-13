@@ -29,16 +29,16 @@ public class CaseProgressionDetailService {
     private DefendantRepository defendantRepository;
 
     @Transactional
-    public CaseProgressionDetail getCaseProgressionDetail(UUID caseId) {
+    public CaseProgressionDetail getCaseProgressionDetail(final UUID caseId) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findByCaseId(caseId);
-        caseProgressionDetail.setTimeLine(this.getTimeline(caseProgressionDetail));
+        caseProgressionDetail.setTimeLine(getTimeline(caseProgressionDetail));
 
         return caseProgressionDetail;
 
     }
 
-    private List<TimeLineDate> getTimeline(CaseProgressionDetail cpd) {
+    private List<TimeLineDate> getTimeline(final CaseProgressionDetail cpd) {
 
         if (cpd.getDateOfSending() == null) {
             return Collections.emptyList();
@@ -72,7 +72,7 @@ public class CaseProgressionDetailService {
     }
 
     @Transactional
-    public List<CaseProgressionDetail> getCases(Optional<String> status) {
+    public List<CaseProgressionDetail> getCases(final Optional<String> status) {
 
         List<CaseProgressionDetail> caseProgressionDetails;
 
@@ -84,16 +84,15 @@ public class CaseProgressionDetailService {
             caseProgressionDetails = caseProgressionDetailRepo.findOpenStatus();
 
         }
-        caseProgressionDetails.stream().forEach(caseProgressionDetail -> {
-            caseProgressionDetail.setTimeLine(getTimeline(caseProgressionDetail));
-        });
+        caseProgressionDetails.stream().forEach(caseProgressionDetail -> caseProgressionDetail
+                        .setTimeLine(getTimeline(caseProgressionDetail)));
         return caseProgressionDetails;
 
     }
 
 
     @Transactional
-    public Optional<Defendant> getDefendant(Optional<String> defendantId) {
+    public Optional<Defendant> getDefendant(final Optional<String> defendantId) {
 
         Defendant defendant;
 
@@ -109,7 +108,7 @@ public class CaseProgressionDetailService {
     }
 
     @Transactional
-    public List<Defendant> getDefendantsByCase(UUID caseId) {
+    public List<Defendant> getDefendantsByCase(final UUID caseId) {
 
 
         final CaseProgressionDetail caseProgressionDetail =
@@ -118,7 +117,7 @@ public class CaseProgressionDetailService {
 
     }
 
-    List<CaseStatusEnum> getCaseStatusList(String status) {
+    List<CaseStatusEnum> getCaseStatusList(final String status) {
         final List<CaseStatusEnum> listOfStatus = new ArrayList<>();
         final StringTokenizer st = new StringTokenizer(status, ",");
         while (st.hasMoreTokens()) {

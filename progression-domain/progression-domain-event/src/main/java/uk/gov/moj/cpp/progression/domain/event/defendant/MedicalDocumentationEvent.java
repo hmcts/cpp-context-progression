@@ -28,12 +28,12 @@ public class MedicalDocumentationEvent {
             return new MedicalDocumentationEvent.MedicalDocumentationBuilder();
         }
 
-        public MedicalDocumentationEvent.MedicalDocumentationBuilder details(String details) {
+        public MedicalDocumentationEvent.MedicalDocumentationBuilder setDetails(String details) {
             this.details = details;
             return this;
         }
 
-        public MedicalDocumentationEvent.MedicalDocumentationBuilder isMedicalDocumentation(
+        public MedicalDocumentationEvent.MedicalDocumentationBuilder setIsMedicalDocumentation(
                 Boolean isMedicalDocumentation) {
             this.isMedicalDocumentation = isMedicalDocumentation;
             return this;

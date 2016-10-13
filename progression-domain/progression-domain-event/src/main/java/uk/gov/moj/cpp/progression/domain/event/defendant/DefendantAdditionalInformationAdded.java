@@ -64,32 +64,32 @@ public class DefendantAdditionalInformationAdded {
             return new DefendantEventBuilder();
         }
 
-        public DefendantEventBuilder defendantProgressionId(UUID defendantProgressionId) {
+        public DefendantEventBuilder setDefendantProgressionId(UUID defendantProgressionId) {
             this.defendantProgressionId = defendantProgressionId;
             return this;
         }
 
-        public DefendantEventBuilder defendantId(UUID defendantId) {
+        public DefendantEventBuilder setDefendantId(UUID defendantId) {
             this.defendantId = defendantId;
             return this;
         }
 
-        public DefendantEventBuilder caseProgressionId(UUID caseProgressionId) {
+        public DefendantEventBuilder setCaseProgressionId(UUID caseProgressionId) {
             this.caseProgressionId = caseProgressionId;
             return this;
         }
 
-        public DefendantEventBuilder sentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
+        public DefendantEventBuilder setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
             this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
             return this;
         }
 
-        public DefendantEventBuilder sentenceHearingReviewDecisionDateTime(
+        public DefendantEventBuilder setSentenceHearingReviewDecisionDateTime(
                 LocalDateTime sentenceHearingReviewDecisionDateTime) {
             this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
             return this;
         }
-        public DefendantEventBuilder additionalInformation(AdditionalInformationEvent additionalInformationEvent) {
+        public DefendantEventBuilder setAdditionalInformation(AdditionalInformationEvent additionalInformationEvent) {
             this.additionalInformationEvent = additionalInformationEvent;
             return this;
         }

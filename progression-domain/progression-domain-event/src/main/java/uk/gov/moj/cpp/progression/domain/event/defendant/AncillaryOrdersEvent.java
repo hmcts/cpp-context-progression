@@ -28,12 +28,12 @@ public class AncillaryOrdersEvent {
             return new AncillaryOrdersEventBuilder();
         }
 
-        public AncillaryOrdersEventBuilder details(String details) {
+        public AncillaryOrdersEventBuilder setDetails(String details) {
             this.details = details;
             return this;
         }
 
-        public AncillaryOrdersEventBuilder isAncillaryOrders(Boolean isAncillaryOrders) {
+        public AncillaryOrdersEventBuilder setIsAncillaryOrders(Boolean isAncillaryOrders) {
             this.isAncillaryOrders = isAncillaryOrders;
             return this;
         }

@@ -29,12 +29,12 @@ public class ProbationEvent {
             return new ProbationEventBuilder();
         }
 
-        public ProbationEventBuilder preSentenceReport(PreSentenceReportEvent preSentenceReportEvent) {
+        public ProbationEventBuilder setPreSentenceReport(PreSentenceReportEvent preSentenceReportEvent) {
             this.preSentenceReportEvent = preSentenceReportEvent;
             return this;
         }
 
-        public ProbationEventBuilder dangerousnessAssessment(Boolean dangerousnessAssessment) {
+        public ProbationEventBuilder setDangerousnessAssessment(Boolean dangerousnessAssessment) {
             this.dangerousnessAssessment = dangerousnessAssessment;
             return this;
         }

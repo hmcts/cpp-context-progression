@@ -29,12 +29,12 @@ public class ProsecutionEvent {
             return new ProsecutionEventBuilder();
         }
 
-        public ProsecutionEventBuilder ancillaryOrders(AncillaryOrdersEvent ancillaryOrdersEvent) {
+        public ProsecutionEventBuilder setAncillaryOrders(AncillaryOrdersEvent ancillaryOrdersEvent) {
             this.ancillaryOrdersEvent = ancillaryOrdersEvent;
             return this;
         }
 
-        public ProsecutionEventBuilder otherDetails(String otherDetails) {
+        public ProsecutionEventBuilder setOtherDetails(String otherDetails) {
             this.otherDetails = otherDetails;
             return this;
         }
