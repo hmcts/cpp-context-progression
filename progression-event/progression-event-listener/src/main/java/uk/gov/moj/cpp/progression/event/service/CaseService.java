@@ -36,7 +36,7 @@ import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 public class CaseService {
 
-    private static Logger logger = LoggerFactory.getLogger(DefendantEventListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantEventListener.class);
     private static final String CASE_PROGRESSION_DETAIL_NOT_FOUND =
                     "CaseProgressionDetail not found";
     @Inject
@@ -266,7 +266,7 @@ public class CaseService {
         Defendant defendant =
                         defendantRepository.findByDefendantId(defendantEvent.getDefendantId());
         if (null == defendant) {
-            logger.info("No case progression defendant found with ID "
+            LOGGER.info("No case progression defendant found with ID "
                             + defendantEvent.getDefendantProgressionId());
         } else {
             defendant = defendantEventToDefendantConverter.populateAdditionalInformation(defendant,

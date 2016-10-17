@@ -28,12 +28,12 @@ public class StatementOfMeansEvent {
             return new StatementOfMeansEventBuilder();
         }
 
-        public StatementOfMeansEventBuilder details(String details) {
+        public StatementOfMeansEventBuilder setDetails(String details) {
             this.details = details;
             return this;
         }
 
-        public StatementOfMeansEventBuilder isStatementOfMeans(Boolean isStatementOfMeans) {
+        public StatementOfMeansEventBuilder setIsStatementOfMeans(Boolean isStatementOfMeans) {
             this.isStatementOfMeans = isStatementOfMeans;
             return this;
         }

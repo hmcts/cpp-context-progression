@@ -42,7 +42,7 @@ public class DefenceEvent {
             return this;
         }
 
-        public DefenceEventBuilder otherDetails(String otherDetails) {
+        public DefenceEventBuilder setOtherDetails(String otherDetails) {
             this.otherDetails = otherDetails;
             return this;
         }

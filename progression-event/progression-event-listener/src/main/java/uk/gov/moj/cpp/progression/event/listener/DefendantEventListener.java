@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInfo
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantEventListener {
 
-    private static Logger logger = LoggerFactory.getLogger(DefendantEventListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantEventListener.class);
 
     @Inject
     private uk.gov.moj.cpp.progression.event.service.CaseService caseService;
@@ -28,11 +28,11 @@ public class DefendantEventListener {
     @Handles("progression.events.defendant-additional-information-added")
     public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
 
-        logger.info("DEFENDANT:LISTENER");
+        LOGGER.info("DEFENDANT:LISTENER");
 
-        JsonObject payload = envelope.payloadAsJsonObject();
-        caseService.addAdditionalInformationForDefendant(
-                jsonObjectConverter.convert(payload, DefendantAdditionalInformationAdded.class));
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        caseService.addAdditionalInformationForDefendant(jsonObjectConverter.convert(payload,
+                        DefendantAdditionalInformationAdded.class));
 
     }
 }

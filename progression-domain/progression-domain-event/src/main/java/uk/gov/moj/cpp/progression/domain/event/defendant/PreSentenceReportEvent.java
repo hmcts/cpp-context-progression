@@ -35,17 +35,17 @@ public class PreSentenceReportEvent {
             return new PreSentenceReportEventBuilder();
         }
 
-        public PreSentenceReportEventBuilder provideGuidance(String provideGuidance) {
+        public PreSentenceReportEventBuilder setProvideGuidance(String provideGuidance) {
             this.provideGuidance = provideGuidance;
             return this;
         }
 
-        public PreSentenceReportEventBuilder drugAssessment(Boolean drugAssessment) {
+        public PreSentenceReportEventBuilder setDrugAssessment(Boolean drugAssessment) {
             this.drugAssessment = drugAssessment;
             return this;
         }
 
-        public PreSentenceReportEventBuilder psrIsRequested(Boolean psrIsRequested) {
+        public PreSentenceReportEventBuilder setPsrIsRequested(Boolean psrIsRequested) {
             this.psrIsRequested = psrIsRequested;
             return this;
         }
