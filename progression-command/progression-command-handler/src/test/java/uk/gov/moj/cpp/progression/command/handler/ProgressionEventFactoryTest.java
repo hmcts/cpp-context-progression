@@ -29,23 +29,14 @@ import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.command.handler.matchers.DefendantEventMatcher;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.domain.event.AllStatementsIdentified;
-import uk.gov.moj.cpp.progression.domain.event.AllStatementsServed;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseSentToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
-import uk.gov.moj.cpp.progression.domain.event.DefenceIssuesAdded;
-import uk.gov.moj.cpp.progression.domain.event.DefenceTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.IndicateEvidenceServed;
-import uk.gov.moj.cpp.progression.domain.event.PTPHearingVacated;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
-import uk.gov.moj.cpp.progression.domain.event.ProsecutionTrialEstimateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
-import uk.gov.moj.cpp.progression.domain.event.SfrIssuesAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.test.utils.DefendantBuilder;
 
@@ -87,46 +78,17 @@ public class ProgressionEventFactoryTest {
     }
 
     @Test
-    public void testCreateCaseSentToCrownCourt() {
-        Object obj = progressionEventFactory.createCaseSentToCrownCourt(envelope);
-        assertThat(obj, instanceOf(CaseSentToCrownCourt.class));
-    }
-
-    @Test
     public void testCreateCaseAddedToCrownCourt() {
         Object obj = progressionEventFactory.createCaseAddedToCrownCourt(envelope);
         assertThat(obj, instanceOf(CaseAddedToCrownCourt.class));
     }
 
-    @Test
-    public void testCreateDefenceIssuesAdded() {
-        Object obj = progressionEventFactory.createDefenceIssuesAdded(envelope);
-        assertThat(obj, instanceOf(DefenceIssuesAdded.class));
-    }
-
-    @Test
-    public void testCreateSfrIssuesAdded() {
-        Object obj = progressionEventFactory.createSfrIssuesAdded(envelope);
-        assertThat(obj, instanceOf(SfrIssuesAdded.class));
-    }
 
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
         Object obj = progressionEventFactory
                         .createSendingCommittalHearingInformationAdded(envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
-    }
-
-    @Test
-    public void testCreateDefenceTrialEstimateAdded() {
-        Object obj = progressionEventFactory.createDefenceTrialEstimateAdded(envelope);
-        assertThat(obj, instanceOf(DefenceTrialEstimateAdded.class));
-    }
-
-    @Test
-    public void testCreateProsecutionTrialEstimateAdded() {
-        Object obj = progressionEventFactory.createProsecutionTrialEstimateAdded(envelope);
-        assertThat(obj, instanceOf(ProsecutionTrialEstimateAdded.class));
     }
 
     @Test
@@ -139,30 +101,6 @@ public class ProgressionEventFactoryTest {
     public void testCreatePreSentenceReportOrdered() {
         Object obj = progressionEventFactory.createPreSentenceReportOrdered(envelope);
         assertThat(obj, instanceOf(PreSentenceReportOrdered.class));
-    }
-
-    @Test
-    public void testCreateIndicateEvidenceServed() {
-        Object obj = progressionEventFactory.createIndicateEvidenceServed(envelope);
-        assertThat(obj, instanceOf(IndicateEvidenceServed.class));
-    }
-
-    @Test
-    public void testCreateAllStatementsIdentified() {
-        Object obj = progressionEventFactory.createAllStatementsIdentified(envelope);
-        assertThat(obj, instanceOf(AllStatementsIdentified.class));
-    }
-
-    @Test
-    public void testCreateAllStatementsServed() {
-        Object obj = progressionEventFactory.createAllStatementsServed(envelope);
-        assertThat(obj, instanceOf(AllStatementsServed.class));
-    }
-
-    @Test
-    public void testCreatePTPHearingVacated() {
-        Object obj = progressionEventFactory.createPTPHearingVacated(envelope);
-        assertThat(obj, instanceOf(PTPHearingVacated.class));
     }
 
     @Test
