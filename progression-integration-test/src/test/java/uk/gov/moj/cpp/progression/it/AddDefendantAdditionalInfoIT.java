@@ -84,9 +84,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
 
 
 
-    private void waitForResponse(final int i) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(i);
-    }
+
 
     private String getQueryUri(final String path) {
         return baseUri + prop.getProperty("base-uri-query") + path;

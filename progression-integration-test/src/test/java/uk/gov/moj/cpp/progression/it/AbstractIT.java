@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.it;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,4 +44,7 @@ public class AbstractIT {
         reqSpec = new RequestSpecBuilder().setBaseUri(baseUri).build();
     }
 
+    protected void waitForResponse(final int i) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(i);
+    }
 }

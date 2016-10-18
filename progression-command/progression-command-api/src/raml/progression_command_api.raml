@@ -4,26 +4,6 @@ version: 1.0
 baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progression
 
 
-/cases/sendcasetocrowncourt:
-  post:
-      description: |
-        Case is sent to a Crown Court for Hearing by a Magistrates Court
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.send-to-crown-court+json
-            name: progression.command.send-to-crown-court
-        ...
-      body:
-        application/vnd.progression.command.send-to-crown-court+json:
-            example: 
-             !include json/progression.command.send-to-crown-court.json          
-             
-            schema: 
-             !include json/schema/progression.command.send-to-crown-court.json
-              
-      responses:
-            202:
-                description: OK
                 
 /cases/addcasetocrowncourt:
   post:
@@ -46,26 +26,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK                
                 
-/cases/adddefenceissues:
-  post:
-      description: |
-        Add Defence Issues to the Case
-        ... 
-        (mapping):
-            requestType: application/vnd.progression.command.add-defence-issues+json
-            name: progression.command.add-defence-issues
-        ...
-      body:
-        application/vnd.progression.command.add-defence-issues+json:
-            example: 
-             !include json/progression.command.add-defence-issues.json         
-             
-            schema: 
-             !include json/schema/progression.command.add-defence-issues.json
-              
-      responses:
-            202:
-                description: OK
+
                 
 /cases/sentencehearingdate :
   post:
@@ -88,26 +49,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK    
                 
-/cases/addsfrissues:
-  post:
-      description: |
-        Add issues with Streamlined Forensics Report
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.addsfrissues+json
-            name: progression.command.addsfrissues
-        ...
-      body:
-        application/vnd.progression.command.addsfrissues+json:
-            example: 
-             !include json/progression.command.addsfrissues.json         
-             
-            schema: 
-             !include json/schema/progression.command.addsfrissues.json
-              
-      responses:
-            202:
-                description: OK   
+
                 
 /cases/sendingcommittalhearinginformation:
   post:
@@ -130,27 +72,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK                 
 
-/cases/defencetrialestimate:
-  post:
-      description: |
-        Add trail estimate required for hearing given by the defence
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.defence-trial-estimate+json
-            name: progression.command.defence-trial-estimate
-        ...
-      body:
-        application/vnd.progression.command.defence-trial-estimate+json:
-            example: 
-             !include json/progression.command.defence-trial-estimate.json         
-             
-            schema: 
-             !include json/schema/progression.command.defence-trial-estimate.json
-              
-      responses:
-            202:
-                description: OK    
-
 /cases/issuedirection:
   post:
       description:  |
@@ -171,7 +92,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK  
-                
+                                   
 /cases/presentencereport:
   post:
       description: |
@@ -193,110 +114,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK                                                         
 
-/cases/indicatestatement:
-  post:
-      description: |
-        Add indicatestatement for thee case
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.indicate-statement+json
-            name: progression.command.indicate-statement
-        ...
-      body:
-        application/vnd.progression.command.indicate-statement+json:
-            example: 
-             !include json/progression.command.indicate-statement.json         
-             
-            schema: 
-             !include json/schema/progression.command.indicate-statement.json
-              
-      responses:
-            202:
-                description: OK                  
-                
-/cases/indicateallstatementsidentified:
-  post:
-      description:  |
-        indicate that all statements has been identified 
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.indicate-all-statements-identified+json
-            name: progression.command.indicate-all-statements-identified
-        ...
-      body:
-        application/vnd.progression.command.indicate-all-statements-identified+json:
-            example: 
-             !include json/progression.command.indicate-all-statements-identified.json         
-             
-            schema: 
-             !include json/schema/progression.command.indicate-all-statements-identified.json
-              
-      responses:
-            202:
-                description: OK   
-                             
-/cases/indicateallstatementsserved:
-  post:
-      description:  |
-        indicate that all statements has been served
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.indicate-all-statements-served+json
-            name: progression.command.indicate-all-statements-served
-        ...
-      body:
-        application/vnd.progression.command.indicate-all-statements-served+json:
-            example: 
-             !include json/progression.command.indicate-all-statements-served.json         
-             
-            schema: 
-             !include json/schema/progression.command.indicate-all-statements-served.json
-              
-      responses:
-            202:
-                description: OK           
-                                         
-/cases/prosecutiontrialestimate:
-  post:
-      description:   |
-        Add trail estimate required for hearing given by the prosecution
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.prosecution-trial-estimate+json
-            name: progression.command.prosecution-trial-estimate
-        ...
-      body:
-        application/vnd.progression.command.prosecution-trial-estimate+json:
-            example: 
-             !include json/progression.command.prosecution-trial-estimate.json         
-             
-            schema: 
-             !include json/schema/progression.command.prosecution-trial-estimate.json
-              
-      responses:
-            202:
-                description: OK                                             
-    
-/cases/vacateptphearing:
-  post:
-      description: |
-        Vacate the booked PTP Hearing
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.vacate-ptp-hearing+json
-            name: progression.command.vacate-ptp-hearing
-        ...
-      body:
-        application/vnd.progression.command.vacate-ptp-hearing+json:
-            example: 
-             !include json/progression.command.vacate-ptp-hearing.json         
-             
-            schema: 
-             !include json/schema/progression.command.vacate-ptp-hearing.json
-              
-      responses:
-            202:
-                description: OK
 
 /cases/casetobeassigned:
   post:

@@ -26,12 +26,13 @@ import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-public class IndicateStatementTest extends BaseDroolsAccessControlTest {
+public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users",
-                    "Court Operations Officers", "Listing Officers");
+    private static final List<String> ALLOWED_USER_GROUPS =
+                    Arrays.asList("System Users", "Court Operations Officers",
+                                    "Listing Officers", "Judiciary");
 
-    private static final String MEDIA_TYPE = "progression.command.indicate-statement";
+    private static final String MEDIA_TYPE = "progression.command.add-defendant-additional-information";
     private Action action;
 
     @Mock

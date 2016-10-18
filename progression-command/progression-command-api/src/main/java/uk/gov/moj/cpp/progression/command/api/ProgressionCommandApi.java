@@ -14,23 +14,8 @@ public class ProgressionCommandApi {
     @Inject
     private Sender sender;
 
-    @Handles("progression.command.send-to-crown-court")
-    public void sendToCrownCourt(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
     @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.add-defence-issues")
-    public void addDefenceIssues(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.addsfrissues")
-    public void addSfrIssues(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 
@@ -38,17 +23,7 @@ public class ProgressionCommandApi {
     public void sendCommittalHearingInformation(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
-
-    @Handles("progression.command.defence-trial-estimate")
-    public void addDefenceTrialEstimate(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.prosecution-trial-estimate")
-    public void addProsecutionTrialEstimate(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
+    
     @Handles("progression.command.issue-direction")
     public void issueDirection(final JsonEnvelope envelope) {
         sender.send(envelope);
@@ -56,26 +31,6 @@ public class ProgressionCommandApi {
 
     @Handles("progression.command.pre-sentence-report")
     public void preSentenceReport(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.indicate-statement")
-    public void indicateStatement(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.indicate-all-statements-identified")
-    public void indicateAllStatementsIdentified(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.indicate-all-statements-served")
-    public void indicateAllStatementsServed(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
-    @Handles("progression.command.vacate-ptp-hearing")
-    public void vacatePTPHearing(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 

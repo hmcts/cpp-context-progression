@@ -6,51 +6,24 @@ baseUri:  message://command/handler/message/progression
 /progression.handler.command:
   post:
       body:
-        application/vnd.progression.command.send-to-crown-court+json:
-            example: !include json/progression.command.send-to-crown-court.json         
-            schema:  !include json/schema/progression.command.send-to-crown-court.json
         application/vnd.progression.command.add-case-to-progression+json:
             example: !include json/progression.command.add-case-to-progression.json          
             schema: !include json/schema/progression.command.add-case-to-progression.json            
         application/vnd.progression.command.case-to-be-assigned+json:
             example: !include json/progression.command.case-to-be-assigned.json         
             schema:  !include json/schema/progression.command.case-to-be-assigned.json
-        application/vnd.progression.command.add-defence-issues+json:
-            example: !include json/progression.command.add-defence-issues.json         
-            schema:  !include json/schema/progression.command.add-defence-issues.json 
-        application/vnd.progression.command.addsfrissues+json:
-            example: !include json/progression.command.addsfrissues.json         
-            schema:  !include json/schema/progression.command.addsfrissues.json                                                
         application/vnd.progression.command.sentence-hearing-date+json:
             example: !include json/progression.command.sentence-hearing-date.json         
             schema:  !include json/schema/progression.command.sentence-hearing-date.json             
         application/vnd.progression.command.sending-committal-hearing-information+json:
             example: !include json/progression.command.sending-committal-hearing-information.json         
             schema:  !include json/schema/progression.command.sending-committal-hearing-information.json 
-        application/vnd.progression.command.defence-trial-estimate+json:
-            example: !include json/progression.command.defence-trial-estimate.json         
-            schema:  !include json/schema/progression.command.defence-trial-estimate.json     
         application/vnd.progression.command.issue-direction+json:
             example: !include json/progression.command.issue-direction.json         
             schema:  !include json/schema/progression.command.issue-direction.json 
         application/vnd.progression.command.pre-sentence-report+json:
             example: !include json/progression.command.pre-sentence-report.json         
             schema:  !include json/schema/progression.command.pre-sentence-report.json
-        application/vnd.progression.command.indicate-statement+json:
-            example: !include json/progression.command.indicate-statement.json         
-            schema:  !include json/schema/progression.command.indicate-statement.json  
-        application/vnd.progression.command.prosecution-trial-estimate+json:
-            example: !include json/progression.command.prosecution-trial-estimate.json         
-            schema:  !include json/schema/progression.command.prosecution-trial-estimate.json 
-        application/vnd.progression.command.vacate-ptp-hearing+json:
-            example: !include json/progression.command.vacate-ptp-hearing.json         
-            schema:  !include json/schema/progression.command.vacate-ptp-hearing.json
-        application/vnd.progression.command.indicate-all-statements-identified+json:
-            example: !include json/progression.command.indicate-all-statements-identified.json         
-            schema:  !include json/schema/progression.command.indicate-all-statements-identified.json
-        application/vnd.progression.command.indicate-all-statements-served+json:
-            example: !include json/progression.command.indicate-all-statements-served.json         
-            schema:  !include json/schema/progression.command.indicate-all-statements-served.json
         application/vnd.progression.command.case-assigned-for-review+json:
             example: !include json/progression.command.case-assigned-for-review.json         
             schema:  !include json/schema/progression.command.case-assigned-for-review.json

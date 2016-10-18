@@ -39,388 +39,235 @@ import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandHandlerTest {
 
-    private static final UUID CASE_PROGRESSION_ID = randomUUID();
-    private static final int VERSION = 1;
-    private static final UUID INDICATE_STATEMENT_ID = randomUUID();
-    public static final Long FIELD_VERSION_VALUE = 1L;
+	private static final UUID CASE_PROGRESSION_ID = randomUUID();
+	private static final int VERSION = 1;
+	private static final UUID INDICATE_STATEMENT_ID = randomUUID();
+	public static final Long FIELD_VERSION_VALUE = 1L;
 
-    @Mock
-    private EventStream eventStream;
-    @Mock
-    private JsonEnvelope mappedJsonEnvelope;
+	@Mock
+	private EventStream eventStream;
+	@Mock
+	private JsonEnvelope mappedJsonEnvelope;
 
-    @Mock
-    private JsonObject jsonObject;
+	@Mock
+	private JsonObject jsonObject;
 
-    @Mock
-    private JsonString jsonString;
+	@Mock
+	private JsonString jsonString;
 
-    @Mock
-    JsonEnvelope envelope;
+	@Mock
+	JsonEnvelope envelope;
 
-    @Mock
-    EventSource eventSource;
+	@Mock
+	EventSource eventSource;
 
-    @Spy
-    Enveloper enveloper;
+	@Spy
+	Enveloper enveloper;
 
-    @Mock
-    Function<Object, JsonEnvelope> enveloperFunction;
+	@Mock
+	Function<Object, JsonEnvelope> enveloperFunction;
 
-    @Mock
-    Object event;
+	@Mock
+	Object event;
 
-    @InjectMocks
-    private ProgressionCommandHandler progressionCommandHandler;
+	@InjectMocks
+	private ProgressionCommandHandler progressionCommandHandler;
 
-    @Mock
-    ProgressionEventFactory progressionEventFactory;
+	@Mock
+	ProgressionEventFactory progressionEventFactory;
 
-    @Mock
-    JsonObjectToObjectConverter jsonObjectToObjectConverter;
+	@Mock
+	JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Test
-    public void shouldHandlerSendCaseToCrownCourtCommand() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
+	@Test
 
-        when(progressionEventFactory.createCaseSentToCrownCourt(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+	public void shouldHandlerAddCaseToCrownCourtCommand() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
 
-        progressionCommandHandler.sendToCrownCourt(command);
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
+		when(progressionEventFactory.createCaseAddedToCrownCourt(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
 
-    @Test
+		progressionCommandHandler.addCaseToCrownCourt(command);
 
-    public void shouldHandlerAddCaseToCrownCourtCommand() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
 
-        when(progressionEventFactory.createCaseAddedToCrownCourt(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+	}
 
-        progressionCommandHandler.addCaseToCrownCourt(command);
+	@Test
 
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	public void shouldHandlerSendCommittalHearingInformationCommand() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
 
-    }
+		when(progressionEventFactory.createSendingCommittalHearingInformationAdded(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
 
-    @Test
-    public void shouldHandlerAddDefenceIssuesCommand() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
+		progressionCommandHandler.sendCommittalHearingInformation(command);
+
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+
+	}
+
+	@Test
+
+	public void shouldIssueDirection() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
+		when(progressionEventFactory.createDirectionIssued(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+		progressionCommandHandler.issueDirection(command);
+
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	}
+
+	@Test
 
-        when(progressionEventFactory.createDefenceIssuesAdded(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+	public void shouldPreSentenceReport() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
+		when(progressionEventFactory.createPreSentenceReportOrdered(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
 
-        progressionCommandHandler.addDefenceIssues(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-
-    }
-
-    @Test
-
-    public void shouldHandlerAddSfrIssuesCommand() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-
-        when(progressionEventFactory.createSfrIssuesAdded(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.addSfrIssues(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-
-    }
-
-    @Test
-
-    public void shouldHandlerSendCommittalHearingInformationCommand() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-
-        when(progressionEventFactory.createSendingCommittalHearingInformationAdded(command))
-                        .thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.sendCommittalHearingInformation(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-
-    }
-
-    @Test
-
-    public void shouldAddDefenceTrialEstimate() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createDefenceTrialEstimateAdded(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.addDefenceTrialEstimate(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-
-    }
-
-    @Test
-
-    public void shouldAddProsecutionTrialEstimate() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createProsecutionTrialEstimateAdded(command))
-                        .thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-        progressionCommandHandler.addProsecutionTrialEstimate(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-
-    public void shouldIssueDirection() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createDirectionIssued(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-        progressionCommandHandler.issueDirection(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-
-    public void shouldPreSentenceReport() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createPreSentenceReportOrdered(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.preSentenceReport(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-
-    public void shouldIndicatestatement() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createIndicateEvidenceServed(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(INDICATE_STATEMENT_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.indicatestatement(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-    public void shouldIndicateAllStatementsIdentified() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createAllStatementsIdentified(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.indicateAllStatementsIdentified(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-
-    public void shouldIndicateAllStatementsServed() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-
-        when(progressionEventFactory.createAllStatementsServed(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.indicateAllStatementsServed(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-    public void shouldVacatePTPHearing() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createPTPHearingVacated(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.vacatePTPHearing(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-    public void shouldaddSentenceHearingDate() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createSentenceHearingDateAdded(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.addSentenceHearingDate(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-    public void shouldCaseToBeAssigned() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createCaseToBeAssignedUpdated(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.updateCaseToBeAssigned(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-    public void shouldCaseAssignedForReview() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createCaseAssignedForReviewUpdated(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.updateCaseAssignedForReview(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-
-    @Test
-    public void shouldHandleCaseReadyForSentenceHearing() throws Exception {
-        when(progressionEventFactory.createCaseReadyForSentenceHearing(envelope)).thenReturn(event);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(eventStream);
-        when(enveloper.withMetadataFrom(envelope)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(mappedJsonEnvelope);
-        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(jsonObject.getString(ProgressionCommandHandler.FIELD_CASE_PROGRESSION_ID))
-                        .thenReturn(CASE_PROGRESSION_ID.toString());
-        progressionCommandHandler.prepareForSentenceHearing(envelope);
-
-        verify(progressionEventFactory).createCaseReadyForSentenceHearing(eq(envelope));
-        verify(eventSource).getStreamById(any());
-        verify(enveloper).withMetadataFrom(envelope);
-
-        ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
-        verify(eventStream).append(captor.capture());
-        assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
-
-        verifyNoMoreInteractions(progressionEventFactory);
-        verifyNoMoreInteractions(eventSource);
-        verifyNoMoreInteractions(enveloper);
-        verifyNoMoreInteractions(eventStream);
-    }
-
-    private String randomString() {
-        return randomAlphabetic(10);
-    }
-
-    private JsonEnvelope createJsonCommand() {
-        final JsonObject metadataAsJsonObject = Json.createObjectBuilder()
-                        .add(ID, UUID.randomUUID().toString()).add(NAME, "SomeName").build();
-
-        final JsonObject payloadAsJsonObject =
-                        Json.createObjectBuilder()
-                                        .add("caseProgressionId", CASE_PROGRESSION_ID.toString())
-                                        .add("indicateStatementId",
-                                                        INDICATE_STATEMENT_ID.toString())
-                                        .add("version", VERSION).build();
-
-        return DefaultJsonEnvelope.envelopeFrom(
-                        JsonObjectMetadata.metadataFrom(metadataAsJsonObject), payloadAsJsonObject);
-
-    }
-
-    private class StubEventStream implements EventStream {
-
-        private Stream<JsonEnvelope> events;
-
-        @Override
-        public Stream<JsonEnvelope> read() {
-            return events;
-        }
-
-        @Override
-        public Stream<JsonEnvelope> readFrom(Long version) {
-            return events;
-        }
-
-        @Override
-        public void append(Stream<JsonEnvelope> events) throws EventStreamException {
-            this.events = events;
-        }
-
-        @Override
-        public void appendAfter(Stream<JsonEnvelope> events, Long version)
-                        throws EventStreamException {
-            this.events = events;
-        }
-
-        @Override
-        public Long getCurrentVersion() {
-            return null;
-        }
-
-        @Override
-        public UUID getId() {
-            return null;
-        }
-    }
+		progressionCommandHandler.preSentenceReport(command);
+
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	}
+
+	@Test
+	public void shouldaddSentenceHearingDate() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
+		when(progressionEventFactory.createSentenceHearingDateAdded(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+
+		progressionCommandHandler.addSentenceHearingDate(command);
+
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	}
+
+	@Test
+	public void shouldCaseToBeAssigned() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
+		when(progressionEventFactory.createCaseToBeAssignedUpdated(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+
+		progressionCommandHandler.updateCaseToBeAssigned(command);
+
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	}
+
+	@Test
+	public void shouldCaseAssignedForReview() throws Exception {
+		final JsonEnvelope command = createJsonCommand();
+		final StubEventStream stubEventStream = new StubEventStream();
+		when(progressionEventFactory.createCaseAssignedForReviewUpdated(command)).thenReturn(event);
+		when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(envelope);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
+
+		progressionCommandHandler.updateCaseAssignedForReview(command);
+
+		assertThat(stubEventStream.events, notNullValue());
+		assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
+	}
+
+	@Test
+	public void shouldHandleCaseReadyForSentenceHearing() throws Exception {
+		when(progressionEventFactory.createCaseReadyForSentenceHearing(envelope)).thenReturn(event);
+		when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(eventStream);
+		when(enveloper.withMetadataFrom(envelope)).thenReturn(enveloperFunction);
+		when(enveloperFunction.apply(event)).thenReturn(mappedJsonEnvelope);
+		when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+		when(jsonObject.getString(ProgressionCommandHandler.FIELD_CASE_PROGRESSION_ID))
+				.thenReturn(CASE_PROGRESSION_ID.toString());
+		progressionCommandHandler.prepareForSentenceHearing(envelope);
+
+		verify(progressionEventFactory).createCaseReadyForSentenceHearing(eq(envelope));
+		verify(eventSource).getStreamById(any());
+		verify(enveloper).withMetadataFrom(envelope);
+
+		ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
+		verify(eventStream).append(captor.capture());
+		assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
+
+		verifyNoMoreInteractions(progressionEventFactory);
+		verifyNoMoreInteractions(eventSource);
+		verifyNoMoreInteractions(enveloper);
+		verifyNoMoreInteractions(eventStream);
+	}
+
+	private String randomString() {
+		return randomAlphabetic(10);
+	}
+
+	private JsonEnvelope createJsonCommand() {
+		final JsonObject metadataAsJsonObject = Json.createObjectBuilder().add(ID, UUID.randomUUID().toString())
+				.add(NAME, "SomeName").build();
+
+		final JsonObject payloadAsJsonObject = Json.createObjectBuilder()
+				.add("caseProgressionId", CASE_PROGRESSION_ID.toString())
+				.add("indicateStatementId", INDICATE_STATEMENT_ID.toString()).add("version", VERSION).build();
+
+		return DefaultJsonEnvelope.envelopeFrom(JsonObjectMetadata.metadataFrom(metadataAsJsonObject),
+				payloadAsJsonObject);
+
+	}
+
+	private class StubEventStream implements EventStream {
+
+		private Stream<JsonEnvelope> events;
+
+		@Override
+		public Stream<JsonEnvelope> read() {
+			return events;
+		}
+
+		@Override
+		public Stream<JsonEnvelope> readFrom(Long version) {
+			return events;
+		}
+
+		@Override
+		public void append(Stream<JsonEnvelope> events) throws EventStreamException {
+			this.events = events;
+		}
+
+		@Override
+		public void appendAfter(Stream<JsonEnvelope> events, Long version) throws EventStreamException {
+			this.events = events;
+		}
+
+		@Override
+		public Long getCurrentVersion() {
+			return null;
+		}
+
+		@Override
+		public UUID getId() {
+			return null;
+		}
+	}
 }
