@@ -36,44 +36,14 @@ public class CaseProgressionDetail {
     @Column(name = "version", nullable = false)
     private Long version;
 
-    @Column(name = "dateofsending", nullable = false)
-    private LocalDate dateOfSending;
-
-    @Column(name = "isallstatementsidentified")
-    private Boolean isAllStatementsIdentified;
-
-    @Column(name = "defenceissue")
-    private String defenceIssue;
-
-    @Column(name = "sfrissue")
-    private String sfrIssue;
-
-    @Column(name = "trialestimatedefence")
-    private Long trialEstimateDefence;
-
-    @Column(name = "trialestimateprosecution")
-    private Long trialEstimateProsecution;
-
-    @Transient
-    private List<TimeLineDate> timeLine;
-
-    @Column(name = "isallstatementsserved")
-    private Boolean isAllStatementsServed;
-
     @Column(name = "directionissuedon")
     private LocalDate directionIssuedOn;
-
-    @Column(name = "ptphearingvacateddate")
-    private LocalDate ptpHearingVacatedDate;
 
     @Column(name = "fromcourtcentre")
     private String fromCourtCentre;
 
     @Column(name = "sendingcommittaldate")
     private LocalDate sendingCommittalDate;
-
-    @Column(name = "ispsrordered")
-    private Boolean isPSROrdered;
 
     @Column(name = "sentencehearingdate")
     private LocalDate sentenceHearingDate;
@@ -101,14 +71,6 @@ public class CaseProgressionDetail {
         this.caseId = caseId;
     }
 
-    public LocalDate getDateOfSending() {
-        return dateOfSending;
-    }
-
-    public void setDateOfSending(LocalDate dateOfSending) {
-        this.dateOfSending = dateOfSending;
-    }
-
     public UUID getId() {
         return id;
     }
@@ -125,76 +87,12 @@ public class CaseProgressionDetail {
         this.version = version;
     }
 
-    public Boolean getIsAllStatementsIdentified() {
-        return isAllStatementsIdentified;
-    }
-
-    public void setIsAllStatementsIdentified(Boolean isAllStatementsIdentified) {
-        this.isAllStatementsIdentified = isAllStatementsIdentified;
-    }
-
-    public String getDefenceIssue() {
-        return defenceIssue;
-    }
-
-    public void setDefenceIssue(String defenceIssue) {
-        this.defenceIssue = defenceIssue;
-    }
-
-    public String getSfrIssue() {
-        return sfrIssue;
-    }
-
-    public void setSfrIssue(String sfrIssue) {
-        this.sfrIssue = sfrIssue;
-    }
-
-    public Long getTrialEstimateDefence() {
-        return trialEstimateDefence;
-    }
-
-    public void setTrialEstimateDefence(Long trialEstimateDefence) {
-        this.trialEstimateDefence = trialEstimateDefence;
-    }
-
-    public Long getTrialEstimateProsecution() {
-        return trialEstimateProsecution;
-    }
-
-    public void setTrialEstimateProsecution(Long trialEstimateProsecution) {
-        this.trialEstimateProsecution = trialEstimateProsecution;
-    }
-
-    public List<TimeLineDate> getTimeLine() {
-        return timeLine;
-    }
-
-    public void setTimeLine(List<TimeLineDate> timeLine) {
-        this.timeLine = timeLine;
-    }
-
-    public Boolean getIsAllStatementsServed() {
-        return isAllStatementsServed;
-    }
-
-    public void setIsAllStatementsServed(Boolean isAllStatementsServed) {
-        this.isAllStatementsServed = isAllStatementsServed;
-    }
-
     public LocalDate getDirectionIssuedOn() {
         return directionIssuedOn;
     }
 
     public void setDirectionIssuedOn(LocalDate directionIssuedOn) {
         this.directionIssuedOn = directionIssuedOn;
-    }
-
-    public LocalDate getPtpHearingVacatedDate() {
-        return ptpHearingVacatedDate;
-    }
-
-    public void setPtpHearingVacatedDate(LocalDate ptpHearingVacatedDate) {
-        this.ptpHearingVacatedDate = ptpHearingVacatedDate;
     }
 
     public String getCourtCentreId() {
@@ -227,14 +125,6 @@ public class CaseProgressionDetail {
 
     public void setSendingCommittalDate(LocalDate sendingCommittalDate) {
         this.sendingCommittalDate = sendingCommittalDate;
-    }
-
-    public Boolean getIsPSROrdered() {
-        return isPSROrdered;
-    }
-
-    public void setIsPSROrdered(Boolean isPSROrdered) {
-        this.isPSROrdered = isPSROrdered;
     }
 
     public LocalDate getSentenceHearingDate() {

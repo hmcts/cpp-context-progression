@@ -34,24 +34,6 @@ public class ProgressionQueryApiTest {
     }
 
     @Test
-    public void shouldHandleTimelineQuery() {
-        when(requester.request(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getTimeline(query), equalTo(response));
-    }
-    
-    @Test
-    public void shouldHandleIndicatestatementsdetailQuery() {
-        when(requester.request(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getIndicatestatementsdetails(query), equalTo(response));
-    }
-    
-    @Test
-    public void shouldHandleIndicatestatementdetailQuery() {
-        when(requester.request(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getIndicatestatementsdetail(query), equalTo(response));
-    }
-    
-    @Test
     public void shouldHandleCaseaQuery() {
         when(requester.request(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCases(query), equalTo(response));

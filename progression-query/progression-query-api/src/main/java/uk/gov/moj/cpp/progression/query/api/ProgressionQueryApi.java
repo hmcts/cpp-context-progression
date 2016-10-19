@@ -21,21 +21,6 @@ public class ProgressionQueryApi {
         return requester.request(query);
     }
 
-    @Handles("progression.query.timeline")
-    public JsonEnvelope getTimeline(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("progression.query.indicatestatementsdetails")
-    public JsonEnvelope getIndicatestatementsdetails(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("progression.query.indicatestatementsdetail")
-    public JsonEnvelope getIndicatestatementsdetail(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("progression.query.cases")
     public JsonEnvelope getCases(final JsonEnvelope query) {
         return requester.request(query);

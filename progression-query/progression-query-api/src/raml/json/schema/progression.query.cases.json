@@ -17,36 +17,6 @@
             "type": "string"
           },
           "version": {
-            "type": "integer"
-          },
-          "dateOfSending": {
-            "type": "string"
-          },
-          "dateCMISubmissionDeadline": {
-            "type": "string"
-          },
-          "noOfDaysForCMISubmission": {
-            "type": "integer"
-          },
-          "defenceIssues": {
-            "type": "string"
-          },
-          "sfrIssues": {
-            "type": "string"
-          },
-          "isAllStatementsIdentified": {
-            "type": "boolean"
-          },
-          "isAllStatementsServed": {
-            "type": "boolean"
-          },
-          "defenceTrialEstimate": {
-            "type": "integer"
-          },
-          "prosecutionTrialEstimate": {
-            "type": "integer"
-          },
-          "ptpHearingVacatedDate": {
             "type": "string"
           },
           "directionIssuedOn": {
@@ -58,13 +28,7 @@
           "sendingCommittalDate": {
             "type": "string"
           },
-          "isPSROrdered": {
-            "type": "boolean"
-          },
           "sentenceHearingDate": {
-            "type": "string"
-          },
-          "sentenceReviewDeadlineDate": {
             "type": "string"
           },
           "status": {
@@ -76,22 +40,10 @@
           "courtCentreId",
           "caseId",
           "version",
-          "dateOfSending",
-          "dateCMISubmissionDeadline",
-          "noOfDaysForCMISubmission",
-          "defenceIssues",
-          "sfrIssues",
-          "isAllStatementsIdentified",
-          "isAllStatementsServed",
-          "defenceTrialEstimate",
-          "prosecutionTrialEstimate",
-          "ptpHearingVacatedDate",
           "directionIssuedOn",
           "fromCourtCentre",
           "sendingCommittalDate",
-          "isPSROrdered",
           "sentenceHearingDate",
-          "sentenceReviewDeadlineDate",
           "status"
         ]
       }

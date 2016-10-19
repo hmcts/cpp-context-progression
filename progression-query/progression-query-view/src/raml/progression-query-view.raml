@@ -23,68 +23,6 @@ protocols: [ HTTP, HTTPS ]
                     example:  !include json/progression.query.caseprogressiondetail.json
                     schema:  !include json/schema/progression.query.caseprogressiondetail.json
                     
-/cases/{caseId}/timeline:
-  uriParameters:
-        caseId:
-          description: ID of case to get
-          type: string
-  get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.timeline+json
-            name: progression.query.timeline
-        ...
-      responses:
-            200:
-                description: OK        
-                body:
-                  application/vnd.progression.query.timeline+json: 
-                      example: !include json/progression.query.timeline.json
-                      schema: !include json/schema/progression.query.timeline.json
-                        
-/cases/{caseId}/indicatestatements:
-  uriParameters:
-        caseId:
-          description: ID of case to get
-          type: string
-  get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.indicatestatementsdetails+json
-            name: progression.query.indicatestatementsdetails
-        ...
-      responses:
-            200:
-                description: OK        
-                body:
-                  application/vnd.progression.query.indicatestatementsdetails+json: 
-                      example: !include json/progression.query.indicatestatementsdetails.json
-                      schema: !include json/schema/progression.query.indicatestatementsdetails.json   
-                                           
-                       
-/indicatestatement/{indicatestatementId}:
-  uriParameters:
-        indicatestatementId:
-          description: ID of indicatestatement to get
-          type: string
-  get:
-      description: |
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.indicatestatementsdetail+json
-            name: progression.query.indicatestatementsdetail
-        ...
-      responses:
-            200:
-                description: OK        
-                body:
-                  application/vnd.progression.query.indicatestatementsdetail+json: 
-                      example: !include json/progression.query.indicatestatementsdetail.json
-                      schema: !include json/schema/progression.query.indicatestatementsdetail.json
-                                           
-                       
 /cases:
   get:
       description: |

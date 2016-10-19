@@ -32,29 +32,6 @@ public class ProgressionQueryControllerTest {
         assertThat(progressionQueryController.getCaseprogressiondetail(query),
                 equalTo(response));
     }
-
-    @Test
-    public void shouldHandleTimelineQuery() {
-        when(requester.request(query)).thenReturn(response);
-        assertThat(progressionQueryController.getTimeline(query),
-                equalTo(response));
-    }
-
-    @Test
-    public void shouldHandleIndicatestatementsdetailsQuery() {
-        when(requester.request(query)).thenReturn(response);
-        assertThat(
-                progressionQueryController.getIndicatestatementsdetails(query),
-                equalTo(response));
-    }
-
-    @Test
-    public void shouldHandleIndicatestatementsdetailQuery() {
-        when(requester.request(query)).thenReturn(response);
-        assertThat(
-                progressionQueryController.getIndicatestatementsdetail(query),
-                equalTo(response));
-    }
     
     @Test
     public void shouldHandleCaseaQuery() {

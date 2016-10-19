@@ -46,7 +46,6 @@ public class CaseService {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setIsPSROrdered(event.getIsPSROrdered());
             caseProgressionDetail.setVersion(version);
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {

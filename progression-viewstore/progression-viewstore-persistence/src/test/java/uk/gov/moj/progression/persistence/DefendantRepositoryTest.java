@@ -18,22 +18,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.domain.constant.TimeLineDateType;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.TimeLineDate;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.progression.persistence.repository.DefendantRepository;
 
 @RunWith(CdiTestRunner.class)
 public class DefendantRepositoryTest {
 
-    private static final String ISSUE = "issue one";
     private static final String COURT_CENTER = "Liverpool";
     private static final UUID ID_ONE = UUID.randomUUID();
-    private static final UUID ID_TWO = UUID.randomUUID();
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
-    private static final UUID CASE_ID_TWO = UUID.randomUUID();
     private static final UUID DEF_PRG_ID = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
     private List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
@@ -56,8 +51,6 @@ public class DefendantRepositoryTest {
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
-
-
     }
 
     @Test
@@ -77,34 +70,15 @@ public class DefendantRepositoryTest {
         CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
         caseProgressionDetail.setId(id);
-        caseProgressionDetail.setDateOfSending(now);
         caseProgressionDetail.setCourtCentreId(COURT_CENTER);
-        caseProgressionDetail.setPtpHearingVacatedDate(now);
-        caseProgressionDetail.setDefenceIssue(ISSUE);
         caseProgressionDetail.setDirectionIssuedOn(now);
         caseProgressionDetail.setVersion(0l);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTER);
-        caseProgressionDetail.setIsAllStatementsIdentified(true);
-        caseProgressionDetail.setIsAllStatementsServed(true);
-        caseProgressionDetail.setIsPSROrdered(true);
         caseProgressionDetail.setReadyForSentenceHearingDate(now.plusDays(7).atStartOfDay());
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetail.setSentenceHearingDate(now);
-        caseProgressionDetail.setSfrIssue(ISSUE);
-        caseProgressionDetail.setTrialEstimateDefence(7L);
-        caseProgressionDetail.setTrialEstimateProsecution(6L);
         caseProgressionDetail.setStatus(status);
         return caseProgressionDetail;
-    }
-
-
-    private Defendant createDefendantDetail(UUID id, UUID defendantId,
-                    CaseProgressionDetail caseProgressionDetail) {
-        Defendant defendant = new Defendant();
-        defendant.setDefendantId(defendantId);
-        defendant.setId(id);
-        defendant.setCaseProgressionDetail(caseProgressionDetail);
-        return defendant;
     }
 
     @After
@@ -112,7 +86,5 @@ public class DefendantRepositoryTest {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
                         .attachAndRemove(repository.findBy(caseProgressionDetail.getId())));
     }
-
-
 
 }

@@ -25,21 +25,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.constant.TimeLineDateType;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.IndicateStatement;
-import uk.gov.moj.cpp.progression.persistence.entity.TimeLineDate;
 import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.converter.DefendantToDefendantViewConverter;
-import uk.gov.moj.cpp.progression.query.view.converter.IndicateStatementsDetailToViewConverter;
-import uk.gov.moj.cpp.progression.query.view.converter.TimelineDateToTimeLineDateViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
-import uk.gov.moj.cpp.progression.query.view.response.IndicateStatementsDetailView;
-import uk.gov.moj.cpp.progression.query.view.response.TimeLineDateView;
 import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
-import uk.gov.moj.cpp.progression.query.view.service.IndicateStatementsDetailService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionQueryViewTest {
@@ -66,12 +58,6 @@ public class ProgressionQueryViewTest {
     private DefendantView defendantView;
 
     @Mock
-    TimeLineDate timeLineDate;
-
-    @Mock
-    TimeLineDateView timeLineDateView;
-
-    @Mock
     CaseProgressionDetailService casePrgDetailService;
 
     @Mock
@@ -79,21 +65,6 @@ public class ProgressionQueryViewTest {
 
     @Mock
     DefendantToDefendantViewConverter defendantToDefendantViewConverter;
-
-    @Mock
-    TimelineDateToTimeLineDateViewConverter timelineDateToTimeLineDateVOConverter;
-
-    @Mock
-    private IndicateStatement indicateStatement;
-
-    @Mock
-    private IndicateStatementsDetailView indicateStatementView;
-
-    @Mock
-    IndicateStatementsDetailService indicateStmtDetailService;
-
-    @Mock
-    IndicateStatementsDetailToViewConverter indicateStatementsDetailToViewConverter;
 
     @Mock
     private Function<Object, JsonEnvelope> function;
@@ -142,34 +113,11 @@ public class ProgressionQueryViewTest {
     }
 
     @Test
-    public void shouldHandleIndicateStmtQuery() {
-        final UUID statementId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_INDICATE_STATEMENT_ID,
-                                        statementId.toString())
-                        .build();
-
-        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(indicateStmtDetailService.getIndicateStatementById(statementId))
-                        .thenReturn(Optional.of(indicateStatement));
-        when(indicateStatementsDetailToViewConverter.convert(indicateStatement))
-                        .thenReturn(indicateStatementView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.INDICATE_STATEMENT_RESPONSE))
-                        .thenReturn(function);
-
-        when(function.apply(indicateStatementView)).thenReturn(responceJson);
-        assertThat(queryView.getIndicatestatementsdetail(query), equalTo(responceJson));
-    }
-
-    @Test
     public void shouldHandleProgressionSQuery() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
-        final TimeLineDate timeLineDate = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline,
-                        LocalDate.now(), LocalDate.now(), 2);
-        caseProgressionDetail.setTimeLine(Arrays.asList(timeLineDate));
 
         final JsonArray jsonArray =
                         Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
@@ -179,14 +127,7 @@ public class ProgressionQueryViewTest {
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
         when(casePrgDetailService.getCaseProgressionDetail(caseId))
                         .thenReturn(caseProgressionDetail);
-        when(timelineDateToTimeLineDateVOConverter.convert(timeLineDate))
-                        .thenReturn(timeLineDateView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE))
-                        .thenReturn(function);
-        when(listToJsonArrayConverter.convert(Arrays.asList(timeLineDateView)))
-                        .thenReturn(jsonArray);
         when(function.apply(jsonObjectTimeline)).thenReturn(responceJson);
-        assertThat(queryView.getTimeLineForProgression(query), equalTo(responceJson));
     }
 
     @Test
@@ -198,36 +139,9 @@ public class ProgressionQueryViewTest {
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
         when(casePrgDetailService.getCaseProgressionDetail(caseId))
                         .thenThrow(new NoResultException());
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.TIMELINE_RESPONSE))
-                        .thenReturn(function);
         when(function.apply(null)).thenReturn(responceJson);
-        assertThat(queryView.getTimeLineForProgression(query), equalTo(responceJson));
     }
 
-    @Test
-    public void shouldHandleIndicateStmtSQuery() {
-        final UUID caseId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
-
-        final JsonArray jsonArray =
-                        Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectindicatestatements =
-                        Json.createObjectBuilder().add("indicatestatements", jsonArray).build();
-
-        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(indicateStmtDetailService.getIndicateStatements(caseId))
-                        .thenReturn(Arrays.asList(indicateStatement));
-        when(indicateStatementsDetailToViewConverter.convert(indicateStatement))
-                        .thenReturn(indicateStatementView);
-        when(enveloper.withMetadataFrom(query,
-                        ProgressionQueryView.INDICATE_STATEMENT_RESPONSE_LIST))
-                                        .thenReturn(function);
-        when(listToJsonArrayConverter.convert(Arrays.asList(indicateStatementView)))
-                        .thenReturn(jsonArray);
-        when(function.apply(jsonObjectindicatestatements)).thenReturn(responceJson);
-        assertThat(queryView.getIndicatestatementsdetails(query), equalTo(responceJson));
-    }
 
     @Test
     public void shouldHandleGetCasesQuery() {
@@ -241,9 +155,6 @@ public class ProgressionQueryViewTest {
                         Json.createObjectBuilder().add("cases", jsonArray).build();
 
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
-        final TimeLineDate timeLineDate = new TimeLineDate(TimeLineDateType.cmiSubmissionDeadline,
-                        LocalDate.now(), LocalDate.now(), 2);
-        caseProgressionDetail.setTimeLine(Arrays.asList(timeLineDate));
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
         when(casePrgDetailService.getCases(Optional.ofNullable("READY_FOR_REVIEW")))

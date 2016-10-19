@@ -1,90 +1,32 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://progression-context-url/rest/cases/caseId",
   "type": "object",
   "properties": {
     "caseProgressionId": {
-      "id": "http://progression-context-url/rest/cases/caseId/caseProgressionId",
       "type": "string"
     },
     "courtCentreId": {
-      "id": "http://progression-context-url/rest/cases/caseId/courtCentreId",
       "type": "string"
     },
     "caseId": {
-      "id": "http://progression-context-url/rest/cases/caseId/caseId",
       "type": "string"
     },
     "version": {
-      "id": "http://progression-context-url/rest/cases/caseId/version",
-      "type": "integer"
-    },
-    "dateOfSending": {
-      "id": "http://progression-context-url/rest/cases/caseId/dateOfSending",
-      "type": "string"
-    },
-    "dateCMISubmissionDeadline": {
-      "id": "http://progression-context-url/rest/cases/caseId/dateCMISubmissionDeadline",
-      "type": "string"
-    },
-    "noOfDaysForCMISubmission": {
-      "id": "http://progression-context-url/rest/cases/caseId/noOfDaysForCMISubmission",
-      "type": "integer"
-    },
-    "defenceIssues": {
-      "id": "http://progression-context-url/rest/cases/caseId/defenceIssues",
-      "type": "string"
-    },
-    "sfrIssues": {
-      "id": "http://progression-context-url/rest/cases/caseId/sfrIssues",
-      "type": "string"
-    },
-    "isAllStatementsIdentified": {
-      "id": "http://progression-context-url/rest/cases/caseId/isAllStatementsIdentified",
-      "type": "boolean"
-    },
-    "isAllStatementsServed": {
-      "id": "http://progression-context-url/rest/cases/caseId/isAllStatementsServed",
-      "type": "boolean"
-    },
-    "defenceTrialEstimate": {
-      "id": "http://progression-context-url/rest/cases/caseId/defenceTrialEstimate",
-      "type": "integer"
-    },
-    "prosecutionTrialEstimate": {
-      "id": "http://progression-context-url/rest/cases/caseId/prosecutionTrialEstimate",
-      "type": "integer"
-    },
-    "ptpHearingVacatedDate": {
-      "id": "http://progression-context-url/rest/cases/caseId/ptpHearingVacatedDate",
       "type": "string"
     },
     "directionIssuedOn": {
-      "id": "http://progression-context-url/rest/cases/caseId/directionIssuedOn",
       "type": "string"
     },
     "fromCourtCentre": {
-      "id": "http://progression-context-url/rest/cases/caseId/fromCourtCentre",
       "type": "string"
     },
     "sendingCommittalDate": {
-      "id": "http://progression-context-url/rest/cases/caseId/sendingCommittalDate",
       "type": "string"
-    },
-    "isPSROrdered": {
-      "id": "http://progression-context-url/rest/cases/caseId/isPSROrdered",
-      "type": "boolean"
     },
     "sentenceHearingDate": {
-      "id": "http://progression-context-url/rest/cases/caseId/sentenceHearingDate",
-      "type": "string"
-    },
-    "sentenceReviewDeadlineDate": {
-      "id": "http://progression-context-url/rest/cases/caseId/sentenceReviewDeadlineDate",
       "type": "string"
     },
     "status": {
-      "id": "http://progression-context-url/rest/cases/caseId/status",
       "type": "string"
     }
   },
@@ -93,22 +35,10 @@
     "courtCentreId",
     "caseId",
     "version",
-    "dateOfSending",
-    "dateCMISubmissionDeadline",
-    "noOfDaysForCMISubmission",
-    "defenceIssues",
-    "sfrIssues",
-    "isAllStatementsIdentified",
-    "isAllStatementsServed",
-    "defenceTrialEstimate",
-    "prosecutionTrialEstimate",
-    "ptpHearingVacatedDate",
     "directionIssuedOn",
     "fromCourtCentre",
     "sendingCommittalDate",
-    "isPSROrdered",
     "sentenceHearingDate",
-    "sentenceReviewDeadlineDate",
     "status"
   ]
 }
