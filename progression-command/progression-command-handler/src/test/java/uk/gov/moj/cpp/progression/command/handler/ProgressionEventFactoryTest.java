@@ -62,8 +62,6 @@ public class ProgressionEventFactoryTest {
         when(jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
         when(jsonObj.getString(Mockito.eq("version"))).thenReturn("1");
         when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(jsonObj.getString(Mockito.eq("indicateStatementId")))
-                        .thenReturn(UUID.randomUUID().toString());
         when(jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sendingCommittalDate")))
                         .thenReturn(LocalDate.now().toString());

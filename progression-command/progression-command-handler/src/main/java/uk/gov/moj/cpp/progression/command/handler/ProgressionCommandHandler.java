@@ -21,7 +21,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 public class ProgressionCommandHandler {
 
 	public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
-	public static final String FIELD_INDICATE_STATEMENT_ID = "indicateStatementId";
 
 	@Inject
 	EventSource eventSource;

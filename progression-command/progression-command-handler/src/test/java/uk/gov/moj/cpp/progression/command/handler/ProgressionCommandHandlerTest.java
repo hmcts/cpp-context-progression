@@ -229,7 +229,7 @@ public class ProgressionCommandHandlerTest {
 
 		final JsonObject payloadAsJsonObject = Json.createObjectBuilder()
 				.add("caseProgressionId", CASE_PROGRESSION_ID.toString())
-				.add("indicateStatementId", INDICATE_STATEMENT_ID.toString()).add("version", VERSION).build();
+				.add("version", VERSION).build();
 
 		return DefaultJsonEnvelope.envelopeFrom(JsonObjectMetadata.metadataFrom(metadataAsJsonObject),
 				payloadAsJsonObject);
