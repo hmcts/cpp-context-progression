@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ public class DefendantRepositoryTest {
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID DEF_PRG_ID = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
-    private List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
+    private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
 
     @Inject
     private CaseProgressionDetailRepository repository;
@@ -44,10 +43,11 @@ public class DefendantRepositoryTest {
     @Before
     public void setup() {
         now = LocalDate.now();
-        CaseProgressionDetail caseProgressionDetailOne =
+        final CaseProgressionDetail caseProgressionDetailOne =
                         createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
-        Defendant defendant = new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
+        final Defendant defendant =
+                        new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
@@ -55,24 +55,23 @@ public class DefendantRepositoryTest {
 
     @Test
     public void shouldFindDefendantByProgressionId() throws Exception {
-        CaseProgressionDetail results = repository.findBy(ID_ONE);
+        final CaseProgressionDetail results = repository.findBy(ID_ONE);
         assertThat(results.getDefendants().iterator().next().getDefendantId(), equalTo(DEF_ID));
     }
 
     @Test
     public void shouldFindDefendantById() throws Exception {
-        Defendant results = defendantRepository.findByDefendantId(DEF_ID);
+        final Defendant results = defendantRepository.findByDefendantId(DEF_ID);
         assertThat(results.getDefendantId(), equalTo(DEF_ID));
     }
 
-    private CaseProgressionDetail createCaseProgressionDetail(UUID id, UUID caseId,
-                    CaseStatusEnum status) {
-        CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+    private CaseProgressionDetail createCaseProgressionDetail(final UUID id, final UUID caseId,
+                    final CaseStatusEnum status) {
+        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
         caseProgressionDetail.setId(id);
         caseProgressionDetail.setCourtCentreId(COURT_CENTER);
         caseProgressionDetail.setDirectionIssuedOn(now);
-        caseProgressionDetail.setVersion(0l);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTER);
         caseProgressionDetail.setReadyForSentenceHearingDate(now.plusDays(7).atStartOfDay());
         caseProgressionDetail.setSendingCommittalDate(now);

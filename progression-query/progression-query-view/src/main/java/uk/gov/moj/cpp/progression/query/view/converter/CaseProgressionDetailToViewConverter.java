@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.progression.query.view.service.ProgressionDataConstant;
 
 public class CaseProgressionDetailToViewConverter {
 
-    public CaseProgressionDetailView convert(CaseProgressionDetail caseProgressionDetail) {
+    public CaseProgressionDetailView convert(final CaseProgressionDetail caseProgressionDetail) {
         CaseProgressionDetailView caseProgressionDetailVo = null;
         caseProgressionDetailVo = new CaseProgressionDetailView();
         caseProgressionDetailVo.setCaseProgressionId(caseProgressionDetail.getId().toString());
@@ -19,7 +19,6 @@ public class CaseProgressionDetailToViewConverter {
         }
         caseProgressionDetailVo.setSentenceReviewDeadlineDate(
                         calcSentenceReviewDeadlineDate(caseProgressionDetail));
-        caseProgressionDetailVo.setVersion(caseProgressionDetail.getVersion());
         caseProgressionDetailVo.setDirectionIssuedOn(caseProgressionDetail.getDirectionIssuedOn());
         caseProgressionDetailVo.setFromCourtCentre(caseProgressionDetail.getFromCourtCentre());
         caseProgressionDetailVo
@@ -30,7 +29,8 @@ public class CaseProgressionDetailToViewConverter {
         return caseProgressionDetailVo;
     }
 
-    private LocalDate calcSentenceReviewDeadlineDate(CaseProgressionDetail caseProgressionDetail) {
+    private LocalDate calcSentenceReviewDeadlineDate(
+                    final CaseProgressionDetail caseProgressionDetail) {
         LocalDate basedOnDate = null;
         if (caseProgressionDetail.getSendingCommittalDate() != null) {
             basedOnDate = caseProgressionDetail.getSendingCommittalDate();

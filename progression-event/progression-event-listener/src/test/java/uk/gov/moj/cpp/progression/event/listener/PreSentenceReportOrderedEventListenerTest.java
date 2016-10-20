@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.event.listener;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -26,19 +24,19 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PreSentenceReportOrderedEventListenerTest {
-	
-	@Mock
-	private PreSentenceReportOrdered preSentenceReportOrdered;
-	
-	@Mock
-	private JsonEnvelope envelope;
-    
+
+    @Mock
+    private PreSentenceReportOrdered preSentenceReportOrdered;
+
+    @Mock
+    private JsonEnvelope envelope;
+
     @Mock
     private JsonObject payload;
-    
+
     @Mock
     private Metadata metadata;
-    
+
     @Mock
     private JsonObjectToObjectConverter jsonObjectConverter;
 
@@ -51,14 +49,14 @@ public class PreSentenceReportOrderedEventListenerTest {
     @Test
     public void testProcessEvent() throws Exception {
 
-    	when(envelope.payloadAsJsonObject()).thenReturn(payload);
-    	when(envelope.metadata()).thenReturn(metadata);
-    	when(metadata.version()).thenReturn(Optional.of(0l));
-    	when(jsonObjectConverter.convert(payload, PreSentenceReportOrdered.class)).thenReturn(preSentenceReportOrdered);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(jsonObjectConverter.convert(payload, PreSentenceReportOrdered.class))
+                        .thenReturn(preSentenceReportOrdered);
 
         listener.processEvent(envelope);
-        
-        verify(service).preSentenceReportOrdered(preSentenceReportOrdered, 0l);
+
+        verify(service).preSentenceReportOrdered(preSentenceReportOrdered);
     }
 
 }

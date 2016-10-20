@@ -27,9 +27,8 @@ public class CaseReadyForScentenceHearingEventListener {
 
     @Handles("progression.events.case-ready-for-sentence-hearing")
     public void processEvent(final JsonEnvelope event) {
-        CaseReadyForSentenceHearing caseReadyForSentenceHearing = jsonObjectConverter
+        final CaseReadyForSentenceHearing caseReadyForSentenceHearing = jsonObjectConverter
                         .convert(event.payloadAsJsonObject(), CaseReadyForSentenceHearing.class);
-        caseService.caseReadyForSentenceHearing(caseReadyForSentenceHearing,
-                        event.metadata().version().get());
+        caseService.caseReadyForSentenceHearing(caseReadyForSentenceHearing);
     }
 }

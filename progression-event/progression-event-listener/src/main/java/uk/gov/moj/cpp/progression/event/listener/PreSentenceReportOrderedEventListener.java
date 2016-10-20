@@ -27,8 +27,7 @@ public class PreSentenceReportOrderedEventListener {
     @Handles("progression.events.pre-sentence-report-ordered")
     public void processEvent(final JsonEnvelope event) {
 
-        caseService.preSentenceReportOrdered(
-                jsonObjectConverter.convert(event.payloadAsJsonObject(), PreSentenceReportOrdered.class),
-                event.metadata().version().get());
+        caseService.preSentenceReportOrdered(jsonObjectConverter
+                        .convert(event.payloadAsJsonObject(), PreSentenceReportOrdered.class));
     }
 }

@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,7 +15,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -32,9 +30,6 @@ public class CaseProgressionDetail {
 
     @Column(name = "caseid", unique = true, nullable = false)
     private UUID caseId;
-
-    @Column(name = "version", nullable = false)
-    private Long version;
 
     @Column(name = "directionissuedon")
     private LocalDate directionIssuedOn;
@@ -67,7 +62,7 @@ public class CaseProgressionDetail {
         return caseId;
     }
 
-    public void setCaseId(UUID caseId) {
+    public void setCaseId(final UUID caseId) {
         this.caseId = caseId;
     }
 
@@ -75,23 +70,15 @@ public class CaseProgressionDetail {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
     }
 
     public LocalDate getDirectionIssuedOn() {
         return directionIssuedOn;
     }
 
-    public void setDirectionIssuedOn(LocalDate directionIssuedOn) {
+    public void setDirectionIssuedOn(final LocalDate directionIssuedOn) {
         this.directionIssuedOn = directionIssuedOn;
     }
 
@@ -103,11 +90,11 @@ public class CaseProgressionDetail {
         return readyForSentenceHearingDate;
     }
 
-    public void setReadyForSentenceHearingDate(LocalDateTime readyForSentenceHearingDate) {
+    public void setReadyForSentenceHearingDate(final LocalDateTime readyForSentenceHearingDate) {
         this.readyForSentenceHearingDate = readyForSentenceHearingDate;
     }
 
-    public void setCourtCentreId(String courtCentreId) {
+    public void setCourtCentreId(final String courtCentreId) {
         this.courtCentreId = courtCentreId;
     }
 
@@ -115,7 +102,7 @@ public class CaseProgressionDetail {
         return fromCourtCentre;
     }
 
-    public void setFromCourtCentre(String fromCourtCentre) {
+    public void setFromCourtCentre(final String fromCourtCentre) {
         this.fromCourtCentre = fromCourtCentre;
     }
 
@@ -123,7 +110,7 @@ public class CaseProgressionDetail {
         return sendingCommittalDate;
     }
 
-    public void setSendingCommittalDate(LocalDate sendingCommittalDate) {
+    public void setSendingCommittalDate(final LocalDate sendingCommittalDate) {
         this.sendingCommittalDate = sendingCommittalDate;
     }
 
@@ -131,7 +118,7 @@ public class CaseProgressionDetail {
         return sentenceHearingDate;
     }
 
-    public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
+    public void setSentenceHearingDate(final LocalDate sentenceHearingDate) {
         this.sentenceHearingDate = sentenceHearingDate;
     }
 
@@ -139,7 +126,7 @@ public class CaseProgressionDetail {
         return status;
     }
 
-    public void setStatus(CaseStatusEnum status) {
+    public void setStatus(final CaseStatusEnum status) {
         this.status = status;
     }
 
@@ -147,7 +134,7 @@ public class CaseProgressionDetail {
         return defendants;
     }
 
-    public void setDefendants(Set<Defendant> defendants) {
+    public void setDefendants(final Set<Defendant> defendants) {
         this.defendants = defendants;
     }
 

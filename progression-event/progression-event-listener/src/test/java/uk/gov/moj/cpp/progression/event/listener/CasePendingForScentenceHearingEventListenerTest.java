@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.event.listener;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -52,13 +50,13 @@ public class CasePendingForScentenceHearingEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(envelope.metadata()).thenReturn(metadata);
-        when(envelope.metadata().version()).thenReturn(Optional.of(0l));
+
         when(jsonObjectToObjectConverter.convert(payload, CasePendingForSentenceHearing.class))
-                .thenReturn(casePendingForSentenceHearing);
+                        .thenReturn(casePendingForSentenceHearing);
 
         listener.processEvent(envelope);
 
-        verify(service).casePendingForSentenceHearing(casePendingForSentenceHearing, 0l);
+        verify(service).casePendingForSentenceHearing(casePendingForSentenceHearing);
     }
 
 }

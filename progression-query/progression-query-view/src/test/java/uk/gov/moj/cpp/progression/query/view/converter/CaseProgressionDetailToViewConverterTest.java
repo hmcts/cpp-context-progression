@@ -19,34 +19,34 @@ public class CaseProgressionDetailToViewConverterTest {
 
     @Test
     public void getCaseProgressionDetailTest() {
-        CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter = new CaseProgressionDetailToViewConverter();
+        final CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter =
+                        new CaseProgressionDetailToViewConverter();
 
-        CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setId(ID);
         final LocalDate now = LocalDate.now();
         caseProgressionDetail.setCaseId(CASEID);
-        caseProgressionDetail.setVersion(1L);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTRE);
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetail.setSentenceHearingDate(now);
         caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
         caseProgressionDetail.setDirectionIssuedOn(now);
 
-        CaseProgressionDetailView caseProgressionDetailVO = caseProgressionDetailToVOConverter
-                .convert(caseProgressionDetail);
+        CaseProgressionDetailView caseProgressionDetailVO =
+                        caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
         assertTrue(caseProgressionDetailVO.getCaseId().equals(CASEID.toString()));
         assertTrue(caseProgressionDetailVO.getCaseProgressionId().equals(ID.toString()));
-        assertTrue(caseProgressionDetailVO.getVersion().equals(1L));
         assertTrue(caseProgressionDetailVO.getFromCourtCentre().equals(COURT_CENTRE));
         assertTrue(caseProgressionDetailVO.getSendingCommittalDate().equals(now));
         assertTrue(caseProgressionDetailVO.getSentenceHearingDate().equals(now));
         assertTrue(caseProgressionDetailVO.getDirectionIssuedOn().equals(now));
-        assertTrue(caseProgressionDetailVO.getStatus().equals(CaseStatusEnum.READY_FOR_REVIEW.toString()));
+        assertTrue(caseProgressionDetailVO.getStatus()
+                        .equals(CaseStatusEnum.READY_FOR_REVIEW.toString()));
 
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetailVO = caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
-        assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate()
-                .equals(LocalDateUtils.addWorkingDays(caseProgressionDetail.getSendingCommittalDate(), 7)));
+        assertTrue(caseProgressionDetailVO.getSentenceReviewDeadlineDate().equals(LocalDateUtils
+                        .addWorkingDays(caseProgressionDetail.getSendingCommittalDate(), 7)));
     }
 
 }

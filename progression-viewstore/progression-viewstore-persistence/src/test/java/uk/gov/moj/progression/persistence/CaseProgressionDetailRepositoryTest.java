@@ -37,7 +37,7 @@ public class CaseProgressionDetailRepositoryTest {
     private static final UUID CASE_ID_TWO = UUID.randomUUID();
     private static final UUID DEF_PRG_ID = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
-    private List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
+    private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
 
     @Inject
     private CaseProgressionDetailRepository repository;
@@ -47,28 +47,28 @@ public class CaseProgressionDetailRepositoryTest {
     @Before
     public void setup() {
         now = LocalDate.now();
-        CaseProgressionDetail caseProgressionDetailOne =
+        final CaseProgressionDetail caseProgressionDetailOne =
                         createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
-        Defendant defendant = new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
+        final Defendant defendant =
+                        new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
-        CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(ID_TWO,
+        final CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(ID_TWO,
                         CASE_ID_TWO, CaseStatusEnum.READY_FOR_REVIEW);
         caseProgressionDetails.add(caseProgressionDetailTwo);
         repository.save(caseProgressionDetailTwo);
 
     }
 
-    private CaseProgressionDetail createCaseProgressionDetail(UUID id, UUID caseId,
-                    CaseStatusEnum status) {
-        CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+    private CaseProgressionDetail createCaseProgressionDetail(final UUID id, final UUID caseId,
+                    final CaseStatusEnum status) {
+        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
         caseProgressionDetail.setId(id);
         caseProgressionDetail.setCourtCentreId(COURT_CENTER);
         caseProgressionDetail.setDirectionIssuedOn(now);
-        caseProgressionDetail.setVersion(0l);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTER);
         caseProgressionDetail.setReadyForSentenceHearingDate(now.plusDays(7).atStartOfDay());
         caseProgressionDetail.setSendingCommittalDate(now);
@@ -86,11 +86,10 @@ public class CaseProgressionDetailRepositoryTest {
 
     @Test
     public void shouldFindByCaseProgressionId() throws Exception {
-        CaseProgressionDetail result = repository.findByCaseId(CASE_ID_ONE);
+        final CaseProgressionDetail result = repository.findByCaseId(CASE_ID_ONE);
         assertThat(result.getCaseId(), equalTo(CASE_ID_ONE));
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
         assertThat(result.getDirectionIssuedOn(), equalTo(now));
-        assertThat(result.getVersion(), equalTo(0l));
         assertThat(result.getFromCourtCentre(), equalTo(COURT_CENTER));
         assertThat(result.getReadyForSentenceHearingDate(),
                         equalTo(now.plusDays(7).atStartOfDay()));
@@ -102,33 +101,33 @@ public class CaseProgressionDetailRepositoryTest {
 
     @Test
     public void shouldFindAll() throws Exception {
-        List<CaseProgressionDetail> results = repository.findAll();
+        final List<CaseProgressionDetail> results = repository.findAll();
         assertThat(results.size(), equalTo(2));
-        CaseProgressionDetail result = results.get(0);
+        final CaseProgressionDetail result = results.get(0);
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
     }
 
     @Test
     public void shouldFindByStatus() throws Exception {
-        List<CaseProgressionDetail> results =
+        final List<CaseProgressionDetail> results =
                         repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));
         assertThat(results.size(), equalTo(1));
-        CaseProgressionDetail result = results.get(0);
+        final CaseProgressionDetail result = results.get(0);
         assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
     }
 
     @Test
     public void shouldFindOpenStatus() throws Exception {
-        List<CaseProgressionDetail> results = repository.findOpenStatus();
+        final List<CaseProgressionDetail> results = repository.findOpenStatus();
         assertThat(results.size(), equalTo(2));
-        CaseProgressionDetail result = results.get(0);
+        final CaseProgressionDetail result = results.get(0);
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
     }
 
 
     @Test
     public void shouldFindDefendantByProgressionId() throws Exception {
-        CaseProgressionDetail results = repository.findBy(ID_ONE);
+        final CaseProgressionDetail results = repository.findBy(ID_ONE);
         assertThat(results.getDefendants().size(), equalTo(1));
     }
 

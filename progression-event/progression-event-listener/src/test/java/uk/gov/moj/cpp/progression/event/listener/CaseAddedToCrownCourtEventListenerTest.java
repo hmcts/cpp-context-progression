@@ -59,7 +59,7 @@ public class CaseAddedToCrownCourtEventListenerTest {
                 .thenReturn(caseAddedToCrownCourt);
         when(caseAddedToCrownCourtConverter.convert(caseAddedToCrownCourt)).thenReturn(caseProgressionDetail);
         when(envelope.metadata()).thenReturn(metadata);
-        when(envelope.metadata().version()).thenReturn(Optional.of(0l));
+         
         eventListener.addedToCrownCourt(envelope);
 
         verify(repository).save(caseProgressionDetail);

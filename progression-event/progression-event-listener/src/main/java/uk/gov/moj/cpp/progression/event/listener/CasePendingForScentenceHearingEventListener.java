@@ -29,6 +29,6 @@ public class CasePendingForScentenceHearingEventListener {
     public void processEvent(final JsonEnvelope event) {
         CasePendingForSentenceHearing casePendingForSentenceHearing = jsonObjectConverter
                 .convert(event.payloadAsJsonObject(), CasePendingForSentenceHearing.class);
-        caseService.casePendingForSentenceHearing(casePendingForSentenceHearing, event.metadata().version().get());
+        caseService.casePendingForSentenceHearing(casePendingForSentenceHearing );
     }
 }

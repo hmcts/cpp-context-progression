@@ -27,8 +27,8 @@ public class CaseAssignedForReviewUpdatedEventListener {
 
     @Handles("progression.events.case-assigned-for-review-updated")
     public void processEvent(final JsonEnvelope event) {
-        CaseAssignedForReviewUpdated caseAssignedForReviewUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(),
-                CaseAssignedForReviewUpdated.class);
-        caseService.caseAssignedForReview(caseAssignedForReviewUpdated, event.metadata().version().get());
+        final CaseAssignedForReviewUpdated caseAssignedForReviewUpdated = jsonObjectConverter
+                        .convert(event.payloadAsJsonObject(), CaseAssignedForReviewUpdated.class);
+        caseService.caseAssignedForReview(caseAssignedForReviewUpdated);
     }
 }

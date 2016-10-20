@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.event.listener;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -19,6 +17,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
+
 /**
  * 
  * @author jchondig
@@ -56,13 +55,13 @@ public class CaseAssignedForReviewUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(envelope.metadata()).thenReturn(metadata);
-        when(envelope.metadata().version()).thenReturn(Optional.of(0l));
+
         when(jsonObjectToObjectConverter.convert(payload, CaseAssignedForReviewUpdated.class))
-                .thenReturn(caseAssignedForReviewUpdated);
+                        .thenReturn(caseAssignedForReviewUpdated);
 
         listener.processEvent(envelope);
 
-        verify(service).caseAssignedForReview(caseAssignedForReviewUpdated, 0l);
+        verify(service).caseAssignedForReview(caseAssignedForReviewUpdated);
     }
 
 }

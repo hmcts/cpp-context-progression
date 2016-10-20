@@ -42,11 +42,10 @@ public class CaseService {
     DefendantRepository defendantRepository;
 
     @Transactional
-    public void preSentenceReportOrdered(final PreSentenceReportOrdered event, final Long version) {
+    public void preSentenceReportOrdered(final PreSentenceReportOrdered event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
@@ -54,11 +53,10 @@ public class CaseService {
     }
 
     @Transactional
-    public void directionIssued(final DirectionIssued event, final Long version) {
+    public void directionIssued(final DirectionIssued event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setDirectionIssuedOn(event.getDirectionIssuedDate());
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {
@@ -68,12 +66,11 @@ public class CaseService {
 
     @Transactional
     public void addSendingCommittalHearingInformation(
-                    final SendingCommittalHearingInformationAdded event, final Long version) {
+                    final SendingCommittalHearingInformationAdded event) {
 
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setFromCourtCentre(event.getFromCourtCentre());
             caseProgressionDetail.setSendingCommittalDate(event.getSendingCommittalDate());
             caseProgressionDetailRepo.save(caseProgressionDetail);
@@ -83,12 +80,11 @@ public class CaseService {
     }
 
     @Transactional
-    public void addSentenceHearingDate(final SentenceHearingDateAdded event, final Long version) {
+    public void addSentenceHearingDate(final SentenceHearingDateAdded event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
             caseProgressionDetail.setSentenceHearingDate(event.getSentenceHearingDate());
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {
             throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
@@ -96,11 +92,10 @@ public class CaseService {
     }
 
     @Transactional
-    public void caseToBeAssigned(final CaseToBeAssignedUpdated event, final Long version) {
+    public void caseToBeAssigned(final CaseToBeAssignedUpdated event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setStatus(event.getStatus());
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {
@@ -109,12 +104,10 @@ public class CaseService {
     }
 
     @Transactional
-    public void caseAssignedForReview(final CaseAssignedForReviewUpdated event,
-                    final Long version) {
+    public void caseAssignedForReview(final CaseAssignedForReviewUpdated event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setStatus(event.getStatus());
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {
@@ -123,12 +116,10 @@ public class CaseService {
     }
 
     @Transactional
-    public void caseReadyForSentenceHearing(final CaseReadyForSentenceHearing event,
-                    final Long version) {
+    public void caseReadyForSentenceHearing(final CaseReadyForSentenceHearing event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setStatus(event.getStatus());
             caseProgressionDetail
                             .setReadyForSentenceHearingDate(event.getReadyForSentenceHearingDate());
@@ -139,12 +130,10 @@ public class CaseService {
     }
 
     @Transactional
-    public void casePendingForSentenceHearing(final CasePendingForSentenceHearing event,
-                    final Long version) {
+    public void casePendingForSentenceHearing(final CasePendingForSentenceHearing event) {
         final CaseProgressionDetail caseProgressionDetail =
                         caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
         if (caseProgressionDetail != null) {
-            caseProgressionDetail.setVersion(version);
             caseProgressionDetail.setStatus(event.getStatus());
             caseProgressionDetailRepo.save(caseProgressionDetail);
         } else {

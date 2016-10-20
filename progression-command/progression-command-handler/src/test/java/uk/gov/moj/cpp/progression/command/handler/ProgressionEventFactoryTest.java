@@ -60,7 +60,6 @@ public class ProgressionEventFactoryTest {
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObj);
         when(jsonObj.getString(Mockito.eq("caseProgressionId"))).thenReturn(PROGRESSION_ID);
         when(jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(jsonObj.getString(Mockito.eq("version"))).thenReturn("1");
         when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
         when(jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
         when(jsonObj.getString(Mockito.eq("sendingCommittalDate")))
@@ -68,61 +67,59 @@ public class ProgressionEventFactoryTest {
         when(jsonObj.getString(Mockito.eq("sentenceHearingDate")))
                         .thenReturn(LocalDate.now().toString());
         when(jsonObj.getJsonArray(Mockito.eq("defendants")))
-                        .thenReturn(Json.createArrayBuilder()
-                                        .add(Json.createObjectBuilder()
-                                                        .add("id", UUID.randomUUID().toString())
-                                                        .build())
-                                        .build());
+                        .thenReturn(Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                        .add("id", UUID.randomUUID().toString()).build()).build());
     }
 
     @Test
     public void testCreateCaseAddedToCrownCourt() {
-        Object obj = progressionEventFactory.createCaseAddedToCrownCourt(envelope);
+        final Object obj = progressionEventFactory.createCaseAddedToCrownCourt(envelope);
         assertThat(obj, instanceOf(CaseAddedToCrownCourt.class));
     }
 
 
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
-        Object obj = progressionEventFactory
+        final Object obj = progressionEventFactory
                         .createSendingCommittalHearingInformationAdded(envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
     }
 
     @Test
     public void testCreateDirectionIssued() {
-        Object obj = progressionEventFactory.createDirectionIssued(envelope);
+        final Object obj = progressionEventFactory.createDirectionIssued(envelope);
         assertThat(obj, instanceOf(DirectionIssued.class));
     }
 
     @Test
     public void testCreatePreSentenceReportOrdered() {
-        Object obj = progressionEventFactory.createPreSentenceReportOrdered(envelope);
+        final Object obj = progressionEventFactory.createPreSentenceReportOrdered(envelope);
         assertThat(obj, instanceOf(PreSentenceReportOrdered.class));
     }
 
     @Test
     public void testCreateSentenceHearingDateAdded() {
-        Object obj = progressionEventFactory.createSentenceHearingDateAdded(envelope);
+        final Object obj = progressionEventFactory.createSentenceHearingDateAdded(envelope);
         assertThat(obj, instanceOf(SentenceHearingDateAdded.class));
     }
 
     @Test
     public void testCreateCaseToBeAssignedUpdated() {
-        Object obj = progressionEventFactory.createCaseToBeAssignedUpdated(envelope);
+        final Object obj = progressionEventFactory.createCaseToBeAssignedUpdated(envelope);
         assertThat(obj, instanceOf(CaseToBeAssignedUpdated.class));
     }
 
     @Test
     public void testCreateCaseAssignedForReviewUpdated() {
-        Object obj = progressionEventFactory.createCaseAssignedForReviewUpdated(envelope);
+        final Object obj = progressionEventFactory.createCaseAssignedForReviewUpdated(envelope);
         assertThat(obj, instanceOf(CaseAssignedForReviewUpdated.class));
     }
 
     @Test
     public void testCreateCaseReadyForSentenceHearing() {
-        CaseReadyForSentenceHearing obj = (CaseReadyForSentenceHearing) progressionEventFactory
-                        .createCaseReadyForSentenceHearing(envelope);
+        final CaseReadyForSentenceHearing obj =
+                        (CaseReadyForSentenceHearing) progressionEventFactory
+                                        .createCaseReadyForSentenceHearing(envelope);
 
         assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
         assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
@@ -134,10 +131,10 @@ public class ProgressionEventFactoryTest {
     @Test
     public void shouldAddDefendantEvent() {
         // given
-        DefendantCommand defendant = DefendantBuilder.defaultDefendant();
+        final DefendantCommand defendant = DefendantBuilder.defaultDefendant();
 
         // when
-        DefendantAdditionalInformationAdded defendantEvent =
+        final DefendantAdditionalInformationAdded defendantEvent =
                         (DefendantAdditionalInformationAdded) progressionEventFactory
                                         .addDefendantEvent(defendant);
 

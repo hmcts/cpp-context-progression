@@ -1,5 +1,4 @@
 {
   "caseProgressionId": "RANDOM_ID",
-  "sfrIssues": "Some free text list of issues",
-  "version": VERSION
+  "sfrIssues": "Some free text list of issues"
 }

@@ -24,6 +24,6 @@ public class SentenceHearingDateAddedEventListener {
     public void processEvent(final JsonEnvelope event) {
         SentenceHearingDateAdded sentenceHearingDateAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(),
                 SentenceHearingDateAdded.class);
-        caseService.addSentenceHearingDate(sentenceHearingDateAdded, event.metadata().version().get());
+        caseService.addSentenceHearingDate(sentenceHearingDateAdded );
     }
 }

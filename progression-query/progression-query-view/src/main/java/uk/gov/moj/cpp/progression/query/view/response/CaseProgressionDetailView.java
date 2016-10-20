@@ -8,8 +8,6 @@ public class CaseProgressionDetailView {
 
     private String caseId;
 
-    private Long version;
-
     private LocalDate directionIssuedOn;
 
     private String fromCourtCentre;
@@ -22,19 +20,13 @@ public class CaseProgressionDetailView {
 
     private String status;
 
-    public Long getVersion() {
-        return version;
-    }
 
-    public void setVersion(Long version) {
-        this.version = version;
-    }
 
     public String getCaseId() {
         return caseId;
     }
 
-    public void setCaseId(String caseId) {
+    public void setCaseId(final String caseId) {
         this.caseId = caseId;
     }
 
@@ -42,7 +34,7 @@ public class CaseProgressionDetailView {
         return caseProgressionId;
     }
 
-    public void setCaseProgressionId(String caseProgressionId) {
+    public void setCaseProgressionId(final String caseProgressionId) {
         this.caseProgressionId = caseProgressionId;
     }
 
@@ -50,7 +42,7 @@ public class CaseProgressionDetailView {
         return directionIssuedOn;
     }
 
-    public void setDirectionIssuedOn(LocalDate directionIssuedOn) {
+    public void setDirectionIssuedOn(final LocalDate directionIssuedOn) {
         this.directionIssuedOn = directionIssuedOn;
     }
 
@@ -58,7 +50,7 @@ public class CaseProgressionDetailView {
         return fromCourtCentre;
     }
 
-    public void setFromCourtCentre(String fromCourtCentre) {
+    public void setFromCourtCentre(final String fromCourtCentre) {
         this.fromCourtCentre = fromCourtCentre;
     }
 
@@ -66,7 +58,7 @@ public class CaseProgressionDetailView {
         return sendingCommittalDate;
     }
 
-    public void setSendingCommittalDate(LocalDate sendingCommittalDate) {
+    public void setSendingCommittalDate(final LocalDate sendingCommittalDate) {
         this.sendingCommittalDate = sendingCommittalDate;
     }
 
@@ -74,7 +66,7 @@ public class CaseProgressionDetailView {
         return sentenceHearingDate;
     }
 
-    public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
+    public void setSentenceHearingDate(final LocalDate sentenceHearingDate) {
         this.sentenceHearingDate = sentenceHearingDate;
     }
 
@@ -82,7 +74,7 @@ public class CaseProgressionDetailView {
         return sentenceReviewDeadlineDate;
     }
 
-    public void setSentenceReviewDeadlineDate(LocalDate sentenceReviewDeadlineDate) {
+    public void setSentenceReviewDeadlineDate(final LocalDate sentenceReviewDeadlineDate) {
         this.sentenceReviewDeadlineDate = sentenceReviewDeadlineDate;
     }
 
@@ -90,7 +82,7 @@ public class CaseProgressionDetailView {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(final String status) {
         this.status = status;
     }
 }

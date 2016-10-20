@@ -35,10 +35,11 @@ public class CaseAddedToCrownCourtEventListener {
     @Handles("progression.events.case-added-to-crown-court")
     public void addedToCrownCourt(final JsonEnvelope event) {
 
-        CaseAddedToCrownCourt caseAddedToCrownCourt = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseAddedToCrownCourt.class);
-        CaseProgressionDetail caseProgressionDetail = entityConverter.convert(caseAddedToCrownCourt);
+        final CaseAddedToCrownCourt caseAddedToCrownCourt = jsonObjectConverter
+                        .convert(event.payloadAsJsonObject(), CaseAddedToCrownCourt.class);
+        final CaseProgressionDetail caseProgressionDetail =
+                        entityConverter.convert(caseAddedToCrownCourt);
         caseProgressionDetail.setStatus(CaseStatusEnum.INCOMPLETE);
-        caseProgressionDetail.setVersion(event.metadata().version().get());
         repository.save(caseProgressionDetail);
     }
 }
