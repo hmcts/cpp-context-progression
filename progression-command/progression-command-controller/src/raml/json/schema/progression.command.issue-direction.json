@@ -4,13 +4,9 @@
   "properties": {
     "caseProgressionId": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
-    "caseProgressionId",
-    "version"
+    "caseProgressionId"
   ]
 }

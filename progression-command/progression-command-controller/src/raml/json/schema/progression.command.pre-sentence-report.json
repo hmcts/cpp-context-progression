@@ -7,14 +7,10 @@
     },
     "isPSROrdered": {
       "type": "boolean"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "isPSROrdered",
-    "version"
+    "isPSROrdered"
   ]
 }

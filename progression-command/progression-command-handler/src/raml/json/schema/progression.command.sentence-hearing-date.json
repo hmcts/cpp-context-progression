@@ -7,14 +7,10 @@
     },
     "sentenceHearingDate": {
       "type": "string"
-    },
-    "version": {
-      "type": "integer"
     }
   },
   "required": [
     "caseProgressionId",
-    "sentenceHearingDate",
-    "version"
+    "sentenceHearingDate"
   ]
 }

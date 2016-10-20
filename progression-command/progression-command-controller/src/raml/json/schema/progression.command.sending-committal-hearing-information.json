@@ -5,9 +5,6 @@
     "caseProgressionId": {
       "type": "string"
     },
-    "version": {
-      "type": "integer"
-    },
     "fromCourtCentre": {
       "type": "string"
     },
@@ -17,7 +14,6 @@
   },
   "required": [
     "caseProgressionId",
-    "version",
     "fromCourtCentre",
     "sendingCommittalDate"
   ]
