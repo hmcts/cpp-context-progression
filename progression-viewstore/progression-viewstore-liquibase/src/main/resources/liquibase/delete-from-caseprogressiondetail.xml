@@ -12,6 +12,7 @@
 		<dropColumn columnName="trialestimatedefence" tableName="caseprogressiondetail" />
         <dropColumn columnName="trialestimateprosecution" tableName="caseprogressiondetail" />
         <dropColumn columnName="ptphearingvacateddate" tableName="caseprogressiondetail" />
-        <dropColumn columnName="ispsrordered" tableName="caseprogressiondetail" />																		
+        <dropColumn columnName="ispsrordered" tableName="caseprogressiondetail" />	
+        <dropColumn columnName="version" tableName="caseprogressiondetail" />																		
     </changeSet>
 </databaseChangeLog>
