@@ -11,7 +11,7 @@ rule "Command - Access control for progression.command.vacate-ptp-hearing"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.vacate-ptp-hearing");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users",   "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",   "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -20,7 +20,7 @@ rule "Command - Access control for progression.command.add-defendant-additional-
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-defendant-additional-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users")))
   then
     $outcome.setSuccess(true);
 end
@@ -29,7 +29,7 @@ rule "Command - Access control for progression.command.prosecution-trial-estimat
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.prosecution-trial-estimate");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -38,7 +38,7 @@ rule "Command - Access control for progression.command.prepare-for-sentence-hear
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.prepare-for-sentence-hearing");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users",  "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",  "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -48,7 +48,7 @@ rule "Command - Access control for progression.command.indicate-statement"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.indicate-statement");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -58,7 +58,7 @@ rule "Command - Access control for progression.command.indicate-all-statements-s
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.indicate-all-statements-served");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -68,7 +68,7 @@ rule "Command - Access control for progression.command.indicate-all-statements-i
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.indicate-all-statements-identified");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -78,7 +78,7 @@ rule "Command - Access control for progression.command.defendant"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.defendant");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -87,7 +87,7 @@ rule "Command - Access control for progression.command.pre-sentence-report"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.pre-sentence-report");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users",  "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",  "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -96,7 +96,7 @@ rule "Command - Access control for progression.command.issue-direction"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.issue-direction");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -106,7 +106,7 @@ rule "Command - Access control for progression.command.defence-trial-estimate"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.defence-trial-estimate");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -116,7 +116,7 @@ rule "Command - Access control for progression.command.sending-committal-hearing
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.sending-committal-hearing-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -125,7 +125,7 @@ rule "Command - Access control for progression.command.case-to-be-assigned"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.case-to-be-assigned");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -134,7 +134,7 @@ rule "Command - Access control for progression.command.case-assigned-for-review"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.case-assigned-for-review");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -143,7 +143,7 @@ rule "Command - Access control for progression.command.addsfrissues"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.addsfrissues");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users")))
   then
     $outcome.setSuccess(true);
 end
@@ -152,7 +152,7 @@ rule "Command - Access control for progression.command.sentence-hearing-date"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.sentence-hearing-date");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -161,7 +161,7 @@ rule "Command - Access control for progression.command.add-defence-issues"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-defence-issues");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -169,7 +169,7 @@ rule "Command - Access control for progression.command.add-case-to-crown-court"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-case-to-crown-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -178,7 +178,7 @@ rule "Command - Access control for progression.command.send-to-crown-court"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.send-to-crown-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end

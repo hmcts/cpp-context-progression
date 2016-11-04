@@ -28,8 +28,8 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 public class IndicateStatementTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System-Users",
-                    "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group");
+    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users",
+                    "Court Operations Officers", "Listing Officers");
 
     private static final String MEDIA_TYPE = "progression.command.indicate-statement";
     private Action action;
