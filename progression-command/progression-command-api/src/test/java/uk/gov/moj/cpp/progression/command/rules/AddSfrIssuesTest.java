@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 public class AddSfrIssuesTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System-Users");
+    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users");
 
     private static final String MEDIA_TYPE = "progression.command.addsfrissues";
     private Action action;

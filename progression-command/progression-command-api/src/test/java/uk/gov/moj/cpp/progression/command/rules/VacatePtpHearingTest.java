@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 public class VacatePtpHearingTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
-                    Arrays.asList("System-Users", "I2T-Judiciary-Group");
+                    Arrays.asList("System Users", "Judiciary");
 
     private static final String MEDIA_TYPE = "progression.command.vacate-ptp-hearing";
     private Action action;

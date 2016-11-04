@@ -12,7 +12,7 @@ rule "Query - Access control for  progression.query.caseprogressiondetail"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.caseprogressiondetail");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -21,7 +21,7 @@ rule "Query - Access control for  progression.query.cases"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -30,7 +30,7 @@ rule "Query - Access control for  progression.query.defendant"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.defendant");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -39,7 +39,7 @@ rule "Query - Access control for  progression.query.timeline"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.timeline");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -48,7 +48,7 @@ rule "Query - Access control for  progression.query.indicatestatementsdetails"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.indicatestatementsdetails");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
@@ -57,7 +57,7 @@ rule "Query - Access control for  progression.query.indicatestatementsdetail"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.indicatestatementsdetail");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System-Users", "I2T-Court-Operations-Officer-Group", "I2T-Listing-Officer-Group", "I2T-Judiciary-Group")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end

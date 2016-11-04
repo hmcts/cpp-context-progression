@@ -28,8 +28,8 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 public class DefenceTrialEstimateTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System-Users",
-                    "I2T-Listing-Officer-Group", "I2T-Judiciary-Group");
+    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users",
+                    "Listing Officers", "Judiciary");
 
     private static final String MEDIA_TYPE = "progression.command.defence-trial-estimate";
     private Action action;
