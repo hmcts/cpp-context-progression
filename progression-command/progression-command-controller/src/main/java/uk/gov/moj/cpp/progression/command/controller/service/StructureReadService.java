@@ -37,17 +37,10 @@ public class StructureReadService {
     @ServiceComponent(Component.COMMAND_CONTROLLER)
     private Requester requester;
 
-    
-    @Inject
-    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
+    public List<String> getStructureCaseDefendantsId(final String caseId, final String userId) {
 
-
-    public List<String> getStructureCaseDefendentsId(final String caseId) {
-
-        UUID systemUserId = serviceContextSystemUserProvider.getContextSystemUserId().get();
-       
         Metadata metadata = JsonObjectMetadata.metadataOf(UUID.randomUUID(), GET_CASE_DEFENDANT_QUERY)
-                        .withUserId(systemUserId.toString())
+                        .withUserId(userId)
                         .build();
         final JsonEnvelope requestEnvelope = envelopeFrom(metadata, buildRequestPayload(caseId));
 
