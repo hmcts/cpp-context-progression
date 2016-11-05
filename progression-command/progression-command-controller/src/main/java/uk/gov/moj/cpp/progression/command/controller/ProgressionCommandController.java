@@ -34,8 +34,8 @@ public class ProgressionCommandController {
 
     @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) {
-        List<String> defendentdIdsForCase = structureCaseService.getStructureCaseDefendentsId(
-                        envelope.payloadAsJsonObject().getString("caseId"));
+        List<String> defendentdIdsForCase = structureCaseService.getStructureCaseDefendantsId(
+                        envelope.payloadAsJsonObject().getString("caseId"), envelope.metadata().userId().toString());
         JsonArrayBuilder defendantsBuilder = Json.createArrayBuilder();
 
         defendentdIdsForCase.forEach(

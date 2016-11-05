@@ -4,16 +4,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import static org.mockito.Mockito.*;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -21,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.moj.cpp.progression.command.controller.service.StructureReadService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,7 +31,7 @@ public class ProgressionCommandcontrollerTest {
     @Mock
     private Sender sender;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JsonEnvelope command;
 
     @Mock
@@ -55,13 +57,16 @@ public class ProgressionCommandcontrollerTest {
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
-
+        String userId = UUID.randomUUID().toString();
         String caseId = UUID.randomUUID().toString();
         String defendantId = UUID.randomUUID().toString();
         JsonObject value = mock(JsonObject.class);
+        JsonObjectMetadata metadata = mock(JsonObjectMetadata.class);
         when(command.payloadAsJsonObject()).thenReturn(value);
         when(value.getString("caseId")).thenReturn(caseId);
-        when(structureCaseService.getStructureCaseDefendentsId(caseId))
+        when(metadata.userId()).thenReturn(Optional.of(userId));
+        when(command.metadata()).thenReturn(metadata);
+        when(structureCaseService.getStructureCaseDefendantsId(caseId, command.metadata().userId().toString()))
                         .thenReturn(Arrays.asList(defendantId));
         when(enveloper.withMetadataFrom(command, "progression.command.add-case-to-progression"))
                         .thenReturn(function);

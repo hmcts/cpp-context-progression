@@ -37,7 +37,7 @@ public class StructureReadServiceTest {
 
     private static final String CASE_ID = UUID.randomUUID().toString();
 
-    private static final UUID SYSTEM_USER_ID = UUID.randomUUID();
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @InjectMocks
     private StructureReadService service;
@@ -62,7 +62,7 @@ public class StructureReadServiceTest {
 
     @Before
     public void setUp(){
-    when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(SYSTEM_USER_ID));
+    when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(USER_ID));
     }
     
     @Test
@@ -79,7 +79,7 @@ public class StructureReadServiceTest {
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObject.getJsonArray(StructureReadService.DEFENDANTS)).thenReturn(jsonArray);
 
-        List<String> defendantIds = service.getStructureCaseDefendentsId(CASE_ID);
+        List<String> defendantIds = service.getStructureCaseDefendantsId(CASE_ID, USER_ID.toString());
         verify(requester).request(jsonCapture.capture());
         assertThat(jsonCapture.getValue().metadata().name(),
                         is(StructureReadService.GET_CASE_DEFENDANT_QUERY));
@@ -96,7 +96,7 @@ public class StructureReadServiceTest {
         when(requester.request(any())).thenReturn(jsonEnvelope);
         when(jsonEnvelope.payload()).thenReturn(JsonValue.NULL);
 
-        List<String> defendantIds = service.getStructureCaseDefendentsId(CASE_ID);
+        List<String> defendantIds = service.getStructureCaseDefendantsId(CASE_ID, USER_ID.toString());
         verify(requester).request(jsonCapture.capture());
         assertThat(jsonCapture.getValue().metadata().name(),
                         is(StructureReadService.GET_CASE_DEFENDANT_QUERY));
