@@ -34,8 +34,10 @@ public class ProgressionCommandController {
 
     @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) {
+        String userId = envelope.metadata().userId()
+                .orElseThrow(() -> new RuntimeException("User Id not found in metadata"));
         List<String> defendentdIdsForCase = structureCaseService.getStructureCaseDefendantsId(
-                        envelope.payloadAsJsonObject().getString("caseId"), envelope.metadata().userId().toString());
+                        envelope.payloadAsJsonObject().getString("caseId"), userId);
         JsonArrayBuilder defendantsBuilder = Json.createArrayBuilder();
 
         defendentdIdsForCase.forEach(
