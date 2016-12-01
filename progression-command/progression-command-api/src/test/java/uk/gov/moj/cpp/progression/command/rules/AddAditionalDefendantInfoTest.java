@@ -29,8 +29,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
-                    Arrays.asList("System Users", "Court Operations Officers",
-                                    "Listing Officers", "Judiciary");
+            Arrays.asList("System Users");
 
     private static final String MEDIA_TYPE = "progression.command.add-defendant-additional-information";
     private Action action;
@@ -44,7 +43,7 @@ public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
     @Override
     protected Map<Class, Object> getProviderMocks() {
         return ImmutableMap.<Class, Object>builder()
-                        .put(UserAndGroupProvider.class, userAndGroupProvider).build();
+                .put(UserAndGroupProvider.class, userAndGroupProvider).build();
     }
 
     @Before
@@ -62,7 +61,7 @@ public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldPassAccessControl() throws Exception {
         when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ALLOWED_USER_GROUPS))
-                        .thenReturn(true);
+                .thenReturn(true);
 
         final ExecutionResults executionResults = executeRulesWith(action);
 
@@ -73,7 +72,7 @@ public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotPassAccessControl() throws Exception {
         when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ALLOWED_USER_GROUPS))
-                        .thenReturn(false);
+                .thenReturn(false);
 
         final ExecutionResults executionResults = executeRulesWith(action);
 
@@ -83,7 +82,7 @@ public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
 
     private void verifyListOfUserGroups() {
         verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(eq(action),
-                        listCaptor.capture());
+                listCaptor.capture());
         assertThat(listCaptor.getValue(), containsInAnyOrder(ALLOWED_USER_GROUPS.toArray()));
     }
 }
