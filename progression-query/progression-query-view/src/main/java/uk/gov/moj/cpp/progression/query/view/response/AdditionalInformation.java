@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.query.view.response;
 
 public class AdditionalInformation {
+    private Boolean noMoreInformationRequired;
+
     private Defence defence;
 
     private Probation probation;
@@ -29,5 +31,13 @@ public class AdditionalInformation {
 
     public void setProsecution(Prosecution prosecution) {
         this.prosecution = prosecution;
+    }
+
+    public Boolean getNoMoreInformationRequired() {
+        return noMoreInformationRequired;
+    }
+
+    public void setNoMoreInformationRequired(Boolean noMoreInformationRequired) {
+        this.noMoreInformationRequired = noMoreInformationRequired;
     }
 }

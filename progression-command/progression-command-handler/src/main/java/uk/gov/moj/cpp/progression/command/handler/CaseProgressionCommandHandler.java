@@ -17,7 +17,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
 
 
-public class CaseProgressionCommandHandler {
+public  class CaseProgressionCommandHandler {
 
     static final String FIELD_STREAM_ID = "caseProgressionId";
 

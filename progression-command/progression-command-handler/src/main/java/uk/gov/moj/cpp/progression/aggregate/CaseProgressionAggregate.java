@@ -20,6 +20,7 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent;
 
 public class CaseProgressionAggregate implements Aggregate {
 
@@ -66,7 +67,11 @@ public class CaseProgressionAggregate implements Aggregate {
                                             if (e.getAdditionalInformationEvent() != null) {
                                                 defendant.setIsAdditionalInfoAvilable(true);
                                             }
-                                        }));
+                                        }),
+                         when(uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent.class)
+                                                .apply(e -> {
+                                                    //Do Nothing
+                                                }));
 
     }
 
@@ -93,6 +98,11 @@ public class CaseProgressionAggregate implements Aggregate {
 
     }
 
+    public Stream<Object> noMoreInformationForDefendant(final UUID defendantId,final UUID caseId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(new NoMoreInformationRequiredEvent(caseId,defendantId));
+        return apply(streamBuilder.build());
+    }
 
     public Stream<Object> addAdditionalInformationForDefendant(final DefendantCommand defendant) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();

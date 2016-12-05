@@ -17,5 +17,6 @@
 	<include file="liquibase/add-defendant-provide-guidance.xml" />
 	<include file="liquibase/delete-from-caseprogressiondetail.xml" />
 	<include file="liquibase/drop-indicatestatement.xml" />
+	<include file="liquibase/add-no-more-information-required.xml" />
 
 </databaseChangeLog>	

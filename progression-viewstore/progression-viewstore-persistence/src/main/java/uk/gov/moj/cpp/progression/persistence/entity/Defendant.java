@@ -68,6 +68,10 @@ public class Defendant {
     @Column(name = "provide_guidance")
     private String provideGuidance;
 
+
+    @Column(name = "is_no_more_information_required")
+    private Boolean isNoMoreInformationRequired;
+
     public Defendant(UUID id, UUID defendantId, CaseProgressionDetail caseProgressionDetail,
             Boolean sentenceHearingReviewDecision) {
         super();
@@ -215,6 +219,14 @@ public class Defendant {
 
     public void setProvideGuidance(String provideGuidance) {
         this.provideGuidance = provideGuidance;
+    }
+
+    public Boolean getNoMoreInformationRequired() {
+        return isNoMoreInformationRequired;
+    }
+
+    public void setNoMoreInformationRequired(Boolean noMoreInformationRequired) {
+        isNoMoreInformationRequired = noMoreInformationRequired;
     }
 
     @Override

@@ -87,4 +87,9 @@ public class ProgressionCommandController {
 	public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
 		sender.send(envelope);
 	}
+
+	@Handles("progression.command.no-more-information-required")
+	public void noMoreInformationRequired(final JsonEnvelope envelope) {
+		sender.send(envelope);
+	}
 }

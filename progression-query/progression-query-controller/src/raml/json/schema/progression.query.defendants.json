@@ -25,6 +25,9 @@
           "additionalInformation": {
             "type": "object",
             "properties": {
+              "noMoreInformationRequired": {
+                "type": "boolean"
+              },
               "probation": {
                 "type": "object",
                 "properties": {

@@ -7,6 +7,7 @@
 	  "sentenceHearingReviewDecision": false,
 	  "sentenceHearingReviewDecisionDateTime": "2016-01-01 20:12",
 	  "additionalInformation": {
+		  "noMoreInformationRequired":false,
 	    "probation": {
 	      "preSentenceReport": {
 	        "psrIsRequested": true,
@@ -42,6 +43,7 @@
 	  "sentenceHearingReviewDecision": false,
 	  "sentenceHearingReviewDecisionDateTime": "2016-01-01 20:12",
 	  "additionalInformation": {
+		  "noMoreInformationRequired":false,
 	    "probation": {
 	      "preSentenceReport": {
 	        "psrIsRequested": true,
