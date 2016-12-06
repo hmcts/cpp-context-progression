@@ -61,3 +61,12 @@ rule "Query - Access control for  progression.query.indicatestatementsdetail"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Query - Access control for  progression.query.crown-court.magistrate-courts"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.crown-court.magistrate-courts");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers", "Judiciary")))
+  then
+    $outcome.setSuccess(true);
+end

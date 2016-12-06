@@ -91,4 +91,25 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.defendants+json:
                     example:  !include json/progression.query.defendants.json
                     schema:  !include json/schema/progression.query.defendants.json
+
+/crown-court/{crownCourtId}/magistrate-courts:
+  uriParameters:
+        crownCourtId:
+          description: ID of the crown court
+          type: string
+  get:
+      description: |
+        Return the list of magistrate courts for a given crown court
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.crown-court.magistrate-courts+json
+            name: progression.query.crown-court.magistrate-courts
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.crown-court.magistrate-courts+json:
+                    example:  !include json/progression.query.crown-court.magistrate-courts.json
+                    schema:  !include json/schema/progression.query.crown-court.magistrate-courts.json
                     
