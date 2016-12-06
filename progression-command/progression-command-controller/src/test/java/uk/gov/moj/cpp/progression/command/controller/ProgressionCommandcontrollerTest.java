@@ -117,4 +117,10 @@ public class ProgressionCommandcontrollerTest {
 		progressionCommandcontroller.addAdditionalInformationForDefendant(command);
 		verify(sender, times(1)).send(command);
 	}
+
+	@Test
+	public void shouldPassNoMoreInformationRequired() throws Exception {
+		progressionCommandcontroller.noMoreInformationRequired(command);
+		verify(sender, times(1)).send(command);
+	}
 }

@@ -77,4 +77,11 @@ public class ProgressionCommandApiTest {
 		progressionCommandApi.addAdditionalInformationForDefendant(command);
 		verify(sender, times(1)).send(command);
 	}
+
+
+	@Test
+	public void shouldPassNoMoreInformationRequired() throws Exception {
+		progressionCommandApi.noMoreInformationRequired(command);
+		verify(sender, times(1)).send(command);
+	}
 }

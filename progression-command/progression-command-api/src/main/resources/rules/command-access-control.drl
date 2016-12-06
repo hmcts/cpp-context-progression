@@ -95,6 +95,16 @@ rule "Command - Access control for progression.command.add-case-to-crown-court"
 end
 
 
+rule "Command - Access control for progression.command.no-more-information-required"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.no-more-information-required");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
+  then
+    $outcome.setSuccess(true);
+end
+
+
 
 
 

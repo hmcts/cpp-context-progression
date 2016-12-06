@@ -83,6 +83,47 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
     }
 
 
+    @Test
+    public void shouldSetNoMoreInformationRequired() throws Exception {
+
+        Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
+                "application/vnd.progression.command.add-case-to-crown-court+json",
+                StubUtil.getJsonBodyStr("progression.command.add-case-to-crown-court.json",
+                        caseId, defendantId, caseProgressionId));
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        waitForResponse(5);
+        Response queryResponse = getCaseProgressionDetail(
+                getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
+                "application/vnd.progression.query.defendant+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+        JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+
+        // defendantProgressionId = defendantsJsonObject.getString("defendantProgressionId");
+        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
+                equalTo(Boolean.FALSE));
+
+        writeResponse = postCommand(
+                getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
+                "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(
+                        "progression.command.no-more-information-required.json",
+                        caseId, defendantId, caseProgressionId));
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        waitForResponse(5);
+
+        queryResponse = getCaseProgressionDetail(
+                getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
+                "application/vnd.progression.query.defendant+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getBoolean("noMoreInformationRequired"),
+                equalTo(Boolean.TRUE));
+    }
+
 
 
 

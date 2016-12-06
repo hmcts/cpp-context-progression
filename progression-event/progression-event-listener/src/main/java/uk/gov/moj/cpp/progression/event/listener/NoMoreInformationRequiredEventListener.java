@@ -35,7 +35,7 @@ public class NoMoreInformationRequiredEventListener {
     DefendantRepository repository;
     @Transactional
     @Handles("progression.events.no-more-information-required")
-    public void addedToCrownCourt(final JsonEnvelope event) {
+    public void noMoreInformationRequiredEventListener(final JsonEnvelope event) {
 
         final NoMoreInformationRequiredEvent noMoreInformationRequiredEvent = jsonObjectConverter
                         .convert(event.payloadAsJsonObject(), NoMoreInformationRequiredEvent.class);

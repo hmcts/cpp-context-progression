@@ -7,10 +7,14 @@
     },
     "defendantId": {
       "type": "string"
-    }
+    },
+      "caseProgressionId": {
+        "type": "string"
+      }
   },
   "required": [
     "caseId",
-    "defendantId"
+    "defendantId",
+    "caseProgressionId"
   ]
 }
