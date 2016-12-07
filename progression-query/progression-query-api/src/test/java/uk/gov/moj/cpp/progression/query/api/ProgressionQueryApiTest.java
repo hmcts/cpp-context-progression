@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -9,12 +8,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.spi.JsonProvider;
 
 import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -48,22 +45,22 @@ public class ProgressionQueryApiTest {
     @Test
     public void shouldReturnListOfMagistrateCourtsForLCC() {
         // given
-        final JsonObject queryPayload = JsonProvider.provider().createObjectBuilder().add("crownCourtId", "LCC").build();
+        final JsonObject queryPayload = createObjectBuilder().add("crownCourtId", "LCC").build();
         when(query.payloadAsJsonObject()).thenReturn(queryPayload);
 
         // when
         final JsonEnvelope jsonEnvelope = progressionHearingsQueryApi.getMagistratesCourts(query);
 
         // then
-        final JsonObject expectedPayload = JsonProvider.provider().createObjectBuilder()
+        final JsonObject expectedPayload = createObjectBuilder()
                 .add("values", createArrayBuilder()
-                        .add("Liverpool & Knowsley Magistrates Court")
-                        .add("Ormskirk Magistrates Court")
-                        .add("Sefton Magistrates Court")
-                        .add("St Helens Magistrates Court")
-                        .add("Wigan Magistrates Court")
-                        .add("Wirral Magistrates Court")
-                        .add("Other")
+                        .add(createObjectBuilder().add("name", "Liverpool & Knowsley Magistrates Court"))
+                        .add(createObjectBuilder().add("name", "Ormskirk Magistrates Court"))
+                        .add(createObjectBuilder().add("name", "Sefton Magistrates Court"))
+                        .add(createObjectBuilder().add("name", "St Helens Magistrates Court"))
+                        .add(createObjectBuilder().add("name", "Wigan Magistrates Court"))
+                        .add(createObjectBuilder().add("name", "Wirral Magistrates Court"))
+                        .add(createObjectBuilder().add("name", "Other"))
                         .build())
                 .build();
         assertThat(jsonEnvelope.payloadAsJsonObject(), is(expectedPayload));

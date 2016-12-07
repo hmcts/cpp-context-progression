@@ -1,11 +1,11 @@
 {
   "values": [
-    "Liverpool & Knowsley Magistrates Court",
-    "Ormskirk Magistrates Court",
-    "Sefton Magistrates Court",
-    "St Helens Magistrates Court",
-    "Wigan Magistrates Court",
-    "Wirral Magistrates Court",
-    "Other"
+    {"name": "Liverpool & Knowsley Magistrates Court"},
+    {"name": "Ormskirk Magistrates Court"},
+    {"name": "Sefton Magistrates Court"},
+    {"name": "St Helens Magistrates' Court"},
+    {"name": "Wigan Magistrates' Court"},
+    {"name": "Wirral Magistrates' Court"},
+    {"name": "Other"}
   ]
 }

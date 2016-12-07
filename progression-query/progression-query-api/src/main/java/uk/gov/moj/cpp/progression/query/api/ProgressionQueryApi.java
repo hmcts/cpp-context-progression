@@ -8,12 +8,13 @@ import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 
 @ServiceComponent(Component.QUERY_API)
@@ -59,10 +60,10 @@ public class ProgressionQueryApi {
     }
 
     private JsonObject buildRequestPayload(final String crownCourtId) {
-        final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         List<String> magistratesCourts = getMagistratesCourts(crownCourtId);
-        magistratesCourts.forEach(arrayBuilder::add);
-        return Json.createObjectBuilder().add("values", arrayBuilder).build();
+        magistratesCourts.forEach(s -> arrayBuilder.add(createObjectBuilder().add("name", s)));
+        return createObjectBuilder().add("values", arrayBuilder).build();
     }
 
     private List<String> getMagistratesCourts(String crownCourtId) {

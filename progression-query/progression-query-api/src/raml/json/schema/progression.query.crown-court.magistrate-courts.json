@@ -5,11 +5,16 @@
     "values": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
       }
     }
   },
   "required": [
-    "magistrate-courts"
+    "values"
   ]
 }
