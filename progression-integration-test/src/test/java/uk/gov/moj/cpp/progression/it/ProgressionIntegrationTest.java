@@ -101,7 +101,7 @@ public class ProgressionIntegrationTest extends AbstractIT {
         assertTrue(queryResponse.getBody().path("status").equals("ASSIGNED_FOR_REVIEW"));
     }
 
-    @Ignore //TODO sibyg
+    @Ignore //TODO wip sibyg
     public void shouldGetListOfMagistrateCourtsForLCC() throws Exception {
 
         Response queryResponse = getResponse(getQueryUri("/crown-court/LCC/magistrate-courts"), "application/vnd.progression.query.crown-court.magistrate-courts+json");

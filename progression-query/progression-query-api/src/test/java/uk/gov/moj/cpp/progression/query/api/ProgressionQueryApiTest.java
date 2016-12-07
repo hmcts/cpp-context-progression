@@ -45,7 +45,7 @@ public class ProgressionQueryApiTest {
         assertThat(progressionHearingsQueryApi.getCases(query), equalTo(response));
     }
 
-    @Test @Ignore //TODO sibyg fixit
+    @Test
     public void shouldReturnListOfMagistrateCourtsForLCC() {
         // given
         final JsonObject queryPayload = JsonProvider.provider().createObjectBuilder().add("crownCourtId", "LCC").build();

@@ -59,11 +59,9 @@ public class ProgressionQueryApi {
     }
 
     private JsonObject buildRequestPayload(final String crownCourtId) {
-        final List<String> magistratesCourts = getMagistratesCourts(crownCourtId);
         final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        List<String> magistratesCourts = getMagistratesCourts(crownCourtId);
         magistratesCourts.forEach(arrayBuilder::add);
-        arrayBuilder.build();
-
         return Json.createObjectBuilder().add("values", arrayBuilder).build();
     }
 
