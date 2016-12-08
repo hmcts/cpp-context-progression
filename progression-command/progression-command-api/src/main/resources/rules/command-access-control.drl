@@ -12,7 +12,7 @@ rule "Command - Access control for progression.command.add-defendant-additional-
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-defendant-additional-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users" , "Listing Officers", "Judiciary")))
   then
     $outcome.setSuccess(true);
 end
