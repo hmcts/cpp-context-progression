@@ -20,7 +20,15 @@ public class CaseProgressionDetailView {
 
     private String status;
 
+    private String courtCentreId;
 
+    public String getCourtCentreId() {
+        return courtCentreId;
+    }
+
+    public void setCourtCentreId(String courtCentreId) {
+        this.courtCentreId = courtCentreId;
+    }
 
     public String getCaseId() {
         return caseId;
