@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -18,6 +19,10 @@ import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 
 import uk.gov.moj.cpp.progression.helper.StubUtil;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 public class AddCaseToCrownCourtIT extends AbstractIT {
 
@@ -47,6 +52,22 @@ public class AddCaseToCrownCourtIT extends AbstractIT {
         final Response queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
                         "application/vnd.progression.query.caseprogressiondetail+json");
         assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+
+        JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+
+        // defendantProgressionId = defendantsJsonObject.getString("defendantProgressionId");
+        assertThat(defendantsJsonObject.getString("courtCentreId"),
+                equalTo("courtCentreId"));
+
+    }
+
+    public static JsonObject getJsonObject(final String jsonAsString) {
+        JsonObject payload;
+        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
+            payload = jsonReader.readObject();
+        }
+        return payload;
     }
 
 
