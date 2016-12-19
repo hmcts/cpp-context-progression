@@ -25,6 +25,7 @@ public class CaseProgressionDetailToViewConverter {
                         .setSendingCommittalDate(caseProgressionDetail.getSendingCommittalDate());
         caseProgressionDetailVo
                         .setSentenceHearingDate(caseProgressionDetail.getSentenceHearingDate());
+        caseProgressionDetailVo.setCourtCentreId(caseProgressionDetail.getCourtCentreId());
 
         return caseProgressionDetailVo;
     }

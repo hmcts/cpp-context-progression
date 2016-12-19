@@ -41,7 +41,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAddCaseToCrownCourt() throws Exception {
+    public void shouldAddAdditionalInfoForDefendant() throws Exception {
 
         Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
                         "application/vnd.progression.command.add-case-to-crown-court+json",
