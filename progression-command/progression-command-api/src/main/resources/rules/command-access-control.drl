@@ -12,7 +12,7 @@ rule "Command - Access control for progression.command.add-defendant-additional-
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-defendant-additional-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users" , "Listing Officers", "Judiciary")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users" , "Listing Officers", "Judiciary", "Case Officer")))
   then
     $outcome.setSuccess(true);
 end
@@ -21,7 +21,7 @@ rule "Command - Access control for progression.command.prepare-for-sentence-hear
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.prepare-for-sentence-hearing");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",  "Listing Officers", "Judiciary")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",  "Listing Officers", "Judiciary", "Case Officer")))
   then
     $outcome.setSuccess(true);
 end
@@ -32,20 +32,10 @@ rule "Command - Access control for progression.command.pre-sentence-report"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.pre-sentence-report");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",  "Listing Officers", "Judiciary")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users",  "Listing Officers", "Judiciary" , "Case Officer")))
   then
     $outcome.setSuccess(true);
 end
-
-rule "Command - Access control for progression.command.issue-direction"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.issue-direction");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Judiciary")))
-  then
-    $outcome.setSuccess(true);
-end
-
 
 rule "Command - Access control for progression.command.sending-committal-hearing-information"
   when
@@ -99,7 +89,7 @@ rule "Command - Access control for progression.command.no-more-information-requi
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.no-more-information-required");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Court Operations Officers", "Listing Officers")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users", "Judiciary", "Case Officer")))
   then
     $outcome.setSuccess(true);
 end

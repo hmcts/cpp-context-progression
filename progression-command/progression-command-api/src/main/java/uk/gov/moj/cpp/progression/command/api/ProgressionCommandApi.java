@@ -24,11 +24,6 @@ public class ProgressionCommandApi {
         sender.send(envelope);
     }
     
-    @Handles("progression.command.issue-direction")
-    public void issueDirection(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
     @Handles("progression.command.pre-sentence-report")
     public void preSentenceReport(final JsonEnvelope envelope) {
         sender.send(envelope);

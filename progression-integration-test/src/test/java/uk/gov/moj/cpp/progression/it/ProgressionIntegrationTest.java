@@ -52,12 +52,6 @@ public class ProgressionIntegrationTest extends AbstractIT {
                 "application/vnd.progression.query.caseprogressiondetail+json");
         assertThat(queryResponse.getStatusCode(), equalTo(SC_OK));
 
-        writeResponse = postCommand(getCommandUri("/cases/issuedirection"),
-                "application/vnd.progression.command.issue-direction+json",
-                getJsonBodyStr("progression.command.issue-direction.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-
         writeResponse = postCommand(getCommandUri("/cases/sendingcommittalhearinginformation"),
                 "application/vnd.progression.command.sending-committal-hearing-information+json",
                 getJsonBodyStr("progression.command.sending-committal-hearing-information.json"));
