@@ -48,11 +48,6 @@ public class ProgressionCommandController {
         sender.send(modifiedJsonEnvelope);
     }
 
-    @Handles("progression.command.issue-direction")
-    public void issueDirection(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
 	@Handles("progression.command.sending-committal-hearing-information")
 	public void sendCommittalHearingInformation(final JsonEnvelope envelope) {
 		sender.send(envelope);

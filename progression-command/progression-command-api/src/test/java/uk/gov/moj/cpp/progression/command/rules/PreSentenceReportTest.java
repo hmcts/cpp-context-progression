@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 public class PreSentenceReportTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users",
-                    "Listing Officers", "Judiciary");
+                    "Listing Officers", "Judiciary", "Case Officer");
 
     private static final String MEDIA_TYPE = "progression.command.pre-sentence-report";
     private Action action;

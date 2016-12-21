@@ -116,22 +116,6 @@ public class ProgressionCommandHandlerTest {
     }
 
     @Test
-
-    public void shouldIssueDirection() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createDirectionIssued(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-        progressionCommandHandler.issueDirection(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
-
     public void shouldPreSentenceReport() throws Exception {
         final JsonEnvelope command = createJsonCommand();
         final StubEventStream stubEventStream = new StubEventStream();

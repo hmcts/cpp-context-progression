@@ -77,12 +77,6 @@ public class ProgressionCommandcontrollerTest {
 	}
 
 	@Test
-	public void shouldIssueDirection() throws Exception {
-		progressionCommandcontroller.issueDirection(command);
-		verify(sender, times(1)).send(command);
-	}
-
-	@Test
 	public void shouldPreSentenceReport() throws Exception {
 		progressionCommandcontroller.preSentenceReport(command);
 		verify(sender, times(1)).send(command);
