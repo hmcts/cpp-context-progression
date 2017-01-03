@@ -30,7 +30,7 @@ public class CaseDetailsTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
                     Arrays.asList("System Users", "Court Operations Officers",
-                                    "Listing Officers", "Judiciary");
+                                    "Listing Officers", "Judiciary", "Case Officer");
 
     private static final String MEDIA_TYPE = "progression.query.cases";
     private Action action;
