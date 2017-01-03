@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>uk.gov.moj.cpp.common</groupId>
 		<artifactId>service-parent-pom</artifactId>
-		<version>2.0.39</version>
+		<version>3.0.4</version>
 	</parent>
 
 	<groupId>uk.gov.moj.cpp.progression</groupId>
 	<artifactId>progression-parent</artifactId>
-	<version>2.0.70</version>
+	<version>2.0.71</version>
 	<packaging>pom</packaging>
 
 	<name>Progression services application</name>
@@ -32,8 +32,8 @@
 		<sonar.scm.provider>git</sonar.scm.provider>
 		<cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
 		<cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
-		<structure.version>2.0.67</structure.version>
-		<access.control.version>2.0.14</access.control.version>
+		<structure.version>2.0.202</structure.version>
+		<access.control.version>2.0.26</access.control.version>
 	</properties>
 
 	<build>
