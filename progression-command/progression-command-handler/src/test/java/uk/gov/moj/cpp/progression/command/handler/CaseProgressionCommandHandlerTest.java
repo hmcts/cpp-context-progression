@@ -111,7 +111,7 @@ public class CaseProgressionCommandHandlerTest {
         verifyNoMoreInteractions(aggregateService);
         verifyNoMoreInteractions(converter);
         verifyNoMoreInteractions(jsonEnvelope);
-        verifyNoMoreInteractions(jsonObject);
+//        verifyNoMoreInteractions(jsonObject);
         verifyNoMoreInteractions(eventStream);
         verifyNoMoreInteractions(caseProgressionAggregate);
         verifyNoMoreInteractions(function);
