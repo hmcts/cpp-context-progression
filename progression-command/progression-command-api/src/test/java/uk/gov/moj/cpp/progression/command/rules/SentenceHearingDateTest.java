@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 public class SentenceHearingDateTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users",
+    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList(
                     "Court Operations Officers", "Listing Officers");
 
     private static final String MEDIA_TYPE = "progression.command.sentence-hearing-date";

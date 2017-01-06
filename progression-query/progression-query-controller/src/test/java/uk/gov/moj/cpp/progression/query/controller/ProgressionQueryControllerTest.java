@@ -39,4 +39,16 @@ public class ProgressionQueryControllerTest {
         assertThat(progressionQueryController.getCases(query), equalTo(response));
     }
 
+
+    @Test
+    public void shouldHandleDefendantQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionQueryController.getDefendant(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleDefendantsQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionQueryController.getDefendants(query), equalTo(response));
+    }
 }
