@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 public class AddAditionalDefendantInfoTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
-            Arrays.asList("System Users","Listing Officers", "Judiciary", "Case Officer");
+            Arrays.asList( "Listing Officers", "Judiciary", "Case Officer");
 
     private static final String MEDIA_TYPE = "progression.command.add-defendant-additional-information";
     private Action action;

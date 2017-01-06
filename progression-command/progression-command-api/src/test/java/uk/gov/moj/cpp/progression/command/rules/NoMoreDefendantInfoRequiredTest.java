@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 public class NoMoreDefendantInfoRequiredTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
-            Arrays.asList("System Users", "Judiciary", "Case Officer");
+            Arrays.asList(  "Judiciary", "Case Officer");
 
     private static final String MEDIA_TYPE = "progression.command.no-more-information-required";
     private Action action;

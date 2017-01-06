@@ -35,11 +35,22 @@ public class ProgressionQueryApiTest {
         when(requester.request(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCaseprogressiondetail(query), equalTo(response));
     }
-
     @Test
-    public void shouldHandleCaseaQuery() {
+    public void shouldHandleCaseQuery() {
         when(requester.request(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCases(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleDefendantQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getDefendant(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleDefendantsQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getDefendants(query), equalTo(response));
     }
 
     @Test

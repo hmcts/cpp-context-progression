@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 public class CaseAssignedForReviewTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList("System Users",
+    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList(
                     "Listing Officers");
 
     private static final String MEDIA_TYPE = "progression.command.case-assigned-for-review";
