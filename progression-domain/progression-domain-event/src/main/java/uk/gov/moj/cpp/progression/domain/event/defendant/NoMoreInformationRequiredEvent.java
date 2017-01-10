@@ -9,11 +9,14 @@ import java.util.UUID;
 public class NoMoreInformationRequiredEvent {
     private final UUID defendantId;
     private final UUID caseId;
+    private final UUID caseProgressionId;
+    private LocalDateTime sentenceHearingReviewDecisionDateTime;
 
-    public NoMoreInformationRequiredEvent( UUID caseId, UUID defendantId) {
+    public NoMoreInformationRequiredEvent( UUID caseId, UUID defendantId, UUID caseProgressionId ) {
         this.caseId = caseId;
         this.defendantId = defendantId;
-
+        this.caseProgressionId =caseProgressionId;
+        this.sentenceHearingReviewDecisionDateTime = LocalDateTime.now();
     }
 
     public UUID getCaseId() {
@@ -24,4 +27,11 @@ public class NoMoreInformationRequiredEvent {
         return defendantId;
     }
 
+    public UUID getCaseProgressionId() {
+        return caseProgressionId;
+    }
+
+    public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+        return sentenceHearingReviewDecisionDateTime;
+    }
 }

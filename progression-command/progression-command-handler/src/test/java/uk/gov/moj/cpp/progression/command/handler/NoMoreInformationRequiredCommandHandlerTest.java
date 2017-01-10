@@ -26,17 +26,15 @@ public class NoMoreInformationRequiredCommandHandlerTest
     private UUID caseId= UUID.randomUUID();
     private UUID defendantId= UUID.randomUUID();
 
-
-
     @Test
     public void shouldPassNoMoreInformationRequired() throws EventStreamException {
 
         when(jsonObject.getString("caseId")).thenReturn(caseId.toString());
         when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
-        when(caseProgressionAggregate.noMoreInformationForDefendant(defendantId,caseId))
+        when(caseProgressionAggregate.noMoreInformationForDefendant(defendantId,caseId,CASE_ID))
                         .thenReturn(events);
 
         noMoreInformationRequiredHandler.noMoreInformationRequired(jsonEnvelope);
-        verify(caseProgressionAggregate).noMoreInformationForDefendant(defendantId,caseId);
+        verify(caseProgressionAggregate).noMoreInformationForDefendant(defendantId,caseId,CASE_ID);
     }
 }

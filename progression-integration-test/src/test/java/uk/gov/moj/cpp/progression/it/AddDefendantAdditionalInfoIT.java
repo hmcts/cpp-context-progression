@@ -28,14 +28,16 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
     private String caseId;
     private String caseProgressionId;
     private String defendantId;
-
+    private String defendant2Id;
+    
     @Before
     public void createMockEndpoints() throws IOException {
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
+        defendant2Id =  UUID.randomUUID().toString();
         StubUtil.resetStubs();
-        StubUtil.setupStructureCaseStub(caseId, defendantId, caseProgressionId);
+        StubUtil.setupStructureCaseStub(caseId, defendantId,defendant2Id, caseProgressionId);
         StubUtil.setupUsersGroupQueryStub();
 
     }
@@ -46,7 +48,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
         Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
                         "application/vnd.progression.command.add-case-to-crown-court+json",
                         StubUtil.getJsonBodyStr("progression.command.add-case-to-crown-court.json",
-                                        caseId, defendantId, caseProgressionId));
+                                        caseId, defendantId, defendant2Id, caseProgressionId));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         waitForResponse(5);
         Response queryResponse = getCaseProgressionDetail(
@@ -56,7 +58,6 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
 
         JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
 
-        // defendantProgressionId = defendantsJsonObject.getString("defendantProgressionId");
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                         equalTo(Boolean.FALSE));
 
@@ -65,11 +66,20 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
                         "application/vnd.progression.command.add-defendant-additional-information+json",
                         StubUtil.getJsonBodyStr(
                                         "progression.command.add-defendant-additional-information.json",
-                                        caseId, defendantId, caseProgressionId));
+                                        caseId, defendantId, defendant2Id, caseProgressionId));
 
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         waitForResponse(5);
+        
+        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
+                "application/vnd.progression.query.caseprogressiondetail+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+
+        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        assertThat(defendantsJsonObject.getString("status"),
+        equalTo("INCOMPLETE"));
 
         queryResponse = getCaseProgressionDetail(
                         getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
@@ -80,6 +90,27 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
 
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                         equalTo(Boolean.TRUE));
+        
+        writeResponse = postCommand(
+                getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
+                "application/vnd.progression.command.add-defendant-additional-information+json",
+                StubUtil.getJsonBodyStr(
+                                "progression.command.add-defendant-additional-information.json",
+                                caseId, defendantId, defendant2Id, caseProgressionId));
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        waitForResponse(5);
+
+        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
+                "application/vnd.progression.query.caseprogressiondetail+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+        
+        
+        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        assertThat(defendantsJsonObject.getString("status"),
+        equalTo("PENDING_FOR_SENTENCING_HEARING"));
+        
     }
 
 
@@ -89,7 +120,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
         Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
                 "application/vnd.progression.command.add-case-to-crown-court+json",
                 StubUtil.getJsonBodyStr("progression.command.add-case-to-crown-court.json",
-                        caseId, defendantId, caseProgressionId));
+                        caseId, defendantId, defendant2Id, caseProgressionId));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         waitForResponse(5);
         Response queryResponse = getCaseProgressionDetail(
@@ -99,7 +130,6 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
 
         JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
 
-        // defendantProgressionId = defendantsJsonObject.getString("defendantProgressionId");
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                 equalTo(Boolean.FALSE));
 
@@ -107,11 +137,21 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
                 getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
                 "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(
                         "progression.command.no-more-information-required.json",
-                        caseId, defendantId, caseProgressionId));
+                        caseId, defendantId, defendant2Id, caseProgressionId));
 
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        
 
         waitForResponse(5);
+        
+        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
+                "application/vnd.progression.query.caseprogressiondetail+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+
+        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        assertThat(defendantsJsonObject.getString("status"),
+        equalTo("INCOMPLETE"));
 
         queryResponse = getCaseProgressionDetail(
                 getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
@@ -119,9 +159,32 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
         assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
 
         defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
+                        equalTo(Boolean.TRUE));
 
         assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getBoolean("noMoreInformationRequired"),
                 equalTo(Boolean.TRUE));
+        
+        writeResponse = postCommand(
+                getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
+                "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(
+                        "progression.command.no-more-information-required.json",
+                        caseId, defendantId, defendant2Id, caseProgressionId));
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        
+
+        waitForResponse(5);
+        
+        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
+                "application/vnd.progression.query.caseprogressiondetail+json");
+        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+
+        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        assertThat(defendantsJsonObject.getString("status"),
+        equalTo("READY_FOR_SENTENCING_HEARING"));
+
     }
 
 
