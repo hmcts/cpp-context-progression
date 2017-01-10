@@ -34,6 +34,8 @@ import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
+import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
+
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
@@ -239,6 +241,11 @@ public class ProgressionEventFactory {
                             .setDangerousnessAssessment(probation.getDangerousnessAssessment());
             additionalInformationEventBuilder.probation(probationEventBuilder.build());
         }
+    }
+    
+    public Object newCaseDocumentReceivedEvent(UUID id, JsonEnvelope command) {
+        JsonObject payload = command.payloadAsJsonObject();
+        return new NewCaseDocumentReceivedEvent(id, payload);
     }
 
     public Object addDefendantEvent(final DefendantCommand defendant) {

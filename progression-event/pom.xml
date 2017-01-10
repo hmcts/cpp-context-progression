@@ -9,6 +9,6 @@
   <packaging>pom</packaging>
   <modules>
   	<module>progression-event-listener</module>
-      <module>progression-event-processor</module>
+  	<module>progression-event-processor</module>
   </modules>
 </project>

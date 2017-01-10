@@ -2,10 +2,14 @@ package uk.gov.moj.cpp.progression.command.handler;
 
 import static uk.gov.justice.services.eventsourcing.source.core.Events.streamOf;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -19,6 +23,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ProgressionCommandHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProgressionCommandHandler.class);
 
 	public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
 
@@ -76,6 +82,16 @@ public class ProgressionCommandHandler {
 		EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
 		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
 	}
+	
+	
+	@Handles("progression.command.upload-case-documents")
+    public void newCaseDocumentReceived(final JsonEnvelope command) throws IOException, EventStreamException {
+        final UUID streamId = UUID.randomUUID();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(progressionEventFactory.newCaseDocumentReceivedEvent(streamId, command));
+        final Stream<Object> events = streamBuilder.build();
+        eventSource.getStreamById(streamId).append(events.map(enveloper.withMetadataFrom(command)));
+    }
 
 	@Handles("progression.command.update-psr-for-defendants")
 	public void updatePsrForDefendants(final JsonEnvelope envelope) throws EventStreamException {

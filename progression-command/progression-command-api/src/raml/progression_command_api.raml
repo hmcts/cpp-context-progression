@@ -192,3 +192,25 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK                
+
+/cases/{caseid}/casedocuments:
+  post:
+    description: |
+      Upload Case Document
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.upload-case-documents+json
+          name: progression.command.upload-case-documents
+      ...
+    body:
+        application/vnd.progression.command.upload-case-documents+json:
+    responses:
+      200:
+         body:
+            application/vnd.progression.document-added+json:
+               schema: !include json/schema/progression.document-added.json
+               example: !include json/progression.document-added.json
+      500:
+        description: Internal Server Error
+
+

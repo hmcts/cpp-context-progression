@@ -1,16 +1,16 @@
 package uk.gov.moj.cpp.progression.event;
 
-import uk.gov.justice.services.core.annotation.Handles;
-import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(EVENT_PROCESSOR)

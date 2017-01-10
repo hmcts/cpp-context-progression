@@ -18,73 +18,80 @@ import uk.gov.moj.cpp.progression.command.controller.service.StructureReadServic
 
 @ServiceComponent(Component.COMMAND_CONTROLLER)
 public class ProgressionCommandController {
-	@Inject
-	private Sender sender;
 
-	@Inject
-	private Enveloper enveloper;
+    @Inject
+    private Sender sender;
 
-	@Inject
-	private StructureReadService structureCaseService;
+    @Inject
+    private Enveloper enveloper;
+
+    @Inject
+    private StructureReadService structureCaseService;
 
     @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) {
         String userId = envelope.metadata().userId()
-                .orElseThrow(() -> new RuntimeException("User Id not found in metadata"));
+                        .orElseThrow(() -> new RuntimeException("User Id not found in metadata"));
         List<String> defendentdIdsForCase = structureCaseService.getStructureCaseDefendantsId(
-                envelope.payloadAsJsonObject().getString("caseId"), userId);
+                        envelope.payloadAsJsonObject().getString("caseId"), userId);
         JsonArrayBuilder defendantsBuilder = Json.createArrayBuilder();
 
         defendentdIdsForCase.forEach(
-                s -> defendantsBuilder.add(Json.createObjectBuilder().add("id", s)));
+                        s -> defendantsBuilder.add(Json.createObjectBuilder().add("id", s)));
 
         final JsonObject command = JsonObjects.createObjectBuilder(envelope.payloadAsJsonObject())
-                .add("defendants", defendantsBuilder.build()).build();
+                        .add("defendants", defendantsBuilder.build()).build();
 
         JsonEnvelope modifiedJsonEnvelope = enveloper
-                .withMetadataFrom(envelope, "progression.command.add-case-to-progression")
-                .apply(command);
+                        .withMetadataFrom(envelope, "progression.command.add-case-to-progression")
+                        .apply(command);
 
         sender.send(modifiedJsonEnvelope);
     }
 
-	@Handles("progression.command.sending-committal-hearing-information")
-	public void sendCommittalHearingInformation(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+    @Handles("progression.command.sending-committal-hearing-information")
+    public void sendCommittalHearingInformation(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.sentence-hearing-date")
-	public void addSentenceHearingDate(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+    @Handles("progression.command.sentence-hearing-date")
+    public void addSentenceHearingDate(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.case-to-be-assigned")
-	public void updateCaseToBeAssigned(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+    @Handles("progression.command.case-to-be-assigned")
+    public void updateCaseToBeAssigned(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.case-assigned-for-review")
-	public void updateCaseAssignedForReview(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+    @Handles("progression.command.case-assigned-for-review")
+    public void updateCaseAssignedForReview(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.prepare-for-sentence-hearing")
-	public void prepareForSentenceHearing(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+    @Handles("progression.command.prepare-for-sentence-hearing")
+    public void prepareForSentenceHearing(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.add-defendant-additional-information")
-	public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+    @Handles("progression.command.add-defendant-additional-information")
+    public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.no-more-information-required")
-	public void noMoreInformationRequired(final JsonEnvelope envelope) {
+    @Handles("progression.command.no-more-information-required")
+    public void noMoreInformationRequired(final JsonEnvelope envelope) {
 		sender.send(envelope);
 	}
 
 	@Handles("progression.command.update-psr-for-defendants")
 	public void updatePSRForDefendants(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+        sender.send(envelope);
+    }
+
+    @Handles("progression.command.upload-case-documents")
+    public void uploadCaseDocuments(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
 }
