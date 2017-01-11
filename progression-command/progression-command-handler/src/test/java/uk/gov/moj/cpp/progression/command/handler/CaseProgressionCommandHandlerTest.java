@@ -32,10 +32,8 @@ import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseProgressionCommandHandlerTest {
 
-    protected static final UUID CASE_ID = UUID.randomUUID();
+    protected static final UUID CASE_PROGRESSION_ID = UUID.randomUUID();
     private static final String ACTION_NAME = "actionName";
-    private static final String CASE_URN = "caseUrn";
-    private boolean updateAllowed = true;
 
     @Mock
     protected EventSource eventSource;
@@ -87,8 +85,8 @@ public class CaseProgressionCommandHandlerTest {
         when(jsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(ACTION_NAME);
         when(jsonObject.getString(CaseProgressionCommandHandler.FIELD_STREAM_ID))
-                        .thenReturn(CASE_ID.toString());
-        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+                        .thenReturn(CASE_PROGRESSION_ID.toString());
+        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseProgressionAggregate.class))
                         .thenReturn(caseProgressionAggregate);
         when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
@@ -100,7 +98,7 @@ public class CaseProgressionCommandHandlerTest {
     public void verifyMocks() throws EventStreamException {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();
         verify(jsonObject, atLeast(1)).getString(CaseProgressionCommandHandler.FIELD_STREAM_ID);
-        verify(eventSource).getStreamById(CASE_ID);
+        verify(eventSource).getStreamById(CASE_PROGRESSION_ID);
         verify(aggregateService).get(eventStream, CaseProgressionAggregate.class);
         verify(enveloper).withMetadataFrom(jsonEnvelope);
         verify(events).map(function);

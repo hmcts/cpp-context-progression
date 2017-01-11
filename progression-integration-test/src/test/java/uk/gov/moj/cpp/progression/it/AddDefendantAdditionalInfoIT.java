@@ -6,6 +6,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -90,6 +93,19 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
 
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                         equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getBoolean("psrIsRequested"),equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getString("provideGuidance"),equalTo("guidance"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getBoolean("drugAssessment"),equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getBoolean("dangerousnessAssessment"),equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("statementOfMeans").getBoolean("isStatementOfMeans"),equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("statementOfMeans").getString("details"),equalTo("meansDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("medicalDocumentation").getBoolean("isMedicalDocumentation"),equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("medicalDocumentation").getString("details"),equalTo("medicalDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getString("otherDetails"),equalTo("otherDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("prosecution").getJsonObject("ancillaryOrders").getBoolean("isAncillaryOrders"),equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("prosecution").getJsonObject("ancillaryOrders").getString("details"),equalTo("ancillaryOrdersDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("prosecution").getString("otherDetails"),equalTo("otherDetails"));
+        
         
         writeResponse = postCommand(
                 getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
@@ -133,6 +149,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                 equalTo(Boolean.FALSE));
 
+        LocalDateTime currentDateTime = LocalDateTime.now();
         writeResponse = postCommand(
                 getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
                 "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(
@@ -161,10 +178,16 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
         defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                         equalTo(Boolean.TRUE));
-
         assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getBoolean("noMoreInformationRequired"),
                 equalTo(Boolean.TRUE));
-        
+
+        LocalDateTime reviewDecisionDateTime = LocalDateTime.parse(defendantsJsonObject.getString("sentenceHearingReviewDecisionDateTime"));
+        assertThat(currentDateTime.getYear(),equalTo(reviewDecisionDateTime.getYear()));
+        assertThat(currentDateTime.getMonth(),equalTo(reviewDecisionDateTime.getMonth()));
+        assertThat(currentDateTime.getDayOfMonth(),equalTo(reviewDecisionDateTime.getDayOfMonth()));
+        assertThat(currentDateTime.getHour(),equalTo(reviewDecisionDateTime.getHour()));
+        assertThat(currentDateTime.getMinute(),equalTo(reviewDecisionDateTime.getMinute()));
+
         writeResponse = postCommand(
                 getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
                 "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(

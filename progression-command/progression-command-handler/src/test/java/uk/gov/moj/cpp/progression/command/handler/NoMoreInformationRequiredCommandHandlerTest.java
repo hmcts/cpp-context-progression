@@ -31,10 +31,10 @@ public class NoMoreInformationRequiredCommandHandlerTest
 
         when(jsonObject.getString("caseId")).thenReturn(caseId.toString());
         when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
-        when(caseProgressionAggregate.noMoreInformationForDefendant(defendantId,caseId,CASE_ID))
+        when(caseProgressionAggregate.noMoreInformationForDefendant(defendantId,caseId,CASE_PROGRESSION_ID))
                         .thenReturn(events);
 
         noMoreInformationRequiredHandler.noMoreInformationRequired(jsonEnvelope);
-        verify(caseProgressionAggregate).noMoreInformationForDefendant(defendantId,caseId,CASE_ID);
+        verify(caseProgressionAggregate).noMoreInformationForDefendant(defendantId,caseId,CASE_PROGRESSION_ID);
     }
 }
