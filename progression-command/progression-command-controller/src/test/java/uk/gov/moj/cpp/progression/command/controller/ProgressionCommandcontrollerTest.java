@@ -117,4 +117,10 @@ public class ProgressionCommandcontrollerTest {
 		progressionCommandcontroller.noMoreInformationRequired(command);
 		verify(sender, times(1)).send(command);
 	}
+
+	@Test
+	public void shouldUpdatePSRForDefendants() throws Exception {
+    	progressionCommandcontroller.updatePSRForDefendants(command);
+		verify(sender, times(1)).send(command);
+	}
 }
