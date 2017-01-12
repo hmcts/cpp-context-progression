@@ -87,4 +87,9 @@ public class ProgressionCommandController {
 	public void noMoreInformationRequired(final JsonEnvelope envelope) {
 		sender.send(envelope);
 	}
+
+	@Handles("progression.command.update-psr-for-defendants")
+	public void updatePSRForDefendants(final JsonEnvelope envelope) {
+		sender.send(envelope);
+	}
 }
