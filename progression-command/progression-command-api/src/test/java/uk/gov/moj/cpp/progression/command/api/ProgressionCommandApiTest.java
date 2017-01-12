@@ -78,4 +78,10 @@ public class ProgressionCommandApiTest {
 		progressionCommandApi.noMoreInformationRequired(command);
 		verify(sender, times(1)).send(command);
 	}
+	
+	@Test
+    public void shouldUpdatePSRForDefendants() throws Exception {
+        progressionCommandApi.updatePSRForDefendants(command);
+        verify(sender, times(1)).send(command);
+    }
 }

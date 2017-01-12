@@ -12,10 +12,14 @@
         "properties": {
           "defendantId": {
             "type": "string"
+          },
+          "psrIsRequested": {
+            "type": "boolean"
           }
         },
         "required": [
-          "defendantId"
+          "defendantId",
+          "psrIsRequested"
         ]
       }
     }
