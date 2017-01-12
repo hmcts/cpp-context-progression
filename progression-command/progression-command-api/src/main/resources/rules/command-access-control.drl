@@ -94,6 +94,14 @@ rule "Command - Access control for progression.command.no-more-information-requi
     $outcome.setSuccess(true);
 end
 
+rule "Command - Access control for progression.command.update-psr-for-defendants"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.update-psr-for-defendants");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Court Operations Officers", "Listing Officers")))
+  then
+    $outcome.setSuccess(true);
+end
 
 
 

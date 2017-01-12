@@ -192,3 +192,24 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+                
+/cases/{caseId}/defendants/updatepsr:
+  post:
+      description:  |
+        Record PSR ordered - Multiple Defendants 
+        ...
+        (mapping):
+            requestType: application/vnd.progression.command.update-psr-for-defendants+json
+            name: progression.command.update-psr-for-defendants
+        ...
+      body:
+        application/vnd.progression.command.update-psr-for-defendants+json:
+            example: 
+             !include json/progression.command.update-psr-for-defendants.json         
+             
+            schema: 
+             !include json/schema/progression.command.update-psr-for-defendants.json
+              
+      responses:
+            202:
+                description: OK                
