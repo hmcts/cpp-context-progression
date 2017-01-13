@@ -41,8 +41,10 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEv
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPreSentenceReportRequested;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated;
 
 public class ProgressionEventFactory {
     public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
@@ -53,6 +55,8 @@ public class ProgressionEventFactory {
     public static final String FIELD_IS_PSR_ORDERED = "isPSROrdered";
     public static final String FIELD_SENTENCE_HEARING_DATE = "sentenceHearingDate";
     public static final String FIELD_DEFENDANT_PROGRESSION_ID = "defendantProgressionId";
+    public static final String FIELD_DEFENDANT_ID = "defendantId";
+    public static final String FIELD_PSR_IS_REQUESTED = "psrIsRequested";
 
     public Object createCaseAddedToCrownCourt(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
@@ -120,6 +124,19 @@ public class ProgressionEventFactory {
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         return new CaseReadyForSentenceHearing(caseProgressionId,
                         CaseStatusEnum.READY_FOR_SENTENCING_HEARING, LocalDateTime.now());
+    }
+
+    public Object createPsrForDefendantsUpdated(final JsonEnvelope envelope) {
+        final UUID caseProgressionId = UUID.fromString(
+                envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
+        final JsonArray defendants = envelope.payloadAsJsonObject().getJsonArray("defendants");
+        final List<DefendantPreSentenceReportRequested> defendantPsrsRequested =
+                defendants.stream()
+                .map(obj -> new DefendantPreSentenceReportRequested(UUID.fromString(
+                                         ((JsonObject) obj).getString(FIELD_DEFENDANT_ID)),
+                                         ((JsonObject) obj).getBoolean(FIELD_PSR_IS_REQUESTED)))
+                .collect(Collectors.toList());
+        return new PreSentenceReportForDefendantsUpdated(caseProgressionId, defendantPsrsRequested);
     }
 
     Function<DefendantCommand, DefendantAdditionalInformationAdded> defendantToDefendantAdded =
