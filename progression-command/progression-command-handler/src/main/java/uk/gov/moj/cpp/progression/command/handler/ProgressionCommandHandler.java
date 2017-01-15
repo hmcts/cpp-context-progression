@@ -17,8 +17,13 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ProgressionCommandHandler {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionCommandHandler.class);
 
 	public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
 
@@ -87,6 +92,7 @@ public class ProgressionCommandHandler {
 	@Handles("progression.command.update-psr-for-defendants")
 	public void updatePsrForDefendants(final JsonEnvelope envelope) throws EventStreamException {
 		Stream<Object> events = streamOf(progressionEventFactory.createPsrForDefendantsUpdated(envelope));
+		LOGGER.info("**** In ProgressionCommandHandler.updatePsrForDefendants ****");
 		EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
 		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
 	}

@@ -200,6 +200,19 @@ public class ProgressionCommandHandlerTest {
         verifyNoMoreInteractions(eventStream);
     }
 
+    // @Test
+    public void shouldHandleUpdatePsrForDefendants() throws Exception {
+        // TODO: Implement..
+        //     : Refactor out some common verification assertion groups..
+
+        progressionCommandHandler.updatePsrForDefendants(envelope);
+
+        verify(progressionEventFactory).createPsrForDefendantsUpdated(eq(envelope));
+        verify(eventSource).getStreamById(any());
+        verify(enveloper).withMetadataFrom(envelope);
+
+    }
+
     private JsonEnvelope createJsonCommand() {
         final JsonObject metadataAsJsonObject = Json.createObjectBuilder()
                         .add(ID, UUID.randomUUID().toString()).add(NAME, "SomeName").build();
