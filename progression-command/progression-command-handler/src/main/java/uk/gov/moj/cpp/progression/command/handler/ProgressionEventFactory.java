@@ -41,7 +41,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEv
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPreSentenceReportRequested;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated;
@@ -130,9 +130,9 @@ public class ProgressionEventFactory {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final JsonArray defendants = envelope.payloadAsJsonObject().getJsonArray("defendants");
-        final List<DefendantPreSentenceReportRequested> defendantPsrsRequested =
+        final List<DefendantPSR> defendantPsrsRequested =
                 defendants.stream()
-                .map(obj -> new DefendantPreSentenceReportRequested(UUID.fromString(
+                .map(obj -> new DefendantPSR(UUID.fromString(
                                          ((JsonObject) obj).getString(FIELD_DEFENDANT_ID)),
                                          ((JsonObject) obj).getBoolean(FIELD_PSR_IS_REQUESTED)))
                 .collect(Collectors.toList());

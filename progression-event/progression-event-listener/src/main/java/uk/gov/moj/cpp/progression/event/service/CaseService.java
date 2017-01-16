@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPreSentenceReportRequested;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.event.listener.DefendantEventListener;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
@@ -166,7 +166,7 @@ public class CaseService {
 
     @Transactional
     public void preSentenceReportForDefendantsUpdated(final PreSentenceReportForDefendantsUpdated event) {
-        List<DefendantPreSentenceReportRequested> defendantPsrs = event.getDefendantPsrsRequested();
+        List<DefendantPSR> defendantPsrs = event.getDefendants();
         defendantPsrs.forEach(defPsr -> {
             Defendant defendant = defendantRepository.findByDefendantId(defPsr.getDefendantId());
             defendant.setIsPSRRequested(defPsr.getPsrIsRequested());
