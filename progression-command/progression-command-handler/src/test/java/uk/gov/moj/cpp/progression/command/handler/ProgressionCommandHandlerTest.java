@@ -116,21 +116,6 @@ public class ProgressionCommandHandlerTest {
     }
 
     @Test
-    public void shouldPreSentenceReport() throws Exception {
-        final JsonEnvelope command = createJsonCommand();
-        final StubEventStream stubEventStream = new StubEventStream();
-        when(progressionEventFactory.createPreSentenceReportOrdered(command)).thenReturn(event);
-        when(enveloper.withMetadataFrom(command)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(event)).thenReturn(envelope);
-        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(stubEventStream);
-
-        progressionCommandHandler.preSentenceReport(command);
-
-        assertThat(stubEventStream.events, notNullValue());
-        assertThat(stubEventStream.events.findFirst().get(), equalTo(envelope));
-    }
-
-    @Test
     public void shouldaddSentenceHearingDate() throws Exception {
         final JsonEnvelope command = createJsonCommand();
         final StubEventStream stubEventStream = new StubEventStream();

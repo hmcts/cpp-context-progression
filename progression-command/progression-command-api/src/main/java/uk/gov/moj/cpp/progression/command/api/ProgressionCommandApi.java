@@ -24,11 +24,6 @@ public class ProgressionCommandApi {
         sender.send(envelope);
     }
     
-    @Handles("progression.command.pre-sentence-report")
-    public void preSentenceReport(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
     @Handles("progression.command.sentence-hearing-date")
     public void addSentenceHearingDate(final JsonEnvelope envelope) {
         sender.send(envelope);

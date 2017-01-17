@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,15 +40,19 @@ public class DefendantRepositoryTest {
     private DefendantRepository defendantRepository;
 
     private static LocalDate now;
+    
+    private static LocalDateTime currentDateTime;
 
     @Before
     public void setup() {
         now = LocalDate.now();
+        currentDateTime = LocalDateTime.now();
         final CaseProgressionDetail caseProgressionDetailOne =
                         createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
         final Defendant defendant =
                         new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
+        defendant.setSentenceHearingReviewDecisionDateTime(currentDateTime);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
@@ -63,6 +68,7 @@ public class DefendantRepositoryTest {
     public void shouldFindDefendantById() throws Exception {
         final Defendant results = defendantRepository.findByDefendantId(DEF_ID);
         assertThat(results.getDefendantId(), equalTo(DEF_ID));
+        assertThat(results.getSentenceHearingReviewDecisionDateTime(), equalTo(currentDateTime));
     }
 
     private CaseProgressionDetail createCaseProgressionDetail(final UUID id, final UUID caseId,

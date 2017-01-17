@@ -12,7 +12,6 @@ import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
@@ -43,17 +42,6 @@ public class CaseService {
 
     @Inject
     DefendantRepository defendantRepository;
-
-    @Transactional
-    public void preSentenceReportOrdered(final PreSentenceReportOrdered event) {
-        final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findBy(event.getCaseProgressionId());
-        if (caseProgressionDetail != null) {
-            caseProgressionDetailRepo.save(caseProgressionDetail);
-        } else {
-            throw new NullPointerException(CASE_PROGRESSION_DETAIL_NOT_FOUND);
-        }
-    }
 
     @Transactional
     public void directionIssued(final DirectionIssued event) {

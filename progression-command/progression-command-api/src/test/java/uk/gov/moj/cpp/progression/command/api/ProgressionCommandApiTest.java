@@ -37,12 +37,6 @@ public class ProgressionCommandApiTest {
 	}
 
 	@Test
-	public void shouldPreSentenceReport() throws Exception {
-		progressionCommandApi.preSentenceReport(command);
-		verify(sender, times(1)).send(command);
-	}
-
-	@Test
 	public void shouldSentenceHearingDate() throws Exception {
 		progressionCommandApi.addSentenceHearingDate(command);
 		verify(sender, times(1)).send(command);

@@ -77,12 +77,6 @@ public class ProgressionCommandcontrollerTest {
 	}
 
 	@Test
-	public void shouldPreSentenceReport() throws Exception {
-		progressionCommandcontroller.preSentenceReport(command);
-		verify(sender, times(1)).send(command);
-	}
-
-	@Test
 	public void shouldSentenceHearingDate() throws Exception {
 		progressionCommandcontroller.addSentenceHearingDate(command);
 		verify(sender, times(1)).send(command);

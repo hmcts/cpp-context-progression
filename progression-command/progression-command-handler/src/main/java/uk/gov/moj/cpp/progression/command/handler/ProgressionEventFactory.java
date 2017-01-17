@@ -34,7 +34,6 @@ import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
@@ -89,15 +88,6 @@ public class ProgressionEventFactory {
         return new DirectionIssued(caseProgressionId, LocalDate.now());
     }
 
-    public Object createPreSentenceReportOrdered(final JsonEnvelope envelope) {
-        final UUID caseProgressionId = UUID.fromString(
-                        envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
-        final Boolean isPSROrdered =
-                        envelope.payloadAsJsonObject().getBoolean(FIELD_IS_PSR_ORDERED);
-        return new PreSentenceReportOrdered(caseProgressionId, isPSROrdered);
-    }
-
-   
     public Object createSentenceHearingDateAdded(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
