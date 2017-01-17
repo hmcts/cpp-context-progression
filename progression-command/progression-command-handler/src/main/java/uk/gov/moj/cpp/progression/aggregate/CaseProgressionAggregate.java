@@ -25,6 +25,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequir
 public class CaseProgressionAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseProgressionAggregate.class);
+    public static final String CANNOT_ADD_ADDITIONAL_INFO = "Cannot add additional information without defendant ";
 
     ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
 
@@ -70,7 +71,13 @@ public class CaseProgressionAggregate implements Aggregate {
                                         }),
                          when(uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent.class)
                                                 .apply(e -> {
-                                                    //Do Nothing
+                                                    caseProgressionId = e.getCaseProgressionId();
+                                                    final Defendant defendant = defendants.stream()
+                                                            .filter((d) -> d.getId()
+                                                                    .equals(e.getDefendantId()))
+                                                            .findAny().get();
+                                                    defendant.setSentenceHearingReviewDecision(true);
+                                                    defendant.setIsAdditionalInfoAvilable(false);
                                                 }));
 
     }
@@ -98,10 +105,27 @@ public class CaseProgressionAggregate implements Aggregate {
 
     }
 
-    public Stream<Object> noMoreInformationForDefendant(final UUID defendantId,final UUID caseId) {
+    public Stream<Object> noMoreInformationForDefendant(final UUID defendantId,final UUID caseId, final UUID caseProgressionId) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(new NoMoreInformationRequiredEvent(caseId,defendantId));
+        if (!defendantIds.contains(defendantId)) {
+            LOGGER.warn(CANNOT_ADD_ADDITIONAL_INFO + defendantId);
+            return Stream.empty();
+        }
+
+        updateDefendantInfo(false,defendantId);
+        // check if all defendant's reviewed
+        checkAllDefendant();
+
+        updateCaseStatus(streamBuilder);
+
+        streamBuilder.add(new NoMoreInformationRequiredEvent(caseId,defendantId, caseProgressionId));
         return apply(streamBuilder.build());
+    }
+
+    private void updateDefendantInfo(boolean isAdditionalInfo, UUID defendantId) {
+        final Defendant def = defendants.stream().filter(d -> d.getId().equals(defendantId)).findAny().get();
+        def.setSentenceHearingReviewDecision(true);
+        def.setIsAdditionalInfoAvilable(isAdditionalInfo);
     }
 
     public Stream<Object> addAdditionalInformationForDefendant(final DefendantCommand defendant) {
@@ -113,17 +137,21 @@ public class CaseProgressionAggregate implements Aggregate {
             return Stream.empty();
         }
 
-        final Defendant def = defendants.stream()
-                        .filter(d -> d.getId().equals(defendant.getDefendantId())).findAny().get();
-        def.setSentenceHearingReviewDecision(true);
-        if (defendant.getAdditionalInformation() != null) {
-            def.setIsAdditionalInfoAvilable(true);
-        }
+        updateDefendantInfo(defendant.getAdditionalInformation()!= null ? true : false, defendantId);
+
         // check if all defendant's reviewed
         checkAllDefendant();
         if (caseProgressionId == null) {
             caseProgressionId = defendant.getCaseProgressionId();
         }
+
+        updateCaseStatus(streamBuilder);
+
+        streamBuilder.add(progressionEventFactory.addDefendantEvent(defendant));
+        return apply(streamBuilder.build());
+    }
+
+    private void updateCaseStatus(Stream.Builder<Object> streamBuilder) {
         if (isAllDefendantReviewed) {
             if (isAnyDefendantPending) {
                 streamBuilder.add(new CasePendingForSentenceHearing(caseProgressionId,
@@ -133,9 +161,6 @@ public class CaseProgressionAggregate implements Aggregate {
                                 CaseStatusEnum.READY_FOR_SENTENCING_HEARING, LocalDateTime.now()));
             }
         }
-
-        streamBuilder.add(progressionEventFactory.addDefendantEvent(defendant));
-        return apply(streamBuilder.build());
     }
 
 }
