@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.it;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
@@ -184,7 +185,7 @@ public class AddDefendantAdditionalInfoIT extends AbstractIT {
                 equalTo(Boolean.TRUE));
 
         LocalDateTime reviewDecisionDateTime = LocalDateTime.parse(defendantsJsonObject.getString("sentenceHearingReviewDecisionDateTime"));
-        assertThat(reviewDecisionDateTime, is(not(null)));
+        assertThat(reviewDecisionDateTime, is(notNullValue()));
 
         writeResponse = postCommand(
                 getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
