@@ -34,7 +34,7 @@ public class StubUtil {
     }
 
 
-    public static void setupStructureCaseStub(final String caseId, final String defendentId,
+    public static void setupStructureCaseStub(final String caseId, final String defendentId,final String defendent2Id,
                     final String caseProgressionId) {
         InternalEndpointMockUtils.stubPingFor("structure-query-api");
         stubFor(get(urlMatching("/structure-query-api/query/api/rest/structure/cases/.*"))
@@ -43,7 +43,7 @@ public class StubUtil {
                                         .withHeader("Content-Type", "application/json")
                                         .withBody(getJsonBodyStr(
                                                         "structure.query.case-defendants.json",
-                                                        caseId, defendentId, caseProgressionId))));
+                                                        caseId, defendentId,defendent2Id, caseProgressionId))));
     }
 
     public static void setupUsersGroupQueryStub() {
@@ -52,16 +52,16 @@ public class StubUtil {
                         .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                                         .withHeader("CPPID", UUID.randomUUID().toString())
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody(getPayload("users-groups-system-user.json"))));
+                                        .withBody(getPayload("users-groups-listing-officers-user.json"))));
 
     }
 
     public static String getJsonBodyStr(final String path, final String caseId,
-                    final String defendantId, final String caseProgressionId) {
+                    final String defendantId, final String defendant2Id, final String caseProgressionId) {
         final String payload = getPayload(path);
         return payload.replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
                         .replace("DEF_ID_1", defendantId)
-                        .replace("DEF_ID_2", UUID.randomUUID().toString())
+                        .replace("DEF_ID_2", defendant2Id)
                         .replace("DEF_PRG_ID", defendantId)
                         .replace("TODAY", LocalDate.now().toString());
     }
