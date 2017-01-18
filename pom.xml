@@ -10,7 +10,7 @@
 
 	<groupId>uk.gov.moj.cpp.progression</groupId>
 	<artifactId>progression-parent</artifactId>
-	<version>2.0.76-SNAPSHOT</version>
+	<version>2.0.77-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Progression services application</name>
@@ -32,7 +32,7 @@
 		<sonar.scm.provider>git</sonar.scm.provider>
 		<cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
 		<cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
-		<structure.version>2.0.202</structure.version>
+		<structure.version>2.0.216</structure.version>
 		<access.control.version>2.0.26</access.control.version>
 	</properties>
 
