@@ -34,7 +34,6 @@ import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
@@ -89,12 +88,6 @@ public class ProgressionEventFactoryTest {
     public void testCreateDirectionIssued() {
         final Object obj = progressionEventFactory.createDirectionIssued(envelope);
         assertThat(obj, instanceOf(DirectionIssued.class));
-    }
-
-    @Test
-    public void testCreatePreSentenceReportOrdered() {
-        final Object obj = progressionEventFactory.createPreSentenceReportOrdered(envelope);
-        assertThat(obj, instanceOf(PreSentenceReportOrdered.class));
     }
 
     @Test

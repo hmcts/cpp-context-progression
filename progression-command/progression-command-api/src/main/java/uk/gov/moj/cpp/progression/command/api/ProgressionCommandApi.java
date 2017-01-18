@@ -24,11 +24,6 @@ public class ProgressionCommandApi {
         sender.send(envelope);
     }
     
-    @Handles("progression.command.pre-sentence-report")
-    public void preSentenceReport(final JsonEnvelope envelope) {
-        sender.send(envelope);
-    }
-
     @Handles("progression.command.sentence-hearing-date")
     public void addSentenceHearingDate(final JsonEnvelope envelope) {
         sender.send(envelope);
@@ -54,9 +49,13 @@ public class ProgressionCommandApi {
         sender.send(envelope);
     }
 
-
     @Handles("progression.command.no-more-information-required")
     public void noMoreInformationRequired(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+    
+    @Handles("progression.command.update-psr-for-defendants")
+    public void updatePSRForDefendants(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 }

@@ -26,12 +26,12 @@ import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-public class PreSentenceReportTest extends BaseDroolsAccessControlTest {
+public class UpdatePSRForDefendantsTest extends BaseDroolsAccessControlTest {
 
-    private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList(
-                    "Listing Officers", "Judiciary", "Case Officer");
+    private static final List<String> ALLOWED_USER_GROUPS =
+            Arrays.asList( "Court Operations Officers", "Listing Officers");
 
-    private static final String MEDIA_TYPE = "progression.command.pre-sentence-report";
+    private static final String MEDIA_TYPE = "progression.command.update-psr-for-defendants";
     private Action action;
 
     @Mock
@@ -43,7 +43,7 @@ public class PreSentenceReportTest extends BaseDroolsAccessControlTest {
     @Override
     protected Map<Class, Object> getProviderMocks() {
         return ImmutableMap.<Class, Object>builder()
-                        .put(UserAndGroupProvider.class, userAndGroupProvider).build();
+                .put(UserAndGroupProvider.class, userAndGroupProvider).build();
     }
 
     @Before
@@ -61,7 +61,7 @@ public class PreSentenceReportTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldPassAccessControl() throws Exception {
         when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ALLOWED_USER_GROUPS))
-                        .thenReturn(true);
+                .thenReturn(true);
 
         final ExecutionResults executionResults = executeRulesWith(action);
 
@@ -72,7 +72,7 @@ public class PreSentenceReportTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotPassAccessControl() throws Exception {
         when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ALLOWED_USER_GROUPS))
-                        .thenReturn(false);
+                .thenReturn(false);
 
         final ExecutionResults executionResults = executeRulesWith(action);
 
@@ -82,7 +82,7 @@ public class PreSentenceReportTest extends BaseDroolsAccessControlTest {
 
     private void verifyListOfUserGroups() {
         verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(eq(action),
-                        listCaptor.capture());
+                listCaptor.capture());
         assertThat(listCaptor.getValue(), containsInAnyOrder(ALLOWED_USER_GROUPS.toArray()));
     }
 }

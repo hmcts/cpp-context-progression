@@ -49,13 +49,6 @@ public class ProgressionCommandHandler {
 		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
 	}
 
-	@Handles("progression.command.pre-sentence-report")
-	public void preSentenceReport(final JsonEnvelope envelope) throws EventStreamException {
-		Stream<Object> events = streamOf(progressionEventFactory.createPreSentenceReportOrdered(envelope));
-		EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
-		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
-	}
-
 	@Handles("progression.command.sentence-hearing-date")
 	public void addSentenceHearingDate(final JsonEnvelope envelope) throws EventStreamException {
 		Stream<Object> events = streamOf(progressionEventFactory.createSentenceHearingDateAdded(envelope));
@@ -80,6 +73,13 @@ public class ProgressionCommandHandler {
 	@Handles("progression.command.prepare-for-sentence-hearing")
 	public void prepareForSentenceHearing(final JsonEnvelope envelope) throws EventStreamException {
 		Stream<Object> events = streamOf(progressionEventFactory.createCaseReadyForSentenceHearing(envelope));
+		EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
+		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
+	}
+
+	@Handles("progression.command.update-psr-for-defendants")
+	public void updatePsrForDefendants(final JsonEnvelope envelope) throws EventStreamException {
+		Stream<Object> events = streamOf(progressionEventFactory.createPsrForDefendantsUpdated(envelope));
 		EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
 		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
 	}
