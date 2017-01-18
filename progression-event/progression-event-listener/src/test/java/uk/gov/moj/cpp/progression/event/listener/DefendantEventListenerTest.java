@@ -54,7 +54,7 @@ public class DefendantEventListenerTest {
     private CaseService service;
 
     @Test
-    public void shouldAddDefendant() throws Exception {
+    public void shouldAddAdditionalInformationForDefendant() throws Exception {
         // given
         given(envelope.payloadAsJsonObject()).willReturn(payload);
         // and
