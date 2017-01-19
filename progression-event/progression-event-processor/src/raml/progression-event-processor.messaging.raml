@@ -1,0 +1,12 @@
+#%RAML 0.8
+title: API Using media type in the URL
+baseUri: message://event/processor/message/progression
+
+version: v1
+/progression.event:
+  post:
+    body:
+        application/vnd.progression.events.sentence-hearing-date-added+json:
+            schema: !include json/schema/progression.events.sentence-hearing-date-added.json
+            example: !include json/progression.events.sentence-hearing-date-added.json
+

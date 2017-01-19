@@ -62,7 +62,7 @@ public class ProgressionIntegrationTest extends AbstractIT {
         assertTrue(queryResponse.getBody().path("sendingCommittalDate")
                 .equals(LocalDate.now().toString()));
 
-        writeResponse = postCommand(getCommandUri("/cases/sentencehearingdate"),
+        writeResponse = postCommand(getCommandUri("/cases/"+caseId),
                 "application/vnd.progression.command.sentence-hearing-date+json",
                 getJsonBodyStr("progression.command.sentence-hearing-date.json"));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));

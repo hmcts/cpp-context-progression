@@ -91,9 +91,11 @@ public class ProgressionEventFactory {
     public Object createSentenceHearingDateAdded(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                         envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
+        final UUID caseId = UUID.fromString(
+                envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final LocalDate hearingDate = LocalDate.parse(
                         envelope.payloadAsJsonObject().getString(FIELD_SENTENCE_HEARING_DATE));
-        return new SentenceHearingDateAdded(caseProgressionId, hearingDate);
+        return new SentenceHearingDateAdded(caseProgressionId, hearingDate,caseId );
     }
 
     public Object createCaseToBeAssignedUpdated(final JsonEnvelope envelope) {

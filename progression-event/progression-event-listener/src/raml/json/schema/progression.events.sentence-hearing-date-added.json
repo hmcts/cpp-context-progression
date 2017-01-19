@@ -5,12 +5,16 @@
     "caseProgressionId": {
       "type": "string"
     },
+    "caseId": {
+      "type": "string"
+    },
     "sentenceHearingDate": {
       "type": "string"
     }
   },
   "required": [
     "caseProgressionId",
-    "sentenceHearingDate"
+    "sentenceHearingDate",
+    "caseId"
   ]
 }
