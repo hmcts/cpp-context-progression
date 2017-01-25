@@ -1,0 +1,33 @@
+package uk.gov.moj.cpp.progression.casedocument.listener;
+
+import java.io.Serializable;
+
+public class AddMaterialCommand implements Serializable {
+
+    private static final long serialVersionUID = 45685980061249719L;
+
+    private final String materialId;
+
+    private final Document document;
+
+    private final String fileName;
+
+    public AddMaterialCommand(final String materialId, final Document document,
+                    final String filename) {
+        this.materialId = materialId;
+        this.document = document;
+        this.fileName = filename;
+    }
+
+    public String getMaterialId() {
+        return materialId;
+    }
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+}

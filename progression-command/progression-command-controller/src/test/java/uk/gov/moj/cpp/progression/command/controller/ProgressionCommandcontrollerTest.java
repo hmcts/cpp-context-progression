@@ -77,12 +77,6 @@ public class ProgressionCommandcontrollerTest {
 	}
 
 	@Test
-	public void shouldPreSentenceReport() throws Exception {
-		progressionCommandcontroller.preSentenceReport(command);
-		verify(sender, times(1)).send(command);
-	}
-
-	@Test
 	public void shouldSentenceHearingDate() throws Exception {
 		progressionCommandcontroller.addSentenceHearingDate(command);
 		verify(sender, times(1)).send(command);
@@ -115,6 +109,12 @@ public class ProgressionCommandcontrollerTest {
 	@Test
 	public void shouldPassNoMoreInformationRequired() throws Exception {
 		progressionCommandcontroller.noMoreInformationRequired(command);
+		verify(sender, times(1)).send(command);
+	}
+
+	@Test
+	public void shouldUpdatePSRForDefendants() throws Exception {
+    	progressionCommandcontroller.updatePSRForDefendants(command);
 		verify(sender, times(1)).send(command);
 	}
 }

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "cppCaseId": {
+      "type": "string"
+    },
+    "fileId": {
+      "type": "string"
+    },
+    "fileMimeType": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cppCaseId",
+    "fileId",
+    "fileMimeType"
+  ]
+}

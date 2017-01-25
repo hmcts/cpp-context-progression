@@ -22,7 +22,6 @@ import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportOrdered;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
@@ -230,28 +229,6 @@ public class CaseServiceTest {
         exception.expect(RuntimeException.class);
         exception.expectMessage("CaseProgressionDetail not found");
         service.casePendingForSentenceHearing(event);
-        verifyNoMoreInteractions(repository);
-    }
-
-    @Test
-    public void preSentenceReportOrderedTest() {
-        final PreSentenceReportOrdered event = mock(PreSentenceReportOrdered.class);
-        final CaseProgressionDetail entity = mock(CaseProgressionDetail.class);
-        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(entity);
-        service.preSentenceReportOrdered(event);
-        verify(repository, times(1)).findBy(CASE_PROGRESSION_ID);
-        verify(repository, times(1)).save(entity);
-    }
-
-    @Test
-    public void preSentenceReportOrderedShouldThrowExceptionTest() throws Exception {
-        final PreSentenceReportOrdered event = mock(PreSentenceReportOrdered.class);
-        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
-        when(repository.findBy(CASE_PROGRESSION_ID)).thenReturn(null);
-        exception.expect(RuntimeException.class);
-        exception.expectMessage("CaseProgressionDetail not found");
-        service.preSentenceReportOrdered(event);
         verifyNoMoreInteractions(repository);
     }
 

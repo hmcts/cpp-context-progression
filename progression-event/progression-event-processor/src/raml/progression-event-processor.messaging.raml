@@ -1,0 +1,31 @@
+#%RAML 0.8
+title: RAML for events listened by lifecycle event processor
+baseUri: message://event/processor/message/lifecycle
+
+version: v1
+/public.event:
+  post:
+      body:
+          application/vnd.material.material-added+json:
+              schema: !include json/schema/material.material-added.json
+              example: !include json/material.material-added.json
+
+          application/vnd.public.structure.case-document-added+json:
+              schema: !include json/schema/public.structure.case-document-added.json
+              example: !include json/public.structure.case-document-added.json
+
+          application/vnd.public.progression.case-document-added+json:
+              schema: !include json/schema/public.progression.case-document-added.json
+              example: !include json/public.progression.case-document-added.json
+
+
+/progression.event:
+  post:
+    body:
+        application/vnd.progression.events.new-case-document-received+json:
+           example: !include json/progression.events.new-case-document-received.json
+           schema: !include json/schema/progression.events.new-case-document-received.json
+        application/vnd.progression.events.sentence-hearing-date-added+json:
+           schema: !include json/schema/progression.events.sentence-hearing-date-added.json
+           example: !include json/progression.events.sentence-hearing-date-added.json
+

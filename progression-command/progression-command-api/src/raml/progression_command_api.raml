@@ -4,7 +4,7 @@ version: 1.0
 baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progression
 
 
-                
+
 /cases/addcasetocrowncourt:
   post:
       description: |
@@ -28,7 +28,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 
 
 
-/cases/sentencehearingdate :
+/cases/{caseId} :
   post:
       description: |
         Add sentence hearing date.
@@ -67,27 +67,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
             schema:
              !include json/schema/progression.command.sending-committal-hearing-information.json
-
-      responses:
-            202:
-                description: OK
-
-/cases/presentencereport:
-  post:
-      description: |
-        Add pre scentence reports
-        ...
-        (mapping):
-            requestType: application/vnd.progression.command.pre-sentence-report+json
-            name: progression.command.pre-sentence-report
-        ...
-      body:
-        application/vnd.progression.command.pre-sentence-report+json:
-            example:
-             !include json/progression.command.pre-sentence-report.json
-
-            schema:
-             !include json/schema/progression.command.pre-sentence-report.json
 
       responses:
             202:
@@ -192,3 +171,46 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+                
+/cases/{caseId}/defendants/updatepsr:
+  post:
+      description:  |
+        Update PSR - Multiple Defendants
+        ...
+        (mapping):
+            requestType: application/vnd.progression.command.update-psr-for-defendants+json
+            name: progression.command.update-psr-for-defendants
+        ...
+      body:
+        application/vnd.progression.command.update-psr-for-defendants+json:
+            example: 
+             !include json/progression.command.update-psr-for-defendants.json         
+             
+            schema: 
+             !include json/schema/progression.command.update-psr-for-defendants.json
+              
+      responses:
+            202:
+                description: OK                
+
+/cases/{caseid}/casedocuments:
+  post:
+    description: |
+      Upload Case Document
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.upload-case-documents+json
+          name: progression.command.upload-case-documents
+      ...
+    body:
+        application/vnd.progression.command.upload-case-documents+json:
+    responses:
+      200:
+         body:
+            application/vnd.progression.document-added+json:
+               schema: !include json/schema/progression.document-added.json
+               example: !include json/progression.document-added.json
+      500:
+        description: Internal Server Error
+
+
