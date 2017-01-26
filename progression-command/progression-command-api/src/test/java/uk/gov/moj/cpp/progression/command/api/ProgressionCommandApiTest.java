@@ -74,8 +74,8 @@ public class ProgressionCommandApiTest {
 	}
 	
 	@Test
-    public void shouldUpdatePSRForDefendants() throws Exception {
-        progressionCommandApi.updatePSRForDefendants(command);
+    public void shouldRequestPSRForDefendants() throws Exception {
+        progressionCommandApi.requestPSRForDefendants(command);
         verify(sender, times(1)).send(command);
     }
 }

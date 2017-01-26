@@ -93,9 +93,9 @@ public class ProgressionCommandHandler {
         eventSource.getStreamById(streamId).append(events.map(enveloper.withMetadataFrom(command)));
     }
 
-	@Handles("progression.command.update-psr-for-defendants")
-	public void updatePsrForDefendants(final JsonEnvelope envelope) throws EventStreamException {
-		Stream<Object> events = streamOf(progressionEventFactory.createPsrForDefendantsUpdated(envelope));
+	@Handles("progression.command.request-psr-for-defendants")
+	public void requestPsrForDefendants(final JsonEnvelope envelope) throws EventStreamException {
+		Stream<Object> events = streamOf(progressionEventFactory.createPsrForDefendantsRequested(envelope));
 		EventStream eventStream = eventSource.getStreamById(getCaseProgressionId(envelope));
 		eventStream.append(events.map(enveloper.withMetadataFrom(envelope)));
 	}

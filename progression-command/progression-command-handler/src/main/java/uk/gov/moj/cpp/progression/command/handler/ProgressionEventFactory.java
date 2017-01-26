@@ -45,7 +45,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInfo
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 
 public class ProgressionEventFactory {
     public static final String FIELD_CASE_PROGRESSION_ID = "caseProgressionId";
@@ -120,7 +120,7 @@ public class ProgressionEventFactory {
                         CaseStatusEnum.READY_FOR_SENTENCING_HEARING, LocalDateTime.now());
     }
 
-    public Object createPsrForDefendantsUpdated(final JsonEnvelope envelope) {
+    public Object createPsrForDefendantsRequested(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final JsonArray defendants = envelope.payloadAsJsonObject().getJsonArray("defendants");
@@ -130,7 +130,7 @@ public class ProgressionEventFactory {
                                          ((JsonObject) obj).getString(FIELD_DEFENDANT_ID)),
                                          ((JsonObject) obj).getBoolean(FIELD_PSR_IS_REQUESTED)))
                 .collect(Collectors.toList());
-        return new PreSentenceReportForDefendantsUpdated(caseProgressionId, defendantPsrsRequested);
+        return new PreSentenceReportForDefendantsRequested(caseProgressionId, defendantPsrsRequested);
     }
 
     Function<DefendantCommand, DefendantAdditionalInformationAdded> defendantToDefendantAdded =

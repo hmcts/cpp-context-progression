@@ -22,7 +22,7 @@ import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 
 
-public class UpdateDefendantsPSRStatusIT extends AbstractIT {
+public class RequestDefendantsPSRStatusIT extends AbstractIT {
 
     private String caseId;
     private String caseProgressionId;
@@ -42,7 +42,7 @@ public class UpdateDefendantsPSRStatusIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdatePSRForDefendant() throws Exception {
+    public void shouldRequestPSRForDefendant() throws Exception {
 
         Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
                         "application/vnd.progression.command.add-case-to-crown-court+json",
@@ -58,10 +58,10 @@ public class UpdateDefendantsPSRStatusIT extends AbstractIT {
         JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
 
         writeResponse = postCommand(
-                        getCommandUri("/cases/" + caseId + "/defendants/updatepsr" ),
-                        "application/vnd.progression.command.update-psr-for-defendants+json",
+                        getCommandUri("/cases/" + caseId + "/defendants/requestpsr" ),
+                        "application/vnd.progression.command.request-psr-for-defendants+json",
                         StubUtil.getJsonBodyStr(
-                                        "progression.command.update-psr-for-defendants.json",
+                                        "progression.command.request-psr-for-defendants.json",
                                         caseId, defendantId, defendant2Id, caseProgressionId));
 
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));

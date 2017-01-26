@@ -26,12 +26,12 @@ import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-public class UpdatePSRForDefendantsTest extends BaseDroolsAccessControlTest {
+public class RequestPSRForDefendantsTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
             Arrays.asList( "Court Operations Officers", "Listing Officers");
 
-    private static final String MEDIA_TYPE = "progression.command.update-psr-for-defendants";
+    private static final String MEDIA_TYPE = "progression.command.request-psr-for-defendants";
     private Action action;
 
     @Mock

@@ -113,8 +113,8 @@ public class ProgressionCommandcontrollerTest {
 	}
 
 	@Test
-	public void shouldUpdatePSRForDefendants() throws Exception {
-    	progressionCommandcontroller.updatePSRForDefendants(command);
+	public void shouldRequestPSRForDefendants() throws Exception {
+    	progressionCommandcontroller.requestPSRForDefendants(command);
 		verify(sender, times(1)).send(command);
 	}
 }
