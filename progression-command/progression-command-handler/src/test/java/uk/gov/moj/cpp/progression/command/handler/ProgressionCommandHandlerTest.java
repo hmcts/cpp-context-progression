@@ -1,26 +1,5 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
-
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -28,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -37,6 +15,24 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.ID;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.NAME;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandHandlerTest {
@@ -185,16 +181,30 @@ public class ProgressionCommandHandlerTest {
         verifyNoMoreInteractions(eventStream);
     }
 
-    // @Test
+    @Test
     public void shouldHandleRequestPsrForDefendants() throws Exception {
-        // TODO: Implement..
-        //     : Refactor out some common verification assertion groups..
 
+        when(progressionEventFactory.createPsrForDefendantsRequested(envelope)).thenReturn(event);
+        when(eventSource.getStreamById(CASE_PROGRESSION_ID)).thenReturn(eventStream);
+        when(enveloper.withMetadataFrom(envelope)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(event)).thenReturn(mappedJsonEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(ProgressionCommandHandler.FIELD_CASE_PROGRESSION_ID))
+                .thenReturn(CASE_PROGRESSION_ID.toString());
         progressionCommandHandler.requestPsrForDefendants(envelope);
 
         verify(progressionEventFactory).createPsrForDefendantsRequested(eq(envelope));
         verify(eventSource).getStreamById(any());
         verify(enveloper).withMetadataFrom(envelope);
+
+        final ArgumentCaptor<Stream> captor = ArgumentCaptor.forClass(Stream.class);
+        verify(eventStream).append(captor.capture());
+        assertTrue(captor.getValue().findFirst().get().equals(mappedJsonEnvelope));
+
+        verifyNoMoreInteractions(progressionEventFactory);
+        verifyNoMoreInteractions(eventSource);
+        verifyNoMoreInteractions(enveloper);
+        verifyNoMoreInteractions(eventStream);
 
     }
 

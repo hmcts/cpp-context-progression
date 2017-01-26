@@ -153,7 +153,7 @@ public class CaseService {
     }
 
     @Transactional
-    public void preSentenceReportForDefendantsUpdated(final PreSentenceReportForDefendantsRequested event) {
+    public void preSentenceReportForDefendantsRequested(final PreSentenceReportForDefendantsRequested event) {
         List<DefendantPSR> defendantPsrs = event.getDefendants();
         defendantPsrs.forEach(defPsr -> {
             Defendant defendant = defendantRepository.findByDefendantId(defPsr.getDefendantId());

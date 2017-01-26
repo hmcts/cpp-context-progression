@@ -24,7 +24,7 @@ public class PreSentenceReportForDefendantsRequestedEventListener {
     public void processEvent(final JsonEnvelope event) {
         final PreSentenceReportForDefendantsRequested psrForDefendantsRequestedEvent =
                 jsonObjectConverter.convert(event.payloadAsJsonObject(), PreSentenceReportForDefendantsRequested.class);
-        caseService.preSentenceReportForDefendantsUpdated(psrForDefendantsRequestedEvent);
+        caseService.preSentenceReportForDefendantsRequested(psrForDefendantsRequestedEvent);
     }
 
 }
