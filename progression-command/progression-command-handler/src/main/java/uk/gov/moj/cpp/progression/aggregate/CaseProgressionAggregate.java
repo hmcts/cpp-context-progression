@@ -20,6 +20,7 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent;
 
 public class CaseProgressionAggregate implements Aggregate {
@@ -57,7 +58,7 @@ public class CaseProgressionAggregate implements Aggregate {
                                         .apply(e -> {
                                             // Do Nothng
                                         }),
-                        when(uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated.class)
+                        when(PreSentenceReportForDefendantsRequested.class)
                                         .apply(e -> {
                                             // Do Nothng
                                         }),

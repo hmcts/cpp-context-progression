@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
@@ -153,7 +153,7 @@ public class CaseService {
     }
 
     @Transactional
-    public void preSentenceReportForDefendantsUpdated(final PreSentenceReportForDefendantsUpdated event) {
+    public void preSentenceReportForDefendantsUpdated(final PreSentenceReportForDefendantsRequested event) {
         List<DefendantPSR> defendantPsrs = event.getDefendants();
         defendantPsrs.forEach(defPsr -> {
             Defendant defendant = defendantRepository.findByDefendantId(defPsr.getDefendantId());

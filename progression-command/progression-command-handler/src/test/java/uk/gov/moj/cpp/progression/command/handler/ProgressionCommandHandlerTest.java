@@ -186,13 +186,13 @@ public class ProgressionCommandHandlerTest {
     }
 
     // @Test
-    public void shouldHandleUpdatePsrForDefendants() throws Exception {
+    public void shouldHandleRequestPsrForDefendants() throws Exception {
         // TODO: Implement..
         //     : Refactor out some common verification assertion groups..
 
-        progressionCommandHandler.updatePsrForDefendants(envelope);
+        progressionCommandHandler.requestPsrForDefendants(envelope);
 
-        verify(progressionEventFactory).createPsrForDefendantsUpdated(eq(envelope));
+        verify(progressionEventFactory).createPsrForDefendantsRequested(eq(envelope));
         verify(eventSource).getStreamById(any());
         verify(enveloper).withMetadataFrom(envelope);
 

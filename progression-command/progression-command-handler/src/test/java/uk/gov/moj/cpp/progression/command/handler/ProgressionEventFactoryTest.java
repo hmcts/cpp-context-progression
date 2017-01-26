@@ -32,7 +32,7 @@ import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
@@ -110,7 +110,7 @@ public class ProgressionEventFactoryTest {
     }
 
     @Test
-    public void testCreatePsrForDefendantsUpdated() {
+    public void testCreatePsrForDefendantsRequest() {
         when(jsonObj.getJsonArray(Mockito.eq("defendants")))
                 .thenReturn(
                    Json.createArrayBuilder()
@@ -118,10 +118,10 @@ public class ProgressionEventFactoryTest {
                         .add(createDefendantJsonWithIsPsrRequested(false))
                         .build());
 
-        final Object obj = progressionEventFactory.createPsrForDefendantsUpdated(envelope);
+        final Object obj = progressionEventFactory.createPsrForDefendantsRequested(envelope);
 
-        assertThat(obj, instanceOf(PreSentenceReportForDefendantsUpdated.class));
-        PreSentenceReportForDefendantsUpdated event = (PreSentenceReportForDefendantsUpdated) obj;
+        assertThat(obj, instanceOf(PreSentenceReportForDefendantsRequested.class));
+        PreSentenceReportForDefendantsRequested event = (PreSentenceReportForDefendantsRequested) obj;
         List<DefendantPSR> defendants = event.getDefendants();
         assertThat(defendants.size(), is(2));
         assertThat(defendants.get(0).getPsrIsRequested(), is(true));
