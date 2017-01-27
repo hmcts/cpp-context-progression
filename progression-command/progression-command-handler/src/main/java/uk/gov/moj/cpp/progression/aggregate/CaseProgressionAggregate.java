@@ -25,13 +25,14 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequir
 
 public class CaseProgressionAggregate implements Aggregate {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseProgressionAggregate.class);
     public static final String CANNOT_ADD_ADDITIONAL_INFO = "Cannot add additional information without defendant ";
 
-    ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
+    private transient ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
 
     private UUID caseProgressionId;
-    private final Set<Defendant> defendants = new HashSet<>();
+    private transient final Set<Defendant> defendants = new HashSet<>();
     private Set<UUID> defendantIds = new HashSet<>();
     private boolean isAllDefendantReviewed;
     private boolean isAnyDefendantPending;

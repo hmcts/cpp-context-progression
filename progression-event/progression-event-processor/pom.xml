@@ -12,7 +12,7 @@
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
         <material.version>2.0.48</material.version>
-        <structure.version>2.0.216</structure.version>
+        <structure.version>2.0.225</structure.version>
         <systemuserslibrary.version>1.0.7</systemuserslibrary.version>
     </properties>
 

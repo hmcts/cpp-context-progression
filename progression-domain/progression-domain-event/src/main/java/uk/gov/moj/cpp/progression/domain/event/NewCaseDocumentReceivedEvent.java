@@ -10,7 +10,7 @@ import uk.gov.justice.domain.annotation.Event;
 @Event("progression.events.new-case-document-received")
 public class NewCaseDocumentReceivedEvent implements Serializable {
 
-    private JsonObject payload;
+    private transient JsonObject payload;
 
     private final UUID cppCaseId;
 
