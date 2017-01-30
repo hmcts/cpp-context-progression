@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 public class CaseToBeAssignedTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS =
-                    Arrays.asList("Listing Officers", "Court Operations Officers");
+                    Arrays.asList("Listing Officers", "Crown Court Admin");
 
     private static final String MEDIA_TYPE = "progression.command.case-to-be-assigned";
     private Action action;
