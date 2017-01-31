@@ -58,7 +58,7 @@ public class NewCaseDocumentReceivedListener {
 
             LOG.info("Sending structure command" + envelope.toString());
 
-//            sendStructureCommand(envelope);
+            sendStructureCommand(envelope);
 
             LOG.info("Structure command to upload a document complete " + envelope);
 
