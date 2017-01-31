@@ -31,4 +31,18 @@ public class SentenceHearingDateAdded {
     public UUID getCaseId() {
         return caseId;
     }
+
+    public void setCaseProgressionId(UUID caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
+    }
+
+    public void setCaseId(UUID caseId) {
+        this.caseId = caseId;
+    }
+
+    public void setSentenceHearingDate(LocalDate sentenceHearingDate) {
+        this.sentenceHearingDate = sentenceHearingDate;
+    }
+    
+    
 }
