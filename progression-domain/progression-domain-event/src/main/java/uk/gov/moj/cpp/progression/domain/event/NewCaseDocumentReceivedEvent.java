@@ -54,5 +54,5 @@ public class NewCaseDocumentReceivedEvent implements Serializable {
         this.payload = payload;
     }
 
-    
+
 }

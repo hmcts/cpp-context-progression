@@ -25,8 +25,7 @@ import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class ProgressionDocumentAddedListener {
 
-    private static final Logger LOG =
-                    LoggerFactory.getLogger(ProgressionDocumentAddedListener.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ProgressionDocumentAddedListener.class.getName());
 
 
     private static final String MATERIAL_COMMAND_ADD_MATERIAL = "material.add-material";
@@ -45,7 +44,7 @@ public class ProgressionDocumentAddedListener {
     public void processEvent(final JsonEnvelope envelope) {
 
         try {
-            LOG.info("Received Progression Case Document added metadata "
+            LOG.info("ProgressionDocumentAddedListener:Received Progression Case Document added metadata "
                             + envelope.metadata().asJsonObject().toString());
 
             sendAddMaterialCommand(envelope);
