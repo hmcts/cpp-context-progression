@@ -67,7 +67,7 @@ public class NewCaseDocumentReceivedListenerTest {
         ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor =
                         ArgumentCaptor.forClass(JsonEnvelope.class);
 
-        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
 
         List<JsonEnvelope> envelopes = jsonEnvelopeCaptor.getAllValues();
 
@@ -75,10 +75,11 @@ public class NewCaseDocumentReceivedListenerTest {
 
         assertThat(envelope.metadata().userId(), equalTo(Optional.of(id)));
         assertThat(envelope.metadata().sessionId(), equalTo(Optional.of(id)));
-        assertThat(envelope.metadata().name(), equalTo("structure.command.add-case-document"));
-        assertThat(envelope.asJsonObject().getString("caseId"), equalTo(id));
-        assertThat(envelope.asJsonObject().getString("materialId"), equalTo("fileId-1"));
-        assertThat(envelope.asJsonObject().getString("documentType"), equalTo("PLEA"));
+        //TODO enable once structure is hooked
+//        assertThat(envelope.metadata().name(), equalTo("structure.command.add-case-document"));
+//        assertThat(envelope.asJsonObject().getString("caseId"), equalTo(id));
+//        assertThat(envelope.asJsonObject().getString("materialId"), equalTo("fileId-1"));
+//        assertThat(envelope.asJsonObject().getString("documentType"), equalTo("PLEA"));
     }
 
     private JsonEnvelope getEnvelope(final String id) {
