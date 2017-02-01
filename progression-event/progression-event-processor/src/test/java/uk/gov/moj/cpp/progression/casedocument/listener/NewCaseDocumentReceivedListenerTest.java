@@ -52,7 +52,7 @@ public class NewCaseDocumentReceivedListenerTest {
     NewCaseDocumentReceivedListener newCaseDocumentReceivedListener;
 
 
-    @Ignore @Test //TODO ignore until structure context is notified
+    @Test
     public void shouldProcessEvent() {
 
         final String id = "71824c05-ec1d-4c0e-bc5e-b1ffff07ebee";

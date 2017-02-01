@@ -56,9 +56,9 @@ public class NewCaseDocumentReceivedListener {
                             envelope.metadata().sessionId().get(),
                             envelope.metadata().clientCorrelationId().get()));
 
-            LOG.info("Sending structure command" + envelope.toString());
+            LOG.info("Sending new document received structure command" + envelope.toString());
 
-//            sendStructureCommand(envelope); //TODO sibyg uncomment once material is verified
+            sendStructureCommand(envelope);
 
             LOG.info("Structure command to upload a document complete " + envelope);
 
