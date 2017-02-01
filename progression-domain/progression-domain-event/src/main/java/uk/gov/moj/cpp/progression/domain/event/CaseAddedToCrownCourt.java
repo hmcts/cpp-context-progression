@@ -46,4 +46,22 @@ public class CaseAddedToCrownCourt {
         return courtCentreId;
     }
 
+    public void setCaseProgressionId(UUID caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
+    }
+
+    public void setCaseId(UUID caseId) {
+        this.caseId = caseId;
+    }
+
+    public void setCourtCentreId(String courtCentreId) {
+        this.courtCentreId = courtCentreId;
+    }
+
+    public void setDefendants(List<Defendant> defendants) {
+        this.defendants = defendants;
+    }
+    
+    
+
 }
