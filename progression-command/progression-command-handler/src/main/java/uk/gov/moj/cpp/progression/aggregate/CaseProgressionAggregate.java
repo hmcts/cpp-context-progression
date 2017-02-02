@@ -32,7 +32,7 @@ public class CaseProgressionAggregate implements Aggregate {
     private transient ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
 
     private UUID caseProgressionId;
-    private transient final Set<Defendant> defendants = new HashSet<>();
+    private final transient Set<Defendant> defendants = new HashSet<>();
     private Set<UUID> defendantIds = new HashSet<>();
     private boolean isAllDefendantReviewed;
     private boolean isAnyDefendantPending;
@@ -67,7 +67,7 @@ public class CaseProgressionAggregate implements Aggregate {
                                         .apply(e -> {
                                             caseProgressionId = e.getCaseProgressionId();
                                             final Defendant defendant = defendants.stream()
-                                                            .filter((d) -> d.getId()
+                                                            .filter(d -> d.getId()
                                                                             .equals(e.getDefendantId()))
                                                             .findAny().get();
                                             defendant.setSentenceHearingReviewDecision(true);
@@ -79,7 +79,7 @@ public class CaseProgressionAggregate implements Aggregate {
                                                 .apply(e -> {
                                                     caseProgressionId = e.getCaseProgressionId();
                                                     final Defendant defendant = defendants.stream()
-                                                            .filter((d) -> d.getId()
+                                                            .filter(d -> d.getId()
                                                                     .equals(e.getDefendantId()))
                                                             .findAny().get();
                                                     defendant.setSentenceHearingReviewDecision(true);
@@ -93,7 +93,7 @@ public class CaseProgressionAggregate implements Aggregate {
         // check if all defendant is reviewed
         final Defendant defReviewRequire = defendants.stream()
                         .filter(d -> d.getSentenceHearingReviewDecision() == null
-                                        || d.getSentenceHearingReviewDecision() == false)
+                                        || (!d.getSentenceHearingReviewDecision().booleanValue()))
                         .findFirst().orElse(null);
         if (defReviewRequire == null) {
             isAllDefendantReviewed = true;
@@ -102,7 +102,7 @@ public class CaseProgressionAggregate implements Aggregate {
         // check if any defendant additional information is required
         final Defendant def = defendants.stream()
                         .filter(d -> d.getIsAdditionalInfoAvilable() != null
-                                        && d.getIsAdditionalInfoAvilable() == true)
+                                        && d.getIsAdditionalInfoAvilable().booleanValue())
                         .findFirst().orElse(null);
 
         if (def != null) {

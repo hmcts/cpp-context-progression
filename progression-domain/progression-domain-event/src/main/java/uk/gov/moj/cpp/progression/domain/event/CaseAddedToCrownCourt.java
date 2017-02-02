@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,11 +29,13 @@ public class CaseAddedToCrownCourt {
         this.caseProgressionId = caseProgressionId;
         this.caseId = caseId;
         this.courtCentreId = courtCentreId;
-        this.defendants = defendantIds;
+        this.defendants = defendantIds == null ? Collections.emptyList()
+                        : new ArrayList<>(defendantIds);
     }
 
     public List<Defendant> getDefendants() {
-        return defendants;
+        return defendants == null ? Collections.emptyList()
+                        : Collections.unmodifiableList(defendants);
     }
 
     public UUID getCaseProgressionId() {
@@ -59,9 +63,10 @@ public class CaseAddedToCrownCourt {
     }
 
     public void setDefendants(List<Defendant> defendants) {
-        this.defendants = defendants;
+        this.defendants =
+                        defendants == null ? Collections.emptyList() : new ArrayList<>(defendants);
     }
-    
-    
+
+
 
 }

@@ -40,9 +40,8 @@ public class MedicalDocumentationEvent {
         }
 
         public MedicalDocumentationEvent build() {
-            MedicalDocumentationEvent medicalDocumentationEvent = new MedicalDocumentationEvent(isMedicalDocumentation,
+            return new MedicalDocumentationEvent(isMedicalDocumentation,
                     details);
-            return medicalDocumentationEvent;
         }
     }
 

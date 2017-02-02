@@ -6,7 +6,6 @@ import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,29 +47,22 @@ public class NewCaseDocumentReceivedListener {
     @Handles("progression.events.new-case-document-received")
     public void processEvent(final JsonEnvelope envelope) {
 
-        try {
+        LOG.info(format(
+                        "NewCaseDocumentReceivedListener:Received Document upload request from userId= %s sessionId= %s correlationId= %s",
+                        envelope.metadata().userId().get(),
+                        envelope.metadata().sessionId().get(),
+                        envelope.metadata().clientCorrelationId().get()));
 
-            LOG.info(format(
-                            "NewCaseDocumentReceivedListener:Received Document upload request from userId= %s sessionId= %s correlationId= %s",
-                            envelope.metadata().userId().get(),
-                            envelope.metadata().sessionId().get(),
-                            envelope.metadata().clientCorrelationId().get()));
+        LOG.info("Sending new document received structure command" + envelope.toString());
 
-            LOG.info("Sending new document received structure command" + envelope.toString());
+        sendStructureCommand(envelope);
 
-            sendStructureCommand(envelope);
+        LOG.info("Structure command to upload a document complete " + envelope);
 
-            LOG.info("Structure command to upload a document complete " + envelope);
-
-            LOG.info("Sending uploaded ");
-            sendPublicEvent(envelope);
-            
-            LOG.info("Public event raised " + envelope);
-
-        } catch (Exception e) {
-            LOG.info("Command to upload a document failed ");
-            LOG.error(envelope.toString(), e);
-        }
+        LOG.info("Sending uploaded ");
+        sendPublicEvent(envelope);
+        
+        LOG.info("Public event raised " + envelope);
     }
 
 

@@ -7,20 +7,21 @@ public class Defendant {
     private UUID id;
     private Boolean sentenceHearingReviewDecision;
     private Boolean isAdditionalInfoAvilable;
-    /**
-     * @return the id
-     */
-    public UUID getId() {
-        return id;
+
+    public Defendant() {
+        super();
     }
 
     public Defendant(UUID id) {
         super();
         this.id = id;
     }
-
-    public Defendant() {
-        super();
+    
+    /**
+     * @return the id
+     */
+    public UUID getId() {
+        return id;
     }
 
     public Boolean getSentenceHearingReviewDecision() {

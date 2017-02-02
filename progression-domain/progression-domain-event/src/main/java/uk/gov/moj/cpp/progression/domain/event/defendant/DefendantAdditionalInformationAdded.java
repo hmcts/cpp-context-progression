@@ -95,9 +95,8 @@ public class DefendantAdditionalInformationAdded {
         }
 
         public DefendantAdditionalInformationAdded build() {
-            DefendantAdditionalInformationAdded defendantEvent = new DefendantAdditionalInformationAdded(defendantProgressionId, defendantId, caseProgressionId,
+            return new DefendantAdditionalInformationAdded(defendantProgressionId, defendantId, caseProgressionId,
                     additionalInformationEvent, sentenceHearingReviewDecision, sentenceHearingReviewDecisionDateTime);
-            return defendantEvent;
         }
 
         public AdditionalInformationEvent getAdditionalInformationEvent() {

@@ -1,24 +1,26 @@
 package uk.gov.justice.api.resource;
 
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.slf4j.Logger;
-import uk.gov.justice.services.core.annotation.Adapter;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.file.api.sender.FileData;
-import uk.gov.justice.services.file.api.sender.FileSender;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.ws.rs.core.GenericEntity;
-import javax.ws.rs.core.Response;
-import java.io.InputStream;
-import java.util.Optional;
-
 import static java.lang.String.format;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.Response;
+
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.slf4j.Logger;
+
+import uk.gov.justice.services.core.annotation.Adapter;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.file.api.sender.FileData;
+import uk.gov.justice.services.file.api.sender.FileSender;
 
 @Adapter(Component.COMMAND_API)
 public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocumentsResource {
@@ -44,7 +46,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                         "Received Document upload request from userId= %s sessionId= %s correlationId= %s caseId= %s",
                         userId, session, correlationId, caseId));
 
-        try {
+        try{
 
             KeyValue<Optional<String>, Optional<InputStream>> fileNameAndContent = uploadCaseDocumentsFormParser.parse(multipartFormDataInput);
 
@@ -92,7 +94,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                         .build().toString()) {})
                     .build();
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOG.error(getErrorMsg(userId, session, correlationId, caseId, "exception"), e);
             return Response.status(BAD_REQUEST).build();
         }
