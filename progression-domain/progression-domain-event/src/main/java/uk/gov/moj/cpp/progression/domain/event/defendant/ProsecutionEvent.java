@@ -43,5 +43,19 @@ public class ProsecutionEvent {
             ProsecutionEvent prosecution = new ProsecutionEvent(ancillaryOrdersEvent, otherDetails);
             return prosecution;
         }
+
+        public AncillaryOrdersEvent getAncillaryOrdersEvent() {
+            return ancillaryOrdersEvent;
+        }
+
+        public void setAncillaryOrdersEvent(AncillaryOrdersEvent ancillaryOrdersEvent) {
+            this.ancillaryOrdersEvent = ancillaryOrdersEvent;
+        }
+
+        public String getOtherDetails() {
+            return otherDetails;
+        }
     }
+    
+    
 }

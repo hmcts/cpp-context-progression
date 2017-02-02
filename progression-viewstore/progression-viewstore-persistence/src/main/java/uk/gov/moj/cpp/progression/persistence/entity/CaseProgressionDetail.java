@@ -138,4 +138,5 @@ public class CaseProgressionDetail {
         this.defendants = defendants;
     }
 
+    
 }

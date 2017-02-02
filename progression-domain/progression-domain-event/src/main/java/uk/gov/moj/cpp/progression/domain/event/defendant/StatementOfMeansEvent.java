@@ -17,6 +17,7 @@ public class StatementOfMeansEvent {
         return isStatementOfMeans;
     }
 
+    
     public static final class StatementOfMeansEventBuilder {
         private String details;
         private Boolean isStatementOfMeans;
@@ -41,5 +42,15 @@ public class StatementOfMeansEvent {
         public StatementOfMeansEvent build() {
             return new StatementOfMeansEvent(isStatementOfMeans, details);
         }
+
+        public String getDetails() {
+            return details;
+        }
+
+        public Boolean getIsStatementOfMeans() {
+            return isStatementOfMeans;
+        }
+        
+        
     }
 }

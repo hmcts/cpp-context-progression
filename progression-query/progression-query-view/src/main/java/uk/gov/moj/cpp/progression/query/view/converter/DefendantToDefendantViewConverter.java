@@ -30,7 +30,7 @@ public class DefendantToDefendantViewConverter {
 
     private AdditionalInformation convertAdditionalInformation(Defendant defendant) {
         AdditionalInformation additionalInformation = new AdditionalInformation();
-        additionalInformation.setNoMoreInformationRequired(defendant.getNoMoreInformationRequired());
+        additionalInformation.setNoMoreInformationRequired(defendant.getIsNoMoreInformationRequired());
         Defence defence = new Defence(defendant.getDefenceOthers(),
                         new StatementOfMeans(defendant.getStatementOfMeans(),
                                         defendant.getIsStatementOffMeans()),
