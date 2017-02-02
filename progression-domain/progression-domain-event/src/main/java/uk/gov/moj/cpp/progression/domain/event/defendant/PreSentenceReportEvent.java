@@ -53,5 +53,19 @@ public class PreSentenceReportEvent {
         public PreSentenceReportEvent build() {
             return new PreSentenceReportEvent(psrIsRequested, provideGuidance, drugAssessment);
         }
+
+        public String getProvideGuidance() {
+            return provideGuidance;
+        }
+
+        public Boolean getDrugAssessment() {
+            return drugAssessment;
+        }
+
+        public Boolean getPsrIsRequested() {
+            return psrIsRequested;
+        }
+        
     }
+    
 }

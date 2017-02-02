@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -10,6 +9,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity
 @Table(name = "Defendant")
@@ -73,7 +76,7 @@ public class Defendant {
     private Boolean isNoMoreInformationRequired;
 
     public Defendant(UUID id, UUID defendantId, CaseProgressionDetail caseProgressionDetail,
-            Boolean sentenceHearingReviewDecision) {
+                    Boolean sentenceHearingReviewDecision) {
         super();
         this.id = id;
         this.defendantId = defendantId;
@@ -121,7 +124,8 @@ public class Defendant {
         return sentenceHearingReviewDecisionDateTime;
     }
 
-    public void setSentenceHearingReviewDecisionDateTime(LocalDateTime sentenceHearingReviewDecisionDateTime) {
+    public void setSentenceHearingReviewDecisionDateTime(
+                    LocalDateTime sentenceHearingReviewDecisionDateTime) {
         this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
     }
 
@@ -220,59 +224,73 @@ public class Defendant {
     public void setProvideGuidance(String provideGuidance) {
         this.provideGuidance = provideGuidance;
     }
-
-    public Boolean getNoMoreInformationRequired() {
+    
+    public Boolean getIsNoMoreInformationRequired() {
         return isNoMoreInformationRequired;
     }
 
-    public void setNoMoreInformationRequired(Boolean noMoreInformationRequired) {
-        isNoMoreInformationRequired = noMoreInformationRequired;
+    public void setIsNoMoreInformationRequired(Boolean isNoMoreInformationRequired) {
+        this.isNoMoreInformationRequired = isNoMoreInformationRequired;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o){
-            return true;
-        }
-        if (!(o instanceof Defendant)){
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-        Defendant defendant = (Defendant) o;
-        return Objects.equals(getDefendantId(), defendant.getDefendantId())
-                && Objects.equals(getSentenceHearingReviewDecision(), defendant.getSentenceHearingReviewDecision())
-                && Objects.equals(getSentenceHearingReviewDecisionDateTime(),
-                        defendant.getSentenceHearingReviewDecisionDateTime())
-                && Objects.equals(getDrugAssessment(), defendant.getDrugAssessment())
-                && Objects.equals(getDangerousnessAssessment(), defendant.getDangerousnessAssessment())
-                && Objects.equals(getIsPSRRequested(), defendant.getIsPSRRequested())
-                && Objects.equals(getIsStatementOffMeans(), defendant.getIsStatementOffMeans())
-                && Objects.equals(getIsMedicalDocumentation(), defendant.getIsMedicalDocumentation())
-                && Objects.equals(getIsAncillaryOrders(), defendant.getIsAncillaryOrders())
-                && Objects.equals(getStatementOfMeans(), defendant.getStatementOfMeans())
-                && Objects.equals(getDefenceOthers(), defendant.getDefenceOthers())
-                && Objects.equals(getAncillaryOrders(), defendant.getAncillaryOrders())
-                && Objects.equals(getProvideGuidance(), defendant.getProvideGuidance())
-                && Objects.equals(getProsecutionOthers(), defendant.getProsecutionOthers());
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Defendant)) {
+            return false;
+        }
+        Defendant defendant = (Defendant) obj;
+
+        return new EqualsBuilder().append(defendantId, defendant.getDefendantId())
+                        .append(sentenceHearingReviewDecision,
+                                        defendant.getSentenceHearingReviewDecision())
+                        .append(sentenceHearingReviewDecisionDateTime,
+                                        defendant.getSentenceHearingReviewDecisionDateTime())
+                        .append(drugAssessment, defendant.getDrugAssessment())
+                        .append(dangerousnessAssessment, defendant.getDangerousnessAssessment())
+                        .append(isPSRRequested, defendant.getIsPSRRequested())
+                        .append(isStatementOffMeans, defendant.getIsStatementOffMeans())
+                        .append(isMedicalDocumentation, defendant.getIsMedicalDocumentation())
+                        .append(isAncillaryOrders, defendant.getIsAncillaryOrders())
+                        .append(statementOfMeans, defendant.getStatementOfMeans())
+                        .append(defenceOthers, defendant.getDefenceOthers())
+                        .append(ancillaryOrders, defendant.getAncillaryOrders())
+                        .append(provideGuidance, defendant.getProvideGuidance())
+                        .append(prosecutionOthers, defendant.getProsecutionOthers()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDefendantId(), getSentenceHearingReviewDecision(),
-                getSentenceHearingReviewDecisionDateTime(), getDrugAssessment(), getDangerousnessAssessment(),
-                getIsAncillaryOrders(), getStatementOfMeans(), getDefenceOthers(), getAncillaryOrders(),
-                getProsecutionOthers(), getIsAncillaryOrders(), getIsMedicalDocumentation(), getIsPSRRequested(),
-                getProvideGuidance());
+        return new HashCodeBuilder(17, 37).append(defendantId).append(sentenceHearingReviewDecision)
+                        .append(sentenceHearingReviewDecisionDateTime).append(drugAssessment)
+                        .append(dangerousnessAssessment).append(isAncillaryOrders)
+                        .append(statementOfMeans).append(defenceOthers).append(ancillaryOrders)
+                        .append(prosecutionOthers).append(isAncillaryOrders)
+                        .append(isMedicalDocumentation).append(isPSRRequested)
+                        .append(provideGuidance).hashCode();
     }
 
     @Override
     public String toString() {
-        return "Defendant{" + "id=" + id + ", defendantId=" + defendantId + ", sentenceHearingReviewDecision="
-                + sentenceHearingReviewDecision + ", sentenceHearingReviewDecisionDateTime="
-                + sentenceHearingReviewDecisionDateTime + ", drugAssessment=" + drugAssessment
-                + ", dangerousnessAssessment=" + dangerousnessAssessment + ", isAncillaryOrders='" + isAncillaryOrders
-                + '\'' + ", statementOfMeans='" + statementOfMeans + '\'' + ", defenceOthers='" + defenceOthers + '\''
-                + ", ancillaryOrders='" + ancillaryOrders + '\'' + ", prosecutionOthers='" + prosecutionOthers + '\''
-                + ", isStatementOffMeans='" + isStatementOffMeans + '\'' + ", isPSRRequested='" + isPSRRequested + '\''
-                + ", isMedicalDocumentation=" + isMedicalDocumentation + ", provideGuidance=" + provideGuidance + '}';
+        return new ToStringBuilder(this).append("id", id).append("defendantId", defendantId)
+                        .append("sentenceHearingReviewDecision", sentenceHearingReviewDecision)
+                        .append("sentenceHearingReviewDecisionDateTime", sentenceHearingReviewDecisionDateTime)
+                        .append("drugAssessment", drugAssessment)
+                        .append("dangerousnessAssessment", dangerousnessAssessment)
+                        .append("isAncillaryOrders", isAncillaryOrders)
+                        .append("statementOfMeans", statementOfMeans)
+                        .append("defenceOthers", defenceOthers)
+                        .append("ancillaryOrders", ancillaryOrders)
+                        .append("prosecutionOthers", prosecutionOthers)
+                        .append("isStatementOffMeans", isStatementOffMeans)
+                        .append("isPSRRequested", isPSRRequested)
+                        .append("isMedicalDocumentation", isMedicalDocumentation)
+                        .append("provideGuidance", provideGuidance).toString();
+
     }
 }
