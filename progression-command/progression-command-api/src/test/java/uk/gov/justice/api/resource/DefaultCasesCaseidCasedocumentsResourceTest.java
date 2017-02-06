@@ -107,11 +107,11 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
 
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput))
-                        .thenReturn(getKeyValue("fileName", "data"));
+                        .thenReturn(getKeyValue("fileName.pdf", "data"));
 
         final FileData fd = new FileData(UUID.randomUUID().toString(), "application/pdf");
         
-        when(fileSender.send(Mockito.eq("fileName"), any(InputStream.class)))
+        when(fileSender.send(Mockito.eq("fileName.pdf"), any(InputStream.class)))
                         .thenReturn(fd);
        
         Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
