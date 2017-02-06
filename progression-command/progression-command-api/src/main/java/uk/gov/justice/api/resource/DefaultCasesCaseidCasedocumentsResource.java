@@ -23,8 +23,8 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 @Adapter(Component.COMMAND_API)
 public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocumentsResource {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory
-            .getLogger(DefaultCasesCaseidCasedocumentsResource.class);
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DefaultCasesCaseidCasedocumentsResource.class);
+    private final String INVALID_FILE_NAME = "Supported files are .pdf, .doc or .docx";
 
     @Inject
     private UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser;
@@ -53,6 +53,12 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                 return Response.status(BAD_REQUEST).build();
             }
 
+            final String fileName = fileNameAndContent.getKey().get();
+
+            if (!((fileName.endsWith(".pdf") || fileName.endsWith(".doc") || fileName.endsWith(".docx")))) {
+              LOG.error(INVALID_FILE_NAME);
+              return Response.status(BAD_REQUEST).entity(INVALID_FILE_NAME).build();
+            }
             if (!fileNameAndContent.getValue().isPresent()) {
                 LOG.error(getErrorMsg(userId, session, correlationId, caseId,
                         "file content missing"));
@@ -64,7 +70,6 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                                             + "clientCorrelationId= %s, caseId= %s",
                             userId, session, correlationId, caseId));
 
-            final String fileName = fileNameAndContent.getKey().get();
 
             // File is sent
             final FileData fileData = fileSender.send(fileName, fileNameAndContent.getValue().get());

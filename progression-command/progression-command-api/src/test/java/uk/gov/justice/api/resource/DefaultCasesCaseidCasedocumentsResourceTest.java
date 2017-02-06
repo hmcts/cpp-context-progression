@@ -72,6 +72,21 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
     }
 
     @Test
+    public void shouldReturnBadRequestWhenFormFileNameisInvalid() throws IOException {
+
+        final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
+
+        when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput)).thenReturn(getInvalidKey("data"));
+
+        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
+                "clientCorrelationId", "caseId");
+
+        assertThat(response.getStatus(), equalTo(Response.Status.BAD_REQUEST.getStatusCode()));
+        assertThat(response.getEntity(), equalTo("Supported files are .pdf, .doc or .docx"));
+
+    }
+
+    @Test
     public void shouldReturnBadRequestWhenFormFileContentisEmpty() throws IOException {
 
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
@@ -119,6 +134,11 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
     private KeyValue<Optional<String>, Optional<InputStream>> getEmptyKey(final String data) {
         return new KeyValue<Optional<String>, Optional<InputStream>>(Optional.empty(),
                         Optional.of(IOUtils.toInputStream(data)));
+    }
+
+    private KeyValue<Optional<String>, Optional<InputStream>> getInvalidKey(final String data) {
+        return new KeyValue<Optional<String>, Optional<InputStream>>(Optional.of("text.txt"),
+                Optional.of(IOUtils.toInputStream(data)));
     }
 
     private KeyValue<Optional<String>, Optional<InputStream>> getKeyValue(final String key,
