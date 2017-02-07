@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>2.0.80-SNAPSHOT</version>
+    <version>${context.version}</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -27,6 +27,7 @@
     </modules>
 
     <properties>
+        <context.version>2.0.80-I2T-SNAPSHOT</context.version>
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
