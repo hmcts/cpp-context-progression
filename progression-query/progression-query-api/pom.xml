@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>uk.gov.moj.cpp.progression</groupId>
 		<artifactId>progression-query</artifactId>
-		<version>${context.version}</version>
+		<version>2.0.80-I2T-SNAPSHOT</version>
 	</parent>
 	<artifactId>progression-query-api</artifactId>
 	<packaging>war</packaging>
