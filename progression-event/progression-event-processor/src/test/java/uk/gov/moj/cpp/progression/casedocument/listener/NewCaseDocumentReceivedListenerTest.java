@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;

@@ -20,17 +20,19 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent;
 
 public class CaseProgressionAggregate implements Aggregate {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseProgressionAggregate.class);
     public static final String CANNOT_ADD_ADDITIONAL_INFO = "Cannot add additional information without defendant ";
 
-    ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
+    private transient ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
 
     private UUID caseProgressionId;
-    private final Set<Defendant> defendants = new HashSet<>();
+    private final transient Set<Defendant> defendants = new HashSet<>();
     private Set<UUID> defendantIds = new HashSet<>();
     private boolean isAllDefendantReviewed;
     private boolean isAnyDefendantPending;
@@ -57,7 +59,7 @@ public class CaseProgressionAggregate implements Aggregate {
                                         .apply(e -> {
                                             // Do Nothng
                                         }),
-                        when(uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsUpdated.class)
+                        when(PreSentenceReportForDefendantsRequested.class)
                                         .apply(e -> {
                                             // Do Nothng
                                         }),
@@ -65,7 +67,7 @@ public class CaseProgressionAggregate implements Aggregate {
                                         .apply(e -> {
                                             caseProgressionId = e.getCaseProgressionId();
                                             final Defendant defendant = defendants.stream()
-                                                            .filter((d) -> d.getId()
+                                                            .filter(d -> d.getId()
                                                                             .equals(e.getDefendantId()))
                                                             .findAny().get();
                                             defendant.setSentenceHearingReviewDecision(true);
@@ -77,7 +79,7 @@ public class CaseProgressionAggregate implements Aggregate {
                                                 .apply(e -> {
                                                     caseProgressionId = e.getCaseProgressionId();
                                                     final Defendant defendant = defendants.stream()
-                                                            .filter((d) -> d.getId()
+                                                            .filter(d -> d.getId()
                                                                     .equals(e.getDefendantId()))
                                                             .findAny().get();
                                                     defendant.setSentenceHearingReviewDecision(true);
@@ -91,7 +93,7 @@ public class CaseProgressionAggregate implements Aggregate {
         // check if all defendant is reviewed
         final Defendant defReviewRequire = defendants.stream()
                         .filter(d -> d.getSentenceHearingReviewDecision() == null
-                                        || d.getSentenceHearingReviewDecision() == false)
+                                        || (!d.getSentenceHearingReviewDecision().booleanValue()))
                         .findFirst().orElse(null);
         if (defReviewRequire == null) {
             isAllDefendantReviewed = true;
@@ -100,7 +102,7 @@ public class CaseProgressionAggregate implements Aggregate {
         // check if any defendant additional information is required
         final Defendant def = defendants.stream()
                         .filter(d -> d.getIsAdditionalInfoAvilable() != null
-                                        && d.getIsAdditionalInfoAvilable() == true)
+                                        && d.getIsAdditionalInfoAvilable().booleanValue())
                         .findFirst().orElse(null);
 
         if (def != null) {

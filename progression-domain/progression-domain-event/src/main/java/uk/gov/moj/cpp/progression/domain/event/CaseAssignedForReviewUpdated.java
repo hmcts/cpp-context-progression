@@ -30,4 +30,12 @@ public class CaseAssignedForReviewUpdated {
         return caseProgressionId;
     }
 
+    public void setCaseProgressionId(UUID caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
+    }
+
+    public void setStatus(CaseStatusEnum status) {
+        this.status = status;
+    }
+    
 }

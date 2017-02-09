@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 public class AddCaseToCrownCourtTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList(
-                    "Court Operations Officers", "Listing Officers");
+                    "Crown Court Admin", "Listing Officers");
 
     private static final String ACTION_NAME = "progression.command.add-case-to-crown-court";
     private Action action;

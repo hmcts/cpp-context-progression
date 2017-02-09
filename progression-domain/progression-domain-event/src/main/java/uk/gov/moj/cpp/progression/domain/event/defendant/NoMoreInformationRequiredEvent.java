@@ -34,4 +34,10 @@ public class NoMoreInformationRequiredEvent {
     public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
         return sentenceHearingReviewDecisionDateTime;
     }
+
+    public void setSentenceHearingReviewDecisionDateTime(
+                    LocalDateTime sentenceHearingReviewDecisionDateTime) {
+        this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
+    }
+    
 }

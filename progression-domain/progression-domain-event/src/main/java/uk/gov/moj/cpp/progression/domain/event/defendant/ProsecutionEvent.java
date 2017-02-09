@@ -40,8 +40,21 @@ public class ProsecutionEvent {
         }
 
         public ProsecutionEvent build() {
-            ProsecutionEvent prosecution = new ProsecutionEvent(ancillaryOrdersEvent, otherDetails);
-            return prosecution;
+            return new ProsecutionEvent(ancillaryOrdersEvent, otherDetails);
+        }
+
+        public AncillaryOrdersEvent getAncillaryOrdersEvent() {
+            return ancillaryOrdersEvent;
+        }
+
+        public void setAncillaryOrdersEvent(AncillaryOrdersEvent ancillaryOrdersEvent) {
+            this.ancillaryOrdersEvent = ancillaryOrdersEvent;
+        }
+
+        public String getOtherDetails() {
+            return otherDetails;
         }
     }
+    
+    
 }

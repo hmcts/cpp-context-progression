@@ -172,45 +172,24 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
                 
-/cases/{caseId}/defendants/updatepsr:
+/cases/{caseId}/defendants/requestpsr:
   post:
       description:  |
-        Update PSR - Multiple Defendants
+        Request PSR - Multiple Defendants
         ...
         (mapping):
-            requestType: application/vnd.progression.command.update-psr-for-defendants+json
-            name: progression.command.update-psr-for-defendants
+            requestType: application/vnd.progression.command.request-psr-for-defendants+json
+            name: progression.command.request-psr-for-defendants
         ...
       body:
-        application/vnd.progression.command.update-psr-for-defendants+json:
+        application/vnd.progression.command.request-psr-for-defendants+json:
             example: 
-             !include json/progression.command.update-psr-for-defendants.json         
+             !include json/progression.command.request-psr-for-defendants.json
              
             schema: 
-             !include json/schema/progression.command.update-psr-for-defendants.json
+             !include json/schema/progression.command.request-psr-for-defendants.json
               
       responses:
             202:
-                description: OK                
-
-/cases/{caseid}/casedocuments:
-  post:
-    description: |
-      Upload Case Document
-      ...
-      (mapping):
-          requestType: application/vnd.progression.command.upload-case-documents+json
-          name: progression.command.upload-case-documents
-      ...
-    body:
-        application/vnd.progression.command.upload-case-documents+json:
-    responses:
-      200:
-         body:
-            application/vnd.progression.document-added+json:
-               schema: !include json/schema/progression.document-added.json
-               example: !include json/progression.document-added.json
-      500:
-        description: Internal Server Error
-
+                description: OK
 

@@ -1,14 +1,5 @@
 package uk.gov.moj.cpp.progression.event.service;
 
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import java.util.UUID;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,21 +7,21 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
-import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
-import uk.gov.moj.cpp.progression.domain.event.DirectionIssued;
-import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
+import uk.gov.moj.cpp.progression.domain.event.*;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.progression.persistence.repository.DefendantRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.Mockito.*;
 
 /**
  * @author Ted Pritchard
@@ -255,5 +246,22 @@ public class CaseServiceTest {
         service.addAdditionalInformationForDefendant(event);
         verify(defendantRepository, times(1)).findByDefendantId(DEFENDANT_ID);
         verifyNoMoreInteractions(defendantRepository);
+    }
+
+    @Test
+    public void preSentenceReportForDefendantsRequestedTest() {
+        final PreSentenceReportForDefendantsRequested event =
+                mock(PreSentenceReportForDefendantsRequested.class);
+        final Defendant entity = mock(Defendant.class);
+        final DefendantPSR defendantPSR = new DefendantPSR(DEFENDANT_ID, true);
+        List<DefendantPSR> defendantPsrs = new ArrayList<>();
+        defendantPsrs.add(defendantPSR);
+
+        when(event.getCaseProgressionId()).thenReturn(CASE_PROGRESSION_ID);
+        when(event.getDefendants()).thenReturn(defendantPsrs);
+        when(defendantRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(entity);
+        service.preSentenceReportForDefendantsRequested(event);
+        verify(defendantRepository, times(1)).findByDefendantId(DEFENDANT_ID);
+        verify(defendantRepository, times(1)).save(entity);
     }
 }

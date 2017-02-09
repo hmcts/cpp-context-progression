@@ -31,7 +31,7 @@ rule "Command - Access control for progression.command.sending-committal-hearing
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.sending-committal-hearing-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Court Operations Officers", "Listing Officers")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -40,7 +40,7 @@ rule "Command - Access control for progression.command.case-to-be-assigned"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.case-to-be-assigned");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("Listing Officers", "Court Operations Officers")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("Listing Officers", "Crown Court Admin")))
   then
     $outcome.setSuccess(true);
 end
@@ -59,7 +59,7 @@ rule "Command - Access control for progression.command.sentence-hearing-date"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.sentence-hearing-date");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Court Operations Officers", "Listing Officers")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -69,7 +69,7 @@ rule "Command - Access control for progression.command.add-case-to-crown-court"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-case-to-crown-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Court Operations Officers", "Listing Officers")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end
@@ -84,11 +84,11 @@ rule "Command - Access control for progression.command.no-more-information-requi
     $outcome.setSuccess(true);
 end
 
-rule "Command - Access control for progression.command.update-psr-for-defendants"
+rule "Command - Access control for progression.command.request-psr-for-defendants"
   when
     $outcome: Outcome();
-    $action: Action(name == "progression.command.update-psr-for-defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Court Operations Officers", "Listing Officers")))
+    $action: Action(name == "progression.command.request-psr-for-defendants");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers")))
   then
     $outcome.setSuccess(true);
 end

@@ -194,6 +194,18 @@ public class ProgressionQueryViewTest {
         assertThat(queryView.getDefendants(query), equalTo(responceJson));
     }
 
+    @Test
+    public void shouldHandleGetDefendantsQueryOnNoResult() {
+        final UUID caseId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
+
+        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(casePrgDetailService.getDefendantsByCase(caseId))
+                .thenThrow(new NoResultException());
+        when(function.apply(null)).thenReturn(responceJson);
+    }
+
 
     @Test
     public void shouldHandleGetDefendantQuery() {

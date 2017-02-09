@@ -36,7 +36,7 @@ public class NoMoreInformationRequiredEventListener {
         final NoMoreInformationRequiredEvent noMoreInformationRequiredEvent = jsonObjectConverter
                         .convert(event.payloadAsJsonObject(), NoMoreInformationRequiredEvent.class);
         final Defendant defendant =repository.findByDefendantId(noMoreInformationRequiredEvent.getDefendantId());
-        defendant.setNoMoreInformationRequired(Boolean.TRUE);
+        defendant.setIsNoMoreInformationRequired(Boolean.TRUE);
         defendant.setSentenceHearingReviewDecision(true);
         defendant.setSentenceHearingReviewDecisionDateTime(
                 noMoreInformationRequiredEvent.getSentenceHearingReviewDecisionDateTime());

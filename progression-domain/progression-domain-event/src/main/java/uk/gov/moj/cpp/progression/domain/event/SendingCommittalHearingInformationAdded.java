@@ -38,4 +38,17 @@ public class SendingCommittalHearingInformationAdded {
         return sendingCommittalDate;
     }
 
+    public void setCaseProgressionId(UUID caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
+    }
+
+    public void setFromCourtCentre(String fromCourtCentre) {
+        this.fromCourtCentre = fromCourtCentre;
+    }
+
+    public void setSendingCommittalDate(LocalDate sendingCommittalDate) {
+        this.sendingCommittalDate = sendingCommittalDate;
+    }
+
+    
 }

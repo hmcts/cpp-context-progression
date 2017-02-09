@@ -42,5 +42,21 @@ public class ProbationEvent {
         public ProbationEvent build() {
             return new ProbationEvent(preSentenceReportEvent, dangerousnessAssessment);
         }
+
+        public PreSentenceReportEvent getPreSentenceReportEvent() {
+            return preSentenceReportEvent;
+        }
+
+        public void setPreSentenceReportEvent(PreSentenceReportEvent preSentenceReportEvent) {
+            this.preSentenceReportEvent = preSentenceReportEvent;
+        }
+
+        public Boolean getDangerousnessAssessment() {
+            return dangerousnessAssessment;
+        }
+        
+        
     }
+    
+    
 }

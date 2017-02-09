@@ -50,6 +50,32 @@ public class DefendantBuilder {
         return defendant;
     }
 
+    public static DefendantCommand defaultDefendantWithoutAdditionalInfo(UUID defendantId) {
+        UUID defendantProgressionId = randomUUID();
+        MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
+        medicalDocumentation.setDetails(randomString());
+
+        DefenceCommand defence = new DefenceCommand();
+        defence.setMedicalDocumentation(medicalDocumentation);
+
+        AncillaryOrdersCommand ancillaryOrders = new AncillaryOrdersCommand();
+        ancillaryOrders.setDetails(randomString());
+
+        PreSentenceReportCommand preSentenceReport = new PreSentenceReportCommand();
+        preSentenceReport.setDrugAssessment(randomBoolean());
+        preSentenceReport.setProvideGuidance(randomString());
+
+        ProbationCommand probation = new ProbationCommand();
+        probation.setDangerousnessAssessment(randomBoolean());
+        probation.setPreSentenceReport(preSentenceReport);
+
+        DefendantCommand defendant = new DefendantCommand();
+        defendant.setDefendantId(defendantId);
+        defendant.setDefendantProgressionId(defendantProgressionId);
+ 
+        return defendant;
+    }
+
     private static UUID randomUUID() {
         return UUID.randomUUID();
     }

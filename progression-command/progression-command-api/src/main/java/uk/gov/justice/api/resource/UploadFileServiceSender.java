@@ -21,18 +21,16 @@ public class UploadFileServiceSender {
     @Inject
     private Sender sender;
 
-    private static final String SINGLE_DOCUMENT_COMMAND =
-                    "progression.command.upload-case-documents";
+    private static final String SINGLE_DOCUMENT_COMMAND = "progression.command.upload-case-documents";
 
     public void doSend(final JsonObject objectToSend, final String userId, final String session,
-                    final String correlationId) {
+                       final String correlationId) {
 
-        Metadata metadataAsJsonObject = JsonObjectMetadata
-                        .metadataOf(UUID.randomUUID(), SINGLE_DOCUMENT_COMMAND).withUserId(userId)
-                        .withSessionId(session).withClientCorrelationId(correlationId).build();
+        Metadata metadataAsJsonObject = JsonObjectMetadata.metadataOf(UUID.randomUUID(), SINGLE_DOCUMENT_COMMAND).withUserId(userId)
+                .withSessionId(session).withClientCorrelationId(correlationId).build();
 
         JsonEnvelope envelope = DefaultJsonEnvelope.envelopeFrom(
-                        JsonObjectMetadata.metadataFrom(metadataAsJsonObject), objectToSend);
+                JsonObjectMetadata.metadataFrom(metadataAsJsonObject), objectToSend);
 
         uploadCaseDocumentHandler(envelope);
 

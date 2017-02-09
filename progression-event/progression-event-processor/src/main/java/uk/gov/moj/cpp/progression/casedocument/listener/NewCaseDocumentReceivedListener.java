@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.progression.casedocument.listener;
 
+import static java.lang.String.format;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +25,9 @@ import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class NewCaseDocumentReceivedListener {
 
-    private static final Logger LOG =
-                    LoggerFactory.getLogger(NewCaseDocumentReceivedListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NewCaseDocumentReceivedListener.class);
 
-    private static final String STRUCTURE_COMMAND_ADD_DOCUMENT =
-                    "structure.command.add-case-document";
+    private static final String STRUCTURE_COMMAND_ADD_DOCUMENT = "structure.command.add-case-document";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -43,44 +41,35 @@ public class NewCaseDocumentReceivedListener {
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
   
-    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT =
-                    "public.progression.case-document-added";
+    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.progression.case-document-added";
 
 
     @Handles("progression.events.new-case-document-received")
     public void processEvent(final JsonEnvelope envelope) {
 
-        try {
+        LOG.info(format(
+                        "NewCaseDocumentReceivedListener:Received Document upload request from userId= %s sessionId= %s correlationId= %s",
+                        envelope.metadata().userId().get(),
+                        envelope.metadata().sessionId().get(),
+                        envelope.metadata().clientCorrelationId().get()));
 
-            LOG.info(String.format(
-                            "Received Document upload request from userId= %s sessionId= %s correlationId= %s",
-                            envelope.metadata().userId().get(),
-                            envelope.metadata().sessionId().get(),
-                            envelope.metadata().clientCorrelationId().get()));
+        LOG.info("Sending new document received structure command" + envelope.toString());
 
-            LOG.info(envelope.toString());
+        sendStructureCommand(envelope);
 
-            sendStructureCommand(envelope);
+        LOG.info("Structure command to upload a document complete " + envelope);
 
-            LOG.info("Structure command to upload a document complete " + envelope);
-
-            sendPublicEvent(envelope);
-            
-            LOG.info("Public event raised " + envelope);
-
-        } catch (Exception e) {
-            
-            LOG.info("Command to upload a document failed ");
-
-            LOG.error(envelope.toString(), e);
-        }
+        LOG.info("Sending uploaded ");
+        sendPublicEvent(envelope);
+        
+        LOG.info("Public event raised " + envelope);
     }
 
 
     private void sendStructureCommand(final JsonEnvelope envelope) {
 
         final NewCaseDocumentReceivedEvent event = jsonObjectConverter.convert(
-                        envelope.payloadAsJsonObject(), NewCaseDocumentReceivedEvent.class);
+                envelope.payloadAsJsonObject(), NewCaseDocumentReceivedEvent.class);
 
         final AssociateNewCaseDocumentCommand associateNewCaseDocumentCommand =
                         new AssociateNewCaseDocumentCommand(event.getCppCaseId().toString(),
@@ -93,19 +82,12 @@ public class NewCaseDocumentReceivedListener {
                         .withClientCorrelationId(envelope.metadata().clientCorrelationId().get())
                         .withUserId(envelope.metadata().userId().get()).build();
 
-        sender.send(envelopeFrom(metadata,
-                        objectToJsonObjectConverter.convert(associateNewCaseDocumentCommand)));
+        sender.send(envelopeFrom(metadata, objectToJsonObjectConverter.convert(associateNewCaseDocumentCommand)));
 
     }
 
 
     private void sendPublicEvent(final JsonEnvelope envelope) {
-
-        JsonObject jsonObject = envelope.payloadAsJsonObject();
-        
-        sender.send(enveloper
-                        .withMetadataFrom(envelope, PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT)
-                        .apply(jsonObject));
-
+        sender.send(enveloper.withMetadataFrom(envelope, PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT).apply(envelope.payloadAsJsonObject()));
     }
 }

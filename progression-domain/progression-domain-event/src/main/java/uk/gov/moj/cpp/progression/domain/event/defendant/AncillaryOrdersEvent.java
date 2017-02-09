@@ -39,8 +39,7 @@ public class AncillaryOrdersEvent {
         }
 
         public AncillaryOrdersEvent build() {
-            AncillaryOrdersEvent others = new AncillaryOrdersEvent(isAncillaryOrders, details);
-            return others;
+            return new AncillaryOrdersEvent(isAncillaryOrders, details);
         }
     }
 

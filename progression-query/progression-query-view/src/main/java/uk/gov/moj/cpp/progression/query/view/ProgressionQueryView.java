@@ -128,8 +128,14 @@ public class ProgressionQueryView {
         final Optional<UUID> caseId =
                         JsonObjects.getUUID(envelope.payloadAsJsonObject(), FIELD_CASE_ID);
 
-        final List<Defendant> defendants =
-                        caseProgressionDetailService.getDefendantsByCase(caseId.get());
+        final List<Defendant> defendants;
+        try{
+            defendants = caseProgressionDetailService.getDefendantsByCase(caseId.get());
+        } catch (final NoResultException nre) {
+            logger.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+            return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE)
+                    .apply(null);
+        }
 
         final List<DefendantView> defendentView = defendants.stream()
                         .map(caseProgressionDetail -> defendantToDefendantViewConverter

@@ -31,4 +31,13 @@ public class DirectionIssued {
         return directionIssuedDate;
     }
 
+    public void setCaseProgressionId(UUID caseProgressionId) {
+        this.caseProgressionId = caseProgressionId;
+    }
+
+    public void setDirectionIssuedDate(LocalDate directionIssuedDate) {
+        this.directionIssuedDate = directionIssuedDate;
+    }
+
+    
 }

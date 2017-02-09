@@ -34,11 +34,18 @@ public class UploadCaseDocumentsFormParser {
 
         final Optional<InputPart> inputPartOptional = getFilePart(multipartFormDataInput);
 
+
         if (!inputPartOptional.isPresent()) {
             return getEmptyKeyValue();
         }
 
         final InputPart filePart = inputPartOptional.get();
+
+        return parse(filePart);
+    }
+
+    private KeyValue<Optional<String>, Optional<InputStream>> parse(InputPart filePart)
+                    throws IOException {
 
         final Optional<String> fileNameUnSplitted = Pattern.compile(";")
                         .splitAsStream(filePart.getHeaders().getFirst("Content-Disposition"))
@@ -61,8 +68,7 @@ public class UploadCaseDocumentsFormParser {
             return getEmptyKeyValue(fileName);
         }
 
-        return new KeyValue<Optional<String>, Optional<InputStream>>(Optional.of(fileName),
-                        Optional.of(inputStream));
+        return new KeyValue<>(Optional.of(fileName), Optional.of(inputStream));
 
     }
 
@@ -83,13 +89,11 @@ public class UploadCaseDocumentsFormParser {
 
     private KeyValue<Optional<String>, Optional<InputStream>> getEmptyKeyValue() {
 
-        return new KeyValue<Optional<String>, Optional<InputStream>>(Optional.empty(),
-                        Optional.empty());
+        return new KeyValue<>(Optional.empty(), Optional.empty());
     }
 
     private KeyValue<Optional<String>, Optional<InputStream>> getEmptyKeyValue(final String key) {
 
-        return new KeyValue<Optional<String>, Optional<InputStream>>(Optional.of(key),
-                        Optional.empty());
+        return new KeyValue<>(Optional.of(key), Optional.empty());
     }
 }

@@ -95,9 +95,49 @@ public class DefendantAdditionalInformationAdded {
         }
 
         public DefendantAdditionalInformationAdded build() {
-            DefendantAdditionalInformationAdded defendantEvent = new DefendantAdditionalInformationAdded(defendantProgressionId, defendantId, caseProgressionId,
+            return new DefendantAdditionalInformationAdded(defendantProgressionId, defendantId, caseProgressionId,
                     additionalInformationEvent, sentenceHearingReviewDecision, sentenceHearingReviewDecisionDateTime);
-            return defendantEvent;
         }
+
+        public AdditionalInformationEvent getAdditionalInformationEvent() {
+            return additionalInformationEvent;
+        }
+
+        public void setAdditionalInformationEvent(AdditionalInformationEvent additionalInformationEvent) {
+            this.additionalInformationEvent = additionalInformationEvent;
+        }
+
+        public UUID getDefendantProgressionId() {
+            return defendantProgressionId;
+        }
+
+        public UUID getDefendantId() {
+            return defendantId;
+        }
+
+        public UUID getCaseProgressionId() {
+            return caseProgressionId;
+        }
+
+        public Boolean getSentenceHearingReviewDecision() {
+            return sentenceHearingReviewDecision;
+        }
+
+        public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+            return sentenceHearingReviewDecisionDateTime;
+        }
+        
+        
     }
+
+    public void setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
+        this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
+    }
+
+    public void setSentenceHearingReviewDecisionDateTime(
+                    LocalDateTime sentenceHearingReviewDecisionDateTime) {
+        this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
+    }
+    
+    
 }
