@@ -32,7 +32,7 @@
         <sonar.scm.provider>git</sonar.scm.provider>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
-        <structure.version>2.0.230</structure.version>
+        <structure.version>2.0.234</structure.version>
         <access.control.version>2.0.31</access.control.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

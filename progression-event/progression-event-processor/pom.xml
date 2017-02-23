@@ -10,9 +10,9 @@
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-        <material.version>2.0.60</material.version>
-        <structure.version>2.0.230</structure.version>
-        <systemuserslibrary.version>1.0.7</systemuserslibrary.version>
+        <material.version>2.0.61</material.version>
+        <structure.version>2.0.234</structure.version>
+        <systemuserslibrary.version>1.0.11</systemuserslibrary.version>
     </properties>
 
     <dependencies>
