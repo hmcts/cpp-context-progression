@@ -3,16 +3,16 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>2.0.80</version>
+        <version>2.0.81</version>
     </parent>
     <artifactId>progression-event-processor</artifactId>
     <packaging>war</packaging>
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-        <material.version>2.0.48</material.version>
-        <structure.version>2.0.226</structure.version>
-        <systemuserslibrary.version>1.0.7</systemuserslibrary.version>
+        <material.version>2.0.61</material.version>
+        <structure.version>2.0.234</structure.version>
+        <systemuserslibrary.version>1.0.11</systemuserslibrary.version>
     </properties>
 
     <dependencies>
