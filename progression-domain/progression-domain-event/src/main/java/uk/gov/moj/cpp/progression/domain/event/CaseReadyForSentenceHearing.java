@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 /**
  * @author jchondig
@@ -17,18 +17,18 @@ public class CaseReadyForSentenceHearing {
 
     private CaseStatusEnum status;
 
-    private LocalDateTime readyForSentenceHearingDate;
+    private ZonedDateTime caseStatusUpdatedDateTime;
 
     public CaseReadyForSentenceHearing(UUID caseProgressionId, CaseStatusEnum status,
-                    LocalDateTime readyForSentenceHearingDate) {
+                                       ZonedDateTime caseStatusUpdatedDateTime) {
         super();
         this.caseProgressionId = caseProgressionId;
         this.status = status;
-        this.readyForSentenceHearingDate = readyForSentenceHearingDate;
+        this.caseStatusUpdatedDateTime = caseStatusUpdatedDateTime;
     }
 
-    public LocalDateTime getReadyForSentenceHearingDate() {
-        return readyForSentenceHearingDate;
+    public ZonedDateTime getCaseStatusUpdatedDateTime() {
+        return caseStatusUpdatedDateTime;
     }
 
     public CaseStatusEnum getStatus() {
@@ -47,8 +47,8 @@ public class CaseReadyForSentenceHearing {
         this.status = status;
     }
 
-    public void setReadyForSentenceHearingDate(LocalDateTime readyForSentenceHearingDate) {
-        this.readyForSentenceHearingDate = readyForSentenceHearingDate;
+    public void setCaseStatusUpdatedDateTime(ZonedDateTime caseStatusUpdatedDateTime) {
+        this.caseStatusUpdatedDateTime = caseStatusUpdatedDateTime;
     }
     
 }

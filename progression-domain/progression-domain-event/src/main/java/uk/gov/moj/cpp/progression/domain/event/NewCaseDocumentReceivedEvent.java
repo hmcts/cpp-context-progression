@@ -1,16 +1,14 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
+import uk.gov.justice.domain.annotation.Event;
+
 import java.io.Serializable;
 import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import uk.gov.justice.domain.annotation.Event;
 
 @Event("progression.events.new-case-document-received")
 public class NewCaseDocumentReceivedEvent implements Serializable {
 
-    private transient JsonObject payload;
+    private static final long serialVersionUID = 1L;
 
     private final UUID cppCaseId;
 
@@ -19,15 +17,13 @@ public class NewCaseDocumentReceivedEvent implements Serializable {
     private final String fileMimeType;
 
     private final String fileName;
-    
-    private static final long serialVersionUID = 1L;
 
-    public NewCaseDocumentReceivedEvent(final UUID id, final JsonObject payload) {
-        this.payload = payload;
-        this.cppCaseId = UUID.fromString(payload.getString("cppCaseId"));
-        this.fileId = payload.getString("fileId");
-        this.fileMimeType = payload.getString("fileMimeType");
-        this.fileName = payload.getString("fileName");
+
+    public NewCaseDocumentReceivedEvent(UUID cppCaseId, String fileId, String fileMimeType, String fileName) {
+        this.cppCaseId = cppCaseId;
+        this.fileId = fileId;
+        this.fileMimeType = fileMimeType;
+        this.fileName = fileName;
     }
 
     public UUID getCppCaseId() {
@@ -45,14 +41,4 @@ public class NewCaseDocumentReceivedEvent implements Serializable {
     public String getFileName() {
         return fileName;
     }
-
-    public JsonObject getPayload() {
-        return payload;
-    }
-
-    public void setPayload(JsonObject payload) {
-        this.payload = payload;
-    }
-
-
 }

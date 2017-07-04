@@ -26,7 +26,9 @@ public class CaseProgressionDetailToViewConverter {
         caseProgressionDetailVo
                         .setSentenceHearingDate(caseProgressionDetail.getSentenceHearingDate());
         caseProgressionDetailVo.setCourtCentreId(caseProgressionDetail.getCourtCentreId());
-
+        if (caseProgressionDetail.getSentenceHearingId() != null) {
+            caseProgressionDetailVo.setSentenceHearingId(caseProgressionDetail.getSentenceHearingId().toString());
+        }
         return caseProgressionDetailVo;
     }
 

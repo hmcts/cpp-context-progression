@@ -1,12 +1,5 @@
 package uk.gov.moj.cpp.progression.command.controller;
 
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -15,6 +8,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.command.controller.service.StructureReadService;
+
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_CONTROLLER)
 public class ProgressionCommandController {
@@ -31,20 +31,20 @@ public class ProgressionCommandController {
     @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) {
         String userId = envelope.metadata().userId()
-                        .orElseThrow(() -> new RuntimeException("User Id not found in metadata"));
+                .orElseThrow(() -> new RuntimeException("User Id not found in metadata"));
         List<String> defendentdIdsForCase = structureCaseService.getStructureCaseDefendantsId(
-                        envelope.payloadAsJsonObject().getString("caseId"), userId);
+                envelope.payloadAsJsonObject().getString("caseId"), userId);
         JsonArrayBuilder defendantsBuilder = Json.createArrayBuilder();
 
         defendentdIdsForCase.forEach(
-                        s -> defendantsBuilder.add(Json.createObjectBuilder().add("id", s)));
+                s -> defendantsBuilder.add(Json.createObjectBuilder().add("id", s)));
 
         final JsonObject command = JsonObjects.createObjectBuilder(envelope.payloadAsJsonObject())
-                        .add("defendants", defendantsBuilder.build()).build();
+                .add("defendants", defendantsBuilder.build()).build();
 
         JsonEnvelope modifiedJsonEnvelope = enveloper
-                        .withMetadataFrom(envelope, "progression.command.add-case-to-progression")
-                        .apply(command);
+                .withMetadataFrom(envelope, "progression.command.add-case-to-progression")
+                .apply(command);
 
         sender.send(modifiedJsonEnvelope);
     }
@@ -81,16 +81,21 @@ public class ProgressionCommandController {
 
     @Handles("progression.command.no-more-information-required")
     public void noMoreInformationRequired(final JsonEnvelope envelope) {
-		sender.send(envelope);
-	}
+        sender.send(envelope);
+    }
 
-	@Handles("progression.command.request-psr-for-defendants")
-	public void requestPSRForDefendants(final JsonEnvelope envelope) {
+    @Handles("progression.command.request-psr-for-defendants")
+    public void requestPSRForDefendants(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 
     @Handles("progression.command.upload-case-documents")
     public void uploadCaseDocuments(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
+    @Handles("progression.command.add-sentence-hearing")
+    public void addSentenceHearing(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 

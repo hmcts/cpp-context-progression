@@ -22,6 +22,8 @@ public class CaseProgressionDetailView {
 
     private String courtCentreId;
 
+    private String sentenceHearingId;
+
     public String getCourtCentreId() {
         return courtCentreId;
     }
@@ -92,5 +94,14 @@ public class CaseProgressionDetailView {
 
     public void setStatus(final String status) {
         this.status = status;
+    }
+
+
+    public String getSentenceHearingId() {
+        return sentenceHearingId;
+    }
+
+    public void setSentenceHearingId(String sentenceHearingId) {
+        this.sentenceHearingId = sentenceHearingId;
     }
 }

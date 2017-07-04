@@ -1,11 +1,19 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -23,13 +31,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
-import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.progression.persistence.repository.DefendantRepository;
-
 /**
  * Unit tests for the CaseProgressionDetailTest class.
  */
@@ -41,26 +42,19 @@ public class CaseProgressionDetailServiceTest {
     private static final UUID CASEID = UUID.randomUUID();
 
     private static final String COURT_CENTRE = "liverpool";
-
-    @Mock
-    private CaseProgressionDetail caseProgressionDetail1;
-
-    @Mock
-    private CaseProgressionDetail caseProgressionDetail2;
-
-    @Mock
-    private CaseProgressionDetail caseProgressionDetail3;
-
-    @Mock
-    private DefendantRepository defendantRepository;
-
-    @Mock
-    private CaseProgressionDetailRepository caseProgressionDetailRepository;
-
     @Spy
     private final CaseProgressionDetailToViewConverter caseProgressionDetailToVOConverter =
-                    new CaseProgressionDetailToViewConverter();
-
+            new CaseProgressionDetailToViewConverter();
+    @Mock
+    private CaseProgressionDetail caseProgressionDetail1;
+    @Mock
+    private CaseProgressionDetail caseProgressionDetail2;
+    @Mock
+    private CaseProgressionDetail caseProgressionDetail3;
+    @Mock
+    private DefendantRepository defendantRepository;
+    @Mock
+    private CaseProgressionDetailRepository caseProgressionDetailRepository;
     @InjectMocks
     private CaseProgressionDetailService caseProgressionDetailService;
 
@@ -69,7 +63,7 @@ public class CaseProgressionDetailServiceTest {
     public void getCaseProgressionDetailTestIsEmpty() {
 
         when(this.caseProgressionDetailRepository.findByCaseId(CASEID))
-                        .thenThrow(new NoResultException());
+                .thenThrow(new NoResultException());
 
         this.caseProgressionDetailService.getCaseProgressionDetail(CASEID);
     }
@@ -85,28 +79,28 @@ public class CaseProgressionDetailServiceTest {
         caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
 
         when(this.caseProgressionDetailRepository.findByCaseId(CASEID))
-                        .thenReturn(caseProgressionDetail);
+                .thenReturn(caseProgressionDetail);
 
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getCaseId()
-                        .equals(CASEID));
+                .equals(CASEID));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getId()
-                        .equals(ID));
+                .equals(ID));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
-                        .getFromCourtCentre().equals(COURT_CENTRE));
+                .getFromCourtCentre().equals(COURT_CENTRE));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
-                        .getSendingCommittalDate().equals(LocalDate.now()));
+                .getSendingCommittalDate().equals(LocalDate.now()));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getStatus()
-                        .equals(CaseStatusEnum.READY_FOR_REVIEW));
+                .equals(CaseStatusEnum.READY_FOR_REVIEW));
     }
 
     @Test
     public void shouldReturnAllCases() throws Exception {
 
         when(caseProgressionDetailRepository.findOpenStatus()).thenReturn(Arrays.asList(
-                        caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
+                caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
 
         final List<CaseProgressionDetail> cases =
-                        caseProgressionDetailService.getCases(Optional.ofNullable(null));
+                caseProgressionDetailService.getCases(Optional.ofNullable(null));
 
         verify(caseProgressionDetailRepository, times(1)).findOpenStatus();
         assertThat(cases, hasSize(3));
@@ -117,13 +111,13 @@ public class CaseProgressionDetailServiceTest {
 
         final String status = "COMPLETED,ASSIGNED_FOR_REVIEW";
         final List<CaseStatusEnum> statusList =
-                        Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
+                Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
 
         when(caseProgressionDetailRepository.findByStatus(statusList)).thenReturn(Arrays.asList(
-                        caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
+                caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
 
         final List<CaseProgressionDetail> cases =
-                        caseProgressionDetailService.getCases(Optional.ofNullable(status));
+                caseProgressionDetailService.getCases(Optional.ofNullable(status));
 
         verify(caseProgressionDetailRepository, times(1)).findByStatus(statusList);
         assertThat(cases, hasSize(3));
@@ -139,7 +133,7 @@ public class CaseProgressionDetailServiceTest {
         when(defendantRepository.findByDefendantId(defendantId)).thenReturn(value);
 
         final Optional<Defendant> defendant = caseProgressionDetailService
-                        .getDefendant(Optional.ofNullable(defendantId.toString()));
+                .getDefendant(Optional.ofNullable(defendantId.toString()));
 
         verify(defendantRepository, times(1)).findByDefendantId(defendantId);
         assertThat(defendant.get().getId(), equalTo(defendantId));
@@ -158,7 +152,7 @@ public class CaseProgressionDetailServiceTest {
 
 
         when(caseProgressionDetailRepository.findByCaseId(caseId))
-                        .thenReturn(caseProgressionDetail);
+                .thenReturn(caseProgressionDetail);
 
         final List<Defendant> defendant = caseProgressionDetailService.getDefendantsByCase(caseId);
 

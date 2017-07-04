@@ -7,10 +7,14 @@
     },
     "status": {
       "type": "string"
+    },
+    "caseStatusUpdatedDateTime": {
+      "type": "string"
     }
   },
   "required": [
     "caseProgressionId",
-    "status"
+    "status",
+    "caseStatusUpdatedDateTime"
   ]
 }

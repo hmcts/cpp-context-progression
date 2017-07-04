@@ -1,14 +1,13 @@
 package uk.gov.moj.cpp.progression.query.controller;
 
 
-
-import javax.inject.Inject;
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import javax.inject.Inject;
 
 @ServiceComponent(Component.QUERY_CONTROLLER)
 public class ProgressionQueryController {
@@ -28,6 +27,11 @@ public class ProgressionQueryController {
 
     @Handles("progression.query.defendant")
     public JsonEnvelope getDefendant(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("progression.query.defendant.document")
+    public JsonEnvelope getDefendantDocument(final JsonEnvelope query) {
         return requester.request(query);
     }
 

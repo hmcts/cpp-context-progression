@@ -18,8 +18,8 @@ public class MedicalDocumentationEvent {
     }
 
     public static final class MedicalDocumentationBuilder {
-        private String details;
-        private Boolean isMedicalDocumentation;
+        private transient String details;
+        private transient Boolean isMedicalDocumentation;
 
         private MedicalDocumentationBuilder() {
         }

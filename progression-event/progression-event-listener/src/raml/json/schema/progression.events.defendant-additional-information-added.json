@@ -35,12 +35,12 @@
                 "drugAssessment": {
                   "type": "boolean"
                 }
-              },
+              }
             },
             "dangerousnessAssessment": {
               "type": "boolean"
             }
-          },
+          }
         },
         "defence": {
           "type": "object",
@@ -54,7 +54,7 @@
                 "details": {
                   "type": "string"
                 }
-              },
+              }
             },
             "medicalDocumentation": {
               "type": "object",
@@ -65,12 +65,12 @@
                 "details": {
                   "type": "string"
                 }
-              },
+              }
             },
             "otherDetails": {
               "type": "string"
             }
-          },
+          }
         },
         "prosecution": {
           "type": "object",
@@ -84,14 +84,14 @@
                 "details": {
                   "type": "string"
                 }
-              },
+              }
             },
             "otherDetails": {
               "type": "string"
             }
-          },
+          }
         }
-      },
+      }
     }
   },
   "required": [

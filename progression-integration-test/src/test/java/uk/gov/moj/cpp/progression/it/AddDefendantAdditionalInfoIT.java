@@ -1,246 +1,215 @@
 package uk.gov.moj.cpp.progression.it;
 
-import static com.jayway.restassured.RestAssured.given;
+import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.jayway.restassured.response.Response;
+import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
+import javax.json.JsonObject;
 
-public class AddDefendantAdditionalInfoIT extends AbstractIT {
+import com.jayway.restassured.response.Response;
+import org.junit.Before;
+import org.junit.Test;
+
+public class AddDefendantAdditionalInfoIT {
 
     private String caseId;
     private String caseProgressionId;
-    private String defendantId;
-    private String defendant2Id;
-    
+    private String firstDefendantId;
+    private String secondDefendantId;
+
     @Before
-    public void createMockEndpoints() throws IOException {
+    public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        defendant2Id =  UUID.randomUUID().toString();
-        StubUtil.resetStubs();
-        StubUtil.setupStructureCaseStub(caseId, defendantId,defendant2Id, caseProgressionId);
-        StubUtil.setupUsersGroupQueryStub();
-
+        firstDefendantId = UUID.randomUUID().toString();
+        secondDefendantId = UUID.randomUUID().toString();
+        createMockEndpoints(caseId, firstDefendantId, secondDefendantId, caseProgressionId);
     }
 
     @Test
     public void shouldAddAdditionalInfoForDefendant() throws Exception {
+        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        assertThatRequestIsAccepted(writeResponse);
 
-        Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
-                        "application/vnd.progression.command.add-case-to-crown-court+json",
-                        StubUtil.getJsonBodyStr("progression.command.add-case-to-crown-court.json",
-                                        caseId, defendantId, defendant2Id, caseProgressionId));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        Response queryResponse = getCaseProgressionDetail(
-                        getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
+        final String queryResponse =
+                pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
                         "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
 
-        JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-
-        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
-                        equalTo(Boolean.FALSE));
-
-        writeResponse = postCommand(
-                        getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
-                        "application/vnd.progression.command.add-defendant-additional-information+json",
-                        StubUtil.getJsonBodyStr(
-                                        "progression.command.add-defendant-additional-information.json",
-                                        caseId, defendantId, defendant2Id, caseProgressionId));
-
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-
-        waitForResponse(5);
-        
-        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-
-
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-        assertThat(defendantsJsonObject.getString("status"),
-        equalTo("INCOMPLETE"));
-
-        queryResponse = getCaseProgressionDetail(
-                        getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
-                        "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-
-        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
-                        equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getBoolean("psrIsRequested"),equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getString("provideGuidance"),equalTo("guidance"));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getBoolean("drugAssessment"),equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getBoolean("dangerousnessAssessment"),equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("statementOfMeans").getBoolean("isStatementOfMeans"),equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("statementOfMeans").getString("details"),equalTo("meansDetails"));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("medicalDocumentation").getBoolean("isMedicalDocumentation"),equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getJsonObject("medicalDocumentation").getString("details"),equalTo("medicalDetails"));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("defence").getString("otherDetails"),equalTo("otherDetails"));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("prosecution").getJsonObject("ancillaryOrders").getBoolean("isAncillaryOrders"),equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("prosecution").getJsonObject("ancillaryOrders").getString("details"),equalTo("ancillaryOrdersDetails"));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("prosecution").getString("otherDetails"),equalTo("otherDetails"));
-        
-        
-        writeResponse = postCommand(
-                getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
-                "application/vnd.progression.command.add-defendant-additional-information+json",
-                StubUtil.getJsonBodyStr(
-                                "progression.command.add-defendant-additional-information.json",
-                                caseId, defendantId, defendant2Id, caseProgressionId));
-
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-
-        waitForResponse(5);
-
-        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-        
-        
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-        assertThat(defendantsJsonObject.getString("status"),
-        equalTo("PENDING_FOR_SENTENCING_HEARING"));
-        
-    }
-
-
-    @Test
-    public void shouldSetNoMoreInformationRequired() throws Exception {
-
-        Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
-                "application/vnd.progression.command.add-case-to-crown-court+json",
-                StubUtil.getJsonBodyStr("progression.command.add-case-to-crown-court.json",
-                        caseId, defendantId, defendant2Id, caseProgressionId));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        Response queryResponse = getCaseProgressionDetail(
-                getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
-                "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-
-        JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        JsonObject defendantsJsonObject = getJsonObject(queryResponse);
 
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                 equalTo(Boolean.FALSE));
 
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        writeResponse = postCommand(
-                getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
-                "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(
-                        "progression.command.no-more-information-required.json",
-                        caseId, defendantId, defendant2Id, caseProgressionId));
+        writeResponse = postAddDefendantAdditionalInfoCommand(firstDefendantId);
+        assertThatRequestIsAccepted(writeResponse);
 
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        
-
-        waitForResponse(5);
-        
-        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
+        final String queryDefendantsResponse = pollForResponse(join("", "/cases/", caseId),
                 "application/vnd.progression.query.caseprogressiondetail+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
 
 
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-        assertThat(defendantsJsonObject.getString("status"),
-        equalTo("INCOMPLETE"));
+        defendantsJsonObject = getJsonObject(queryDefendantsResponse);
+        assertThat(defendantsJsonObject.getString("status"), equalTo("INCOMPLETE"));
 
-        queryResponse = getCaseProgressionDetail(
-                getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
-                "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
 
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        final String queryProgressionDefendantsResponse =
+                pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
+                        "application/vnd.progression.query.defendant+json");
+
+        defendantsJsonObject = getJsonObject(queryProgressionDefendantsResponse);
+
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
-                        equalTo(Boolean.TRUE));
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getBoolean("noMoreInformationRequired"),
                 equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("probation").getJsonObject("preSentenceReport")
+                .getBoolean("psrIsRequested"), equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("probation").getJsonObject("preSentenceReport")
+                .getString("provideGuidance"), equalTo("guidance"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("probation").getJsonObject("preSentenceReport")
+                .getBoolean("drugAssessment"), equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                        .getJsonObject("probation").getBoolean("dangerousnessAssessment"),
+                equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("defence").getJsonObject("statementOfMeans")
+                .getBoolean("isStatementOfMeans"), equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("defence").getJsonObject("statementOfMeans")
+                .getString("details"), equalTo("meansDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("defence").getJsonObject("medicalDocumentation")
+                .getBoolean("isMedicalDocumentation"), equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("defence").getJsonObject("medicalDocumentation")
+                .getString("details"), equalTo("medicalDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                        .getJsonObject("defence").getString("otherDetails"),
+                equalTo("otherDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("prosecution").getJsonObject("ancillaryOrders")
+                .getBoolean("isAncillaryOrders"), equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("prosecution").getJsonObject("ancillaryOrders")
+                .getString("details"), equalTo("ancillaryOrdersDetails"));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                        .getJsonObject("prosecution").getString("otherDetails"),
+                equalTo("otherDetails"));
 
-        LocalDateTime reviewDecisionDateTime = LocalDateTime.parse(defendantsJsonObject.getString("sentenceHearingReviewDecisionDateTime"));
+        writeResponse = postAddDefendantAdditionalInfoCommand(secondDefendantId);
+        assertThatRequestIsAccepted(writeResponse);
+
+        final String queryProgressionSentenceResponse = pollForResponse(join("", "/cases/", caseId),
+                "application/vnd.progression.query.caseprogressiondetail+json");
+
+        defendantsJsonObject = getJsonObject(queryProgressionSentenceResponse);
+        assertThat(defendantsJsonObject.getString("status"),
+                equalTo("PENDING_FOR_SENTENCING_HEARING"));
+    }
+
+    @Test
+    public void shouldNotAddAdditionalInfoForDefendant_CapabilityDisabled() throws Exception {
+        givenAddDefendantAdditionalInformationCapabiltyDisabled();
+        final Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        final Response writeAdditionalInfoResponse = postAddDefendantAdditionalInfoCommand(firstDefendantId);
+        assertThatResponseIndicatesFeatureDisabled(writeAdditionalInfoResponse);
+    }
+
+    @Test
+    public void shouldSetNoMoreInformationRequired() throws Exception {
+        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        assertThatRequestIsAccepted(writeResponse);
+
+        final String response =
+                pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
+                        "application/vnd.progression.query.defendant+json");
+
+        JsonObject defendantsJsonObject = getJsonObject(response);
+
+        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
+                equalTo(Boolean.FALSE));
+
+        writeResponse = postNoMoreInformationRequiredCommand(firstDefendantId);
+        assertThatRequestIsAccepted(writeResponse);
+
+        final String queryResponse = pollForResponse(join("", "/cases/", caseId),
+                "application/vnd.progression.query.caseprogressiondetail+json");
+
+        defendantsJsonObject = getJsonObject(queryResponse);
+        assertThat(defendantsJsonObject.getString("status"), equalTo("INCOMPLETE"));
+
+        final String queryDefendantResponse =
+                pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
+                        "application/vnd.progression.query.defendant+json");
+
+
+        defendantsJsonObject = getJsonObject(queryDefendantResponse);
+        assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
+                equalTo(Boolean.TRUE));
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getBoolean("noMoreInformationRequired"), equalTo(Boolean.TRUE));
+
+        LocalDateTime reviewDecisionDateTime = LocalDateTime.parse(
+                defendantsJsonObject.getString("sentenceHearingReviewDecisionDateTime"));
         assertThat(reviewDecisionDateTime, is(notNullValue()));
 
-        writeResponse = postCommand(
-                getCommandUri("/cases/" + caseId + "/defendants/" + defendant2Id),
-                "application/vnd.progression.command.no-more-information-required+json",StubUtil.getJsonBodyStr(
-                        "progression.command.no-more-information-required.json",
-                        caseId, defendantId, defendant2Id, caseProgressionId));
+        writeResponse = postNoMoreInformationRequiredCommand(secondDefendantId);
+        assertThatRequestIsAccepted(writeResponse);
 
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        
-
-        waitForResponse(5);
-        
-        queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
+        final String querySentenceResponse = pollForResponse(join("", "/cases/", caseId),
                 "application/vnd.progression.query.caseprogressiondetail+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
 
-
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
+        defendantsJsonObject = getJsonObject(querySentenceResponse);
         assertThat(defendantsJsonObject.getString("status"),
-        equalTo("READY_FOR_SENTENCING_HEARING"));
-
+                equalTo("READY_FOR_SENTENCING_HEARING"));
     }
 
-
-
-
-    private String getQueryUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-query") + path;
+    @Test
+    public void shouldNotSetNoMoreInformationRequired_CapabilityDisabled() throws Exception {
+        givenNoMoreInformationRequiredCapabiltyDisabled();
+        addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        final Response writeAdditionalInfoResponse = postNoMoreInformationRequiredCommand(firstDefendantId);
+        assertThatResponseIndicatesFeatureDisabled(writeAdditionalInfoResponse);
     }
 
-    private String getCommandUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-command") + path;
+    private Response postNoMoreInformationRequiredCommand(String defendantId) throws IOException {
+        return postCommand(getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
+                "application/vnd.progression.command.no-more-information-required+json",
+                getJsonBody("progression.command.no-more-information-required.json"));
     }
 
-    private Response postCommand(final String uri, final String mediaType,
-                    final String jsonStringBody) throws IOException {
-        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
-                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().post(uri).then()
-                        .extract().response();
+    private Response postAddDefendantAdditionalInfoCommand(String defendantId) throws IOException {
+        return postCommand(getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
+                "application/vnd.progression.command.add-defendant-additional-information+json",
+                getJsonBody("progression.command.add-defendant-additional-information.json"));
     }
 
-    private Response getCaseProgressionDetail(final String uri, final String mediaType)
-                    throws IOException {
-        return given().spec(reqSpec).and().accept(mediaType)
-                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().get(uri).then()
-                        .extract().response();
+    private String getJsonBody(String path) {
+        return StubUtil.getJsonBodyStr(path, caseId, firstDefendantId, secondDefendantId, caseProgressionId);
     }
 
+    private void givenAddDefendantAdditionalInformationCapabiltyDisabled() {
+        stubSetStatusForCapability("progression.command.add-defendant-additional-information", false);
+    }
 
-
-    public static JsonObject getJsonObject(final String jsonAsString) {
-        JsonObject payload;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
-            payload = jsonReader.readObject();
-        }
-        return payload;
+    private void givenNoMoreInformationRequiredCapabiltyDisabled() {
+        stubSetStatusForCapability("progression.command.no-more-information-required", false);
     }
 }

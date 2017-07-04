@@ -1,19 +1,16 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
-
-import javax.json.JsonObject;
-import java.util.UUID;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)

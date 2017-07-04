@@ -1,124 +1,110 @@
 package uk.gov.moj.cpp.progression.it;
 
-import static com.jayway.restassured.RestAssured.given;
+import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.UUID;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.jayway.restassured.response.Response;
+import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgression;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseAddedToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesSuccess;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
+import java.io.IOException;
+import java.util.UUID;
 
+import javax.json.JsonObject;
 
-public class RequestDefendantsPSRStatusIT extends AbstractIT {
+import com.jayway.restassured.response.Response;
+import org.junit.Before;
+import org.junit.Test;
+
+public class RequestDefendantsPSRStatusIT {
 
     private String caseId;
     private String caseProgressionId;
-    private String defendantId;
-    private String defendant2Id;
-    
+    private String firstDefendantId;
+    private String secondDefendantId;
+
     @Before
-    public void createMockEndpoints() throws IOException {
+    public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        defendant2Id =  UUID.randomUUID().toString();
-        StubUtil.resetStubs();
-        StubUtil.setupStructureCaseStub(caseId, defendantId,defendant2Id, caseProgressionId);
-        StubUtil.setupUsersGroupQueryStub();
-
+        firstDefendantId = UUID.randomUUID().toString();
+        secondDefendantId = UUID.randomUUID().toString();
+        createMockEndpoints(caseId, firstDefendantId, secondDefendantId, caseProgressionId);
     }
 
     @Test
     public void shouldRequestPSRForDefendant() throws Exception {
+        givenCaseAddedToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
 
-        Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
-                        "application/vnd.progression.command.add-case-to-crown-court+json",
-                        StubUtil.getJsonBodyStr("progression.command.add-case-to-crown-court.json",
-                                        caseId, defendantId, defendant2Id, caseProgressionId));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        Response queryResponse = getCaseProgressionDetail(
-                        getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
-                        "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-
-        JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-
-        writeResponse = postCommand(
-                        getCommandUri("/cases/" + caseId + "/defendants/requestpsr" ),
-                        "application/vnd.progression.command.request-psr-for-defendants+json",
-                        StubUtil.getJsonBodyStr(
-                                        "progression.command.request-psr-for-defendants.json",
-                                        caseId, defendantId, defendant2Id, caseProgressionId));
-
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-
-        waitForResponse(5);
-        
-       
-        queryResponse = getCaseProgressionDetail(
-                        getQueryUri("/cases/" + caseId + "/defendants/" + defendantId),
-                        "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
-
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-        
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getBoolean("psrIsRequested"),equalTo(Boolean.FALSE));
-
-        queryResponse = getCaseProgressionDetail(
-                getQueryUri("/cases/" + caseId + "/defendants/" + defendant2Id),
+        pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
                 "application/vnd.progression.query.defendant+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+
+        Response writeResponse = postCommand(getCommandUri("/cases/" + caseId + "/defendants/requestpsr"),
+                "application/vnd.progression.command.request-psr-for-defendants+json",
+                StubUtil.getJsonBodyStr(
+                        "progression.command.request-psr-for-defendants.json",
+                        caseId, firstDefendantId, secondDefendantId, caseProgressionId));
+
+        assertThatRequestIsAccepted(writeResponse);
+
+        final String defendantsResponse =
+                pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
+                        "application/vnd.progression.query.defendant+json");
+
+        JsonObject defendantsJsonObject = getJsonObject(defendantsResponse);
+
+        assertThatPSRNotRequestedForDefendant(defendantsJsonObject);
+
+        Response queryResponse = getCaseProgression(
+                getQueryUri("/cases/" + caseId + "/defendants/" + secondDefendantId),
+                "application/vnd.progression.query.defendant+json");
+        assertThatResponseIndicatesSuccess(queryResponse);
 
         defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-        
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation").getJsonObject("probation").getJsonObject("preSentenceReport").getBoolean("psrIsRequested"),equalTo(Boolean.TRUE));
-        
+
+        assertThatPSRRequestedForDefendant(defendantsJsonObject);
     }
 
+    @Test
+    public void shouldBeUnableToRequestPSRForDefendant_CapabilityDisabled() throws Exception {
+        givenRequestPSRForDefendantCapabilityDisabled();
+        givenCaseAddedToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
 
-    private String getQueryUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-query") + path;
+        Response writeResponse = postCommand(getCommandUri("/cases/" + caseId + "/defendants/requestpsr"),
+                "application/vnd.progression.command.request-psr-for-defendants+json",
+                StubUtil.getJsonBodyStr(
+                        "progression.command.request-psr-for-defendants.json",
+                        caseId, firstDefendantId, secondDefendantId, caseProgressionId));
+
+        assertThatResponseIndicatesFeatureDisabled(writeResponse);
     }
 
-    private String getCommandUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-command") + path;
+    private void givenRequestPSRForDefendantCapabilityDisabled() {
+        stubSetStatusForCapability("progression.command.request-psr-for-defendants", false);
     }
 
-    private Response postCommand(final String uri, final String mediaType,
-                    final String jsonStringBody) throws IOException {
-        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
-                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().post(uri).then()
-                        .extract().response();
+    private void assertThatPSRRequestedForDefendant(JsonObject defendantsJsonObject) {
+        assertThatPSRRequestedIs(Boolean.TRUE, defendantsJsonObject);
     }
 
-    private Response getCaseProgressionDetail(final String uri, final String mediaType)
-                    throws IOException {
-        return given().spec(reqSpec).and().accept(mediaType)
-                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().get(uri).then()
-                        .extract().response();
+    private void assertThatPSRNotRequestedForDefendant(JsonObject defendantsJsonObject) {
+        assertThatPSRRequestedIs(Boolean.FALSE, defendantsJsonObject);
     }
 
-
-
-    public static JsonObject getJsonObject(final String jsonAsString) {
-        JsonObject payload;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
-            payload = jsonReader.readObject();
-        }
-        return payload;
+    private void assertThatPSRRequestedIs(Boolean isRequested, JsonObject defendantsJsonObject) {
+        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
+                .getJsonObject("probation").getJsonObject("preSentenceReport")
+                .getBoolean("psrIsRequested"), equalTo(isRequested));
     }
 }

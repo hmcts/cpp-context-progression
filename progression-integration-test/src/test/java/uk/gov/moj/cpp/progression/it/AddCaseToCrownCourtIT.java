@@ -1,106 +1,58 @@
 package uk.gov.moj.cpp.progression.it;
 
-import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.time.LocalDate;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpStatus;
+import javax.json.JsonObject;
+
+import com.jayway.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
-
-import uk.gov.moj.cpp.progression.helper.StubUtil;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-public class AddCaseToCrownCourtIT extends AbstractIT {
+public class AddCaseToCrownCourtIT {
 
     private String caseId;
     private String caseProgressionId;
 
     @Before
-    public void createMockEndpoints() throws IOException {
+    public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        StubUtil.resetStubs();
-        StubUtil.setupStructureCaseStub(caseId, UUID.randomUUID().toString(),
-                        UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        StubUtil.setupUsersGroupQueryStub();
         caseProgressionId = UUID.randomUUID().toString();
-
+        createMockEndpoints(caseId);
     }
-
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
+        // given
+        addCaseToCrownCourt(caseId, caseProgressionId);
 
-        final Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
-                        "application/vnd.progression.command.add-case-to-crown-court+json",
-                        getJsonBodyStr("progression.command.add-case-to-crown-court.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        final Response queryResponse = getCaseProgressionDetail(getQueryUri("/cases/" + caseId),
-                        "application/vnd.progression.query.caseprogressiondetail+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(HttpStatus.SC_OK));
+        // when
+        final String response = getCaseProgressionFor(caseId);
 
-
-        JsonObject defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-
-        // defendantProgressionId = defendantsJsonObject.getString("defendantProgressionId");
-        assertThat(defendantsJsonObject.getString("courtCentreId"),
-                equalTo("courtCentreId"));
-
+        // then
+        final JsonObject defendantsJsonObject = getJsonObject(response);
+        assertThat(defendantsJsonObject.getString("courtCentreId"), equalTo("courtCentreId"));
     }
 
-    public static JsonObject getJsonObject(final String jsonAsString) {
-        JsonObject payload;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
-            payload = jsonReader.readObject();
-        }
-        return payload;
+    @Test
+    public void shouldNotAddCaseToCrownCourt_CapabilityDisabled() throws Exception {
+        givenAddCaseToCrownCourtFeatureDisabled();
+
+        final Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId);
+
+        assertThatResponseIndicatesFeatureDisabled(writeResponse);
     }
 
-
-
-  
-
-    private String getQueryUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-query") + path;
-    }
-
-    private String getCommandUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-command") + path;
-    }
-
-    private Response postCommand(final String uri, final String mediaType,
-                    final String jsonStringBody) throws IOException {
-        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
-                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().post(uri).then()
-                        .extract().response();
-    }
-
-    private Response getCaseProgressionDetail(final String uri, final String mediaType)
-                    throws IOException {
-        return given().spec(reqSpec).and().accept(mediaType)
-                        .header("CJSCPPUID", UUID.randomUUID().toString()).when().get(uri).then()
-                        .extract().response();
-    }
-
-    private String getJsonBodyStr(final String fileName) throws IOException {
-        return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
-                        .replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
-                        .replace("DEF_ID_1", UUID.randomUUID().toString())
-                        .replace("DEF_ID_2", UUID.randomUUID().toString())
-                        .replace("TODAY", LocalDate.now().toString());
+    private void givenAddCaseToCrownCourtFeatureDisabled() {
+        stubSetStatusForCapability("progression.command.add-case-to-crown-court", false);
     }
 }

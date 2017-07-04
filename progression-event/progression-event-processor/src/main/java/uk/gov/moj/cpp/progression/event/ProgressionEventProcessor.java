@@ -17,6 +17,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 public class ProgressionEventProcessor {
 
     private static final String PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_DATE_ADDED = "public.progression.events.sentence-hearing-date-added";
+    private static final String PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_DATE_UPDATED = "public.progression.events.sentence-hearing-date-updated";
+    private static final String PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_ADDED = "public.progression.events.sentence-hearing-added";
 
     @Inject
     private Enveloper enveloper;
@@ -25,11 +27,24 @@ public class ProgressionEventProcessor {
     private Sender sender;
 
     @Handles("progression.events.sentence-hearing-date-added")
-    public void publishCaseStartedPublicEvent(final JsonEnvelope event) {
+    public void publishSentenceHearingAddedPublicEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString("caseId");
         final JsonObject payload = Json.createObjectBuilder().add("caseId", caseId).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_DATE_ADDED).apply(payload));
     }
 
+    @Handles("progression.events.sentence-hearing-date-updated")
+    public void publishSentenceHearingUpdatedPublicEvent(final JsonEnvelope event) {
+        final String caseId = event.payloadAsJsonObject().getString("caseId");
+        final JsonObject payload = Json.createObjectBuilder().add("caseId", caseId).build();
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_DATE_UPDATED).apply(payload));
+    }
+
+    @Handles("progression.events.sentence-hearing-added")
+    public void publishSentenceHearingIdAddedPublicEvent(final JsonEnvelope event) {
+        final String caseId = event.payloadAsJsonObject().getString("caseId");
+        final JsonObject payload = Json.createObjectBuilder().add("caseId", caseId).build();
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_ADDED).apply(payload));
+    }
 
 }

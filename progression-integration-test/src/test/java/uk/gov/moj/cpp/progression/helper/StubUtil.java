@@ -18,6 +18,8 @@ import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
  */
 public class StubUtil {
 
+    protected static final String DEFAULT_JSON_CONTENT_TYPE = "application/json";
+
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final int HTTP_STATUS_OK = 200;
 

@@ -78,4 +78,10 @@ public class ProgressionCommandApiTest {
         progressionCommandApi.requestPSRForDefendants(command);
         verify(sender, times(1)).send(command);
     }
+
+	@Test
+	public void shouldAddSentenceHearing() throws Exception {
+		progressionCommandApi.addSentenceHearing(command);
+		verify(sender, times(1)).send(command);
+	}
 }

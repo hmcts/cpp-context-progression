@@ -117,4 +117,17 @@ public class ProgressionCommandcontrollerTest {
     	progressionCommandcontroller.requestPSRForDefendants(command);
 		verify(sender, times(1)).send(command);
 	}
+	
+	@Test
+    public void shouldUploadCaseDocuments() throws Exception {
+        progressionCommandcontroller.uploadCaseDocuments(command);
+        verify(sender, times(1)).send(command);
+    }
+
+	@Test
+	public void shouldAddSentenceHearing() throws Exception {
+		progressionCommandcontroller.addSentenceHearing(command);
+		verify(sender, times(1)).send(command);
+	}
 }
+

@@ -24,8 +24,6 @@ public class AddDefendantAdditionalInformationCommandHandlerTest
     @Mock
     private DefendantCommand defendant;
 
-    @Mock
-    private ProgressionEventFactory factory;
 
     @Mock
     private DefendantAdditionalInformationAdded defendantEvent;
@@ -33,7 +31,6 @@ public class AddDefendantAdditionalInformationCommandHandlerTest
     @Test
     public void shouldAddDefendant() throws EventStreamException {
         when(converter.convert(jsonObject, DefendantCommand.class)).thenReturn(defendant);
-        when(factory.addDefendantEvent(defendant)).thenReturn(defendantEvent);
         when(caseProgressionAggregate.addAdditionalInformationForDefendant(defendant))
                         .thenReturn(events);
 

@@ -11,5 +11,6 @@
   	<module>progression-domain-event</module>
   	<module>progression-domain-command</module>
   	<module>progression-domain-common</module>
+      <module>progression-domain-aggregate</module>
   </modules>
 </project>

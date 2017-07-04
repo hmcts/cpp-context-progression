@@ -58,4 +58,9 @@ public class ProgressionCommandApi {
     public void requestPSRForDefendants(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+
+    @Handles("progression.command.add-sentence-hearing")
+    public void addSentenceHearing(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 }

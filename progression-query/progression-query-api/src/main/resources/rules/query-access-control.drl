@@ -44,6 +44,15 @@ rule "Query - Access control for  progression.query.defendants"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.defendant.document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.defendant.document");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.crown-court.magistrate-courts"
   when
     $outcome: Outcome();

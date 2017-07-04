@@ -1,9 +1,14 @@
 package uk.gov.justice.api.resource;
 
 import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.status;
+import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +22,15 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
 
+import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
+import uk.gov.justice.services.core.accesscontrol.AccessControlService;
+import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.audit.AuditService;
 import uk.gov.justice.services.file.api.sender.FileData;
 import uk.gov.justice.services.file.api.sender.FileSender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @Adapter(Component.COMMAND_API)
 public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocumentsResource {
@@ -37,6 +47,16 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
     @Inject
     private FileSender fileSender;
 
+    @Inject
+    private AuditService auditService;
+
+    @Inject
+    private AccessControlService accessControlService;
+
+    @Inject
+    private AccessControlFailureMessageGenerator accessControlFailureMessageGenerator;
+
+
     @Override
     public Response uploadCaseDocument(final MultipartFormDataInput multipartFormDataInput,
                     final String userId, final String session, final String correlationId,
@@ -45,6 +65,30 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
         LOG.info(String.format(
                         "Received Document upload request from userId= %s sessionId= %s correlationId= %s caseId= %s",
                         userId, session, correlationId, caseId));
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataOf(randomUUID(), "progression.command.upload-case-documents")
+                        .withUserId(userId)
+                        .build(),
+                createObjectBuilder()
+                        .add("caseId", caseId)
+                        .build());
+
+        auditService.audit(envelope);
+
+        final Optional<AccessControlViolation> violation = accessControlService.checkAccessControl(envelope);
+
+        if (violation.isPresent()) {
+            final String errorMessage = accessControlFailureMessageGenerator.errorMessageFrom(
+                    envelope,
+                    violation.get());
+
+            final JsonObject responseErrorMsg = createObjectBuilder()
+                    .add("error", errorMessage)
+                    .build();
+
+            return status(FORBIDDEN).entity(responseErrorMsg.toString()).build();
+        }
 
         try{
 

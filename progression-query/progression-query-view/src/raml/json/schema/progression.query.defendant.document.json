@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "fileId": {
+      "type": "string"
+    },
+    "fileName": {
+      "type": "string"
+    },
+    "lastModified": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "fileId",
+    "fileName",
+    "lastModified"
+  ]
+}

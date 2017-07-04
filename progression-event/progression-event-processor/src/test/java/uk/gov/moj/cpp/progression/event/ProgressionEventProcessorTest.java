@@ -43,13 +43,13 @@ public class ProgressionEventProcessorTest {
     private ProgressionEventProcessor progressionEventProcessor;
 
     @Test
-    public void publishCaseStartedPublicEvent() {
+    public void publishSentenceHearingAddedPublicEvent() {
         // given
         final JsonEnvelope event = EnvelopeFactory.createEnvelope("progression.events.sentence-hearing-date-added", createObjectBuilder().add("caseId", CASE_ID).build());
 
 
         // when
-        progressionEventProcessor.publishCaseStartedPublicEvent(event);
+        progressionEventProcessor.publishSentenceHearingAddedPublicEvent(event);
 
         // then
         final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
@@ -62,5 +62,44 @@ public class ProgressionEventProcessorTest {
                 )));
     }
 
+    @Test
+    public void publishSentenceHearingDateUpdatedPublicEvent() {
+        // given
+        final JsonEnvelope event = EnvelopeFactory.createEnvelope("progression.events.sentence-hearing-date-updated", createObjectBuilder().add("caseId", CASE_ID).build());
+
+
+        // when
+        progressionEventProcessor.publishSentenceHearingUpdatedPublicEvent(event);
+
+        // then
+        final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName("public.progression.events.sentence-hearing-date-updated"),
+                payloadIsJson(
+                        withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID))
+                )));
+    }
+
+    @Test
+    public void publishSentenceHearingUpdatedPublicEvent() {
+        // given
+        final JsonEnvelope event = EnvelopeFactory.createEnvelope("progression.events.sentence-hearing-added", createObjectBuilder().add("caseId", CASE_ID).build());
+
+
+        // when
+        progressionEventProcessor.publishSentenceHearingIdAddedPublicEvent(event);
+
+        // then
+        final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName("public.progression.events.sentence-hearing-added"),
+                payloadIsJson(
+                        withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID))
+                )));
+    }
 
 }

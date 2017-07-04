@@ -2,9 +2,6 @@ package uk.gov.moj.cpp.progression.event.listener;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -13,7 +10,10 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 /**
  * @author hshaik

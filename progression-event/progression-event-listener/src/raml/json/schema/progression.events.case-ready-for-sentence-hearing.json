@@ -8,13 +8,13 @@
     "status": {
       "type": "string"
     },
-    "readyForSentenceHearingDate": {
+    "caseStatusUpdatedDateTime": {
       "type": "string"
     }
   },
   "required": [
     "caseProgressionId",
     "status",
-    "readyForSentenceHearingDate"
+    "caseStatusUpdatedDateTime"
   ]
 }

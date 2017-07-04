@@ -25,9 +25,9 @@ public class AdditionalInformationEvent {
     }
 
     public static final class AdditionalInformationEventBuilder {
-        private ProbationEvent probationEvent;
-        private DefenceEvent defenceEvent;
-        private ProsecutionEvent prosecutionEvent;
+        private transient ProbationEvent probationEvent;
+        private transient DefenceEvent defenceEvent;
+        private transient ProsecutionEvent prosecutionEvent;
 
         private AdditionalInformationEventBuilder() {
         }

@@ -15,6 +15,7 @@ import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 public class CaseProgressionDetailToViewConverterTest {
     private static final UUID ID = UUID.randomUUID();
     private static final UUID CASEID = UUID.randomUUID();
+    private static final UUID SENTENCE_HEARING_ID = UUID.randomUUID();
     private static final String COURT_CENTRE = "liverpool";
 
     @Test
@@ -31,6 +32,7 @@ public class CaseProgressionDetailToViewConverterTest {
         caseProgressionDetail.setSentenceHearingDate(now);
         caseProgressionDetail.setStatus(CaseStatusEnum.READY_FOR_REVIEW);
         caseProgressionDetail.setDirectionIssuedOn(now);
+        caseProgressionDetail.setSentenceHearingId(SENTENCE_HEARING_ID);
 
         CaseProgressionDetailView caseProgressionDetailVO =
                         caseProgressionDetailToVOConverter.convert(caseProgressionDetail);
@@ -42,6 +44,7 @@ public class CaseProgressionDetailToViewConverterTest {
         assertTrue(caseProgressionDetailVO.getDirectionIssuedOn().equals(now));
         assertTrue(caseProgressionDetailVO.getStatus()
                         .equals(CaseStatusEnum.READY_FOR_REVIEW.toString()));
+        assertTrue(caseProgressionDetailVO.getSentenceHearingId().equals(SENTENCE_HEARING_ID.toString()));
 
         caseProgressionDetail.setSendingCommittalDate(now);
         caseProgressionDetailVO = caseProgressionDetailToVOConverter.convert(caseProgressionDetail);

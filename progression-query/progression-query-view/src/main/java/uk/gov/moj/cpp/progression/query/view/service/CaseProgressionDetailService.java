@@ -1,5 +1,13 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.DefendantDocument;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantDocumentRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,24 +17,19 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.progression.persistence.repository.DefendantRepository;
-
 public class CaseProgressionDetailService {
 
     @Inject
+    DefendantDocumentRepository defendantDocumentRepository;
+    @Inject
     private CaseProgressionDetailRepository caseProgressionDetailRepo;
-
     @Inject
     private DefendantRepository defendantRepository;
 
     @Transactional
     public CaseProgressionDetail getCaseProgressionDetail(final UUID caseId) {
         final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findByCaseId(caseId);
+                caseProgressionDetailRepo.findByCaseId(caseId);
         return caseProgressionDetail;
     }
 
@@ -39,7 +42,7 @@ public class CaseProgressionDetailService {
         if (status.isPresent()) {
 
             caseProgressionDetails =
-                            caseProgressionDetailRepo.findByStatus(getCaseStatusList(status.get()));
+                    caseProgressionDetailRepo.findByStatus(getCaseStatusList(status.get()));
         } else {
             caseProgressionDetails = caseProgressionDetailRepo.findOpenStatus();
 
@@ -62,15 +65,21 @@ public class CaseProgressionDetailService {
         return Optional.empty();
 
 
+    }
 
+    public Optional<DefendantDocument> getDefendantDocument(final Optional<String> caseId, final Optional<String> defendantId) {
+        if (caseId.isPresent() && defendantId.isPresent()) {
+            return Optional.of(defendantDocumentRepository.findLatestDefendantDocument(UUID.fromString(caseId.get()),
+                    UUID.fromString(defendantId.get())));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Transactional
     public List<Defendant> getDefendantsByCase(final UUID caseId) {
-
-
         final CaseProgressionDetail caseProgressionDetail =
-                        caseProgressionDetailRepo.findByCaseId(caseId);
+                caseProgressionDetailRepo.findByCaseId(caseId);
         return new ArrayList(caseProgressionDetail.getDefendants());
 
     }

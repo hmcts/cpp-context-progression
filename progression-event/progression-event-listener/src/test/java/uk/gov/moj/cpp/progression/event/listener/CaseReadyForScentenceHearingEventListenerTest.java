@@ -3,6 +3,13 @@ package uk.gov.moj.cpp.progression.event.listener;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
+import uk.gov.moj.cpp.progression.event.service.CaseService;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -10,13 +17,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
-import uk.gov.moj.cpp.progression.event.service.CaseService;
-import uk.gov.moj.progression.persistence.repository.CaseProgressionDetailRepository;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseReadyForScentenceHearingEventListenerTest {

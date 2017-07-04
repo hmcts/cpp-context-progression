@@ -1,111 +1,113 @@
 package uk.gov.moj.cpp.progression.casedocument.listener;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.moj.cpp.progression.casedocument.listener.NewCaseDocumentReceivedListener.PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT;
+import static uk.gov.moj.cpp.progression.casedocument.listener.NewCaseDocumentReceivedListener.STRUCTURE_COMMAND_ADD_DOCUMENT;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import javax.json.JsonObject;
 
-import org.junit.Ignore;
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
-
 @RunWith(MockitoJUnitRunner.class)
 public class NewCaseDocumentReceivedListenerTest {
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory
-                    .createEnveloperWithEvents(AssociateNewCaseDocumentCommand.class);
-
-    @Mock
-    private JsonObjectToObjectConverter jsonObjectConverter;
-
-    @Mock
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Mock
     private Sender sender;
 
-    @InjectMocks
-    NewCaseDocumentReceivedListener newCaseDocumentReceivedListener;
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(AssociateNewCaseDocumentCommand.class);
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
+
+    private NewCaseDocumentReceivedListener newCaseDocumentReceivedListener;
+
+    @Before
+    public void setUp() {
+        newCaseDocumentReceivedListener = new NewCaseDocumentReceivedListener(sender, enveloper);
+    }
 
 
     @Test
     public void shouldProcessEvent() {
+        // given
+        final UUID randomId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final UUID sessionId = UUID.randomUUID();
+        final UUID clientCorrelationId = UUID.randomUUID();
+        final UUID cppCaseId = UUID.randomUUID();
+        final UUID fileId = UUID.randomUUID();
+        final String mimeType = randomString();
+        final String metaField = randomString();
+        final String fileName = randomString();
 
-        final String id = "71824c05-ec1d-4c0e-bc5e-b1ffff07ebee";
+        final JsonEnvelope inputEnvelope = JsonEnvelopeBuilder.envelope()
+                .with(metadataOf(randomId, metaField)
+                        .withUserId(userId.toString())
+                        .withSessionId(sessionId.toString())
+                        .withClientCorrelationId(clientCorrelationId.toString()))
+                .withPayloadOf(cppCaseId, "cppCaseId")
+                .withPayloadOf(fileId, "fileId")
+                .withPayloadOf(mimeType, "fileMimeType")
+                .withPayloadOf(fileName, "fileName")
+                .build();
 
-        final JsonEnvelope inputEnvelope = getEnvelope(id);
-
-        mockNewCaseDocumentReceivedEvent(inputEnvelope);
-
-        mockAssociateNewCaseDocumentCommand(inputEnvelope);
-
+        // when
         newCaseDocumentReceivedListener.processEvent(inputEnvelope);
 
-        ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor =
-                        ArgumentCaptor.forClass(JsonEnvelope.class);
+        // then
+        verify(enveloper).withMetadataFrom(eq(inputEnvelope), eq(STRUCTURE_COMMAND_ADD_DOCUMENT));
 
-        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        List<JsonEnvelope> envelopes = envelopeCaptor.getAllValues();
 
-        List<JsonEnvelope> envelopes = jsonEnvelopeCaptor.getAllValues();
+        JsonEnvelope envelope1 = envelopes.get(0);
+        Assert.assertThat(envelope1.metadata(), withMetadataEnvelopedFrom(inputEnvelope).withName(STRUCTURE_COMMAND_ADD_DOCUMENT));
+        final JsonObject payload = envelope1.payloadAsJsonObject();
+        Assert.assertThat(payload, JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
+                withJsonPath("$.caseId", CoreMatchers.equalTo(cppCaseId.toString())),
+                withJsonPath("$.materialId", CoreMatchers.equalTo(fileId.toString())),
+                withJsonPath("$.documentType", CoreMatchers.equalTo("PLEA")))));
 
-        JsonEnvelope envelope = envelopes.get(0);
-
-        assertThat(envelope.metadata().userId(), equalTo(Optional.of(id)));
-        assertThat(envelope.metadata().sessionId(), equalTo(Optional.of(id)));
-        assertThat(envelope.metadata().name(), equalTo("structure.command.add-case-document"));
-        assertThat(envelope.asJsonObject().getString("caseId"), equalTo(id));
-        assertThat(envelope.asJsonObject().getString("materialId"), equalTo("fileId-1"));
-        assertThat(envelope.asJsonObject().getString("documentType"), equalTo("PLEA"));
-    }
-
-    private JsonEnvelope getEnvelope(final String id) {
-        return DefaultJsonEnvelope.envelope()
-                        .with(metadataOf(id, id).withUserId(id).withSessionId(id)
-                                        .withClientCorrelationId(id))
-                        .withPayloadOf(id, "cppCaseId").withPayloadOf("fileId-1", "fileId")
-                        .withPayloadOf("application/pdf", "fileMimeType")
-                        .withPayloadOf("fileName-1", "fileName").build();
+        JsonEnvelope envelope2 = envelopes.get(1);
+        Assert.assertThat(envelope2.metadata(), withMetadataEnvelopedFrom(inputEnvelope).withName(PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT));
+        final JsonObject payload2 = envelope2.payloadAsJsonObject();
+        assertThat(payload2, JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
+                withJsonPath("$.fileName", CoreMatchers.equalTo(fileName)),
+                withJsonPath("$.fileId", CoreMatchers.equalTo(fileId.toString())),
+                withJsonPath("$.cppCaseId", CoreMatchers.equalTo(cppCaseId.toString())),
+                withJsonPath("$.fileMimeType", CoreMatchers.equalTo(mimeType)))));
 
     }
 
-    private void mockNewCaseDocumentReceivedEvent(final JsonEnvelope envelope) {
-        when(jsonObjectConverter.convert(envelope.payloadAsJsonObject(),
-                        NewCaseDocumentReceivedEvent.class)).thenReturn(
-                                        new NewCaseDocumentReceivedEvent(UUID.randomUUID(),
-                                                        envelope.asJsonObject()));
+    private String randomString() {
+        return RandomGenerator.string(3).next();
     }
-
-    private void mockAssociateNewCaseDocumentCommand(final JsonEnvelope envelope) {
-        when(objectToJsonObjectConverter.convert(any(AssociateNewCaseDocumentCommand.class)))
-                        .thenReturn(Json.createObjectBuilder()
-                                        .add("caseId", envelope.asJsonObject()
-                                                        .getString("cppCaseId"))
-                                        .add("materialId", "fileId-1").add("documentType", "PLEA")
-                                        .build());
-    }
-
 }

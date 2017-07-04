@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>3.0.6</version>
+        <version>3.0.25</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -32,8 +34,11 @@
         <sonar.scm.provider>git</sonar.scm.provider>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
-        <structure.version>2.0.234</structure.version>
+        <structure.version>2.0.281</structure.version>
+        <material.version>2.0.71</material.version>
+        <systemuserslibrary.version>1.0.11</systemuserslibrary.version>
         <access.control.version>2.0.31</access.control.version>
+        <authorisation.service.version>0.1.19</authorisation.service.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
     </properties>

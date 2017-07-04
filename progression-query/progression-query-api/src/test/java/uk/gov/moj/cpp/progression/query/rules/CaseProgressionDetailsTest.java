@@ -1,89 +1,47 @@
 package uk.gov.moj.cpp.progression.query.rules;
 
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static java.util.Arrays.stream;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.kie.api.runtime.ExecutionResults;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 
-import com.google.common.collect.ImmutableMap;
+public class CaseProgressionDetailsTest extends ProgressionQueryRuleExecutor {
 
-import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+    private static final String[] ACTION_GROUPS = new String[]{"Crown Court Admin",
+                    "Listing Officers", "Judiciary", "Case Officer"};
 
-public class CaseProgressionDetailsTest extends BaseDroolsAccessControlTest {
-
-    private static final List<String> ALLOWED_USER_GROUPS =
-                    Arrays.asList(  "Crown Court Admin",
-                                    "Listing Officers", "Judiciary", "Case Officer");
+    private static final String[] ALLOWED_USER_GROUPS = new String[]{"Crown Court Admin",
+                    "Listing Officers", "Judiciary", "Case Officer"};
 
     private static final String MEDIA_TYPE = "progression.query.caseprogressiondetail";
-    private Action action;
 
-    @Mock
-    private UserAndGroupProvider userAndGroupProvider;
-
-    @Captor
-    private ArgumentCaptor<List<String>> listCaptor;
-
-    @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder()
-                        .put(UserAndGroupProvider.class, userAndGroupProvider).build();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        action = createActionFor(MEDIA_TYPE);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        verifyNoMoreInteractions(userAndGroupProvider);
-    }
-
-
+    private static final String[] NOT_ALLOWED_USER_GROUPS = new String[] {"CMS", "Charging Lawyers",
+                    "Court Administrators", "Court Clerks", "Court Operations Officers",
+                    "Group Name", "Group name 3", "IDAM", "Judge", "JudicialOfficer",
+                    "Legal Advisers", "MCSS", "Magistrates", "Solicitors", "TFL Users",
+                    "Test Group", "System Users", "Genesis"};
 
     @Test
     public void shouldPassAccessControl() throws Exception {
-        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ALLOWED_USER_GROUPS))
-                        .thenReturn(true);
-
-        final ExecutionResults executionResults = executeRulesWith(action);
-
-        assertSuccessfulOutcome(executionResults);
-        verifyListOfUserGroups();
+        assertSuccessfulOutcome(executeRules(MEDIA_TYPE, ACTION_GROUPS, ALLOWED_USER_GROUPS));
     }
 
     @Test
     public void shouldNotPassAccessControl() throws Exception {
-        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ALLOWED_USER_GROUPS))
-                        .thenReturn(false);
-
-        final ExecutionResults executionResults = executeRulesWith(action);
-
-        assertFailureOutcome(executionResults);
-        verifyListOfUserGroups();
+        assertFailureOutcome(executeRules(MEDIA_TYPE, ACTION_GROUPS, NOT_ALLOWED_USER_GROUPS));
     }
 
-    private void verifyListOfUserGroups() {
-        verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(eq(action),
-                        listCaptor.capture());
-        assertThat(listCaptor.getValue(), containsInAnyOrder(ALLOWED_USER_GROUPS.toArray()));
+    @Test
+    public void shouldAllowUserBelongingToAGroup() throws Exception {
+        stream(ALLOWED_USER_GROUPS).forEach(group -> {
+            assertSuccessfulOutcome(executeRules(MEDIA_TYPE, ACTION_GROUPS, group));
+        });
+    }
+
+    @Test
+    public void shouldNotAllowUserBelongingToANotAllowedGroup() throws Exception {
+        stream(NOT_ALLOWED_USER_GROUPS).forEach(group -> {
+            assertFailureOutcome(executeRules(MEDIA_TYPE, ACTION_GROUPS, group));
+        });
     }
 }

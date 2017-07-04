@@ -30,6 +30,9 @@
           },
           "status": {
             "type": "string"
+          },
+          "sentenceHearingId": {
+            "type": "string"
           }
         },
         "required": [
@@ -40,7 +43,8 @@
           "fromCourtCentre",
           "sendingCommittalDate",
           "sentenceHearingDate",
-          "status"
+          "status",
+          "sentenceHearingId"
         ]
       }
     }

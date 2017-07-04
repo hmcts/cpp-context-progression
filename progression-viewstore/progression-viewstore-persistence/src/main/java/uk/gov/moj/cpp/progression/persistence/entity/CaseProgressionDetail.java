@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -43,12 +43,14 @@ public class CaseProgressionDetail {
     @Column(name = "sentencehearingdate")
     private LocalDate sentenceHearingDate;
 
-    @Column(name = "readyforsentencehearingdate")
-    private LocalDateTime readyForSentenceHearingDate;
+    @Column(name = "casestatusupdateddatetime")
+    private ZonedDateTime caseStatusUpdatedDateTime;
 
     @Enumerated(EnumType.STRING)
     private CaseStatusEnum status;
 
+    @Column(name = "sentencehearingid",unique = true)
+    private UUID sentenceHearingId;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
                     mappedBy = "caseProgressionDetail")
@@ -86,12 +88,12 @@ public class CaseProgressionDetail {
         return courtCentreId;
     }
 
-    public LocalDateTime getReadyForSentenceHearingDate() {
-        return readyForSentenceHearingDate;
+    public ZonedDateTime getCaseStatusUpdatedDateTime() {
+        return caseStatusUpdatedDateTime;
     }
 
-    public void setReadyForSentenceHearingDate(final LocalDateTime readyForSentenceHearingDate) {
-        this.readyForSentenceHearingDate = readyForSentenceHearingDate;
+    public void setCaseStatusUpdatedDateTime(ZonedDateTime caseStatusUpdatedDateTime) {
+        this.caseStatusUpdatedDateTime = caseStatusUpdatedDateTime;
     }
 
     public void setCourtCentreId(final String courtCentreId) {
@@ -138,5 +140,11 @@ public class CaseProgressionDetail {
         this.defendants = defendants;
     }
 
-    
+    public UUID getSentenceHearingId() {
+        return sentenceHearingId;
+    }
+
+    public void setSentenceHearingId(UUID sentenceHearingId) {
+        this.sentenceHearingId = sentenceHearingId;
+    }
 }

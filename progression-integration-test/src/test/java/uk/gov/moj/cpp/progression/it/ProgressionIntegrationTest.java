@@ -1,12 +1,20 @@
 package uk.gov.moj.cpp.progression.it;
 
-import com.google.common.collect.Lists;
-import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.moj.cpp.progression.helper.StubUtil;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.join;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getMagistrateCourts;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -15,94 +23,98 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import javax.json.JsonObject;
 
-public class ProgressionIntegrationTest extends AbstractIT {
+import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
+import com.jayway.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.junit.Before;
+import org.junit.Test;
+
+public class ProgressionIntegrationTest {
 
     private String caseId;
     private String caseProgressionId;
 
     @Before
-    public void createMockEndpoints() throws IOException {
+    public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        StubUtil.resetStubs();
-        StubUtil.setupStructureCaseStub(caseId, UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        StubUtil.setupUsersGroupQueryStub();
         caseProgressionId = UUID.randomUUID().toString();
-
+        createMockEndpoints(caseId);
     }
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
+        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId);
+        assertThatRequestIsAccepted(writeResponse);
 
-        Response writeResponse = postCommand(getCommandUri("/cases/addcasetocrowncourt"),
-                "application/vnd.progression.command.add-case-to-crown-court+json",
-                getJsonBodyStr("progression.command.add-case-to-crown-court.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        Response queryResponse = getResponse(getQueryUri("/cases/" + caseId),
+        pollForResponse(join("", "/cases/", caseId),
                 "application/vnd.progression.query.caseprogressiondetail+json");
-        assertThat(queryResponse.getStatusCode(), equalTo(SC_OK));
 
-        writeResponse = postCommand(getCommandUri("/cases/sendingcommittalhearinginformation"),
+        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.sending-committal-hearing-information+json",
                 getJsonBodyStr("progression.command.sending-committal-hearing-information.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        queryResponse = getResponse(getQueryUri("/cases/" + caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
-        assertTrue(queryResponse.getBody().path("sendingCommittalDate")
+        assertThatRequestIsAccepted(writeResponse);
+
+        final String queryResponse =
+                pollForResponse(join("", "/cases/", caseId),
+                        "application/vnd.progression.query.caseprogressiondetail+json");
+
+        JsonObject defendantsJsonObject = getJsonObject(queryResponse);
+        assertTrue(defendantsJsonObject.getString("sendingCommittalDate")
                 .equals(LocalDate.now().toString()));
 
-        writeResponse = postCommand(getCommandUri("/cases/"+caseId),
+        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.sentence-hearing-date+json",
                 getJsonBodyStr("progression.command.sentence-hearing-date.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        queryResponse = getResponse(getQueryUri("/cases/" + caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
-        assertTrue(queryResponse.getBody().path("sentenceHearingDate")
+        assertThatRequestIsAccepted(writeResponse);
+
+
+        final String queryDefendantsResponse =
+                pollForResponse(join("", "/cases/", caseId),
+                        "application/vnd.progression.query.caseprogressiondetail+json");
+
+        defendantsJsonObject = getJsonObject(queryDefendantsResponse);
+        assertTrue(defendantsJsonObject.getString("sentenceHearingDate")
                 .equals(LocalDate.now().toString()));
 
-        writeResponse = postCommand(getCommandUri("/cases/casetobeassigned"),
+        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.case-to-be-assigned+json",
                 getJsonBodyStr("progression.command.case-to-be-assigned.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        queryResponse = getResponse(getQueryUri("/cases/" + caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
-        assertTrue(queryResponse.getBody().path("status").equals("READY_FOR_REVIEW"));
+        assertThatRequestIsAccepted(writeResponse);
 
-        writeResponse = postCommand(getCommandUri("/cases/caseassignedforreview"),
+        final String queryDefendantsReviewResponse =
+                pollForResponse(join("", "/cases/", caseId),
+                        "application/vnd.progression.query.caseprogressiondetail+json");
+
+        defendantsJsonObject = getJsonObject(queryDefendantsReviewResponse);
+
+        assertTrue(defendantsJsonObject.getString("status")
+                .equals("READY_FOR_REVIEW"));
+
+        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.case-assigned-for-review+json",
                 getJsonBodyStr("progression.command.case-assigned-for-review.json"));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        waitForResponse(5);
-        queryResponse = getResponse(getQueryUri("/cases/" + caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
-        assertTrue(queryResponse.getBody().path("status").equals("ASSIGNED_FOR_REVIEW"));
+
+        final String queryDefendantsAssignedResponse =
+                pollForResponse(join("", "/cases/", caseId),
+                        "application/vnd.progression.query.caseprogressiondetail+json");
+
+        defendantsJsonObject = getJsonObject(queryDefendantsAssignedResponse);
+
+        assertTrue(defendantsJsonObject.getString("status").equals("ASSIGNED_FOR_REVIEW"));
     }
 
     @Test
     public void shouldGetMagistrateCourtsForLCC() throws Exception {
         // given
-        List<String> expectedMagistrateCourts = newArrayList("Liverpool & Knowsley Magistrates Court",
-                "Ormskirk Magistrates Court", "Sefton Magistrates Court", "St Helens Magistrates Court",
-                "Wigan Magistrates Court", "Wirral Magistrates Court", "Other");
+        List<String> expectedMagistrateCourts = newArrayList("Liverpool", "Bootle", "Birkenhead", "Warrington");
         // and
-        String queryUri = getQueryUri("/crown-court/LCC/magistrate-courts");
 
         // when
-        Response queryResponse = getResponse(queryUri,
-                "application/vnd.progression.query.crown-court.magistrate-courts+json");
+        Response queryResponse = getMagistrateCourts();
 
         // then
         assertThat(queryResponse.getStatusCode(), equalTo(SC_OK));
@@ -116,27 +128,6 @@ public class ProgressionIntegrationTest extends AbstractIT {
         assertThat(actualMagistrateCourts, is(expectedMagistrateCourts));
     }
 
-    private String getQueryUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-query") + path;
-    }
-
-    private String getCommandUri(final String path) {
-        return baseUri + prop.getProperty("base-uri-command") + path;
-    }
-
-    private Response postCommand(final String uri, final String mediaType,
-                                 final String jsonStringBody) throws IOException {
-        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
-                .header("CJSCPPUID", UUID.randomUUID().toString()).when().post(uri).then()
-                .extract().response();
-    }
-
-    private Response getResponse(final String uri, final String mediaType)
-            throws IOException {
-        return given().spec(reqSpec).and().accept(mediaType)
-                .header("CJSCPPUID", UUID.randomUUID().toString()).when().get(uri).then()
-                .extract().response();
-    }
 
     private String getJsonBodyStr(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())

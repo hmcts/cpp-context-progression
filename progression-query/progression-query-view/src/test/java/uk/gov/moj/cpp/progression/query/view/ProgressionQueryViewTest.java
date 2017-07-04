@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,15 +34,18 @@ import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailServic
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionQueryViewTest {
+    
     @Mock
     private JsonEnvelope query;
+    
     @Mock
     private JsonEnvelope response;
+    
     @Mock
     Enveloper enveloper;
 
     @Mock
-    private ListToJsonArrayConverter listToJsonArrayConverter;
+    private ListToJsonArrayConverter<Object> listToJsonArrayConverter;
 
     @Mock
     private List<CaseProgressionDetail> listCaseProgressionDetail;
@@ -70,13 +72,13 @@ public class ProgressionQueryViewTest {
     private Function<Object, JsonEnvelope> function;
 
     @Mock
-    private JsonEnvelope responceJson;
+    private JsonEnvelope responseJson;
 
     @InjectMocks
     private ProgressionQueryView queryView;
 
     @Test
-    public void shouldHandleProgressionQuery() {
+    public void shouldGetCaseProgressionDetailsGivenACaseId() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
@@ -89,15 +91,13 @@ public class ProgressionQueryViewTest {
         when(enveloper.withMetadataFrom(query,
                         ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
                                         .thenReturn(function);
-
-        when(function.apply(caseProgressionDetailView)).thenReturn(responceJson);
-        assertThat(queryView.getCaseProgressionDetails(query), equalTo(responceJson));
+        when(function.apply(caseProgressionDetailView)).thenReturn(responseJson);
+        assertThat(queryView.getCaseProgressionDetails(query), equalTo(responseJson));
     }
 
     @Test
-    public void shouldHandleProgressionQueryOnNoresult() {
+    public void shouldReturnNoResultForCaseProgressionDetailsGivenASpecificCaseId() {
         final UUID caseId = UUID.randomUUID();
-        final String now = LocalDate.now().toString();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
@@ -108,43 +108,12 @@ public class ProgressionQueryViewTest {
                         ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
                                         .thenReturn(function);
 
-        when(function.apply(null)).thenReturn(responceJson);
-        assertThat(queryView.getCaseProgressionDetails(query), equalTo(responceJson));
+        when(function.apply(null)).thenReturn(responseJson);
+        assertThat(queryView.getCaseProgressionDetails(query), equalTo(responseJson));
     }
 
     @Test
-    public void shouldHandleProgressionSQuery() {
-        final UUID caseId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
-        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
-
-        final JsonArray jsonArray =
-                        Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectTimeline =
-                        Json.createObjectBuilder().add("timeline", jsonArray).build();
-
-        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId))
-                        .thenReturn(caseProgressionDetail);
-        when(function.apply(jsonObjectTimeline)).thenReturn(responceJson);
-    }
-
-    @Test
-    public void shouldHandleProgressionSQueryOnNoResult() {
-        final UUID caseId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
-
-        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId))
-                        .thenThrow(new NoResultException());
-        when(function.apply(null)).thenReturn(responceJson);
-    }
-
-
-    @Test
-    public void shouldHandleGetCasesQuery() {
+    public void shouldGetMultipleCaseProgressionDetailsThatAreReadyForReview() {
         Optional<String> status = Optional.ofNullable("READY_FOR_REVIEW");
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_STATUS, status.get()).build();
@@ -166,12 +135,12 @@ public class ProgressionQueryViewTest {
 
         when(listToJsonArrayConverter.convert(Arrays.asList(caseProgressionDetailView)))
                         .thenReturn(jsonArray);
-        when(function.apply(jsonObjectcases)).thenReturn(responceJson);
-        assertThat(queryView.getCases(query), equalTo(responceJson));
+        when(function.apply(jsonObjectcases)).thenReturn(responseJson);
+        assertThat(queryView.getCases(query), equalTo(responseJson));
     }
 
     @Test
-    public void shouldHandleGetDefendantsQuery() {
+    public void shouldGetMultipleDefendantsGivenACaseId() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
@@ -190,29 +159,31 @@ public class ProgressionQueryViewTest {
                         .thenReturn(function);
 
         when(listToJsonArrayConverter.convert(Arrays.asList(defendantView))).thenReturn(jsonArray);
-        when(function.apply(jsonObjectDefendant)).thenReturn(responceJson);
-        assertThat(queryView.getDefendants(query), equalTo(responceJson));
+        when(function.apply(jsonObjectDefendant)).thenReturn(responseJson);
+        assertThat(queryView.getDefendants(query), equalTo(responseJson));
     }
 
     @Test
-    public void shouldHandleGetDefendantsQueryOnNoResult() {
+    public void shouldReturnNoResultForDefendantsGivenASpecificCaseId() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
+                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getDefendantsByCase(caseId))
-                .thenThrow(new NoResultException());
-        when(function.apply(null)).thenReturn(responceJson);
+        when(casePrgDetailService.getDefendantsByCase(caseId)).thenThrow(new NoResultException());
+        when(enveloper.withMetadataFrom(query,
+                        ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
+                                        .thenReturn(function);
+        when(function.apply(null)).thenReturn(responseJson);
+        assertThat(queryView.getDefendants(query), equalTo(responseJson));
     }
 
 
     @Test
-    public void shouldHandleGetDefendantQuery() {
+    public void shouldGetADefendantGivenACaseId() {
         final UUID defendantId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.DEFENDANT_ID, defendantId.toString()).build();
-
         final Defendant defendant = new Defendant();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
@@ -222,7 +193,7 @@ public class ProgressionQueryViewTest {
         when(enveloper.withMetadataFrom(query, ProgressionQueryView.DEFENDANT_RESPONSE))
                         .thenReturn(function);
 
-        when(function.apply(defendantView)).thenReturn(responceJson);
-        assertThat(queryView.getDefendant(query), equalTo(responceJson));
+        when(function.apply(defendantView)).thenReturn(responseJson);
+        assertThat(queryView.getDefendant(query), equalTo(responseJson));
     }
 }

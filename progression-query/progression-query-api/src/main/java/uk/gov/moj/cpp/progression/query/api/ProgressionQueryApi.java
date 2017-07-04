@@ -1,21 +1,22 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
+import static com.google.common.collect.Lists.newArrayList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 
 @ServiceComponent(Component.QUERY_API)
 public class ProgressionQueryApi {
@@ -38,6 +39,11 @@ public class ProgressionQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.defendant.document")
+    public JsonEnvelope getDefendantDocument(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("progression.query.defendants")
     public JsonEnvelope getDefendants(final JsonEnvelope query) {
         return requester.request(query);
@@ -48,9 +54,6 @@ public class ProgressionQueryApi {
      * of magistrate courts for liverpool crown court to
      * support CRC-2918. Ideally this needs to sit in reference
      * context once the origin of data is clear.
-     *
-     * @param envelope
-     * @return
      */
     @Handles("progression.query.crown-court.magistrate-courts")
     public JsonEnvelope getMagistratesCourts(final JsonEnvelope envelope) {
@@ -69,8 +72,7 @@ public class ProgressionQueryApi {
     private List<String> getMagistratesCourts(String crownCourtId) {
         switch (crownCourtId) {
             case "LCC":
-                return newArrayList("Liverpool & Knowsley Magistrates Court", "Ormskirk Magistrates Court", "Sefton Magistrates Court",
-                        "St Helens Magistrates Court", "Wigan Magistrates Court", "Wirral Magistrates Court", "Other");
+                return newArrayList("Liverpool", "Bootle", "Birkenhead", "Warrington");
             default:
                 return newArrayList();
         }
