@@ -1,16 +1,17 @@
 package uk.gov.justice.api.resource;
 
-import uk.gov.justice.services.adapter.rest.application.CommonProviders;
+import uk.gov.justice.services.adapter.rest.application.DefaultCommonProviders;
+
+import java.util.Set;
 
 import javax.enterprise.inject.Specializes;
-import java.util.Set;
 
 /**
  * Register non-framework compliant REST resources.
  * Part of a workaround used until the Framework can support non-JSON responses.
  */
 @Specializes
-public class ProgressionCommandApiCommonProviders extends CommonProviders {
+public class ProgressionCommandApiCommonProviders extends DefaultCommonProviders {
 
     @Override
     public Set<Class<?>> providers() {

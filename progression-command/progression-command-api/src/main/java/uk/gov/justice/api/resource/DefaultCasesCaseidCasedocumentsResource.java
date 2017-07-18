@@ -10,6 +10,15 @@ import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
 
+import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
+import uk.gov.justice.services.core.accesscontrol.AccessControlService;
+import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
+import uk.gov.justice.services.core.annotation.Adapter;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.file.api.sender.FileData;
+import uk.gov.justice.services.file.api.sender.FileSender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -21,16 +30,6 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
-
-import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
-import uk.gov.justice.services.core.accesscontrol.AccessControlService;
-import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
-import uk.gov.justice.services.core.annotation.Adapter;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.audit.AuditService;
-import uk.gov.justice.services.file.api.sender.FileData;
-import uk.gov.justice.services.file.api.sender.FileSender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @Adapter(Component.COMMAND_API)
 public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocumentsResource {
@@ -46,9 +45,6 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
 
     @Inject
     private FileSender fileSender;
-
-    @Inject
-    private AuditService auditService;
 
     @Inject
     private AccessControlService accessControlService;
@@ -74,9 +70,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                         .add("caseId", caseId)
                         .build());
 
-        auditService.audit(envelope);
-
-        final Optional<AccessControlViolation> violation = accessControlService.checkAccessControl(envelope);
+        final Optional<AccessControlViolation> violation = accessControlService.checkAccessControl("progression-command-api", envelope);
 
         if (violation.isPresent()) {
             final String errorMessage = accessControlFailureMessageGenerator.errorMessageFrom(

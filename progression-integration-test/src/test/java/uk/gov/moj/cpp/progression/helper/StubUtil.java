@@ -54,7 +54,7 @@ public class StubUtil {
                         .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                                         .withHeader("CPPID", UUID.randomUUID().toString())
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody(getPayload("users-groups-listing-officers-user.json"))));
+                                        .withBody(getPayload("stub-data/usersgroups.get-groups-by-user.json"))));
 
     }
 

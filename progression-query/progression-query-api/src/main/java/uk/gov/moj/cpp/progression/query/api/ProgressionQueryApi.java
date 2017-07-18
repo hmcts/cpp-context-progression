@@ -9,7 +9,7 @@ import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.dispatcher.Requester;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.List;

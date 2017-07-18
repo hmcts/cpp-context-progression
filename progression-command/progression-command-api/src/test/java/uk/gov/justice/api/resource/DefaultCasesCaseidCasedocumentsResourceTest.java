@@ -1,27 +1,5 @@
 package uk.gov.justice.api.resource;
 
-import org.apache.commons.io.IOUtils;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
-import uk.gov.justice.services.core.accesscontrol.AccessControlService;
-import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
-import uk.gov.justice.services.core.audit.AuditService;
-import uk.gov.justice.services.file.api.sender.FileData;
-import uk.gov.justice.services.file.api.sender.FileSender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-import java.util.UUID;
-
 import static com.jayway.jsonassert.JsonAssert.with;
 import static java.util.Optional.of;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -31,18 +9,38 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
+import uk.gov.justice.services.core.accesscontrol.AccessControlService;
+import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
+import uk.gov.justice.services.file.api.sender.FileData;
+import uk.gov.justice.services.file.api.sender.FileSender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.IOUtils;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultCasesCaseidCasedocumentsResourceTest {
 
     @Mock
-    private UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser;
-
-    @Mock
     UploadFileServiceSender uploadFileServiceSender;
-
+    @Mock
+    private UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser;
     @Mock
     private FileSender fileSender;
 
@@ -51,10 +49,6 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
     @Mock
     private AccessControlFailureMessageGenerator accessControlFailureMessageGenerator;
-
-    @Mock
-    private AuditService auditService;
-
 
     @InjectMocks
     private DefaultCasesCaseidCasedocumentsResource resource;
@@ -65,7 +59,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         // given
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
         // and
-        when(accessControlService.checkAccessControl(any(JsonEnvelope.class))).thenReturn(Optional.empty());
+        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(Optional.empty());
         // and
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput)).thenReturn(getEmptyKeyValue());
 
@@ -81,7 +75,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
     @Test
     public void shouldReturnBadRequestWhenFormFileNameisEmpty() throws IOException {
 
-        when(accessControlService.checkAccessControl(any(JsonEnvelope.class))).thenReturn(Optional.empty());
+        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(Optional.empty());
 
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
 
@@ -102,7 +96,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput)).thenReturn(getInvalidKey("data"));
         // and
-        when(accessControlService.checkAccessControl(any(JsonEnvelope.class))).thenReturn(Optional.empty());
+        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(Optional.empty());
 
 
         Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
@@ -116,7 +110,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
     @Test
     public void shouldReturnBadRequestWhenFormFileContentisEmpty() throws IOException {
 
-        when(accessControlService.checkAccessControl(any(JsonEnvelope.class))).thenReturn(Optional.empty());
+        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(Optional.empty());
 
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
 
@@ -137,7 +131,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
         final AccessControlViolation accessControlViolation = mock(AccessControlViolation.class);
 
-        when(accessControlService.checkAccessControl(any(JsonEnvelope.class))).thenReturn(of(accessControlViolation));
+        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(of(accessControlViolation));
         when(accessControlFailureMessageGenerator.errorMessageFrom(any(JsonEnvelope.class), eq(accessControlViolation))).thenReturn(errorMessage);
 
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
@@ -149,12 +143,11 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
         with(errorJson).assertThat("$.error", is(errorMessage));
 
-        verify(auditService).audit(any(JsonEnvelope.class));
     }
 
     @Test
     public void shouldReturnSuccessForValidForm() throws IOException {
-        when(accessControlService.checkAccessControl(any(JsonEnvelope.class))).thenReturn(Optional.empty());
+        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(Optional.empty());
 
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
 

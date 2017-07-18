@@ -18,6 +18,13 @@ import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithDefaults;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,21 +37,13 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.runner.RunWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.ImmutableMap;
-
-import uk.gov.justice.services.core.dispatcher.Requester;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 @RunWith(MockitoJUnitRunner.class)
 public abstract class ProgressionQueryRuleExecutor extends BaseDroolsAccessControlTest {
@@ -57,19 +56,14 @@ public abstract class ProgressionQueryRuleExecutor extends BaseDroolsAccessContr
     private static final String UUID_SESSION_ID = "f0132298-7b79-4397-bab6-f2f5e27915f0";
     private static final String UUID_STREAM_ID = "f29e0415-3a3b-48d8-b301-d34faa58662a";
     private static final Long STREAM_VERSION = 99L;
-
-    @Mock
-    private Enveloper enveloper;
-
-    @Mock
-    private Requester requester;
-
     @Mock
     Function<Object, JsonEnvelope> function;
-
     @Mock
     JsonEnvelope payload;
-
+    @Mock
+    private Enveloper enveloper;
+    @Mock
+    private Requester requester;
     @Spy
     @InjectMocks
     private UserAndGroupProvider userAndGroupProvider;
