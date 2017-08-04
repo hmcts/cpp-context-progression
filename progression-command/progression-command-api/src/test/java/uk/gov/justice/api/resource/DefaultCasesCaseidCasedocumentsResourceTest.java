@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
 import uk.gov.justice.services.core.accesscontrol.AccessControlService;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
+import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.file.api.sender.FileData;
 import uk.gov.justice.services.file.api.sender.FileSender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -96,7 +97,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput)).thenReturn(getInvalidKey("data"));
         // and
-        when(accessControlService.checkAccessControl(any(String.class), any(JsonEnvelope.class))).thenReturn(Optional.empty());
+        when(accessControlService.checkAccessControl(eq(Component.COMMAND_API), any(JsonEnvelope.class))).thenReturn(Optional.empty());
 
 
         Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",

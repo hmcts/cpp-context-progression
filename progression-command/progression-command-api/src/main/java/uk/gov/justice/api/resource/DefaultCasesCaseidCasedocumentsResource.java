@@ -70,7 +70,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                         .add("caseId", caseId)
                         .build());
 
-        final Optional<AccessControlViolation> violation = accessControlService.checkAccessControl("progression-command-api", envelope);
+        final Optional<AccessControlViolation> violation = accessControlService.checkAccessControl(Component.COMMAND_API, envelope);
 
         if (violation.isPresent()) {
             final String errorMessage = accessControlFailureMessageGenerator.errorMessageFrom(
