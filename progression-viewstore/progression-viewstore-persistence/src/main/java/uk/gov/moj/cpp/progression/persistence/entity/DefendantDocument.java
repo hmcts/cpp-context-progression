@@ -92,8 +92,14 @@ public class DefendantDocument {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DefendantDocument)) return false;
+        if (this == o){
+            return true;
+        }
+
+        if (!(o instanceof DefendantDocument)){
+            return false;
+        }
+
         DefendantDocument that = (DefendantDocument) o;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getCaseId(), that.getCaseId()) &&

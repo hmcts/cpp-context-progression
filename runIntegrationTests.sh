@@ -40,7 +40,7 @@ function deleteAndDeployWars {
 
 
 function healthCheck {
-  CONTEXT=("$CONTEXT_NAME-command-api" "$CONTEXT_NAME-command-controller" "$CONTEXT_NAME-command-handler" "${CONTEXT_NAME}-query-api" "${CONTEXT_NAME}-query-controller" "${CONTEXT_NAME}-query-view" "${CONTEXT_NAME}-event-listener")
+  CONTEXT=("$CONTEXT_NAME-command-api"  "$CONTEXT_NAME-command-handler" "${CONTEXT_NAME}-query-api" "${CONTEXT_NAME}-query-view" "${CONTEXT_NAME}-event-listener")
   CONTEXT_COUNT=${#CONTEXT[@]}
   TIMEOUT=90
   RETRY_DELAY=5
@@ -103,7 +103,7 @@ function runLiquibase {
 }
 
 function buildDeployAndTest {
-#  buildWars
+  buildWars
   deployAndTest
 }
 
