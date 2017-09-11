@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INCOMPLETE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseProgressionAggregateTest {
@@ -191,7 +192,7 @@ public class CaseProgressionAggregateTest {
 
 
         final CaseAddedToCrownCourt caseAddedToCrownCourt =
-                new CaseAddedToCrownCourt(caseProgressionId,  caseId ,courtCentreId.toString(), Arrays.asList(new Defendant(defendantId)));
+                new CaseAddedToCrownCourt(caseProgressionId,  caseId ,courtCentreId.toString(), Arrays.asList(new Defendant(defendantId)),INCOMPLETE);
 
         Object response = caseProgressionAggregate.apply(caseAddedToCrownCourt);
 
@@ -320,7 +321,7 @@ public class CaseProgressionAggregateTest {
         Defendant defendant = new Defendant(defendantId);
         // and
         CaseAddedToCrownCourt caseAddedToCrownCourt = new CaseAddedToCrownCourt(caseProgressionId,
-                        caseId, courtCentreId, Lists.newArrayList(defendant));
+                        caseId, courtCentreId, Lists.newArrayList(defendant),INCOMPLETE);
         // and
         caseProgressionAggregate.apply(caseAddedToCrownCourt);
     }

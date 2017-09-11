@@ -140,6 +140,34 @@ public class ProgressionQueryViewTest {
     }
 
     @Test
+    public void shouldGetCaseProgressionDetailsWithCaseId() {
+        Optional<UUID> caseId = Optional.ofNullable(UUID.randomUUID());
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.get().toString()).build();
+
+        final JsonArray jsonArray =
+                Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
+        final JsonObject jsonObjectcases =
+                Json.createObjectBuilder().add("cases", jsonArray).build();
+
+        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+
+        when(query.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(casePrgDetailService.getCaseProgressionDetail(caseId.get()))
+                .thenReturn(caseProgressionDetail);
+        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail))
+                .thenReturn(caseProgressionDetailView);
+        when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASES_RESPONSE_LIST))
+                .thenReturn(function);
+
+        when(listToJsonArrayConverter.convert(Arrays.asList(caseProgressionDetailView)))
+                .thenReturn(jsonArray);
+        when(function.apply(jsonObjectcases)).thenReturn(responseJson);
+        assertThat(queryView.getCases(query), equalTo(responseJson));
+    }
+
+
+    @Test
     public void shouldGetMultipleDefendantsGivenACaseId() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()

@@ -39,7 +39,6 @@ public class CaseAddedToCrownCourtEventListener {
                         .convert(event.payloadAsJsonObject(), CaseAddedToCrownCourt.class);
         final CaseProgressionDetail caseProgressionDetail =
                         entityConverter.convert(caseAddedToCrownCourt);
-        caseProgressionDetail.setStatus(CaseStatusEnum.INCOMPLETE);
         repository.save(caseProgressionDetail);
     }
 }

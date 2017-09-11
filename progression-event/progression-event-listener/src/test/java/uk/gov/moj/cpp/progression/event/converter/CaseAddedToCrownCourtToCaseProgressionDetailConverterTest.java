@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.event.converter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INCOMPLETE;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -11,7 +12,6 @@ import org.junit.Test;
 
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
-import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 
 public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
@@ -34,7 +34,7 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
         converter = new CaseAddedToCrownCourtToCaseProgressionDetailConverter();
 
         event = new CaseAddedToCrownCourt(CASE_PROGRESSION_ID, CASE_ID, COURT_CENTRE_ID,
-                        Arrays.asList(new Defendant(DEF_ID)));
+                        Arrays.asList(new Defendant(DEF_ID)),INCOMPLETE);
     }
 
     @Test
@@ -45,6 +45,7 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverterTest {
         assertThat(cpd.getCaseId(), equalTo(CASE_ID));
         assertThat(cpd.getCourtCentreId(), equalTo(COURT_CENTRE_ID));
         assertThat(cpd.getDefendants().iterator().next().getDefendantId(), equalTo(DEF_ID));
+        assertThat(cpd.getStatus(),equalTo(INCOMPLETE));
     }
 
 }

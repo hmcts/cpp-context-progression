@@ -11,3 +11,4 @@
 *.iml
 
 # Misc.
+**/.DS_Store

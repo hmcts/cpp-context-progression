@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 /**
  * 
@@ -23,14 +24,17 @@ public class CaseAddedToCrownCourt {
 
     private List<Defendant> defendants;
 
+    private CaseStatusEnum status;
+
     public CaseAddedToCrownCourt(UUID caseProgressionId, UUID caseId, String courtCentreId,
-                    List<Defendant> defendantIds) {
+                    List<Defendant> defendantIds, CaseStatusEnum status) {
         super();
         this.caseProgressionId = caseProgressionId;
         this.caseId = caseId;
         this.courtCentreId = courtCentreId;
         this.defendants = defendantIds == null ? Collections.emptyList()
                         : new ArrayList<>(defendantIds);
+        this.status = status;
     }
 
     public List<Defendant> getDefendants() {
@@ -67,6 +71,11 @@ public class CaseAddedToCrownCourt {
                         defendants == null ? Collections.emptyList() : new ArrayList<>(defendants);
     }
 
+    public CaseStatusEnum getStatus() {
+        return status;
+    }
 
-
+    public void setStatus(CaseStatusEnum status) {
+        this.status = status;
+    }
 }

@@ -57,7 +57,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
 
     public enum ProgressionRules {
 
-        AddAditionalDefendantInfoTest("progression.command.add-defendant-additional-information", "Listing Officers", "Judiciary", "Case Officer"),
+        AddAditionalDefendantInfoTest("progression.command.add-defendant-additional-information", "Judiciary", "Case Officer"),
         AddCaseToCrownCourtTest("progression.command.add-case-to-crown-court", "Crown Court Admin", "Listing Officers"),
         AddSentenceHearingTest("progression.command.add-sentence-hearing", "Crown Court Admin", "Listing Officers"),
         CaseAssignedForReviewTest("progression.command.case-assigned-for-review", "Listing Officers"),

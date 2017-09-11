@@ -7,6 +7,7 @@ import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.event.CaseAlreadyExistsInCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
@@ -37,6 +38,7 @@ public class CaseProgressionAggregate implements Aggregate {
     private transient ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
     private UUID caseProgressionId;
     private Set<UUID> defendantIds = new HashSet<>();
+    private Set<UUID> caseIds = new HashSet<>();
     private boolean isAllDefendantReviewed;
     private boolean isAnyDefendantPending;
     private LocalDate sentenceHearingDate;
@@ -51,6 +53,7 @@ public class CaseProgressionAggregate implements Aggregate {
                             defendants.addAll(e.getDefendants());
                             defendantIds = defendants.stream().map(Defendant::getId)
                                     .collect(Collectors.toSet());
+                            caseIds.add(e.getCaseId());
                         }),
                 when(uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing.class)
                         .apply(e -> {
@@ -163,6 +166,12 @@ public class CaseProgressionAggregate implements Aggregate {
     }
 
     public Stream<Object> addCaseToCrownCourt(JsonEnvelope jsonEnvelope) {
+        final UUID caseId =
+                UUID.fromString(jsonEnvelope.payloadAsJsonObject().getString("caseId"));
+        if (caseIds.contains(caseId)) {
+            LOGGER.warn("Case already exists in crown court with caseId " + caseId);
+            return apply(Stream.of(new CaseAlreadyExistsInCrownCourt(caseId, "Case already exists in crown court with caseId " + caseId)));
+        }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         streamBuilder.add(progressionEventFactory.createCaseAddedToCrownCourt(jsonEnvelope));
         return apply(streamBuilder.build());

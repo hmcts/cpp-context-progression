@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.progression.query.view.response.DefendantDocumentView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
 import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -82,10 +83,25 @@ public class ProgressionQueryView {
 
     @Handles("progression.query.cases")
     public JsonEnvelope getCases(final JsonEnvelope envelope) {
+        final Optional<UUID> caseId =
+                JsonObjects.getUUID(envelope.payloadAsJsonObject(), FIELD_CASE_ID);
         final Optional<String> status =
                 JsonObjects.getString(envelope.payloadAsJsonObject(), FIELD_STATUS);
 
-        final List<CaseProgressionDetail> cases = caseProgressionDetailService.getCases(status);
+        List<CaseProgressionDetail> cases = new ArrayList<CaseProgressionDetail>();
+        if(caseId.isPresent() && status.isPresent() ){
+            cases = caseProgressionDetailService.getCases(status,caseId);
+        }else if(caseId.isPresent()){
+            try {
+                CaseProgressionDetail caseProgressionDetail =
+                        caseProgressionDetailService.getCaseProgressionDetail(caseId.get());
+                cases.add(caseProgressionDetail);
+            } catch (final NoResultException nre) {
+                logger.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+            }
+        }else {
+            cases = caseProgressionDetailService.getCases(status);
+        }
 
         final List<CaseProgressionDetailView> caseProgressionDetailView = cases.stream()
                 .map(caseProgressionDetail -> caseProgressionDetailToViewConverter

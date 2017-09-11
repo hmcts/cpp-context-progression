@@ -80,7 +80,7 @@ public class ProgressionEventFactory {
         final List<Defendant> defendantIds = defendants.stream()
                 .map(s -> new Defendant(UUID.fromString(((JsonObject) s).getString("id"))))
                 .collect(Collectors.toList());
-        return new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId, defendantIds);
+        return new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId, defendantIds, CaseStatusEnum.INCOMPLETE);
     }
 
     public SendingCommittalHearingInformationAdded createSendingCommittalHearingInformationAdded(final JsonEnvelope envelope) {

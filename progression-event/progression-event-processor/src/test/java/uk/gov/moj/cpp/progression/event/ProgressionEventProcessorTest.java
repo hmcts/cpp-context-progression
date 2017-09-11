@@ -12,6 +12,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 import java.util.UUID;
 
@@ -102,4 +103,48 @@ public class ProgressionEventProcessorTest {
                 )));
     }
 
+    @Test
+    public void publishCaseAddedToCrownCourtPublicEvent() {
+        // given
+        final String CASE_PROGRESSION_ID = UUID.randomUUID().toString();
+        final JsonEnvelope event = EnvelopeFactory.createEnvelope("progression.events.case-added-to-crown-court", createObjectBuilder().
+                add("caseId", CASE_ID).
+                add("caseProgressionId",CASE_PROGRESSION_ID).
+                add("courtCentreId","LiverPool").
+                add("status", CaseStatusEnum.INCOMPLETE.toString()).build());
+
+        // when
+        progressionEventProcessor.publishCaseAddedToCrownCourtPublicEvent(event);
+
+        // then
+        final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName("public.progression.events.case-added-to-crown-court"),
+                payloadIsJson(
+                        withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID))
+                )));
+    }
+
+    @Test
+    public void publishCaseAlreadyExistsInCrownCourtPublicEvent() {
+        // given
+        final String CASE_PROGRESSION_ID = UUID.randomUUID().toString();
+        final JsonEnvelope event = EnvelopeFactory.createEnvelope("progression.events.case-already-exists-in-crown-court", createObjectBuilder().
+                add("caseId", CASE_ID).build());
+
+        // when
+        progressionEventProcessor.publishCaseAlreadyExistsInCrownCourtEvent(event);
+
+        // then
+        final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName("public.progression.events.case-already-exists-in-crown-court"),
+                payloadIsJson(
+                        withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID))
+                )));
+    }
 }

@@ -51,6 +51,15 @@ public class CaseProgressionDetailService {
 
     }
 
+    @Transactional
+    public List<CaseProgressionDetail> getCases(final Optional<String> status, final Optional<UUID> caseId) {
+
+        List<CaseProgressionDetail> caseProgressionDetails;
+            caseProgressionDetails =
+                    caseProgressionDetailRepo.findByStatusAndCaseID(getCaseStatusList(status.get()),caseId.get());
+        return caseProgressionDetails;
+
+    }
 
     @Transactional
     public Optional<Defendant> getDefendant(final Optional<String> defendantId) {

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.persistence.repository;
 
+import org.apache.deltaspike.data.api.QueryParam;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 
@@ -20,6 +21,9 @@ public interface CaseProgressionDetailRepository extends EntityRepository<CasePr
 
     @Query(value = "from CaseProgressionDetail c where c.status IN  (?1) ")
     List<CaseProgressionDetail> findByStatus(List<CaseStatusEnum> status);
+
+    @Query(value = "from CaseProgressionDetail c where c.status IN  (?1) and c.caseId = (?2) ")
+    List<CaseProgressionDetail> findByStatusAndCaseID(List<CaseStatusEnum> status,  final UUID caseId);
 
     @Query(value = "from CaseProgressionDetail c where c.status <> 'COMPLETED') ")
     List<CaseProgressionDetail> findOpenStatus();

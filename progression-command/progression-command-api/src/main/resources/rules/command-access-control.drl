@@ -11,7 +11,7 @@ rule "Command - Access control for progression.command.add-defendant-additional-
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-defendant-additional-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Listing Officers", "Judiciary", "Case Officer"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Case Officer"))
   then
     $outcome.setSuccess(true);
 end

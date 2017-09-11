@@ -17,6 +17,7 @@ public class CaseAddedToCrownCourtToCaseProgressionDetailConverter
         caseProgressionDetail.setId(event.getCaseProgressionId());
         caseProgressionDetail.setCaseId(event.getCaseId());
         caseProgressionDetail.setCourtCentreId(event.getCourtCentreId());
+        caseProgressionDetail.setStatus(event.getStatus());
 
         if (event.getDefendants() != null) {
             event.getDefendants().stream()

@@ -113,6 +113,14 @@ public class CaseProgressionDetailRepositoryTest {
     }
 
     @Test
+    public void shouldFindByStatusAndCaseId() throws Exception {
+        final List<CaseProgressionDetail> results =
+                repository.findByStatusAndCaseID(Arrays.asList(CaseStatusEnum.INCOMPLETE),CASE_ID_ONE);
+        assertThat(results.size(), equalTo(1));
+        final CaseProgressionDetail result = results.get(0);
+        assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
+    }
+    @Test
     public void shouldFindOpenStatus() throws Exception {
         final List<CaseProgressionDetail> results = repository.findOpenStatus();
         assertThat(results.size(), equalTo(2));
