@@ -43,7 +43,6 @@ public class ProgressionCommandApiTest {
     @Mock
     private StructureReadService structureCaseService;
 
-
     @InjectMocks
     private ProgressionCommandApi progressionCommandApi;
 
@@ -75,8 +74,14 @@ public class ProgressionCommandApiTest {
 
     @Test
     public void shouldSentenceHearingDate() throws Exception {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.record-sentence-hearing-date"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
         progressionCommandApi.addSentenceHearingDate(command);
-        verify(sender, times(1)).send(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
     }
 
     @Test
@@ -99,15 +104,26 @@ public class ProgressionCommandApiTest {
 
     @Test
     public void shouldAddDefendantProgression() throws Exception {
-        progressionCommandApi.addAdditionalInformationForDefendant(command);
-        verify(sender, times(1)).send(command);
-    }
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.handler.add-defendant-additional-information"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
 
+        progressionCommandApi.addAdditionalInformationForDefendant(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
 
     @Test
     public void shouldPassNoMoreInformationRequired() throws Exception {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.record-no-more-information-required"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
         progressionCommandApi.noMoreInformationRequired(command);
-        verify(sender, times(1)).send(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
     }
 
     @Test
@@ -118,7 +134,13 @@ public class ProgressionCommandApiTest {
 
     @Test
     public void shouldAddSentenceHearing() throws Exception {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.record-sentence-hearing"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
         progressionCommandApi.addSentenceHearing(command);
-        verify(sender, times(1)).send(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
     }
 }

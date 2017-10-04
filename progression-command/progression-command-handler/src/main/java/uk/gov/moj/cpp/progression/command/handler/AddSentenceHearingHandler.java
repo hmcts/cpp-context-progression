@@ -12,7 +12,7 @@ import java.util.UUID;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AddSentenceHearingHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.add-sentence-hearing")
+    @Handles("progression.command.record-sentence-hearing")
     public void addSentenceHearing(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.addSentenceHearing(

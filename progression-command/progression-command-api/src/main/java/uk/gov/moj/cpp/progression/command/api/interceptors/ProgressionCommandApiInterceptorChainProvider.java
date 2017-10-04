@@ -4,7 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 
 import uk.gov.justice.services.core.interceptor.Interceptor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProvider;
-import uk.gov.moj.cpp.authorisation.interceptor.FeatureControlInterceptor;
+import uk.gov.moj.cpp.authorisation.interceptor.SynchronousFeatureControlInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class ProgressionCommandApiInterceptorChainProvider implements Intercepto
     @Override
     public List<Pair<Integer, Class<? extends Interceptor>>> interceptorChainTypes() {
         final ArrayList<Pair<Integer, Class<? extends Interceptor>>> pairs = new ArrayList<>();
-        pairs.add(new ImmutablePair<>(5900, FeatureControlInterceptor.class));
+        pairs.add(new ImmutablePair<>(5900, SynchronousFeatureControlInterceptor.class));
         return pairs;
     }
 }

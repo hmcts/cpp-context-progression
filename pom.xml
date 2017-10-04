@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>4.0.5</version>
+        <version>4.0.17</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -24,6 +24,7 @@
         <module>progression-domain</module>
         <module>progression-integration-test</module>
         <module>progression-performance-test</module>
+        <module>progression-service</module>
     </modules>
 
     <properties>
@@ -31,7 +32,7 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
-        <structure.version>2.0.295</structure.version>
+        <structure.version>2.0.300</structure.version>
         <material.version>2.0.71</material.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
@@ -55,6 +56,13 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <enableSshAgent>true</enableSshAgent>
                     <pushReleases>true</pushReleases>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <archiveClasses>true</archiveClasses>
+                    <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
         </plugins>

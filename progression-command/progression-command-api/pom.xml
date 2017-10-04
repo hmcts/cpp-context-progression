@@ -43,11 +43,6 @@
             <artifactId>authorisation-interceptor</artifactId>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
-            <artifactId>authorisation-interceptor-strategy-sync</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>rest-client-core</artifactId>
         </dependency>

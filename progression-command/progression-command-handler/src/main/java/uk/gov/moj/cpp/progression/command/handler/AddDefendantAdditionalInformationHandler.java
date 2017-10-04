@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AddDefendantAdditionalInformationHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.add-defendant-additional-information")
+    @Handles("progression.command.handler.add-defendant-additional-information")
     public void addAdditionalInformationForDefendant(final JsonEnvelope command)
                     throws EventStreamException {
         applyToCaseProgressionAggregate(command,

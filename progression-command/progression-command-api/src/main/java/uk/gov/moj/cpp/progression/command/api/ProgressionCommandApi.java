@@ -56,7 +56,8 @@ public class ProgressionCommandApi {
     
     @Handles("progression.command.sentence-hearing-date")
     public void addSentenceHearingDate(final JsonEnvelope envelope) {
-        sender.send(envelope);
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.record-sentence-hearing-date");
+        sender.send(commandEnvelope);
     }
 
     @Handles("progression.command.case-to-be-assigned")
@@ -76,14 +77,16 @@ public class ProgressionCommandApi {
 
     @Handles("progression.command.add-defendant-additional-information")
     public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
-        sender.send(envelope);
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.handler.add-defendant-additional-information");
+        sender.send(commandEnvelope);
     }
 
     @Handles("progression.command.no-more-information-required")
     public void noMoreInformationRequired(final JsonEnvelope envelope) {
-        sender.send(envelope);
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.record-no-more-information-required");
+        sender.send(commandEnvelope);
     }
-    
+
     @Handles("progression.command.request-psr-for-defendants")
     public void requestPSRForDefendants(final JsonEnvelope envelope) {
         sender.send(envelope);
@@ -91,6 +94,11 @@ public class ProgressionCommandApi {
 
     @Handles("progression.command.add-sentence-hearing")
     public void addSentenceHearing(final JsonEnvelope envelope) {
-        sender.send(envelope);
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.record-sentence-hearing");
+        sender.send(commandEnvelope);
+    }
+
+    private JsonEnvelope envelopeWithUpdatedActionName(final JsonEnvelope existingEnvelope, final String name) {
+        return enveloper.withMetadataFrom(existingEnvelope, name).apply(existingEnvelope.payloadAsJsonObject());
     }
 }

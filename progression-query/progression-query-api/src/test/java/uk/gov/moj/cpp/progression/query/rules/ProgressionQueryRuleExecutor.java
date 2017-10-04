@@ -70,23 +70,23 @@ public abstract class ProgressionQueryRuleExecutor extends BaseDroolsAccessContr
 
     protected Map<Class, Object> getProviderMocks() {
         return ImmutableMap.<Class, Object>builder()
-                        .put(UserAndGroupProvider.class, userAndGroupProvider).build();
+                .put(UserAndGroupProvider.class, userAndGroupProvider).build();
     }
 
     protected ExecutionResults executeRules(final String actionName, String[] actionGroups,
-                    String... userGroups) {
+                                            String... userGroups) {
         final Set<String> groupsForTheAction = new HashSet<>(Arrays.asList(actionGroups));
         final Set<String> groupsForTheUser = new HashSet<>(Arrays.asList(userGroups));
 
         final Action action = createActionFor(actionName);
 
         when(enveloper.withMetadataFrom(any(JsonEnvelope.class), eq(USERGROUPS_QUERY)))
-                        .thenReturn(function);
+                .thenReturn(function);
 
         when(function.apply(any(JsonObject.class))).thenReturn(payload);
 
         final JsonEnvelope userGroupsResponse =
-                        envelopeFrom(metadataWithDefaults(), buildGroups(userGroups));
+                envelopeFrom(metadataWithDefaults(), buildGroups(userGroups));
         final JsonEnvelope emptyResponse = envelopeFrom(metadataWithDefaults(), buildGroups());
 
         groupsForTheAction.retainAll(groupsForTheUser);
@@ -100,15 +100,15 @@ public abstract class ProgressionQueryRuleExecutor extends BaseDroolsAccessContr
 
     protected Action createActionFor(final String actionName) {
         JsonObject jsonObject = Json.createObjectBuilder().add(ID, UUID_ID).add(NAME, actionName)
-                        .add(CORRELATION,
-                                        Json.createObjectBuilder().add(CLIENT_ID,
-                                                        UUID_CLIENT_CORRELATION))
-                        .add(CAUSATION, Json.createArrayBuilder().add(UUID_CAUSATION))
-                        .add(CONTEXT, Json.createObjectBuilder().add(USER_ID, UUID_USER_ID)
-                                        .add(SESSION_ID, UUID_SESSION_ID))
-                        .add(STREAM, Json.createObjectBuilder().add(STREAM_ID, UUID_STREAM_ID)
-                                        .add(VERSION, STREAM_VERSION))
-                        .build();
+                .add(CORRELATION,
+                        Json.createObjectBuilder().add(CLIENT_ID,
+                                UUID_CLIENT_CORRELATION))
+                .add(CAUSATION, Json.createArrayBuilder().add(UUID_CAUSATION))
+                .add(CONTEXT, Json.createObjectBuilder().add(USER_ID, UUID_USER_ID)
+                        .add(SESSION_ID, UUID_SESSION_ID))
+                .add(STREAM, Json.createObjectBuilder().add(STREAM_ID, UUID_STREAM_ID)
+                        .add(VERSION, STREAM_VERSION))
+                .build();
         return new Action(envelopeFrom(metadataFrom(jsonObject), JsonValue.NULL));
     }
 
@@ -116,7 +116,7 @@ public abstract class ProgressionQueryRuleExecutor extends BaseDroolsAccessContr
         final JsonObjectBuilder json = Json.createObjectBuilder();
         final JsonArrayBuilder groupsArray = Json.createArrayBuilder();
         for (String groupId : groupIds) {
-            groupsArray.add(Json.createObjectBuilder().add("groupId", groupId));
+            groupsArray.add(Json.createObjectBuilder().add("groupId", groupId).add("groupName", groupId));
         }
         json.add("groups", groupsArray);
         return json.build();

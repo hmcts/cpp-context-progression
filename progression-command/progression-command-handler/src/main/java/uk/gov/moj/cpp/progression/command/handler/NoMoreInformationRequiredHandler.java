@@ -13,7 +13,7 @@ import java.util.UUID;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class NoMoreInformationRequiredHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.no-more-information-required")
+    @Handles("progression.command.record-no-more-information-required")
     public void noMoreInformationRequired(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.noMoreInformationForDefendant(
