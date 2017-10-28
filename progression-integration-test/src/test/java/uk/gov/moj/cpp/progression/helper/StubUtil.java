@@ -30,6 +30,7 @@ public class StubUtil {
 
 
     public static void resetStubs() {
+
         reset();
         InternalEndpointMockUtils.stubPingFor("structure-query-api");
         InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");

@@ -32,7 +32,7 @@ import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ProgressionIntegrationTest {
+public class ProgressionIT {
 
     private String caseId;
     private String caseProgressionId;

@@ -7,6 +7,10 @@
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=progression
+EVENT_LOG_VERSION=1.0.0
+EVENT_BUFFER_VERSION=1.0.0
+
+
 
 #fail script on error
 set -e
@@ -34,7 +38,7 @@ function deleteAndDeployWars {
   sleep 10
 
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.undeployed
-  find . -name "*.war" -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
+  find . \( -iname "*.war" ! -iname "${CONTEXT_NAME}-service-*.war" \) -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
   echo "Copied wars to $WILDFLY_DEPLOYMENT_DIR"
 }
 
@@ -84,22 +88,43 @@ function healthCheck {
   done
 }
 
+function runEventLogLiquibase() {
+    echo "Executing event log Liquibase"
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:event-repository-liquibase:${EVENT_LOG_VERSION}:jar
+    java -jar target/event-repository-liquibase-${EVENT_LOG_VERSION}.jar --url=jdbc:postgresql://localhost:5432/progressioneventstore --username=progression --password=progression --logLevel=info update
+    echo "Finished executing event log liquibase"
+}
+
+function runEventLogAggregateSnapshotLiquibase() {
+    echo "Running EventLogAggregateSnapshotLiquibase"
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:aggregate-snapshot-repository-liquibase:${EVENT_LOG_VERSION}:jar
+    java -jar target/aggregate-snapshot-repository-liquibase-${EVENT_LOG_VERSION}.jar --url=jdbc:postgresql://localhost:5432/progressioneventstore --username=progression --password=progression --logLevel=info update
+    echo "Finished executing EventLogAggregateSnapshotLiquibase liquibase"
+}
+
+function runEventBufferLiquibase() {
+    echo "running event buffer liquibase"
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:event-buffer-liquibase:${EVENT_BUFFER_VERSION}:jar
+    java -jar target/event-buffer-liquibase-${EVENT_BUFFER_VERSION}.jar --url=jdbc:postgresql://localhost:5432/progressionviewstore --username=progression --password=progression --logLevel=info update
+    echo "finished running event buffer liquibase"
+}
+
+function runViewStoreLiquibase {
+  #run liquibase for context
+  mvn -f ${CONTEXT_NAME}-viewstore/${CONTEXT_NAME}-viewstore-liquibase/pom.xml -Dliquibase.url=jdbc:postgresql://localhost:5432/progressionviewstore -Dliquibase.username=progression -Dliquibase.password=progression -Dliquibase.logLevel=info resources:resources liquibase:update
+  echo "Finished executing liquibase"
+}
+
 function integrationTests {
   echo
   echo "Running Integration Tests"
-  mvn -f ${CONTEXT_NAME}-integration-test/pom.xml clean integration-test -P${CONTEXT_NAME}-integration-test
+  mvn -f ${CONTEXT_NAME}-integration-test/pom.xml clean integration-test -P${CONTEXT_NAME}-integration-test -DtrimStackTrace=false -DINTEGRATION_HOST_KEY=localhost
   echo "Finished running Integration Tests"
 }
 
-function createEventLog() {
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.moj.cpp.common-streaming.event-repository:envelope-repository-jpa-liquibase:0.2.0:jar
-    java -jar target/envelope-repository-jpa-liquibase-0.2.0.jar --url=jdbc:postgresql://localhost:5432/postgres --username=postgres --password=postgres --logLevel=info update
-}
 
-function runLiquibase {
-  #run liquibase for context
-  mvn -f ${CONTEXT_NAME}-viewstore/${CONTEXT_NAME}-viewstore-liquibase/pom.xml -Dliquibase.url=jdbc:postgresql://localhost:5432/postgres -Dliquibase.username=postgres -Dliquibase.password=postgres -Dliquibase.logLevel=info resources:resources liquibase:update
-  echo "Finished executing liquibase"
+function deployWiremock() {
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=$WILDFLY_DEPLOYMENT_DIR -Dartifact=uk.gov.justice.services:wiremock-service:1.1.0:war
 }
 
 function buildDeployAndTest {
@@ -109,9 +134,12 @@ function buildDeployAndTest {
 
 function deployAndTest {
   deleteAndDeployWars
+  deployWiremock
   startVagrant
-  createEventLog
-  runLiquibase
+  runEventLogLiquibase
+  runEventLogAggregateSnapshotLiquibase
+  runViewStoreLiquibase
+  runEventBufferLiquibase
   healthCheck
   integrationTests
 }
