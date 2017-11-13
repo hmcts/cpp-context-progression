@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
@@ -26,19 +27,18 @@ public class AddCaseToCrownCourtIT {
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId);
+        caseProgressionId = caseId;
+        createMockEndpoints();
     }
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
         // given
-        addCaseToCrownCourt(caseId, caseProgressionId);
-
+        addDefendant(caseId);
         // when
-        final String response = getCaseProgressionFor(caseId);
-
+        addCaseToCrownCourt(caseId, caseProgressionId);
         // then
+        final String response = getCaseProgressionFor(caseId);
         final JsonObject defendantsJsonObject = getJsonObject(response);
         assertThat(defendantsJsonObject.getString("courtCentreId"), equalTo("courtCentreId"));
     }

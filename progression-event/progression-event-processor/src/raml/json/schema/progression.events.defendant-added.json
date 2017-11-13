@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "personId": {
+      "type": "string"
+    },
+    "policeDefendantId": {
+      "type": "string"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "policeOffenceId": {
+            "type": "string"
+          },
+          "cpr": {
+            "type": "object",
+            "properties": {
+              "defendantOffender": {
+                "type": "object",
+                "properties": {
+                  "year": {
+                    "type": "string"
+                  },
+                  "organisationUnit": {
+                    "type": "string"
+                  },
+                  "number": {
+                    "type": "string"
+                  },
+                  "checkDigit": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "year",
+                  "organisationUnit",
+                  "number",
+                  "checkDigit"
+                ]
+              },
+              "cjsCode": {
+                "type": "string"
+              },
+              "offenceSequence": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "defendantOffender",
+              "cjsCode",
+              "offenceSequence"
+            ]
+          },
+          "asnSequenceNumber": {
+            "type": "string"
+          },
+          "cjsCode": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "wording": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "arrestDate": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "chargeDate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "policeOffenceId",
+          "cpr",
+          "asnSequenceNumber",
+          "cjsCode",
+          "description",
+          "wording",
+          "category",
+          "startDate"
+        ]
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "personId",
+    "policeDefendantId",
+    "offences"
+  ]
+}

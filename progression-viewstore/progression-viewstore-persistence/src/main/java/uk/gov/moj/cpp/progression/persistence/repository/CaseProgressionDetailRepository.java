@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.Repository;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 
 @Repository
 public interface CaseProgressionDetailRepository extends EntityRepository<CaseProgressionDetail, UUID> {
@@ -28,4 +29,8 @@ public interface CaseProgressionDetailRepository extends EntityRepository<CasePr
     @Query(value = "from CaseProgressionDetail c where c.status <> 'COMPLETED') ")
     List<CaseProgressionDetail> findOpenStatus();
 
+    @Query(value = "SELECT cd.defendants FROM CaseProgressionDetail cd where cd.caseId = :caseId")
+    List<Defendant> findCaseDefendants(@QueryParam("caseId") final UUID caseId);
+
+    List<CaseProgressionDetail> findCaseByCaseUrn(String caseUrn);
 }

@@ -119,3 +119,12 @@ rule "Command - Access control for progression.command.defendant-document"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Access control for progression.command.add-defendant"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.add-defendant");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "CMS"))
+  then
+    $outcome.setSuccess(true);
+end

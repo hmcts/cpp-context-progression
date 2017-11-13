@@ -17,6 +17,8 @@ import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProsecutionCommand;
+import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantDefenceSolicitorFirm;
+import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantInterpreter;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
@@ -29,8 +31,10 @@ import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformatio
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceSolicitorFirmUpdatedForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
+import uk.gov.moj.cpp.progression.domain.event.defendant.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 
@@ -69,18 +73,29 @@ public class ProgressionEventFactory {
                 return defendantEventBuilder.build();
             };
 
+    public static DefenceSolicitorFirmUpdatedForDefendant asSolicitorFirmUpdatedForDefendant(
+            UpdateDefendantDefenceSolicitorFirm updateDefendantSolicitorFirm) {
+                return new DefenceSolicitorFirmUpdatedForDefendant(
+                        updateDefendantSolicitorFirm.getCaseId(),
+                        updateDefendantSolicitorFirm.getDefendantId(),
+                        updateDefendantSolicitorFirm.getDefenceSolicitorFirm());
+            }
+
+    public static InterpreterUpdatedForDefendant asInterpreterUpdatedForDefendant(
+            final UpdateDefendantInterpreter updateDefendantInterpreter) {
+                return new InterpreterUpdatedForDefendant(
+                        updateDefendantInterpreter.getCaseId(),
+                        updateDefendantInterpreter.getDefendantId(),
+                        updateDefendantInterpreter.getInterpreter()
+                );
+            }
+
     public CaseAddedToCrownCourt createCaseAddedToCrownCourt(final JsonEnvelope envelope) {
-        final UUID caseProgressionId = UUID.fromString(
-                envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final UUID caseId =
                 UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final String courtCentreId =
                 envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTER_ID);
-        final JsonArray defendants = envelope.payloadAsJsonObject().getJsonArray("defendants");
-        final List<Defendant> defendantIds = defendants.stream()
-                .map(s -> new Defendant(UUID.fromString(((JsonObject) s).getString("id"))))
-                .collect(Collectors.toList());
-        return new CaseAddedToCrownCourt(caseProgressionId, caseId, courtCentreId, defendantIds, CaseStatusEnum.INCOMPLETE);
+        return new CaseAddedToCrownCourt(caseId, courtCentreId);
     }
 
     public SendingCommittalHearingInformationAdded createSendingCommittalHearingInformationAdded(final JsonEnvelope envelope) {

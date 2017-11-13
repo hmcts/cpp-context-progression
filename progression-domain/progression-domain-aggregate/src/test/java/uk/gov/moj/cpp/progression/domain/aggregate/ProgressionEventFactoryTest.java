@@ -11,6 +11,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
+import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantInterpreter;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
@@ -20,6 +22,8 @@ import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsReq
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Interpreter;
+import uk.gov.moj.cpp.progression.domain.event.defendant.InterpreterUpdatedForDefendant;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -43,6 +47,7 @@ public class ProgressionEventFactoryTest {
 
     private static final String PROGRESSION_ID = randomUUID();
     private static final String CASE_ID = randomUUID();
+    private static final String DEFENDANT_ID = randomUUID();
 
     @Mock
     JsonEnvelope envelope;
@@ -141,6 +146,17 @@ public class ProgressionEventFactoryTest {
 
         // then
         assertThat(defendantEvent, sameAs(defendant));
+    }
+
+
+    @Test
+    public void testCreateInterpreterUpdatedForDefendant() {
+        UUID caseId=UUID.randomUUID();
+        UUID defendantId=UUID.randomUUID();
+        Interpreter interpreter=new Interpreter();
+        UpdateDefendantInterpreter updateDefendantInterpreter=new UpdateDefendantInterpreter(caseId,defendantId,interpreter);
+        final Object obj = progressionEventFactory.asInterpreterUpdatedForDefendant(updateDefendantInterpreter);
+        assertThat(obj, instanceOf(InterpreterUpdatedForDefendant.class));
     }
 
     private Matcher<DefendantAdditionalInformationAdded> sameAs(

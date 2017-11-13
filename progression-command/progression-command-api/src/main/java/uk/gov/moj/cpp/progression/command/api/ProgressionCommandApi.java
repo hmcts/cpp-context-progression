@@ -8,7 +8,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
-import uk.gov.moj.cpp.progression.command.api.service.StructureReadService;
 
 import java.util.List;
 
@@ -25,28 +24,10 @@ public class ProgressionCommandApi {
     @Inject
     private Enveloper enveloper;
 
-    @Inject
-    private StructureReadService structureCaseService;
-
 
     @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope envelope) {
-        String userId = envelope.metadata().userId()
-                .orElseThrow(() -> new RuntimeException("User Id not found in metadata"));
-        List<String> defendentdIdsForCase = structureCaseService.getStructureCaseDefendantsId(
-                envelope.payloadAsJsonObject().getString("caseId"), userId);
-        JsonArrayBuilder defendantsBuilder = Json.createArrayBuilder();
-
-        defendentdIdsForCase.forEach(
-                s -> defendantsBuilder.add(Json.createObjectBuilder().add("id", s)));
-
-        final JsonObject command = JsonObjects.createObjectBuilder(envelope.payloadAsJsonObject())
-                .add("defendants", defendantsBuilder.build()).build();
-
-        JsonEnvelope modifiedJsonEnvelope = enveloper
-                .withMetadataFrom(envelope, "progression.command.add-case-to-progression")
-                .apply(command);
-        sender.send(modifiedJsonEnvelope);
+        sender.send(envelope);
     }
 
     @Handles("progression.command.sending-committal-hearing-information")
@@ -98,6 +79,11 @@ public class ProgressionCommandApi {
         sender.send(commandEnvelope);
     }
 
+    @Handles("progression.command.update-plea")
+    public void updatePlea(final JsonEnvelope envelope) {
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.handler.update-plea");
+        sender.send(commandEnvelope);
+    }
     private JsonEnvelope envelopeWithUpdatedActionName(final JsonEnvelope existingEnvelope, final String name) {
         return enveloper.withMetadataFrom(existingEnvelope, name).apply(existingEnvelope.payloadAsJsonObject());
     }

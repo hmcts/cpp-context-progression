@@ -30,6 +30,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.cases+json
             name: progression.query.cases
+         (mapping):
+            responseType: application/vnd.progression.query.case-by-urn+json
+            name: progression.query.case-by-urn
         ...
       queryParameters:
         status:
@@ -41,11 +44,18 @@ protocols: [ HTTP, HTTPS ]
           description: ID of case to search
           type: string
           required: false
+        urn:
+          description: urn of case to search
+          type: string
+          required: false
       responses:
             200:
                 description: OK        
                 body: 
                   application/vnd.progression.query.cases+json:
+                    example:  !include json/progression.query.cases.json
+                    schema:  !include json/schema/progression.query.cases.json
+                  application/vnd.progression.query.case-by-urn+json:
                     example:  !include json/progression.query.cases.json
                     schema:  !include json/schema/progression.query.cases.json
 
@@ -93,3 +103,27 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.defendants+json:
                     example:  !include json/progression.query.defendants.json
                     schema:  !include json/schema/progression.query.defendants.json
+
+/cases/{caseId}/defendant/{defendantId}/offences:
+   uriParameters:
+     caseId:
+       description: The ID of the case
+       type: string
+     defendantId:
+       description: The ID of the defendant
+       type: string
+   get:
+     description: |
+       Retrieve offences data information
+       ...
+       (mapping):
+           responseType: application/vnd.progression.query.defendant-offences+json
+           name: progression.query.defendant-offences
+       ...
+     responses:
+         200:
+           description: OK
+           body:
+                 application/vnd.progression.query.defendant-offences+json:
+                   schema: !include json/schema/progression.query.defendant-offences.json
+                   example: !include json/progression.query.defendant-offences.json

@@ -14,6 +14,7 @@ public class CaseProgressionDetailToViewConverter {
         caseProgressionDetailVo = new CaseProgressionDetailView();
         caseProgressionDetailVo.setCaseProgressionId(caseProgressionDetail.getId().toString());
         caseProgressionDetailVo.setCaseId(caseProgressionDetail.getCaseId().toString());
+        caseProgressionDetailVo.setCaseUrn(caseProgressionDetail.getCaseUrn());
         if (caseProgressionDetail.getStatus() != null) {
             caseProgressionDetailVo.setStatus(caseProgressionDetail.getStatus().toString());
         }

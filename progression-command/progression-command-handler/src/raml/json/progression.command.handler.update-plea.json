@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "",
+  "type": "object",
+  "properties": {
+    "plea": {
+      "id": "/plea",
+      "type": "string",
+      "enum": ["NOT_GUILTY", "GUILTY", "GUILTY_REQUEST_HEARING"]
+    },
+    "caseId": {
+      "id": "/caseId",
+      "type": "string"
+    },
+    "offenceId": {
+      "id": "/offenceId",
+      "type": "string"
+    }
+  },
+  "required": [
+    "plea",
+    "offenceId",
+    "caseId"
+  ]
+}

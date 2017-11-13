@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.assignCaseForReview;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
@@ -28,13 +29,15 @@ public class AssignCaseForReviewIT {
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId);
+        caseProgressionId = caseId;
+        createMockEndpoints();
+
     }
 
     @Test
     public void shouldAssignCaseToReviewWithCapabilityEnabled() throws Exception {
         // given
+        addDefendant(caseId);
         Response caseAddedToCrownCourtResponse = addCaseToCrownCourt(caseId, caseProgressionId);
         assertThatRequestIsAccepted(caseAddedToCrownCourtResponse);
 

@@ -7,7 +7,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent;
-import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 
@@ -20,8 +19,6 @@ public class NoMoreInformationRequiredEventListener {
     @Inject
     JsonObjectToObjectConverter jsonObjectConverter;
 
-    @Inject
-    CaseAddedToCrownCourtToCaseProgressionDetailConverter entityConverter;
 
     @Inject
     DefendantRepository repository;

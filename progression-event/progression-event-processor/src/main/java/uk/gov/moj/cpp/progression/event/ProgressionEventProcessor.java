@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.event;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.CASE_ID;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -24,7 +25,6 @@ public class ProgressionEventProcessor {
     private static final String PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_ADDED = "public.progression.events.sentence-hearing-added";
     private static final String PUBLIC_PROGRESSION_EVENTS_CASE_ADDED_TO_CROWN_COURT = "public.progression.events.case-added-to-crown-court";
     private static final String PUBLIC_PROGRESSION_EVENTS_CASE_ADDED_TO_CROWN_COURT_EXISTS = "public.progression.events.case-already-exists-in-crown-court";
-    public static final String CASE_ID = "caseId";
     public static final String CASE_PROGRESSION_ID = "caseProgressionId";
     public static final String COURT_CENTRE_ID ="courtCentreId";
     public static final String STATUS ="status";
@@ -61,8 +61,6 @@ public class ProgressionEventProcessor {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
         LOGGER.debug("Raising public event for case added to crown court for caseId: " +caseId);
         final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).
-        add(CASE_PROGRESSION_ID,event.payloadAsJsonObject().getString(CASE_PROGRESSION_ID)).
-        add(STATUS,event.payloadAsJsonObject().getString(STATUS)).
         add(COURT_CENTRE_ID,event.payloadAsJsonObject().getString(COURT_CENTRE_ID)).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_CASE_ADDED_TO_CROWN_COURT).apply(payload));
     }

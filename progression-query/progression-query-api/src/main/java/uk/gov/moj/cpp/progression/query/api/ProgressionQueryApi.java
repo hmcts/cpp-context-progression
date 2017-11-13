@@ -34,6 +34,11 @@ public class ProgressionQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.case-by-urn")
+    public JsonEnvelope getCaseByUrn(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("progression.query.defendant")
     public JsonEnvelope getDefendant(final JsonEnvelope query) {
         return requester.request(query);
@@ -61,6 +66,12 @@ public class ProgressionQueryApi {
         final String crownCourtId = requestPayload.getString("crownCourtId");
         return envelopeFrom(envelope.metadata(), buildRequestPayload(crownCourtId));
     }
+
+    @Handles("progression.query.defendant-offences")
+    public JsonEnvelope findOffences(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 
     private JsonObject buildRequestPayload(final String crownCourtId) {
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();

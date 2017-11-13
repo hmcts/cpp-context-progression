@@ -21,13 +21,14 @@ public class SentenceHearingDateCommandHandlerTest
     @InjectMocks
     private SentenceHearingDateHandler sentenceHearingDateHandler;
 
-    private UUID caseId= UUID.randomUUID();
+    private UUID caseId= CASE_PROGRESSION_ID;
     private LocalDate sentenceHearingDate = LocalDate.now();
 
     @Test
     public void shouldPassNoMoreInformationRequired() throws EventStreamException {
 
         when(jsonObject.getString("caseId")).thenReturn(caseId.toString());
+        when(jsonObject.getString("caseProgressionId")).thenReturn(caseId.toString());
         when(jsonObject.getString("sentenceHearingDate")).thenReturn(sentenceHearingDate.toString());
         when(caseProgressionAggregate.addSentenceHearingDate(caseId,CASE_PROGRESSION_ID,sentenceHearingDate))
                         .thenReturn(events);

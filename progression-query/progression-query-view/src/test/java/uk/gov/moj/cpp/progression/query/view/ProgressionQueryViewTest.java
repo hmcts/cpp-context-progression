@@ -211,7 +211,7 @@ public class ProgressionQueryViewTest {
     public void shouldGetADefendantGivenACaseId() {
         final UUID defendantId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.DEFENDANT_ID, defendantId.toString()).build();
+                        .add(ProgressionQueryView.FIELD_DEFENDANT_ID, defendantId.toString()).build();
         final Defendant defendant = new Defendant();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);

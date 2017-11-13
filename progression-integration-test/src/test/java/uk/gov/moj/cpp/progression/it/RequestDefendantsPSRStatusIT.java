@@ -4,6 +4,7 @@ import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgression;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseAddedToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
@@ -37,15 +38,17 @@ public class RequestDefendantsPSRStatusIT {
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = UUID.randomUUID().toString();
+        caseProgressionId = caseId;
         firstDefendantId = UUID.randomUUID().toString();
         secondDefendantId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId, firstDefendantId, secondDefendantId, caseProgressionId);
+        createMockEndpoints();
+
     }
 
     @Test
     public void shouldRequestPSRForDefendant() throws Exception {
-        givenCaseAddedToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        addDefendant(caseId,firstDefendantId);
+        addDefendant(caseId,secondDefendantId);
 
         pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
                 "application/vnd.progression.query.defendant+json");
@@ -74,12 +77,13 @@ public class RequestDefendantsPSRStatusIT {
         defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
 
         assertThatPSRRequestedForDefendant(defendantsJsonObject);
-    }
+            }
 
     @Test
     public void shouldBeUnableToRequestPSRForDefendant_CapabilityDisabled() throws Exception {
         givenRequestPSRForDefendantCapabilityDisabled();
-        givenCaseAddedToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        addDefendant(caseId,firstDefendantId);
+        addDefendant(caseId,secondDefendantId);
 
         Response writeResponse = postCommand(getCommandUri("/cases/" + caseId + "/defendants/requestpsr"),
                 "application/vnd.progression.command.request-psr-for-defendants+json",

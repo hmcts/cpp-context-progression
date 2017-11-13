@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,7 +22,8 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 @Entity
 @Table(name = "CaseProgressionDetail")
-public class CaseProgressionDetail {
+public class CaseProgressionDetail implements Serializable {
+    private static final long serialVersionUID = 97304452922115611L;
     @Id
     @Column(name = "id", unique = true, nullable = false)
     private UUID id;
@@ -30,6 +33,9 @@ public class CaseProgressionDetail {
 
     @Column(name = "caseid", unique = true, nullable = false)
     private UUID caseId;
+
+    @Column(name = "caseurn", nullable = false)
+    private String caseUrn;
 
     @Column(name = "directionissuedon")
     private LocalDate directionIssuedOn;
@@ -146,5 +152,24 @@ public class CaseProgressionDetail {
 
     public void setSentenceHearingId(UUID sentenceHearingId) {
         this.sentenceHearingId = sentenceHearingId;
+    }
+
+    public Defendant getDefendant(UUID defendentId) {
+        return defendants.stream().filter(defendent -> defendent.getId().equals(defendentId))
+                .findFirst().orElse(null);
+    }
+
+    public void addDefendant(Defendant defendantDetail) {
+        Objects.requireNonNull(defendantDetail);
+        defendants.add(defendantDetail);
+        defendantDetail.setCaseProgressionDetail(this);
+    }
+
+    public String getCaseUrn() {
+        return caseUrn;
+    }
+
+    public void setCaseUrn(String caseUrn) {
+        this.caseUrn = caseUrn;
     }
 }

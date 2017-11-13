@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "interpreter": {
+      "type": "object",
+      "properties": {
+        "needed": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "needed"
+      ]
+    }
+  },
+  "required": [
+    "caseId", "defendantId", "interpreter"
+  ],
+  "additionalProperties": false
+}

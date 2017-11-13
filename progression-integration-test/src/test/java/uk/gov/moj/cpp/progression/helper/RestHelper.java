@@ -86,15 +86,9 @@ public class RestHelper {
         return baseUri + prop.getProperty("base-uri-command") + path;
     }
 
-    public static void createMockEndpoints(String caseId) {
-        createMockEndpoints(caseId, UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(), UUID.randomUUID().toString());
-    }
 
-    public static void createMockEndpoints(String caseId, String firstDefendantId, String secondDefendantId, String caseProgressionId) {
+    public static void createMockEndpoints() {
         StubUtil.resetStubs();
-        StubUtil.setupStructureCaseStub(caseId, firstDefendantId,
-                secondDefendantId, caseProgressionId);
         StubUtil.setupUsersGroupQueryStub();
         AuthorisationServiceStub.stubEnableAllCapabilities();
     }

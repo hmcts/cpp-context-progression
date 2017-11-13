@@ -1,0 +1,17 @@
+{
+  "caseId":"011698fe-1ae3-4b64-a81d-e33982ffe407",
+  "defendantId":"011698fe-1ae3-4b64-a81d-e33982ffe407",
+  "offences": [
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "offenceCode": "H8198",
+      "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+      "indicatedPlea": "GUILTY",
+      "section": "Section 51",
+      "startDate": "2010-08-01",
+      "endDate": "2011-08-01",
+      "orderIndex": 1,
+      "count": 1
+    }
+  ]
+}

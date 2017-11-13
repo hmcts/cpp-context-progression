@@ -7,7 +7,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
-import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 
@@ -25,8 +24,6 @@ public class CaseAddedToCrownCourtEventListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Mock
-    private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourtConverter;
 
     @Mock
     private CaseProgressionDetailRepository repository;
@@ -55,12 +52,11 @@ public class CaseAddedToCrownCourtEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CaseAddedToCrownCourt.class))
                 .thenReturn(caseAddedToCrownCourt);
-        when(caseAddedToCrownCourtConverter.convert(caseAddedToCrownCourt)).thenReturn(caseProgressionDetail);
         when(envelope.metadata()).thenReturn(metadata);
+        when(repository.findByCaseId(caseAddedToCrownCourt.getCaseId())).thenReturn(caseProgressionDetail);
          
         eventListener.addedToCrownCourt(envelope);
 
-        verify(repository).save(caseProgressionDetail);
 
     }
 }
