@@ -35,7 +35,7 @@ public class DefendantAllocationDecisionRemovedListenerTest {
     public void shouldHandleAllocationDecisionRemoved() throws Exception {
         // given
         JsonEnvelope event = envelopeFrom(
-                metadataOf(UUID.randomUUID(), "structure.events.defendant-allocation-decision-removed"),
+                metadataOf(UUID.randomUUID(), "progression.events.defendant-allocation-decision-removed"),
                 createObjectBuilder()
                         .add("caseId", CASE_ID.toString())
                         .add("defendantId", DEFENDANT_ID.toString())

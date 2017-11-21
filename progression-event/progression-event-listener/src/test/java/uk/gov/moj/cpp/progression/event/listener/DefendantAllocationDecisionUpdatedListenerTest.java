@@ -37,7 +37,7 @@ public class DefendantAllocationDecisionUpdatedListenerTest {
     public void shouldHandleAllocationDecisionUpdatedEvent() throws Exception {
         // given
         JsonEnvelope event = envelopeFrom(
-                metadataOf(UUID.randomUUID(), "structure.events.action-plan-created"),
+                metadataOf(UUID.randomUUID(), "progression.events.defendant-allocation-decision-updated"),
                 createObjectBuilder()
                         .add("caseId", CASE_ID.toString())
                         .add("defendantId", DEFENDANT_ID.toString())

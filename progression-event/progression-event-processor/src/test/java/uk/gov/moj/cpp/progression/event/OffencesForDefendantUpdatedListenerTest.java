@@ -48,7 +48,7 @@ public class OffencesForDefendantUpdatedListenerTest {
         String caseId = randomUUIDStr();
         String defendantId = randomUUIDStr();
         JsonEnvelope jsonEnvelope = envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("structure.events.offences-for-defendant-updated"))
+                .with(JsonObjectMetadata.metadataWithRandomUUID("pro.events.offences-for-defendant-updated"))
                 .withPayloadOf(caseId, CASE_ID)
                 .withPayloadOf(defendantId, DEFENDANT_ID)
                 .build();

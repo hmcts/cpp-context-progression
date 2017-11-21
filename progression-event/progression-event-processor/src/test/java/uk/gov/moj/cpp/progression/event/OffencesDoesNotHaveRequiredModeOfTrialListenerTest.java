@@ -48,7 +48,7 @@ public class OffencesDoesNotHaveRequiredModeOfTrialListenerTest {
         String caseId = randomUUIDStr();
         String defendantId = randomUUIDStr();
         JsonEnvelope jsonEnvelope = envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("structure.events.defendant-offences-does-not-have-required-modeoftrial"))
+                .with(JsonObjectMetadata.metadataWithRandomUUID("progression.events.defendant-offences-does-not-have-required-modeoftrial"))
                 .withPayloadOf(caseId, CASE_ID)
                 .withPayloadOf(defendantId, DEFENDANT_ID)
                 .build();

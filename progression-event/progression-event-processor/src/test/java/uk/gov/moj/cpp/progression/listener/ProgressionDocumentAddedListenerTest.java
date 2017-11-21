@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.structure.listener;
+package uk.gov.moj.cpp.progression.listener;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.Matchers.allOf;

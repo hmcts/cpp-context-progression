@@ -49,7 +49,7 @@ public class DefendantAllocationDecisionUpdatedListenerTest {
         String caseId = randomUUIDStr();
         String defendantId = randomUUIDStr();
         JsonEnvelope jsonEnvelope = envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("structure.events.defendant-allocation-decision-updated"))
+                .with(JsonObjectMetadata.metadataWithRandomUUID("progression.events.defendant-allocation-decision-updated"))
                 .withPayloadOf(caseId, CASE_ID)
                 .withPayloadOf(defendantId, DEFENDANT_ID)
                 .build();

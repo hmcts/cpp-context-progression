@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.structure.listener;
+package uk.gov.moj.cpp.progression.listener;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
