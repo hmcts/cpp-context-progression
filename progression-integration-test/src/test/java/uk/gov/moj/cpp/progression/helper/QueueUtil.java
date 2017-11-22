@@ -26,7 +26,9 @@ public class QueueUtil {
 
     private static final String EVENT_SELECTOR_TEMPLATE = "CPPNAME IN ('%s')";
 
-    private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://localhost:61616");
+    private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY","localhost");
+
+    private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://"+HOST+":61616");
 
     private static final long RETRIEVE_TIMEOUT = 20000;
 
