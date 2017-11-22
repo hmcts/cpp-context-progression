@@ -35,8 +35,8 @@ public abstract class AbstractTestHelper implements AutoCloseable {
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String USER_ID = UUID.randomUUID().toString();
     private static final String STRUCTURE_SYSTEM_USER = "38e4b0c2-b4d4-4078-a857-7a5570e7ae73";
-
-    protected static final String BASE_URI = System.getProperty("baseUri", "http://localhost:8080");
+    private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY","localhost");
+    protected static final String BASE_URI = System.getProperty("baseUri", "http://"+HOST+":8080");
     protected static final String STRUCTURE_EVENT_TOPIC = "progression.event";
     private static final String WRITE_BASE_URL = "/progression-command-api/command/api/rest/progression";
     private static final String READ_BASE_URL = "/progression-query-api/query/api/rest/progression";
