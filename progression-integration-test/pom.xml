@@ -126,6 +126,7 @@
                                 <property>
                                     <name>INTEGRATION_HOST_KEY</name>
                                     <value>${INTEGRATION_HOST_KEY}</value>
+                                    <queueUri>tcp://${INTEGRATION_HOST_KEY}:61616</queueUri>
                                 </property>
                             </systemProperties>
                         </configuration>
