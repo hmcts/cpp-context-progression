@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateDefendantAllocationDecisionHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.update-allocation-decision-for-defendant")
+    @Handles("progression.command.handler.update-allocation-decision-for-defendant")
     public void updateDefendantAllocationDecision(final JsonEnvelope command)
                     throws EventStreamException {
         applyToCaseProgressionAggregate(command,
