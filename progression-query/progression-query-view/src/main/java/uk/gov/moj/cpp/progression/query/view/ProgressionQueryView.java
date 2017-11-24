@@ -48,6 +48,8 @@ public class ProgressionQueryView {
     static final String DEFENDANT_DOCUMENT_RESPONSE = "progression.query.defendant.document-response";
     private static final String NAME_RESPONSE_DEFENDANT_OFFENCES = "progression.query.defendant-offences-response";
     public static final String NO_CASE_PROGRESSION_DETAIL_FOUND_FOR_CASE_ID = "No CaseProgressionDetail found for caseId: ";
+    private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "progression.query.cases-search-by-material-id-response";
+    static final String FIELD_QUERY = "q";
 
     @Inject
     StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -123,19 +125,7 @@ public class ProgressionQueryView {
 
     @Handles("progression.query.case-by-urn")
     public JsonEnvelope findCaseByUrn(final JsonEnvelope envelope) {
-        List<CaseProgressionDetail> cases = new ArrayList<CaseProgressionDetail>();
-        cases = caseProgressionDetailService.findCaseByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_URN));
-
-        final List<CaseProgressionDetailView> caseProgressionDetailView = cases.stream()
-                .map(caseProgressionDetail -> caseProgressionDetailToViewConverter
-                        .convert(caseProgressionDetail))
-                .collect(Collectors.toList());
-
-        return enveloper.withMetadataFrom(envelope, CASES_RESPONSE_LIST)
-                .apply(Json.createObjectBuilder()
-                        .add("cases", listToJsonArrayConverter
-                                .convert(caseProgressionDetailView))
-                        .build());
+        return enveloper.withMetadataFrom(envelope, CASES_RESPONSE_LIST).apply( caseProgressionDetailService.findCaseByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_URN)));
     }
 
     @Handles("progression.query.defendant")
@@ -208,6 +198,13 @@ public class ProgressionQueryView {
     public JsonEnvelope findOffences(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_DEFENDANT_OFFENCES).apply(
                 offencesService.findOffences(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID), envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID)));
+    }
+
+    @Handles("progression.query.cases-search-by-material-id")
+    public JsonEnvelope searchCaseByMaterialId(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID).apply(
+                caseProgressionDetailService.searchCaseByMaterialId(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
+
     }
 
 }

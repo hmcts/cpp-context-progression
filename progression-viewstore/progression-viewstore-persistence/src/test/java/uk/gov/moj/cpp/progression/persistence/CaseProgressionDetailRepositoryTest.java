@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.progression.persistence;
 
+import static com.sun.org.apache.xerces.internal.util.PropertyState.is;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 
 import java.time.LocalDate;
@@ -23,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 
 @RunWith(CdiTestRunner.class)
 public class CaseProgressionDetailRepositoryTest {
@@ -30,15 +33,16 @@ public class CaseProgressionDetailRepositoryTest {
     private static final String COURT_CENTER = "Liverpool";
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID CASE_ID_TWO = UUID.randomUUID();
-    private static final UUID DEF_PRG_ID = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
     public static final ZonedDateTime CASE_STATUS_UPDATED_DATE_TIME = ZonedDateTime.now(ZoneOffset.UTC).plusDays(7);
     public static final String CASE_URN_ONE = "URNONE";
     public static final String CASE_URN_TWO = "URNTWO";
+    public static final UUID MATERIAL_ID = UUID.randomUUID();
     private static LocalDate now;
     private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
     @Inject
     private CaseProgressionDetailRepository repository;
+
 
     @Before
     public void setup() {
@@ -46,8 +50,14 @@ public class CaseProgressionDetailRepositoryTest {
         final CaseProgressionDetail caseProgressionDetailOne =
                         createCaseProgressionDetail(CASE_ID_ONE, CaseStatusEnum.INCOMPLETE, CASE_URN_ONE);
         caseProgressionDetails.add(caseProgressionDetailOne);
+
         final Defendant defendant =
-                        new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false,null);
+                        new Defendant(DEF_ID, DEF_ID, caseProgressionDetailOne, false,null);
+        DefendantBailDocument defendantBailDocument=new DefendantBailDocument();
+        defendantBailDocument.setDocumentId(MATERIAL_ID);
+        defendantBailDocument.setId(UUID.randomUUID());
+        defendantBailDocument.setActive(Boolean.TRUE);
+        defendant.addDefendantBailDocument(defendantBailDocument);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
@@ -108,10 +118,16 @@ public class CaseProgressionDetailRepositoryTest {
 
     @Test
     public void shouldFindCaseByUrn() throws Exception {
-        final List<CaseProgressionDetail> results = repository.findCaseByCaseUrn(CASE_URN_ONE);
-        assertThat(results.size(), equalTo(1));
-        final CaseProgressionDetail result = results.get(0);
-        assertThat(result.getCaseUrn(), equalTo(CASE_URN_ONE));
+        final CaseProgressionDetail caseProgressionDetails = repository.findCaseByCaseUrn(CASE_URN_ONE);
+        assertThat(caseProgressionDetails.getCaseUrn(), equalTo(CASE_URN_ONE));
+    }
+
+
+    @Test
+    public void shouldfindCaseByMaterialIdWhenMaterialIsDocument() {
+
+        CaseProgressionDetail caseProgressionDetail = repository.findByMaterialId(MATERIAL_ID);
+        assertThat(caseProgressionDetail.getCaseId(), equalTo(CASE_ID_ONE));
     }
 
     @Test

@@ -263,7 +263,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
                                 status().is(OK),
                                 payload()
                                         .isJson(allOf(
-                                                withJsonPath("$.cases[0].caseUrn", is(caseUrn)))
+                                                withJsonPath("$.caseUrn", is(caseUrn)))
                                         ))
         );
     }

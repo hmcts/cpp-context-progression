@@ -72,7 +72,7 @@ rule "Query - Access control for  progression.query.crown-court.magistrate-court
 end
 
 
-rule "Structure - Query - API - Cases defendant offences"
+rule "progression - Query - API - Cases defendant offences"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.defendant-offences");
@@ -80,3 +80,13 @@ rule "Structure - Query - API - Cases defendant offences"
   then
     $outcome.setSuccess(true);
 end
+
+rule "progression - Query - API - search by material id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.cases-search-by-material-id");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
+  then
+    $outcome.setSuccess(true);
+end
+
