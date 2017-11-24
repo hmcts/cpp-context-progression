@@ -13,9 +13,13 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 public class DefaultRequests {
     public static final String GET_CASE_DEFENDANTS = "application/vnd.progression.query.defendants+json";
     public static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.progression.query.case+json";
+    public static final String GET_CASE_BY_URN_MEDIA_TYPE = "application/vnd.progression.query.case-by-urn+json";
     public static final String GET_OFFENCES_BY_CASE_ID_MEDIA_TYPE = "application/vnd.progression.query.defendant-offences+json";
 
 
+    public static RequestParamsBuilder getCaseByUrn(final String caseUrn) {
+        return getCaseByUrn(caseUrn , USER_ID);
+    }
 
     public static RequestParamsBuilder getCaseById(final String caseId) {
         return getCaseById(caseId, USER_ID);
@@ -26,6 +30,10 @@ public class DefaultRequests {
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 
+    public static RequestParamsBuilder getCaseByUrn(final String caseUrn, String userId) {
+        return requestParams(getReadUrl("/cases?urn="+caseUrn ), GET_CASE_BY_URN_MEDIA_TYPE)
+                .withHeader(HeaderConstants.USER_ID, userId);
+    }
 
     public static RequestParamsBuilder getDefendantsByCaseId(final String caseId) {
         return requestParams(getReadUrl(format("/cases/%s/defendants", caseId)), GET_CASE_DEFENDANTS)

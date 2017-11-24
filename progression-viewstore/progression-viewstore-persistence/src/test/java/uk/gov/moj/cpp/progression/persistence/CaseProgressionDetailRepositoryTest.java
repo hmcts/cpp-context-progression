@@ -107,6 +107,14 @@ public class CaseProgressionDetailRepositoryTest {
     }
 
     @Test
+    public void shouldFindCaseByUrn() throws Exception {
+        final List<CaseProgressionDetail> results = repository.findCaseByCaseUrn(CASE_URN_ONE);
+        assertThat(results.size(), equalTo(1));
+        final CaseProgressionDetail result = results.get(0);
+        assertThat(result.getCaseUrn(), equalTo(CASE_URN_ONE));
+    }
+
+    @Test
     public void shouldFindByStatus() throws Exception {
         final List<CaseProgressionDetail> results =
                         repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));

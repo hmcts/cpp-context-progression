@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -17,21 +20,16 @@ import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantDocumentView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
 import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
+import uk.gov.moj.cpp.progression.query.view.service.OffencesService;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.persistence.NoResultException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.progression.query.view.service.OffencesService;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProgressionQueryView {
@@ -125,8 +123,19 @@ public class ProgressionQueryView {
 
     @Handles("progression.query.case-by-urn")
     public JsonEnvelope findCaseByUrn(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE).apply(
-                caseProgressionDetailService.findCaseByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_URN)));
+        List<CaseProgressionDetail> cases = new ArrayList<CaseProgressionDetail>();
+        cases = caseProgressionDetailService.findCaseByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_URN));
+
+        final List<CaseProgressionDetailView> caseProgressionDetailView = cases.stream()
+                .map(caseProgressionDetail -> caseProgressionDetailToViewConverter
+                        .convert(caseProgressionDetail))
+                .collect(Collectors.toList());
+
+        return enveloper.withMetadataFrom(envelope, CASES_RESPONSE_LIST)
+                .apply(Json.createObjectBuilder()
+                        .add("cases", listToJsonArrayConverter
+                                .convert(caseProgressionDetailView))
+                        .build());
     }
 
     @Handles("progression.query.defendant")

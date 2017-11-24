@@ -32,5 +32,6 @@ public interface CaseProgressionDetailRepository extends EntityRepository<CasePr
     @Query(value = "SELECT cd.defendants FROM CaseProgressionDetail cd where cd.caseId = :caseId")
     List<Defendant> findCaseDefendants(@QueryParam("caseId") final UUID caseId);
 
-    List<CaseProgressionDetail> findCaseByCaseUrn(String caseUrn);
+    @Query(value = "FROM CaseProgressionDetail cd WHERE UPPER(cd.caseUrn) = UPPER(?1)")
+    List<CaseProgressionDetail> findCaseByCaseUrn( String caseUrn);
 }

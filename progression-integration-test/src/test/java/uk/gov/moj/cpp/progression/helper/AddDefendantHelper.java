@@ -32,6 +32,7 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getCaseById;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getCaseByUrn;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantsByCaseId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_ADDED;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED;
@@ -83,7 +84,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
         publicEventDefendantAdditionFailedConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, PUBLIC_ACTIVE_MQ_TOPIC);
         personId = UUID.randomUUID().toString();
-        caseUrn = UUID.randomUUID().toString();
+        caseUrn = UUID.randomUUID().toString().replace("-","").substring(0,8).toUpperCase();
     }
 
     /*
@@ -237,7 +238,6 @@ public class AddDefendantHelper extends AbstractTestHelper {
 
         final Filter personIdFilter = filter(where("personId").is(jsRequest.get("personId")));
 
-        final RequestParamsBuilder getCaseById = getCaseById(caseId);
         final RequestParamsBuilder getDefendantsByCaseId = getDefendantsByCaseId(caseId);
 
         final List<RequestParamsBuilder> endPointsToTest = asList(getDefendantsByCaseId);
@@ -251,12 +251,28 @@ public class AddDefendantHelper extends AbstractTestHelper {
         );
     }
 
+    public void verifySearchForCaseByURN() {
+
+        final RequestParamsBuilder caseByUrn = getCaseByUrn(caseUrn);
+
+        final List<RequestParamsBuilder> endPointsToTest = asList(caseByUrn);
+
+        endPointsToTest.forEach(endPoint ->
+                poll(endPoint)
+                        .until(
+                                status().is(OK),
+                                payload()
+                                        .isJson(allOf(
+                                                withJsonPath("$.cases[0].caseUrn", is(caseUrn)))
+                                        ))
+        );
+    }
+
  public void verifyFullDefendantAdded() {
         final JsonPath jsRequest = new JsonPath(request);
 
         final Filter personIdFilter = filter(where("personId").is(jsRequest.get("personId")));
 
-        final RequestParamsBuilder getCaseById = getCaseById(caseId);
         final RequestParamsBuilder getDefendantsByCaseId = getDefendantsByCaseId(caseId);
 
         final List<RequestParamsBuilder> endPointsToTest = asList(getDefendantsByCaseId);
