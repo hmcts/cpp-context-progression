@@ -36,7 +36,7 @@ public class CaseProgressionDetailToViewConverter {
 
         DefendantToDefendantViewConverter defendantToDefendantViewConverter=new DefendantToDefendantViewConverter();
         List<DefendantView> defendantViews=caseProgressionDetail.getDefendants().stream().map(d-> defendantToDefendantViewConverter.convert(d)).collect(Collectors.toList());
-        caseProgressionDetailVo.setDefendantViewList(defendantViews);
+        caseProgressionDetailVo.setDefendants(defendantViews);
         return caseProgressionDetailVo;
     }
 

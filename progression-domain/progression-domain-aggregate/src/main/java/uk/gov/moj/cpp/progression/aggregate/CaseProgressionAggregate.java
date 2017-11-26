@@ -84,7 +84,12 @@ public class CaseProgressionAggregate implements Aggregate {
                         }
                 ),
                 when(OffencesForDefendantUpdated.class).apply(e ->
-                        e.getOffences().forEach(o -> this.offenceForDefendants.put(e.getDefendantId(), e.getOffences()))
+                        e.getOffences().forEach(o -> {
+                            this.offenceForDefendants.put(e.getDefendantId(), e.getOffences());
+                            this.offenceIdsByDefendantId.put(
+                                    e.getDefendantId(),
+                                    e.getOffences().stream().map(OffenceForDefendant::getId).collect(Collectors.toSet()));
+                        })
                 ),
                 when(BailStatusUpdatedForDefendant.class)
                         .apply(e -> this.defendantsBailDocuments.put(e.getDefendantId(), e.getBailDocument()

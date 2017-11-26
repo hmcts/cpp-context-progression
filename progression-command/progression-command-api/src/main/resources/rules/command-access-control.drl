@@ -128,3 +128,12 @@ rule "Command - Access control for progression.command.add-defendant"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for update Offences plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.update-plea");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers","Court Clerks"));
+  then
+    $outcome.setSuccess(true);
+end

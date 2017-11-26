@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.it;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
+import uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub;
 import uk.gov.moj.cpp.progression.helper.UpdateOffencesForDefendantHelper;
 
 import java.util.UUID;
@@ -33,9 +34,11 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
     public void updateOffencesForDefendantAndVerify() {
         UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
         updateOffenceForDefendantHelper.updateOffencesForDefendant();
+        updateOffenceForDefendantHelper.updateOffencesPlea();
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
+        updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
 
     }
 

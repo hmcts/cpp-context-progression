@@ -26,14 +26,14 @@ public class CaseProgressionDetailView {
 
     private String sentenceHearingId;
 
-    private List<DefendantView> defendantViewList;
+    private List<DefendantView> defendants;
 
-    public List<DefendantView> getDefendantViewList() {
-        return defendantViewList;
+    public List<DefendantView> getDefendants() {
+        return defendants;
     }
 
-    public void setDefendantViewList(List<DefendantView> defendantViewList) {
-        this.defendantViewList = defendantViewList;
+    public void setDefendants(List<DefendantView> defendants) {
+        this.defendants = defendants;
     }
 
     public String getCourtCentreId() {
@@ -123,5 +123,4 @@ public class CaseProgressionDetailView {
     public void setSentenceHearingId(String sentenceHearingId) {
         this.sentenceHearingId = sentenceHearingId;
     }
-
 }
