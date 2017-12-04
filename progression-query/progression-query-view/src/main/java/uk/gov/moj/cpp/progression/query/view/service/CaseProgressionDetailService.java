@@ -116,9 +116,11 @@ public class CaseProgressionDetailService {
 
     @Transactional
     public CaseProgressionDetailView findCaseByCaseUrn(String caseUrn) {
-        CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
-        if (caseProgressionDetail != null) {
+        try {
+            CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
             return caseProgressionDetailToViewConverter.convert(caseProgressionDetail);
+        } catch (NoResultException e) {
+            LOGGER.debug("No case found with URN='{}'", caseUrn, e);
         }
         return null;
     }
