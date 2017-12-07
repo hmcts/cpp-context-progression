@@ -49,14 +49,23 @@ import java.util.stream.Stream;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.addDefendantEvent;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.asInterpreterUpdatedForDefendant;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.asSolicitorFirmUpdatedForDefendant;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAssignedForReviewUpdated;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseReadyForSentenceHearing;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseToBeAssignedUpdated;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.newCaseDocumentReceivedEvent;
 
 public class CaseProgressionAggregate implements Aggregate {
 
 
     public static final String CANNOT_ADD_ADDITIONAL_INFO = "Cannot add additional information without defendant ";
-    private static final long serialVersionUID = 5L;
+    private static final long serialVersionUID = 6L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseProgressionAggregate.class);
-    private transient ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
     private boolean isAllDefendantReviewed;
     private boolean isAnyDefendantPending;
     private LocalDate sentenceHearingDate;
@@ -188,49 +197,38 @@ public class CaseProgressionAggregate implements Aggregate {
             return apply(Stream.of(new CaseAlreadyExistsInCrownCourt(caseId, "Case already exists in crown court with Id " + caseId)));
         }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.createCaseAddedToCrownCourt(jsonEnvelope));
+        streamBuilder.add(createCaseAddedToCrownCourt(jsonEnvelope));
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> uploadCaseDocument(JsonEnvelope jsonEnvelope) {
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.newCaseDocumentReceivedEvent(jsonEnvelope));
-        return apply(streamBuilder.build());
-    }
-
-    public Stream<Object> uploadDefendantDocument(JsonEnvelope jsonEnvelope) {
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.newCaseDocumentReceivedEvent(jsonEnvelope));
-        return apply(streamBuilder.build());
-    }
 
     public Stream<Object> prepareForSentenceHearing(JsonEnvelope jsonEnvelope) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.createCaseReadyForSentenceHearing(jsonEnvelope));
+        streamBuilder.add(createCaseReadyForSentenceHearing(jsonEnvelope));
         return apply(streamBuilder.build());
     }
 
     public Stream<Object> requestPsrForDefendant(JsonEnvelope jsonEnvelope) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.createPsrForDefendantsRequested(jsonEnvelope));
+        streamBuilder.add(createPsrForDefendantsRequested(jsonEnvelope));
         return apply(streamBuilder.build());
     }
 
     public Stream<Object> sendingHearingCommittal(JsonEnvelope jsonEnvelope) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.createSendingCommittalHearingInformationAdded(jsonEnvelope));
+        streamBuilder.add(createSendingCommittalHearingInformationAdded(jsonEnvelope));
         return apply(streamBuilder.build());
     }
 
     public Stream<Object> caseAssignedForReview(JsonEnvelope jsonEnvelope) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.createCaseAssignedForReviewUpdated(jsonEnvelope));
+        streamBuilder.add(createCaseAssignedForReviewUpdated(jsonEnvelope));
         return apply(streamBuilder.build());
     }
 
     public Stream<Object> caseToBeAssigned(JsonEnvelope jsonEnvelope) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.createCaseToBeAssignedUpdated(jsonEnvelope));
+        streamBuilder.add(createCaseToBeAssignedUpdated(jsonEnvelope));
         return apply(streamBuilder.build());
     }
 
@@ -281,7 +279,7 @@ public class CaseProgressionAggregate implements Aggregate {
         checkAllDefendant();
         updateCaseStatus(streamBuilder);
 
-        streamBuilder.add(progressionEventFactory.addDefendantEvent(defendant));
+        streamBuilder.add(addDefendantEvent(defendant));
         return apply(streamBuilder.build());
     }
 
@@ -340,7 +338,7 @@ public class CaseProgressionAggregate implements Aggregate {
             LOGGER.error("Cannot set defence solicitor firm status without defendant {}", defendantId);
             return apply(Stream.of(new DefendantNotFound(defendantId.toString(), "Update Defence Solicitor Firm")));
         }
-        return apply(Stream.of(ProgressionEventFactory.asSolicitorFirmUpdatedForDefendant(updateDefenceSolicitorFirm)));
+        return apply(Stream.of(asSolicitorFirmUpdatedForDefendant(updateDefenceSolicitorFirm)));
     }
 
     public Stream<Object> updateDefendantAllocationDecision(JsonEnvelope command) {
@@ -380,7 +378,7 @@ public class CaseProgressionAggregate implements Aggregate {
             LOGGER.warn("Cannot set defendant interpreter without defendant " + defendantId);
             return apply(Stream.of(new DefendantNotFound(defendantId.toString(), "Update Defendant Interpreter")));
         }
-        return apply(Stream.of(ProgressionEventFactory.asInterpreterUpdatedForDefendant(updateDefendantInterpreter)));
+        return apply(Stream.of(asInterpreterUpdatedForDefendant(updateDefendantInterpreter)));
     }
 
     public Map<UUID, List<OffenceForDefendant>> getOffenceForDefendants() {

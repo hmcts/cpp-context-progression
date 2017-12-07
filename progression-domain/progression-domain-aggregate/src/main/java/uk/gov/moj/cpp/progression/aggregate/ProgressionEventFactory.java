@@ -58,7 +58,7 @@ public class ProgressionEventFactory {
     private static final String FIELD_SENDING_COMMITTAL_DATE = "sendingCommittalDate";
     private static final String FIELD_DEFENDANT_ID = "defendantId";
     private static final String FIELD_PSR_IS_REQUESTED = "psrIsRequested";
-    Function<DefendantCommand, DefendantAdditionalInformationAdded> defendantToDefendantAdded =
+    private static Function<DefendantCommand, DefendantAdditionalInformationAdded> defendantToDefendantAdded =
             defendant -> {
                 final DefendantAdditionalInformationAdded.DefendantEventBuilder defendantEventBuilder =
                         aDefendantEvent()
@@ -72,6 +72,10 @@ public class ProgressionEventFactory {
                 buildAdditionalInformationEvent(defendant, defendantEventBuilder);
                 return defendantEventBuilder.build();
             };
+
+    private ProgressionEventFactory(){
+
+    }
 
     public static DefenceSolicitorFirmUpdatedForDefendant asSolicitorFirmUpdatedForDefendant(
             UpdateDefendantDefenceSolicitorFirm updateDefendantSolicitorFirm) {
@@ -90,7 +94,7 @@ public class ProgressionEventFactory {
                 );
             }
 
-    public CaseAddedToCrownCourt createCaseAddedToCrownCourt(final JsonEnvelope envelope) {
+    public static CaseAddedToCrownCourt createCaseAddedToCrownCourt(final JsonEnvelope envelope) {
         final UUID caseId =
                 UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final String courtCentreId =
@@ -98,7 +102,7 @@ public class ProgressionEventFactory {
         return new CaseAddedToCrownCourt(caseId, courtCentreId);
     }
 
-    public SendingCommittalHearingInformationAdded createSendingCommittalHearingInformationAdded(final JsonEnvelope envelope) {
+    public static SendingCommittalHearingInformationAdded createSendingCommittalHearingInformationAdded(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final String fromCourtCentre =
@@ -109,27 +113,27 @@ public class ProgressionEventFactory {
                 sendingCommittalDate);
     }
 
-    public CaseToBeAssignedUpdated createCaseToBeAssignedUpdated(final JsonEnvelope envelope) {
+    public static CaseToBeAssignedUpdated createCaseToBeAssignedUpdated(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         return new CaseToBeAssignedUpdated(caseProgressionId, CaseStatusEnum.READY_FOR_REVIEW);
     }
 
-    public CaseAssignedForReviewUpdated createCaseAssignedForReviewUpdated(final JsonEnvelope envelope) {
+    public static CaseAssignedForReviewUpdated createCaseAssignedForReviewUpdated(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         return new CaseAssignedForReviewUpdated(caseProgressionId,
                 CaseStatusEnum.ASSIGNED_FOR_REVIEW);
     }
 
-    public CaseReadyForSentenceHearing createCaseReadyForSentenceHearing(final JsonEnvelope envelope) {
+    public static CaseReadyForSentenceHearing createCaseReadyForSentenceHearing(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         return new CaseReadyForSentenceHearing(caseProgressionId,
                 CaseStatusEnum.READY_FOR_SENTENCING_HEARING, ZonedDateTime.now(ZoneOffset.UTC));
     }
 
-    public PreSentenceReportForDefendantsRequested createPsrForDefendantsRequested(final JsonEnvelope envelope) {
+    public static PreSentenceReportForDefendantsRequested createPsrForDefendantsRequested(final JsonEnvelope envelope) {
         final UUID caseProgressionId = UUID.fromString(
                 envelope.payloadAsJsonObject().getString(FIELD_CASE_PROGRESSION_ID));
         final JsonArray defendants = envelope.payloadAsJsonObject().getJsonArray("defendants");
@@ -142,7 +146,7 @@ public class ProgressionEventFactory {
         return new PreSentenceReportForDefendantsRequested(caseProgressionId, defendantPsrsRequested);
     }
 
-    private void buildAdditionalInformationEvent(final DefendantCommand defendant,
+    private static void buildAdditionalInformationEvent(final DefendantCommand defendant,
                                                  final DefendantAdditionalInformationAdded.DefendantEventBuilder defendantEventBuilder) {
         final AdditionalInformationCommand additionalInformation =
                 defendant.getAdditionalInformation();
@@ -161,7 +165,7 @@ public class ProgressionEventFactory {
         }
     }
 
-    private void buildProsecutionEvent(final AdditionalInformationCommand additionalInformation,
+    private static void buildProsecutionEvent(final AdditionalInformationCommand additionalInformation,
                                        final AdditionalInformationEventBuilder additionalInformationEventBuilder) {
         final ProsecutionCommand prosecution = additionalInformation.getProsecution();
         if (prosecution != null) {
@@ -183,7 +187,7 @@ public class ProgressionEventFactory {
         }
     }
 
-    private void buildDefenceEvent(final AdditionalInformationCommand additionalInformation,
+    private static void buildDefenceEvent(final AdditionalInformationCommand additionalInformation,
                                    final AdditionalInformationEventBuilder additionalInformationEventBuilder) {
 
         final DefenceCommand defence = additionalInformation.getDefence();
@@ -213,7 +217,7 @@ public class ProgressionEventFactory {
         }
     }
 
-    private void buildProbationEvent(final AdditionalInformationCommand additionalInformation,
+    private static void buildProbationEvent(final AdditionalInformationCommand additionalInformation,
                                      final AdditionalInformationEventBuilder additionalInformationEventBuilder) {
         final ProbationCommand probation = additionalInformation.getProbation();
 
@@ -236,7 +240,7 @@ public class ProgressionEventFactory {
         }
     }
 
-    public NewCaseDocumentReceivedEvent newCaseDocumentReceivedEvent(JsonEnvelope envelope) {
+    public static NewCaseDocumentReceivedEvent newCaseDocumentReceivedEvent(JsonEnvelope envelope) {
         JsonObject payload = envelope.payloadAsJsonObject();
         UUID cppCaseId = UUID.fromString(payload.getString("cppCaseId"));
         String fileId = payload.getString("fileId");
@@ -245,7 +249,7 @@ public class ProgressionEventFactory {
         return new NewCaseDocumentReceivedEvent(cppCaseId, fileId, fileMimeType, fileName);
     }
 
-    public Object addDefendantEvent(final DefendantCommand defendant) {
+    public static Object  addDefendantEvent(final DefendantCommand defendant) {
         return defendantToDefendantAdded.apply(defendant);
     }
 }

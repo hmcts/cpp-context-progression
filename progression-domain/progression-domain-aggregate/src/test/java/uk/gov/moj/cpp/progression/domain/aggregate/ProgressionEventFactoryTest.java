@@ -54,11 +54,6 @@ public class ProgressionEventFactoryTest {
     @Mock
     JsonObject jsonObj;
 
-    @InjectMocks
-    ProgressionEventFactory progressionEventFactory;
-
-
-
     @Before
     public void SetUp() {
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObj);
@@ -77,14 +72,14 @@ public class ProgressionEventFactoryTest {
 
     @Test
     public void testCreateCaseAddedToCrownCourt() {
-        final Object obj = progressionEventFactory.createCaseAddedToCrownCourt(envelope);
+        final Object obj = ProgressionEventFactory.createCaseAddedToCrownCourt(envelope);
         assertThat(obj, instanceOf(CaseAddedToCrownCourt.class));
     }
 
 
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
-        final Object obj = progressionEventFactory
+        final Object obj = ProgressionEventFactory
                         .createSendingCommittalHearingInformationAdded(envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
     }
@@ -92,13 +87,13 @@ public class ProgressionEventFactoryTest {
 
     @Test
     public void testCreateCaseToBeAssignedUpdated() {
-        final Object obj = progressionEventFactory.createCaseToBeAssignedUpdated(envelope);
+        final Object obj = ProgressionEventFactory.createCaseToBeAssignedUpdated(envelope);
         assertThat(obj, instanceOf(CaseToBeAssignedUpdated.class));
     }
 
     @Test
     public void testCreateCaseAssignedForReviewUpdated() {
-        final Object obj = progressionEventFactory.createCaseAssignedForReviewUpdated(envelope);
+        final Object obj = ProgressionEventFactory.createCaseAssignedForReviewUpdated(envelope);
         assertThat(obj, instanceOf(CaseAssignedForReviewUpdated.class));
     }
 
@@ -111,7 +106,7 @@ public class ProgressionEventFactoryTest {
                         .add(createDefendantJsonWithIsPsrRequested(false))
                         .build());
 
-        final Object obj = progressionEventFactory.createPsrForDefendantsRequested(envelope);
+        final Object obj = ProgressionEventFactory.createPsrForDefendantsRequested(envelope);
 
         assertThat(obj, instanceOf(PreSentenceReportForDefendantsRequested.class));
         PreSentenceReportForDefendantsRequested event = (PreSentenceReportForDefendantsRequested) obj;
@@ -124,7 +119,7 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateCaseReadyForSentenceHearing() {
         final CaseReadyForSentenceHearing obj =
-                        (CaseReadyForSentenceHearing) progressionEventFactory
+                        (CaseReadyForSentenceHearing) ProgressionEventFactory
                                         .createCaseReadyForSentenceHearing(envelope);
 
         assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
@@ -141,7 +136,7 @@ public class ProgressionEventFactoryTest {
 
         // when
         final DefendantAdditionalInformationAdded defendantEvent =
-                        (DefendantAdditionalInformationAdded) progressionEventFactory
+                        (DefendantAdditionalInformationAdded) ProgressionEventFactory
                                         .addDefendantEvent(defendant);
 
         // then
@@ -155,7 +150,7 @@ public class ProgressionEventFactoryTest {
         UUID defendantId=UUID.randomUUID();
         Interpreter interpreter=new Interpreter();
         UpdateDefendantInterpreter updateDefendantInterpreter=new UpdateDefendantInterpreter(caseId,defendantId,interpreter);
-        final Object obj = progressionEventFactory.asInterpreterUpdatedForDefendant(updateDefendantInterpreter);
+        final Object obj = ProgressionEventFactory.asInterpreterUpdatedForDefendant(updateDefendantInterpreter);
         assertThat(obj, instanceOf(InterpreterUpdatedForDefendant.class));
     }
 
