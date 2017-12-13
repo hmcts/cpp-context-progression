@@ -10,7 +10,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
-import uk.gov.moj.cpp.progression.command.api.service.StructureReadService;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -40,9 +39,6 @@ public class ProgressionCommandApiTest {
     @Mock
     private Function<Object, JsonEnvelope> function;
 
-    @Mock
-    private StructureReadService structureCaseService;
-
     @InjectMocks
     private ProgressionCommandApi progressionCommandApi;
 
@@ -57,8 +53,6 @@ public class ProgressionCommandApiTest {
         when(value.getString("caseId")).thenReturn(caseId);
         when(metadata.userId()).thenReturn(Optional.of(userId));
         when(command.metadata()).thenReturn(metadata);
-        when(structureCaseService.getStructureCaseDefendantsId(caseId, command.metadata().userId().toString()))
-                .thenReturn(Arrays.asList(defendantId));
         when(enveloper.withMetadataFrom(command, "progression.command.add-case-to-progression"))
                 .thenReturn(function);
         when(function.apply(any())).thenReturn(command);

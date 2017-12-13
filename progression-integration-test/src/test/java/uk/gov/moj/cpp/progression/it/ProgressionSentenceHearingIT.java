@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseAddedToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseProgressionDetail;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
@@ -39,15 +40,15 @@ public class ProgressionSentenceHearingIT {
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = UUID.randomUUID().toString();
+        caseProgressionId = caseId;
         sentenceHearingId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId);
+        createMockEndpoints();
+
     }
 
     @Test
     public void shouldAddSentenceHearing() throws Exception {
-        givenCaseAddedToCrownCourt(caseId, caseProgressionId);
-        givenCaseProgressionDetail(caseId);
+        addDefendant(caseId);
 
         Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.sentence-hearing-date+json",
@@ -96,8 +97,7 @@ public class ProgressionSentenceHearingIT {
     @Test
     public void shouldNotAddSentenceHearingDate_CapabilityDisabled() throws Exception {
         givenAddSentenceHearingDateCapabilityDisabled();
-        givenCaseAddedToCrownCourt(caseId, caseProgressionId);
-        givenCaseProgressionDetail(caseId);
+        addDefendant(caseId);
 
         Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.sentence-hearing-date+json",

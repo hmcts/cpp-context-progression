@@ -20,6 +20,23 @@ import org.apache.http.HttpStatus;
 
 public class PreAndPostConditionHelper {
 
+    public static void addDefendant(String caseId){
+        try (AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
+            addDefendantHelper.addMinimalDefendant();
+            addDefendantHelper.verifyInActiveMQ();
+            addDefendantHelper.verifyInPublicTopic();
+            addDefendantHelper.verifyMinimalDefendantAdded();
+        }
+    }
+
+    public static void addDefendant(String caseId,String defendantId){
+        try (AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
+            addDefendantHelper.addFullDefendant(defendantId, UUID.randomUUID().toString().substring(0,11));
+//            addDefendantHelper.verifyInActiveMQ();
+//            addDefendantHelper.verifyFullDefendantAdded();
+        }
+    }
+
     public static Response addCaseToCrownCourt(String caseId, String caseProgressionId) throws IOException {
         return addCaseToCrownCourt(caseId, caseProgressionId, UUID.randomUUID().toString(), UUID.randomUUID().toString());
     }

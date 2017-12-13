@@ -31,22 +31,26 @@ import javax.persistence.NoResultException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.query.view.service.OffencesService;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProgressionQueryView {
 
-    static final String DEFENDANT_ID = "defendantId";
 
-    static final Logger logger = LoggerFactory.getLogger(ProgressionQueryView.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionQueryView.class);
 
     static final String FIELD_CASE_ID = "caseId";
-    static final String CASE_PROGRESSION_DETAILS_RESPONSE =
-            "progression.query.caseprogressiondetails-response";
+    static final String FIELD_DEFENDANT_ID = "defendantId";
     static final String FIELD_STATUS = "status";
+    static final String FIELD_URN = "urn";
+    static final String CASE_PROGRESSION_DETAILS_RESPONSE ="progression.query.caseprogressiondetails-response";
     static final String CASES_RESPONSE_LIST = "progression.query.cases-response-list";
     static final String DEFENDANT_RESPONSE_LIST = "progression.query.defendant-response-list";
     static final String DEFENDANT_RESPONSE = "progression.query.defendant-response";
     static final String DEFENDANT_DOCUMENT_RESPONSE = "progression.query.defendant.document-response";
+    private static final String NAME_RESPONSE_DEFENDANT_OFFENCES = "progression.query.defendant-offences-response";
+    public static final String NO_CASE_PROGRESSION_DETAIL_FOUND_FOR_CASE_ID = "No CaseProgressionDetail found for caseId: ";
+
     @Inject
     StringToJsonObjectConverter stringToJsonObjectConverter;
     @Inject
@@ -62,6 +66,9 @@ public class ProgressionQueryView {
     @Inject
     private ListToJsonArrayConverter listToJsonArrayConverter;
 
+    @Inject
+    OffencesService offencesService;
+
     @Handles("progression.query.caseprogressiondetail")
     public JsonEnvelope getCaseProgressionDetails(final JsonEnvelope envelope) {
         final Optional<UUID> caseId =
@@ -72,7 +79,7 @@ public class ProgressionQueryView {
             caseProgressionDetail =
                     caseProgressionDetailService.getCaseProgressionDetail(caseId.get());
         } catch (final NoResultException nre) {
-            logger.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+            LOGGER.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
             return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE)
                     .apply(null);
         }
@@ -97,7 +104,7 @@ public class ProgressionQueryView {
                         caseProgressionDetailService.getCaseProgressionDetail(caseId.get());
                 cases.add(caseProgressionDetail);
             } catch (final NoResultException nre) {
-                logger.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+                LOGGER.error(NO_CASE_PROGRESSION_DETAIL_FOUND_FOR_CASE_ID + caseId, nre);
             }
         }else {
             cases = caseProgressionDetailService.getCases(status);
@@ -116,10 +123,16 @@ public class ProgressionQueryView {
 
     }
 
+    @Handles("progression.query.case-by-urn")
+    public JsonEnvelope findCaseByUrn(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE).apply(
+                caseProgressionDetailService.findCaseByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_URN)));
+    }
+
     @Handles("progression.query.defendant")
     public JsonEnvelope getDefendant(final JsonEnvelope envelope) {
         final Optional<String> defendantId =
-                JsonObjects.getString(envelope.payloadAsJsonObject(), DEFENDANT_ID);
+                JsonObjects.getString(envelope.payloadAsJsonObject(), FIELD_DEFENDANT_ID);
 
         final Optional<Defendant> defendant =
                 caseProgressionDetailService.getDefendant(defendantId);
@@ -163,7 +176,7 @@ public class ProgressionQueryView {
         try {
             defendants = caseProgressionDetailService.getDefendantsByCase(caseId.get());
         } catch (final NoResultException nre) {
-            logger.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+            LOGGER.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
             return enveloper.withMetadataFrom(envelope, CASE_PROGRESSION_DETAILS_RESPONSE)
                     .apply(null);
         }
@@ -180,6 +193,12 @@ public class ProgressionQueryView {
                                         .convert(defendentView))
                         .build());
 
+    }
+
+    @Handles("progression.query.defendant-offences")
+    public JsonEnvelope findOffences(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_DEFENDANT_OFFENCES).apply(
+                offencesService.findOffences(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID), envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID)));
     }
 
 }

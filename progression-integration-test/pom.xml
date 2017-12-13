@@ -55,18 +55,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-core-client</artifactId>
-            <version>${artemis.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-commons</artifactId>
-            <version>${artemis.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-client</artifactId>
             <scope>test</scope>
         </dependency>

@@ -101,4 +101,9 @@ public class CaseProgressionDetailService {
         }
         return listOfStatus;
     }
+
+    @Transactional
+    public List<CaseProgressionDetail> findCaseByCaseUrn(String caseUrn) {
+        return  caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
+    }
 }

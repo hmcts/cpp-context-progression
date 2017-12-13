@@ -56,6 +56,12 @@ public class ProgressionQueryApiTest {
     }
 
     @Test
+    public void shouldGetDefendantsOffenceQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.findOffences(query), equalTo(response));
+    }
+
+    @Test
     public void shouldReturnListOfMagistrateCourtsForLCC() {
         // given
         final JsonObject queryPayload = createObjectBuilder().add("crownCourtId", "LCC").build();

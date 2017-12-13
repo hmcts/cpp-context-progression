@@ -19,13 +19,14 @@ public class AddSentenceHearingCommandHandlerTest
     @InjectMocks
     private AddSentenceHearingHandler addSentenceHearingHandler;
 
-    private UUID caseId= UUID.randomUUID();
+    private UUID caseId= CASE_PROGRESSION_ID;
     private UUID sentenceHearingId = UUID.randomUUID();
 
     @Test
     public void shouldPassAddSentenceHearingHandler() throws EventStreamException {
 
         when(jsonObject.getString("caseId")).thenReturn(caseId.toString());
+        when(jsonObject.getString("caseProgressionId")).thenReturn(caseId.toString());
         when(jsonObject.getString("sentenceHearingId")).thenReturn(sentenceHearingId.toString());
         when(caseProgressionAggregate.addSentenceHearing(caseId,CASE_PROGRESSION_ID, sentenceHearingId))
                         .thenReturn(events);

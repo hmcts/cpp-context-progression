@@ -32,22 +32,10 @@ public class StubUtil {
     public static void resetStubs() {
 
         reset();
-        InternalEndpointMockUtils.stubPingFor("structure-query-api");
         InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
     }
 
 
-    public static void setupStructureCaseStub(final String caseId, final String defendentId,final String defendent2Id,
-                    final String caseProgressionId) {
-        InternalEndpointMockUtils.stubPingFor("structure-query-api");
-        stubFor(get(urlMatching("/structure-query-api/query/api/rest/structure/cases/.*"))
-                        .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
-                                        .withHeader("CPPID", UUID.randomUUID().toString())
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(getJsonBodyStr(
-                                                        "structure.query.case-defendants.json",
-                                                        caseId, defendentId,defendent2Id, caseProgressionId))));
-    }
 
     public static void setupUsersGroupQueryStub() {
         InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");

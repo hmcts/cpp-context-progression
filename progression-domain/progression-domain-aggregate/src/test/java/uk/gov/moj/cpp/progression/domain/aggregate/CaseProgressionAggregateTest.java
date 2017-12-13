@@ -1,13 +1,15 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
+import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
@@ -21,29 +23,39 @@ import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformatio
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateUpdated;
+import uk.gov.moj.cpp.progression.domain.event.defendant.CPR;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequiredEvent;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
+import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
+import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INCOMPLETE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseProgressionAggregateTest {
 
-    @InjectMocks
     private CaseProgressionAggregate caseProgressionAggregate;
+    private static final AddDefendant addDefendant = DefendantBuilder.defaultAddDefendant();
 
+    @Before
+    public void setUp(){
+        caseProgressionAggregate=new CaseProgressionAggregate();
+    }
     @Test
     public void shouldReturnEmptyStringForNonExistingDefendant() {
         // given
@@ -57,38 +69,7 @@ public class CaseProgressionAggregateTest {
         assertThat(objectStream.count(), is(0L));
     }
 
-    @Test
-    public void shouldAddAdditionalInformationForDefendant() {
-        // given
-        final UUID defendantId = randomUUID();
-        // and
-        createDefendant(defendantId);
-        // and
-        DefendantCommand defendantCommand = DefendantBuilder.defaultDefendantWith(defendantId);
 
-        // when
-        final Stream<Object> objectStream = caseProgressionAggregate
-                        .addAdditionalInformationForDefendant(defendantCommand);
-
-        // then
-        assertAdditionalInformationEvent(defendantId, objectStream);
-    }
-
-    @Test
-    public void shouldNotAddAdditionalInformationForDefendant() {
-        // given
-        final UUID defendantId = randomUUID();
-        // and
-        createDefendant(defendantId);
-        // and
-        DefendantCommand defendantCommand = DefendantBuilder.defaultDefendantWithoutAdditionalInfo(defendantId);
-        // when
-        final Stream<Object> objectStream = caseProgressionAggregate
-                        .addAdditionalInformationForDefendant(defendantCommand);
-
-        // then
-        assertAdditionalInformationEvent(defendantId, objectStream);
-    }
 
     @Test
     public void shouldHandleNoMoreInformationRequired() {
@@ -107,13 +88,10 @@ public class CaseProgressionAggregateTest {
     
     @Test
     public void shouldHandleNoMoreInformationForDefendant() {
-        final UUID caseId = randomUUID();
-        final UUID defendantId = randomUUID();
-        final UUID caseProgressionId = randomUUID();
-        createDefendant(defendantId);
-        final Stream<Object> response = caseProgressionAggregate.noMoreInformationForDefendant(defendantId,caseId, caseProgressionId);
+        createDefendantWithOffence(addDefendant);
+        final Stream<Object> response = caseProgressionAggregate.noMoreInformationForDefendant(addDefendant.getDefendantId(),addDefendant.getCaseId(), addDefendant.getCaseId());
         final Object[] events = response.toArray();
-        assertNoMoreInformationRequiredEvent(defendantId, events[events.length-1]);
+        assertNoMoreInformationRequiredEvent(addDefendant.getDefendantId(), events[events.length-1]);
     }
     
     @Test
@@ -186,19 +164,16 @@ public class CaseProgressionAggregateTest {
     @Test
     public void shouldAddCaseToCrownCourt() {
         final UUID caseId = randomUUID();
-        final UUID defendantId = randomUUID();
         final UUID courtCentreId = randomUUID();
-        final UUID caseProgressionId = randomUUID();
 
 
         final CaseAddedToCrownCourt caseAddedToCrownCourt =
-                new CaseAddedToCrownCourt(caseProgressionId,  caseId ,courtCentreId.toString(), Arrays.asList(new Defendant(defendantId)),INCOMPLETE);
+                new CaseAddedToCrownCourt(caseId ,courtCentreId.toString());
 
         Object response = caseProgressionAggregate.apply(caseAddedToCrownCourt);
 
         assertThat(((CaseAddedToCrownCourt)response).getCaseId(), is(caseId));
-        assertThat(((CaseAddedToCrownCourt)response).getCaseProgressionId(), is(caseProgressionId));
-        assertThat(((CaseAddedToCrownCourt)response).getDefendants().get(0).getId(), is(defendantId));
+        assertThat(((CaseAddedToCrownCourt)response).getCourtCentreId(), is(courtCentreId.toString()));
     }
 
     @Test
@@ -310,19 +285,49 @@ public class CaseProgressionAggregateTest {
     }
 
     
-    private void createDefendant(UUID defendantId) {
-        // and
-        UUID caseProgressionId = randomUUID();
-        // and
+    private void addedCaseToCrownCourt(UUID defendantId) {
+
         UUID caseId = randomUUID();
-        // and
         String courtCentreId = RandomStringUtils.random(3);
-        // and
-        Defendant defendant = new Defendant(defendantId);
-        // and
-        CaseAddedToCrownCourt caseAddedToCrownCourt = new CaseAddedToCrownCourt(caseProgressionId,
-                        caseId, courtCentreId, Lists.newArrayList(defendant),INCOMPLETE);
-        // and
+        CaseAddedToCrownCourt caseAddedToCrownCourt = new CaseAddedToCrownCourt(
+                caseId, courtCentreId);
         caseProgressionAggregate.apply(caseAddedToCrownCourt);
+    }
+
+    private void createDefendant(UUID defendantId) {
+        UUID caseId = randomUUID();
+        Defendant defendant = new Defendant(defendantId);
+        Offence offence=new Offence(randomUUID(),
+                randomUUID().toString(),
+                null,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                LocalDate.now(),
+                LocalDate.now(),
+                LocalDate.now(),
+                LocalDate.now());
+        DefendantAdded defendantAdded =new DefendantAdded(caseId,defendantId,randomUUID(),"",Arrays.asList(offence),"CaseUrn");
+        caseProgressionAggregate.apply(defendantAdded);
+    }
+
+    private void createDefendantWithOffence(AddDefendant addDefendant ){
+        //Adding defendant
+        caseProgressionAggregate =new CaseProgressionAggregate();
+        caseProgressionAggregate.addDefendant(addDefendant);
+
+        //Adding Offences for defendant
+        final List<OffenceForDefendant> offenceForDefendants = Arrays.asList(new OffenceForDefendant(randomUUID(), "offenceCode"
+                , "indicatedPlea", "section",
+                " wording", LocalDate.now(), LocalDate.now(), 0, 0, "modeOfTrial"));
+
+
+        final OffencesForDefendantUpdated offencesForDefendantUpdated =
+                new OffencesForDefendantUpdated(addDefendant.getCaseId(), addDefendant.getDefendantId(), offenceForDefendants);
+
+        caseProgressionAggregate.updateOffencesForDefendant(offencesForDefendantUpdated ).collect(toList());
     }
 }

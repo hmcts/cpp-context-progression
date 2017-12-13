@@ -88,6 +88,26 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/cases/{caseId}/defendant:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+  post:
+    description: |
+      Add defendant.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.add-defendant+json
+          name: progression.command.add-defendant
+      ...
+    body:
+      application/vnd.progression.command.add-defendant+json:
+        example:
+          !include json/progression.command.add-defendant.json
+        schema:
+          !include json/schema/progression.command.add-defendant.json
+
 
 /cases/{caseId}/defendants/{defendantId}:
   uriParameters:
@@ -107,6 +127,21 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.command.no-more-information-required+json
             name: progression.command.no-more-information-required
+        (mapping):
+            requestType: application/vnd.progression.command.update-bail-status-for-defendant+json
+            name: progression.command.update-bail-status-for-defendant
+        (mapping):
+            requestType: application/vnd.progression.command.update-defence-solicitor-firm-for-defendant+json
+            name: progression.command.update-defence-solicitor-firm-for-defendant
+        (mapping):
+            requestType: application/vnd.progression.command.update-interpreter-for-defendant+json
+            name: progression.command.update-interpreter-for-defendant
+        (mapping):
+            requestType: application/vnd.progression.command.update-offences-for-defendant+json
+            name: progression.command.update-offences-for-defendant
+        (mapping):
+            requestType: application/vnd.progression.command.update-allocation-decision-for-defendant+json
+            name: progression.command.update-allocation-decision-for-defendant            
         ...
       body:
         application/vnd.progression.command.add-defendant-additional-information+json:
@@ -120,11 +155,38 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.command.no-more-information-required.json
             schema:
              !include json/schema/progression.command.no-more-information-required.json
+        application/vnd.progression.command.update-bail-status-for-defendant+json:
+          example:
+            !include json/progression.command.update-bail-status-for-defendant.json
+          schema:
+            !include json/schema/progression.command.update-bail-status-for-defendant.json
+        application/vnd.progression.command.update-defence-solicitor-firm-for-defendant+json:
+          example:
+            !include json/progression.command.update-defence-solicitor-firm-for-defendant.json
+          schema:
+            !include json/schema/progression.command.update-defence-solicitor-firm-for-defendant.json
+        application/vnd.progression.command.update-interpreter-for-defendant+json:
+          example:
+            !include json/progression.command.update-interpreter-for-defendant.json
+          schema:
+            !include json/schema/progression.command.update-interpreter-for-defendant.json
+        application/vnd.progression.command.update-offences-for-defendant+json:
+          example:
+            !include json/progression.command.update-offences-for-defendant.json
+          schema:
+            !include json/schema/progression.command.update-offences-for-defendant.json
+        application/vnd.progression.command.update-allocation-decision-for-defendant+json:
+          example:
+            !include json/progression.command.update-allocation-decision-for-defendant.json
+          schema:
+            !include json/schema/progression.command.update-allocation-decision-for-defendant.json           
 
       responses:
             202:
                 description: OK
                 
+                
+               
 /cases/{caseId}/defendants/requestpsr:
   post:
       description:  |
@@ -145,3 +207,29 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+
+/cases/{caseId}/offences/{offenceId}/pleas:
+  uriParameters:
+    caseId:
+      description: The ID of the offence update
+      type: string
+    offenceId:
+      description: The ID of the offence update
+      type: string
+  post:
+    description: |
+      Update a case's plea
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.update-plea+json
+          name: progression.command.update-plea
+      ...
+    body:
+      application/vnd.progression.command.update-plea+json:
+        example:
+          !include json/progression.command.update-plea.json
+        schema:
+          !include json/schema/progression.command.update-plea.json
+    responses:
+      202:
+        description: Accepted

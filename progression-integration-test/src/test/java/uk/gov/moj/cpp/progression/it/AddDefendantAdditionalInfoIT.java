@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
@@ -15,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
+import uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.io.IOException;
@@ -37,16 +39,17 @@ public class AddDefendantAdditionalInfoIT {
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = UUID.randomUUID().toString();
+        caseProgressionId = caseId;
         firstDefendantId = UUID.randomUUID().toString();
         secondDefendantId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId, firstDefendantId, secondDefendantId, caseProgressionId);
+        createMockEndpoints();
     }
 
     @Test
     public void shouldAddAdditionalInfoForDefendant() throws Exception {
-        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
-        assertThatRequestIsAccepted(writeResponse);
+        addDefendant(caseId,firstDefendantId);
+        addDefendant(caseId,secondDefendantId);
+        Response writeResponse ;
 
         final String queryResponse =
                 pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
@@ -127,15 +130,15 @@ public class AddDefendantAdditionalInfoIT {
     @Test
     public void shouldNotAddAdditionalInfoForDefendant_CapabilityDisabled() throws Exception {
         givenAddDefendantAdditionalInformationCapabiltyDisabled();
-        final Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        addDefendant(caseId,firstDefendantId);
         final Response writeAdditionalInfoResponse = postAddDefendantAdditionalInfoCommand(firstDefendantId);
         assertThatResponseIndicatesFeatureDisabled(writeAdditionalInfoResponse);
     }
 
     @Test
     public void shouldSetNoMoreInformationRequired() throws Exception {
-        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
-        assertThatRequestIsAccepted(writeResponse);
+        addDefendant(caseId,firstDefendantId);
+        addDefendant(caseId,secondDefendantId);
 
         final String response =
                 pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
@@ -146,7 +149,7 @@ public class AddDefendantAdditionalInfoIT {
         assertThat(defendantsJsonObject.getBoolean("sentenceHearingReviewDecision"),
                 equalTo(Boolean.FALSE));
 
-        writeResponse = postNoMoreInformationRequiredCommand(firstDefendantId);
+        Response writeResponse = postNoMoreInformationRequiredCommand(firstDefendantId);
         assertThatRequestIsAccepted(writeResponse);
 
         final String queryResponse = pollForResponse(join("", "/cases/", caseId),
@@ -184,7 +187,7 @@ public class AddDefendantAdditionalInfoIT {
     @Test
     public void shouldNotSetNoMoreInformationRequired_CapabilityDisabled() throws Exception {
         givenNoMoreInformationRequiredCapabiltyDisabled();
-        addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+        addDefendant(caseId,firstDefendantId);
         final Response writeAdditionalInfoResponse = postNoMoreInformationRequiredCommand(firstDefendantId);
         assertThatResponseIndicatesFeatureDisabled(writeAdditionalInfoResponse);
     }

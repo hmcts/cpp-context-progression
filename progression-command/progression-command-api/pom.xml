@@ -76,19 +76,7 @@
                 <groupId>uk.gov.justice.maven</groupId>
                 <artifactId>raml-maven-plugin</artifactId>
                 <dependencies>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.structure</groupId>
-                        <artifactId>structure-query-api</artifactId>
-                        <version>${structure.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
+                        <dependency>
                         <groupId>uk.gov.moj.cpp.progression</groupId>
                         <artifactId>progression-command-handler</artifactId>
                         <version>${project.version}</version>

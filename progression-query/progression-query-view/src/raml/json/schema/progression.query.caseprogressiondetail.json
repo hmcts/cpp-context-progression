@@ -11,6 +11,9 @@
     "caseId": {
       "type": "string"
     },
+    "caseUrn": {
+      "type": "string"
+    },
     "directionIssuedOn": {
       "type": "string"
     },
@@ -34,6 +37,7 @@
     "caseProgressionId",
     "courtCentreId",
     "caseId",
+    "caseUrn",
     "directionIssuedOn",
     "fromCourtCentre",
     "sendingCommittalDate",

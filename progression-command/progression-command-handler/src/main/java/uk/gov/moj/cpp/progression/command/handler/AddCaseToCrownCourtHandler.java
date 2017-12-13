@@ -12,7 +12,7 @@ import java.util.UUID;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AddCaseToCrownCourtHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.add-case-to-progression")
+    @Handles("progression.command.add-case-to-crown-court")
     public void addCaseToCrownCourt(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.addCaseToCrownCourt(command));

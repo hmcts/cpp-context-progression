@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
 
 public  class CaseProgressionCommandHandler {
 
-    static final String FIELD_STREAM_ID = "caseProgressionId";
+    static final String FIELD_STREAM_ID = "caseId";
 
     @Inject
     EventSource eventSource;

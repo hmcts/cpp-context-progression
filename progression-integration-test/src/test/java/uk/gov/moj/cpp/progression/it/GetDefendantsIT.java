@@ -22,7 +22,7 @@ public class GetDefendantsIT {
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
         caseProgressionId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId);
+        createMockEndpoints();
     }
 
     @Test

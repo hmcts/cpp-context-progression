@@ -17,7 +17,6 @@ import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateUpdated;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
-import uk.gov.moj.cpp.progression.event.converter.CaseAddedToCrownCourtToCaseProgressionDetailConverter;
 import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -48,8 +47,6 @@ public class CaseServiceTest {
     private CaseProgressionDetailRepository repository;
     @Mock
     private DefendantRepository defendantRepository;
-    @Mock
-    private CaseAddedToCrownCourtToCaseProgressionDetailConverter caseAddedToCrownCourt;
     @Mock
     private DefendantEventToDefendantConverter defendantEventToDefendantConverter;
     @InjectMocks

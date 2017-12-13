@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Defendant {
+public class Defendant implements Serializable {
 
     private UUID id;
     private Boolean sentenceHearingReviewDecision;

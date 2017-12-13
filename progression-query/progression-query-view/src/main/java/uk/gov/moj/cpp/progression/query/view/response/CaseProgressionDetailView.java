@@ -7,6 +7,7 @@ public class CaseProgressionDetailView {
     private String caseProgressionId;
 
     private String caseId;
+    private String caseUrn;
 
     private LocalDate directionIssuedOn;
 
@@ -96,6 +97,13 @@ public class CaseProgressionDetailView {
         this.status = status;
     }
 
+    public String getCaseUrn() {
+        return caseUrn;
+    }
+
+    public void setCaseUrn(String caseUrn) {
+        this.caseUrn = caseUrn;
+    }
 
     public String getSentenceHearingId() {
         return sentenceHearingId;

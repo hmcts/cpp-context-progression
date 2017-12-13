@@ -28,13 +28,13 @@ import org.junit.runner.RunWith;
 public class CaseProgressionDetailRepositoryTest {
 
     private static final String COURT_CENTER = "Liverpool";
-    private static final UUID ID_ONE = UUID.randomUUID();
-    private static final UUID ID_TWO = UUID.randomUUID();
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID CASE_ID_TWO = UUID.randomUUID();
     private static final UUID DEF_PRG_ID = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
     public static final ZonedDateTime CASE_STATUS_UPDATED_DATE_TIME = ZonedDateTime.now(ZoneOffset.UTC).plusDays(7);
+    public static final String CASE_URN_ONE = "URNONE";
+    public static final String CASE_URN_TWO = "URNTWO";
     private static LocalDate now;
     private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
     @Inject
@@ -44,25 +44,27 @@ public class CaseProgressionDetailRepositoryTest {
     public void setup() {
         now = LocalDate.now();
         final CaseProgressionDetail caseProgressionDetailOne =
-                        createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
+                        createCaseProgressionDetail(CASE_ID_ONE, CaseStatusEnum.INCOMPLETE, CASE_URN_ONE);
         caseProgressionDetails.add(caseProgressionDetailOne);
         final Defendant defendant =
-                        new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false);
+                        new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false,null);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
 
-        final CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(ID_TWO,
-                        CASE_ID_TWO, CaseStatusEnum.READY_FOR_REVIEW);
+
+        final CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(
+                CASE_ID_TWO, CaseStatusEnum.READY_FOR_REVIEW, CASE_URN_TWO);
         caseProgressionDetails.add(caseProgressionDetailTwo);
         repository.save(caseProgressionDetailTwo);
 
     }
 
-    private CaseProgressionDetail createCaseProgressionDetail(final UUID id, final UUID caseId,
-                    final CaseStatusEnum status) {
+    private CaseProgressionDetail createCaseProgressionDetail(final UUID caseId,
+                                                              final CaseStatusEnum status, String caseUrn) {
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
-        caseProgressionDetail.setId(id);
+        caseProgressionDetail.setId(caseId);
+        caseProgressionDetail.setCaseUrn(caseUrn);
         caseProgressionDetail.setCourtCentreId(COURT_CENTER);
         caseProgressionDetail.setDirectionIssuedOn(now);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTER);
@@ -84,6 +86,7 @@ public class CaseProgressionDetailRepositoryTest {
     public void shouldFindByCaseProgressionId() throws Exception {
         final CaseProgressionDetail result = repository.findByCaseId(CASE_ID_ONE);
         assertThat(result.getCaseId(), equalTo(CASE_ID_ONE));
+        assertThat(result.getCaseUrn(), equalTo(CASE_URN_ONE));
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
         assertThat(result.getDirectionIssuedOn(), equalTo(now));
         assertThat(result.getFromCourtCentre(), equalTo(COURT_CENTER));
@@ -131,7 +134,7 @@ public class CaseProgressionDetailRepositoryTest {
 
     @Test
     public void shouldFindDefendantByProgressionId() throws Exception {
-        final CaseProgressionDetail results = repository.findBy(ID_ONE);
+        final CaseProgressionDetail results = repository.findBy(CASE_ID_ONE);
         assertThat(results.getDefendants().size(), equalTo(1));
     }
 

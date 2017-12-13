@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getMagistrateCourts;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
@@ -40,12 +41,14 @@ public class ProgressionIT {
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = UUID.randomUUID().toString();
-        createMockEndpoints(caseId);
+        caseProgressionId = caseId;
+        createMockEndpoints();
+
     }
 
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
+        addDefendant(caseId);
         Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId);
         assertThatRequestIsAccepted(writeResponse);
 

@@ -26,6 +26,15 @@ rule "Query - Access control for  progression.query.cases"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.case-by-urn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case-by-urn");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "Court Clerks","System Users","CMS" , "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.defendant"
   when
     $outcome: Outcome();
@@ -57,6 +66,16 @@ rule "Query - Access control for  progression.query.crown-court.magistrate-court
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.crown-court.magistrate-courts");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
+  then
+    $outcome.setSuccess(true);
+end
+
+
+rule "Structure - Query - API - Cases defendant offences"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.defendant-offences");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
   then
     $outcome.setSuccess(true);
