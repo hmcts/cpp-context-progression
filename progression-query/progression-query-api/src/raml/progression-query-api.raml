@@ -58,8 +58,8 @@ protocols: [ HTTP, HTTPS ]
                     example:  !include json/progression.query.cases.json
                     schema:  !include json/schema/progression.query.cases.json
                   application/vnd.progression.query.case-by-urn+json:
-                    example:  !include json/progression.query.cases.json
-                    schema:  !include json/schema/progression.query.cases.json
+                    example:  !include json/progression.query.caseprogressiondetail.json
+                    schema:  !include json/schema/progression.query.caseprogressiondetail.json
 
 /cases/{caseId}/defendants/{defendantId}:
   uriParameters:
@@ -151,3 +151,24 @@ protocols: [ HTTP, HTTPS ]
                  application/vnd.progression.query.defendant-offences+json:
                    schema: !include json/schema/progression.query.defendant-offences.json
                    example: !include json/progression.query.defendant-offences.json
+
+/search:
+  get:
+    description: |
+      Search for cases
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cases-search-by-material-id+json
+          name: progression.query.cases-search-by-material-id
+      ...
+    queryParameters:
+      q:
+        description: query
+        type: string
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.progression.query.cases-search-by-material-id+json:
+                  schema: !include json/schema/progression.query.cases-search-by-material-id.json
+                  example: !include json/progression.query.cases-search-by-material-id.json

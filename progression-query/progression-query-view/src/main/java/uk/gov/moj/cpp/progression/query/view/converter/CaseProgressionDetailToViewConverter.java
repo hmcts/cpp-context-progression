@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.progression.query.view.converter;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
+import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
 import uk.gov.moj.cpp.progression.query.view.service.ProgressionDataConstant;
 
 public class CaseProgressionDetailToViewConverter {
@@ -30,6 +33,10 @@ public class CaseProgressionDetailToViewConverter {
         if (caseProgressionDetail.getSentenceHearingId() != null) {
             caseProgressionDetailVo.setSentenceHearingId(caseProgressionDetail.getSentenceHearingId().toString());
         }
+
+        DefendantToDefendantViewConverter defendantToDefendantViewConverter=new DefendantToDefendantViewConverter();
+        List<DefendantView> defendantViews=caseProgressionDetail.getDefendants().stream().map(d-> defendantToDefendantViewConverter.convert(d)).collect(Collectors.toList());
+        caseProgressionDetailVo.setDefendants(defendantViews);
         return caseProgressionDetailVo;
     }
 

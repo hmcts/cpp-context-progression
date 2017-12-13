@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class CaseProgressionDetailView {
 
@@ -24,6 +25,16 @@ public class CaseProgressionDetailView {
     private String courtCentreId;
 
     private String sentenceHearingId;
+
+    private List<DefendantView> defendants;
+
+    public List<DefendantView> getDefendants() {
+        return defendants;
+    }
+
+    public void setDefendants(List<DefendantView> defendants) {
+        this.defendants = defendants;
+    }
 
     public String getCourtCentreId() {
         return courtCentreId;

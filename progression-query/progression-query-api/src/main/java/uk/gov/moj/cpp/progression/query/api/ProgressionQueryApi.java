@@ -39,6 +39,12 @@ public class ProgressionQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.cases-search-by-material-id")
+    public JsonEnvelope getCaseSearchByMaterialId(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+
     @Handles("progression.query.defendant")
     public JsonEnvelope getDefendant(final JsonEnvelope query) {
         return requester.request(query);

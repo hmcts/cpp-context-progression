@@ -23,6 +23,7 @@ public class AddDefendantIT extends BaseIntegrationTest {
             addDefendantHelper.verifyInActiveMQ();
             addDefendantHelper.verifyInPublicTopic();
             addDefendantHelper.verifyMinimalDefendantAdded();
+            addDefendantHelper.verifySearchForCaseByURN();
         }
     }
 

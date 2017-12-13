@@ -33,6 +33,8 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.command.update-offences-for-defendant+json";
 
+    private static final String WRITE_MEDIA_TYPE_PLEAS = "application/vnd.progression.command.update-plea+json";
+
     private static final String TEMPLATE_ADD_OFFENCE_FOR_DEFENDANT_PAYLOAD = "raml/json/progression.command.update-offences-for-defendant.json";
 
     public static final String OFFENCE_CODE = "PS123FG";
@@ -77,6 +79,27 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         request = jsonObjectPayload.toString();
 
         makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void updateOffencesPlea() {
+        final String jsonString = "{ \"plea\":\"GUILTY_REQUEST_HEARING\"}";
+        JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        request = jsonObjectPayload.toString();
+
+        makePostCall(getWriteUrl("/cases/" + caseId + "/offences/" + offenceId+"/pleas"), WRITE_MEDIA_TYPE_PLEAS, request);
+    }
+
+    public void verifyOffencesPleasForDefendantUpdated() {
+        JsonPath jsRequest = new JsonPath(request);
+
+        poll(getOffencesForDefendantId(caseId,defendantId))
+                .until(
+                        status().is(OK),
+                        payload()
+                                .isJson(allOf(
+                                        withJsonPath("$.offences[0].plea", is("GUILTY_REQUEST_HEARING"))
+                                        )
+                                ));
     }
 
 

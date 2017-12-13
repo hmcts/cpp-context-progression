@@ -32,6 +32,7 @@ public class UpdateBailStatusForDefendantIT extends BaseIntegrationTest {
             UpdateBailStatusForDefendantHelper updateBailStatusForDefendantHelper =
                     new UpdateBailStatusForDefendantHelper(caseId, defendantID);
             updateBailStatusForDefendantHelper.updateBailStatus();
+                updateBailStatusForDefendantHelper.verifySearchByMaterialId();
             updateBailStatusForDefendantHelper.verifyInActiveMQ();
             updateBailStatusForDefendantHelper.verifyBailStatusUpdated();
         }

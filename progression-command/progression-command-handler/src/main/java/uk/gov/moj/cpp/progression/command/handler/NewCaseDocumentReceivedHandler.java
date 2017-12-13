@@ -10,16 +10,17 @@ import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.newCaseDocumentReceivedEvent;
+
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class NewCaseDocumentReceivedHandler extends CaseProgressionCommandHandler {
 
-    private transient ProgressionEventFactory progressionEventFactory = new ProgressionEventFactory();
 
     @Handles("progression.command.upload-case-documents")
     public void uploadCaseDocument(final JsonEnvelope command) throws EventStreamException {
         final UUID streamId = UUID.randomUUID();
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(progressionEventFactory.newCaseDocumentReceivedEvent(command));
+        streamBuilder.add(newCaseDocumentReceivedEvent(command));
         final Stream<Object> events = streamBuilder.build();
         eventSource.getStreamById(streamId).append(events.map(enveloper.withMetadataFrom(command)));
     }

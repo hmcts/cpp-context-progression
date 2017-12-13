@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -7,15 +9,19 @@ import uk.gov.moj.cpp.progression.persistence.entity.DefendantDocument;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantDocumentRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
+import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
+import uk.gov.moj.cpp.progression.query.view.response.ProsecutingAuthority;
+import uk.gov.moj.cpp.progression.query.view.response.SearchCaseByMaterialIdView;
 
+import javax.inject.Inject;
+import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 public class CaseProgressionDetailService {
 
@@ -25,6 +31,12 @@ public class CaseProgressionDetailService {
     private CaseProgressionDetailRepository caseProgressionDetailRepo;
     @Inject
     private DefendantRepository defendantRepository;
+
+    @Inject
+    private CaseProgressionDetailToViewConverter caseProgressionDetailToViewConverter;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseProgressionDetailService.class);
+
 
     @Transactional
     public CaseProgressionDetail getCaseProgressionDetail(final UUID caseId) {
@@ -103,7 +115,30 @@ public class CaseProgressionDetailService {
     }
 
     @Transactional
-    public List<CaseProgressionDetail> findCaseByCaseUrn(String caseUrn) {
-        return  caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
+    public CaseProgressionDetailView findCaseByCaseUrn(String caseUrn) {
+        try {
+            CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
+            return caseProgressionDetailToViewConverter.convert(caseProgressionDetail);
+        } catch (NoResultException e) {
+            LOGGER.debug("No case found with URN='{}'", caseUrn, e);
+        }
+        return null;
+    }
+
+    public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {
+        SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView();
+        try {
+            CaseProgressionDetail caseDetail = caseProgressionDetailRepo.findByMaterialId(UUID.fromString(q));
+            if (caseDetail != null) {
+                String caseId = caseDetail.getId().toString();
+                ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.CPS;
+                searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, prosecutingAuthority);
+            } else {
+                searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(null, null);
+            }
+        } catch (NoResultException e) {
+            LOGGER.error("No case found with materialId='{}'", q, e);
+        }
+        return searchCaseByMaterialIdView;
     }
 }

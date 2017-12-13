@@ -14,7 +14,7 @@ public class UpdateOffencesForDefendantHandler extends CaseProgressionCommandHan
     @Inject
     private OffencesForDefendantConverter offencesForDefendantConverter;
 
-    @Handles("progression.command.handler.update-offences-for-defendant")
+    @Handles("progression.command.update-offences-for-defendant")
     public void updateOffences(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command, aCase -> aCase.updateOffencesForDefendant(offencesForDefendantConverter.convert(command)));
     }

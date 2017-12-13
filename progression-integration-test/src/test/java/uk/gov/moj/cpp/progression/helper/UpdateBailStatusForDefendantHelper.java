@@ -19,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getCaseById;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantsByCaseId;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.searchByMaterialId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_BAIL_STATUS_UPDATED_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
@@ -85,6 +86,20 @@ public class UpdateBailStatusForDefendantHelper extends AbstractTestHelper {
                         payload().isJson(allOf(
                                 withJsonPath("$.defendants", hasSize(1)),
                                 withJsonPath("$.defendants[0].bailStatus", is(jsRequest.getString("bailStatus")))
+                        ))
+                );
+
+    }
+
+    public void verifySearchByMaterialId() {
+        JsonPath jsRequest = new JsonPath(request);
+
+        poll(searchByMaterialId(documentId))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", is(caseId)),
+                                withJsonPath("$.prosecutingAuthority", is("CPS"))
                         ))
                 );
 
