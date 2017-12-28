@@ -31,13 +31,12 @@ public class OffencesForDefendantUpdatedListener {
     @Inject
     private OffenceForDefendantUpdatedToEntity converter;
 
-    Defendant defendant;
 
     @Transactional
     @Handles("progression.events.offences-for-defendant-updated")
     public void updateOffencesForDefendant(final JsonEnvelope envelope) {
         final OffencesForDefendantUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), OffencesForDefendantUpdated.class);
-        defendant = defendantRepository.findBy(event.getDefendantId());
+        final Defendant defendant = defendantRepository.findBy(event.getDefendantId());
         if (defendant != null && !event.getOffences().isEmpty()) {
             final Set<OffenceDetail> persistedOffenceDetailList = defendant.getOffences();
             final Set<OffenceDetail> offenceDetailList = event.getOffences().stream().map(s -> converter.convert(s)).collect(Collectors.toSet());
