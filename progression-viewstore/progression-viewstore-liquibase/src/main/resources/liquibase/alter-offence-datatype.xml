@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="29012018-1" author="progression" >
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="category" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="code" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="cpr_defendant_offender_check_digit" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="cpr_defendant_offender_number" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="cpr_defendant_offender_organisation_unit" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="cpr_defendant_offender_year" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="description" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="indicated_plea" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="police_offence_id" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="prosecution_facts" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="reason" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="section" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="witness_statement" />
+        <modifyDataType tableName="offence" newDataType="TEXT" columnName="wording" />
+    </changeSet>
+
+</databaseChangeLog>

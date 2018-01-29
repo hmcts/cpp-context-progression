@@ -22,5 +22,6 @@
     <include file="liquibase/add-sentence-hearing-id.xml"/>
     <include file="liquibase/update-case-status-updated-datetime.xml"/>
     <include file="liquibase/structure-view-db-migration.xml"/>
+    <include file="liquibase/alter-offence-datatype.xml"/>
 
 </databaseChangeLog>	
