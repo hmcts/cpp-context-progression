@@ -29,22 +29,4 @@ public class UpdateOffencesForDefendantApiTest {
         verify(sender, times(1)).send(command);
     }
 
-    @RunWith(MockitoJUnitRunner.class)
-    public static class AddDefendantApiTest {
-
-        @Mock
-        private Sender sender;
-
-        @Mock
-        private JsonEnvelope command;
-
-        @InjectMocks
-        private AddDefendantApi addDefendantApi;
-
-        @Test
-        public void shouldAddDefendant() {
-            addDefendantApi.addDefendant(command);
-            verify(sender).send(command);
-        }
-    }
 }

@@ -35,13 +35,13 @@ public class OffencesService {
 
         Defendant defendantDetail = caseRepository
                 .findCaseDefendants(UUID.fromString(caseId))
-                .stream().filter(defendant -> defendant.getId().equals(UUID.fromString(defendantId))).findFirst().orElse(null);
+                .stream().filter(defendant -> defendant.getDefendantId().equals(UUID.fromString(defendantId))).findFirst().orElse(null);
 
         //Defendant details not found hence can't extract the pleas information.
         if (defendantDetail == null) {
             return null;
         }
-        List<OffenceView> offences = offenceRepository.findByDefendant(defendantDetail).stream()
+        List<OffenceView> offences = offenceRepository.findByDefendantOrderByOrderIndex(defendantDetail).stream()
                 .map(OffenceView::new).collect(toList());
 
         return new OffencesView(offences);

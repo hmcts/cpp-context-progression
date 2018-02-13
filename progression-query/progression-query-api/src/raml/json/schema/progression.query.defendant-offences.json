@@ -19,11 +19,47 @@
           "offenceCode": {
             "type": "string"
           },
-          "plea": {
+          "convictionDate": {
             "type": "string"
           },
+          "plea": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string",
+                "enum": ["GUILTY"]
+              },
+              "pleaDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "value",
+              "pleaDate"
+            ]
+          },
           "indicatedPlea": {
-            "enum": [ "GUILTY", "NOT_GUILTY", "NO_PLEA" ]
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string",
+                "enum": ["NO_INDICATION", "INDICATED_GUILTY", "INDICATED_NOT_GUILTY"]
+              },
+              "allocationDecision": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "value"
+            ]
           },
           "section": {
             "type": "string"

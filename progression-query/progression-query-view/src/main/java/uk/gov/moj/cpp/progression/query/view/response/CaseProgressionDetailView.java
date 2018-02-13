@@ -5,12 +5,8 @@ import java.util.List;
 
 public class CaseProgressionDetailView {
 
-    private String caseProgressionId;
-
     private String caseId;
     private String caseUrn;
-
-    private LocalDate directionIssuedOn;
 
     private String fromCourtCentre;
 
@@ -23,8 +19,6 @@ public class CaseProgressionDetailView {
     private String status;
 
     private String courtCentreId;
-
-    private String sentenceHearingId;
 
     private List<DefendantView> defendants;
 
@@ -50,22 +44,6 @@ public class CaseProgressionDetailView {
 
     public void setCaseId(final String caseId) {
         this.caseId = caseId;
-    }
-
-    public String getCaseProgressionId() {
-        return caseProgressionId;
-    }
-
-    public void setCaseProgressionId(final String caseProgressionId) {
-        this.caseProgressionId = caseProgressionId;
-    }
-
-    public LocalDate getDirectionIssuedOn() {
-        return directionIssuedOn;
-    }
-
-    public void setDirectionIssuedOn(final LocalDate directionIssuedOn) {
-        this.directionIssuedOn = directionIssuedOn;
     }
 
     public String getFromCourtCentre() {
@@ -116,11 +94,4 @@ public class CaseProgressionDetailView {
         this.caseUrn = caseUrn;
     }
 
-    public String getSentenceHearingId() {
-        return sentenceHearingId;
-    }
-
-    public void setSentenceHearingId(String sentenceHearingId) {
-        this.sentenceHearingId = sentenceHearingId;
-    }
 }

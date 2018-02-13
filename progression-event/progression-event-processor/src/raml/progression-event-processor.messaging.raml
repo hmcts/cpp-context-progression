@@ -25,18 +25,9 @@ version: v1
         application/vnd.progression.events.sentence-hearing-date-added+json:
            schema: !include json/schema/progression.events.sentence-hearing-date-added.json
            example: !include json/progression.events.sentence-hearing-date-added.json
-        application/vnd.progression.events.sentence-hearing-date-updated+json:
-           schema: !include json/schema/progression.events.sentence-hearing-date-updated.json
-           example: !include json/progression.events.sentence-hearing-date-updated.json
-        application/vnd.progression.events.sentence-hearing-added+json:
-            schema: !include json/schema/progression.events.sentence-hearing-added.json
-            example: !include json/progression.events.sentence-hearing-added.json
         application/vnd.progression.events.case-added-to-crown-court+json:
-            schema: !include json/schema/progression.events.case-added-to-crown-court.json
-            example: !include json/progression.events.case-added-to-crown-court.json
-        application/vnd.progression.events.defendant-allocation-decision-updated+json:
-            schema: !include json/schema/progression.events.defendant-allocation-decision-updated.json
-            example: !include json/progression.events.defendant-allocation-decision-updated.json
+           schema: !include json/schema/progression.events.case-added-to-crown-court.json
+           example: !include json/progression.events.case-added-to-crown-court.json
         application/vnd.progression.events.offences-for-defendant-updated+json:
             schema: !include json/schema/progression.events.offences-for-defendant-updated.json
             example: !include json/progression.events.offences-for-defendant-updated.json
@@ -49,3 +40,12 @@ version: v1
         application/vnd.progression.events.defendant-added+json:
               schema: !include json/schema/progression.events.defendant-added.json
               example: !include json/progression.events.defendant-added.json
+        application/vnd.progression.events.sending-sheet-completed+json:
+           schema: !include json/schema/progression.events.sending-sheet-completed.json
+           example: !include json/progression.events.sending-sheet-completed.json
+        application/vnd.progression.events.sending-sheet-previously-completed+json:
+           schema: !include json/schema/progression.events.sending-sheet-previously-completed.json
+           example: !include json/progression.events.sending-sheet-previously-completed.json
+        application/vnd.progression.events.sending-sheet-invalidated+json:
+           schema: !include json/schema/progression.events.sending-sheet-invalidated.json
+           example: !include json/progression.events.sending-sheet-invalidated.json

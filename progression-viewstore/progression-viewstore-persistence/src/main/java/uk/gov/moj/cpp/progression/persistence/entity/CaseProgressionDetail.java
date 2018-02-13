@@ -25,20 +25,14 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 public class CaseProgressionDetail implements Serializable {
     private static final long serialVersionUID = 97304452922115611L;
     @Id
-    @Column(name = "id", unique = true, nullable = false)
-    private UUID id;
+    @Column(name = "caseid", unique = true, nullable = false)
+    private UUID caseId;
 
     @Column(name = "courtcentreid")
     private String courtCentreId;
 
-    @Column(name = "caseid", unique = true, nullable = false)
-    private UUID caseId;
-
     @Column(name = "caseurn", nullable = false)
     private String caseUrn;
-
-    @Column(name = "directionissuedon")
-    private LocalDate directionIssuedOn;
 
     @Column(name = "fromcourtcentre")
     private String fromCourtCentre;
@@ -55,9 +49,6 @@ public class CaseProgressionDetail implements Serializable {
     @Enumerated(EnumType.STRING)
     private CaseStatusEnum status;
 
-    @Column(name = "sentencehearingid",unique = true)
-    private UUID sentenceHearingId;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
                     mappedBy = "caseProgressionDetail")
     private Set<Defendant> defendants = new HashSet<>();
@@ -72,22 +63,6 @@ public class CaseProgressionDetail implements Serializable {
 
     public void setCaseId(final UUID caseId) {
         this.caseId = caseId;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(final UUID id) {
-        this.id = id;
-    }
-
-    public LocalDate getDirectionIssuedOn() {
-        return directionIssuedOn;
-    }
-
-    public void setDirectionIssuedOn(final LocalDate directionIssuedOn) {
-        this.directionIssuedOn = directionIssuedOn;
     }
 
     public String getCourtCentreId() {
@@ -146,16 +121,8 @@ public class CaseProgressionDetail implements Serializable {
         this.defendants = defendants;
     }
 
-    public UUID getSentenceHearingId() {
-        return sentenceHearingId;
-    }
-
-    public void setSentenceHearingId(UUID sentenceHearingId) {
-        this.sentenceHearingId = sentenceHearingId;
-    }
-
     public Defendant getDefendant(UUID defendentId) {
-        return defendants.stream().filter(defendent -> defendent.getId().equals(defendentId))
+        return defendants.stream().filter(defendent -> defendent.getDefendantId().equals(defendentId))
                 .findFirst().orElse(null);
     }
 

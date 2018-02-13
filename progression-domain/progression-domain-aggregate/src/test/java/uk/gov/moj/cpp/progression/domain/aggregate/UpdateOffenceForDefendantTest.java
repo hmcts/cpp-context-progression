@@ -39,8 +39,8 @@ public class UpdateOffenceForDefendantTest {
 
         final UUID caseId = randomUUID();
         final List<OffenceForDefendant> offenceForDefendants = Arrays.asList(new OffenceForDefendant(randomUUID(), "offenceCode"
-                , "indicatedPlea", "section",
-                " wording", LocalDate.now(), LocalDate.now(), 0, 0, "modeOfTrial"));
+                ,  "section",
+                " wording", LocalDate.now(), LocalDate.now(), 0, 0, null, null, null));
 
 
         final OffencesForDefendantUpdated offencesForDefendantUpdated =

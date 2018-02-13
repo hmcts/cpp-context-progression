@@ -29,19 +29,16 @@ import javax.json.JsonObject;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ProgressionIT {
 
     private String caseId;
-    private String caseProgressionId;
 
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = caseId;
         createMockEndpoints();
 
     }
@@ -49,7 +46,7 @@ public class ProgressionIT {
     @Test
     public void shouldAddCaseToCrownCourt() throws Exception {
         addDefendant(caseId);
-        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId);
+        Response writeResponse = addCaseToCrownCourt(caseId);
         assertThatRequestIsAccepted(writeResponse);
 
         pollForResponse(join("", "/cases/", caseId),
@@ -96,18 +93,8 @@ public class ProgressionIT {
         assertTrue(defendantsJsonObject.getString("status")
                 .equals("READY_FOR_REVIEW"));
 
-        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
-                "application/vnd.progression.command.case-assigned-for-review+json",
-                getJsonBodyStr("progression.command.case-assigned-for-review.json"));
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final String queryDefendantsAssignedResponse =
-                pollForResponse(join("", "/cases/", caseId),
-                        "application/vnd.progression.query.caseprogressiondetail+json");
 
-        defendantsJsonObject = getJsonObject(queryDefendantsAssignedResponse);
-
-        assertTrue(defendantsJsonObject.getString("status").equals("ASSIGNED_FOR_REVIEW"));
     }
 
     @Test
@@ -134,7 +121,7 @@ public class ProgressionIT {
 
     private String getJsonBodyStr(final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
-                .replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_CASE_ID", caseId)
                 .replace("DEF_ID_1", UUID.randomUUID().toString())
                 .replace("DEF_ID_2", UUID.randomUUID().toString())
                 .replace("TODAY", LocalDate.now().toString());

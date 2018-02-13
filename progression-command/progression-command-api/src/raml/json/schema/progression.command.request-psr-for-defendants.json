@@ -2,16 +2,13 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "caseProgressionId": {
-      "type": "string"
-    },
     "defendants": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "defendantId": {
-            "type": "string"
+            "$ref":"#/definitions/uuidPattern"
           },
           "psrIsRequested": {
             "type": "boolean"
@@ -25,7 +22,12 @@
     }
   },
   "required": [
-    "caseProgressionId",
     "defendants"
-  ]
+  ],
+  "definitions":{
+    "uuidPattern":{
+      "type":"string",
+      "pattern":"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
 }

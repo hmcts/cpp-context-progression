@@ -38,7 +38,7 @@ function deleteAndDeployWars {
   sleep 10
 
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.undeployed
-  find . \( -iname "*.war" ! -iname "${CONTEXT_NAME}-service-*.war" \) -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
+  find . \( -iname "${CONTEXT_NAME}-service-*.war" \) -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
   echo "Copied wars to $WILDFLY_DEPLOYMENT_DIR"
 }
 
@@ -130,6 +130,9 @@ function deployWiremock() {
 function buildDeployAndTest {
   buildWars
   deployAndTest
+}
+function deployWiremock() {
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=$WILDFLY_DEPLOYMENT_DIR -Dartifact=uk.gov.justice.services:wiremock-service:1.1.0:war
 }
 
 function deployAndTest {

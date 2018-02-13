@@ -32,7 +32,6 @@ public class DefendantRepositoryTest {
     private static final String ID_ONE = "CASEURN";
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
-    private static final UUID DEF_PRG_ID = DEF_ID;
     private static LocalDate now;
     private static LocalDateTime currentDateTime;
     private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
@@ -49,7 +48,7 @@ public class DefendantRepositoryTest {
                         createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
         final Defendant defendant =
-                        new Defendant(DEF_PRG_ID, DEF_ID, caseProgressionDetailOne, false, null);
+                        new Defendant(DEF_ID, caseProgressionDetailOne, false, null);
         defendant.setSentenceHearingReviewDecisionDateTime(currentDateTime);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
@@ -73,10 +72,8 @@ public class DefendantRepositoryTest {
                                                               final CaseStatusEnum status) {
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
-        caseProgressionDetail.setId(caseId);
         caseProgressionDetail.setCaseUrn(caseUrn);
         caseProgressionDetail.setCourtCentreId(COURT_CENTER);
-        caseProgressionDetail.setDirectionIssuedOn(now);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTER);
         caseProgressionDetail.setCaseStatusUpdatedDateTime(ZonedDateTime.now(ZoneOffset.UTC).plusDays(7));
         caseProgressionDetail.setSendingCommittalDate(now);
@@ -88,7 +85,7 @@ public class DefendantRepositoryTest {
     @After
     public void teardown() {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
-                        .attachAndRemove(repository.findBy(caseProgressionDetail.getId())));
+                        .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
     }
 
 }

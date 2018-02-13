@@ -14,7 +14,7 @@ import static uk.gov.justice.services.eventsourcing.source.core.Events.streamOf;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class SendCommittalHearingInformationHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.sending-committal-hearing-information")
+    @Handles("progression.command.handler.sending-committal-hearing-information")
     public void sendCommittalHearingInformation(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.sendingHearingCommittal(command));

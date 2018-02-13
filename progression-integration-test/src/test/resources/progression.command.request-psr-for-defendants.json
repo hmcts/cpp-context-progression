@@ -1,6 +1,5 @@
 {
-  "caseProgressionId": "RANDOM_ID",
-  "defendants":[  
+  "defendants":[
       {  
          "defendantId":"DEF_ID_1",
          "psrIsRequested": false

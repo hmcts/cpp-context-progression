@@ -1,18 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import com.jayway.jsonpath.Filter;
-import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-
-import javax.json.JsonObject;
-import java.util.List;
-import java.util.UUID;
-
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
@@ -31,7 +18,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getCaseById;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getCaseByUrn;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantsByCaseId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_ADDED;
@@ -39,6 +25,21 @@ import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEF
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+
+import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+
+import java.util.List;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.jayway.jsonpath.Filter;
+import com.jayway.jsonpath.ReadContext;
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AddDefendantHelper extends AbstractTestHelper {
 
@@ -84,13 +85,13 @@ public class AddDefendantHelper extends AbstractTestHelper {
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
         publicEventDefendantAdditionFailedConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, PUBLIC_ACTIVE_MQ_TOPIC);
         personId = UUID.randomUUID().toString();
-        caseUrn = UUID.randomUUID().toString().replace("-","").substring(0,8).toUpperCase();
+        caseUrn = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
     /*
       Currently the optional fields are: arrest date, end date and charge date
      */
-    public void addMinimalDefendant() {
+    public String addMinimalDefendant() {
         final JsonObject defendantAsJsonObject = createObjectBuilder()
                 .add("defendantId", VALUE_DEFENDANT_ID)
                 .add("personId", personId)
@@ -124,6 +125,8 @@ public class AddDefendantHelper extends AbstractTestHelper {
         request = defendantAsJsonObject.toString();
 
         makePostCall(getWriteUrl("/cases/" + caseId + "/defendant"), WRITE_MEDIA_TYPE, request);
+
+        return request;
     }
 
     /*
@@ -132,14 +135,15 @@ public class AddDefendantHelper extends AbstractTestHelper {
     public void addFullDefendant() {
         addFullDefendant(VALUE_DEFENDANT_ID);
     }
+
     public void addFullDefendant(String defendantId) {
-        addFullDefendant(defendantId,VALUE_POLICE_DEFENDANT_ID);
+        addFullDefendant(defendantId, VALUE_POLICE_DEFENDANT_ID);
     }
 
     /*
           The optional fields are included, namely, arrest date, end date and charge date
          */
-    public void addFullDefendant(String defendantId,String policeDefendantId) {
+    public void addFullDefendant(String defendantId, String policeDefendantId) {
         final JsonObject defendantAsJsonObject = createObjectBuilder()
                 .add("defendantId", defendantId)
                 .add("personId", personId)
@@ -268,7 +272,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
         );
     }
 
- public void verifyFullDefendantAdded() {
+    public void verifyFullDefendantAdded() {
         final JsonPath jsRequest = new JsonPath(request);
 
         final Filter personIdFilter = filter(where("personId").is(jsRequest.get("personId")));
@@ -285,7 +289,6 @@ public class AddDefendantHelper extends AbstractTestHelper {
                                         .isJson(matchFullDefendant(personIdFilter)))
         );
     }
-
 
 
     private Matcher<ReadContext> matchFullDefendant(Filter personIdFilter) {
@@ -346,6 +349,8 @@ public class AddDefendantHelper extends AbstractTestHelper {
     public String getPersonId() {
         return personId;
     }
+
+    public String getCaseUrn(){return caseUrn;}
 
     public String getDefendantId() {
         return VALUE_DEFENDANT_ID;

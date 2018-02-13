@@ -52,7 +52,7 @@ public class CaseProgressionDetailRepositoryTest {
         caseProgressionDetails.add(caseProgressionDetailOne);
 
         final Defendant defendant =
-                        new Defendant(DEF_ID, DEF_ID, caseProgressionDetailOne, false,null);
+                        new Defendant(DEF_ID, caseProgressionDetailOne, false,null);
         DefendantBailDocument defendantBailDocument=new DefendantBailDocument();
         defendantBailDocument.setDocumentId(MATERIAL_ID);
         defendantBailDocument.setId(UUID.randomUUID());
@@ -73,10 +73,8 @@ public class CaseProgressionDetailRepositoryTest {
                                                               final CaseStatusEnum status, String caseUrn) {
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
-        caseProgressionDetail.setId(caseId);
         caseProgressionDetail.setCaseUrn(caseUrn);
         caseProgressionDetail.setCourtCentreId(COURT_CENTER);
-        caseProgressionDetail.setDirectionIssuedOn(now);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTER);
         caseProgressionDetail.setCaseStatusUpdatedDateTime(CASE_STATUS_UPDATED_DATE_TIME);
         caseProgressionDetail.setSendingCommittalDate(now);
@@ -89,16 +87,15 @@ public class CaseProgressionDetailRepositoryTest {
     @After
     public void teardown() {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
-                        .attachAndRemove(repository.findBy(caseProgressionDetail.getId())));
+                        .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
     }
 
     @Test
-    public void shouldFindByCaseProgressionId() throws Exception {
+    public void shouldFindByCaseId() throws Exception {
         final CaseProgressionDetail result = repository.findByCaseId(CASE_ID_ONE);
         assertThat(result.getCaseId(), equalTo(CASE_ID_ONE));
         assertThat(result.getCaseUrn(), equalTo(CASE_URN_ONE));
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
-        assertThat(result.getDirectionIssuedOn(), equalTo(now));
         assertThat(result.getFromCourtCentre(), equalTo(COURT_CENTER));
         assertThat(result.getCaseStatusUpdatedDateTime(),
                         equalTo(CASE_STATUS_UPDATED_DATE_TIME));

@@ -162,10 +162,6 @@
       "type": "string",
       "$id": "/properties/defenceSolicitorFirm"
     },
-    "allocationDecision": {
-      "type": "string",
-      "$id": "/properties/allocationDecision"
-    },
     "interpreter": {
       "type": "object",
       "$id": "/properties/interpreter",
@@ -196,12 +192,41 @@
             "$id": "/properties/offences/items/properties/offenceCode"
           },
           "plea": {
-            "type": "string",
-            "$id": "/properties/offences/items/properties/plea"
+            "type": "object",
+            "$id": "/properties/offences/items/properties/plea",
+            "properties": {
+              "id": {
+                "type": "string",
+                "$id": "/properties/offences/items/properties/plea/id"
+              },
+              "value": {
+                "type": "string",
+                "enum": ["GUILTY"],
+                "$id": "/properties/offences/items/properties/plea/value"
+              },
+              "pleaDate": {
+                "type": "string",
+                "$id": "/properties/offences/items/properties/plea/pleaDate"
+              }
+             }
           },
           "indicatedPlea": {
-            "type": "string",
-            "$id": "/properties/offences/items/properties/indicatedPlea"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "$id": "/properties/offences/items/properties/indicatedPlea/id"
+              },
+              "value": {
+                "type": "string",
+                "enum": ["NO_INDICATION", "INDICATED_GUILTY", "INDICATED_NOT_GUILTY"],
+                "$id": "/properties/offences/items/properties/indicatedPlea/value"
+              },
+              "allocationDecision": {
+                "type": "string",
+                "$id": "/properties/offences/items/properties/indicatedPlea/allocationDecision"
+              }
+            }
           },
           "section": {
             "type": "string",

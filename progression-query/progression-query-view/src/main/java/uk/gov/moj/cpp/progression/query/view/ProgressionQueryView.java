@@ -104,7 +104,7 @@ public class ProgressionQueryView {
                         caseProgressionDetailService.getCaseProgressionDetail(caseId.get());
                 cases.add(caseProgressionDetail);
             } catch (final NoResultException nre) {
-                LOGGER.error(NO_CASE_PROGRESSION_DETAIL_FOUND_FOR_CASE_ID + caseId, nre);
+                LOGGER.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
             }
         }else {
             cases = caseProgressionDetailService.getCases(status);
@@ -198,7 +198,7 @@ public class ProgressionQueryView {
     public JsonEnvelope findOffences(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_DEFENDANT_OFFENCES).apply(
                 offencesService.findOffences(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID), envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID)));
-    }
+}
 
     @Handles("progression.query.cases-search-by-material-id")
     public JsonEnvelope searchCaseByMaterialId(final JsonEnvelope envelope) {

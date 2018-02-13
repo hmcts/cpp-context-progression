@@ -23,5 +23,12 @@
     <include file="liquibase/update-case-status-updated-datetime.xml"/>
     <include file="liquibase/structure-view-db-migration.xml"/>
     <include file="liquibase/alter-offence-datatype.xml"/>
+    <include file="liquibase/update-plea-indicated-plea-offence.xml"/>
+    <include file="liquibase/delete-defendant-allocation_decision.xml"/>
+    <include file="liquibase/remove-case-progression-id.xml"/>
+    <include file="liquibase/remove-defendant-progression-id.xml"/>
+    <include file="liquibase/delete-unusedcolumns-offence_defendant.xml"/>
+    <include file="liquibase/alter-varchar-datatypes.xml"/>
+
 
 </databaseChangeLog>	

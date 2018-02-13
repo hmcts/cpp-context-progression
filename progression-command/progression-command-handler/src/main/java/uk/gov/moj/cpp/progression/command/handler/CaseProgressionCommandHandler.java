@@ -38,7 +38,7 @@ public  class CaseProgressionCommandHandler {
                     final Function<CaseProgressionAggregate, Stream<Object>> function)
                     throws EventStreamException {
         EventStream eventStream =
-                        eventSource.getStreamById(getCaseProgressionId(command.payloadAsJsonObject()));
+                        eventSource.getStreamById(getStreamIdByCaseId(command.payloadAsJsonObject()));
         CaseProgressionAggregate aCaseProgression =
                         aggregateService.get(eventStream, CaseProgressionAggregate.class);
 
@@ -46,7 +46,7 @@ public  class CaseProgressionCommandHandler {
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }
 
-    protected UUID getCaseProgressionId(final JsonObject payload) {
+    protected UUID getStreamIdByCaseId(final JsonObject payload) {
         return UUID.fromString(payload.getString(FIELD_STREAM_ID));
     }
 

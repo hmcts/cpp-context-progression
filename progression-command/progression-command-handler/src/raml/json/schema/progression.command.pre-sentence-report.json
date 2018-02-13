@@ -2,15 +2,22 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "caseProgressionId": {
-      "type": "string"
+    "caseId": {
+      "$ref":"#/definitions/uuidPattern"
     },
     "isPSROrdered": {
       "type": "boolean"
     }
   },
   "required": [
-    "caseProgressionId",
+    "caseId",
     "isPSROrdered"
-  ]
+  ],
+  "definitions":{
+    "uuidPattern":{
+      "type":"string",
+      "pattern":"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
+
 }

@@ -33,10 +33,6 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS, GROUP_JUDICIARY);
     }
 
-    public static List<String> getUpdateAllocationDecisionForDefendantActionGroups() {
-        return asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS);
-    }
-
     public static List<String> getUpdateInterpreterorDefendantActionGroups() {
         return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS, GROUP_JUDICIARY);
     }

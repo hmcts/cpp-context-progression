@@ -1,28 +1,24 @@
 package uk.gov.moj.cpp.progression.command.api;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
-
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-
-import javax.json.JsonObject;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
+
+import javax.json.JsonObject;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandApiTest {
@@ -39,6 +35,7 @@ public class ProgressionCommandApiTest {
     @Mock
     private Function<Object, JsonEnvelope> function;
 
+
     @InjectMocks
     private ProgressionCommandApi progressionCommandApi;
 
@@ -53,88 +50,76 @@ public class ProgressionCommandApiTest {
         when(value.getString("caseId")).thenReturn(caseId);
         when(metadata.userId()).thenReturn(Optional.of(userId));
         when(command.metadata()).thenReturn(metadata);
-        when(enveloper.withMetadataFrom(command, "progression.command.add-case-to-progression"))
+        when(enveloper.withMetadataFrom(command, "progression.command.handler.add-case-to-crown-court"))
                 .thenReturn(function);
         when(function.apply(any())).thenReturn(command);
         progressionCommandApi.addCaseToCrownCourt(command);
-        verify(sender, times(1)).send(command);
+        verify(sender).send(command);
     }
 
     @Test
     public void shouldSendCommittalHearingInformation() throws Exception {
+        when(enveloper.withMetadataFrom(command, "progression.command.handler.sending-committal-hearing-information"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(command);
+
         progressionCommandApi.sendCommittalHearingInformation(command);
-        verify(sender, times(1)).send(command);
+        verify(sender).send(command);
     }
 
     @Test
     public void shouldSentenceHearingDate() throws Exception {
-        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
         when(enveloper.withMetadataFrom(command, "progression.command.record-sentence-hearing-date"))
                 .thenReturn(function);
-        when(function.apply(any())).thenReturn(commandEnvelope);
+        when(function.apply(any())).thenReturn(command);
 
         progressionCommandApi.addSentenceHearingDate(command);
-
-        verify(sender, times(1)).send(commandEnvelope);
+        verify(sender).send(command);
     }
 
     @Test
     public void shouldCaseToBeAssigned() throws Exception {
+        when(enveloper.withMetadataFrom(command, "progression.command.handler.case-to-be-assigned"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(command);
         progressionCommandApi.updateCaseToBeAssigned(command);
-        verify(sender, times(1)).send(command);
+        verify(sender).send(command);
     }
 
-    @Test
-    public void shouldCaseAssignedForReview() throws Exception {
-        progressionCommandApi.updateCaseAssignedForReview(command);
-        verify(sender, times(1)).send(command);
-    }
-
-    @Test
-    public void shouldPrepareForSentenceHearing() throws Exception {
-        progressionCommandApi.prepareForSentenceHearing(command);
-        verify(sender, times(1)).send(command);
-    }
 
     @Test
     public void shouldAddDefendantProgression() throws Exception {
-        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
         when(enveloper.withMetadataFrom(command, "progression.command.handler.add-defendant-additional-information"))
                 .thenReturn(function);
-        when(function.apply(any())).thenReturn(commandEnvelope);
+        when(function.apply(any())).thenReturn(command);
 
         progressionCommandApi.addAdditionalInformationForDefendant(command);
-
-        verify(sender, times(1)).send(commandEnvelope);
+        verify(sender).send(command);
     }
+
 
     @Test
     public void shouldPassNoMoreInformationRequired() throws Exception {
-        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
         when(enveloper.withMetadataFrom(command, "progression.command.record-no-more-information-required"))
                 .thenReturn(function);
-        when(function.apply(any())).thenReturn(commandEnvelope);
+        when(function.apply(any())).thenReturn(command);
 
         progressionCommandApi.noMoreInformationRequired(command);
-
-        verify(sender, times(1)).send(commandEnvelope);
+        verify(sender).send(command);
     }
 
     @Test
     public void shouldRequestPSRForDefendants() throws Exception {
+        when(enveloper.withMetadataFrom(command, "progression.command.handler.request-psr-for-defendants"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(command);
         progressionCommandApi.requestPSRForDefendants(command);
-        verify(sender, times(1)).send(command);
+        verify(sender).send(command);
     }
 
     @Test
-    public void shouldAddSentenceHearing() throws Exception {
-        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
-        when(enveloper.withMetadataFrom(command, "progression.command.record-sentence-hearing"))
-                .thenReturn(function);
-        when(function.apply(any())).thenReturn(commandEnvelope);
-
-        progressionCommandApi.addSentenceHearing(command);
-
-        verify(sender, times(1)).send(commandEnvelope);
+    public void shouldCompleteSendingSheet() throws Exception {
+        progressionCommandApi.completeSendingSheet(command);
+        verify(sender).send(command);
     }
 }

@@ -15,7 +15,6 @@ public class CaseProgressionDetailToViewConverter {
     public CaseProgressionDetailView convert(final CaseProgressionDetail caseProgressionDetail) {
         CaseProgressionDetailView caseProgressionDetailVo = null;
         caseProgressionDetailVo = new CaseProgressionDetailView();
-        caseProgressionDetailVo.setCaseProgressionId(caseProgressionDetail.getId().toString());
         caseProgressionDetailVo.setCaseId(caseProgressionDetail.getCaseId().toString());
         caseProgressionDetailVo.setCaseUrn(caseProgressionDetail.getCaseUrn());
         if (caseProgressionDetail.getStatus() != null) {
@@ -23,17 +22,12 @@ public class CaseProgressionDetailToViewConverter {
         }
         caseProgressionDetailVo.setSentenceReviewDeadlineDate(
                         calcSentenceReviewDeadlineDate(caseProgressionDetail));
-        caseProgressionDetailVo.setDirectionIssuedOn(caseProgressionDetail.getDirectionIssuedOn());
         caseProgressionDetailVo.setFromCourtCentre(caseProgressionDetail.getFromCourtCentre());
         caseProgressionDetailVo
                         .setSendingCommittalDate(caseProgressionDetail.getSendingCommittalDate());
         caseProgressionDetailVo
                         .setSentenceHearingDate(caseProgressionDetail.getSentenceHearingDate());
         caseProgressionDetailVo.setCourtCentreId(caseProgressionDetail.getCourtCentreId());
-        if (caseProgressionDetail.getSentenceHearingId() != null) {
-            caseProgressionDetailVo.setSentenceHearingId(caseProgressionDetail.getSentenceHearingId().toString());
-        }
-
         DefendantToDefendantViewConverter defendantToDefendantViewConverter=new DefendantToDefendantViewConverter();
         List<DefendantView> defendantViews=caseProgressionDetail.getDefendants().stream().map(d-> defendantToDefendantViewConverter.convert(d)).collect(Collectors.toList());
         caseProgressionDetailVo.setDefendants(defendantViews);

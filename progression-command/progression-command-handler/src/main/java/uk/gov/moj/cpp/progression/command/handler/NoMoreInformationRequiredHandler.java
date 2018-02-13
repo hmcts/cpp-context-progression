@@ -17,6 +17,6 @@ public class NoMoreInformationRequiredHandler extends CaseProgressionCommandHand
     public void noMoreInformationRequired(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.noMoreInformationForDefendant(
-                        UUID.fromString(command.payloadAsJsonObject().getString("defendantId")), UUID.fromString(command.payloadAsJsonObject().getString("caseId")), UUID.fromString(command.payloadAsJsonObject().getString("caseProgressionId"))));
+                        UUID.fromString(command.payloadAsJsonObject().getString("defendantId")), UUID.fromString(command.payloadAsJsonObject().getString("caseId"))));
     }
 }

@@ -3,18 +3,20 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "type": "string"
+      "$ref":"#/definitions/uuidPattern"
     },
     "defendantId": {
-      "type": "string"
-    },
-    "caseProgressionId": {
-      "type": "string"
+      "$ref":"#/definitions/uuidPattern"
     }
   },
   "required": [
     "caseId",
-    "defendantId",
-    "caseProgressionId"
-  ]
+    "defendantId"
+  ],
+  "definitions":{
+    "uuidPattern":{
+      "type":"string",
+      "pattern":"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
 }

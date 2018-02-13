@@ -5,18 +5,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubSetStatusForCapability;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesFeatureDisabled;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
-import uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.io.IOException;
@@ -32,14 +28,12 @@ import org.junit.Test;
 public class AddDefendantAdditionalInfoIT {
 
     private String caseId;
-    private String caseProgressionId;
     private String firstDefendantId;
     private String secondDefendantId;
 
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        caseProgressionId = caseId;
         firstDefendantId = UUID.randomUUID().toString();
         secondDefendantId = UUID.randomUUID().toString();
         createMockEndpoints();
@@ -127,13 +121,6 @@ public class AddDefendantAdditionalInfoIT {
                 equalTo("PENDING_FOR_SENTENCING_HEARING"));
     }
 
-    @Test
-    public void shouldNotAddAdditionalInfoForDefendant_CapabilityDisabled() throws Exception {
-        givenAddDefendantAdditionalInformationCapabiltyDisabled();
-        addDefendant(caseId,firstDefendantId);
-        final Response writeAdditionalInfoResponse = postAddDefendantAdditionalInfoCommand(firstDefendantId);
-        assertThatResponseIndicatesFeatureDisabled(writeAdditionalInfoResponse);
-    }
 
     @Test
     public void shouldSetNoMoreInformationRequired() throws Exception {
@@ -184,13 +171,6 @@ public class AddDefendantAdditionalInfoIT {
                 equalTo("READY_FOR_SENTENCING_HEARING"));
     }
 
-    @Test
-    public void shouldNotSetNoMoreInformationRequired_CapabilityDisabled() throws Exception {
-        givenNoMoreInformationRequiredCapabiltyDisabled();
-        addDefendant(caseId,firstDefendantId);
-        final Response writeAdditionalInfoResponse = postNoMoreInformationRequiredCommand(firstDefendantId);
-        assertThatResponseIndicatesFeatureDisabled(writeAdditionalInfoResponse);
-    }
 
     private Response postNoMoreInformationRequiredCommand(String defendantId) throws IOException {
         return postCommand(getCommandUri("/cases/" + caseId + "/defendants/" + defendantId),
@@ -205,14 +185,7 @@ public class AddDefendantAdditionalInfoIT {
     }
 
     private String getJsonBody(String path) {
-        return StubUtil.getJsonBodyStr(path, caseId, firstDefendantId, secondDefendantId, caseProgressionId);
+        return StubUtil.getJsonBodyStr(path, caseId, firstDefendantId, secondDefendantId);
     }
 
-    private void givenAddDefendantAdditionalInformationCapabiltyDisabled() {
-        stubSetStatusForCapability("progression.command.add-defendant-additional-information", false);
-    }
-
-    private void givenNoMoreInformationRequiredCapabiltyDisabled() {
-        stubSetStatusForCapability("progression.command.no-more-information-required", false);
-    }
 }

@@ -64,7 +64,6 @@ public class DefendantBuilder {
     }
 
     public static DefendantCommand defaultDefendantWith(UUID defendantId) {
-        UUID defendantProgressionId = randomUUID();
         MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
         medicalDocumentation.setDetails(randomString());
 
@@ -89,13 +88,11 @@ public class DefendantBuilder {
 
         DefendantCommand defendant = new DefendantCommand();
         defendant.setDefendantId(defendantId);
-        defendant.setDefendantProgressionId(defendantProgressionId);
         defendant.setAdditionalInformation(additionalInformation);
         return defendant;
     }
 
     public static DefendantCommand defaultDefendantWithoutAdditionalInfo(UUID defendantId) {
-        UUID defendantProgressionId = randomUUID();
         MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
         medicalDocumentation.setDetails(randomString());
 
@@ -115,7 +112,6 @@ public class DefendantBuilder {
 
         DefendantCommand defendant = new DefendantCommand();
         defendant.setDefendantId(defendantId);
-        defendant.setDefendantProgressionId(defendantProgressionId);
 
         return defendant;
     }

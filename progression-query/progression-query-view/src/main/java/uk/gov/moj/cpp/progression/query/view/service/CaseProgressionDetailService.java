@@ -68,7 +68,7 @@ public class CaseProgressionDetailService {
 
         List<CaseProgressionDetail> caseProgressionDetails;
             caseProgressionDetails =
-                    caseProgressionDetailRepo.findByStatusAndCaseID(getCaseStatusList(status.get()),caseId.get());
+                    caseProgressionDetailRepo.findByStatusAndCaseID(getCaseStatusList(status.orElse(null)),caseId.orElse(null));
         return caseProgressionDetails;
 
     }
@@ -130,7 +130,7 @@ public class CaseProgressionDetailService {
         try {
             CaseProgressionDetail caseDetail = caseProgressionDetailRepo.findByMaterialId(UUID.fromString(q));
             if (caseDetail != null) {
-                String caseId = caseDetail.getId().toString();
+                String caseId = caseDetail.getCaseId().toString();
                 ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.CPS;
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, prosecutingAuthority);
             } else {

@@ -37,9 +37,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseProgressionDetailServiceTest {
 
-    private static final UUID ID = UUID.randomUUID();
-
     private static final UUID CASEID = UUID.randomUUID();
+
 
     private static final String COURT_CENTRE = "liverpool";
     @Spy
@@ -72,7 +71,6 @@ public class CaseProgressionDetailServiceTest {
     public void getCaseProgressionDetailTest() throws IOException {
 
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
-        caseProgressionDetail.setId(ID);
         caseProgressionDetail.setCaseId(CASEID);
         caseProgressionDetail.setFromCourtCentre(COURT_CENTRE);
         caseProgressionDetail.setSendingCommittalDate(LocalDate.now());
@@ -83,8 +81,6 @@ public class CaseProgressionDetailServiceTest {
 
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getCaseId()
                 .equals(CASEID));
-        assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID).getId()
-                .equals(ID));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
                 .getFromCourtCentre().equals(COURT_CENTRE));
         assertTrue(this.caseProgressionDetailService.getCaseProgressionDetail(CASEID)
@@ -109,9 +105,9 @@ public class CaseProgressionDetailServiceTest {
     @Test
     public void shouldReturnCasesForStatus() throws Exception {
 
-        final String status = "COMPLETED,ASSIGNED_FOR_REVIEW";
+        final String status = "COMPLETED,READY_FOR_REVIEW";
         final List<CaseStatusEnum> statusList =
-                Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
+                Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.READY_FOR_REVIEW);
 
         when(caseProgressionDetailRepository.findByStatus(statusList)).thenReturn(Arrays.asList(
                 caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
@@ -126,9 +122,9 @@ public class CaseProgressionDetailServiceTest {
     @Test
     public void shouldReturnCasesForStatusAndCaseId() throws Exception {
 
-        final String status = "COMPLETED,ASSIGNED_FOR_REVIEW";
+        final String status = "COMPLETED,READY_FOR_REVIEW";
         final List<CaseStatusEnum> statusList =
-                Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.ASSIGNED_FOR_REVIEW);
+                Arrays.asList(CaseStatusEnum.COMPLETED, CaseStatusEnum.READY_FOR_REVIEW);
 
         when(caseProgressionDetailRepository.findByStatusAndCaseID(statusList,CASEID)).thenReturn(Arrays.asList(
                 caseProgressionDetail1));
@@ -146,14 +142,14 @@ public class CaseProgressionDetailServiceTest {
         final UUID defendantId = UUID.randomUUID();
 
         Defendant value = new Defendant();
-        value.setId(defendantId);
+        value.setDefendantId(defendantId);
         when(defendantRepository.findByDefendantId(defendantId)).thenReturn(value);
 
         final Optional<Defendant> defendant = caseProgressionDetailService
                 .getDefendant(Optional.ofNullable(defendantId.toString()));
 
         verify(defendantRepository, times(1)).findByDefendantId(defendantId);
-        assertThat(defendant.get().getId(), equalTo(defendantId));
+        assertThat(defendant.get().getDefendantId(), equalTo(defendantId));
     }
 
     @Test
@@ -164,7 +160,7 @@ public class CaseProgressionDetailServiceTest {
         CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
         Defendant value = new Defendant();
-        value.setId(defendantId);
+        value.setDefendantId(defendantId);
         caseProgressionDetail.getDefendants().add(value);
 
 
@@ -174,6 +170,6 @@ public class CaseProgressionDetailServiceTest {
         final List<Defendant> defendant = caseProgressionDetailService.getDefendantsByCase(caseId);
 
         verify(caseProgressionDetailRepository, times(1)).findByCaseId(caseId);
-        assertThat(defendant.get(0).getId(), equalTo(defendantId));
+        assertThat(defendant.get(0).getDefendantId(), equalTo(defendantId));
     }
 }

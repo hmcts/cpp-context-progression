@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -11,18 +12,19 @@ import java.util.UUID;
  *
  */
 @Event("progression.events.case-ready-for-sentence-hearing")
+@JsonIgnoreProperties({"caseProgressionId"})
 public class CaseReadyForSentenceHearing {
 
-    private UUID caseProgressionId;
+    private UUID caseId;
 
     private CaseStatusEnum status;
 
     private ZonedDateTime caseStatusUpdatedDateTime;
 
-    public CaseReadyForSentenceHearing(UUID caseProgressionId, CaseStatusEnum status,
+    public CaseReadyForSentenceHearing(UUID caseId, CaseStatusEnum status,
                                        ZonedDateTime caseStatusUpdatedDateTime) {
         super();
-        this.caseProgressionId = caseProgressionId;
+        this.caseId = caseId;
         this.status = status;
         this.caseStatusUpdatedDateTime = caseStatusUpdatedDateTime;
     }
@@ -35,12 +37,12 @@ public class CaseReadyForSentenceHearing {
         return status;
     }
 
-    public UUID getCaseProgressionId() {
-        return caseProgressionId;
+    public UUID getCaseId() {
+        return caseId;
     }
 
-    public void setCaseProgressionId(UUID caseProgressionId) {
-        this.caseProgressionId = caseProgressionId;
+    public void setCaseId(UUID caseId) {
+        this.caseId = caseId;
     }
 
     public void setStatus(CaseStatusEnum status) {

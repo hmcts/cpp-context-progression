@@ -101,12 +101,13 @@ public class DefendantDocument {
         }
 
         DefendantDocument that = (DefendantDocument) o;
-        return Objects.equals(getId(), that.getId()) &&
+        boolean checkIdCaseIdAndDefendantId = Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getCaseId(), that.getCaseId()) &&
-                Objects.equals(getDefendantId(), that.getDefendantId()) &&
-                Objects.equals(getFileId(), that.getFileId()) &&
+                Objects.equals(getDefendantId(), that.getDefendantId());
+        boolean checkfileIdFileNameAndLastModified = Objects.equals(getFileId(), that.getFileId()) &&
                 Objects.equals(getFileName(), that.getFileName()) &&
                 Objects.equals(getLastModified(), that.getLastModified());
+        return checkIdCaseIdAndDefendantId && checkfileIdFileNameAndLastModified;
     }
 
     @Override

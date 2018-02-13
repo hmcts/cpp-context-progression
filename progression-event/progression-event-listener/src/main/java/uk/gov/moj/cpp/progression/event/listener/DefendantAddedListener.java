@@ -48,7 +48,6 @@ public class DefendantAddedListener {
             caseProgressionDetail= new CaseProgressionDetail();
             caseProgressionDetail.setCaseId(caseId);
             caseProgressionDetail.setCaseUrn(caseUrn);
-            caseProgressionDetail.setId(caseId);
             caseProgressionDetail.setStatus(CaseStatusEnum.INCOMPLETE);
             caseRepository.save(caseProgressionDetail);
         }

@@ -44,7 +44,6 @@
   ],
   "custodyTimeLimitDate": "2016-11-11",
   "defenceSolicitorFirm": "xyz solicitor",
-  "allocationDecision": "ELECT_TRIAL",
   "interpreter": {
     "needed": true,
     "language": "french"
@@ -53,8 +52,18 @@
     {
       "id": "0baecac5-222b-402d-9047-84803679edad",
       "offenceCode": "OF61131",
-      "plea": "GUILTY",
-      "indicatedPlea": "GUILTY",
+      "plea":
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edae",
+        "value" : "GUILTY",
+        "pleaDate" : "2017-02-02"
+      },
+      "indicatedPlea":
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edaf",
+        "value" : "INDICATED_GUILTY",
+        "allocationDecision" : "ELECT_TRIAL"
+      },
       "section":"Section 51",
       "offenceSequenceNumber": 1,
       "pleaMitigation": "The dog ate my ticket",

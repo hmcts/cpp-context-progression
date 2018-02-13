@@ -15,5 +15,5 @@ import java.util.UUID;
 @Repository
 public interface OffenceRepository extends EntityRepository<OffenceDetail, UUID> {
 
-    List<OffenceDetail> findByDefendant(Defendant defendant);
+    List<OffenceDetail> findByDefendantOrderByOrderIndex(Defendant defendant);
 }

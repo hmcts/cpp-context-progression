@@ -7,9 +7,6 @@
       "items": {
         "type": "object",
         "properties": {
-          "caseProgressionId": {
-            "type": "string"
-          },
           "courtCentreId": {
             "type": "string"
           },
@@ -17,9 +14,6 @@
             "type": "string"
           },
           "caseUrn": {
-            "type": "string"
-          },
-          "directionIssuedOn": {
             "type": "string"
           },
           "fromCourtCentre": {
@@ -33,22 +27,16 @@
           },
           "status": {
             "type": "string"
-          },
-          "sentenceHearingId": {
-            "type": "string"
           }
         },
         "required": [
-          "caseProgressionId",
           "courtCentreId",
           "caseId",
           "caseUrn",
-          "directionIssuedOn",
           "fromCourtCentre",
           "sendingCommittalDate",
           "sentenceHearingDate",
-          "status",
-          "sentenceHearingId"
+          "status"
         ]
       }
     }

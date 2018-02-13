@@ -38,7 +38,7 @@ public class UpdateDefendantBailStatusTest {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final BailDocument bailDocument =new  BailDocument(randomUUID(),randomUUID());
-        List<Object> eventStream = caseProgressionAggregate.updateDefendantBailStatus(addDefendant.getDefendantId(),"bailStatus", Optional.of(bailDocument),Optional.of(LocalDate.now()) ).collect(toList());
+        List<Object> eventStream = caseProgressionAggregate.updateDefendantBailStatus(caseId, addDefendant.getDefendantId(),"bailStatus", Optional.of(bailDocument),Optional.of(LocalDate.now()) ).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         Object object = eventStream.get(0);

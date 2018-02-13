@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateCaseToBeAssignedHandler extends CaseProgressionCommandHandler {
 
-    @Handles("progression.command.case-to-be-assigned")
+    @Handles("progression.command.handler.case-to-be-assigned")
     public void updateCaseToBeAssigned(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.caseToBeAssigned(command));

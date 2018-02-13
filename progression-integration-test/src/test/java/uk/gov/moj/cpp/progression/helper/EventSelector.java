@@ -72,8 +72,6 @@ public class EventSelector {
             "progression.events.ownership-transferred";
     public static final String EVENT_SELECTOR_DEFENCE_SOLICITOR_FIRM_UPDATED_FOR_DEFENDANT =
             "progression.events.defence-solicitor-firm-for-defendant-updated";
-    public static final String EVENT_SELECTOR_ALLOCATION_DECISION_UPDATED_FOR_DEFENDANT =
-            "progression.events.defendant-allocation-decision-updated";
     public static final String EVENT_SELECTOR_INTERPRETER_UPDATED_FOR_DEFENDANT =
             "progression.events.interpreter-for-defendant-updated";
     public static final String EVENT_SELECTOR_VICTIM_DELETED = "progression.events.victim-deleted";

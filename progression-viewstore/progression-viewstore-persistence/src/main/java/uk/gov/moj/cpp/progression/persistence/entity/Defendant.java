@@ -33,14 +33,11 @@ public class Defendant implements Serializable  {
     public static final String UNCONDITIONAL = "unconditional";
 
     @Id
-    @Column(name = "id", unique = true, nullable = false)
-    private UUID id;
-
     @Column(name = "defendant_id", unique = true, nullable = false)
     private UUID defendantId;
 
     @ManyToOne
-    @JoinColumn(name = "case_progression_id", nullable = false)
+    @JoinColumn(name = "caseid", nullable = false)
     CaseProgressionDetail caseProgressionDetail;
 
 
@@ -64,13 +61,6 @@ public class Defendant implements Serializable  {
 
     @Column(name = "defence_solicitor_firm")
     private String defenceSolicitorFirm;
-
-    @Column(name = "allocation_decision")
-    private String allocationDecision;
-
-
-    @Column(name = "num_previous_convictions")
-    private Integer numPreviousConvictions;
 
     @Column(name = "custody_time_limit_date")
     private LocalDate custodyTimeLimitDate;
@@ -124,29 +114,26 @@ public class Defendant implements Serializable  {
     @Embedded
     private InterpreterDetail interpreter;
 
-    public Defendant(UUID id, UUID defendantId, CaseProgressionDetail caseProgressionDetail,
+    public Defendant(UUID defendantId, CaseProgressionDetail caseProgressionDetail,
                     Boolean sentenceHearingReviewDecision,Set<OffenceDetail> offences) {
         super();
-        this.id = id;
         this.defendantId = defendantId;
         this.caseProgressionDetail = caseProgressionDetail;
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
         setOffences(offences);
     }
 
-    public Defendant(UUID id, UUID defendantId, CaseProgressionDetail caseProgressionDetail,
+    public Defendant(UUID defendantId, CaseProgressionDetail caseProgressionDetail,
                      Boolean sentenceHearingReviewDecision) {
         super();
-        this.id = id;
         this.defendantId = defendantId;
         this.caseProgressionDetail = caseProgressionDetail;
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
-    public Defendant( UUID id,UUID defendantId,UUID personId,
+    public Defendant(UUID defendantId,UUID personId,
                      String policeDefendantId,Set<OffenceDetail> offences,Boolean sentenceHearingReviewDecision) {
         super();
-        this.id = id;
         this.defendantId = defendantId;
         this.personId = personId;
         this.policeDefendantId = policeDefendantId;
@@ -158,14 +145,6 @@ public class Defendant implements Serializable  {
 
     public Defendant() {
         super();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public UUID getDefendantId() {
@@ -348,23 +327,6 @@ public class Defendant implements Serializable  {
         this.custodyTimeLimitDate = custodyTimeLimitDate;
     }
 
-    public Integer getNumPreviousConvictions() {
-        return numPreviousConvictions;
-    }
-
-    public void setNumPreviousConvictions(Integer numPreviousConvictions) {
-        this.numPreviousConvictions = numPreviousConvictions;
-    }
-
-    public String getAllocationDecision() {
-        return allocationDecision;
-    }
-
-    public void setAllocationDecision(String allocationDecision) {
-        this.allocationDecision = allocationDecision;
-    }
-
-
     public UUID getPersonId() {
         return personId;
     }
@@ -460,7 +422,7 @@ public class Defendant implements Serializable  {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("id", id).append("defendantId", defendantId)
+        return new ToStringBuilder(this).append("defendantId", defendantId)
                         .append("sentenceHearingReviewDecision", sentenceHearingReviewDecision)
                         .append("sentenceHearingReviewDecisionDateTime", sentenceHearingReviewDecisionDateTime)
                         .append("drugAssessment", drugAssessment)
