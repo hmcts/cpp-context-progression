@@ -137,7 +137,7 @@ public class CaseProgressionDetailService {
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(null, null);
             }
         } catch (NoResultException e) {
-            LOGGER.error("No case found with materialId='{}'", q, e);
+            LOGGER.info("No case found with materialId='{}'", q);
         }
         return searchCaseByMaterialIdView;
     }
