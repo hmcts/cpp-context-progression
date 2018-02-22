@@ -40,11 +40,7 @@ public class DefendantAddedListener {
 
         LOGGER.debug("Defendant with ID '{}' added for case with ID '{}' ", defendantId, caseId);
 
-        JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add(CASE_ID, caseId)
-                .add(DEFENDANT_ID, defendantId).build();
-
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDED_PUBLIC_EVENT).apply(publicEventPayload));
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDED_PUBLIC_EVENT).apply(jsonEnvelope));
     }
 
     @Handles("progression.events.defendant-addition-failed")
