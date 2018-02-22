@@ -22,13 +22,16 @@ public class UpdateDefendantBailStatusHandler extends CaseProgressionCommandHand
     @Handles("progression.command.update-bail-status-for-defendant")
     public void updateBailStatusForDefendant(final JsonEnvelope command)
             throws EventStreamException {
-        JsonObject payload = command.payloadAsJsonObject();
-        UUID defendantId = UUID.fromString(payload.getString("defendantId"));
+        final JsonObject payload = command.payloadAsJsonObject();
+        final UUID defendantId = UUID.fromString(payload.getString("defendantId"));
+        final UUID caseId = getStreamIdByCaseId(payload);
+
 
         final Optional<BailDocument> bailDocument = bailDocumentFrom(payload);
         final Optional<LocalDate> custodyTimeLimitDate =  custodyTimeLimitDateFrom(payload);
 
         applyToCaseProgressionAggregate(command, aCase -> aCase.updateDefendantBailStatus(
+                caseId,
                 defendantId,
                 payload.getString("bailStatus"),
                 bailDocument,

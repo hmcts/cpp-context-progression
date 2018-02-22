@@ -1,14 +1,11 @@
 {
-  "caseProgressionId" : "1",
   "courtCentreId":"Liverpool",
   "caseId" : "5daefec6-5f77-4109-82d9-1e60544a6c08",
   "caseUrn" : "22C22222222",
-  "directionIssuedOn": "2016-03-08",
   "fromCourtCentre" : "Magistrate court liverpool",
   "sendingCommittalDate" : "2016-04-20",
   "sentenceHearingDate" : "2016-05-19",
   "status" : "READY_FOR_REVIEW",
-  "sentenceHearingId" : "3daefec6-5f77-4109-82d9-1e60544a6c08",
   "defendants": [
     {
       "defendantId": "3daefec6-5f77-4109-82d9-1e60544a6c12",
@@ -56,7 +53,6 @@
       ],
       "custodyTimeLimitDate": "2016-11-11",
       "defenceSolicitorFirm": "xyz solicitor",
-      "allocationDecision": "ELECT_TRIAL",
       "interpreter": {
         "needed": true,
         "language": "french"
@@ -65,8 +61,18 @@
         {
           "id": "0baecac5-222b-402d-9047-84803679edad",
           "offenceCode": "OF61131",
-          "plea": "GUILTY",
-          "indicatedPlea": "GUILTY",
+          "plea":
+          {
+            "id": "0baecac5-222b-402d-9047-84803679edae",
+            "value" : "GUILTY",
+            "pleaDate" : "2017-02-02"
+          },
+          "indicatedPlea":
+          {
+            "id": "0baecac5-222b-402d-9047-84803679edaf",
+            "value" : "INDICATED_GUILTY",
+            "allocationDecision" : "ELECT_TRIAL"
+          },
           "section":"Section 51",
           "offenceSequenceNumber": 1,
           "pleaMitigation": "The dog ate my ticket",

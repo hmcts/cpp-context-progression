@@ -34,11 +34,20 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
     public void updateOffencesForDefendantAndVerify() {
         UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
         updateOffenceForDefendantHelper.updateOffencesForDefendant();
-        updateOffenceForDefendantHelper.updateOffencesPlea();
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
         updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
+
+    }
+
+    @Test
+    public void updateOffencesForDefendantWithOrderAndVerify() {
+        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        updateOffenceForDefendantHelper.updateMultipleOffencesForDefendant();
+        updateOffenceForDefendantHelper.verifyInActiveMQ();
+        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
+        updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdatedWithOffenceOrdering(addDefendantHelper.getCaseUrn());
 
     }
 

@@ -9,10 +9,6 @@ version: v1
             schema: !include json/schema/progression.events.case-added-to-crown-court.json
             example: !include json/progression.events.case-added-to-crown-court.json
 
-        application/vnd.progression.events.direction-issued+json:
-            schema: !include json/schema/progression.events.direction-issued.json
-            example: !include json/progression.events.direction-issued.json
-
         application/vnd.progression.events.sending-committal-hearing-information-added+json:
             schema: !include json/schema/progression.events.sending-committal-hearing-information-added.json
             example: !include json/progression.events.sending-committal-hearing-information-added.json
@@ -24,10 +20,6 @@ version: v1
         application/vnd.progression.events.case-to-be-assigned-updated+json:
             schema: !include json/schema/progression.events.case-to-be-assigned-updated.json
             example: !include json/progression.events.case-to-be-assigned-updated.json            
-            
-        application/vnd.progression.events.case-assigned-for-review-updated+json:
-            example: !include json/progression.events.case-assigned-for-review-updated.json         
-            schema:  !include json/schema/progression.events.case-assigned-for-review-updated.json
             
         application/vnd.progression.events.case-ready-for-sentence-hearing+json:
             example: !include json/progression.events.case-ready-for-sentence-hearing.json         
@@ -49,25 +41,9 @@ version: v1
             example: !include json/progression.events.pre-sentence-report-for-defendants-requested.json
             schema:  !include json/schema/progression.events.pre-sentence-report-for-defendants-requested.json
 
-        application/vnd.progression.events.sentence-hearing-date-updated+json:
-            schema: !include json/schema/progression.events.sentence-hearing-date-updated.json
-            example: !include json/progression.events.sentence-hearing-date-updated.json
-
-        application/vnd.progression.events.sentence-hearing-added+json:
-            schema: !include json/schema/progression.events.sentence-hearing-added.json
-            example: !include json/progression.events.sentence-hearing-added.json
-
         application/vnd.progression.events.offences-for-defendant-updated+json:
             schema: !include json/schema/progression.events.offences-for-defendant-updated.json
             example: !include json/progression.events.offences-for-defendant-updated.json
-
-        application/vnd.progression.events.defendant-allocation-decision-updated+json:
-            schema: !include json/schema/progression.events.defendant-allocation-decision-updated.json
-            example: !include json/progression.events.defendant-allocation-decision-updated.json
-
-        application/vnd.progression.events.defendant-allocation-decision-removed+json:
-            schema: !include json/schema/progression.events.defendant-allocation-decision-removed.json
-            example: !include json/progression.events.defendant-allocation-decision-removed.json
 
         application/vnd.progression.events.interpreter-for-defendant-updated+json:
             schema: !include json/schema/progression.events.interpreter-for-defendant-updated.json
@@ -85,6 +61,6 @@ version: v1
             schema: !include json/schema/progression.events.bail-status-updated-for-defendant.json
             example: !include json/progression.events.bail-status-updated-for-defendant.json
 
-        application/vnd.progression.events.plea-updated+json:
-          schema: !include json/schema/progression.events.plea-updated.json
-          example: !include json/progression.events.plea-updated.json
+        application/vnd.progression.events.sending-sheet-completed+json:
+            schema: !include json/schema/progression.events.sending-sheet-completed.json
+            example: !include json/progression.events.sending-sheet-completed.json

@@ -18,6 +18,5 @@ public class DefaultTestData {
     public static final String BAIL_STATUS_CONDITIONAL = "conditional";
     public static final String MATERIAL_ID = UUID.randomUUID().toString();
     public static final LocalDate CUSTODY_TIME_LIMIT_DATE = new UtcClock().now().toLocalDate();
-    public static final String ALLOCATION_DECISION = "allocationDecision";
 
 }

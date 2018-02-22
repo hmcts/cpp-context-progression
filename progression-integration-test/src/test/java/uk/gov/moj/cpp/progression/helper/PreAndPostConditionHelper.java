@@ -20,31 +20,31 @@ import org.apache.http.HttpStatus;
 
 public class PreAndPostConditionHelper {
 
-    public static void addDefendant(String caseId){
+    public static String addDefendant(String caseId) {
+        String request = null;
         try (AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
-            addDefendantHelper.addMinimalDefendant();
+            request = addDefendantHelper.addMinimalDefendant();
             addDefendantHelper.verifyInActiveMQ();
             addDefendantHelper.verifyInPublicTopic();
             addDefendantHelper.verifyMinimalDefendantAdded();
         }
+        return request;
     }
 
-    public static void addDefendant(String caseId,String defendantId){
+    public static void addDefendant(String caseId, String defendantId) {
         try (AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
-            addDefendantHelper.addFullDefendant(defendantId, UUID.randomUUID().toString().substring(0,11));
-//            addDefendantHelper.verifyInActiveMQ();
-//            addDefendantHelper.verifyFullDefendantAdded();
+            addDefendantHelper.addFullDefendant(defendantId, UUID.randomUUID().toString().substring(0, 11));
         }
     }
 
-    public static Response addCaseToCrownCourt(String caseId, String caseProgressionId) throws IOException {
-        return addCaseToCrownCourt(caseId, caseProgressionId, UUID.randomUUID().toString(), UUID.randomUUID().toString());
+    public static Response addCaseToCrownCourt(String caseId) throws IOException {
+        return addCaseToCrownCourt(caseId, UUID.randomUUID().toString(), UUID.randomUUID().toString());
     }
 
-    public static Response addCaseToCrownCourt(String caseId, String caseProgressionId, String firstDefendantId, String secondDefendantId) throws IOException {
+    public static Response addCaseToCrownCourt(String caseId, String firstDefendantId, String secondDefendantId) throws IOException {
         return postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.add-case-to-crown-court+json",
-                getAddCaseToCrownCourtJsonBody(caseId, caseProgressionId, firstDefendantId, secondDefendantId));
+                getAddCaseToCrownCourtJsonBody(caseId, firstDefendantId, secondDefendantId));
     }
 
     public static Response getDefendants(String caseId) throws IOException {
@@ -60,32 +60,26 @@ public class PreAndPostConditionHelper {
         return getCommand(uri, mediaType);
     }
 
-    public static Response assignCaseForReview(String caseId, String caseProgressionId) throws IOException {
-        return postCommand(getCommandUri("/cases/" + caseId),
-                "application/vnd.progression.command.case-assigned-for-review+json", getAssignCaseForReviewJsonBody(caseProgressionId));
-    }
 
-    private static String getAddCaseToCrownCourtJsonBody(final String caseId, final String caseProgressionId, String firstDefendantId, String secondDefendantId) throws IOException {
+
+    private static String getAddCaseToCrownCourtJsonBody(final String caseId, String firstDefendantId, String secondDefendantId) throws IOException {
         return Resources.toString(Resources.getResource("progression.command.add-case-to-crown-court.json"), Charset.defaultCharset())
-                .replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_CASE_ID", caseId)
                 .replace("DEF_ID_1", firstDefendantId)
                 .replace("DEF_ID_2", secondDefendantId)
                 .replace("TODAY", LocalDate.now().toString());
     }
 
-    private static String getAssignCaseForReviewJsonBody(final String caseProgressionId) throws IOException {
-        return Resources.toString(Resources.getResource("progression.command.case-assigned-for-review.json"), Charset.defaultCharset())
-                .replace("RANDOM_ID", caseProgressionId);
-    }
+
 
     // Progression Test DSL for preconditions and assertions
-    public static void givenCaseAddedToCrownCourt(String caseId, String caseProgressionId, String firstDefendantId, String secondDefendantId) throws IOException {
-        Response writeResponse = addCaseToCrownCourt(caseId, caseProgressionId, firstDefendantId, secondDefendantId);
+    public static void givenCaseAddedToCrownCourt(String caseId, String firstDefendantId, String secondDefendantId) throws IOException {
+        Response writeResponse = addCaseToCrownCourt(caseId, firstDefendantId, secondDefendantId);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    public static void givenCaseAddedToCrownCourt(String caseId, String caseProgressionId) throws IOException {
-        givenCaseAddedToCrownCourt(caseId, caseProgressionId, UUID.randomUUID().toString(), UUID.randomUUID().toString());
+    public static void givenCaseAddedToCrownCourt(String caseId) throws IOException {
+        givenCaseAddedToCrownCourt(caseId, UUID.randomUUID().toString(), UUID.randomUUID().toString());
     }
 
     public static void givenCaseProgressionDetail(String caseId) {

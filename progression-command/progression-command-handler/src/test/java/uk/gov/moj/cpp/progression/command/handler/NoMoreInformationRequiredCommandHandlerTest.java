@@ -20,19 +20,17 @@ public class NoMoreInformationRequiredCommandHandlerTest
     @InjectMocks
     private NoMoreInformationRequiredHandler noMoreInformationRequiredHandler;
 
-    private UUID caseId= CASE_PROGRESSION_ID;
     private UUID defendantId= UUID.randomUUID();
 
     @Test
     public void shouldPassNoMoreInformationRequired() throws EventStreamException {
 
-        when(jsonObject.getString("caseId")).thenReturn(caseId.toString());
-        when(jsonObject.getString("caseProgressionId")).thenReturn(caseId.toString());
+        when(jsonObject.getString("caseId")).thenReturn(CASE_ID.toString());
         when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
-        when(caseProgressionAggregate.noMoreInformationForDefendant(defendantId,caseId,CASE_PROGRESSION_ID))
+        when(caseProgressionAggregate.noMoreInformationForDefendant(defendantId,CASE_ID))
                         .thenReturn(events);
 
         noMoreInformationRequiredHandler.noMoreInformationRequired(jsonEnvelope);
-        verify(caseProgressionAggregate).noMoreInformationForDefendant(defendantId,caseId,CASE_PROGRESSION_ID);
+        verify(caseProgressionAggregate).noMoreInformationForDefendant(defendantId,CASE_ID);
     }
 }

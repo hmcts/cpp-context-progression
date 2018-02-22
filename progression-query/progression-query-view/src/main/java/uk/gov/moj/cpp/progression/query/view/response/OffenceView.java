@@ -3,8 +3,9 @@ package uk.gov.moj.cpp.progression.query.view.response;
 
 
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.OffenceIndicatedPlea;
+import uk.gov.moj.cpp.progression.persistence.entity.OffencePlea;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -13,9 +14,9 @@ public class OffenceView {
 
     private final UUID id;
     private final String offenceCode;
-    private final String plea;
+    private final PleaView plea;
     private final String section;
-    private final String indicatedPlea;
+    private final IndicatedPleaView indicatedPlea;
     private final Integer offenceSequenceNumber;
     private final String wording;
     private final String policeOffenceId;
@@ -33,10 +34,9 @@ public class OffenceView {
     private final LocalDate startDate;
     private final LocalDate endDate;
     private final LocalDate chargeDate;
-    private final Boolean pendingWithdrawal;
-    private BigDecimal compensation;
-    private String prosecutionFacts;
+    private final LocalDate convictionDate;
     private Integer count;
+    private int orderIndex;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -49,8 +49,8 @@ public class OffenceView {
         this.sequenceNumber = offenceSequenceNumber;
         this.asnSequenceNumber = offenceSequenceNumber;
 
-        this.plea = offence.getPlea();
-        this.indicatedPlea = offence.getIndicatedPlea();
+        this.plea = offence.getOffencePlea() != null ? getPleaView(offence.getOffencePlea()) : null;
+        this.indicatedPlea = offence.getOffenceIndicatedPlea() !=null ? getIndicatedPleaview(offence.getOffenceIndicatedPlea()) : null;
         this.section=offence.getSection();
         this.wording = offence.getWording();
         this.policeOffenceId = offence.getPoliceOffenceId();
@@ -65,11 +65,18 @@ public class OffenceView {
         this.startDate = offence.getStartDate();
         this.endDate=offence.getEndDate();
         this.chargeDate = offence.getChargeDate();
-        this.pendingWithdrawal = offence.getPendingWithdrawal();
-        this.compensation = offence.getCompensation();
-        this.prosecutionFacts = offence.getProsecutionFacts();
         this.count=offence.getCount();
+        this.convictionDate = offence.getConvictionDate();
+        this.orderIndex=offence.getOrderIndex();
 
+    }
+
+    private PleaView getPleaView(OffencePlea offencePlea) {
+        return new PleaView(offencePlea.getId(), offencePlea.getValue(), offencePlea.getPleaDate());
+    }
+
+    private IndicatedPleaView getIndicatedPleaview(OffenceIndicatedPlea offenceIndicatedPlea) {
+        return new IndicatedPleaView(offenceIndicatedPlea.getId(),offenceIndicatedPlea.getValue(),offenceIndicatedPlea.getAllocationDecision());
     }
 
     private String setCprDefendantOffenderCheckDigit(OffenceDetail offence) {
@@ -104,7 +111,7 @@ public class OffenceView {
         return offenceCode;
     }
 
-    public String getPlea() {
+    public PleaView getPlea() {
         return plea;
     }
 
@@ -116,7 +123,7 @@ public class OffenceView {
         return wording;
     }
 
-    public String getIndicatedPlea() {
+    public IndicatedPleaView getIndicatedPlea() {
         return indicatedPlea;
     }
 
@@ -180,18 +187,6 @@ public class OffenceView {
         return chargeDate;
     }
 
-    public Boolean getPendingWithdrawal() {
-        return pendingWithdrawal;
-    }
-
-    public BigDecimal getCompensation() {
-        return compensation;
-    }
-
-    public String getProsecutionFacts() {
-        return prosecutionFacts;
-    }
-
     public String getSection() {
         return section;
     }
@@ -199,4 +194,10 @@ public class OffenceView {
     public Integer getCount() {
         return count;
     }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public int getOrderIndex(){return orderIndex;}
 }

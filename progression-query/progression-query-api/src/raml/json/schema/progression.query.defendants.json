@@ -1,282 +1,250 @@
 {
   "definitions": {},
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "$id": "http://example.com/example.json",
   "properties": {
     "defendants": {
       "type": "array",
-      "$id": "/properties/defendants",
       "items": {
         "type": "object",
-        "$id": "/properties/defendants/items",
         "properties": {
           "defendantId": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/defendantId"
+            "type": "string"
           },
           "sentenceHearingReviewDecision": {
-            "type": "boolean",
-            "$id": "/properties/defendants/items/properties/sentenceHearingReviewDecision"
+            "type": "boolean"
           },
           "sentenceHearingReviewDecisionDateTime": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/sentenceHearingReviewDecisionDateTime"
+            "type": "string"
           },
           "additionalInformation": {
             "type": "object",
-            "$id": "/properties/defendants/items/properties/additionalInformation",
             "properties": {
               "noMoreInformationRequired": {
-                "type": "boolean",
-                "$id": "/properties/defendants/items/properties/additionalInformation/properties/noMoreInformationRequired"
+                "type": "boolean"
               },
               "probation": {
                 "type": "object",
-                "$id": "/properties/defendants/items/properties/additionalInformation/properties/probation",
                 "properties": {
                   "preSentenceReport": {
                     "type": "object",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/probation/properties/preSentenceReport",
                     "properties": {
                       "psrIsRequested": {
-                        "type": "boolean",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/probation/properties/preSentenceReport/properties/psrIsRequested"
+                        "type": "boolean"
                       },
                       "provideGuidance": {
-                        "type": "string",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/probation/properties/preSentenceReport/properties/provideGuidance"
+                        "type": "string"
                       },
                       "drugAssessment": {
-                        "type": "boolean",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/probation/properties/preSentenceReport/properties/drugAssessment"
+                        "type": "boolean"
                       }
                     }
                   },
                   "dangerousnessAssessment": {
-                    "type": "boolean",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/probation/properties/dangerousnessAssessment"
+                    "type": "boolean"
                   }
                 }
               },
               "defence": {
                 "type": "object",
-                "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence",
                 "properties": {
                   "statementOfMeans": {
                     "type": "object",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/statementOfMeans",
                     "properties": {
                       "isStatementOfMeans": {
-                        "type": "boolean",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/statementOfMeans/properties/isStatementOfMeans"
+                        "type": "boolean"
                       },
                       "details": {
-                        "type": "string",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/statementOfMeans/properties/details"
+                        "type": "string"
                       }
                     }
                   },
                   "medicalDocumentation": {
                     "type": "object",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/medicalDocumentation",
                     "properties": {
                       "isMedicalDocumentation": {
-                        "type": "boolean",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/medicalDocumentation/properties/isMedicalDocumentation"
+                        "type": "boolean"
                       },
                       "details": {
-                        "type": "string",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/medicalDocumentation/properties/details"
+                        "type": "string"
                       }
                     }
                   },
                   "otherDetails": {
-                    "type": "string",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/defence/properties/otherDetails"
+                    "type": "string"
                   }
                 }
               },
               "prosecution": {
                 "type": "object",
-                "$id": "/properties/defendants/items/properties/additionalInformation/properties/prosecution",
                 "properties": {
                   "ancillaryOrders": {
                     "type": "object",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/prosecution/properties/ancillaryOrders",
                     "properties": {
                       "isAncillaryOrders": {
-                        "type": "boolean",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/prosecution/properties/ancillaryOrders/properties/isAncillaryOrders"
+                        "type": "boolean"
                       },
                       "details": {
-                        "type": "string",
-                        "$id": "/properties/defendants/items/properties/additionalInformation/properties/prosecution/properties/ancillaryOrders/properties/details"
+                        "type": "string"
                       }
                     }
                   },
                   "otherDetails": {
-                    "type": "string",
-                    "$id": "/properties/defendants/items/properties/additionalInformation/properties/prosecution/properties/otherDetails"
+                    "type": "string"
                   }
                 }
               }
             }
           },
           "caseId": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/caseId"
+            "type": "string"
           },
           "personId": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/personId"
+            "type": "string"
           },
           "policeDefendantId": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/policeDefendantId"
+            "type": "string"
           },
           "bailStatus": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/bailStatus"
+            "type": "string"
           },
           "defendantBailDocuments": {
             "type": "array",
-            "$id": "/properties/defendants/items/properties/defendantBailDocuments",
             "items": {
               "type": "object",
-              "$id": "/properties/defendants/items/properties/defendantBailDocuments/items",
               "properties": {
                 "id": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/defendantBailDocuments/items/properties/id"
+                  "type": "string"
                 },
                 "documentId": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/defendantBailDocuments/items/properties/documentId"
+                  "type": "string"
                 },
                 "active": {
-                  "type": "boolean",
-                  "$id": "/properties/defendants/items/properties/defendantBailDocuments/items/properties/active"
+                  "type": "boolean"
                 }
               }
             }
           },
           "custodyTimeLimitDate": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/custodyTimeLimitDate"
+            "type": "string"
           },
           "defenceSolicitorFirm": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/defenceSolicitorFirm"
-          },
-          "allocationDecision": {
-            "type": "string",
-            "$id": "/properties/defendants/items/properties/allocationDecision"
+            "type": "string"
           },
           "interpreter": {
             "type": "object",
-            "$id": "/properties/defendants/items/properties/interpreter",
             "properties": {
               "needed": {
-                "type": "boolean",
-                "$id": "/properties/defendants/items/properties/interpreter/properties/needed"
+                "type": "boolean"
               },
               "language": {
-                "type": "string",
-                "$id": "/properties/defendants/items/properties/interpreter/properties/language"
+                "type": "string"
               }
             }
           },
           "offences": {
             "type": "array",
-            "$id": "/properties/defendants/items/properties/offences",
             "items": {
               "type": "object",
-              "$id": "/properties/defendants/items/properties/offences/items",
               "properties": {
                 "id": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/id"
+                  "type": "string"
                 },
                 "offenceCode": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/offenceCode"
+                  "type": "string"
+                },
+                "convictionDate": {
+                  "type": "string"
                 },
                 "plea": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/plea"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string",
+                      "enum": ["GUILTY"]
+                    },
+                    "pleaDate": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "value",
+                    "pleaDate"
+                  ]
                 },
                 "indicatedPlea": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/indicatedPlea"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string",
+                      "enum": ["NO_INDICATION", "INDICATED_GUILTY", "INDICATED_NOT_GUILTY"]
+                    },
+                    "allocationDecision": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "value"
+                  ]
                 },
                 "section": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/section"
+                  "type": "string"
                 },
                 "offenceSequenceNumber": {
-                  "type": "integer",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/offenceSequenceNumber"
+                  "type": "integer"
                 },
                 "pleaMitigation": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/pleaMitigation"
+                  "type": "string"
                 },
                 "wording": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/wording"
+                  "type": "string"
                 },
                 "policeOffenceId": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/policeOffenceId"
+                  "type": "string"
                 },
                 "cprDefendantOffenderYear": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/cprDefendantOffenderYear"
+                  "type": "string"
                 },
                 "cprDefendantOffenderOrganisationUnit": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/cprDefendantOffenderOrganisationUnit"
+                  "type": "string"
                 },
                 "cprDefendantOffenderNumber": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/cprDefendantOffenderNumber"
+                  "type": "string"
                 },
                 "cprDefendantOffenderCheckDigit": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/cprDefendantOffenderCheckDigit"
+                  "type": "string"
                 },
                 "reason": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/reason"
+                  "type": "string"
                 },
                 "description": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/description"
+                  "type": "string"
                 },
                 "category": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/category"
+                  "type": "string"
                 },
                 "arrestDate": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/arrestDate"
+                  "type": "string"
                 },
                 "startDate": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/startDate"
+                  "type": "string"
                 },
                 "endDate": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/endDate"
+                  "type": "string"
                 },
                 "chargeDate": {
-                  "type": "string",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/chargeDate"
+                  "type": "string"
                 },
                 "count": {
-                  "type": "integer",
-                  "$id": "/properties/defendants/items/properties/offences/items/properties/count"
+                  "type": "integer"
                 }
               }
             }

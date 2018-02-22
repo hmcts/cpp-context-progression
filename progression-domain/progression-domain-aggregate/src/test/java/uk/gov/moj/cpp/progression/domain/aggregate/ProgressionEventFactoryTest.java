@@ -1,13 +1,11 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
@@ -15,39 +13,78 @@ import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantInterpreter;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
-import uk.gov.moj.cpp.progression.domain.event.CaseAssignedForReviewUpdated;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Interpreter;
 import uk.gov.moj.cpp.progression.domain.event.defendant.InterpreterUpdatedForDefendant;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
 
-    private static final String PROGRESSION_ID = randomUUID();
     private static final String CASE_ID = randomUUID();
     private static final String DEFENDANT_ID = randomUUID();
+    private static final String COURT_CENTRE_NAME = "Warwick Justice Centre";
+    private static final String COURT_CENTRE_ID = "1234";
+    private static final String HEARING_TYPE = "PTP";
+    private static final String SENDING_COMMITAL_DATE = "01-01-1990";
+    private static final String CASE_URN = "87GD9945217";
+    private static final String DEFENDANT_PERSON_ID = randomUUID();
+    private static final String DEFENDANT_FIRST_NAME = "David";
+    private static final String DEFENDANT_LAST_NAME = "Lloyd";
+    private static final String DEFENDANT_NATIONALITY = "British";
+    private static final String DEFENDANT_GENDER = "Male";
+    private static final String DEFENDANT_ADDRESS_1 = "Lima Court";
+    private static final String DEFENDANT_ADDRESS_2 = "Bath Road";
+    private static final String DEFENDANT_ADDRESS_3 = "Norwich";
+    private static final String DEFENDANT_ADDRESS_4 = "UK";
+    private static final String DEFENDANT_POSTCODE = "NR11HF";
+    private static final String DEFENDANT_DATE_OF_BIRTH = "23-10-1995";
+    private static final String BAIL_STATUS = "bailed";
+    private static final String CUSTODY_TIME_LIMIT_DATE = "2018-01-30";
+    private static final String DEFENCE_ORGANISATION = "Solicitor Jacob M";
+    private static final boolean INTERPRETER_NEEDED = false;
+    private static final String INTERPRETER_LANGUAGE = "English";
+    private static final String OFFENCE_ID = randomUUID();
+    private static final String OFFENCE_CODE = "OF61131";
+    private static final String PLEA_ID = randomUUID();
+    private static final String PLEA_VALUE = "GUILTY";
+    private static final String PLEA_DATE = "2017-11-02";
+    private static final String SECTION = "S 51";
+    private static final String WORDING = "On 10 Oct ...";
+    private static final String REASON = "Not stated";
+    private static final String DESCRIPTION = "Not available";
+    private static final String CATEGORY = "Civil";
+    private static final String START_DATE = "10-10-2017";
+    private static final String END_DATE = "11-11-2017";
+    private static final String CC_HEARING_DATE = "15-10-2017";
+    private static final String CC_COURT_CENTRE_NAME = "Liverpool crown court";
+    private static final String CC_COURT_CENTRE_ID = randomUUID();
 
     @Mock
     JsonEnvelope envelope;
@@ -56,23 +93,68 @@ public class ProgressionEventFactoryTest {
 
     @Before
     public void SetUp() {
-        when(envelope.payloadAsJsonObject()).thenReturn(jsonObj);
-        when(jsonObj.getString(Mockito.eq("caseProgressionId"))).thenReturn(PROGRESSION_ID);
-        when(jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
-        when(jsonObj.getString(Mockito.eq("sendingCommittalDate")))
+        when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
+        when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
+        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
+        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
+        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
                         .thenReturn(LocalDate.now().toString());
-        when(jsonObj.getString(Mockito.eq("sentenceHearingDate")))
+        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
                         .thenReturn(LocalDate.now().toString());
-        when(jsonObj.getJsonArray(Mockito.eq("defendants")))
+
+        when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
                         .thenReturn(Json.createArrayBuilder().add(Json.createObjectBuilder()
                                         .add("id", randomUUID()).build()).build());
+
+
+        when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
+                .add("courtCentreName", COURT_CENTRE_NAME)
+                .add("courtCentreId", COURT_CENTRE_ID).add("type", HEARING_TYPE)
+                .add("sendingCommittalDate", SENDING_COMMITAL_DATE).add("caseId", CASE_ID)
+                .add("caseUrn", CASE_URN)
+                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                .add("id", DEFENDANT_ID)
+                                .add("personId", DEFENDANT_PERSON_ID)
+                                .add("firstName", DEFENDANT_FIRST_NAME).add("lastName", DEFENDANT_LAST_NAME)
+                                .add("nationality", DEFENDANT_NATIONALITY).add("gender", DEFENDANT_GENDER)
+                                        .add("address", Json.createObjectBuilder()
+                                                .add("address1", DEFENDANT_ADDRESS_1)
+                                                .add("address2", DEFENDANT_ADDRESS_2)
+                                                .add("address3", DEFENDANT_ADDRESS_3)
+                                                .add("address4", DEFENDANT_ADDRESS_4)
+                                                .add("postCode", DEFENDANT_POSTCODE).build())
+                                .add("dateOfBirth", DEFENDANT_DATE_OF_BIRTH)
+                                .add("bailStatus", BAIL_STATUS)
+                                .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
+                                .add("defenceOrganisation", DEFENCE_ORGANISATION)
+                                        .add("interpreter", Json.createObjectBuilder()
+                                                .add("needed", INTERPRETER_NEEDED)
+                                                .add("language", INTERPRETER_LANGUAGE).build())
+                                        .add("offences", Json.createArrayBuilder().add(Json
+                                                        .createObjectBuilder()
+                                                .add("id", OFFENCE_ID)
+                                                .add("offenceCode", OFFENCE_CODE)
+                                                .add("plea", Json.createObjectBuilder().add("id", PLEA_ID)
+                                                        .add("value", PLEA_VALUE)
+                                                        .add("pleaDate", PLEA_DATE).build())
+                                                .add("section", SECTION)
+                                                .add("wording", WORDING)
+                                                .add("reason", REASON)
+                                                .add("description", DESCRIPTION)
+                                                .add("category", CATEGORY)
+                                                .add("startDate", START_DATE)
+                                                .add("endDate", END_DATE).build()))
+                                        .build()).build())
+                        .build());
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
     }
 
     @Test
     public void testCreateCaseAddedToCrownCourt() {
-        final Object obj = ProgressionEventFactory.createCaseAddedToCrownCourt(envelope);
+        final Object obj = ProgressionEventFactory.createCaseAddedToCrownCourt(this.envelope);
         assertThat(obj, instanceOf(CaseAddedToCrownCourt.class));
     }
 
@@ -80,37 +162,39 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
         final Object obj = ProgressionEventFactory
-                        .createSendingCommittalHearingInformationAdded(envelope);
+                        .createSendingCommittalHearingInformationAdded(this.envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
     }
 
 
     @Test
     public void testCreateCaseToBeAssignedUpdated() {
-        final Object obj = ProgressionEventFactory.createCaseToBeAssignedUpdated(envelope);
+        final Object obj = ProgressionEventFactory.createCaseToBeAssignedUpdated(this.envelope);
         assertThat(obj, instanceOf(CaseToBeAssignedUpdated.class));
     }
 
     @Test
-    public void testCreateCaseAssignedForReviewUpdated() {
-        final Object obj = ProgressionEventFactory.createCaseAssignedForReviewUpdated(envelope);
-        assertThat(obj, instanceOf(CaseAssignedForReviewUpdated.class));
+    public void testCreateCompletedSendingSheet() {
+        final Object obj = ProgressionEventFactory.completedSendingSheet(this.envelope);
+        assertThat(obj, instanceOf(SendingSheetCompleted.class));
+        final SendingSheetCompleted ssCompleted = (SendingSheetCompleted) obj;
+        assertSendingSheetCompletedValues(ssCompleted);
     }
 
     @Test
     public void testCreatePsrForDefendantsRequest() {
-        when(jsonObj.getJsonArray(Mockito.eq("defendants")))
+        when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
                 .thenReturn(
                    Json.createArrayBuilder()
                         .add(createDefendantJsonWithIsPsrRequested(true))
                         .add(createDefendantJsonWithIsPsrRequested(false))
                         .build());
 
-        final Object obj = ProgressionEventFactory.createPsrForDefendantsRequested(envelope);
+        final Object obj = ProgressionEventFactory.createPsrForDefendantsRequested(this.envelope);
 
         assertThat(obj, instanceOf(PreSentenceReportForDefendantsRequested.class));
-        PreSentenceReportForDefendantsRequested event = (PreSentenceReportForDefendantsRequested) obj;
-        List<DefendantPSR> defendants = event.getDefendants();
+        final PreSentenceReportForDefendantsRequested event = (PreSentenceReportForDefendantsRequested) obj;
+        final List<DefendantPSR> defendants = event.getDefendants();
         assertThat(defendants.size(), is(2));
         assertThat(defendants.get(0).getPsrIsRequested(), is(true));
         assertThat(defendants.get(1).getPsrIsRequested(), is(false));
@@ -120,9 +204,9 @@ public class ProgressionEventFactoryTest {
     public void testCreateCaseReadyForSentenceHearing() {
         final CaseReadyForSentenceHearing obj =
                         (CaseReadyForSentenceHearing) ProgressionEventFactory
-                                        .createCaseReadyForSentenceHearing(envelope);
+                                        .createCaseReadyForSentenceHearing(this.envelope);
 
-        assertThat(PROGRESSION_ID, equalTo(obj.getCaseProgressionId().toString()));
+        assertThat(CASE_ID, equalTo(obj.getCaseId().toString()));
         assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
         assertThat(ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES),
                         equalTo(obj.getCaseStatusUpdatedDateTime().truncatedTo(ChronoUnit.MINUTES)));
@@ -146,10 +230,10 @@ public class ProgressionEventFactoryTest {
 
     @Test
     public void testCreateInterpreterUpdatedForDefendant() {
-        UUID caseId=UUID.randomUUID();
-        UUID defendantId=UUID.randomUUID();
-        Interpreter interpreter=new Interpreter();
-        UpdateDefendantInterpreter updateDefendantInterpreter=new UpdateDefendantInterpreter(caseId,defendantId,interpreter);
+        final UUID caseId=UUID.randomUUID();
+        final UUID defendantId=UUID.randomUUID();
+        final Interpreter interpreter=new Interpreter();
+        final UpdateDefendantInterpreter updateDefendantInterpreter=new UpdateDefendantInterpreter(caseId,defendantId,interpreter);
         final Object obj = ProgressionEventFactory.asInterpreterUpdatedForDefendant(updateDefendantInterpreter);
         assertThat(obj, instanceOf(InterpreterUpdatedForDefendant.class));
     }
@@ -163,9 +247,61 @@ public class ProgressionEventFactoryTest {
         return UUID.randomUUID().toString();
     }
 
-    private JsonObject createDefendantJsonWithIsPsrRequested(Boolean isPsrRequested) {
+    private JsonObject createDefendantJsonWithIsPsrRequested(final Boolean isPsrRequested) {
         return Json.createObjectBuilder()
                 .add("defendantId", UUID.randomUUID().toString())
                 .add("psrIsRequested", isPsrRequested).build();
     }
+
+    private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
+        assertThat(CC_HEARING_DATE, equalTo(ssCompleted.getCrownCourtHearing().getCcHearingDate()));
+        assertThat(CC_COURT_CENTRE_ID, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreId().toString()));
+        assertThat(CC_COURT_CENTRE_NAME, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreName()));
+        assertSendingSheetCompletedHearingValues(ssCompleted.getHearing());
+    }
+
+    private void assertSendingSheetCompletedHearingValues(final Hearing hearing) {
+        assertThat(COURT_CENTRE_NAME, equalTo(hearing.getCourtCentreName()));
+        assertThat(COURT_CENTRE_ID, equalTo(hearing.getCourtCentreId()));
+        assertThat(HEARING_TYPE, equalTo(hearing.getType()));
+        assertThat(SENDING_COMMITAL_DATE, equalTo(hearing.getSendingCommittalDate()));
+        assertThat(CASE_URN, equalTo(hearing.getCaseUrn()));
+        assertThat(CASE_ID, equalTo(hearing.getCaseId().toString()));
+        assertHearingDefendant(hearing.getDefendants().get(0));
+    }
+
+    private void assertHearingDefendant(final Defendant defendant) {
+        assertThat(DEFENDANT_ID, equalTo(defendant.getId().toString()));
+        assertThat(DEFENDANT_PERSON_ID, equalTo(defendant.getPersonId().toString()));
+        assertThat(DEFENDANT_FIRST_NAME, equalTo(defendant.getFirstName()));
+        assertThat(DEFENDANT_LAST_NAME, equalTo(defendant.getLastName()));
+        assertThat(DEFENDANT_ADDRESS_1, equalTo(defendant.getAddress().getAddress1()));
+        assertThat(DEFENDANT_ADDRESS_2, equalTo(defendant.getAddress().getAddress2()));
+        assertThat(DEFENDANT_ADDRESS_3, equalTo(defendant.getAddress().getAddress3()));
+        assertThat(DEFENDANT_ADDRESS_4, equalTo(defendant.getAddress().getAddress4()));
+        assertThat(DEFENDANT_POSTCODE, equalTo(defendant.getAddress().getPostcode()));
+        assertThat(DEFENDANT_DATE_OF_BIRTH, equalTo(defendant.getDateOfBirth()));
+        assertThat(BAIL_STATUS, equalTo(defendant.getBailStatus()));
+        assertThat(CUSTODY_TIME_LIMIT_DATE, equalTo(defendant.getCustodyTimeLimitDate()));
+        assertThat(DEFENCE_ORGANISATION, equalTo(defendant.getDefenceOrganisation()));
+        assertThat(INTERPRETER_NEEDED, equalTo(defendant.getInterpreter().getNeeded()));
+        assertThat(INTERPRETER_LANGUAGE, equalTo(defendant.getInterpreter().getLanguage()));
+        assertDefendantOffence(defendant.getOffences().get(0));
+    }
+
+    private void assertDefendantOffence(final Offence offence) {
+        assertThat(OFFENCE_ID, equalTo(offence.getId().toString()));
+        assertThat(OFFENCE_CODE, equalTo(offence.getOffenceCode()));
+        assertThat(PLEA_ID, equalTo(offence.getPlea().getId().toString()));
+        assertThat(PLEA_VALUE, equalTo(offence.getPlea().getValue()));
+        assertThat(PLEA_DATE, equalTo(offence.getPlea().getPleaDate().toString()));
+        assertThat(SECTION, equalTo(offence.getSection()));
+        assertThat(WORDING, equalTo(offence.getWording()));
+        assertThat(REASON, equalTo(offence.getReason()));
+        assertThat(DESCRIPTION, equalTo(offence.getDescription()));
+        assertThat(CATEGORY, equalTo(offence.getCategory()));
+        assertThat(START_DATE, equalTo(offence.getStartDate()));
+        assertThat(END_DATE, equalTo(offence.getEndDate()));
+    }
+
 }

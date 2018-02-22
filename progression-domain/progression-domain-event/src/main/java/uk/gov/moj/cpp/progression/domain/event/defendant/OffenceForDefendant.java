@@ -13,9 +13,11 @@ public class OffenceForDefendant implements Serializable {
 
     private final String offenceCode;
 
-    private final String modeOfTrial;
+    private final OffencePlea offencePlea;
 
-    private final String indicatedPlea;
+    private final OffenceIndicatedPlea offenceIndicatedPlea;
+
+    private final LocalDate convictionDate;
 
     private final String section;
 
@@ -37,8 +39,8 @@ public class OffenceForDefendant implements Serializable {
         return offenceCode;
     }
 
-    public String getIndicatedPlea() {
-        return indicatedPlea;
+    public OffenceIndicatedPlea getOffenceIndicatedPlea() {
+        return offenceIndicatedPlea;
     }
 
     public String getSection() {
@@ -65,23 +67,28 @@ public class OffenceForDefendant implements Serializable {
         return count;
     }
 
-    public String getModeOfTrial() {
-        return modeOfTrial;
+    public OffencePlea getOffencePlea() {
+        return offencePlea;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
     }
 
 
     @SuppressWarnings("squid:S00107")
-    public OffenceForDefendant(UUID id, String offenceCode, String indicatedPlea, String section,
-                               String wording, LocalDate startDate, LocalDate endDate, int orderIndex,Integer count,String modeOfTrial) {
+    public OffenceForDefendant(UUID id, String offenceCode, String section,
+                               String wording, LocalDate startDate, LocalDate endDate, int orderIndex, Integer count, OffencePlea offencePlea, OffenceIndicatedPlea offenceIndicatedPlea, LocalDate convictionDate) {
         this.id = id;
         this.offenceCode = offenceCode;
-        this.indicatedPlea = indicatedPlea;
+        this.offencePlea = offencePlea;
         this.section = section;
         this.wording = wording;
         this.startDate = startDate;
         this.endDate = endDate;
         this.orderIndex = orderIndex;
-        this.count=count;
-        this.modeOfTrial=modeOfTrial;
+        this.count = count;
+        this.offenceIndicatedPlea = offenceIndicatedPlea;
+        this.convictionDate = convictionDate;
     }
 }

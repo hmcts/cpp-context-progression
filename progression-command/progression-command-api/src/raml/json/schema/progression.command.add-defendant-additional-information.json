@@ -2,12 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "caseProgressionId": {
-      "type": "string"
-    },
-    "defendantProgressionId": {
-      "type": "string"
-    },
     "additionalInformation": {
       "type": "object",
       "properties": {
@@ -84,9 +78,5 @@
         }
       }
     }
-  },
-  "required": [
-    "caseProgressionId",
-    "defendantProgressionId"
-  ]
+  }
 }

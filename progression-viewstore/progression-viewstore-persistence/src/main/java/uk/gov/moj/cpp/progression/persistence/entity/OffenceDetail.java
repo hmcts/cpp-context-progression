@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -22,8 +24,9 @@ public class OffenceDetail implements Serializable {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "plea")
-    private String plea;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "plea_id")
+    private OffencePlea offencePlea;
 
     @Column(name = "seq_no")
     private Integer sequenceNumber;
@@ -31,9 +34,9 @@ public class OffenceDetail implements Serializable {
     @Column(name = "wording")
     private String wording;
 
-
-    @Column(name = "indicated_plea")
-    private String indicatedPlea;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "indicated_plea_id")
+    private OffenceIndicatedPlea offenceIndicatedPlea;
 
     @Column(name = "section")
     private String section;
@@ -65,26 +68,12 @@ public class OffenceDetail implements Serializable {
     @Column(name = "charge_date")
     private LocalDate chargeDate;
 
-
-
-    @Column(name = "pending_withdrawal")
-    private Boolean pendingWithdrawal;
+    @Column(name = "conviction_date")
+    private LocalDate convictionDate;
 
     @ManyToOne
     @JoinColumn(name = "defendant_id")
     private Defendant defendant;
-
-    @Column(name = "libra_offence_date_code")
-    private int libraOffenceDateCode;
-
-    @Column(name = "witness_statement")
-    private String witnessStatement;
-
-    @Column(name = "prosecution_facts")
-    private String prosecutionFacts;
-
-    @Column(name = "compensation")
-    private BigDecimal compensation;
 
     @Column(name = "order_index")
     private int orderIndex;
@@ -100,7 +89,7 @@ public class OffenceDetail implements Serializable {
     private OffenceDetail(final OffenceDetailBuilder builder) {
         this.id = builder.id;
         this.code = builder.code;
-        this.plea = builder.plea;
+        this.offencePlea = builder.offencePlea;
         this.sequenceNumber = builder.sequenceNumber;
         this.wording = builder.wording;
         this.policeOffenceId = builder.policeOffenceId;
@@ -112,12 +101,8 @@ public class OffenceDetail implements Serializable {
         this.startDate = builder.startDate;
         this.endDate = builder.endDate;
         this.chargeDate = builder.chargeDate;
-        this.pendingWithdrawal = builder.pendingWithdrawal;
-        this.witnessStatement = builder.witnessStatement;
-        this.prosecutionFacts = builder.prosecutionFacts;
-        this.libraOffenceDateCode = builder.libraOffenceDateCode;
-        this.compensation = builder.compensation;
-        this.indicatedPlea = builder.indicatedPlea;
+        this.convictionDate = builder.convictionDate;
+        this.offenceIndicatedPlea = builder.offenceIndicatedPlea;
         this.section = builder.section;
         this.orderIndex = builder.orderIndex;
         this.count = builder.count;
@@ -144,12 +129,12 @@ public class OffenceDetail implements Serializable {
         this.code = code;
     }
 
-    public String getPlea() {
-        return plea;
+    public OffencePlea getOffencePlea() {
+        return offencePlea;
     }
 
-    public void setPlea(String plea) {
-        this.plea = plea;
+    public void setOffencePlea(OffencePlea offencePlea) {
+        this.offencePlea = offencePlea;
     }
 
     public Integer getSequenceNumber() {
@@ -169,12 +154,12 @@ public class OffenceDetail implements Serializable {
     }
 
 
-    public String getIndicatedPlea() {
-        return indicatedPlea;
+    public OffenceIndicatedPlea getOffenceIndicatedPlea() {
+        return offenceIndicatedPlea;
     }
 
-    public void setIndicatedPlea(String indicatedPlea) {
-        this.indicatedPlea = indicatedPlea;
+    public void setOffenceIndicatedPlea(OffenceIndicatedPlea offenceIndicatedPlea) {
+        this.offenceIndicatedPlea = offenceIndicatedPlea;
     }
 
     public String getSection() {
@@ -257,13 +242,12 @@ public class OffenceDetail implements Serializable {
         this.chargeDate = chargeDate;
     }
 
-
-    public Boolean getPendingWithdrawal() {
-        return pendingWithdrawal;
+    public LocalDate getConvictionDate() {
+        return convictionDate;
     }
 
-    public void setPendingWithdrawal(Boolean pendingWithdrawal) {
-        this.pendingWithdrawal = pendingWithdrawal;
+    public void setConvictionDate(LocalDate convictionDate) {
+        this.convictionDate = convictionDate;
     }
 
     public Defendant getDefendant() {
@@ -273,39 +257,6 @@ public class OffenceDetail implements Serializable {
     public void setDefendant(Defendant defendantDetail) {
         this.defendant = defendantDetail;
     }
-
-    public String getWitnessStatement() {
-        return witnessStatement;
-    }
-
-    public void setWitnessStatement(String witnessStatement) {
-        this.witnessStatement = witnessStatement;
-    }
-
-    public String getProsecutionFacts() {
-        return prosecutionFacts;
-    }
-
-    public void setProsecutionFacts(String prosecutionFacts) {
-        this.prosecutionFacts = prosecutionFacts;
-    }
-
-    public int getLibraOffenceDateCode() {
-        return libraOffenceDateCode;
-    }
-
-    public void setLibraOffenceDateCode(int libraOffenceDateCode) {
-        this.libraOffenceDateCode = libraOffenceDateCode;
-    }
-
-    public BigDecimal getCompensation() {
-        return compensation;
-    }
-
-    public void setCompensation(BigDecimal compensation) {
-        this.compensation = compensation;
-    }
-
     public int getOrderIndex() {
         return orderIndex;
     }
@@ -346,7 +297,7 @@ public class OffenceDetail implements Serializable {
 
         private UUID id;
         private String code;
-        private String plea;
+        private OffencePlea offencePlea;
         private Integer sequenceNumber;
         private String wording;
         private String policeOffenceId;
@@ -358,12 +309,8 @@ public class OffenceDetail implements Serializable {
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalDate chargeDate;
-        private Boolean pendingWithdrawal;
-        private String witnessStatement;
-        private String prosecutionFacts;
-        private int libraOffenceDateCode;
-        private BigDecimal compensation;
-        private String indicatedPlea;
+        private LocalDate convictionDate;
+        private OffenceIndicatedPlea offenceIndicatedPlea;
         private String section;
         private int orderIndex;
         private Integer count;
@@ -383,8 +330,8 @@ public class OffenceDetail implements Serializable {
             return this;
         }
 
-        public OffenceDetailBuilder setPlea(String plea) {
-            this.plea = plea;
+        public OffenceDetailBuilder setOffencePlea(OffencePlea offencePlea) {
+            this.offencePlea = offencePlea;
             return this;
         }
 
@@ -446,34 +393,13 @@ public class OffenceDetail implements Serializable {
             return this;
         }
 
-
-        public OffenceDetailBuilder setPendingWithdrawal(boolean pendingWithdrawal) {
-            this.pendingWithdrawal = pendingWithdrawal;
+        public OffenceDetailBuilder setConvictionDate(LocalDate convictionDate) {
+            this.convictionDate = convictionDate;
             return this;
         }
-
-        public OffenceDetailBuilder withWitnessStatement(String witnessStatement) {
-            this.witnessStatement = witnessStatement;
-            return this;
-        }
-
-        public OffenceDetailBuilder withProsecutionFacts(String prosecutionFacts) {
-            this.prosecutionFacts = prosecutionFacts;
-            return this;
-        }
-
-        public OffenceDetailBuilder withLibraOffenceDateCode(int libraOffenceDateCode) {
-            this.libraOffenceDateCode = libraOffenceDateCode;
-            return this;
-        }
-
-        public OffenceDetailBuilder withCompensation(BigDecimal compensation) {
-            this.compensation = compensation;
-            return this;
-        }
-
-        public OffenceDetailBuilder withIndicatedPlea(String indicatedPlea) {
-            this.indicatedPlea = indicatedPlea;
+        
+        public OffenceDetailBuilder withOffenceIndicatedPlea(OffenceIndicatedPlea offenceIndicatedPlea) {
+            this.offenceIndicatedPlea = offenceIndicatedPlea;
             return this;
         }
 

@@ -2,9 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "caseProgressionId": {
-      "type": "string"
-    },
     "courtCentreId": {
       "type": "string"
     },
@@ -12,9 +9,6 @@
       "type": "string"
     },
     "caseUrn": {
-      "type": "string"
-    },
-    "directionIssuedOn": {
       "type": "string"
     },
     "fromCourtCentre": {
@@ -27,9 +21,6 @@
       "type": "string"
     },
     "status": {
-      "type": "string"
-    },
-    "sentenceHearingId": {
       "type": "string"
     },
     "defendants": {
@@ -204,9 +195,6 @@
             "defenceSolicitorFirm": {
               "type": "string"
             },
-            "allocationDecision": {
-              "type": "string"
-            },
             "interpreter": {
               "type": "object",
               "properties": {
@@ -235,10 +223,43 @@
                       "type": "string"
                     },
                     "plea": {
-                      "type": "string"
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string",
+                          "enum": ["GUILTY"]
+                        },
+                        "pleaDate": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "value",
+                        "pleaDate"
+                      ]
                     },
                     "indicatedPlea": {
-                      "type": "string"
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string",
+                          "enum": ["NO_INDICATION", "INDICATED_GUILTY", "INDICATED_NOT_GUILTY"]
+                        },
+                        "allocationDecision": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "value"
+                      ]
                     },
                     "section": {
                       "type": "string"
@@ -331,7 +352,6 @@
             "defendantBailDocuments",
             "custodyTimeLimitDate",
             "defenceSolicitorFirm",
-            "allocationDecision",
             "interpreter",
             "offences"
           ]
@@ -340,16 +360,13 @@
     }
   },
   "required": [
-    "caseProgressionId",
     "courtCentreId",
     "caseId",
     "caseUrn",
-    "directionIssuedOn",
     "fromCourtCentre",
     "sendingCommittalDate",
     "sentenceHearingDate",
     "status",
-    "sentenceHearingId",
     "defendants"
   ]
 }

@@ -29,14 +29,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             requestType: application/vnd.progression.command.case-to-be-assigned+json
             name: progression.command.case-to-be-assigned
         (mapping):
-            requestType: application/vnd.progression.command.case-assigned-for-review+json
-            name: progression.command.case-assigned-for-review
-        (mapping):
-            requestType: application/vnd.progression.command.prepare-for-sentence-hearing+json
-            name: progression.command.prepare-for-sentence-hearing
-        (mapping):
-            requestType: application/vnd.progression.command.add-sentence-hearing+json
-            name: progression.command.add-sentence-hearing
+            requestType: application/vnd.progression.command.complete-sending-sheet+json
+            name: progression.command.complete-sending-sheet
         ...
       body:
         application/vnd.progression.command.sentence-hearing-date+json:
@@ -64,25 +58,12 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
             schema:
              !include json/schema/progression.command.case-to-be-assigned.json
-        application/vnd.progression.command.case-assigned-for-review+json:
+        application/vnd.progression.command.complete-sending-sheet+json:
             example:
-             !include json/progression.command.case-assigned-for-review.json
+             !include json/progression.command.complete-sending-sheet.json
 
             schema:
-             !include json/schema/progression.command.case-assigned-for-review.json
-        application/vnd.progression.command.prepare-for-sentence-hearing+json:
-            example:
-             !include json/progression.command.prepare-for-sentence-hearing.json
-
-            schema:
-             !include json/schema/progression.command.prepare-for-sentence-hearing.json
-
-        application/vnd.progression.command.add-sentence-hearing+json:
-            example:
-             !include json/progression.command.add-sentence-hearing.json
-
-            schema:
-             !include json/schema/progression.command.add-sentence-hearing.json
+             !include json/schema/progression.command.complete-sending-sheet.json
   
       responses:
             202:
@@ -139,9 +120,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.command.update-offences-for-defendant+json
             name: progression.command.update-offences-for-defendant
-        (mapping):
-            requestType: application/vnd.progression.command.update-allocation-decision-for-defendant+json
-            name: progression.command.update-allocation-decision-for-defendant            
         ...
       body:
         application/vnd.progression.command.add-defendant-additional-information+json:
@@ -175,11 +153,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             !include json/progression.command.update-offences-for-defendant.json
           schema:
             !include json/schema/progression.command.update-offences-for-defendant.json
-        application/vnd.progression.command.update-allocation-decision-for-defendant+json:
-          example:
-            !include json/progression.command.update-allocation-decision-for-defendant.json
-          schema:
-            !include json/schema/progression.command.update-allocation-decision-for-defendant.json           
 
       responses:
             202:
@@ -207,29 +180,3 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
-
-/cases/{caseId}/offences/{offenceId}/pleas:
-  uriParameters:
-    caseId:
-      description: The ID of the offence update
-      type: string
-    offenceId:
-      description: The ID of the offence update
-      type: string
-  post:
-    description: |
-      Update a case's plea
-      ...
-      (mapping):
-          requestType: application/vnd.progression.command.update-plea+json
-          name: progression.command.update-plea
-      ...
-    body:
-      application/vnd.progression.command.update-plea+json:
-        example:
-          !include json/progression.command.update-plea.json
-        schema:
-          !include json/schema/progression.command.update-plea.json
-    responses:
-      202:
-        description: Accepted

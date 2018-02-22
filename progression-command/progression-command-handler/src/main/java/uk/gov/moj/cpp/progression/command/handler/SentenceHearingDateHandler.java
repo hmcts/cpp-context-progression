@@ -16,7 +16,8 @@ public class SentenceHearingDateHandler extends CaseProgressionCommandHandler {
     public void addSentenceHearingDate(final JsonEnvelope command) throws EventStreamException {
         applyToCaseProgressionAggregate(command,
                 aCase -> aCase.addSentenceHearingDate(
-                         UUID.fromString(command.payloadAsJsonObject().getString("caseId")), UUID.fromString(command.payloadAsJsonObject().getString("caseProgressionId")), LocalDate.parse(command.payloadAsJsonObject().getString("sentenceHearingDate"))));
+                         UUID.fromString(command.payloadAsJsonObject().getString("caseId")),
+                        LocalDate.parse(command.payloadAsJsonObject().getString("sentenceHearingDate"))));
     }
 
 

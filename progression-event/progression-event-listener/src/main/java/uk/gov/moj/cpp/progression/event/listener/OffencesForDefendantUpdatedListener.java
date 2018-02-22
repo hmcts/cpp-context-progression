@@ -31,12 +31,13 @@ public class OffencesForDefendantUpdatedListener {
     @Inject
     private OffenceForDefendantUpdatedToEntity converter;
 
+    Defendant defendant;
 
     @Transactional
     @Handles("progression.events.offences-for-defendant-updated")
     public void updateOffencesForDefendant(final JsonEnvelope envelope) {
         final OffencesForDefendantUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), OffencesForDefendantUpdated.class);
-        final Defendant defendant = defendantRepository.findBy(event.getDefendantId());
+        defendant = defendantRepository.findBy(event.getDefendantId());
         if (defendant != null && !event.getOffences().isEmpty()) {
             final Set<OffenceDetail> persistedOffenceDetailList = defendant.getOffences();
             final Set<OffenceDetail> offenceDetailList = event.getOffences().stream().map(s -> converter.convert(s)).collect(Collectors.toSet());
@@ -57,12 +58,15 @@ public class OffencesForDefendantUpdatedListener {
                 if (offenceDetailPersisted.equals(offenceDetail)) {
                     offenceDetailPersisted.setCode(offenceDetail.getCode());
                     offenceDetailPersisted.setStartDate(offenceDetail.getStartDate());
+                    offenceDetailPersisted.setConvictionDate(offenceDetail.getConvictionDate());
                     offenceDetailPersisted.setOrderIndex(offenceDetail.getOrderIndex());
                     offenceDetailPersisted.setWording(offenceDetail.getWording());
-                    offenceDetailPersisted.setIndicatedPlea(offenceDetail.getIndicatedPlea());
+                    offenceDetailPersisted.setOffenceIndicatedPlea(offenceDetail.getOffenceIndicatedPlea());
+                    offenceDetailPersisted.setOffencePlea(offenceDetail.getOffencePlea());
                     offenceDetailPersisted.setSection(offenceDetail.getSection());
                     offenceDetailPersisted.setEndDate(offenceDetail.getEndDate());
                     offenceDetailPersisted.setCount(offenceDetail.getCount());
+                    offenceDetailPersisted.setCategory(offenceDetail.getCategory());
                 }
             })
         );

@@ -2,9 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "caseProgressionId": {
-      "type": "string"
-    },
     "fromCourtCentre": {
       "type": "string"
     },
@@ -13,7 +10,6 @@
     }
   },
   "required": [
-    "caseProgressionId",
     "fromCourtCentre",
     "sendingCommittalDate"
   ]

@@ -3,30 +3,27 @@ package uk.gov.moj.cpp.progression.domain.event.defendant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import uk.gov.justice.domain.annotation.Event;
 
 @Event("progression.events.defendant-additional-information-added")
+@JsonIgnoreProperties({"caseProgressionId", "defendantProgressionId"})
 public class DefendantAdditionalInformationAdded {
-    private final UUID defendantProgressionId;
+
     private final UUID defendantId;
-    private final UUID caseProgressionId;
+    private final UUID caseId;
     private Boolean sentenceHearingReviewDecision;
     private LocalDateTime sentenceHearingReviewDecisionDateTime;
     private final AdditionalInformationEvent additionalInformationEvent;
 
-    public DefendantAdditionalInformationAdded(UUID defendantProgressionId, UUID defendantId, UUID caseProgressionId,
+    public DefendantAdditionalInformationAdded(UUID defendantId, UUID caseId,
             AdditionalInformationEvent additionalInformationEvent, Boolean sentenceHearingReviewDecision,
             LocalDateTime sentenceHearingReviewDecisionDateTime) {
-        this.defendantProgressionId = defendantProgressionId;
         this.defendantId = defendantId;
         this.additionalInformationEvent = additionalInformationEvent;
-        this.caseProgressionId = caseProgressionId;
+        this.caseId = caseId;
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
         this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
-    }
-
-    public UUID getDefendantProgressionId() {
-        return defendantProgressionId;
     }
 
     public UUID getDefendantId() {
@@ -37,8 +34,8 @@ public class DefendantAdditionalInformationAdded {
         return additionalInformationEvent;
     }
 
-    public UUID getCaseProgressionId() {
-        return caseProgressionId;
+    public UUID getCaseId() {
+        return caseId;
     }
 
     public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
@@ -50,9 +47,8 @@ public class DefendantAdditionalInformationAdded {
     }
 
     public static final class DefendantEventBuilder {
-        private UUID defendantProgressionId;
         private UUID defendantId;
-        private UUID caseProgressionId;
+        private UUID caseId;
         private Boolean sentenceHearingReviewDecision;
         private LocalDateTime sentenceHearingReviewDecisionDateTime;
         private AdditionalInformationEvent additionalInformationEvent;
@@ -64,18 +60,13 @@ public class DefendantAdditionalInformationAdded {
             return new DefendantEventBuilder();
         }
 
-        public DefendantEventBuilder setDefendantProgressionId(UUID defendantProgressionId) {
-            this.defendantProgressionId = defendantProgressionId;
-            return this;
-        }
-
         public DefendantEventBuilder setDefendantId(UUID defendantId) {
             this.defendantId = defendantId;
             return this;
         }
 
-        public DefendantEventBuilder setCaseProgressionId(UUID caseProgressionId) {
-            this.caseProgressionId = caseProgressionId;
+        public DefendantEventBuilder setCaseId(UUID caseId) {
+            this.caseId = caseId;
             return this;
         }
 
@@ -95,7 +86,7 @@ public class DefendantAdditionalInformationAdded {
         }
 
         public DefendantAdditionalInformationAdded build() {
-            return new DefendantAdditionalInformationAdded(defendantProgressionId, defendantId, caseProgressionId,
+            return new DefendantAdditionalInformationAdded(defendantId, caseId,
                     additionalInformationEvent, sentenceHearingReviewDecision, sentenceHearingReviewDecisionDateTime);
         }
 
@@ -107,16 +98,12 @@ public class DefendantAdditionalInformationAdded {
             this.additionalInformationEvent = additionalInformationEvent;
         }
 
-        public UUID getDefendantProgressionId() {
-            return defendantProgressionId;
-        }
-
         public UUID getDefendantId() {
             return defendantId;
         }
 
-        public UUID getCaseProgressionId() {
-            return caseProgressionId;
+        public UUID getCaseId() {
+            return caseId;
         }
 
         public Boolean getSentenceHearingReviewDecision() {
@@ -126,8 +113,7 @@ public class DefendantAdditionalInformationAdded {
         public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
             return sentenceHearingReviewDecisionDateTime;
         }
-        
-        
+
     }
 
     public void setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {

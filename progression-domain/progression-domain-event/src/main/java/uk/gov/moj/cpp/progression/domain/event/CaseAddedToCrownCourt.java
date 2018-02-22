@@ -1,12 +1,8 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
 import uk.gov.justice.domain.annotation.Event;
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

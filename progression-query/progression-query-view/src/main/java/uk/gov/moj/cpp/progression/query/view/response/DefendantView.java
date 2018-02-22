@@ -25,10 +25,8 @@ public class DefendantView {
     private String bailStatus;
     private List<DefendantBailDocumentView> defendantBailDocuments;
     private String defenceSolicitorFirm;
-    private String allocationDecision;
     private InterpreterDetail interpreter;
     private LocalDate custodyTimeLimitDate;
-    private Integer numPreviousConvictions;
 
     public DefendantView(Defendant defendant) {
         this.sentenceHearingReviewDecisionDateTime = defendant.getSentenceHearingReviewDecisionDateTime();
@@ -49,7 +47,6 @@ public class DefendantView {
                             .collect(Collectors.toList());
         }
         this.defenceSolicitorFirm = defendant.getDefenceSolicitorFirm();
-        this.allocationDecision = defendant.getAllocationDecision();
         if(defendant.getInterpreter() == null){
             this.interpreter = new InterpreterDetail();
         }
@@ -59,7 +56,6 @@ public class DefendantView {
             this.interpreter.setLanguage(defendant.getInterpreter().getLanguage());
         }
         this.custodyTimeLimitDate = defendant.getCustodyTimeLimitDate();
-        this.numPreviousConvictions = defendant.getNumPreviousConvictions();
 
     }
 
@@ -94,7 +90,7 @@ public class DefendantView {
         } else {
             List<OffenceView> offenceViewList = new ArrayList<>();
             offences.forEach(offence -> offenceViewList.add(new OffenceView(offence)));
-            offenceViewList.sort(Comparator.comparing(OffenceView::getOffenceSequenceNumber));
+            offenceViewList.sort(Comparator.comparing(OffenceView::getOrderIndex));
             return offenceViewList;
         }
     }
@@ -143,10 +139,6 @@ public class DefendantView {
         return defenceSolicitorFirm;
     }
 
-    public String getAllocationDecision() {
-        return allocationDecision;
-    }
-
     public InterpreterDetail getInterpreter() {
         return interpreter;
     }
@@ -155,7 +147,4 @@ public class DefendantView {
         return custodyTimeLimitDate;
     }
 
-    public Integer getNumPreviousConvictions() {
-        return numPreviousConvictions;
-    }
 }

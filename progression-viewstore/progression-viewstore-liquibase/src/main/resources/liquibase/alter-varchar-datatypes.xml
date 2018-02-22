@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="GPE-2757-alter-varchar-datatypes" author="progression" >
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="statement_of_means" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="medical_documentation" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="defence_others" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="ancillary_orders" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="prosecution_others" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="provide_guidance" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="bail_status" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="defence_solicitor_firm" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="interpreter_language" />
+        <modifyDataType tableName="defendant" newDataType="varchar(1)" columnName="interpreter_needed" />
+        <modifyDataType tableName="defendant" newDataType="TEXT" columnName="police_defendant_id" />
+        <modifyDataType tableName="caseprogressiondetail" newDataType="TEXT" columnName="courtcentreid" />
+        <modifyDataType tableName="caseprogressiondetail" newDataType="TEXT" columnName="fromcourtcentre" />
+        <modifyDataType tableName="caseprogressiondetail" newDataType="TEXT" columnName="status" />
+        <modifyDataType tableName="caseprogressiondetail" newDataType="TEXT" columnName="caseurn" />
+        <modifyDataType tableName="defendant_bail_document" newDataType="varchar(1)" columnName="active" />
+    </changeSet>
+
+</databaseChangeLog>

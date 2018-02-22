@@ -95,7 +95,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
 
             final String fileName = fileNameAndContent.getKey().get();
 
-            if (!((fileName.endsWith(".pdf") || fileName.endsWith(".doc") || fileName.endsWith(".docx")))) {
+            if (!(fileName.endsWith(".pdf") || fileName.endsWith(".doc") || fileName.endsWith(".docx"))) {
               LOG.error(INVALID_FILE_NAME);
               return Response.status(BAD_REQUEST).entity(INVALID_FILE_NAME).build();
             }

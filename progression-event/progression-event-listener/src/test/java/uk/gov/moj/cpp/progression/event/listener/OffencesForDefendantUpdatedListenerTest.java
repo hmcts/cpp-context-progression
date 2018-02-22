@@ -16,11 +16,13 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.progression.event.converter.OffenceForDefendantUpdatedToEntity;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.OffencePlea;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,7 +108,7 @@ public class OffencesForDefendantUpdatedListenerTest {
         OffenceDetail offenceDetail=argumentCaptor.getValue().getOffences().stream().filter(s-> s.getId().equals(offence2)).findFirst().get();
         // wordings from persisted offence2 -> i.e. wordings-pleas
         assertThat(null,is(offenceDetail.getWording()));
-        assertThat("wordings-pleas",is(offenceDetail.getPlea()));
+        assertThat("GUILTY",is(offenceDetail.getOffencePlea().getValue()));
         assertThat(1,is(offenceDetail.getOrderIndex()));
     }
 
@@ -127,7 +129,7 @@ public class OffencesForDefendantUpdatedListenerTest {
         assertThat(ids,not(hasItem(offence1)));
         OffenceDetail offenceDetail=argumentCaptor.getValue().getOffences().stream().filter(s-> s.getId().equals(offence2)).findFirst().get();
         assertThat(null,is(offenceDetail.getWording()));
-        assertThat("wordings-pleas",is(offenceDetail.getPlea()));
+        assertThat("GUILTY",is(offenceDetail.getOffencePlea().getValue()));
         assertThat(1,is(offenceDetail.getOrderIndex()));
     }
 
@@ -135,13 +137,13 @@ public class OffencesForDefendantUpdatedListenerTest {
         OffenceDetail offenceDetail1 = new OffenceDetail();
         offenceDetail1.setId(id1);
         offenceDetail1.setWording(word1);
-        offenceDetail1.setPlea(word1);
+        offenceDetail1.setOffencePlea(getOffencePlea());
         offenceDetail1.setOrderIndex(1);
         offenceDetail1.setCount(1);
         OffenceDetail offenceDetail2 = new OffenceDetail();
         offenceDetail2.setId(id2);
         offenceDetail2.setWording(word2);
-        offenceDetail2.setPlea(word2);
+        offenceDetail2.setOffencePlea(getOffencePlea());
         offenceDetail2.setOrderIndex(2);
         offenceDetail2.setCount(2);
         Defendant defendantDetail = new Defendant();
@@ -150,14 +152,20 @@ public class OffencesForDefendantUpdatedListenerTest {
         return defendantDetail;
     }
 
+    private OffencePlea getOffencePlea() {
+        return new OffencePlea(UUID.randomUUID(),"GUILTY", LocalDate.now());
+    }
+
     private JsonEnvelope getJsonEnvelope(UUID defendantId, UUID id1, String word1, UUID id2, String word2) {
-        JsonObject jsonObject1 = createObjectBuilder().add("id", id1.toString()).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("indicatedPlea", "GUILTY").add("section", "Section 51").add("orderIndex",1).add("count",1).build();
-        JsonObject jsonObject2 = createObjectBuilder().add("id", id2.toString()).add("wording", word2).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("indicatedPlea", "GUILTY").add("section", "Section 51").add("orderIndex",2).add("count",1).build();
+        JsonObject pleaJson = createObjectBuilder().add("id", id1.toString()).add("pleaDate","2010-08-01").add("value","GUILTY").build();
+        JsonObject jsonObject1 = createObjectBuilder().add("id", id1.toString()).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("offencePlea", pleaJson).add("section", "Section 51").add("orderIndex",1).add("count",1).build();
+        JsonObject jsonObject2 = createObjectBuilder().add("id", id2.toString()).add("wording", word2).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("offencePlea", pleaJson).add("section", "Section 51").add("orderIndex",2).add("count",1).build();
         return EnvelopeFactory.createEnvelope("name", Json.createObjectBuilder().add("caseId", defendantId.toString()).add("defendantId", defendantId.toString()).add("offences", Json.createArrayBuilder().add(jsonObject1).add(jsonObject2).build()).build());
     }
 
     private JsonEnvelope getJsonEnvelopeForDelete(UUID defendantId, UUID id1, String word1) {
-        JsonObject jsonObject1 = createObjectBuilder().add("id", id1.toString()).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("indicatedPlea", "GUILTY").add("section", "Section 51").add("orderIndex",1).add("count",1).build();
+        JsonObject pleaJson = createObjectBuilder().add("id", id1.toString()).add("pleaDate","2010-08-01").add("value","GUILTY").build();
+        JsonObject jsonObject1 = createObjectBuilder().add("id", id1.toString()).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("offencePlea", pleaJson).add("section", "Section 51").add("orderIndex",1).add("count",1).build();
         return EnvelopeFactory.createEnvelope("name", Json.createObjectBuilder().add("caseId", defendantId.toString()).add("defendantId", defendantId.toString()).add("offences", Json.createArrayBuilder().add(jsonObject1)).build());
     }
 

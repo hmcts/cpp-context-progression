@@ -23,7 +23,7 @@ public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defe
                 .map(DefendantAddedToDefendant::mapToOffenceDetails)
                 .collect(toSet());
 
-        return new Defendant(defendantAdded.getDefendantId(),defendantAdded.getDefendantId(), defendantAdded.getPersonId(), defendantAdded.getPoliceDefendantId(),
+        return new Defendant(defendantAdded.getDefendantId(), defendantAdded.getPersonId(), defendantAdded.getPoliceDefendantId(),
                 offences,false);
 
     }

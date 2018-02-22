@@ -48,9 +48,9 @@ public class StubUtil {
     }
 
     public static String getJsonBodyStr(final String path, final String caseId,
-                    final String defendantId, final String defendant2Id, final String caseProgressionId) {
+                    final String defendantId, final String defendant2Id) {
         final String payload = getPayload(path);
-        return payload.replace("RANDOM_ID", caseProgressionId).replace("RANDOM_CASE_ID", caseId)
+        return payload.replace("RANDOM_CASE_ID", caseId)
                         .replace("DEF_ID_1", defendantId)
                         .replace("DEF_ID_2", defendant2Id)
                         .replace("DEF_PRG_ID", defendantId)

@@ -42,13 +42,6 @@ public class DefendantEventMatcher extends TypeSafeDiagnosingMatcher<DefendantAd
             return false;
         }
 
-        if (defendantEvent.getDefendantProgressionId() != defendantCommand
-                        .getDefendantProgressionId()) {
-            mismatchDescription.appendText(" was ")
-                            .appendValue(defendantEvent.getDefendantProgressionId());
-            return false;
-        }
-
         AdditionalInformationEvent additionalInformationEvent =
                         defendantEvent.getAdditionalInformationEvent();
         AdditionalInformationCommand additionalInformationCommand =

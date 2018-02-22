@@ -2,14 +2,11 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "defendantProgressionId": {
-      "type": "string"
-    },
     "defendantId": {
       "type": "string"
     },
-    "caseProgressionId": {
-      "type": "string"
+    "caseId": {
+      "$ref":"#/definitions/uuidPattern"
     },
     "sentenceHearingReviewDecision": {
       "type": "boolean"
@@ -95,10 +92,16 @@
     }
   },
   "required": [
-    "defendantProgressionId",
     "defendantId",
-    "caseProgressionId",
+    "caseId",
     "sentenceHearingReviewDecision",
     "sentenceHearingReviewDecisionDateTime"
-  ]
+  ],
+  "definitions":{
+    "uuidPattern":{
+      "type":"string",
+      "pattern":"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
+
 }

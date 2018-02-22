@@ -5,8 +5,19 @@
     {
       "id": "0baecac5-222b-402d-9047-84803679edad",
       "offenceCode": "H8198",
-      "plea": "GUILTY",
-      "indicatedPlea": "GUILTY",
+      "convictionDate": "2017-08-01",
+      "plea":
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edae",
+        "value" : "GUILTY",
+        "pleaDate" : "2017-02-02"
+      },
+      "indicatedPlea":
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edaf",
+        "value" : "INDICATED_GUILTY",
+        "allocationDecision" : "ELECT_TRIAL"
+      },
       "section":"Section 51",
       "offenceSequenceNumber": 1,
       "pleaMitigation": "The dog ate my ticket",
