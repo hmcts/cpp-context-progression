@@ -40,7 +40,7 @@ public class DefendantAddedListener {
 
         LOGGER.debug("Defendant with ID '{}' added for case with ID '{}' ", defendantId, caseId);
 
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDED_PUBLIC_EVENT).apply(jsonEnvelope));
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDED_PUBLIC_EVENT).apply(privateEventPayload));
     }
 
     @Handles("progression.events.defendant-addition-failed")
