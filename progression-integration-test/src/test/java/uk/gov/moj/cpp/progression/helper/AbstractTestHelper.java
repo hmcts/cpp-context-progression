@@ -38,8 +38,8 @@ public abstract class AbstractTestHelper implements AutoCloseable {
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY","localhost");
     protected static final String BASE_URI = System.getProperty("baseUri", "http://"+HOST+":8080");
     protected static final String STRUCTURE_EVENT_TOPIC = "progression.event";
-    private static final String WRITE_BASE_URL = "/progression-command-api/command/api/rest/progression";
-    private static final String READ_BASE_URL = "/progression-query-api/query/api/rest/progression";
+    private static final String WRITE_BASE_URL = "/progression-service/command/api/rest/progression";
+    private static final String READ_BASE_URL = "/progression-service/query/api/rest/progression";
 
     protected final RestClient restClient = new RestClient();
 

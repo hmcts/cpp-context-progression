@@ -32,14 +32,14 @@ public class StubUtil {
     public static void resetStubs() {
 
         reset();
-        InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
     }
 
 
 
     public static void setupUsersGroupQueryStub() {
-        InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
-        stubFor(get(urlMatching("/usersgroups-query-api/query/api/rest/usersgroups/users/.*"))
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/.*"))
                         .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                                         .withHeader("CPPID", UUID.randomUUID().toString())
                                         .withHeader("Content-Type", "application/json")
