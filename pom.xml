@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>6.0.2</version>
+        <version>5.1.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -31,6 +31,7 @@
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
+        <file-alfresco.version>2.3.0</file-alfresco.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <material.version>2.0.94</material.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
