@@ -40,24 +40,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
-                <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>1.0-m5.1</version>
-                <configuration>
-                    <flowInitContext>
-                        <masterBranchName>dev/progression-release</masterBranchName>
-                        <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/progression-feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/progression-release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/progression-hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>progression-tag-</versionTagPrefix>
-                    </flowInitContext>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <enableSshAgent>true</enableSshAgent>
-                    <pushReleases>true</pushReleases>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <archiveClasses>true</archiveClasses>
