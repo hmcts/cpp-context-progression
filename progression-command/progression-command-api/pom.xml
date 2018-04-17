@@ -27,6 +27,7 @@
         <dependency>
             <groupId>uk.gov.justice</groupId>
             <artifactId>file-alfresco</artifactId>
+            <version>${file-alfresco.version}</version>
         </dependency>
 
         <dependency>
