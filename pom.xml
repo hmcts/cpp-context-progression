@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>5.1.1</version>
+        <version>6.0.11</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -33,7 +33,7 @@
         <sonar.scm.provider>git</sonar.scm.provider>
         <file-alfresco.version>2.3.0</file-alfresco.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
-        <material.version>2.0.94</material.version>
+        <material.version>2.0.101</material.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
     </properties>
