@@ -2,71 +2,66 @@ package uk.gov.moj.cpp.progression.query.view;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
-import uk.gov.moj.cpp.progression.query.view.converter.DefendantToDefendantViewConverter;
-import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
-import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
-import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
-
 @RunWith(MockitoJUnitRunner.class)
-public class ProgressionQueryViewTest {
+public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
     
     @Mock
     private JsonEnvelope query;
     
     @Mock
     private JsonEnvelope response;
+
+    @Mock
+    private ObjectMapper objectMapper;
     
     @Mock
-    Enveloper enveloper;
+    private Enveloper enveloper;
 
-    @Mock
-    private ListToJsonArrayConverter<Object> listToJsonArrayConverter;
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    @Mock
-    private List<CaseProgressionDetail> listCaseProgressionDetail;
+    @Spy
+    private ListToJsonArrayConverter jsonConverter;
 
     @Mock
     private CaseProgressionDetail caseProgressionDetail;
 
     @Mock
-    private CaseProgressionDetailView caseProgressionDetailView;
-
-    @Mock
-    private DefendantView defendantView;
-
-    @Mock
-    CaseProgressionDetailService casePrgDetailService;
-
-    @Mock
-    CaseProgressionDetailToViewConverter caseProgressionDetailToViewConverter;
-
-    @Mock
-    DefendantToDefendantViewConverter defendantToDefendantViewConverter;
+    private CaseProgressionDetailService casePrgDetailService;
 
     @Mock
     private Function<Object, JsonEnvelope> function;
@@ -77,25 +72,42 @@ public class ProgressionQueryViewTest {
     @InjectMocks
     private ProgressionQueryView queryView;
 
+    @Before
+    public void initMocks() {
+
+        setField(this.jsonConverter, "mapper",
+                new ObjectMapperProducer().objectMapper());
+        setField(this.jsonConverter, "stringToJsonObjectConverter",
+                new StringToJsonObjectConverter());
+    }
+
     @Test
-    public void shouldGetCaseProgressionDetailsGivenACaseId() {
+    public void shouldGetCaseProgressionDetailsGivenACaseId() throws Exception {
         final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
         when(casePrgDetailService.getCaseProgressionDetail(caseId))
-                        .thenReturn(caseProgressionDetail);
-        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail))
-                        .thenReturn(caseProgressionDetailView);
+                .thenReturn(getCaseProgressionDetailView(caseId, defendantId));
+
         when(enveloper.withMetadataFrom(query,
                         ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
                                         .thenReturn(function);
-        when(function.apply(caseProgressionDetailView)).thenReturn(responseJson);
-        assertThat(queryView.getCaseProgressionDetails(query), equalTo(responseJson));
+        when(function.apply(anyObject())).thenReturn(responseJson);
+
+        JsonEnvelope response = queryView.getCaseProgressionDetails(query);
+
+        verify(casePrgDetailService, atMost(1)).getCaseProgressionDetail(anyObject());
+        verify(query, atMost(2)).payloadAsJsonObject();
+        verify(objectMapper, atMost(1)).writeValueAsString(anyObject());
+        verify(enveloper, atMost(1)).withMetadataFrom(anyObject(), anyString());
+        verify(function, atMost(2)).apply(anyObject());
+        assertThat(response, equalTo(responseJson));
     }
 
-    @Test
+    @Test(expected = javax.persistence.NoResultException.class)
     public void shouldReturnNoResultForCaseProgressionDetailsGivenASpecificCaseId() {
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
@@ -113,115 +125,119 @@ public class ProgressionQueryViewTest {
     }
 
     @Test
-    public void shouldGetMultipleCaseProgressionDetailsThatAreReadyForReview() {
-        Optional<String> status = Optional.ofNullable("READY_FOR_REVIEW");
+    public void shouldGetMultipleCaseProgressionDetailsThatAreReadyForReview() throws Exception {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+
+        Optional<String> status = Optional.of("READY_FOR_REVIEW");
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_STATUS, status.get()).build();
-
-        final JsonArray jsonArray =
-                        Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectcases =
-                        Json.createObjectBuilder().add("cases", jsonArray).build();
-
-        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
+                        .add(ProgressionQueryView.FIELD_STATUS, status.get())
+                        .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCases(Optional.ofNullable("READY_FOR_REVIEW")))
-                        .thenReturn(Arrays.asList(caseProgressionDetail));
-        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail))
-                        .thenReturn(caseProgressionDetailView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASES_RESPONSE_LIST))
-                        .thenReturn(function);
+        when(casePrgDetailService.getCases(Optional.of(anyString()), anyObject())).thenReturn(Arrays.asList(getCaseProgressionDetailView(caseId, defendantId)));
 
-        when(listToJsonArrayConverter.convert(Arrays.asList(caseProgressionDetailView)))
-                        .thenReturn(jsonArray);
-        when(function.apply(jsonObjectcases)).thenReturn(responseJson);
-        assertThat(queryView.getCases(query), equalTo(responseJson));
+        when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
+        when(function.apply(anyObject())).thenReturn(responseJson);
+
+        JsonEnvelope response = queryView.getCases(query);
+
+        verify(casePrgDetailService, atMost(1)).getCases(anyObject());
+        verify(query, atMost(2)).payloadAsJsonObject();
+        verify(objectMapper, atMost(1)).writeValueAsString(anyObject());
+        verify(enveloper, atMost(1)).withMetadataFrom(anyObject(), anyString());
+        verify(function,atMost(2)).apply(anyObject());
+        assertThat(response, equalTo(responseJson));
     }
 
     @Test
-    public void shouldGetCaseProgressionDetailsWithCaseId() {
-        Optional<UUID> caseId = Optional.ofNullable(UUID.randomUUID());
+    public void shouldGetCaseProgressionDetailsWithCaseId() throws Exception {
+
+        reset(query);
+        Optional<UUID> caseId = Optional.of(UUID.randomUUID());
+        final UUID defendantId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add(ProgressionQueryView.FIELD_CASE_ID, caseId.get().toString()).build();
 
-        final JsonArray jsonArray =
-                Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectcases =
-                Json.createObjectBuilder().add("cases", jsonArray).build();
-
-        final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
 
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getCaseProgressionDetail(caseId.get()))
-                .thenReturn(caseProgressionDetail);
-        when(caseProgressionDetailToViewConverter.convert(caseProgressionDetail))
-                .thenReturn(caseProgressionDetailView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.CASES_RESPONSE_LIST))
-                .thenReturn(function);
+        when(casePrgDetailService.getCaseProgressionDetail(caseId.get())).thenReturn(getCaseProgressionDetailView(caseId.get(), defendantId));
+        when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
+        when(function.apply(anyObject())).thenReturn(responseJson);
 
-        when(listToJsonArrayConverter.convert(Arrays.asList(caseProgressionDetailView)))
-                .thenReturn(jsonArray);
-        when(function.apply(jsonObjectcases)).thenReturn(responseJson);
-        assertThat(queryView.getCases(query), equalTo(responseJson));
+        JsonEnvelope response = queryView.getCases(query);
+
+        verify(casePrgDetailService, atMost(1)).getCases(anyObject());
+        verify(query, atMost(2)).payloadAsJsonObject();
+        verify(objectMapper, atMost(1)).writeValueAsString(anyObject());
+        verify(enveloper, atMost(1)).withMetadataFrom(anyObject(), anyString());
+        verify(function,atMost(2)).apply(anyObject());
+        assertThat(response, equalTo(responseJson));
     }
 
-
     @Test
-    public void shouldGetMultipleDefendantsGivenACaseId() {
+    public void shouldGetMultipleDefendantsGivenACaseId() throws Exception {
+
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
-        final JsonArray jsonArray =
-                        Json.createArrayBuilder().add(Json.createObjectBuilder().build()).build();
-        final JsonObject jsonObjectDefendant =
-                        Json.createObjectBuilder().add("defendants", jsonArray).build();
-
-        final Defendant defendant = new Defendant();
-
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getDefendantsByCase(caseId)).thenReturn(Arrays.asList(defendant));
-        when(defendantToDefendantViewConverter.convert(defendant)).thenReturn(defendantView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.DEFENDANT_RESPONSE_LIST))
-                        .thenReturn(function);
 
-        when(listToJsonArrayConverter.convert(Arrays.asList(defendantView))).thenReturn(jsonArray);
-        when(function.apply(jsonObjectDefendant)).thenReturn(responseJson);
-        assertThat(queryView.getDefendants(query), equalTo(responseJson));
+        when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
+        when(function.apply(anyObject())).thenReturn(responseJson);
+
+        JsonEnvelope response  = queryView.getDefendants(query);
+
+        verify(query, atMost(1)).payloadAsJsonObject();
+        verify(objectMapper, atMost(2)).writeValueAsString(anyObject());
+        verify(enveloper, atMost(1)).withMetadataFrom(anyObject(), anyString());
+        verify(function,atMost(2)).apply(anyObject());
+
+        assertThat(response, equalTo(responseJson));
     }
 
-    @Test
+    @Test(expected = javax.persistence.NoResultException.class)
     public void shouldReturnNoResultForDefendantsGivenASpecificCaseId() {
+
         final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
-
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
         when(casePrgDetailService.getDefendantsByCase(caseId)).thenThrow(new NoResultException());
         when(enveloper.withMetadataFrom(query,
                         ProgressionQueryView.CASE_PROGRESSION_DETAILS_RESPONSE))
                                         .thenReturn(function);
         when(function.apply(null)).thenReturn(responseJson);
-        assertThat(queryView.getDefendants(query), equalTo(responseJson));
-    }
 
+        queryView.getDefendants(query);
+    }
 
     @Test
-    public void shouldGetADefendantGivenACaseId() {
-        final UUID defendantId = UUID.randomUUID();
+    public void shouldGetADefendantGivenACaseId() throws Exception {
+        final UUID caseId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add(ProgressionQueryView.FIELD_DEFENDANT_ID, defendantId.toString()).build();
-        final Defendant defendant = new Defendant();
+                .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
 
+        when(casePrgDetailService.getDefendantsByCase(caseId))
+                .thenReturn(getDefendantsView());
         when(query.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(casePrgDetailService.getDefendant(Optional.of(defendantId.toString())))
-                        .thenReturn(Optional.of(defendant));
-        when(defendantToDefendantViewConverter.convert(defendant)).thenReturn(defendantView);
-        when(enveloper.withMetadataFrom(query, ProgressionQueryView.DEFENDANT_RESPONSE))
-                        .thenReturn(function);
+        when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
+        when(function.apply(anyObject())).thenReturn(responseJson);
 
-        when(function.apply(defendantView)).thenReturn(responseJson);
-        assertThat(queryView.getDefendant(query), equalTo(responseJson));
+        JsonEnvelope response  = queryView.getDefendants(query);
+
+        verify(query, atMost(1)).payloadAsJsonObject();
+        verify(objectMapper, atMost(2)).writeValueAsString(anyObject());
+        verify(enveloper, atMost(1)).withMetadataFrom(anyObject(), anyString());
+        verify(function,atMost(2)).apply(anyObject());
+        verify(casePrgDetailService, atMost(1)).getDefendantsByCase(caseId);
+
+        assertThat(response, equalTo(responseJson));
     }
+
+
+
 }
+
+

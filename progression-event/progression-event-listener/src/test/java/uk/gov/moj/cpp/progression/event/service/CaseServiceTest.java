@@ -5,21 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
-import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
-import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +17,25 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
+import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
+import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
+import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
+import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
+import uk.gov.moj.cpp.progression.event.converter.DefendantEventToDefendantConverter;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseServiceTest {
@@ -44,6 +49,8 @@ public class CaseServiceTest {
     private CaseProgressionDetailRepository repository;
     @Mock
     private DefendantRepository defendantRepository;
+    @Mock
+    private OffenceRepository offenceRepository;    
     @Mock
     private DefendantEventToDefendantConverter defendantEventToDefendantConverter;
     @InjectMocks
@@ -156,6 +163,47 @@ public class CaseServiceTest {
         //then
         verify(repository, times(1)).findBy(CASE_ID);
         verify(repository, times(1)).save(entity);
+
+    }
+    
+    @Test
+    public void addConvictionDateToOffenceTest() {
+
+        final UUID caseId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
+
+        final OffenceDetail entity = mock(OffenceDetail.class);
+
+        ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.builder().withCaseId(caseId)
+                .withOffenceId(offenceId).withConvictionDate(convictionDate).build();
+
+        when(offenceRepository.findBy(offenceId)).thenReturn(entity);
+
+        service.setConvictionDate(convictionDateAdded.getOffenceId(), convictionDateAdded.getConvictionDate());
+
+        verify(offenceRepository, times(1)).findBy(offenceId);
+        verify(offenceRepository, times(1)).save(entity);
+
+    }
+
+    @Test
+    public void removeConvictionDateFromOffenceTest() {
+
+        final UUID caseId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+
+        final OffenceDetail entity = mock(OffenceDetail.class);
+
+        ConvictionDateRemoved convictionDateRemoved = ConvictionDateRemoved.builder().withCaseId(caseId)
+                .withOffenceId(offenceId).build();
+
+        when(offenceRepository.findBy(offenceId)).thenReturn(entity);
+
+        service.setConvictionDate(convictionDateRemoved.getOffenceId(), null);
+
+        verify(offenceRepository, times(1)).findBy(offenceId);
+        verify(offenceRepository, times(1)).save(entity);
 
     }
 }

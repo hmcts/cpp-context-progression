@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command.defendant;
 
 
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,17 +18,17 @@ public class AddDefendant {
 
     private final Long version;
 
-    private final UUID personId;
+    private final Person person;
 
     private final String policeDefendantId;
 
     private final List<Offence> offences ;
 
-    public AddDefendant(UUID caseId, UUID defendantId, Long version, UUID personId, String policeDefendantId, List<Offence> offences, String caseUrn) {
+    public AddDefendant(UUID caseId, UUID defendantId, Long version, Person person, String policeDefendantId, List<Offence> offences, String caseUrn) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.version = version;
-        this.personId = personId;
+        this.person = person;
         this.policeDefendantId = policeDefendantId;
         this.offences = offences != null ? new ArrayList<>(offences) : new ArrayList<>();
         this.caseUrn=caseUrn;
@@ -49,8 +50,8 @@ public class AddDefendant {
         return version;
     }
 
-    public UUID getPersonId() {
-        return personId;
+    public Person getPerson() {
+        return person;
     }
 
     public String getPoliceDefendantId() {

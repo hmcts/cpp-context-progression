@@ -8,8 +8,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import org.junit.Assert;
-import org.mockito.internal.util.reflection.Whitebox;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
@@ -20,6 +18,8 @@ import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CasePendingForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
 import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
+import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
+import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
 import uk.gov.moj.cpp.progression.domain.event.Defendant;
 import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
@@ -36,11 +36,18 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.NoMoreInformationRequir
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,12 +56,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -292,7 +301,7 @@ public class CaseProgressionAggregateTest {
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
         assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
+        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
         Assert.assertTrue(sendingSheetInvalidated.getDescription().contains(CC_COURT_CENTRE_ID));
     }
 
@@ -304,51 +313,81 @@ public class CaseProgressionAggregateTest {
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
         assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
+        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
         Assert.assertTrue(sendingSheetInvalidated.getCaseId().equals(UUID.fromString(CASE_ID)));
     }
 
     @Test
     public void shouldInvalidateSendingSheetWrongDefendants() {
         final List<Object> objects = applySendingSheet(a->{
-            Defendant defendant = new Defendant();
+            final Defendant defendant = new Defendant();
             defendant.setId(UUID.randomUUID());
             Whitebox.setInternalState(this.caseProgressionAggregate, "defendants", new HashSet<>(Arrays.asList(defendant)));
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
         assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
+        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
         Assert.assertTrue(sendingSheetInvalidated.getCaseId().equals(UUID.fromString(CASE_ID)));
     }
 
     @Test
     public void shouldInvalidateSendingSheetWrongOffences() {
         final List<Object> objects = applySendingSheet(a->{
-            Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
+            final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
             Whitebox.setInternalState(this.caseProgressionAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
         assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
+        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
         Assert.assertTrue(sendingSheetInvalidated.getCaseId().equals(UUID.fromString(CASE_ID)));
         Assert.assertTrue(sendingSheetInvalidated.getDescription().contains(OFFENCE_ID));
 
     }
 
+    @Test
+    public void shouldHandleConvictionDateAdded() {
 
-    private List<Object> applySendingSheet(Consumer<CaseProgressionAggregate> adjustInternals) {
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
+
+        final ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.builder().withCaseId(caseId)
+                .withOffenceId(offenceId).withConvictionDate(convictionDate).build();
+
+        final Object response = this.caseProgressionAggregate.apply(convictionDateAdded);
+
+        assertThat(((ConvictionDateAdded) response).getCaseId(), is(caseId));
+        assertThat(((ConvictionDateAdded) response).getOffenceId(), is(offenceId));
+        assertThat(((ConvictionDateAdded) response).getConvictionDate(), is(convictionDate));
+    }
+
+    @Test
+    public void shouldHandleConvictionDateRemoved() {
+
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final ConvictionDateRemoved convictionDateRemoved = ConvictionDateRemoved.builder().withCaseId(caseId)
+                .withOffenceId(offenceId).build();
+
+        final Object response = this.caseProgressionAggregate.apply(convictionDateRemoved);
+
+        assertThat(((ConvictionDateRemoved) response).getCaseId(), is(caseId));
+        assertThat(((ConvictionDateRemoved) response).getOffenceId(), is(offenceId));
+    }
+    private List<Object> applySendingSheet(final Consumer<CaseProgressionAggregate> adjustInternals) {
         createCompleteSendingSheetEnvelope();
         final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
         final Hearing hearing = new Hearing();
         hearing.setCaseId(UUID.fromString("4daefec6-5f77-4109-82d9-1e60544a6c05"));
         sendingSheetCompleted.setHearing(hearing);
-        Set<Defendant> defendants = new HashSet<>();
-        Defendant defendant = new Defendant();
+        final Set<Defendant> defendants = new HashSet<>();
+        final Defendant defendant = new Defendant();
         defendants.add(defendant);
         defendant.setId(UUID.fromString(DEFENDANT_ID));
-        Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
+        final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
         offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(Arrays.asList(UUID.fromString(OFFENCE_ID))));
         //green path internals
         Whitebox.setInternalState(this.caseProgressionAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
@@ -364,7 +403,7 @@ public class CaseProgressionAggregateTest {
     @Test
     public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
         final List<Object> objects = applySendingSheet(a->{
-            Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>(Arrays.asList(UUID.fromString(CASE_ID)));
+            final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>(Arrays.asList(UUID.fromString(CASE_ID)));
             Whitebox.setInternalState(this.caseProgressionAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
         });
         assertThat(objects.size(), is(1));
@@ -374,24 +413,6 @@ public class CaseProgressionAggregateTest {
     }
 
 
-    /*  @Test
-    public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
-        createCompleteSendingSheetEnvelope();
-        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
-        final Hearing hearing = new Hearing();
-        hearing.setCaseId(UUID.fromString(CASE_ID));
-        sendingSheetCompleted.setHearing(hearing);
-
-        this.caseProgressionAggregate.completeSendingSheet(this.envelope);
-        // send the same case again for completion
-        final Stream<Object> stream = this.caseProgressionAggregate.completeSendingSheet(this.envelope);
-        final List<Object> objects = stream.collect(Collectors.toList());
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetPreviouslyCompleted.class));
-        assertThat(CASE_ID, equalTo(((SendingSheetPreviouslyCompleted) obj).getCaseId().toString()));
-    }
-*/
     private void assertNoMoreInformationRequiredEvent(final UUID defendantId, final Object response) {
         final NoMoreInformationRequiredEvent o =   (NoMoreInformationRequiredEvent) response;
         assertThat(o.getDefendantId(), is(defendantId));
@@ -431,7 +452,8 @@ public class CaseProgressionAggregateTest {
                 LocalDate.now(),
                 LocalDate.now(),
                 LocalDate.now());
-        final DefendantAdded defendantAdded =new DefendantAdded(caseId,defendantId,randomUUID(),"",Arrays.asList(offence),"CaseUrn");
+        final Person person = new Person( randomUUID(),  "", "", "",  LocalDate.now(), "", "", "", "", "", "", "", null);
+        final DefendantAdded defendantAdded =new DefendantAdded(caseId, defendantId, person,"", Arrays.asList(offence), "CaseUrn");
         this.caseProgressionAggregate.apply(defendantAdded);
     }
 
@@ -452,7 +474,7 @@ public class CaseProgressionAggregateTest {
         this.caseProgressionAggregate.updateOffencesForDefendant(offencesForDefendantUpdated ).collect(toList());
     }
 
-    private Map<UUID, Set<UUID>>  defendantId2OffenceIds = new HashMap<>();
+    private final Map<UUID, Set<UUID>>  defendantId2OffenceIds = new HashMap<>();
 
 
     private void createCompleteSendingSheetEnvelope() {
@@ -467,7 +489,7 @@ public class CaseProgressionAggregateTest {
         when(this.jsonObj.getString(Mockito.eq("courtCentreId")))
                 .thenReturn(COURT_CENTRE_ID);
 
-        UUID defendantId = randomUUID();
+        final UUID defendantId = randomUUID();
         when(this.jsonObj.getJsonArray(Mockito.eq("defendants"))).thenReturn(Json.createArrayBuilder()
                 .add(Json.createObjectBuilder().add("id", defendantId.toString()).build())
                 .build());

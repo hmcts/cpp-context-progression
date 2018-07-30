@@ -8,13 +8,13 @@ import org.junit.Test;
 public class CaseDetailsTest extends ProgressionQueryRuleExecutor {
 
     private static final String[] ACTION_GROUPS = new String[] {"Crown Court Admin",
-                    "Listing Officers", "Judiciary", "Case Officer"};
+                    "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"};
 
     private static final String[] ALLOWED_USER_GROUPS = new String[] {"Crown Court Admin",
-                    "Listing Officers", "Judiciary", "Case Officer"};
+                    "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"};
 
     private static final String[] NOT_ALLOWED_USER_GROUPS = new String[] {"CMS", "Charging Lawyers",
-                    "Court Administrators", "Court Clerks", "Court Operations Officers",
+                    "Court Administrators",  "Court Operations Officers",
                     "Group Name", "Group name 3", "IDAM", "Judge", "JudicialOfficer",
                     "Legal Advisers", "MCSS", "Magistrates", "Solicitors", "TFL Users",
                     "Test Group", "System Users", "Genesis"};

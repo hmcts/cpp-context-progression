@@ -31,6 +31,9 @@ baseUri: message://event/processor/message/progression
                     application/vnd.public.progression.defendant-added+json:
                         schema: !include json/schema/public.progression.defendant-added.json
                         example: !include json/public.progression.defendant-added.json
+                    application/vnd.public.progression.events.defendant-updated+json:
+                        schema: !include json/schema/public.progression.events.defendant-updated.json
+                        example: !include json/public.progression.events.defendant-updated.json
                     application/vnd.public.progression.events.sending-sheet-completed+json:
                         schema: !include json/schema/public.progression.events.sending-sheet-completed.json
                         example: !include json/public.progression.events.sending-sheet-completed.json
@@ -40,3 +43,12 @@ baseUri: message://event/processor/message/progression
                     application/vnd.public.progression.events.sending-sheet-invalidated+json:
                         schema: !include json/schema/public.progression.events.sending-sheet-invalidated.json
                         example: !include json/public.progression.events.sending-sheet-invalidated.json
+                    application/vnd.public.progression.case-defendant-changed+json:
+                        schema: !include json/schema/public.progression.case-defendant-changed.json
+                        example: !include json/public.progression.case-defendant-changed.json
+                    application/vnd.public.progression.defendant-offences-changed+json:
+                        schema: !include json/schema/public.progression.defendant-offences-changed.json
+                        example: !include json/public.progression.defendant-offences-changed.json
+                    application/vnd.public.hearing-detail-changed+json:
+                        schema: !include json/schema/public.hearing-detail-changed.json
+                        example: !include json/public.hearing-detail-changed.json

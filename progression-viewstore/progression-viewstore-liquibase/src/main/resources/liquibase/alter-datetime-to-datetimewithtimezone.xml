@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="alter-to-datetime-with-time-zone" author="progression" >
+        <modifyDataType tableName="caseprogressiondetail" newDataType="DATETIME TZ" columnName="casestatusupdateddatetime" />
+        <modifyDataType tableName="defendant" newDataType="DATETIME TZ" columnName="sentence_hearing_review_decision_date_time" />
+        <modifyDataType tableName="offence" newDataType="DATE" columnName="conviction_date" />
+        <modifyDataType tableName="offence_plea" newDataType="DATE" columnName="plea_date" />
+        <modifyDataType tableName="person" newDataType="DATE" columnName="date_of_birth" />
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,24 @@
+{
+  "caseId": "CASE_ID",
+  "urn": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+  "hearing": {
+    "id": "HEARING_ID",
+    "type": "Trial",
+    "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f",
+    "courtRoomId": "47834e9d-0bca-4f26-aa30-270580496e6e",
+    "judgeId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+    "startDateTime": "2016-06-01T10:00:00Z",
+    "hearingDays": ["2016-06-01T10:00:00Z"],
+    "estimateMinutes": 7200,
+    "defendants": [
+      {
+        "id": "DEFENDANT_ID",
+        "offences": [
+          {
+            "id": "0baecac5-222b-402d-9047-84803679edad"
+          }
+        ]
+      }
+    ]
+  }
+}

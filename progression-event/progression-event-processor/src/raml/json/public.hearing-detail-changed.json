@@ -1,0 +1,18 @@
+{
+  "hearing": {
+    "id": "f93d22ee-e06b-48e1-8e50-133ff475d025",
+    "type": "Trial",
+    "courtRoomId": "6bb8a527-2a23-4d7d-b6e2-dd94d2a7d63d",
+    "courtRoomName": "3",
+    "judge": {
+      "id": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+      "title": "HHJ",
+      "firstName": "Neil",
+      "lastName": "Flewitt"
+    },
+    "hearingDays": [
+      "2016-06-01T10:00:00Z",
+      "2016-07-03T10:15:00Z"
+    ]
+  }
+}

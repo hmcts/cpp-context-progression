@@ -12,7 +12,7 @@ public class OffencesForDefendantUpdated {
     private final UUID caseId;
 
     private final UUID defendantId;
-
+                                                                       
     private final List<OffenceForDefendant> offences;
 
     public OffencesForDefendantUpdated(UUID caseId, UUID defendantId, List<OffenceForDefendant> offences) {

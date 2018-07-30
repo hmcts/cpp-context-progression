@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "#/definitions/uuidPattern"
+    },
+    "urn": {
+      "type": "string",
+      "maxLength": 15
+    },
+    "hearings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/uuidPattern"
+        },
+        "courtCentreId": {
+          "$ref": "#/definitions/uuidPattern"
+        },
+        "type": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "estimateMinutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "startTime": {
+          "type": "string",
+          "format": "time"
+        },
+        "judgeId": {
+          "$ref": "#/definitions/uuidPattern"
+        },
+        "courtRoomId": {
+          "$ref": "#/definitions/uuidPattern"
+        },
+        "defendants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/uuidPattern"
+              },
+              "offences": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "#/definitions/uuidPattern"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "offences"
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "courtCentreId",
+        "type",
+        "startDate",
+        "estimateMinutes",
+        "defendants"
+      ]
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "urn",
+    "hearings"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "uuidPattern": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
+}

@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.progression.it;
 
-import org.junit.Before;
-import org.junit.Test;
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
-import uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub;
 import uk.gov.moj.cpp.progression.helper.UpdateOffencesForDefendantHelper;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.util.UUID;
 
+import org.junit.Before;
+import org.junit.Test;
+
 public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
+
+    private static final String REF_DATA_QUERY_CJSCODE_PAYLOAD =
+            "/restResource/ref-data-cjscode.json";
 
     private AddDefendantHelper addDefendantHelper;
     private String caseId;
@@ -24,6 +28,7 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
         addDefendantHelper.verifyMinimalDefendantAdded();
+        ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
     }
 
     /**
@@ -38,6 +43,7 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
         updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
+        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentAdded(addDefendantHelper.getOffenceId());
 
     }
 
@@ -48,6 +54,32 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdatedWithOffenceOrdering(addDefendantHelper.getCaseUrn());
+
+    }
+
+    @Test
+    public void updateOffenceForDefendantAndVerifyPublicEvent() {
+        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        updateOffenceForDefendantHelper.updateOffencesForDefendant(addDefendantHelper.getOffenceId());
+        updateOffenceForDefendantHelper.verifyInActiveMQ();
+        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
+        updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
+        updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
+        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentChanged();
+    }
+
+    @Test
+    public void updateOffenceForDefendantAndVerifyPublicEventNotRaised() {
+        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        updateOffenceForDefendantHelper.updateOffencesForDefendant(addDefendantHelper.getOffenceId());
+        updateOffenceForDefendantHelper.verifyInActiveMQ();
+        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
+        updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
+        updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
+        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentChanged();
+
+        updateOffenceForDefendantHelper.updateOffencesForDefendant(addDefendantHelper.getOffenceId());
+        updateOffenceForDefendantHelper.verifyInMessagingQueueForDefendentChangedNotPresent();
 
     }
 

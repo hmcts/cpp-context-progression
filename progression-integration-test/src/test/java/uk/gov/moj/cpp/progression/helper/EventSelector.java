@@ -12,6 +12,7 @@ public class EventSelector {
     public static final String PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED = "public.progression.defendant-added";
     public static final String PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED = "public.progression.defendant-addition-failed";
     public static final String EVENT_SELECTOR_DEFENDANT_ADDED = "progression.events.defendant-added";
+    public static final String EVENT_SELECTOR_DEFENDANT_UPDATED = "progression.events.defendant-updated";
     public static final String EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED = "progression.events.defendant-addition-failed";
     public static final String EVENT_SELECTOR_OFFENCE_FOR_DEFENDANT_ADDED = "progression.events.offence-for-defendant-added";
     public static final String EVENT_SELECTOR_OFFENCES_FOR_DEFENDANT_UPDATED = "progression.events.offences-for-defendant-updated";
@@ -52,7 +53,6 @@ public class EventSelector {
     public static final String PUBLIC_EVENT_SELECTOR_SUSPECT_ALREADY_EXISTS = "public.progression.suspect-already-exists";
     public static final String EVENT_SELECTOR_VICTIM_ADDED = "progression.events.victim-added";
     public static final String PUBLIC_EVENT_SELECTOR_VICTIM_ADDED = "public.progression.victim-added";
-    public static final String EVENT_SELECTOR_WITNESS_ADDED = "progression.events.witness-added";
     public static final String PUBLIC_EVENT_SELECTOR_WITNESS_ADDED = "public.progression.witness-added";
     public static final String EVENT_SELECTOR_WITNESS_CLASSIFICATIONS_REPLACED = "progression.events.witness-classifications-replaced";
     public static final String PUBLIC_EVENT_SELECTOR_WITNESS_CLASSIFICATIONS_REPLACED = "public.progression.witness-classifications-replaced";

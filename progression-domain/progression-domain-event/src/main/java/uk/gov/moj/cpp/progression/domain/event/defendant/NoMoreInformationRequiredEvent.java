@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Event("progression.events.no-more-information-required")
@@ -11,12 +12,12 @@ import java.util.UUID;
 public class NoMoreInformationRequiredEvent {
     private final UUID defendantId;
     private final UUID caseId;
-    private LocalDateTime sentenceHearingReviewDecisionDateTime;
+    private ZonedDateTime sentenceHearingReviewDecisionDateTime;
 
     public NoMoreInformationRequiredEvent( UUID caseId, UUID defendantId ) {
         this.caseId = caseId;
         this.defendantId = defendantId;
-        this.sentenceHearingReviewDecisionDateTime = LocalDateTime.now();
+        this.sentenceHearingReviewDecisionDateTime = ZonedDateTime.now();
     }
 
     public UUID getCaseId() {
@@ -27,12 +28,12 @@ public class NoMoreInformationRequiredEvent {
         return defendantId;
     }
 
-    public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+    public ZonedDateTime getSentenceHearingReviewDecisionDateTime() {
         return sentenceHearingReviewDecisionDateTime;
     }
 
     public void setSentenceHearingReviewDecisionDateTime(
-                    LocalDateTime sentenceHearingReviewDecisionDateTime) {
+            ZonedDateTime sentenceHearingReviewDecisionDateTime) {
         this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
     }
     

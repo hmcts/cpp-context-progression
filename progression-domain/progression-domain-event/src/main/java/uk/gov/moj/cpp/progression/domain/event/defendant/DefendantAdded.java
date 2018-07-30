@@ -14,7 +14,7 @@ public class DefendantAdded {
 
     private UUID defendantId;
 
-    private UUID personId;
+    private Person person;
 
     private String policeDefendantId;
 
@@ -24,12 +24,12 @@ public class DefendantAdded {
 
     public DefendantAdded(UUID caseId,
                           UUID defendantId,
-                          UUID personId,
+                          Person person,
                           String policeDefendantId,
                           List<Offence> offences, String caseUrn) {
         this.caseId = caseId;
         this.defendantId = defendantId;
-        this.personId = personId;
+        this.person = person;
         this.policeDefendantId = policeDefendantId;
         this.offences = offences;
         this.caseUrn=caseUrn;
@@ -43,8 +43,8 @@ public class DefendantAdded {
         return defendantId;
     }
 
-    public UUID getPersonId() {
-        return personId;
+    public Person getPerson() {
+        return person;
     }
 
     public List<Offence> getOffences() {

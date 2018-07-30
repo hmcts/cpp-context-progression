@@ -124,7 +124,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
             // Send the file meta data
             final JsonObject uploadFileMetadataMessage = buildMessage(caseId, fileName, fileData);
 
-            uploadFileServiceSender.doSend(uploadFileMetadataMessage, userId, session, correlationId);
+            uploadFileServiceSender.doSend(uploadFileMetadataMessage, userId, correlationId);
 
             return Response.status(ACCEPTED)
                     .entity(new GenericEntity<String>(createObjectBuilder()

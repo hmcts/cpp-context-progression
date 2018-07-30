@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<processes>
+    <process resource="processes/listHearing.bpmn" />
+    <process resource="processes/initiateHearing.bpmn" />
+</processes>

@@ -1,6 +1,26 @@
 {
   "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18958",
-  "personId": "ba9a2765-e630-4d9a-923c-6b9fd29dbfc4",
+  "person":{
+    "id":"ab746921-d839-4867-bcf9-b41db8ebc852",
+    "title":"Mr",
+    "firstName":"David",
+    "lastName":"LLOYD",
+    "dateOfBirth":"1980-07-15",
+    "nationality":"England",
+    "gender":"Male",
+    "homeTelephone": "02012345678",
+    "workTelephone": "02012345679",
+    "mobile": "07777777777",
+    "fax": "02011111111",
+    "email": "email@email.com",
+    "address":{
+      "address1":"14 Tottenham Court Road",
+      "address2":"London",
+      "address3":"England",
+      "address4":"UK",
+      "postCode":"W1T 1JY"
+    }
+  },
   "policeDefendantId": "BS2CM01ADEF1",
   "offences": [{
     "id": "7e2f843e-d639-40b3-8611-8015f3a18959",

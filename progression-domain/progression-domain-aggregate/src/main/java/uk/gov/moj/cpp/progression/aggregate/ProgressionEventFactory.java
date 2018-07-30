@@ -10,6 +10,17 @@ import static uk.gov.moj.cpp.progression.domain.event.defendant.PreSentenceRepor
 import static uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent.ProbationEventBuilder.aProbationEvent;
 import static uk.gov.moj.cpp.progression.domain.event.defendant.StatementOfMeansEvent.StatementOfMeansEventBuilder.aStatementOfMeansEvent;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
@@ -17,8 +28,6 @@ import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.ProsecutionCommand;
-import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantDefenceSolicitorFirm;
-import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantInterpreter;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
@@ -37,29 +46,15 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingShee
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.AdditionalInformationEvent.AdditionalInformationEventBuilder;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceEvent;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefenceSolicitorFirmUpdatedForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
-import uk.gov.moj.cpp.progression.domain.event.defendant.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProbationEvent;
 import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 
 public class ProgressionEventFactory {
     private static final String FIELD_HEARING = "hearing";
     private static final String FIELD_CASE_ID = "caseId";
-    private static final String FIELD_COURT_CENTER_ID = "courtCentreId";
+    private static final String FIELD_COURT_CENTRE_ID = "courtCentreId";
     private static final String FIELD_FROM_COURT_CENTRE = "fromCourtCentre";
     private static final String FIELD_SENDING_COMMITTAL_DATE = "sendingCommittalDate";
     private static final String FIELD_DEFENDANT_ID = "defendantId";
@@ -73,7 +68,7 @@ public class ProgressionEventFactory {
                                 .setCaseId(
                                         defendant.getCaseId())
                                 .setSentenceHearingReviewDecision(true)
-                                .setSentenceHearingReviewDecisionDateTime(LocalDateTime.now());
+                                .setSentenceHearingReviewDecisionDateTime(ZonedDateTime.now());
                 buildAdditionalInformationEvent(defendant, defendantEventBuilder);
                 return defendantEventBuilder.build();
             };
@@ -82,28 +77,12 @@ public class ProgressionEventFactory {
 
     }
 
-    public static DefenceSolicitorFirmUpdatedForDefendant asSolicitorFirmUpdatedForDefendant(
-            final UpdateDefendantDefenceSolicitorFirm updateDefendantSolicitorFirm) {
-                return new DefenceSolicitorFirmUpdatedForDefendant(
-                        updateDefendantSolicitorFirm.getCaseId(),
-                        updateDefendantSolicitorFirm.getDefendantId(),
-                        updateDefendantSolicitorFirm.getDefenceSolicitorFirm());
-            }
-
-    public static InterpreterUpdatedForDefendant asInterpreterUpdatedForDefendant(
-            final UpdateDefendantInterpreter updateDefendantInterpreter) {
-                return new InterpreterUpdatedForDefendant(
-                        updateDefendantInterpreter.getCaseId(),
-                        updateDefendantInterpreter.getDefendantId(),
-                        updateDefendantInterpreter.getInterpreter()
-                );
-            }
 
     public static CaseAddedToCrownCourt createCaseAddedToCrownCourt(final JsonEnvelope envelope) {
         final UUID caseId =
                 UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
         final String courtCentreId =
-                envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTER_ID);
+                envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTRE_ID);
         return new CaseAddedToCrownCourt(caseId, courtCentreId);
     }
 
@@ -119,7 +98,7 @@ public class ProgressionEventFactory {
     private static Hearing createHearingObj(final JsonEnvelope envelope) {
         final JsonObject hearingJsonObject = envelope.payloadAsJsonObject().getJsonObject(FIELD_HEARING);
         final String courtCentreName = hearingJsonObject.getString("courtCentreName");
-        final String courtCentreId = hearingJsonObject.getString(FIELD_COURT_CENTER_ID);
+        final String courtCentreId = hearingJsonObject.getString(FIELD_COURT_CENTRE_ID);
         final String type = hearingJsonObject.getString("type");
         final String sendingCommittalDate = hearingJsonObject.getString(FIELD_SENDING_COMMITTAL_DATE);
         final UUID caseId = UUID.fromString(hearingJsonObject.getString(FIELD_CASE_ID));
@@ -257,7 +236,7 @@ public class ProgressionEventFactory {
         final String ccHearingDate = crownCourtHearingJsonObject.getString("ccHearingDate");
         final String courtCentreNameForListringReq = crownCourtHearingJsonObject.getString("courtCentreName");
         final UUID courtCentreIdForListingReq =
-                UUID.fromString(crownCourtHearingJsonObject.getString(FIELD_COURT_CENTER_ID));
+                UUID.fromString(crownCourtHearingJsonObject.getString(FIELD_COURT_CENTRE_ID));
         final CrownCourtHearing crownCourtHearing = new CrownCourtHearing();
         crownCourtHearing.setCcHearingDate(ccHearingDate);
         crownCourtHearing.setCourtCentreName(courtCentreNameForListringReq);

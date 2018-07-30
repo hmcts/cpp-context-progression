@@ -48,6 +48,12 @@
             <version>1.0.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-common</artifactId>
+            <version>2.4.1</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 </project>

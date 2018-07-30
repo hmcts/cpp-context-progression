@@ -64,15 +64,19 @@ public abstract class AbstractTestHelper implements AutoCloseable {
     }
 
     protected void makePostCall(String url, String mediaType, String payload) {
-        makePostCall(UUID.fromString(USER_ID), url, mediaType, payload);
+        makePostCall(url, mediaType, payload , Response.Status.ACCEPTED.getStatusCode());
     }
 
-    protected void makePostCall(UUID userId, String url, String mediaType, String payload) {
+    protected void makePostCall(String url, String mediaType, String payload, int statusCode) {
+        makePostCall(UUID.fromString(USER_ID), url, mediaType, payload , statusCode);
+    }
+
+    protected void makePostCall(UUID userId, String url, String mediaType, String payload, int statusCode ) {
         LOGGER.info("Post call made: \n\n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\n", url, mediaType, payload, USER_ID);
         MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId.toString());
         Response response = restClient.postCommand(url, mediaType, payload, map);
-        assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+        assertThat(response.getStatus(), is(statusCode));
     }
     
     protected void makeMultipartFormPostCall(UUID userId, String url, String fileFieldName, String fileName) {

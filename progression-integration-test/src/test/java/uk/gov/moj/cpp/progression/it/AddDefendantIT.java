@@ -1,14 +1,16 @@
 package uk.gov.moj.cpp.progression.it;
 
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.UUID.randomUUID;
+import static org.junit.Assert.assertNotNull;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 
 import java.io.IOException;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AddDefendantIT extends BaseIntegrationTest {
     @Before

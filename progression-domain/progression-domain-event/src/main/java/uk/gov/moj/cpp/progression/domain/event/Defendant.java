@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.progression.domain.event;
 
+import uk.gov.moj.cpp.progression.domain.event.defendant.Interpreter;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
+
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class Defendant implements Serializable {
@@ -8,16 +12,29 @@ public class Defendant implements Serializable {
     private UUID id;
     private Boolean sentenceHearingReviewDecision;
     private Boolean isAdditionalInfoAvilable;
-
+    private Person person;
+    private String bailStatus;
+    private ZonedDateTime custodyTimeLimit;
+    private String defenceOrganisation;
+    private Interpreter interpreter;
     public Defendant() {
         super();
     }
 
-    public Defendant(UUID id) {
+    public Defendant(final UUID id) {
         super();
         this.id = id;
     }
-    
+
+    public Defendant(final UUID id, final Person person, final String bailStatus, final ZonedDateTime custodyTimeLimit, final String defenceOrganisation, final Interpreter interpreter) {
+        this.id = id;
+        this.person = person;
+        this.bailStatus = bailStatus;
+        this.custodyTimeLimit = custodyTimeLimit;
+        this.defenceOrganisation = defenceOrganisation;
+        this.interpreter = interpreter;
+    }
+
     /**
      * @return the id
      */
@@ -29,7 +46,7 @@ public class Defendant implements Serializable {
         return sentenceHearingReviewDecision;
     }
 
-    public void setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
+    public void setSentenceHearingReviewDecision(final Boolean sentenceHearingReviewDecision) {
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
@@ -37,12 +54,31 @@ public class Defendant implements Serializable {
         return isAdditionalInfoAvilable;
     }
 
-    public void setIsAdditionalInfoAvilable(Boolean isAdditionalInfoAvilable) {
+    public void setIsAdditionalInfoAvilable(final Boolean isAdditionalInfoAvilable) {
         this.isAdditionalInfoAvilable = isAdditionalInfoAvilable;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
+    public Person getPerson() {
+        return person;
+    }
+
+    public String getBailStatus() {
+        return bailStatus;
+    }
+
+    public ZonedDateTime getCustodyTimeLimit() {
+        return custodyTimeLimit;
+    }
+
+    public String getDefenceOrganisation() {
+        return defenceOrganisation;
+    }
+
+    public Interpreter getInterpreter() {
+        return interpreter;
+    }
 }

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.domain.event.defendant;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -13,12 +14,12 @@ public class DefendantAdditionalInformationAdded {
     private final UUID defendantId;
     private final UUID caseId;
     private Boolean sentenceHearingReviewDecision;
-    private LocalDateTime sentenceHearingReviewDecisionDateTime;
+    private ZonedDateTime sentenceHearingReviewDecisionDateTime;
     private final AdditionalInformationEvent additionalInformationEvent;
 
     public DefendantAdditionalInformationAdded(UUID defendantId, UUID caseId,
             AdditionalInformationEvent additionalInformationEvent, Boolean sentenceHearingReviewDecision,
-            LocalDateTime sentenceHearingReviewDecisionDateTime) {
+                                               ZonedDateTime sentenceHearingReviewDecisionDateTime) {
         this.defendantId = defendantId;
         this.additionalInformationEvent = additionalInformationEvent;
         this.caseId = caseId;
@@ -38,7 +39,7 @@ public class DefendantAdditionalInformationAdded {
         return caseId;
     }
 
-    public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+    public ZonedDateTime getSentenceHearingReviewDecisionDateTime() {
         return sentenceHearingReviewDecisionDateTime;
     }
 
@@ -50,7 +51,7 @@ public class DefendantAdditionalInformationAdded {
         private UUID defendantId;
         private UUID caseId;
         private Boolean sentenceHearingReviewDecision;
-        private LocalDateTime sentenceHearingReviewDecisionDateTime;
+        private ZonedDateTime sentenceHearingReviewDecisionDateTime;
         private AdditionalInformationEvent additionalInformationEvent;
 
         private DefendantEventBuilder() {
@@ -76,7 +77,7 @@ public class DefendantAdditionalInformationAdded {
         }
 
         public DefendantEventBuilder setSentenceHearingReviewDecisionDateTime(
-                LocalDateTime sentenceHearingReviewDecisionDateTime) {
+                ZonedDateTime sentenceHearingReviewDecisionDateTime) {
             this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
             return this;
         }
@@ -110,7 +111,7 @@ public class DefendantAdditionalInformationAdded {
             return sentenceHearingReviewDecision;
         }
 
-        public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+        public ZonedDateTime getSentenceHearingReviewDecisionDateTime() {
             return sentenceHearingReviewDecisionDateTime;
         }
 
@@ -121,7 +122,7 @@ public class DefendantAdditionalInformationAdded {
     }
 
     public void setSentenceHearingReviewDecisionDateTime(
-                    LocalDateTime sentenceHearingReviewDecisionDateTime) {
+            ZonedDateTime sentenceHearingReviewDecisionDateTime) {
         this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
     }
     

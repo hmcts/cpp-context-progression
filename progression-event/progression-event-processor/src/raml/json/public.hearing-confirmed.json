@@ -1,0 +1,21 @@
+{
+  "caseId": "5a52df35-227f-42d8-905d-28948510b8b3",
+  "urn": "87GD9945217",
+  "hearing": {
+    "id": "f93d22ee-e06b-48e1-8e50-133ff475d025",
+    "type": "Trial",
+    "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f",
+    "courtRoomId": "6bb8a527-2a23-4d7d-b6e2-dd94d2a7d63d",
+    "judgeId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+    "defendants": [
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edac",
+        "offences": [
+          {
+            "id": "0baecac5-222b-402d-9047-84803679edad"
+          }
+        ]
+      }
+    ]
+  }
+}

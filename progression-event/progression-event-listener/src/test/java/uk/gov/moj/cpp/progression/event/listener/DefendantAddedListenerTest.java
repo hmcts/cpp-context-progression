@@ -37,7 +37,6 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 public class DefendantAddedListenerTest {
 
     private static final UUID VICTIM_ID = randomUUID();
-    private static final UUID WITNESS_ID = randomUUID();
     private UUID caseId = randomUUID();
 
     @Mock

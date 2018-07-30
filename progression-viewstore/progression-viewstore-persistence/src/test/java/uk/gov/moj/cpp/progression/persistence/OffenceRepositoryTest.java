@@ -1,24 +1,29 @@
 package uk.gov.moj.cpp.progression.persistence;
 
-import com.google.common.collect.Sets;
+import static java.util.UUID.randomUUID;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import javax.inject.Inject;
+
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.google.common.collect.Sets;
+
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
-
-import javax.inject.Inject;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * DB integration tests for {@link OffenceRepository} class
@@ -48,7 +53,7 @@ public class OffenceRepositoryTest  {
         //given
         caseRepository.save(getCaseWithDefendantOffences());
 
-        OffenceDetail actual = offenceRepository.findBy(OFFENCE_ID_ONE);
+        final OffenceDetail actual = offenceRepository.findBy(OFFENCE_ID_ONE);
         assertNotNull("Should not be null", actual);
         assertEquals(OFFENCE_ID_ONE, actual.getId());
     }
@@ -57,22 +62,23 @@ public class OffenceRepositoryTest  {
     public void shouldReturnOffenceInOrder() throws Exception {
         //given
         caseRepository.save(getCaseWithDefendantOffences());
-        Defendant defendant=defendantRepository.findByDefendantId(DEF_ID);
-        List<OffenceDetail> offenceDetails = offenceRepository.findByDefendantOrderByOrderIndex(defendant);
-        assertEquals(OFFENCE_ID_ONE, offenceDetails.get(0).getId());
-        assertEquals(OFFENCE_ID_TWO, offenceDetails.get(1).getId());
-        assertEquals(OFFENCE_ID_THREE, offenceDetails.get(2).getId());
+        final Defendant defendant=defendantRepository.findByDefendantId(DEF_ID);
+        final List<OffenceDetail> offenceDetails =
+                        offenceRepository.findByDefendantOrderByOrderIndex(defendant);
+        final List<UUID>  offenceIds = Arrays.asList(OFFENCE_ID_TWO,OFFENCE_ID_TWO,OFFENCE_ID_THREE);
+        final long count = offenceDetails.stream().map(item -> offenceIds.contains(item)).count();
+        assertTrue(count == 3);
     }
 
     private CaseProgressionDetail getCaseWithDefendantOffences() {
-        CaseProgressionDetail caseDetail = new CaseProgressionDetail();
+        final CaseProgressionDetail caseDetail = new CaseProgressionDetail();
         caseDetail.setCaseId(CASE_ID_ONE);
         caseDetail.setCaseUrn(CASEURN);
         caseDetail.addDefendant(new Defendant(DEF_ID,caseDetail,false, Sets.newHashSet(getOffenceDetail(OFFENCE_ID_ONE,1),getOffenceDetail(OFFENCE_ID_TWO,2),getOffenceDetail(OFFENCE_ID_THREE,3))));
         return caseDetail;
     }
 
-    private OffenceDetail getOffenceDetail(UUID uuid,int orderIndex) {
+    private OffenceDetail getOffenceDetail(final UUID uuid, final int orderIndex) {
         return new OffenceDetail.OffenceDetailBuilder()
                 .setId(uuid)
                 .setPoliceOffenceId("")

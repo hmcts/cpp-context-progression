@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-defendant-person" author="cpp.context.progression">
+        <createTable tableName="person">
+            <column name="person_id" type="UUID"/>
+            <column name="title" type="TEXT"/>
+            <column name="first_name" type="TEXT"/>
+            <column name="last_name" type="TEXT"/>
+            <column name="date_of_birth" type="DATETIME"/>
+            <column name="nationality" type="TEXT"/>
+            <column name="gender" type="TEXT"/>
+            <column name="home_telephone" type="TEXT"/>
+            <column name="work_telephone" type="TEXT"/>
+            <column name="mobile" type="TEXT"/>
+            <column name="fax" type="TEXT"/>
+            <column name="email" type="TEXT"/>
+            <column name="address_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="create-defendant-person-address" author="infinity">
+        <createTable tableName="address">
+            <column name="address_id" type="UUID"/>
+            <column name="address_1" type="TEXT"/>
+            <column name="address_2" type="TEXT"/>
+            <column name="address_3" type="TEXT"/>
+            <column name="address_4" type="TEXT"/>
+            <column name="post_code" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="add-defendant-person-address-key-constraints_1" author="cpp.context.progression">
+
+        <addPrimaryKey columnNames="person_id" constraintName="person_primary_key"
+                       tableName="person"/>
+
+        <addPrimaryKey columnNames="address_id" constraintName="address_primary_key"
+                       tableName="address"/>
+
+    </changeSet>
+
+</databaseChangeLog>

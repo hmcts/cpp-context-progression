@@ -1,0 +1,34 @@
+{
+  "person":{
+    "id":"ab746921-d839-4867-bcf9-b41db8ebc852",
+    "title":"Mr",
+    "firstName":"David",
+    "lastName":"LLOYD",
+    "dateOfBirth":"1980-07-15",
+    "nationality":"England",
+    "gender":"Male",
+    "homeTelephone": "02012345678",
+    "workTelephone": "02012345679",
+    "mobile": "07777777777",
+    "fax": "02011111111",
+    "email": "email@email.com",
+    "address":{
+      "address1":"14 Tottenham Court Road",
+      "address2":"London",
+      "address3":"England",
+      "address4":"UK",
+      "postCode":"W1T 1JY"
+    }
+  },
+  "bailStatus":"conditional",
+  "bailDocument": {
+    "id": "17a4fbb0-9424-4c6f-ad68-3be8fb761384",
+    "materialId": "uploaded-document-uuid"
+  },
+  "custodyTimeLimitDate":"2016-11-11",
+  "defenceSolicitorFirm":"xyz solicitor",
+  "interpreter":{
+    "needed":true,
+    "language":"french"
+  }
+}

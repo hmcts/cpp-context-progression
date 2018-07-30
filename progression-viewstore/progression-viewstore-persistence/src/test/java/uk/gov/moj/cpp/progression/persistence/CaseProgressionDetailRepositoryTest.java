@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.persistence;
 
-import static com.sun.org.apache.xerces.internal.util.PropertyState.is;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -25,7 +24,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 
 @RunWith(CdiTestRunner.class)
 public class CaseProgressionDetailRepositoryTest {

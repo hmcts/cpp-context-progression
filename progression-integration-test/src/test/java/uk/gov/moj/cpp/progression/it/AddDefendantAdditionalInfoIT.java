@@ -17,6 +17,7 @@ import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -156,7 +157,7 @@ public class AddDefendantAdditionalInfoIT {
         assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
                 .getBoolean("noMoreInformationRequired"), equalTo(Boolean.TRUE));
 
-        LocalDateTime reviewDecisionDateTime = LocalDateTime.parse(
+        ZonedDateTime reviewDecisionDateTime = ZonedDateTime.parse(
                 defendantsJsonObject.getString("sentenceHearingReviewDecisionDateTime"));
         assertThat(reviewDecisionDateTime, is(notNullValue()));
 

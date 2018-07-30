@@ -29,6 +29,8 @@
     <include file="liquibase/remove-defendant-progression-id.xml"/>
     <include file="liquibase/delete-unusedcolumns-offence_defendant.xml"/>
     <include file="liquibase/alter-varchar-datatypes.xml"/>
+    <include file="liquibase/create-person.xml"/>
+    <include file="liquibase/alter-datetime-to-datetimewithtimezone.xml"/>
 
 
 </databaseChangeLog>	

@@ -43,7 +43,7 @@ public class UploadFileServiceSenderTest {
     @Test
     public void testDoSend() {
 
-        uploadFileServiceSender.doSend(payload, "userId", "session", "correlationId");
+        uploadFileServiceSender.doSend(payload, "userId", "correlationId");
 
         ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor =
                         ArgumentCaptor.forClass(JsonEnvelope.class);

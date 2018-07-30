@@ -6,26 +6,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
-import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
-import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantInterpreter;
-import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
-import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
-import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
-import uk.gov.moj.cpp.progression.domain.event.defendant.Interpreter;
-import uk.gov.moj.cpp.progression.domain.event.defendant.InterpreterUpdatedForDefendant;
-
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -43,6 +23,23 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
+import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
+import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
+import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
+import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
@@ -203,8 +200,8 @@ public class ProgressionEventFactoryTest {
     @Test
     public void testCreateCaseReadyForSentenceHearing() {
         final CaseReadyForSentenceHearing obj =
-                        (CaseReadyForSentenceHearing) ProgressionEventFactory
-                                        .createCaseReadyForSentenceHearing(this.envelope);
+                        ProgressionEventFactory
+                        .createCaseReadyForSentenceHearing(this.envelope);
 
         assertThat(CASE_ID, equalTo(obj.getCaseId().toString()));
         assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
@@ -228,15 +225,7 @@ public class ProgressionEventFactoryTest {
     }
 
 
-    @Test
-    public void testCreateInterpreterUpdatedForDefendant() {
-        final UUID caseId=UUID.randomUUID();
-        final UUID defendantId=UUID.randomUUID();
-        final Interpreter interpreter=new Interpreter();
-        final UpdateDefendantInterpreter updateDefendantInterpreter=new UpdateDefendantInterpreter(caseId,defendantId,interpreter);
-        final Object obj = ProgressionEventFactory.asInterpreterUpdatedForDefendant(updateDefendantInterpreter);
-        assertThat(obj, instanceOf(InterpreterUpdatedForDefendant.class));
-    }
+
 
     private Matcher<DefendantAdditionalInformationAdded> sameAs(
                     final DefendantCommand defendantCommand) {

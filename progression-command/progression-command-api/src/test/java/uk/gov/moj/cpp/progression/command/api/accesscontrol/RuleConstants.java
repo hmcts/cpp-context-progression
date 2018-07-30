@@ -41,4 +41,7 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS);
     }
 
+    public static List<String> getUpdateDefendantActionGroups() {
+        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS);
+    }
 }

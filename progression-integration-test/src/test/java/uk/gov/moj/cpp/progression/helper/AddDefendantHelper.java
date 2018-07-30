@@ -72,6 +72,18 @@ public class AddDefendantHelper extends AbstractTestHelper {
     private static final String VALUE_END_DATE = "2010-08-21";
     private static final String VALUE_ARREST_DATE = "2010-08-21";
     private static final String VALUE_CHARGE_DATE = "2011-08-01";
+    private static final String PERSON_TITLE = "Mr";
+    private static final String PERSON_FIRST_NAME = "John";
+    private static final String PERSON_LAST_NAME = "Doe";
+    private static final String PERSON_DATE_OF_BIRTH = "1971-12-21";
+    private static final String PERSON_NATIONALITY = "British";
+    private static final String PERSON_GENDER = "Male";
+    private static final String ADDRESS_LINE_1 = "Address Line 1";
+    private static final String ADDRESS_LINE_2 = "Address Line 2";
+    private static final String ADDRESS_LINE_3 = "Address Line 3";
+    private static final String ADDRESS_LINE_4 = "Address Line 4";
+    private static final String POST_CODE = "Post Code";
+    private static final String ADDRESS_ID = UUID.randomUUID().toString();
 
     private final String caseId;
     private final String caseUrn;
@@ -88,13 +100,27 @@ public class AddDefendantHelper extends AbstractTestHelper {
         caseUrn = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
+
     /*
       Currently the optional fields are: arrest date, end date and charge date
      */
     public String addMinimalDefendant() {
         final JsonObject defendantAsJsonObject = createObjectBuilder()
                 .add("defendantId", VALUE_DEFENDANT_ID)
-                .add("personId", personId)
+                .add("person", createObjectBuilder()
+                        .add("id", personId)
+                        .add("title", PERSON_TITLE)
+                        .add("firstName", PERSON_FIRST_NAME)
+                        .add("lastName", PERSON_LAST_NAME)
+                        .add("dateOfBirth", PERSON_DATE_OF_BIRTH)
+                        .add("nationality", PERSON_NATIONALITY)
+                        .add("gender", PERSON_GENDER)
+                        .add("address", createObjectBuilder()
+                                .add("address1", ADDRESS_LINE_1)
+                                .add("address2", ADDRESS_LINE_2)
+                                .add("address3", ADDRESS_LINE_3)
+                                .add("address4", ADDRESS_LINE_4)
+                                .add("postCode", POST_CODE).build()).build())
                 .add("caseUrn", caseUrn)
                 .add("policeDefendantId", VALUE_POLICE_DEFENDANT_ID)
                 .add("offences", createArrayBuilder()
@@ -136,17 +162,30 @@ public class AddDefendantHelper extends AbstractTestHelper {
         addFullDefendant(VALUE_DEFENDANT_ID);
     }
 
-    public void addFullDefendant(String defendantId) {
+    public void addFullDefendant(final String defendantId) {
         addFullDefendant(defendantId, VALUE_POLICE_DEFENDANT_ID);
     }
 
     /*
           The optional fields are included, namely, arrest date, end date and charge date
          */
-    public void addFullDefendant(String defendantId, String policeDefendantId) {
+    public void addFullDefendant(final String defendantId, final String policeDefendantId) {
         final JsonObject defendantAsJsonObject = createObjectBuilder()
                 .add("defendantId", defendantId)
-                .add("personId", personId)
+                .add("person", createObjectBuilder()
+                        .add("id", personId)
+                        .add("title", PERSON_TITLE)
+                        .add("firstName", PERSON_FIRST_NAME)
+                        .add("lastName", PERSON_LAST_NAME)
+                        .add("dateOfBirth", PERSON_DATE_OF_BIRTH)
+                        .add("nationality", PERSON_NATIONALITY)
+                        .add("gender", PERSON_GENDER)
+                        .add("address", createObjectBuilder()
+                                .add("address1", ADDRESS_LINE_1)
+                                .add("address2", ADDRESS_LINE_2)
+                                .add("address3", ADDRESS_LINE_3)
+                                .add("address4", ADDRESS_LINE_4)
+                                .add("postCode", POST_CODE).build()).build())
                 .add("caseUrn", caseUrn)
                 .add("policeDefendantId", policeDefendantId)
                 .add("offences", createArrayBuilder()
@@ -185,13 +224,13 @@ public class AddDefendantHelper extends AbstractTestHelper {
 
 
     public void verifyInActiveMQ() {
-        JsonPath jsRequest = new JsonPath(request);
+        final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
 
-        JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
 
         assertThat(jsonResponse.get("defendantId"), is(jsRequest.getString("defendantId")));
-        assertThat(jsonResponse.get("personId"), is(jsRequest.getString("personId")));
+        //assertThat(jsonResponse.get("personId"), is(jsRequest.getString("personId")));
         assertThat(jsonResponse.get("policeDefendantId"), is(jsRequest.getString("policeDefendantId")));
         assertThat(jsonResponse.get("offences[0].policeOffenceId"), is(jsRequest.getString("offences[0].policeOffenceId")));
     }
@@ -210,7 +249,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
         verifyFailureMessageInPrivateTopic(VALUE_DEFENDANT_ID);
     }
 
-    public void verifyFailureMessageInPrivateTopic(String defendantId) {
+    public void verifyFailureMessageInPrivateTopic(final String defendantId) {
         final String defendantAdditionFailedEvent = privateEventDefendantAdditionFailedConsumer.retrieveMessage().orElse(null);
 
         assertThat(defendantAdditionFailedEvent, notNullValue());
@@ -226,7 +265,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
         verifyFailureMessageInPublicTopic(VALUE_DEFENDANT_ID);
     }
 
-    public void verifyFailureMessageInPublicTopic(String defendantId) {
+    public void verifyFailureMessageInPublicTopic(final String defendantId) {
         final String defendantAdditionFailedEvent = publicEventDefendantAdditionFailedConsumer.retrieveMessage().orElse(null);
 
         assertThat(defendantAdditionFailedEvent, notNullValue());
@@ -240,7 +279,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
     public void verifyMinimalDefendantAdded() {
         final JsonPath jsRequest = new JsonPath(request);
 
-        final Filter personIdFilter = filter(where("personId").is(jsRequest.get("personId")));
+        final Filter personIdFilter = filter(where("person.id").is(jsRequest.get("person.id")));
 
         final RequestParamsBuilder getDefendantsByCaseId = getDefendantsByCaseId(caseId);
 
@@ -291,7 +330,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
     }
 
 
-    private Matcher<ReadContext> matchFullDefendant(Filter personIdFilter) {
+    private Matcher<ReadContext> matchFullDefendant(final Filter personIdFilter) {
         return allOf(
                 withJsonPath(compile("$.defendants[?]", personIdFilter), hasSize(1)),
                 withJsonPath(compile("$.defendants[?].defendantId", personIdFilter), contains(VALUE_DEFENDANT_ID)),
@@ -321,7 +360,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
         );
     }
 
-    private Matcher<ReadContext> matchMinimalDefendant(Filter personIdFilter) {
+    private Matcher<ReadContext> matchMinimalDefendant(final Filter personIdFilter) {
         return allOf(
                 withJsonPath(compile("$.defendants[?]", personIdFilter), hasSize(1)),
                 withJsonPath(compile("$.defendants[?].defendantId", personIdFilter), contains(VALUE_DEFENDANT_ID)),
@@ -354,6 +393,10 @@ public class AddDefendantHelper extends AbstractTestHelper {
 
     public String getDefendantId() {
         return VALUE_DEFENDANT_ID;
+    }
+
+    public String getOffenceId() {
+        return VALUE_OFFENCES_ID;
     }
 
     @Override

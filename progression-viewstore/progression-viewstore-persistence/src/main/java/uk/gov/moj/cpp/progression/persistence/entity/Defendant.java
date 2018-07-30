@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
@@ -49,9 +51,9 @@ public class Defendant implements Serializable  {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendant")
     private Set<DefendantBailDocument> defendantBailDocuments = new HashSet<>();
 
-    @Column(name = "person_id")
-    private UUID personId;
-
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "person_id", unique = true)
+    Person person;
 
     @Column(name = "police_defendant_id")
     private String policeDefendantId;
@@ -69,7 +71,7 @@ public class Defendant implements Serializable  {
     private Boolean sentenceHearingReviewDecision;
 
     @Column(name = "sentence_hearing_review_decision_date_time")
-    private LocalDateTime sentenceHearingReviewDecisionDateTime;
+    private ZonedDateTime sentenceHearingReviewDecisionDateTime;
 
     @Column(name = "drug_assessment")
     private Boolean drugAssessment;
@@ -111,6 +113,7 @@ public class Defendant implements Serializable  {
     @Column(name = "is_no_more_information_required")
     private Boolean isNoMoreInformationRequired;
 
+
     @Embedded
     private InterpreterDetail interpreter;
 
@@ -131,17 +134,15 @@ public class Defendant implements Serializable  {
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
-    public Defendant(UUID defendantId,UUID personId,
-                     String policeDefendantId,Set<OffenceDetail> offences,Boolean sentenceHearingReviewDecision) {
+    public Defendant(UUID defendantId, Person person,
+                     String policeDefendantId, Set<OffenceDetail> offences, Boolean sentenceHearingReviewDecision) {
         super();
         this.defendantId = defendantId;
-        this.personId = personId;
+        this.person = person;
         this.policeDefendantId = policeDefendantId;
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
         setOffences(offences);
     }
-
-
 
     public Defendant() {
         super();
@@ -171,12 +172,12 @@ public class Defendant implements Serializable  {
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
-    public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+    public ZonedDateTime getSentenceHearingReviewDecisionDateTime() {
         return sentenceHearingReviewDecisionDateTime;
     }
 
     public void setSentenceHearingReviewDecisionDateTime(
-                    LocalDateTime sentenceHearingReviewDecisionDateTime) {
+            ZonedDateTime sentenceHearingReviewDecisionDateTime) {
         this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
     }
 
@@ -327,15 +328,6 @@ public class Defendant implements Serializable  {
         this.custodyTimeLimitDate = custodyTimeLimitDate;
     }
 
-    public UUID getPersonId() {
-        return personId;
-    }
-
-
-    public void setPersonId(UUID personId) {
-        this.personId = personId;
-    }
-
     public Set<OffenceDetail> getOffences() {
         return offences;
     }
@@ -376,6 +368,14 @@ public class Defendant implements Serializable  {
 
     public void setInterpreter(InterpreterDetail interpreter) {
         this.interpreter = interpreter;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(final Person person) {
+        this.person = person;
     }
 
     @Override

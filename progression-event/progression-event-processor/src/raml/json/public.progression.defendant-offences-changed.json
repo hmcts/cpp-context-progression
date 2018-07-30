@@ -1,0 +1,82 @@
+{
+  "modifiedDate": "2018-03-01",
+  "updatedOffences": [
+    {
+      "defendantId": "6711d373-c416-426c-92f7-3cd37115f70b",
+      "caseId": "9e7b3014-2e9f-4c14-8f51-b471f64d52cf",
+      "offences": [
+        {
+          "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
+          "offenceCode": "H8198",
+          "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+          "startDate": "2010-08-01",
+          "endDate": "2011-08-01",
+          "statementOfOffence": {
+            "title" :  "A title",
+            "legislation" : "Some legislation"
+          },
+          "count": 1,
+          "convictionDate": "2017-08-01"
+        },
+        {
+          "id": "d5e03eb8-3274-457c-9db3-e67638c0e8b0",
+          "offenceCode": "H8198",
+          "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Fred Smith",
+          "startDate": "2010-08-01",
+          "endDate": "2011-08-01",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "deletedOffences": [
+    {
+      "defendantId": "6711d373-c416-426c-92f7-3cd37115f70b",
+      "caseId": "9e7b3014-2e9f-4c14-8f51-b471f64d52cf",
+      "offences": [
+        {
+          "id": "c399ab70-b5f8-44c1-8d22-e4598fb9b666"
+        },
+        {
+          "id": "922ee13b-aace-47dd-bbd9-7b51ab93e206"
+        }
+      ]
+    }
+  ],
+  "addedOffences": [
+    {
+      "defendantId": "6711d373-c416-426c-92f7-3cd37115f70b",
+      "caseId": "9e7b3014-2e9f-4c14-8f51-b471f64d52cf",
+      "offences": [
+        {
+          "id": "fce1db7e-c284-4e78-82fd-a6f7266d8751",
+          "offenceCode": "H8198",
+          "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Billy Smith",
+          "startDate": "2010-08-01",
+          "endDate": "2011-08-01",
+          "statementOfOffence": {
+            "title" :  "A title",
+            "legislation" : "Some legislation"
+          },
+          "count": 1,
+          "convictionDate": "2017-08-01"
+        }
+      ]
+    },
+    {
+      "defendantId": "79525571-dbfb-48fb-9d7e-8247c20f9104",
+      "caseId": "9e7b3014-2e9f-4c14-8f51-b471f64d52cf",
+      "offences": [
+        {
+          "id": "4dc66d2f-bdf1-415d-9e42-65920421eba9",
+          "offenceCode": "H8198",
+          "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jack Smith",
+          "startDate": "2010-08-01",
+          "endDate": "2011-08-01",
+          "count": 1,
+          "convictionDate": "2017-08-01"
+        }
+      ]
+    }
+  ]
+}

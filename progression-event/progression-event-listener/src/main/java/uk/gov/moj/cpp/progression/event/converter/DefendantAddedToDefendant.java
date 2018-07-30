@@ -1,18 +1,20 @@
 package uk.gov.moj.cpp.progression.event.converter;
 
+import static java.util.stream.Collectors.toSet;
+
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.progression.domain.event.defendant.CPR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantOffenderDomain;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
+import uk.gov.moj.cpp.progression.persistence.entity.Address;
 import uk.gov.moj.cpp.progression.persistence.entity.CPRDetails;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.DefendantOffenderDetails;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Person;
 
 import java.util.Set;
-
-import static java.util.stream.Collectors.toSet;
 
 public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defendant> {
 
@@ -23,9 +25,47 @@ public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defe
                 .map(DefendantAddedToDefendant::mapToOffenceDetails)
                 .collect(toSet());
 
-        return new Defendant(defendantAdded.getDefendantId(), defendantAdded.getPersonId(), defendantAdded.getPoliceDefendantId(),
+        Person person =  getPersonDetail(defendantAdded.getPerson());
+
+        return new Defendant(defendantAdded.getDefendantId(), person, defendantAdded.getPoliceDefendantId(),
                 offences,false);
 
+    }
+
+    private Person getPersonDetail(final uk.gov.moj.cpp.progression.domain.event.defendant.Person person) {
+
+        if(person == null) {
+            return null;
+        }
+
+        Address address = getAddressDetail(person);
+
+        return new Person().builder()
+                .personId(person.getId())
+                .title(person.getTitle())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .dateOfBirth(person.getDateOfBirth())
+                .nationality(person.getNationality())
+                .gender(person.getGender())
+                .homeTelephone(person.getHomeTelephone())
+                .workTelephone(person.getWorkTelephone())
+                .fax(person.getFax())
+                .mobile(person.getMobile())
+                .email(person.getEmail())
+                .address(address).build();
+    }
+
+    private Address getAddressDetail(final uk.gov.moj.cpp.progression.domain.event.defendant.Person person) {
+        Address address = new Address();
+        if(person.getAddress() != null){
+            address.setAddress1(person.getAddress().getAddress1());
+            address.setAddress2(person.getAddress().getAddress2());
+            address.setAddress3(person.getAddress().getAddress3());
+            address.setAddress4(person.getAddress().getAddress4());
+            address.setPostCode(person.getAddress().getPostCode());
+        }
+        return address;
     }
 
     private static OffenceDetail mapToOffenceDetails(Offence offence) {

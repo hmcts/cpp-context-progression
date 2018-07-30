@@ -8,10 +8,10 @@ import static java.util.Arrays.stream;
 public class CaseSearchByUrnDetailsTest extends ProgressionQueryRuleExecutor {
 
     private static final String[] ACTION_GROUPS = new String[] {"System Users","CMS", "Court Clerks","Crown Court Admin",
-            "Listing Officers", "Judiciary", "Case Officer"};
+            "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"};
 
     private static final String[] ALLOWED_USER_GROUPS = new String[] {"System Users","CMS", "Court Clerks","Crown Court Admin",
-                    "Listing Officers", "Judiciary", "Case Officer"};
+                    "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"};
 
     private static final String[] NOT_ALLOWED_USER_GROUPS = new String[] {"Charging Lawyers",
                     "Court Administrators",  "Court Operations Officers",

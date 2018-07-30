@@ -1,7 +1,20 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -9,19 +22,12 @@ import uk.gov.moj.cpp.progression.persistence.entity.DefendantDocument;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantDocumentRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
-import uk.gov.moj.cpp.progression.query.view.converter.CaseProgressionDetailToViewConverter;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
+import uk.gov.moj.cpp.progression.query.view.response.DefendantDocumentView;
+import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
+import uk.gov.moj.cpp.progression.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.progression.query.view.response.ProsecutingAuthority;
 import uk.gov.moj.cpp.progression.query.view.response.SearchCaseByMaterialIdView;
-
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringTokenizer;
-import java.util.UUID;
 
 public class CaseProgressionDetailService {
 
@@ -32,22 +38,25 @@ public class CaseProgressionDetailService {
     @Inject
     private DefendantRepository defendantRepository;
 
-    @Inject
-    private CaseProgressionDetailToViewConverter caseProgressionDetailToViewConverter;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseProgressionDetailService.class);
 
 
     @Transactional
-    public CaseProgressionDetail getCaseProgressionDetail(final UUID caseId) {
-        final CaseProgressionDetail caseProgressionDetail =
-                caseProgressionDetailRepo.findByCaseId(caseId);
-        return caseProgressionDetail;
+    public CaseProgressionDetailView getCaseProgressionDetail(final UUID caseId) {
+        CaseProgressionDetail caseProgressionDetail;
+
+        try {
+            caseProgressionDetail = caseProgressionDetailRepo.findByCaseId(caseId);
+        } catch (final NoResultException nre) {
+            LOGGER.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+            return null;
+        }
+
+        return CaseProgressionDetailView.createCaseView(caseProgressionDetail);
     }
 
-
     @Transactional
-    public List<CaseProgressionDetail> getCases(final Optional<String> status) {
+    public List<CaseProgressionDetailView> getCases(final Optional<String> status) {
 
         List<CaseProgressionDetail> caseProgressionDetails;
 
@@ -59,50 +68,63 @@ public class CaseProgressionDetailService {
             caseProgressionDetails = caseProgressionDetailRepo.findOpenStatus();
 
         }
-        return caseProgressionDetails;
+        return getCaseProgressionDetailViewList(caseProgressionDetails);
 
     }
 
+    private List<CaseProgressionDetailView> getCaseProgressionDetailViewList(final List<CaseProgressionDetail> caseProgressionDetails) {
+        return caseProgressionDetails.stream()
+                .map(caseProgressionDetail -> CaseProgressionDetailView.createCaseView(caseProgressionDetail))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public List<CaseProgressionDetail> getCases(final Optional<String> status, final Optional<UUID> caseId) {
+    public List<CaseProgressionDetailView> getCases(final Optional<String> status, final Optional<UUID> caseId) {
 
         List<CaseProgressionDetail> caseProgressionDetails;
             caseProgressionDetails =
                     caseProgressionDetailRepo.findByStatusAndCaseID(getCaseStatusList(status.orElse(null)),caseId.orElse(null));
-        return caseProgressionDetails;
+        return getCaseProgressionDetailViewList(caseProgressionDetails);
 
     }
 
     @Transactional
-    public Optional<Defendant> getDefendant(final Optional<String> defendantId) {
-
-        Defendant defendant;
-
+    public DefendantView getDefendant(final Optional<String> defendantId) {
         if (defendantId.isPresent()) {
-
-            defendant = defendantRepository.findByDefendantId(UUID.fromString(defendantId.get()));
-            return Optional.of(defendant);
+            try {
+                final Defendant defendant = (defendantRepository.findByDefendantId(UUID.fromString(defendantId.get())));
+                if(defendant != null){
+                    return new DefendantView(defendant);
+                }
+            } catch (final NoResultException nre) {
+                LOGGER.error("No defendant found for defendantId: " + defendantId, nre);
+            }
         }
-        return Optional.empty();
-
-
+        return null;
     }
 
-    public Optional<DefendantDocument> getDefendantDocument(final Optional<String> caseId, final Optional<String> defendantId) {
+    public DefendantDocumentView getDefendantDocument(final Optional<String> caseId, final Optional<String> defendantId) {
         if (caseId.isPresent() && defendantId.isPresent()) {
-            return Optional.of(defendantDocumentRepository.findLatestDefendantDocument(UUID.fromString(caseId.get()),
-                    UUID.fromString(defendantId.get())));
-        } else {
-            return Optional.empty();
+            final DefendantDocument defendantDocument = defendantDocumentRepository.findLatestDefendantDocument(UUID.fromString(caseId.get()),
+                    UUID.fromString(defendantId.get()));
+            if (defendantDocument != null) {
+                return new DefendantDocumentView(defendantDocument.getFileId(),
+                        defendantDocument.getFileName(), defendantDocument.getLastModified());
+            }
         }
+        return null;
     }
 
     @Transactional
-    public List<Defendant> getDefendantsByCase(final UUID caseId) {
-        final CaseProgressionDetail caseProgressionDetail =
-                caseProgressionDetailRepo.findByCaseId(caseId);
-        return new ArrayList(caseProgressionDetail.getDefendants());
-
+    public DefendantsView getDefendantsByCase(final UUID caseId) {
+        CaseProgressionDetail caseProgressionDetail;
+        try {
+            caseProgressionDetail = caseProgressionDetailRepo.findByCaseId(caseId);
+        } catch (final NoResultException nre) {
+            LOGGER.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
+            return null;
+        }
+        return new DefendantsView(getDefendantViewList(caseProgressionDetail.getDefendants()));
     }
 
     List<CaseStatusEnum> getCaseStatusList(final String status) {
@@ -115,11 +137,11 @@ public class CaseProgressionDetailService {
     }
 
     @Transactional
-    public CaseProgressionDetailView findCaseByCaseUrn(String caseUrn) {
+    public CaseProgressionDetailView findCaseByCaseUrn(final String caseUrn) {
         try {
-            CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
-            return caseProgressionDetailToViewConverter.convert(caseProgressionDetail);
-        } catch (NoResultException e) {
+            final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
+            return CaseProgressionDetailView.createCaseWithoutDefendantView(caseProgressionDetail);
+        } catch (final NoResultException e) {
             LOGGER.debug("No case found with URN='{}'", caseUrn, e);
         }
         return null;
@@ -128,17 +150,23 @@ public class CaseProgressionDetailService {
     public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {
         SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView();
         try {
-            CaseProgressionDetail caseDetail = caseProgressionDetailRepo.findByMaterialId(UUID.fromString(q));
+            final CaseProgressionDetail caseDetail = caseProgressionDetailRepo.findByMaterialId(UUID.fromString(q));
             if (caseDetail != null) {
-                String caseId = caseDetail.getCaseId().toString();
-                ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.CPS;
+                final String caseId = caseDetail.getCaseId().toString();
+                final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.CPS;
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, prosecutingAuthority);
             } else {
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(null, null);
             }
-        } catch (NoResultException e) {
-            LOGGER.info("No case found with materialId='{}'", q);
+        } catch (final NoResultException e) {
+            LOGGER.info("No case found with materialId='{}'", q, e);
         }
         return searchCaseByMaterialIdView;
+    }
+
+    private List<DefendantView> getDefendantViewList(final Set<Defendant> defendants) {
+        return defendants.stream()
+                .map(defendant -> new DefendantView(defendant))
+                .collect(Collectors.toList());
     }
 }

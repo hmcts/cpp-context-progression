@@ -60,14 +60,14 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
     public enum ProgressionRules {
 
         AddAditionalDefendantInfoTest("progression.command.add-defendant-additional-information", "Judiciary", "Case Officer"),
-        AddCaseToCrownCourtTest("progression.command.add-case-to-crown-court", "Crown Court Admin", "Listing Officers"),
-        CaseToBeAssignedTest("progression.command.case-to-be-assigned", "Listing Officers", "Crown Court Admin"),
-        DocumentUploadRuleTest("progression.command.defendant-document", "Crown Court Admin", "Listing Officers"),
+        AddCaseToCrownCourtTest("progression.command.add-case-to-crown-court", "Crown Court Admin", "Listing Officers" , "Court Clerks"),
+        CaseToBeAssignedTest("progression.command.case-to-be-assigned", "Listing Officers", "Crown Court Admin", "Court Clerks"),
+        DocumentUploadRuleTest("progression.command.defendant-document", "Crown Court Admin", "Listing Officers", "Court Clerks"),
         NoMoreDefendantInfoRequiredTest("progression.command.no-more-information-required", "Judiciary", "Case Officer"),
-        RequestPSRForDefendantsTest("progression.command.request-psr-for-defendants", "Crown Court Admin", "Listing Officers"),
-        SendingCommittalHearingInfoTest("progression.command.sending-committal-hearing-information", "Crown Court Admin", "Listing Officers"),
-        SentenceHearingDateTest("progression.command.sentence-hearing-date", "Crown Court Admin","Listing Officers"),
-        SendingSheetCompleteRuleTest("progression.command.complete-sending-sheet", "Crown Court Admin", "Listing Officers");
+        RequestPSRForDefendantsTest("progression.command.request-psr-for-defendants", "Crown Court Admin", "Listing Officers", "Court Clerks"),
+        SendingCommittalHearingInfoTest("progression.command.sending-committal-hearing-information", "Crown Court Admin", "Listing Officers", "Court Clerks"),
+        SentenceHearingDateTest("progression.command.sentence-hearing-date", "Crown Court Admin","Listing Officers", "Court Clerks"),
+        SendingSheetCompleteRuleTest("progression.command.complete-sending-sheet", "Crown Court Admin", "Listing Officers", "Court Clerks");
 
         private final String actionName;
         private final String[] allowedUserGroups;

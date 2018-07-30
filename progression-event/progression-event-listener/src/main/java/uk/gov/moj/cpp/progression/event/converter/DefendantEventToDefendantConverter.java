@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.ProsecutionEvent;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class DefendantEventToDefendantConverter implements Converter<DefendantAd
         Defendant defendant = new Defendant();
         defendant.setDefendantId(event.getDefendantId());
         defendant.setSentenceHearingReviewDecision(true);
-        defendant.setSentenceHearingReviewDecisionDateTime(LocalDateTime.now());
+        defendant.setSentenceHearingReviewDecisionDateTime(ZonedDateTime.now());
         return populateAdditionalInformation(defendant, event);
     }
 

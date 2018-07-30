@@ -1,24 +1,25 @@
 package uk.gov.moj.cpp.progression.query.view.response;
 
+import static java.util.stream.Collectors.toList;
+
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.InterpreterDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class DefendantView {
-    private LocalDateTime sentenceHearingReviewDecisionDateTime;
+    private ZonedDateTime sentenceHearingReviewDecisionDateTime;
     private String defendantId;
     private AdditionalInformation additionalInformation;
     private Boolean sentenceHearingReviewDecision;
-    private UUID personId;
+    private Person person;
     private List<OffenceView> offences;
     private UUID caseId;
     private String policeDefendantId;
@@ -27,14 +28,16 @@ public class DefendantView {
     private String defenceSolicitorFirm;
     private InterpreterDetail interpreter;
     private LocalDate custodyTimeLimitDate;
+    private UUID personId;
 
     public DefendantView(Defendant defendant) {
         this.sentenceHearingReviewDecisionDateTime = defendant.getSentenceHearingReviewDecisionDateTime();
         this.defendantId = defendant.getDefendantId().toString();
         this.additionalInformation = convertAdditionalInformation(defendant);
         this.sentenceHearingReviewDecision = defendant.getSentenceHearingReviewDecision();
-        this.personId = defendant.getPersonId();
-        this.offences = constructDefendantChargeView(defendant);
+        this.person = convertPerson(defendant.getPerson());
+        this.personId = defendant.getPerson().getPersonId();
+        this.offences = constructDefendantOffencesView(defendant).getOffences();
         this.caseId = defendant.getCaseProgressionDetail().getCaseId();
         this.policeDefendantId = defendant.getPoliceDefendantId();
         this.bailStatus = defendant.getBailStatus();
@@ -44,13 +47,12 @@ public class DefendantView {
                             .filter(s -> s.getActive().equals(Boolean.TRUE))
                             .map(s -> new DefendantBailDocumentView(s.getId(),
                                     s.getDocumentId(), s.getActive()))
-                            .collect(Collectors.toList());
+                            .collect(toList());
         }
         this.defenceSolicitorFirm = defendant.getDefenceSolicitorFirm();
-        if(defendant.getInterpreter() == null){
+        if (defendant.getInterpreter() == null) {
             this.interpreter = new InterpreterDetail();
-        }
-        else{
+        } else {
             this.interpreter = new InterpreterDetail();
             this.interpreter.setNeeded(defendant.getInterpreter().getNeeded());
             this.interpreter.setLanguage(defendant.getInterpreter().getLanguage());
@@ -83,19 +85,34 @@ public class DefendantView {
 
     }
 
-    private static List<OffenceView> constructDefendantChargeView(Defendant defendant) {
+    private Person convertPerson(final uk.gov.moj.cpp.progression.persistence.entity.Person person) {
+        return new Person()
+                .builder()
+                .personId(person.getPersonId())
+                .title(person.getTitle())
+                .dateOfBirth(person.getDateOfBirth())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .nationality(person.getNationality())
+                .gender(person.getGender())
+                .homeTelephone(person.getHomeTelephone())
+                .workTelephone(person.getWorkTelephone())
+                .fax(person.getFax())
+                .email(person.getEmail())
+                .address(person.getAddress())
+                .build();
+    }
+
+    private static OffencesView constructDefendantOffencesView(Defendant defendant) {
         final Set<OffenceDetail> offences = defendant.getOffences();
         if (offences == null) {
-            return new ArrayList<>();
+            return new OffencesView(new ArrayList<>());
         } else {
-            List<OffenceView> offenceViewList = new ArrayList<>();
-            offences.forEach(offence -> offenceViewList.add(new OffenceView(offence)));
-            offenceViewList.sort(Comparator.comparing(OffenceView::getOrderIndex));
-            return offenceViewList;
+            return new OffencesView(offences.stream().map(OffenceView::new).collect(toList()));
         }
     }
 
-    public LocalDateTime getSentenceHearingReviewDecisionDateTime() {
+    public ZonedDateTime getSentenceHearingReviewDecisionDateTime() {
         return sentenceHearingReviewDecisionDateTime;
     }
 
@@ -111,8 +128,8 @@ public class DefendantView {
         return sentenceHearingReviewDecision;
     }
 
-    public UUID getPersonId() {
-        return personId;
+    public Person getPerson() {
+        return person;
     }
 
     public List<OffenceView> getOffences() {
@@ -147,4 +164,11 @@ public class DefendantView {
         return custodyTimeLimitDate;
     }
 
+    public UUID getPersonId() {
+        return personId;
+    }
+
+    public void setPersonId(final UUID personId) {
+        this.personId = personId;
+    }
 }

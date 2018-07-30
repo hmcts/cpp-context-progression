@@ -15,8 +15,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
@@ -25,26 +23,33 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.Sets;
-import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SendingSheetCompleteIT implements AutoCloseable {
+import com.google.common.collect.Sets;
+import com.google.common.io.Resources;
+import com.jayway.restassured.response.Response;
+
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.cpp.progression.stub.ListingStub;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
+public class SendingSheetCompleteIT {
 
     private static final String PROGRESSION_COMMAND_COMPLETE_SENDING_SHEET = "progression.command.complete-sending-sheet";
-    private final MessageConsumerClient publicEventSendingSheetCompletedConsumer = new MessageConsumerClient();
-    private final MessageConsumerClient publicEventSendingSheetPreviouslyCompletedConsumer = new MessageConsumerClient();
-    private final MessageConsumerClient publicEventCompleteSendingSheetInvalidatedConsumer = new MessageConsumerClient();
+    private static final MessageConsumerClient publicEventSendingSheetCompletedConsumer = new MessageConsumerClient();
+    private static final MessageConsumerClient publicEventSendingSheetPreviouslyCompletedConsumer = new MessageConsumerClient();
+    private static final MessageConsumerClient publicEventCompleteSendingSheetInvalidatedConsumer = new MessageConsumerClient();
 
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String PUBLIC_SENDING_SHEET_COMPLETED = "public.progression.events.sending-sheet-completed";
     public static final String PUBLIC_SENDING_SHEET_PREVIOUSLY_COMPLETED = "public.progression.events.sending-sheet-previously-completed";
     public static final String PUBLIC_SENDING_SHEET_INVALIDATED = "public.progression.events.sending-sheet-invalidated";
     public static final String COMPLETE_SENDING_SHEET_JSON = "progression.command.complete-sending-sheet.json";
+    private static final String REF_DATA_QUERY_CJSCODE_PAYLOAD = "/restResource/ref-data-cjscode.json";
 
     private String caseId;
     private String request;
@@ -57,10 +62,19 @@ public class SendingSheetCompleteIT implements AutoCloseable {
 
     private Set<RANDOM_DATA> randomData;
 
+
+    public static void init() {
+        createMockEndpoints();
+        ListingStub.stubSendCaseForListing();
+        ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
+        publicEventSendingSheetCompletedConsumer.startConsumer(PUBLIC_SENDING_SHEET_COMPLETED, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicEventSendingSheetPreviouslyCompletedConsumer.startConsumer(PUBLIC_SENDING_SHEET_PREVIOUSLY_COMPLETED, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicEventCompleteSendingSheetInvalidatedConsumer.startConsumer(PUBLIC_SENDING_SHEET_INVALIDATED, PUBLIC_ACTIVE_MQ_TOPIC);
+    }
+
     @Before
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
-        createMockEndpoints();
         request = "";
         randomData = Sets.newHashSet();
     }
@@ -70,10 +84,10 @@ public class SendingSheetCompleteIT implements AutoCloseable {
         request = addDefendant(caseId);
         addCaseToCrownCourt(caseId);
         givenCaseProgressionDetail(caseId);
+        init();
 
-        publicEventSendingSheetCompletedConsumer.startConsumer(PUBLIC_SENDING_SHEET_COMPLETED, PUBLIC_ACTIVE_MQ_TOPIC);
 
-        Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
+        final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.complete-sending-sheet+json",
                 getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -89,9 +103,7 @@ public class SendingSheetCompleteIT implements AutoCloseable {
         request = addDefendant(caseId);
         addCaseToCrownCourt(caseId);
         givenCaseProgressionDetail(caseId);
-
-        publicEventSendingSheetCompletedConsumer.startConsumer(PUBLIC_SENDING_SHEET_COMPLETED, PUBLIC_ACTIVE_MQ_TOPIC);
-        publicEventSendingSheetPreviouslyCompletedConsumer.startConsumer(PUBLIC_SENDING_SHEET_PREVIOUSLY_COMPLETED, PUBLIC_ACTIVE_MQ_TOPIC);
+        init();
 
         Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.complete-sending-sheet+json",
@@ -112,9 +124,9 @@ public class SendingSheetCompleteIT implements AutoCloseable {
         // and
         randomData.add(RANDOM_DATA.DEFENDANT_ID);
         // and
-        publicEventCompleteSendingSheetInvalidatedConsumer.startConsumer(PUBLIC_SENDING_SHEET_INVALIDATED, PUBLIC_ACTIVE_MQ_TOPIC);
+        init();
 
-        Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
+        final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
                 "application/vnd.progression.command.complete-sending-sheet+json",
                 getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -128,10 +140,10 @@ public class SendingSheetCompleteIT implements AutoCloseable {
 
     private String getJsonBodyStr(final String fileName) throws IOException {
         String fileContent = Resources.toString(Resources.getResource(fileName), Charset.defaultCharset());
-        JSONObject jObj = new JSONObject(request);
-        String defendantId = jObj.getString("defendantId");
-        JSONObject offence = (JSONObject) jObj.getJSONArray("offences").get(0);
-        String offenceId = offence.getString("id");
+        final JSONObject jObj = new JSONObject(request);
+        final String defendantId = jObj.getString("defendantId");
+        final JSONObject offence = (JSONObject) jObj.getJSONArray("offences").get(0);
+        final String offenceId = offence.getString("id");
         if (!randomData.contains(RANDOM_DATA.CASE_ID)) {
             fileContent = fileContent.replace("RANDOM_CASE_ID", caseId);
         }
@@ -172,9 +184,10 @@ public class SendingSheetCompleteIT implements AutoCloseable {
                 .assertThat("$.caseId", is(caseId));
     }
 
-    @Override
-    public void close() throws Exception {
+    @AfterClass
+    public static void close() throws Exception {
         publicEventSendingSheetCompletedConsumer.close();
         publicEventSendingSheetPreviouslyCompletedConsumer.close();
+        publicEventCompleteSendingSheetInvalidatedConsumer.close();
     }
 }

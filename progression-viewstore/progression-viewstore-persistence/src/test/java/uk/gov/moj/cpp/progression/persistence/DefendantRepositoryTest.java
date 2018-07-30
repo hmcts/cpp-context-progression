@@ -33,7 +33,7 @@ public class DefendantRepositoryTest {
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
     private static LocalDate now;
-    private static LocalDateTime currentDateTime;
+    private static ZonedDateTime currentDateTime;
     private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
     @Inject
     private CaseProgressionDetailRepository repository;
@@ -43,7 +43,7 @@ public class DefendantRepositoryTest {
     @Before
     public void setup() {
         now = LocalDate.now();
-        currentDateTime = LocalDateTime.now();
+        currentDateTime = ZonedDateTime.now();
         final CaseProgressionDetail caseProgressionDetailOne =
                         createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);

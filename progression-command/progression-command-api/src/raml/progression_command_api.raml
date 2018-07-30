@@ -109,17 +109,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             requestType: application/vnd.progression.command.no-more-information-required+json
             name: progression.command.no-more-information-required
         (mapping):
-            requestType: application/vnd.progression.command.update-bail-status-for-defendant+json
-            name: progression.command.update-bail-status-for-defendant
-        (mapping):
-            requestType: application/vnd.progression.command.update-defence-solicitor-firm-for-defendant+json
-            name: progression.command.update-defence-solicitor-firm-for-defendant
-        (mapping):
-            requestType: application/vnd.progression.command.update-interpreter-for-defendant+json
-            name: progression.command.update-interpreter-for-defendant
-        (mapping):
             requestType: application/vnd.progression.command.update-offences-for-defendant+json
             name: progression.command.update-offences-for-defendant
+        (mapping):
+            requestType: application/vnd.progression.command.update-defendant+json
+            name: progression.command.update-defendant
         ...
       body:
         application/vnd.progression.command.add-defendant-additional-information+json:
@@ -133,27 +127,16 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.command.no-more-information-required.json
             schema:
              !include json/schema/progression.command.no-more-information-required.json
-        application/vnd.progression.command.update-bail-status-for-defendant+json:
-          example:
-            !include json/progression.command.update-bail-status-for-defendant.json
-          schema:
-            !include json/schema/progression.command.update-bail-status-for-defendant.json
-        application/vnd.progression.command.update-defence-solicitor-firm-for-defendant+json:
-          example:
-            !include json/progression.command.update-defence-solicitor-firm-for-defendant.json
-          schema:
-            !include json/schema/progression.command.update-defence-solicitor-firm-for-defendant.json
-        application/vnd.progression.command.update-interpreter-for-defendant+json:
-          example:
-            !include json/progression.command.update-interpreter-for-defendant.json
-          schema:
-            !include json/schema/progression.command.update-interpreter-for-defendant.json
         application/vnd.progression.command.update-offences-for-defendant+json:
           example:
             !include json/progression.command.update-offences-for-defendant.json
           schema:
             !include json/schema/progression.command.update-offences-for-defendant.json
-
+        application/vnd.progression.command.update-defendant+json:
+          example:
+            !include json/progression.command.update-defendant.json
+          schema:
+            !include json/schema/progression.command.update-defendant.json
       responses:
             202:
                 description: OK
