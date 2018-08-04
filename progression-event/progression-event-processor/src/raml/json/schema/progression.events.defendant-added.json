@@ -8,6 +8,9 @@
     "defendantId": {
       "type": "string"
     },
+    "personId": {
+      "type": "string"
+    },
     "person": {
       "type": "object",
       "properties": {

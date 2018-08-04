@@ -1,6 +1,6 @@
 {
   "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18958",
-  "version": 1,
+  "personId":"ab746921-d839-4867-bcf9-b41db8ebc852",
   "person":{
     "id":"ab746921-d839-4867-bcf9-b41db8ebc852",
     "title":"Mr",
@@ -44,7 +44,7 @@
     "category": "Either Way",
     "arrestDate": "2010-08-01",
     "startDate": "2010-08-01",
-    "endDate": "2010-08-01",
+    "endDate": "2017-08-01",
     "chargeDate": "2010-08-01"
   }]
 }
