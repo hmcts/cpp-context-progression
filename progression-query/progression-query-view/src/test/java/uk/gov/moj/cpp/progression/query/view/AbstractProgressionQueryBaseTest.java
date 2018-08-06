@@ -15,7 +15,6 @@ import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantsView;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;

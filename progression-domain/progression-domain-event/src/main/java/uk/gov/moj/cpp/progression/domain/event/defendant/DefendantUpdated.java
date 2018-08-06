@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.domain.event.defendant;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("squid:S00107")

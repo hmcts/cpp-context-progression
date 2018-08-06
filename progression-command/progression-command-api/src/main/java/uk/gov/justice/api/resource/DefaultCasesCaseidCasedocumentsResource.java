@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocumentsResource {
 
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DefaultCasesCaseidCasedocumentsResource.class);
-    private final String INVALID_FILE_NAME = "Supported files are .pdf, .doc or .docx";
+    private static final String SUPPORTED_FILE_FORMATS = "Supported files are .pdf, .doc or .docx";
 
     @Inject
     private UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser;
@@ -58,9 +58,8 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                     final String userId, final String session, final String correlationId,
                     final String caseId) {
 
-        LOG.info(String.format(
-                        "Received Document upload request from userId= %s sessionId= %s correlationId= %s caseId= %s",
-                        userId, session, correlationId, caseId));
+        LOG.info("Received Document upload request from userId = {} sessionId = {} correlationId = {} caseId = {}",
+                userId, session, correlationId, caseId);
 
         final JsonEnvelope envelope = envelopeFrom(
                 metadataOf(randomUUID(), "progression.command.upload-case-documents")
@@ -96,8 +95,8 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
             final String fileName = fileNameAndContent.getKey().get();
 
             if (!(fileName.endsWith(".pdf") || fileName.endsWith(".doc") || fileName.endsWith(".docx"))) {
-              LOG.error(INVALID_FILE_NAME);
-              return Response.status(BAD_REQUEST).entity(INVALID_FILE_NAME).build();
+              LOG.error(SUPPORTED_FILE_FORMATS);
+              return Response.status(BAD_REQUEST).entity(SUPPORTED_FILE_FORMATS).build();
             }
             if (!fileNameAndContent.getValue().isPresent()) {
                 LOG.error(getErrorMsg(userId, session, correlationId, caseId,
@@ -105,21 +104,16 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                 return Response.status(BAD_REQUEST).build();
             }
 
-            LOG.info(String.format(
-                            "Parsed Document upload request from userId= %s sessionId= %s "
-                                            + "clientCorrelationId= %s, caseId= %s",
-                            userId, session, correlationId, caseId));
-
+            LOG.info("Parsed Document upload request from userId = {} sessionId = {} clientCorrelationId = {}, caseId = {}",
+                    userId, session, correlationId, caseId);
 
             // File is sent
             final FileData fileData = fileSender.send(fileName, fileNameAndContent.getValue().get());
+            final String fileId = fileData.fileId();
+            final String fileMimeType = fileData.fileMimeType();
 
-            LOG.info(String.format(
-                            "Uploaded document from userId= %s sessionId= %s "
-                                            + "clientCorrelationId= %s, caseId= %s, fileName= %s, fileId= %s, "
-                                            + "fileMimeType= %s ",
-                            userId, session, correlationId, caseId, fileName, fileData.fileId(),
-                            fileData.fileMimeType()));
+            LOG.info("Uploaded document from userId = {} sessionId = {} clientCorrelationId = {}, caseId = {}, fileName = {}, fileId = {}, fileMimeType = {} ",
+                    userId, session, correlationId, caseId, fileName, fileId, fileMimeType);
 
             // Send the file meta data
             final JsonObject uploadFileMetadataMessage = buildMessage(caseId, fileName, fileData);
@@ -152,31 +146,5 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                         + "clientCorrelationId= %s caseId= %s cause= %s",
                 userId, session, clientCorrelationId, caseId, msg);
     }
-
-    public UploadCaseDocumentsFormParser getUploadCaseDocumentsFormParser() {
-        return uploadCaseDocumentsFormParser;
-    }
-
-    public void setUploadCaseDocumentsFormParser(
-            UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser) {
-        this.uploadCaseDocumentsFormParser = uploadCaseDocumentsFormParser;
-    }
-
-    public UploadFileServiceSender getUploadFileServiceSender() {
-        return uploadFileServiceSender;
-    }
-
-    public void setUploadFileServiceSender(UploadFileServiceSender uploadFileServiceSender) {
-        this.uploadFileServiceSender = uploadFileServiceSender;
-    }
-
-    public FileSender getFileSender() {
-        return fileSender;
-    }
-
-    public void setFileSender(FileSender fileSender) {
-        this.fileSender = fileSender;
-    }
-
 
 }
