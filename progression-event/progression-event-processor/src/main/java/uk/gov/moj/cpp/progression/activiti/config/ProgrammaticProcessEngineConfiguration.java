@@ -13,6 +13,7 @@ import javax.transaction.TransactionManager;
 import org.activiti.cdi.CdiJtaProcessEngineConfiguration;
 import org.activiti.cdi.spi.ProcessEngineLookup;
 import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.impl.asyncexecutor.ManagedAsyncJobExecutor;
 import org.activiti.engine.impl.history.HistoryLevel;
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ public class ProgrammaticProcessEngineConfiguration implements ProcessEngineLook
 
         final CdiJtaProcessEngineConfiguration cdiJtaProcessEngineConfiguration = new CdiJtaProcessEngineConfiguration();
         cdiJtaProcessEngineConfiguration.setTransactionManager(getTransactionManager());
-        processEngine = cdiJtaProcessEngineConfiguration.setDatabaseSchemaUpdate("true")
+        processEngine = cdiJtaProcessEngineConfiguration.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE)
                 .setDataSourceJndiName("java:/DS.progressionactiviti").setDatabaseType("postgres")
                 .setHistoryLevel(HistoryLevel.NONE)
                 .setTransactionsExternallyManaged(true).setJobExecutorActivate(true)

@@ -10,9 +10,9 @@
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-        <referencedata.version>2.0.161</referencedata.version>
+        <referencedata.version>2.0.164</referencedata.version>
         <listing.version>1.0.7</listing.version>
-        <hearing.version>2.0.124</hearing.version>
+        <hearing.version>2.0.127</hearing.version>
     </properties>
 
     <dependencies>
