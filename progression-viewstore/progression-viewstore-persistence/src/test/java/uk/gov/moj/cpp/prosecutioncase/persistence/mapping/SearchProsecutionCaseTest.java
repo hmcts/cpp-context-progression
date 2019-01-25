@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.mapping;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority.CPS;
 
 import uk.gov.justice.core.courts.Defendant;
@@ -20,7 +20,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCa
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -99,7 +98,7 @@ public class SearchProsecutionCaseTest {
 
         final String expectedSearchTarget = "PAR-100 | John S Smith | 1977-01-01";
         assertNotNull(searchProsecutionCaseDetails);
-        assertEquals(expectedSearchTarget,searchProsecutionCaseDetails.getSearchTarget());
+        assertEquals(expectedSearchTarget, searchProsecutionCaseDetails.getSearchTarget());
 
     }
 

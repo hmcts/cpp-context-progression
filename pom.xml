@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>6.2.0</version>
+        <version>7.1.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>

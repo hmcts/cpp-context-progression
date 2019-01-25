@@ -11,9 +11,9 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.justice.services.messaging.JsonMetadata.USER_ID;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.WireMockStubUtils.mockUpdateResultsMaterialStatus;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
 import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
@@ -128,7 +128,7 @@ public class GenerateNowsIT extends AbstractIT {
         final BeanMatcher<Courtdocuments> pregeneratedResultMatcher = isBean(Courtdocuments.class)
                 .with(Courtdocuments::getDocumentIndices, first(is(isBean(CourtDocumentIndex.class)
                         .withOptional(courtDocumentIndex -> Optional.of(courtDocumentIndex.getDocument()), isBean(CourtDocument.class)
-                                        .withValue(CourtDocument::getName, "Imprisonment Order")
+                                .withValue(CourtDocument::getName, "Imprisonment Order")
                         )
                 )));
 
@@ -148,7 +148,7 @@ public class GenerateNowsIT extends AbstractIT {
                         .withOptional(courtDocumentIndex -> Optional.of(courtDocumentIndex.getDocument()), isBean(CourtDocument.class)
                                 .withValue(CourtDocument::getName, "Imprisonment Order")
                                 .with(CourtDocument::getMaterials, first(BeanMatcher.isBean(Material.class)
-                                    .withOptionalValue(material -> Optional.of(material.getGenerationStatus()), GENERATED)
+                                        .withOptionalValue(material -> Optional.of(material.getGenerationStatus()), GENERATED)
                                 ))
                         )
                 )));

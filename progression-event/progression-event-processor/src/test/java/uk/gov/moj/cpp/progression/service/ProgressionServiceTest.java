@@ -8,12 +8,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.PUBLIC_EVENT_HEARING_DETAIL_CHANGED;
 
@@ -133,23 +133,23 @@ public class ProgressionServiceTest {
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
                 metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA),
-                    payloadIsJson(
-                            allOf(
-                                    withJsonPath("$.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
-                                    withJsonPath("$.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
-                                    withJsonPath("$.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
-                                    withJsonPath("$.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
-                                    withJsonPath("$.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
-                                    withJsonPath("$.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
-                                    withJsonPath("$.hearingDateTime", is(HEARING_DATE_1)),
-                                    withJsonPath("$.confirmedProsecutionCaseIds[0].id", is(CASE_ID_1.toString())),
-                                    withJsonPath("$.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID_1.toString())),
-                                    withJsonPath("$.confirmedProsecutionCaseIds[1].id", is(CASE_ID_2.toString())),
-                                    withJsonPath("$.confirmedProsecutionCaseIds[1].confirmedDefendantIds[0]", is(DEFENDANT_ID_2.toString()))
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
+                                withJsonPath("$.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
+                                withJsonPath("$.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
+                                withJsonPath("$.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
+                                withJsonPath("$.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
+                                withJsonPath("$.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
+                                withJsonPath("$.hearingDateTime", is(HEARING_DATE_1)),
+                                withJsonPath("$.confirmedProsecutionCaseIds[0].id", is(CASE_ID_1.toString())),
+                                withJsonPath("$.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID_1.toString())),
+                                withJsonPath("$.confirmedProsecutionCaseIds[1].id", is(CASE_ID_2.toString())),
+                                withJsonPath("$.confirmedProsecutionCaseIds[1].confirmedDefendantIds[0]", is(DEFENDANT_ID_2.toString()))
 
-                            )
                         )
-                    )
+                )
+                )
         );
 
     }

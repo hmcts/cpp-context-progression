@@ -24,7 +24,7 @@
             <artifactId>system-users-library</artifactId>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.services</groupId>
+            <groupId>uk.gov.justice.framework-generators</groupId>
             <artifactId>rest-client-core</artifactId>
         </dependency>
         <dependency>
@@ -108,8 +108,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>uk.gov.justice.maven</groupId>
-                <artifactId>raml-maven-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
+                <artifactId>generator-plugin</artifactId>
                 <dependencies>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.notification.notify</groupId>
