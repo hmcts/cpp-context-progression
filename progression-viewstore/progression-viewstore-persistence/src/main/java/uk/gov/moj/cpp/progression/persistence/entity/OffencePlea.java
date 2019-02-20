@@ -1,19 +1,21 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * Created by jchondig on 01/12/2017.
  * Represents plea associated with an offence.
+ * @deprecated
  */
-
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 @Table(name = "offence_plea")
 public class OffencePlea implements Serializable {

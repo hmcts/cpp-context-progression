@@ -1,0 +1,24 @@
+{
+  "hearingTypes": [
+    {
+      "id": "HEARINGTYPEID",
+      "seqId": 1,
+      "hearingCode": "PTP",
+      "hearingDescription": "Plea & Trial Preparation",
+      "welshHearingDescription": "Diffynnydd i fynychu i",
+      "defaultDurationMin": 20,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+      "seqId": 2,
+      "hearingCode": "FPTP",
+      "hearingDescription": "Further Plea & Trial Preparation",
+      "welshHearingDescription": "Diffynnydd i fynychu 2",
+      "defaultDurationMin": 20,
+      "validFrom": null,
+      "validTo": null
+    }
+  ]
+}

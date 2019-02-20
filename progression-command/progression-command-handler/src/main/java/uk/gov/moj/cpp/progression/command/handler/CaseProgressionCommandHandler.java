@@ -14,9 +14,15 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public  class CaseProgressionCommandHandler {
 
     static final String FIELD_STREAM_ID = "caseId";
@@ -34,15 +40,15 @@ public  class CaseProgressionCommandHandler {
     JsonObjectToObjectConverter converter;
 
 
-    protected void applyToCaseProgressionAggregate(final JsonEnvelope command,
-                    final Function<CaseProgressionAggregate, Stream<Object>> function)
+    protected void applyToCaseAggregate(final JsonEnvelope command,
+                                        final Function<CaseAggregate, Stream<Object>> function)
                     throws EventStreamException {
-        EventStream eventStream =
+        final EventStream eventStream =
                         eventSource.getStreamById(getStreamIdByCaseId(command.payloadAsJsonObject()));
-        CaseProgressionAggregate aCaseProgression =
-                        aggregateService.get(eventStream, CaseProgressionAggregate.class);
+        final CaseAggregate aCaseProgression =
+                        aggregateService.get(eventStream, CaseAggregate.class);
 
-        Stream<Object> events = function.apply(aCaseProgression);
+        final Stream<Object> events = function.apply(aCaseProgression);
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }
 

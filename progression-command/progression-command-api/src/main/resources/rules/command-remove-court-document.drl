@@ -1,0 +1,20 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.ArrayList;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+global uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider progressionProvider;
+
+rule "Command - remove court document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.remove-court-document");
+    $allowedGroups: ArrayList() from collect(String() from progressionProvider.getAllowedUserGroups($action));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,$allowedGroups));
+  then
+    $outcome.setSuccess(true);
+end
+
+
+

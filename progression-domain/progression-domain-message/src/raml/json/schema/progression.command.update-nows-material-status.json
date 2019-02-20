@@ -1,0 +1,30 @@
+{
+  "$schema":"http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.update-nows-material-status.json",
+  "type":"object",
+  "properties":{
+    "hearingId":{
+      "$ref":"#/definitions/uuidPattern"
+    },
+    "materialId":{
+      "$ref":"#/definitions/uuidPattern"
+    },
+    "status":{
+      "$ref":"#/definitions/status"
+    }
+  },
+  "additionalProperties":false,
+  "required":[
+    "materialId",
+    "status"
+  ],
+  "definitions":{
+    "status":{
+      "type":"string"
+    },
+    "uuidPattern":{
+      "type":"string",
+      "pattern":"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
+}

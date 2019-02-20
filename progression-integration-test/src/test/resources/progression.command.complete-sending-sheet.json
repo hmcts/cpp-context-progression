@@ -10,6 +10,7 @@
       {
         "id": "0baecac5-222b-402d-9047-84803679edac",
         "personId": "0baecac5-222b-402d-9047-84803689edad",
+        "title":"Mr",
         "firstName": "David",
         "lastName": "Lloyd",
         "nationality": "British",
@@ -22,7 +23,7 @@
           "postcode": "W1T 1JY"
         },
         "dateOfBirth": "1995-03-23",
-        "bailStatus": "bailed",
+        "bailStatus": "IN_CUSTODY",
         "custodyTimeLimitDate": "2018-01-30",
         "defenceOrganisation": "Solicitor XYZ",
         "interpreter": {
@@ -33,6 +34,9 @@
           {
             "id": "0baecac5-222b-402d-9047-84803679edad",
             "offenceCode": "OF61131",
+            "count": 0,
+            "offenceTitle": "offence title",
+            "offenceTitleWelsh": "offence title Welsh",
             "convictionDate": "2017-08-01",
             "plea":
             {

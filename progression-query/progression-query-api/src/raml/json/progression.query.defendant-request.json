@@ -1,0 +1,8 @@
+{
+  "defendantRequest": {
+    "defendantId": "ab746921-d839-4867-bcf9-b41db8ebc852",
+    "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "referralReasonId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+    "summonsType": "SJP_REFERRAL"
+  }
+}

@@ -21,7 +21,13 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantUpdatedListenerTest {
 

@@ -3,7 +3,13 @@ package uk.gov.moj.cpp.progression.query.view.response;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@SuppressWarnings("squid:S1186")
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
+@SuppressWarnings({"squid:S1186", "squid:S1133"})
 public class Person {
 
     private UUID id;
@@ -209,7 +215,7 @@ public class Person {
         }
 
         public Builder address(final uk.gov.moj.cpp.progression.persistence.entity.Address address) {
-            Address personAddress = new Address();
+            final Address personAddress = new Address();
             personAddress.builder()
                     .address1(address.getAddress1())
                     .address2(address.getAddress2())
@@ -222,7 +228,7 @@ public class Person {
         }
 
         public Person build() {
-            Person person = new Person();
+            final Person person = new Person();
             person.setFirstName(getFirstName());
             person.setLastName(getLastName());
             person.setId(getId());

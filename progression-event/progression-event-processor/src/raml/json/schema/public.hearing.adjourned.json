@@ -1,100 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/hearing/courts/hearing-adjourned.json",
   "type": "object",
   "properties": {
-    "caseId": {
-      "$ref": "#/definitions/uuidPattern"
+    "adjournedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
-    "urn": {
-      "type": "string",
-      "maxLength": 15
-    },
-    "hearings": {
+    "nextHearings": {
       "type": "array",
       "minItems": 1,
       "items": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/uuidPattern"
-        },
-        "courtCentreId": {
-          "$ref": "#/definitions/uuidPattern"
-        },
-        "type": {
-          "type": "string"
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "estimateMinutes": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "startTime": {
-          "type": "string",
-          "format": "time"
-        },
-        "judgeId": {
-          "$ref": "#/definitions/uuidPattern"
-        },
-        "courtRoomId": {
-          "$ref": "#/definitions/uuidPattern"
-        },
-        "defendants": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "$ref": "#/definitions/uuidPattern"
-              },
-              "offences": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "$ref": "#/definitions/uuidPattern"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              }
-            },
-            "required": [
-              "id",
-              "offences"
-            ]
-          }
-        }
-      },
-      "required": [
-        "id",
-        "courtCentreId",
-        "type",
-        "startDate",
-        "estimateMinutes",
-        "defendants"
-      ]
+        "$ref": "http://justice.gov.uk/core/courts/nextHearing.json"
       }
     }
   },
   "required": [
-    "caseId",
-    "urn",
-    "hearings"
+    "nextHearings", "adjournedHearing"
   ],
-  "additionalProperties": false,
-  "definitions": {
-    "uuidPattern": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
+  "additionalProperties": false
 }

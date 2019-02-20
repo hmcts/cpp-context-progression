@@ -26,7 +26,12 @@ import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.progression.query.view.AbstractProgressionQueryBaseTest;
 import uk.gov.moj.cpp.progression.query.view.response.OffenceView;
 import uk.gov.moj.cpp.progression.query.view.response.OffencesView;
-
+/**
+ * Unit tests for the CaseProgressionDetailTest class.
+ * @deprecated
+ *
+ */
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class FindOffencesTest extends AbstractProgressionQueryBaseTest {
 

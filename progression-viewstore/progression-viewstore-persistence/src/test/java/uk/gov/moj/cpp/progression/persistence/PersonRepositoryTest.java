@@ -13,11 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import uk.gov.moj.cpp.progression.persistence.entity.Address;
-import uk.gov.moj.cpp.progression.persistence.entity.Person;
-import uk.gov.moj.cpp.progression.persistence.repository.AddressRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.PersonRepository;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -31,7 +26,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import uk.gov.moj.cpp.progression.persistence.entity.Address;
+import uk.gov.moj.cpp.progression.persistence.entity.Person;
+import uk.gov.moj.cpp.progression.persistence.repository.AddressRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.PersonRepository;
 
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Transactional
 @RunWith(CdiTestRunner.class)
 public class PersonRepositoryTest {
@@ -120,7 +125,7 @@ public class PersonRepositoryTest {
 
     @Test
     public void shouldFindPersonById() {
-        Person person = personRepository.findBy(PERSON_ID_A);
+        final Person person = personRepository.findBy(PERSON_ID_A);
 
         assertThat(person, is(notNullValue()));
         assertThat(person.getPersonId(), equalTo(PERSON_ID_A));
@@ -132,21 +137,21 @@ public class PersonRepositoryTest {
 
     @Test
     public void shouldReturnNullIfPersonNotFound() {
-        Person person = personRepository.findBy(UUID.randomUUID());
+        final Person person = personRepository.findBy(UUID.randomUUID());
 
         assertThat(person, is(nullValue()));
     }
 
     @Test
     public void shouldReturnListOfPerson() {
-        List<Person> personList = personRepository.findByLastNameIgnoreCase(LASTNAME_B);
+        final List<Person> personList = personRepository.findByLastNameIgnoreCase(LASTNAME_B);
         assertThat(personList, hasSize(1));
         assertThat(personList, equalTo(singletonList(personB)));
     }
 
     @Test
     public void shouldReturnEmptyListWhenNotFoundByLastName() throws Exception {
-        List<Person> personList = personRepository.findByLastNameIgnoreCase("InvalidLastName");
+        final List<Person> personList = personRepository.findByLastNameIgnoreCase("InvalidLastName");
 
         assertThat(personList, equalTo(emptyList()));
     }
@@ -154,7 +159,7 @@ public class PersonRepositoryTest {
     @Test
     public void shouldReturnListOfTwoSamePersonsWhenQueryingByFirstLastNameAndDateOfBirth() {
 
-        List<Person> persons = personRepository.findPersonByCriteria(FIRSTNAME_A, LASTNAME_A, POST_CODE, LocalDate.of(DOB_YEAR, DOB_MONTH, DOB_DAY));
+        final List<Person> persons = personRepository.findPersonByCriteria(FIRSTNAME_A, LASTNAME_A, POST_CODE, LocalDate.of(DOB_YEAR, DOB_MONTH, DOB_DAY));
 
         assertThat(persons.size(), equalTo(2));
         assertTrue(persons.get(0).getPersonId().equals(personADuplicate.getPersonId())
@@ -172,12 +177,12 @@ public class PersonRepositoryTest {
 
     @Test
     public void canGetPersonFromBuilder() {
-        List<Person> personList = personRepository.findPersonByCriteria(FIRSTNAME_A, LASTNAME_A, POST_CODE, LocalDate.of(DOB_YEAR, DOB_MONTH, DOB_DAY));
+        final List<Person> personList = personRepository.findPersonByCriteria(FIRSTNAME_A, LASTNAME_A, POST_CODE, LocalDate.of(DOB_YEAR, DOB_MONTH, DOB_DAY));
 
         personList.forEach(
                 item -> personRepository.remove(item)
         );
-        Person person = new Person().builder()
+        final Person person = new Person().builder()
                 .personId(PERSON_ID_A)
                 .title(TITLE_A)
                 .firstName(FIRSTNAME_A)
@@ -192,9 +197,9 @@ public class PersonRepositoryTest {
                 .dateOfBirth(LocalDate.of(DOB_YEAR, DOB_MONTH, DOB_DAY))
                 .address(UUID.randomUUID(), ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, POST_CODE).build();
 
-        Address addr = addressRepository.save(person.getAddress());
+        final Address addr = addressRepository.save(person.getAddress());
         person.setAddress(addr);
-        Person result = personRepository.save(person);
+        final Person result = personRepository.save(person);
         assertEquals(PERSON_ID_A, result.getPersonId());
         assertEquals(TITLE_A, person.getTitle());
         assertEquals(FIRSTNAME_A, result.getFirstName());
@@ -217,7 +222,7 @@ public class PersonRepositoryTest {
 
     private Person createPerson(final UUID personId, final String title,
                                 final String firstName, final String lastName, final String gender,
-                                final String homeTelephone, String workTelephone,
+                                final String homeTelephone, final String workTelephone,
                                 final String mobile, final String fax, final String email) {
         return new Person().builder()
                 .personId(personId)

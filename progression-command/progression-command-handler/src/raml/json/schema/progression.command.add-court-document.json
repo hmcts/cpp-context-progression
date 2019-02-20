@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/add-court-document.json",
+  "type": "object",
+  "properties": {
+    "materialId":{
+      "$ref":"http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    }
+  },
+  "required": [
+    "materialId",
+    "courtDocument"
+  ],
+  "additionalProperties": false
+}
+

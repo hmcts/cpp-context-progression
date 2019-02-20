@@ -1,22 +1,5 @@
 package uk.gov.moj.cpp.progression.event;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-
-import javax.json.JsonObject;
-import java.util.UUID;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.eq;
@@ -27,13 +10,38 @@ import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.event.OffencesDoesNotHaveRequiredModeOfTrialListener.STRUCTURE_EVENTS_DEFENDANT_OFFENCES_DOES_NOT_HAVE_REQUIRED_MODEOFTRIAL;
 
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class OffencesDoesNotHaveRequiredModeOfTrialListenerTest {
     @Mock
     private Sender sender;
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(JsonObject.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(JsonObject.class);
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
@@ -45,9 +53,9 @@ public class OffencesDoesNotHaveRequiredModeOfTrialListenerTest {
     @Test
     public void shouldHandleOffencesDoesNotHaveRequiredModeOfTrialEvent() throws Exception {
         // given
-        String caseId = randomUUIDStr();
-        String defendantId = randomUUIDStr();
-        JsonEnvelope jsonEnvelope = envelope()
+        final String caseId = randomUUIDStr();
+        final String defendantId = randomUUIDStr();
+        final JsonEnvelope jsonEnvelope = envelope()
                 .with(JsonObjectMetadata.metadataWithRandomUUID("progression.events.defendant-offences-does-not-have-required-modeoftrial"))
                 .withPayloadOf(caseId, CASE_ID)
                 .withPayloadOf(defendantId, DEFENDANT_ID)

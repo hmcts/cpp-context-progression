@@ -1,0 +1,17 @@
+{
+  "hearingId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+  "sharedResultLines": [
+    {
+      "id": "fce71000-a548-4862-a265-8fd4322dbd79",
+      "level": "CASE",
+      "label": "rQgGthbhSA",
+      "isAvailableForCourtExtract": true,
+      "courtClerk": {
+        "userId": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+        "firstName": "name",
+        "lastName": "lastname"
+      }
+    }
+  ]
+}
+

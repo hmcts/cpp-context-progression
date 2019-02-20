@@ -10,7 +10,13 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(EVENT_LISTENER)
 public class SentenceHearingDateAddedEventListener {
 
@@ -22,7 +28,7 @@ public class SentenceHearingDateAddedEventListener {
 
     @Handles("progression.events.sentence-hearing-date-added")
     public void processEvent(final JsonEnvelope event) {
-        SentenceHearingDateAdded sentenceHearingDateAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(),
+        final SentenceHearingDateAdded sentenceHearingDateAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(),
                 SentenceHearingDateAdded.class);
         caseService.addSentenceHearingDate(sentenceHearingDateAdded );
     }

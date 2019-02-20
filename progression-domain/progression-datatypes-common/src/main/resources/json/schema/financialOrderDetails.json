@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/financialOrderDetails.json",
+  "description": "Specific data items required by Financial Orders",
+  "type": "object",
+  "properties": {
+    "employerOrganisation": {
+      "$ref": "http://justice.gov.uk/core/courts/organisation.json"
+    },
+    "employerPayrollReference": {
+      "type": "string"
+    },
+    "accountReference": {
+      "description": "Relevant to financial orders only.  This is the account reference that the defendant must quaote when settling the financial imposition.  This is the enforcement response from GOB",
+      "type": "string"
+    },
+    "totalAmountImposed": {
+      "type": "string"
+    },
+    "totalBalance": {
+      "type": "string"
+    },
+    "isCrownCourt": {
+      "type": "boolean"
+    },
+    "paymentTerms": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "totalAmountImposed",
+    "totalBalance",
+    "isCrownCourt"
+  ],
+  "additionalProperties": false
+}

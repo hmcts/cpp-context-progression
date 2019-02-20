@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.progression.persistence.repository;
 
-import uk.gov.moj.cpp.progression.persistence.entity.Person;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +10,13 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.Repository;
 
+import uk.gov.moj.cpp.progression.persistence.entity.Person;
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Repository
 public interface PersonRepository extends EntityRepository<Person, UUID> {
 

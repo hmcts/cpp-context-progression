@@ -1,16 +1,23 @@
 package uk.gov.moj.cpp.progression.listener.casedocument;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.inject.Inject;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class NewCaseDocumentReceivedListener {
 

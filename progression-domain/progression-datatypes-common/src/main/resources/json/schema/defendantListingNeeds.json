@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/defendantListingNeeds.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		 "defendantId": {
+			 "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		 "datesToAvoid": {
+			 "type": "string"
+		},
+		 "listingReason": {
+			 "type": "string"
+		},
+		 "hearingLanguageNeeds": {
+			 "description": "The defendants hearing needs.  Indicates the defendants preference for the hearing to be conducted in non English",
+			 "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingLanguage"
+		}
+	},
+	"required": [
+		"prosecutionCaseId",
+		"defendantId"
+	],
+  "additionalProperties": false
+}

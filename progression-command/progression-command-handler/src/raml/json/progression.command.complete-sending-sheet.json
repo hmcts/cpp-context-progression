@@ -46,7 +46,10 @@
             "description": "description",
             "category": "category",
             "startDate": "2016-06-21",
-            "endDate": "2017-08-01"
+            "endDate": "2017-08-01",
+            "title": "Public service vehicle - passenger use altered / defaced ticket",
+            "legislation": "legislation",
+            "orderIndex":1
           },{
             "id": "0baecac5-222b-402d-9047-84803679edad",
             "offenceCode": "OF61131",
@@ -62,7 +65,10 @@
             "description": "description",
             "category": "category",
             "startDate": "2016-06-21",
-            "endDate": "2017-08-01"
+            "endDate": "2017-08-01",
+            "title": "Public service vehicle - passenger use altered / defaced ticket",
+            "legislation": "legislation",
+            "orderIndex":2
           }
         ]
       }

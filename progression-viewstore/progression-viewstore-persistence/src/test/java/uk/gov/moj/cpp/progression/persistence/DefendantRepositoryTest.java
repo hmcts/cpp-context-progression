@@ -3,14 +3,7 @@ package uk.gov.moj.cpp.progression.persistence;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -25,6 +18,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+/**
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @RunWith(CdiTestRunner.class)
 public class DefendantRepositoryTest {
 

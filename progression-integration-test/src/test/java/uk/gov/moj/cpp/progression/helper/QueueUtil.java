@@ -37,7 +37,7 @@ public class QueueUtil {
 
     private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://"+HOST+":61616");
 
-    private static final long RETRIEVE_TIMEOUT = 20000;
+    private static final long RETRIEVE_TIMEOUT = 60000;
 
     private final Connection connection;
 

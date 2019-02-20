@@ -16,25 +16,18 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>command-api</artifactId>
-
         </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
-            <groupId>uk.gov.justice</groupId>
-            <artifactId>file-alfresco</artifactId>
-            <version>${file-alfresco.version}</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>progression-datatypes-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-multipart-provider</artifactId>
-            <version>${resteasy-multipart-provider.version}</version>
-        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>system-users-library</artifactId>
@@ -53,6 +46,18 @@
             <artifactId>rest-adapter-file-service</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>uk.gov.justice</groupId>
+            <artifactId>file-alfresco</artifactId>
+            <version>${file-alfresco.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-progression-providers</artifactId>
+            <version>${access.control.version}</version>
+        </dependency>
+
         <!-- JUnit regression testing framework. -->
         <dependency>
             <groupId>junit</groupId>
@@ -67,6 +72,12 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>file-api</artifactId>
+            <version>2.4.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

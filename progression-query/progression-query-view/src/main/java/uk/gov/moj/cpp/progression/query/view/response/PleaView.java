@@ -4,8 +4,12 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Created by jchondig on 04/12/2017.
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
  */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class PleaView {
 
     private final UUID id;
@@ -26,7 +30,7 @@ public class PleaView {
         return pleaDate;
     }
 
-    public PleaView(UUID id, String value, LocalDate pleaDate) {
+    public PleaView(final UUID id, final String value, final LocalDate pleaDate) {
         this.id = id;
         this.value = value;
         this.pleaDate = pleaDate;

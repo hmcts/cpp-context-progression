@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.it;
 
-import org.junit.Before;
+import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 
-import static uk.gov.moj.cpp.progression.helper.AuthorisationServiceStub.stubEnableAllCapabilities;
+import org.junit.Before;
 
 public abstract class BaseIntegrationTest {
 

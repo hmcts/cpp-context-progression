@@ -4,11 +4,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
+/**
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 public class BooleanTFConverterTest {
 
     BooleanTFConverter converter;

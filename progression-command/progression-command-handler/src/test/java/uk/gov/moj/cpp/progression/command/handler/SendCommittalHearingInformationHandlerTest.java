@@ -1,15 +1,16 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class SendCommittalHearingInformationHandlerTest
                 extends CaseProgressionCommandHandlerTest {
@@ -20,10 +21,10 @@ public class SendCommittalHearingInformationHandlerTest
     @Test
     public void shouldSendCommittalHearingInformation() throws EventStreamException {
 
-        when(caseProgressionAggregate.sendingHearingCommittal(jsonEnvelope))
+        when(caseAggregate.sendingHearingCommittal(jsonEnvelope))
                         .thenReturn(events);
 
         sendCommittalHearingInformationHandler.sendCommittalHearingInformation(jsonEnvelope);
-        verify(caseProgressionAggregate).sendingHearingCommittal(jsonEnvelope);
+        verify(caseAggregate).sendingHearingCommittal(jsonEnvelope);
     }
 }

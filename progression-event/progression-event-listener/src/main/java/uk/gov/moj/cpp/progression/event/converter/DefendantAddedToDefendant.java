@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.progression.event.converter;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Set;
+
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.progression.domain.event.defendant.CPR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdded;
@@ -13,19 +15,23 @@ import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.DefendantOffenderDetails;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Person;
-
-import java.util.Set;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defendant> {
 
     @Override
-    public Defendant convert(DefendantAdded defendantAdded) {
+    public Defendant convert(final DefendantAdded defendantAdded) {
 
-        Set<OffenceDetail> offences = defendantAdded.getOffences().stream()
+        final Set<OffenceDetail> offences = defendantAdded.getOffences().stream()
                 .map(DefendantAddedToDefendant::mapToOffenceDetails)
                 .collect(toSet());
 
-        Person person =  getPersonDetail(defendantAdded.getPerson());
+        final Person person =  getPersonDetail(defendantAdded.getPerson());
 
         return new Defendant(defendantAdded.getDefendantId(), person, defendantAdded.getPoliceDefendantId(),
                 offences,false);
@@ -38,7 +44,7 @@ public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defe
             return null;
         }
 
-        Address address = getAddressDetail(person);
+        final Address address = getAddressDetail(person);
 
         return new Person().builder()
                 .personId(person.getId())
@@ -57,7 +63,7 @@ public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defe
     }
 
     private Address getAddressDetail(final uk.gov.moj.cpp.progression.domain.event.defendant.Person person) {
-        Address address = new Address();
+        final Address address = new Address();
         if(person.getAddress() != null){
             address.setAddress1(person.getAddress().getAddress1());
             address.setAddress2(person.getAddress().getAddress2());
@@ -68,15 +74,15 @@ public class DefendantAddedToDefendant implements Converter<DefendantAdded, Defe
         return address;
     }
 
-    private static OffenceDetail mapToOffenceDetails(Offence offence) {
-        CPR cpr = offence.getCpr();
-        DefendantOffenderDomain defendantOffenderDomain = cpr.getDefendantOffender();
+    private static OffenceDetail mapToOffenceDetails(final Offence offence) {
+        final CPR cpr = offence.getCpr();
+        final DefendantOffenderDomain defendantOffenderDomain = cpr.getDefendantOffender();
 
-        DefendantOffenderDetails defendantOffenderDetails = new DefendantOffenderDetails(defendantOffenderDomain.getYear(),
+        final DefendantOffenderDetails defendantOffenderDetails = new DefendantOffenderDetails(defendantOffenderDomain.getYear(),
                 defendantOffenderDomain.getOrganisationUnit(), defendantOffenderDomain.getNumber(),
                 defendantOffenderDomain.getCheckDigit());
 
-        CPRDetails cprDetails = new CPRDetails(defendantOffenderDetails);
+        final CPRDetails cprDetails = new CPRDetails(defendantOffenderDetails);
 
         return new OffenceDetail.OffenceDetailBuilder().setId(offence.getId())
                 .setPoliceOffenceId(offence.getPoliceOffenceId())

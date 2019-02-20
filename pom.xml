@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>6.1.0</version>
+        <version>6.2.0</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
-    <description>A applications for progression service.</description>
+    <description>A applications for progression service</description>
 
     <modules>
         <module>progression-query</module>
@@ -24,6 +24,7 @@
         <module>progression-integration-test</module>
         <module>progression-performance-test</module>
         <module>progression-service</module>
+        <module>progression-test-utilities</module>
     </modules>
 
     <properties>
@@ -32,9 +33,14 @@
         <sonar.scm.provider>git</sonar.scm.provider>
         <file-alfresco.version>2.3.0</file-alfresco.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
-        <material.version>2.0.111</material.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
+        <material.version>2.0.112</material.version>
+        <access.control.version>4.1.8-R2</access.control.version>
+        <referencedata.version>2.4.1-R2-SNAPSHOT</referencedata.version>
+        <listing.version>2.0.5-R2-SNAPSHOT</listing.version>
+        <hearing.version>2.5.2-R2-SNAPSHOT</hearing.version>
+        <referencedata.offence.version>1.0.18</referencedata.offence.version>
     </properties>
 
     <build>

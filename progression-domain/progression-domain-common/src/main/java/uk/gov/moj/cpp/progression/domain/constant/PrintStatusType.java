@@ -1,0 +1,5 @@
+package uk.gov.moj.cpp.progression.domain.constant;
+
+public enum PrintStatusType {
+    AWAITING_GENERATION, GENERATION_REQUESTED, ATTACHED, PRINT_REQUEST, PRINT_REQUEST_FAILED, PRINT_REQUEST_SUCCEEDED, PRINT_REQUEST_ACCEPTED
+}

@@ -3,14 +3,20 @@ package uk.gov.moj.cpp.progression.query.view.response;
 
 
 import java.util.UUID;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class DefendantBailDocumentView {
 
     private final UUID id;
     private final UUID documentId;
     private final Boolean active;
 
-    public DefendantBailDocumentView(UUID id, UUID documentId, Boolean active) {
+    public DefendantBailDocumentView(final UUID id, final UUID documentId, final Boolean active) {
         super();
         this.id = id;
         this.documentId = documentId;

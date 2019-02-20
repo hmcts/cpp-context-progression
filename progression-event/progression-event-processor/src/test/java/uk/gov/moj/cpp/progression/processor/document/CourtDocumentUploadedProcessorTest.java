@@ -1,0 +1,84 @@
+package uk.gov.moj.cpp.progression.processor.document;
+
+import static java.util.UUID.randomUUID;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentUploadedProcessor.PUBLIC_COURT_DOCUMENT_UPLOADED;
+
+import uk.gov.justice.core.courts.CourtsDocumentUploaded;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.MaterialService;
+
+import java.util.function.Function;
+
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class CourtDocumentUploadedProcessorTest {
+    @InjectMocks
+    private CourtDocumentUploadedProcessor eventProcessor;
+
+    @Mock
+    private Sender sender;
+
+    @Mock
+    private MaterialService materialService;
+
+    @Spy
+    private final Enveloper enveloper = createEnveloper();
+
+    @Mock
+    private JsonEnvelope envelope;
+
+    @Mock
+    private JsonObject courtDocumentUploadJson;
+
+    @Mock
+    private CourtsDocumentUploaded courtsDocumentUploaded;
+
+    @Mock
+    private JsonEnvelope finalEnvelope;
+
+    @Mock
+    private Function<Object, JsonEnvelope> enveloperFunction;
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Spy
+    @InjectMocks
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
+    @Test
+    public void shouldProcessUploadCourtDocumentMessage(){
+        when(envelope.payloadAsJsonObject()).thenReturn(courtDocumentUploadJson);
+        when(jsonObjectToObjectConverter.convert(courtDocumentUploadJson,CourtsDocumentUploaded.class)).thenReturn(courtsDocumentUploaded);
+        when(courtsDocumentUploaded.getFileServiceId()).thenReturn(randomUUID());
+        when(courtsDocumentUploaded.getMaterialId() ).thenReturn(randomUUID());
+        when(enveloper.withMetadataFrom(envelope, PUBLIC_COURT_DOCUMENT_UPLOADED)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        //When
+        this.eventProcessor.handleCourtDocumentUploadEvent(envelope);
+
+        //Then
+        verify(sender).send(finalEnvelope);
+    }
+}

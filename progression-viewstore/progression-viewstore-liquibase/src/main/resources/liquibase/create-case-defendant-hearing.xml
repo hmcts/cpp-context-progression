@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="case_defendant_hearing" author="cpp.context.progression">
+
+        <createTable tableName="case_defendant_hearing">
+            <column name="case_id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="hearing_id" type="UUID"/>
+        </createTable>
+
+        <createTable tableName="hearing">
+            <column name="hearing_id" type="UUID"/>
+            <column name="payload" type="TEXT"/>
+            <column name="listing_status" type="TEXT"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="hearing_id" constraintName="hearing_primary_key"
+                       tableName="hearing"/>
+
+        <addPrimaryKey columnNames="case_id, defendant_id, hearing_id"
+                       constraintName="case_defendant_hearing_primary_key"
+                       tableName="case_defendant_hearing"/>
+
+    </changeSet>
+
+</databaseChangeLog>

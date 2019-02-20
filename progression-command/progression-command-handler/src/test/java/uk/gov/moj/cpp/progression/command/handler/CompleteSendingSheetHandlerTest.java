@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class CompleteSendingSheetHandlerTest extends CaseProgressionCommandHandlerTest {
 
@@ -18,9 +18,9 @@ public class CompleteSendingSheetHandlerTest extends CaseProgressionCommandHandl
 
     @Test
     public void shouldSendCompleteSendingSheet() throws EventStreamException {
-        when(caseProgressionAggregate.completeSendingSheet(jsonEnvelope))
+        when(caseAggregate.completeSendingSheet(jsonEnvelope))
                         .thenReturn(events);
         completeSendingSheetHandler.completeSendingSheet(jsonEnvelope);
-        verify(caseProgressionAggregate).completeSendingSheet(jsonEnvelope);
+        verify(caseAggregate).completeSendingSheet(jsonEnvelope);
     }
 }

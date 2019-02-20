@@ -19,9 +19,11 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 
 /**
  * 
- * @author jchondig
+ * @deprecated This is deprecated for Release 2.4
  *
  */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class SendingCommittalHearingInformationAddedEventListenerTest {
 

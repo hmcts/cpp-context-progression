@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/materialDetails.json",
+  "description": "The context for material",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "description": "The requesting user",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "fileId": {
+      "description": "File ref",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "description": "The hearingId",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "The caseId",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "description": "The address4",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "nowsNotificationDocumentState": {
+      "description": "State need to notify",
+      "$ref": "http://justice.gov.uk/core/courts/notificationDocumentState.json#"
+    },
+    "isRemotePrintingRequired": {
+      "type": "boolean"
+    }
+  },
+
+  "required": [
+    "userId",
+    "fileId",
+    "hearingId",
+    "materialId"
+  ],
+  "additionalProperties": false
+}

@@ -1,13 +1,17 @@
 package uk.gov.moj.cpp.progression.event.utils;
 
 
-import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.common.util.UtcClock;
-
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import uk.gov.justice.services.common.util.UtcClock;
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class DefaultTestData {
 
     public static final UUID CASE_ID = UUID.randomUUID();

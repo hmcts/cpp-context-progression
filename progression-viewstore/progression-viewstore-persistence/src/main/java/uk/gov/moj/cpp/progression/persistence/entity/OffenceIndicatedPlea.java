@@ -1,15 +1,19 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import java.io.Serializable;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.UUID;
 
 /**
- * Created by jchondig on 01/12/2017.
+ * @deprecated
+ *
  */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 @Table(name = "offence_indicated_plea")
 public class OffenceIndicatedPlea implements Serializable {

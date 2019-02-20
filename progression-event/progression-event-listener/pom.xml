@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
-            <artifactId>progression-domain-event</artifactId>
+            <artifactId>progression-domain-message</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -55,6 +55,14 @@
             <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-test-utilities</artifactId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
 

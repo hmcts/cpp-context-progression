@@ -8,10 +8,10 @@
   <artifactId>progression-domain</artifactId>
   <packaging>pom</packaging>
   <modules>
-  	<module>progression-domain-event</module>
-  	<module>progression-domain-command</module>
+  	<module>progression-domain-message</module>
   	<module>progression-domain-common</module>
     <module>progression-domain-aggregate</module>
     <module>progression-domain-transformations</module>
+    <module>progression-datatypes-common</module>
   </modules>
 </project>

@@ -6,17 +6,24 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
+import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
+import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
+import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
+
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,23 +31,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
-import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
-import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
-import uk.gov.moj.cpp.progression.domain.event.CaseReadyForSentenceHearing;
-import uk.gov.moj.cpp.progression.domain.event.CaseToBeAssignedUpdated;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
-import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdditionalInformationAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
-
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionEventFactoryTest {
 
@@ -81,6 +77,9 @@ public class ProgressionEventFactoryTest {
     private static final String END_DATE = "11-11-2017";
     private static final String CC_HEARING_DATE = "15-10-2017";
     private static final String CC_COURT_CENTRE_NAME = "Liverpool crown court";
+    private static final String OFFENCE_TITLE = "O_TITLE";
+    private static final String LEGISLATION = "O_LEGISLATION";
+    private static final int ORDER_INDEX = 2;
     private static final String CC_COURT_CENTRE_ID = randomUUID();
 
     @Mock
@@ -119,7 +118,7 @@ public class ProgressionEventFactoryTest {
                                                 .add("address2", DEFENDANT_ADDRESS_2)
                                                 .add("address3", DEFENDANT_ADDRESS_3)
                                                 .add("address4", DEFENDANT_ADDRESS_4)
-                                                .add("postCode", DEFENDANT_POSTCODE).build())
+                                                .add("postcode", DEFENDANT_POSTCODE).build())
                                 .add("dateOfBirth", DEFENDANT_DATE_OF_BIRTH)
                                 .add("bailStatus", BAIL_STATUS)
                                 .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
@@ -140,6 +139,9 @@ public class ProgressionEventFactoryTest {
                                                 .add("description", DESCRIPTION)
                                                 .add("category", CATEGORY)
                                                 .add("startDate", START_DATE)
+                                                .add("title", OFFENCE_TITLE)
+                                                .add("legislation", LEGISLATION)
+                                                .add("orderIndex", ORDER_INDEX)
                                                 .add("endDate", END_DATE).build()))
                                         .build()).build())
                         .build());
@@ -164,11 +166,6 @@ public class ProgressionEventFactoryTest {
     }
 
 
-    @Test
-    public void testCreateCaseToBeAssignedUpdated() {
-        final Object obj = ProgressionEventFactory.createCaseToBeAssignedUpdated(this.envelope);
-        assertThat(obj, instanceOf(CaseToBeAssignedUpdated.class));
-    }
 
     @Test
     public void testCreateCompletedSendingSheet() {
@@ -197,40 +194,13 @@ public class ProgressionEventFactoryTest {
         assertThat(defendants.get(1).getPsrIsRequested(), is(false));
     }
 
-    @Test
-    public void testCreateCaseReadyForSentenceHearing() {
-        final CaseReadyForSentenceHearing obj =
-                        ProgressionEventFactory
-                        .createCaseReadyForSentenceHearing(this.envelope);
-
-        assertThat(CASE_ID, equalTo(obj.getCaseId().toString()));
-        assertThat(CaseStatusEnum.READY_FOR_SENTENCING_HEARING, equalTo(obj.getStatus()));
-        assertThat(ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES),
-                        equalTo(obj.getCaseStatusUpdatedDateTime().truncatedTo(ChronoUnit.MINUTES)));
-
-    }
-
-    @Test
-    public void shouldAddDefendantEvent() {
-        // given
-        final DefendantCommand defendant = DefendantBuilder.defaultDefendant();
-
-        // when
-        final DefendantAdditionalInformationAdded defendantEvent =
-                        (DefendantAdditionalInformationAdded) ProgressionEventFactory
-                                        .addDefendantEvent(defendant);
-
-        // then
-        assertThat(defendantEvent, sameAs(defendant));
-    }
 
 
 
 
-    private Matcher<DefendantAdditionalInformationAdded> sameAs(
-                    final DefendantCommand defendantCommand) {
-        return new DefendantEventMatcher(defendantCommand);
-    }
+
+
+
 
     private static String randomUUID() {
         return UUID.randomUUID().toString();
@@ -291,6 +261,9 @@ public class ProgressionEventFactoryTest {
         assertThat(CATEGORY, equalTo(offence.getCategory()));
         assertThat(START_DATE, equalTo(offence.getStartDate()));
         assertThat(END_DATE, equalTo(offence.getEndDate()));
+        assertThat(OFFENCE_TITLE, equalTo(offence.getTitle()));
+        assertThat(LEGISLATION, equalTo(offence.getLegislation()));
+        assertThat(ORDER_INDEX, equalTo(offence.getOrderIndex()));
     }
 
 }

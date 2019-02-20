@@ -1,13 +1,19 @@
 
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import java.io.Serializable;
+
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
-import java.io.Serializable;
-
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Embeddable
 public class CPRDetails implements Serializable {
 
@@ -22,7 +28,7 @@ public class CPRDetails implements Serializable {
         super();
     }
 
-    public CPRDetails(DefendantOffenderDetails defendantOffender){
+    public CPRDetails(final DefendantOffenderDetails defendantOffender){
         this.defendantOffender = defendantOffender;
     }
 
@@ -30,7 +36,7 @@ public class CPRDetails implements Serializable {
     public DefendantOffenderDetails getDefendantOffender() {
         return defendantOffender;
     }
-    public void setDefendantOffender(DefendantOffenderDetails defendantOffender) {
+    public void setDefendantOffender(final DefendantOffenderDetails defendantOffender) {
         this.defendantOffender = defendantOffender;
     }
 

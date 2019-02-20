@@ -10,6 +10,7 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 
+@SuppressWarnings("squid:S1133")
 public enum HttpMethodType {
     GET {
         @Override

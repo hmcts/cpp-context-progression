@@ -29,21 +29,21 @@ public class UploadCaseDocumentsFormParserTest {
     private static final String CSV = "row1,col1\nrow2,col2\n";
 
     private UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser;
-    
+
     @Before
     public void setup(){
         uploadCaseDocumentsFormParser = new UploadCaseDocumentsFormParser();
     }
-    
-    
+
+
     @Test
     public void shouldReturnEmptyForNullInput() throws IOException {
         final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(null);
-        
+
         assertFalse(result.getKey().isPresent());
         assertFalse(result.getValue().isPresent());
     }
-    
+
     @Test
     public void shouldReturnEmptyForEmptyUploadform() throws IOException {
 
@@ -53,7 +53,7 @@ public class UploadCaseDocumentsFormParserTest {
         when(input.getFormDataMap()).thenReturn(form);
 
         final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(input);
-        
+
         assertFalse(result.getKey().isPresent());
         assertFalse(result.getValue().isPresent());
     }
@@ -67,7 +67,7 @@ public class UploadCaseDocumentsFormParserTest {
         when(input.getFormDataMap()).thenReturn(form);
 
         final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(input);
-        
+
         assertFalse(result.getKey().isPresent());
         assertFalse(result.getValue().isPresent());
     }
@@ -81,7 +81,7 @@ public class UploadCaseDocumentsFormParserTest {
         when(input.getFormDataMap()).thenReturn(form);
 
         final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(input);
-        
+
         assertTrue(result.getKey().isPresent());
         assertFalse(result.getValue().isPresent());
     }
@@ -95,7 +95,7 @@ public class UploadCaseDocumentsFormParserTest {
         when(input.getFormDataMap()).thenReturn(form);
 
         final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(input);
-        
+
         assertFalse(result.getKey().isPresent());
         assertFalse(result.getValue().isPresent());
     }
@@ -125,7 +125,7 @@ public class UploadCaseDocumentsFormParserTest {
 
         final InputStream csvInputStream = IOUtils.toInputStream(CSV);
 
-        MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
+        final MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
         headers.put("Content-Disposition", Arrays.asList("name=\"file\"; filename=\"test.csv\""));
         headers.put("Content-Type", Arrays
                         .asList("application/vnd.progression.command.upload-case-documents+json"));
@@ -156,7 +156,7 @@ public class UploadCaseDocumentsFormParserTest {
 
         final InputStream csvInputStream = IOUtils.toInputStream(CSV);
 
-        MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
+        final MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
         headers.put("Content-Disposition", Arrays.asList("name=\"file\"; filename=\"\""));
         headers.put("Content-Type", Arrays
                         .asList("application/vnd.progression.command.upload-case-documents+json"));
@@ -183,7 +183,7 @@ public class UploadCaseDocumentsFormParserTest {
 
         final InputStream csvInputStream = null;
 
-        MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
+        final MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
         headers.put("Content-Disposition", Arrays.asList("name=\"file\"; filename=\"test.csv\""));
         headers.put("Content-Type", Arrays
                         .asList("application/vnd.progression.command.upload-case-documents+json"));
@@ -209,7 +209,7 @@ public class UploadCaseDocumentsFormParserTest {
 
         final InputStream csvInputStream = IOUtils.toInputStream(CSV);
 
-        MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
+        final MultivaluedMap<String, String> headers = new CaseInsensitiveMap<>();
         headers.put("Content-Disposi", Arrays.asList("name=\"file\"; filename=\"test.csv\""));
         headers.put("Content-Type", Arrays
                         .asList("application/vnd.progression.command.upload-case-documents+json"));

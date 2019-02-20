@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.listener.progression;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -8,13 +14,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.listener.casedocument.AddMaterialCommand;
 import uk.gov.moj.cpp.progression.listener.casedocument.Document;
-
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class ProgressionDocumentAddedListener {
 
@@ -28,7 +34,7 @@ public class ProgressionDocumentAddedListener {
     private final Enveloper enveloper;
 
     @Inject
-    public ProgressionDocumentAddedListener(Sender sender, Enveloper enveloper) {
+    public ProgressionDocumentAddedListener(final Sender sender, final Enveloper enveloper) {
         this.sender = sender;
         this.enveloper = enveloper;
     }

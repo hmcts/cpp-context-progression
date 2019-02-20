@@ -3,21 +3,12 @@ package uk.gov.justice.api.resource;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
-
-import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
-import uk.gov.justice.services.core.accesscontrol.AccessControlService;
-import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
-import uk.gov.justice.services.core.annotation.Adapter;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.file.api.sender.FileData;
-import uk.gov.justice.services.file.api.sender.FileSender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +22,20 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
 
+import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
+import uk.gov.justice.services.core.accesscontrol.AccessControlService;
+import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
+import uk.gov.justice.services.core.annotation.Adapter;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.file.api.sender.FileData;
+import uk.gov.justice.services.file.api.sender.FileSender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @Adapter(Component.COMMAND_API)
 public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocumentsResource {
 
@@ -85,7 +90,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
 
         try{
 
-            KeyValue<Optional<String>, Optional<InputStream>> fileNameAndContent = uploadCaseDocumentsFormParser.parse(multipartFormDataInput);
+            final KeyValue<Optional<String>, Optional<InputStream>> fileNameAndContent = uploadCaseDocumentsFormParser.parse(multipartFormDataInput);
 
             if (!fileNameAndContent.getKey().isPresent()) {
                 LOG.error(getErrorMsg(userId, session, correlationId, caseId, "file name absent"));
@@ -126,7 +131,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
                         .build().toString()) {})
                     .build();
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error(getErrorMsg(userId, session, correlationId, caseId, "exception"), e);
             return Response.status(BAD_REQUEST).build();
         }

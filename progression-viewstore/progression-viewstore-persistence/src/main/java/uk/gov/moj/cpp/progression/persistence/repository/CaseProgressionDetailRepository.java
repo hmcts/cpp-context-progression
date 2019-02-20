@@ -1,17 +1,22 @@
 package uk.gov.moj.cpp.progression.persistence.repository;
 
-import org.apache.deltaspike.data.api.QueryParam;
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
+import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Repository
 public interface CaseProgressionDetailRepository extends EntityRepository<CaseProgressionDetail, UUID> {
 

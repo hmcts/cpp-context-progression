@@ -1,14 +1,5 @@
 package uk.gov.moj.cpp.progression.it;
 
-import com.jayway.restassured.response.Response;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.moj.cpp.progression.helper.StubUtil;
-
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.util.UUID;
-
 import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,6 +13,17 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+
+import uk.gov.moj.cpp.progression.helper.StubUtil;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.jayway.restassured.response.Response;
+import org.junit.Before;
+import org.junit.Test;
 
 public class RequestDefendantsPSRStatusIT {
 
@@ -40,17 +42,16 @@ public class RequestDefendantsPSRStatusIT {
 
     @Test
     public void shouldRequestPSRForDefendant() throws Exception {
-        addDefendant(caseId,firstDefendantId);
-        addDefendant(caseId,secondDefendantId);
+        addDefendant(caseId, firstDefendantId);
+        addDefendant(caseId, secondDefendantId);
 
         pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
                 "application/vnd.progression.query.defendant+json");
 
-        Response writeResponse = postCommand(getCommandUri("/cases/" + caseId + "/defendants/requestpsr"),
+        final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId + "/defendants/requestpsr"),
                 "application/vnd.progression.command.request-psr-for-defendants+json",
                 StubUtil.getJsonBodyStr(
-                        "progression.command.request-psr-for-defendants.json",
-                        caseId, firstDefendantId, secondDefendantId));
+                        "progression.command.request-psr-for-defendants.json", caseId, firstDefendantId, secondDefendantId));
 
         assertThatRequestIsAccepted(writeResponse);
 
@@ -62,7 +63,7 @@ public class RequestDefendantsPSRStatusIT {
 
         assertThatPSRNotRequestedForDefendant(defendantsJsonObject);
 
-        Response queryResponse = getCaseProgression(
+        final Response queryResponse = getCaseProgression(
                 getQueryUri("/cases/" + caseId + "/defendants/" + secondDefendantId),
                 "application/vnd.progression.query.defendant+json");
         assertThatResponseIndicatesSuccess(queryResponse);
@@ -72,15 +73,15 @@ public class RequestDefendantsPSRStatusIT {
         assertThatPSRRequestedForDefendant(defendantsJsonObject);
             }
 
-    private void assertThatPSRRequestedForDefendant(JsonObject defendantsJsonObject) {
+    private static void assertThatPSRRequestedForDefendant(final JsonObject defendantsJsonObject) {
         assertThatPSRRequestedIs(Boolean.TRUE, defendantsJsonObject);
     }
 
-    private void assertThatPSRNotRequestedForDefendant(JsonObject defendantsJsonObject) {
+    private static void assertThatPSRNotRequestedForDefendant(final JsonObject defendantsJsonObject) {
         assertThatPSRRequestedIs(Boolean.FALSE, defendantsJsonObject);
     }
 
-    private void assertThatPSRRequestedIs(Boolean isRequested, JsonObject defendantsJsonObject) {
+    private static void assertThatPSRRequestedIs(final Boolean isRequested, final JsonObject defendantsJsonObject) {
         assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
                 .getJsonObject("probation").getJsonObject("preSentenceReport")
                 .getBoolean("psrIsRequested"), equalTo(isRequested));

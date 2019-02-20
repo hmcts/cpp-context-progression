@@ -6,7 +6,12 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 public class Address implements Serializable {
 
@@ -119,7 +124,7 @@ public class Address implements Serializable {
         }
 
         public Address build() {
-            Address address = new Address();
+            final Address address = new Address();
             address.setAddress1(address1);
             address.setAddress2(address2);
             address.setAddress3(address3);

@@ -10,6 +10,9 @@
     },
     "sendingCommittalDate": {
       "type": "string"
+    },
+    "courtCenterID": {
+      "$ref":"#/definitions/uuidPattern"
     }
   },
   "required": [

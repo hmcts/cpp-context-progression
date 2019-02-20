@@ -10,16 +10,14 @@
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-        <referencedata.version>2.0.164</referencedata.version>
-        <listing.version>1.0.7</listing.version>
-        <hearing.version>2.0.127</hearing.version>
+        <results.version>1.0.8</results.version>
+        <notification.notify.version>0.0.25</notification.notify.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>event-processor</artifactId>
-
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
@@ -30,17 +28,13 @@
             <artifactId>rest-client-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>test-utils-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
-            <artifactId>progression-domain-event</artifactId>
+            <artifactId>progression-domain-message</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -48,14 +42,14 @@
             <artifactId>progression-domain-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Activiti Dependencies -->
         <dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-engine</artifactId>
+            <groupId>uk.gov.moj.cpp.material</groupId>
+            <artifactId>material-client</artifactId>
+            <version>${material.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-cdi</artifactId>
+            <groupId>uk.gov.moj.cpp.system.id-mapper</groupId>
+            <artifactId>id-mapper-client</artifactId>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -85,6 +79,30 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>file-service-persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.system.documentgenerator</groupId>
+            <artifactId>system-documentgenerator-client</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-test-utilities</artifactId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.co.jemos.podam</groupId>
+            <artifactId>podam</artifactId>
+            <version>7.1.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -93,6 +111,38 @@
                 <groupId>uk.gov.justice.maven</groupId>
                 <artifactId>raml-maven-plugin</artifactId>
                 <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.notification.notify</groupId>
+                        <artifactId>notificationnotify-command-api</artifactId>
+                        <version>${notification.notify.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.results</groupId>
+                        <artifactId>results-command-api</artifactId>
+                        <version>${results.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.listing</groupId>
+                        <artifactId>listing-command-api</artifactId>
+                        <version>${listing.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-command-api</artifactId>
@@ -106,9 +156,33 @@
                         </exclusions>
                     </dependency>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.material</groupId>
+                        <artifactId>material-query-api</artifactId>
+                        <version>${material.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.referencedata</groupId>
                         <artifactId>referencedata-query-api</artifactId>
                         <version>${referencedata.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.referencedata.offences</groupId>
+                        <artifactId>referencedataoffences-query-api</artifactId>
+                        <version>${referencedata.offence.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>
@@ -165,6 +239,20 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
+
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.hearing</groupId>
+                        <artifactId>hearing-query-api</artifactId>
+                        <version>${hearing.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
                 </dependencies>
             </plugin>
         </plugins>

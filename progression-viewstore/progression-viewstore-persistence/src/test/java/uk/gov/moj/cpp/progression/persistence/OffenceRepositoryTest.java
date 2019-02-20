@@ -27,7 +27,10 @@ import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 
 /**
  * DB integration tests for {@link OffenceRepository} class
+ * @deprecated
  */
+
+@Deprecated
 @RunWith(CdiTestRunner.class)
 public class OffenceRepositoryTest  {
 

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-updated.json",
+  "type": "object",
+  "properties": {
+    "updatedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/confirmedHearing.json"
+    }
+  },
+  "required": [
+    "updatedHearing"
+  ],
+  "additionalProperties": false
+}

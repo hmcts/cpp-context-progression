@@ -10,7 +10,13 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(EVENT_LISTENER)
 public class ConvictionDateRemovedEventListener {
 

@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class Prosecution {
     private String otherDetails;
 
@@ -9,7 +15,7 @@ public class Prosecution {
         return otherDetails;
     }
 
-    public void setOtherDetails(String otherDetails) {
+    public void setOtherDetails(final String otherDetails) {
         this.otherDetails = otherDetails;
     }
 
@@ -17,11 +23,11 @@ public class Prosecution {
         return ancillaryOrders;
     }
 
-    public void setAncillaryOrders(AncillaryOrders ancillaryOrders) {
+    public void setAncillaryOrders(final AncillaryOrders ancillaryOrders) {
         this.ancillaryOrders = ancillaryOrders;
     }
 
-    public Prosecution(String otherDetails, AncillaryOrders ancillaryOrders) {
+    public Prosecution(final String otherDetails, final AncillaryOrders ancillaryOrders) {
         super();
         this.otherDetails = otherDetails;
         this.ancillaryOrders = ancillaryOrders;

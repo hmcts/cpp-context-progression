@@ -1,0 +1,20 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/courts/progression/query/progression.query.prosecution-case",
+	"type": "object",
+	"properties": {
+		"prosecutionCase": {
+			"$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+		},
+		"courtDocuments":{
+			"type":"array",
+			"minItems": 0,
+			"additionalItems": false,
+			"items":{
+				"$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+			}
+		}
+	}
+
+}
+

@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.SendingSheetCompleteIT.PUBLIC_SENDING_SHEET_INVALIDATED;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantForDefendantId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
@@ -22,12 +25,12 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.jayway.restassured.path.json.JsonPath;
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 
 public class UpdateDefendantHelper extends AbstractTestHelper {
 
@@ -42,10 +45,8 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
     private final MessageConsumer publicEventsConsumerForDefendantUpdated =
             QueueUtil.publicEvents.createConsumer(
                     "public.progression.events.defendant-updated");
-
-    private final MessageConsumer publicEventsCaseDefendantChanged =
-                    QueueUtil.publicEvents
-                                    .createConsumer("public.progression.case-defendant-changed");
+    private static final MessageConsumer publicEventCompleteSendingSheetInvalidatedConsumer = QueueUtil.publicEvents.createConsumer(
+            "public.progression.events.sending-sheet-previously-completed");
 
     private String request;
 
@@ -82,6 +83,15 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
+
+    public void updateDefendantBailStatus(final String documentId) {
+        final String jsonString = getPayload(TEMPLATE_PDATE_DEFENDANT_BAIL_STATUS_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.put("documentId", documentId);
+        jsonObjectPayload.put("bailStatus", "unconditional");
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
 
     /**
      * Retrieve message from queue and do additional verifications
@@ -135,25 +145,18 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
                 Matchers.containsString(caseId)))));
     }
 
-    public void verifyInMessagingQueueForDefendentChanged() {
-        final Optional<JsonObject> message =
-                        QueueUtil.retrieveMessageAsJsonObject(publicEventsCaseDefendantChanged);
-        assertTrue(message.isPresent());
-        assertThat(message.get(), isJson(withJsonPath("$.caseId",
-                        Matchers.hasToString(Matchers.containsString(caseId)))));
-    }
-    public void verifyInMessagingQueueForDefendentChangedNotPresent() {
-        final Optional<JsonObject> message =
-                        QueueUtil.retrieveMessageAsJsonObject(publicEventsCaseDefendantChanged);
-        assertTrue(!message.isPresent());
-    }
-
-    
     public void verifyEmptyUpdateDefendantPayload() {
         final String jsonString = getPayload(TEMPLATE_EMPTY_DEFENDANT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request,Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    public void verifySendingSheetPreviouslyCompletedPublicEvent() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventCompleteSendingSheetInvalidatedConsumer);
+        assertTrue(message.isPresent());
+        assertThat(message.get(), isJson(withJsonPath("$.caseId", Matchers.hasToString(
+                Matchers.containsString(caseId)))));
     }
 
 }

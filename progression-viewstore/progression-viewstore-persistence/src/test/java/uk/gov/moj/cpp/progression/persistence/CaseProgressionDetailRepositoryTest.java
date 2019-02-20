@@ -3,12 +3,6 @@ package uk.gov.moj.cpp.progression.persistence;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -25,6 +19,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+/**
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @RunWith(CdiTestRunner.class)
 public class CaseProgressionDetailRepositoryTest {
 
@@ -51,7 +55,7 @@ public class CaseProgressionDetailRepositoryTest {
 
         final Defendant defendant =
                         new Defendant(DEF_ID, caseProgressionDetailOne, false,null);
-        DefendantBailDocument defendantBailDocument=new DefendantBailDocument();
+        final DefendantBailDocument defendantBailDocument=new DefendantBailDocument();
         defendantBailDocument.setDocumentId(MATERIAL_ID);
         defendantBailDocument.setId(UUID.randomUUID());
         defendantBailDocument.setActive(Boolean.TRUE);
@@ -68,7 +72,7 @@ public class CaseProgressionDetailRepositoryTest {
     }
 
     private CaseProgressionDetail createCaseProgressionDetail(final UUID caseId,
-                                                              final CaseStatusEnum status, String caseUrn) {
+                                                              final CaseStatusEnum status, final String caseUrn) {
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
         caseProgressionDetail.setCaseId(caseId);
         caseProgressionDetail.setCaseUrn(caseUrn);
@@ -121,7 +125,7 @@ public class CaseProgressionDetailRepositoryTest {
     @Test
     public void shouldfindCaseByMaterialIdWhenMaterialIsDocument() {
 
-        CaseProgressionDetail caseProgressionDetail = repository.findByMaterialId(MATERIAL_ID);
+        final CaseProgressionDetail caseProgressionDetail = repository.findByMaterialId(MATERIAL_ID);
         assertThat(caseProgressionDetail.getCaseId(), equalTo(CASE_ID_ONE));
     }
 

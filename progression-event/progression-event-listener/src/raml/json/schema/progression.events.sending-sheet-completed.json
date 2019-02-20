@@ -219,6 +219,15 @@
                     "category":{
                       "type":"string"
                     },
+                    "title":{
+                      "type":"string"
+                    },
+                    "legislation":{
+                      "type":"string"
+                    },
+                    "orderIndex":{
+                      "type":"integer"
+                    },
                     "startDate":{
                       "$ref":"#/definitions/datePattern"
                     },

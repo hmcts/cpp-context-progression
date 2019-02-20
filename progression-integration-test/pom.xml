@@ -11,6 +11,7 @@
     <properties>
         <artemis.version>1.2.0</artemis.version>
         <rest-assured.version>2.5.0</rest-assured.version>
+        <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
     </properties>
 
     <artifactId>progression-integration-test</artifactId>
@@ -76,7 +77,80 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-test-utilities</artifactId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-domain-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
+
+    <build>
+    <plugins>
+        <plugin>
+            <artifactId>generator-plugin</artifactId>
+            <groupId>uk.gov.justice.maven.generator</groupId>
+            <executions>
+                <execution>
+                    <id>pojo-generation</id>
+                    <configuration>
+                        <basePackageName>uk.gov.moj.cpp.progression.it</basePackageName>
+                        <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
+                        <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <plugins>
+                                <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
+                                <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
+                                <!--plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddAdditionalPropertiesToClassPlugin</plugin-->
+                                <!--plugin>
+                                    uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
+                                </plugin-->
+                            </plugins>
+                            <typeMappings>
+                                <typeMapping>
+                                    <name>uuid</name>
+                                    <type>reference</type>
+                                    <implementation>java.util.UUID</implementation>
+                                </typeMapping>
+                                <typeMapping>
+                                    <name>date</name>
+                                    <type>reference</type>
+                                    <implementation>java.time.LocalDate</implementation>
+                                </typeMapping>
+                                <typeMapping>
+                                    <name>date</name>
+                                    <type>format</type>
+                                    <implementation>java.time.LocalDate</implementation>
+                                </typeMapping>
+                                <typeMapping>
+                                    <name>date-time</name>
+                                    <type>format</type>
+                                    <implementation>java.time.ZonedDateTime</implementation>
+                                </typeMapping>
+                            </typeMappings>
+                        </generatorProperties>
+                    </configuration>
+                </execution>
+            </executions>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>progression-datatypes-common</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+
+    </plugins>
+    </build>
+
+
     <profiles>
         <profile>
             <id>build</id>

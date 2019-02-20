@@ -31,7 +31,7 @@ public class UpdateDefendantIT extends BaseIntegrationTest {
      */
     @Test
     public void updateDefendantPersonAndVerify() {
-        UpdateDefendantHelper updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        final UpdateDefendantHelper updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
         updateDefendantHelper.updateDefendantPerson();
         updateDefendantHelper.verifyInActiveMQ();
         updateDefendantHelper.verifyDefendantPersonUpdated();
@@ -46,7 +46,7 @@ public class UpdateDefendantIT extends BaseIntegrationTest {
      */
     @Test
     public void updateDefendantBailStatusAndVerify() {
-        UpdateDefendantHelper updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        final UpdateDefendantHelper updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
         updateDefendantHelper.updateDefendantBailStatus();
         updateDefendantHelper.verifyInActiveMQ();
         updateDefendantHelper.verifyDefendantBailStatusUpdated();
@@ -59,7 +59,7 @@ public class UpdateDefendantIT extends BaseIntegrationTest {
      */
     @Test
     public void updateDefendantEmptyPayloadVerify() {
-        UpdateDefendantHelper updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        final UpdateDefendantHelper updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
         updateDefendantHelper.verifyEmptyUpdateDefendantPayload();
     }
 

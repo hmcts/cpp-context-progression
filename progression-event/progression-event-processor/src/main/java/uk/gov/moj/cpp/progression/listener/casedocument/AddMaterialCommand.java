@@ -1,7 +1,13 @@
 package uk.gov.moj.cpp.progression.listener.casedocument;
 
 import java.io.Serializable;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class AddMaterialCommand implements Serializable {
 
     private static final long serialVersionUID = 45685980061249719L;

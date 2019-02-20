@@ -54,6 +54,18 @@
             <version>2.4.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-common-providers</artifactId>
+        </dependency>
+
+<!--        ::jar:4.1.0:compile -->
 
     </dependencies>
 </project>

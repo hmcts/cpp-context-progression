@@ -21,12 +21,12 @@ import java.util.UUID;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jayway.restassured.path.json.JsonPath;
 
 public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
 
@@ -40,20 +40,14 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
     private static final String OFFENCE_CODE = "PS123FG";
 
 
-
     private final MessageConsumer publicEventsConsumerForOffencesForDefendantUpdated =
             QueueUtil.publicEvents.createConsumer(
                     "public.progression.events.offences-for-defendant-updated");
 
-    private final MessageConsumer publicEventDefendantOffanceChanged =
-            QueueUtil.publicEvents.createConsumer(
-            "public.progression.defendant-offences-changed");
-
-
 
     private String request;
 
-    private final String defendantId ;
+    private final String defendantId;
 
     private final String caseId;
 
@@ -96,11 +90,10 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         request = jsonObjectPayload.toString();
 
 
-
         makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    private void populateOffence(final JSONObject jsonObjectPayload, final int index, final String defendantId, final String offenceId, final String wording, final int orderIndex, final int count) {
+    private static void populateOffence(final JSONObject jsonObjectPayload, final int index, final String defendantId, final String offenceId, final String wording, final int orderIndex, final int count) {
         final JSONObject jsonObject0 = jsonObjectPayload.getJSONArray("offences").getJSONObject(index);
         jsonObject0.put("defendantId", defendantId);
         jsonObject0.put("id", offenceId);
@@ -115,7 +108,7 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
     }
 
 
-    private JSONObject getIndicatedPlea() {
+    private static JSONObject getIndicatedPlea() {
         final JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", UUID.randomUUID().toString());
         jsonObject.put("value", "INDICATED_GUILTY");
@@ -126,7 +119,7 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
     public void verifyOffencesPleasForDefendantUpdated() {
         final JsonPath jsRequest = new JsonPath(request);
 
-        poll(getOffencesForDefendantId(caseId,defendantId))
+        poll(getOffencesForDefendantId(caseId, defendantId))
                 .until(
                         status().is(OK),
                         payload()
@@ -135,8 +128,6 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
                                         )
                                 ));
     }
-
-
 
 
     /**
@@ -149,13 +140,13 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
         LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
 
-            assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
+        assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
     }
 
     public void verifyOffencesForDefendantUpdated() {
         final JsonPath jsRequest = new JsonPath(request);
 
-        poll(getOffencesForDefendantId(caseId,defendantId))
+        poll(getOffencesForDefendantId(caseId, defendantId))
                 .until(
                         status().is(OK),
                         payload()
@@ -169,7 +160,7 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
     public void verifyOffencesForDefendantUpdatedWithOffenceOrdering(final String caseUrn) {
         final JsonPath jsRequest = new JsonPath(request);
 
-        poll(getOffencesForDefendantId(caseId,defendantId))
+        poll(getOffencesForDefendantId(caseId, defendantId))
                 .until(
                         status().is(OK),
                         payload()
@@ -186,42 +177,12 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         return defendantId;
     }
 
-    public  void verifyInMessagingQueueOffencesForDefendentUpdated(){
+    public void verifyInMessagingQueueOffencesForDefendentUpdated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForOffencesForDefendantUpdated);
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.caseId", Matchers.hasToString(
                 Matchers.containsString(caseId)))));
     }
 
-    public  void verifyInMessagingQueueOffencesForDefendentChanged(){
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventDefendantOffanceChanged);
-        assertTrue(message.isPresent());
-        assertThat(message.get(), isJson(allOf(
-                withJsonPath("$.updatedOffences[0].caseId", Matchers.hasToString(Matchers.containsString(caseId))),
-                withJsonPath("$.updatedOffences[0].defendantId", Matchers.hasToString(Matchers.containsString(defendantId))),
-                withJsonPath("$.updatedOffences[0].offences[0].wording", Matchers.hasToString(Matchers.containsString("add offence to defendant test")))
-        )));
-    }
 
-    public  void verifyInMessagingQueueOffencesForDefendentAdded(final String deletedOffenceId){
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventDefendantOffanceChanged);
-        assertTrue(message.isPresent());
-        assertThat(message.get(), isJson(allOf(
-                withJsonPath("$.deletedOffences[0].caseId", Matchers.hasToString(Matchers.containsString(caseId))),
-                withJsonPath("$.deletedOffences[0].defendantId", Matchers.hasToString(Matchers.containsString(defendantId))),
-                withJsonPath("$.deletedOffences[0].offences[0]", Matchers.hasToString(Matchers.containsString(deletedOffenceId))),
-
-                withJsonPath("$.addedOffences[0].caseId", Matchers.hasToString(Matchers.containsString(caseId))),
-                withJsonPath("$.addedOffences[0].defendantId", Matchers.hasToString(Matchers.containsString(defendantId))),
-                withJsonPath("$.addedOffences[0].offences[0].id", Matchers.hasToString(Matchers.containsString(offenceId))),
-                withJsonPath("$.addedOffences[0].offences[0].statementOfOffence.title", Matchers.hasToString(Matchers.containsString("Public service vehicle - passenger use altered / defaced ticket"))),
-                withJsonPath("$.addedOffences[0].offences[0].statementOfOffence.legislation", Matchers.hasToString(Matchers.containsString("legislation")))
-        )));
-    }
-
-    public void verifyInMessagingQueueForDefendentChangedNotPresent() {
-        final Optional<JsonObject> message =
-                QueueUtil.retrieveMessageAsJsonObject(publicEventDefendantOffanceChanged);
-        assertTrue(!message.isPresent());
-    }
 }

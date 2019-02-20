@@ -2,14 +2,19 @@ package uk.gov.moj.cpp.progression.query.view.response;
 
 
 
-import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.OffenceIndicatedPlea;
-import uk.gov.moj.cpp.progression.persistence.entity.OffencePlea;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
-@SuppressWarnings("WeakerAccess")
+import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.OffenceIndicatedPlea;
+import uk.gov.moj.cpp.progression.persistence.entity.OffencePlea;
+/**
+ * 
+ * @deprecated
+ *
+ */
+@Deprecated
+@SuppressWarnings({"WeakerAccess", "squid:S1133"})
 public class OffenceView {
 
     private final UUID id;
@@ -35,8 +40,8 @@ public class OffenceView {
     private final LocalDate endDate;
     private final LocalDate chargeDate;
     private final LocalDate convictionDate;
-    private Integer count;
-    private int orderIndex;
+    private final Integer count;
+    private final int orderIndex;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -71,34 +76,34 @@ public class OffenceView {
 
     }
 
-    private PleaView getPleaView(OffencePlea offencePlea) {
+    private PleaView getPleaView(final OffencePlea offencePlea) {
         return new PleaView(offencePlea.getId(), offencePlea.getValue(), offencePlea.getPleaDate());
     }
 
-    private IndicatedPleaView getIndicatedPleaview(OffenceIndicatedPlea offenceIndicatedPlea) {
+    private IndicatedPleaView getIndicatedPleaview(final OffenceIndicatedPlea offenceIndicatedPlea) {
         return new IndicatedPleaView(offenceIndicatedPlea.getId(),offenceIndicatedPlea.getValue(),offenceIndicatedPlea.getAllocationDecision());
     }
 
-    private String setCprDefendantOffenderCheckDigit(OffenceDetail offence) {
+    private String setCprDefendantOffenderCheckDigit(final OffenceDetail offence) {
         return offence.getCpr() != null && offence.getCpr().getDefendantOffender() != null
                         ? offence.getCpr().getDefendantOffender().getCheckDigit()
                         : null;
     }
 
-    private String setCprDefendantOffenderNumber(OffenceDetail offence) {
+    private String setCprDefendantOffenderNumber(final OffenceDetail offence) {
         return offence.getCpr() != null && offence.getCpr().getDefendantOffender() != null
                         ? offence.getCpr().getDefendantOffender().getNumber()
                         : null;
     }
 
-    private String setCprDefendantOffenderOrganisationUnit(OffenceDetail offence) {
+    private String setCprDefendantOffenderOrganisationUnit(final OffenceDetail offence) {
         return offence.getCpr() != null && offence.getCpr().getDefendantOffender() != null
                         ? offence.getCpr().getDefendantOffender()
                                         .getOrganisationUnit()
                         : null;
     }
 
-    private String setCprDefendantOffenderYear(OffenceDetail offence) {
+    private String setCprDefendantOffenderYear(final OffenceDetail offence) {
         return offence.getCpr() != null && offence.getCpr().getDefendantOffender() != null
                         ? offence.getCpr().getDefendantOffender().getYear() : null;
     }

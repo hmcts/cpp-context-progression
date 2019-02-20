@@ -1,15 +1,21 @@
 package uk.gov.moj.cpp.progression.command.api;
 
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+
+import javax.inject.Inject;
+
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
-
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @ServiceComponent(COMMAND_API)
 public class ProgressionCommandApi {
     @Inject
@@ -38,24 +44,6 @@ public class ProgressionCommandApi {
         sender.send(commandEnvelope);
     }
 
-    @Handles("progression.command.case-to-be-assigned")
-    public void updateCaseToBeAssigned(final JsonEnvelope envelope) {
-        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.handler.case-to-be-assigned");
-        sender.send(commandEnvelope);
-    }
-
-
-    @Handles("progression.command.add-defendant-additional-information")
-    public void addAdditionalInformationForDefendant(final JsonEnvelope envelope) {
-        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.handler.add-defendant-additional-information");
-        sender.send(commandEnvelope);
-    }
-
-    @Handles("progression.command.no-more-information-required")
-    public void noMoreInformationRequired(final JsonEnvelope envelope) {
-        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope, "progression.command.record-no-more-information-required");
-        sender.send(commandEnvelope);
-    }
 
     @Handles("progression.command.request-psr-for-defendants")
     public void requestPSRForDefendants(final JsonEnvelope envelope) {

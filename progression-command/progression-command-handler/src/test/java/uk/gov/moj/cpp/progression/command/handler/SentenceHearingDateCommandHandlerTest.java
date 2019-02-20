@@ -4,7 +4,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +12,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
-
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class SentenceHearingDateCommandHandlerTest
                 extends CaseProgressionCommandHandlerTest {
@@ -21,7 +20,7 @@ public class SentenceHearingDateCommandHandlerTest
     @InjectMocks
     private SentenceHearingDateHandler sentenceHearingDateHandler;
 
-    private LocalDate sentenceHearingDate = LocalDate.now();
+    private final LocalDate sentenceHearingDate = LocalDate.now();
 
     @Test
     public void shouldPassNoMoreInformationRequired() throws EventStreamException {
@@ -29,10 +28,10 @@ public class SentenceHearingDateCommandHandlerTest
         when(jsonObject.getString("caseId")).thenReturn(CASE_ID.toString());
 
         when(jsonObject.getString("sentenceHearingDate")).thenReturn(sentenceHearingDate.toString());
-        when(caseProgressionAggregate.addSentenceHearingDate(CASE_ID,sentenceHearingDate))
+        when(caseAggregate.addSentenceHearingDate(CASE_ID,sentenceHearingDate))
                         .thenReturn(events);
 
         sentenceHearingDateHandler.addSentenceHearingDate(jsonEnvelope);
-        verify(caseProgressionAggregate).addSentenceHearingDate(CASE_ID,sentenceHearingDate);
+        verify(caseAggregate).addSentenceHearingDate(CASE_ID,sentenceHearingDate);
     }
 }

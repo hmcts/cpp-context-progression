@@ -2,17 +2,61 @@ package uk.gov.moj.cpp.accesscontrol;
 
 import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+global uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider progressionProvider;
 
+rule "Query - Access control for  progression.query.courtdocument"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.courtdocument");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
 
+rule "Query - Access control for  progression.query.courtdocuments"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.courtdocuments");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.prosecutioncase"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.prosecutioncase");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.case-at-a-glance"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case-at-a-glance");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.search-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.search-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
 
 rule "Query - Access control for  progression.query.caseprogressiondetail"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.caseprogressiondetail");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -21,7 +65,7 @@ rule "Query - Access control for  progression.query.cases"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -30,7 +74,7 @@ rule "Query - Access control for  progression.query.case-by-urn"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.case-by-urn");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "System Users","Court Clerks","Court Clerks","System Users","CMS" , "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks","Court Clerks","System Users","CMS" , "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
   then
     $outcome.setSuccess(true);
 end
@@ -39,7 +83,7 @@ rule "Query - Access control for  progression.query.defendant"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.defendant");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -48,7 +92,7 @@ rule "Query - Access control for  progression.query.defendants"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList("System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -57,7 +101,7 @@ rule "Query - Access control for  progression.query.defendant.document"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.defendant.document");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -66,7 +110,7 @@ rule "Query - Access control for  progression.query.crown-court.magistrate-court
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.crown-court.magistrate-courts");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList(  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -76,7 +120,7 @@ rule "progression - Query - API - Cases defendant offences"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.defendant-offences");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer","Court Clerks")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer","Court Clerks"))
   then
     $outcome.setSuccess(true);
 end
@@ -85,7 +129,63 @@ rule "progression - Query - API - search by material id"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.cases-search-by-material-id");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, Arrays.asList( "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer")))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - search for users groups by material id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.usergroups-by-material-id");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - material-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.material-metadata");
+    $allowedGroups: ArrayList() from collect(String() from progressionProvider.getAllowedUserGroups($action));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,$allowedGroups));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - material-content"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.material-content");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - court-extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.court-extract");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - defendant-request"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.defendant-request");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.material-nows-content"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.material-nows-content");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin"))
   then
     $outcome.setSuccess(true);
 end

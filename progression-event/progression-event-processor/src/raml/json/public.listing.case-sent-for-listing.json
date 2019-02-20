@@ -15,7 +15,7 @@
           "firstName": "David",
           "lastName": "Lloyd",
           "dateOfBirth": "1995-03-23",
-          "bailStatus": "inCustody",
+          "bailStatus": "IN_CUSTODY",
           "custodyTimeLimit": "1995-03-23",
           "defenceOrganisation": "Solicitor XYZ",
           "offences": [

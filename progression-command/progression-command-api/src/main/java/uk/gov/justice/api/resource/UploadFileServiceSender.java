@@ -1,10 +1,5 @@
 package uk.gov.justice.api.resource;
 
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -14,6 +9,16 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @ServiceComponent(Component.COMMAND_API)
 public class UploadFileServiceSender {
 
@@ -25,10 +30,10 @@ public class UploadFileServiceSender {
 
     public void doSend(final JsonObject objectToSend, final String userId, final String correlationId) {
 
-        Metadata metadataAsJsonObject = JsonObjectMetadata.metadataOf(UUID.randomUUID(), SINGLE_DOCUMENT_COMMAND).withUserId(userId)
+        final Metadata metadataAsJsonObject = JsonObjectMetadata.metadataOf(UUID.randomUUID(), SINGLE_DOCUMENT_COMMAND).withUserId(userId)
                 .withClientCorrelationId(correlationId).build();
 
-        JsonEnvelope envelope = DefaultJsonEnvelope.envelopeFrom(
+        final JsonEnvelope envelope = DefaultJsonEnvelope.envelopeFrom(
                 JsonObjectMetadata.metadataFrom(metadataAsJsonObject), objectToSend);
 
         uploadCaseDocumentHandler(envelope);
@@ -36,7 +41,7 @@ public class UploadFileServiceSender {
     }
 
     @Handles(SINGLE_DOCUMENT_COMMAND)
-    public void uploadCaseDocumentHandler(JsonEnvelope envelope) {
+    public void uploadCaseDocumentHandler(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
 }

@@ -1,0 +1,27 @@
+package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
+
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Query;
+import org.apache.deltaspike.data.api.QueryParam;
+import org.apache.deltaspike.data.api.Repository;
+
+@Repository
+public interface CaseDefendantHearingRepository extends EntityRepository<CaseDefendantHearingEntity, CaseDefendantHearingKey> {
+
+    @Query("from CaseDefendantHearingEntity entity where entity.id.caseId in (:caseId)")
+    public abstract List<CaseDefendantHearingEntity> findByCaseId(@QueryParam("caseId") UUID caseId);
+
+    @Query("from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId)")
+    public abstract List<CaseDefendantHearingEntity> findByHearingId(@QueryParam("hearingId") UUID hearingId);
+
+    @Query("from CaseDefendantHearingEntity entity where entity.id.defendantId in (:defendantId)")
+    public abstract List<CaseDefendantHearingEntity> findByDefendantId(@QueryParam("defendantId") UUID defendantId);
+
+
+}

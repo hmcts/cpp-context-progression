@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/warrantOrderDetails.json",
+  "description": "Specific data items required by Warrants",
+  "type": "object",
+  "properties": {
+        "arrestSummonsNumber": {
+		  "type": "string"
+		}
+      },
+      "required": [
+        "arrestSummonsNumber"
+      ],
+      "additionalProperties": false
+}

@@ -1,9 +1,15 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Embeddable
 public class InterpreterDetail implements Serializable{
 
@@ -15,7 +21,7 @@ public class InterpreterDetail implements Serializable{
     @Column(name="interpreter_language")
     private String language;
 
-    public InterpreterDetail(Boolean needed, String language) {
+    public InterpreterDetail(final Boolean needed, final String language) {
         this.needed = needed;
         this.language = language;
     }
@@ -27,7 +33,7 @@ public class InterpreterDetail implements Serializable{
         return needed;
     }
 
-    public void setNeeded(Boolean needed) {
+    public void setNeeded(final Boolean needed) {
         this.needed = needed;
     }
 
@@ -35,7 +41,7 @@ public class InterpreterDetail implements Serializable{
         return language;
     }
 
-    public void setLanguage(String language) {
+    public void setLanguage(final String language) {
         this.language = language;
     }
 

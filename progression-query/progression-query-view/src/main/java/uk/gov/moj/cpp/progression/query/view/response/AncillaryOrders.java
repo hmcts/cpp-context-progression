@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class AncillaryOrders {
     private String details;
 
@@ -9,7 +15,7 @@ public class AncillaryOrders {
         return details;
     }
 
-    public void setDetails(String details) {
+    public void setDetails(final String details) {
         this.details = details;
     }
 
@@ -17,11 +23,11 @@ public class AncillaryOrders {
         return isAncillaryOrders;
     }
 
-    public void setIsAncillaryOrders(Boolean isAncillaryOrders) {
+    public void setIsAncillaryOrders(final Boolean isAncillaryOrders) {
         this.isAncillaryOrders = isAncillaryOrders;
     }
 
-    public AncillaryOrders(String details, Boolean isAncillaryOrders) {
+    public AncillaryOrders(final String details, final Boolean isAncillaryOrders) {
         super();
         this.details = details;
         this.isAncillaryOrders = isAncillaryOrders;
