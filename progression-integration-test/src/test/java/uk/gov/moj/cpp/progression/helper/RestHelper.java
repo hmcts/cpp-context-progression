@@ -38,6 +38,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubSendCaseForListing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtOURoom;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtsCodeData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -149,6 +150,7 @@ public class RestHelper {
         stubQueryHearingTypeData("/restResource/ref-data-hearing-types.json",randomUUID());
         stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons.json", randomUUID());
         stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json", randomUUID());
+        stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
         stubQueryCourtOURoom("/restResource/referencedata.ou-courtroom.json");
         stubQueryOrganisation("/restResource/ref-data-get-organisation.json");

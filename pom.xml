@@ -37,9 +37,9 @@
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <material.version>2.0.112</material.version>
         <access.control.version>4.1.8-R2</access.control.version>
-        <referencedata.version>2.4.1-R2-SNAPSHOT</referencedata.version>
-        <listing.version>2.0.5-R2-SNAPSHOT</listing.version>
-        <hearing.version>2.5.2-R2-SNAPSHOT</hearing.version>
+        <referencedata.version>2.0.174</referencedata.version>
+        <listing.version>1.0.10</listing.version>
+        <hearing.version>2.0.132</hearing.version>
         <referencedata.offence.version>1.0.18</referencedata.offence.version>
     </properties>
 

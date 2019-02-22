@@ -263,4 +263,20 @@ public class ReferenceDataStub {
 
         waitForStubToBeReady(urlPath  , "application/vnd.referencedata.ou-courtrooms+json");
     }
+
+    public static void stubEnforcementArea(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject enforcementArea = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/enforcement-area?.*";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(enforcementArea.toString())));
+
+        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.query.enforcement-area+json");
+    }
 }
