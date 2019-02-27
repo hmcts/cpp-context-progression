@@ -31,6 +31,17 @@
     <include file="liquibase/alter-varchar-datatypes.xml"/>
     <include file="liquibase/create-person.xml"/>
     <include file="liquibase/alter-datetime-to-datetimewithtimezone.xml"/>
+    <include file="liquibase/create-prosecution-case.xml"/>
+    <include file="liquibase/create-court-document.xml"/>
+    <include file="liquibase/search-prosecution-case.xml"/>
+    <include file="liquibase/create-court-document-material.xml"/>
+    <include file="liquibase/create-court-document-index.xml"/>
+    <include file="liquibase/alter-court-document.xml"/>
+    <include file="liquibase/create-case-defendant-hearing.xml"/>
+    <include file="liquibase/create-hearing-result-line.xml"/>
+    <include file="liquibase/create-defendant-request.xml"/>
+    <include file="liquibase/add-print-status-table.xml"/>
+    <include file="liquibase/alter-court-document2.xml"/>
 
 
 </databaseChangeLog>	

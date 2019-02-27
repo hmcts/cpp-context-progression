@@ -3,8 +3,12 @@ package uk.gov.moj.cpp.progression.query.view.response;
 import java.util.UUID;
 
 /**
- * Created by jchondig on 04/12/2017.
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
  */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class IndicatedPleaView {
 
     private final UUID id;
@@ -25,7 +29,7 @@ public class IndicatedPleaView {
         return allocationDecision;
     }
 
-    public IndicatedPleaView(UUID id, String value, String allocationDecision) {
+    public IndicatedPleaView(final UUID id, final String value, final String allocationDecision) {
         this.id = id;
         this.value = value;
         this.allocationDecision = allocationDecision;

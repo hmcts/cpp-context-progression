@@ -9,10 +9,12 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 /**
- * NullAwareJsonObjectBuilder decorates JsonObjectBuilder to add null checks before calling add, so
- * as to prevent NPE Only adds to the builder if both name and value are not null;
+ *
+ * @deprecated
  *
  */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class NullAwareJsonObjectBuilder implements JsonObjectBuilder {
 
     private final JsonObjectBuilder builder;

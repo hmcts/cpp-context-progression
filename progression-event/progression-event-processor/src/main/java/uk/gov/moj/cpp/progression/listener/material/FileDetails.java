@@ -1,7 +1,13 @@
 package uk.gov.moj.cpp.progression.listener.material;
 
 import java.io.Serializable;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class FileDetails implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -27,19 +33,19 @@ public class FileDetails implements Serializable {
         return externalLink;
     }
 
-    public void setAlfrescoAssetId(String alfrescoAssetId) {
+    public void setAlfrescoAssetId(final String alfrescoAssetId) {
         this.alfrescoAssetId = alfrescoAssetId;
     }
 
-    public void setMimeType(String mimeType) {
+    public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
-    public void setFileName(String fileName) {
+    public void setFileName(final String fileName) {
         this.fileName = fileName;
     }
 
-    public void setExternalLink(String externalLink) {
+    public void setExternalLink(final String externalLink) {
         this.externalLink = externalLink;
     }
 }

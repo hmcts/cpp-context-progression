@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain</artifactId>
-        <version>2.0.111-SNAPSHOT</version>
+        <version>2.0.114-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <artifactId>progression-domain-common</artifactId>
     <dependencies>
@@ -12,11 +12,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava-testlib</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

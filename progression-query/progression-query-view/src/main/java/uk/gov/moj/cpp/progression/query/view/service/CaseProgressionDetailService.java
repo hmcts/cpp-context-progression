@@ -28,7 +28,13 @@ import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.progression.query.view.response.ProsecutingAuthority;
 import uk.gov.moj.cpp.progression.query.view.response.SearchCaseByMaterialIdView;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class CaseProgressionDetailService {
 
     @Inject

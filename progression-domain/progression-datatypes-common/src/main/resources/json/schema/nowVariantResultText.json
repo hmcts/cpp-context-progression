@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowVariantResultText.json",
+  "description": "The variable text for each result definition within a NOW.  Built dynamically from reference data",
+  "type": "object",
+  "properties": {
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,145 @@
+{
+  "hearing": {
+    "id": "c6a3fb7e-7523-4391-98a0-ae622ad4ac33",
+    "courtCentre": {
+      "courtCentreId": "d2ca6c3b-6c47-400f-acfb-6eea9cb45705",
+      "courtCentreName": "whEYt5pGLz",
+      "courtRoomId": "b1355956-eaa5-47ba-bb85-48eef368fa5d",
+      "courtRoomName": "fjm8yfzGGJ"
+    },
+    "attendees": [
+      {
+        "firstName": "3nYfi7ayhi",
+        "lastName": "FHHU9tSba0",
+        "type": "JUDGE",
+        "title": "xskZgkBeqq"
+      }
+    ],
+    "defendants": [
+      {
+        "id": "36e43e49-f644-4884-9261-8485537fe9ab",
+        "person": {
+          "id": "fc14c731-d05b-406a-bed2-74021be2e938",
+          "firstName": "2FiARDLxhK",
+          "lastName": "meKUv0Guug",
+          "dateOfBirth": "2014-06-04",
+          "address": {
+            "address1": "TRSO6VFKPV",
+            "address2": "RwLw0YjcT4",
+            "address3": "WzsLzeJo6q",
+            "address4": "jcURK6HxG1",
+            "postCode": "QkqxJ3tZdr"
+          },
+          "nationality": "2ngztuHbZG",
+          "gender": "s3rd7yCqov",
+          "homeTelephone": "",
+          "workTelephone": "",
+          "mobile": "",
+          "fax": "",
+          "email": ""
+        },
+        "defenceOrganisation": "zWcg2T1IcX",
+        "interpreter": {
+          "name": "",
+          "language": "RsranAFgSO"
+        },
+        "cases": [
+          {
+            "id": "6d4295ff-3878-46ad-a05b-9c7b17a897f3",
+            "urn": "3nF4LR0iRK",
+            "bailStatus": "B7n9HmHrpw",
+            "custodyTimeLimitDate": "2021-02-04T12:00:15.351Z",
+            "offences": [
+              {
+                "id": "5ba1c5e8-8e6f-4b81-9d90-0a75a51e4a10",
+                "code": "E8RLeQXk5i",
+                "convictionDate": "2015-12-15",
+                "plea": {
+                  "id": "5ba1c5e8-8e6f-4b81-9d90-0a75a51e4a10",
+                  "date": "2015-12-02",
+                  "value": "NOT_GUILTY",
+                  "enteredHearingId": "c6a3fb7e-7523-4391-98a0-ae622ad4ac33"
+                },
+                "verdict": {
+                  "verdictDescription": "nXdgfBIC7d",
+                  "verdictCategory": "GUILTY",
+                  "numberOfSplitJurors": "9-0",
+                  "verdictDate": "2015-12-15",
+                  "numberOfJurors": 9,
+                  "unanimous": false,
+                  "enteredHearingId": "c6a3fb7e-7523-4391-98a0-ae622ad4ac33"
+                },
+                "wording": "5BFduy8niU",
+                "startDate": "2016-12-13",
+                "endDate": "2017-04-11"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sharedResultLines": [
+      {
+        "id": "7879fde7-6dfc-4466-95df-36e584bbc3b0",
+        "caseId": "b96a29e5-1c09-4384-8b99-77cebca3d8af",
+        "defendantId": "f287aa07-8d2b-43a9-8836-122388e93e9f",
+        "offenceId": "9f3646a1-e9ab-484f-abda-c1bc04ce6ff1",
+        "level": "DEFENDANT_CASE",
+        "label": "Imprisonment",
+        "rank": 1,
+        "orderedDate": "2017-12-21",
+        "lastSharedDateTime": "2018-04-30T18:32:04.238Z",
+        "courtClerk": {
+          "id": "ab746921-d839-4867-bcf9-b41db8ebc852",
+          "firstName": "David",
+          "lastName": "Walliams"
+        },
+        "prompts": [
+          {
+            "id": "7567766c-6fb9-11e8-adc0-fa7ae01bbebc",
+            "label": "Imprisonment duration",
+            "value": "1 year 6 months"
+          },
+          {
+            "id": "75677b1c-6fb9-11e8-adc0-fa7ae01bbebc",
+            "label": "Prison",
+            "value": "Wormwood Scrubs"
+          }
+        ]
+      }
+    ]
+  },
+  "variants": [
+    {
+      "key": {
+        "hearingId": "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
+        "defendantId": "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
+        "nowsTypeId": "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
+        "usergroups": [
+          "Listings Officers",
+          "Court Clerks"
+        ]
+      },
+      "materialId": "f79bf106-84e0-4bd9-911a-fc28cd6a8c9c",
+      "description": "Imprisonment Order",
+      "templateName": "SingleTemplate",
+      "status": "GENERATED"
+    },
+    {
+      "key": {
+        "hearingId": "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
+        "defendantId": "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
+        "nowsTypeId": "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
+        "usergroups": [
+          "System Users",
+          "Court Clerks"
+        ]
+      },
+      "materialId": "a7757369-8382-4a4b-9640-ace82d5222f6",
+      "description": "Imprisonment Order",
+      "templateName": "SingleTemplate",
+      "status": "BUILDING"
+    }
+  ],
+  "sharedTime": "2016-06-01T10:00:00Z"
+}

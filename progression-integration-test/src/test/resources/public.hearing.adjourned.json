@@ -1,24 +1,31 @@
 {
-  "caseId": "RANDOM_CASE_ID",
-  "urn": "87GD9945217",
-  "hearings": [
+  "adjournedHearing": "1d30ba85-b806-4278-ad87-efa9ec75be50",
+  "nextHearings": [
     {
-      "id": "1d30ba85-b806-4278-ad87-efa9ec75be50",
-      "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f",
-      "type": "PTP",
-      "startDate": "2018-06-01",
-      "estimateMinutes": 7200,
-      "startTime": "10:30",
-      "judgeId": "0baecac5-222b-402d-9047-84803679edae",
-      "courtRoomId": "e8821a38-546d-4b56-9992-ebdd772a561f",
-      "defendants": [
+      "type": {
+        "id": "2d30ba85-b806-4278-ad87-efa9ec75be50",
+        "description": "SENTENCING"
+      },
+      "jurisdictionType": "MAGISTRATES",
+      "courtCentre": {
+        "id": "3d30ba85-b806-4278-ad87-efa9ec75be50",
+        "name": "CROYDON"
+      },
+      "earliestStartDateTime": "2018-11-12T09:27:12Z",
+      "estimatedMinutes": 7200,
+      "nextHearingProsecutionCases": [
         {
-          "id": "DEFENDANT_ID",
-          "offences": [
-            {
-              "id": "OFFENCE_ID"
-            }
-          ]
+            "id": "PROSECUTION_CASE_ID",
+            "defendants": [
+              {
+                "id": "DEFENDANT_ID",
+                "offences": [
+                  {
+                    "id": "OFFENCE_ID"
+                  }
+                ]
+              }
+            ]
         }
       ]
     }

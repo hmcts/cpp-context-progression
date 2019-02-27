@@ -24,6 +24,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ *
+ * @deprecated
+ *
+ */
+@Deprecated
 @SuppressWarnings("squid:S2187")
 public class AbstractProgressionQueryBaseTest {
 

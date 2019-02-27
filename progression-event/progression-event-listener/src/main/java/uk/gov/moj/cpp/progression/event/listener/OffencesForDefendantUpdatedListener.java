@@ -1,6 +1,15 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+
 import com.google.common.collect.Sets;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -10,14 +19,13 @@ import uk.gov.moj.cpp.progression.event.converter.OffenceForDefendantUpdatedToEn
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(EVENT_LISTENER)
 public class OffencesForDefendantUpdatedListener {
 
@@ -52,7 +60,7 @@ public class OffencesForDefendantUpdatedListener {
         }
     }
 
-    private void mergeOffence(Set<OffenceDetail> persistedOffenceDetailList, Set<OffenceDetail> offenceDetailList) {
+    private void mergeOffence(final Set<OffenceDetail> persistedOffenceDetailList, final Set<OffenceDetail> offenceDetailList) {
         persistedOffenceDetailList.forEach(offenceDetailPersisted ->
             offenceDetailList.forEach(offenceDetail -> {
                 if (offenceDetailPersisted.equals(offenceDetail)) {

@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -9,11 +13,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
-
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 @Table(name = "offence")
 public class OffenceDetail implements Serializable {
@@ -117,7 +122,7 @@ public class OffenceDetail implements Serializable {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
@@ -125,7 +130,7 @@ public class OffenceDetail implements Serializable {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
@@ -133,7 +138,7 @@ public class OffenceDetail implements Serializable {
         return offencePlea;
     }
 
-    public void setOffencePlea(OffencePlea offencePlea) {
+    public void setOffencePlea(final OffencePlea offencePlea) {
         this.offencePlea = offencePlea;
     }
 
@@ -141,7 +146,7 @@ public class OffenceDetail implements Serializable {
         return sequenceNumber;
     }
 
-    public void setSequenceNumber(Integer sequenceNumber) {
+    public void setSequenceNumber(final Integer sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
 
@@ -149,7 +154,7 @@ public class OffenceDetail implements Serializable {
         return wording;
     }
 
-    public void setWording(String wording) {
+    public void setWording(final String wording) {
         this.wording = wording;
     }
 
@@ -158,7 +163,7 @@ public class OffenceDetail implements Serializable {
         return offenceIndicatedPlea;
     }
 
-    public void setOffenceIndicatedPlea(OffenceIndicatedPlea offenceIndicatedPlea) {
+    public void setOffenceIndicatedPlea(final OffenceIndicatedPlea offenceIndicatedPlea) {
         this.offenceIndicatedPlea = offenceIndicatedPlea;
     }
 
@@ -166,7 +171,7 @@ public class OffenceDetail implements Serializable {
         return section;
     }
 
-    public void setSection(String section) {
+    public void setSection(final String section) {
         this.section = section;
     }
 
@@ -174,7 +179,7 @@ public class OffenceDetail implements Serializable {
         return policeOffenceId;
     }
 
-    public void setPoliceOffenceId(String policeOffenceId) {
+    public void setPoliceOffenceId(final String policeOffenceId) {
         this.policeOffenceId = policeOffenceId;
     }
 
@@ -182,7 +187,7 @@ public class OffenceDetail implements Serializable {
         return cpr;
     }
 
-    public void setCpr(CPRDetails cpr) {
+    public void setCpr(final CPRDetails cpr) {
         this.cpr = cpr;
     }
 
@@ -190,7 +195,7 @@ public class OffenceDetail implements Serializable {
         return reason;
     }
 
-    public void setReason(String reason) {
+    public void setReason(final String reason) {
         this.reason = reason;
     }
 
@@ -198,7 +203,7 @@ public class OffenceDetail implements Serializable {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -206,7 +211,7 @@ public class OffenceDetail implements Serializable {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(final String category) {
         this.category = category;
     }
 
@@ -214,7 +219,7 @@ public class OffenceDetail implements Serializable {
         return arrestDate;
     }
 
-    public void setArrestDate(LocalDate arrestDate) {
+    public void setArrestDate(final LocalDate arrestDate) {
         this.arrestDate = arrestDate;
     }
 
@@ -222,7 +227,7 @@ public class OffenceDetail implements Serializable {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(final LocalDate startDate) {
         this.startDate = startDate;
     }
 
@@ -230,7 +235,7 @@ public class OffenceDetail implements Serializable {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(final LocalDate endDate) {
         this.endDate = endDate;
     }
 
@@ -238,7 +243,7 @@ public class OffenceDetail implements Serializable {
         return chargeDate;
     }
 
-    public void setChargeDate(LocalDate chargeDate) {
+    public void setChargeDate(final LocalDate chargeDate) {
         this.chargeDate = chargeDate;
     }
 
@@ -246,7 +251,7 @@ public class OffenceDetail implements Serializable {
         return convictionDate;
     }
 
-    public void setConvictionDate(LocalDate convictionDate) {
+    public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
     }
 
@@ -254,14 +259,14 @@ public class OffenceDetail implements Serializable {
         return defendant;
     }
 
-    public void setDefendant(Defendant defendantDetail) {
+    public void setDefendant(final Defendant defendantDetail) {
         this.defendant = defendantDetail;
     }
     public int getOrderIndex() {
         return orderIndex;
     }
 
-    public void setOrderIndex(int orderIndex) {
+    public void setOrderIndex(final int orderIndex) {
         this.orderIndex = orderIndex;
     }
 
@@ -269,12 +274,12 @@ public class OffenceDetail implements Serializable {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(final Integer count) {
         this.count = count;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
@@ -282,7 +287,7 @@ public class OffenceDetail implements Serializable {
             return false;
         }
 
-        OffenceDetail that = (OffenceDetail) o;
+        final OffenceDetail that = (OffenceDetail) o;
 
         return id.equals(that.id);
 
@@ -320,100 +325,100 @@ public class OffenceDetail implements Serializable {
             return new OffenceDetail(this);
         }
 
-        public OffenceDetailBuilder setId(UUID id) {
+        public OffenceDetailBuilder setId(final UUID id) {
             this.id = id;
             return this;
         }
 
-        public OffenceDetailBuilder setCode(String code) {
+        public OffenceDetailBuilder setCode(final String code) {
             this.code = code;
             return this;
         }
 
-        public OffenceDetailBuilder setOffencePlea(OffencePlea offencePlea) {
+        public OffenceDetailBuilder setOffencePlea(final OffencePlea offencePlea) {
             this.offencePlea = offencePlea;
             return this;
         }
 
 
-        public OffenceDetailBuilder setSequenceNumber(Integer sequenceNumber) {
+        public OffenceDetailBuilder setSequenceNumber(final Integer sequenceNumber) {
             this.sequenceNumber = sequenceNumber;
             return this;
         }
 
-        public OffenceDetailBuilder setWording(String wording) {
+        public OffenceDetailBuilder setWording(final String wording) {
             this.wording = wording;
             return this;
         }
 
 
-        public OffenceDetailBuilder setPoliceOffenceId(String policeOffenceId) {
+        public OffenceDetailBuilder setPoliceOffenceId(final String policeOffenceId) {
             this.policeOffenceId = policeOffenceId;
             return this;
         }
 
 
-        public OffenceDetailBuilder setCpr(CPRDetails cpr) {
+        public OffenceDetailBuilder setCpr(final CPRDetails cpr) {
             this.cpr = cpr;
             return this;
         }
 
-        public OffenceDetailBuilder setReason(String reason) {
+        public OffenceDetailBuilder setReason(final String reason) {
             this.reason = reason;
             return this;
         }
 
-        public OffenceDetailBuilder setDescription(String description) {
+        public OffenceDetailBuilder setDescription(final String description) {
             this.description = description;
             return this;
         }
 
-        public OffenceDetailBuilder setCategory(String category) {
+        public OffenceDetailBuilder setCategory(final String category) {
             this.category = category;
             return this;
         }
 
-        public OffenceDetailBuilder setArrestDate(LocalDate arrestDate) {
+        public OffenceDetailBuilder setArrestDate(final LocalDate arrestDate) {
             this.arrestDate = arrestDate;
             return this;
         }
 
-        public OffenceDetailBuilder setStartDate(LocalDate startDate) {
+        public OffenceDetailBuilder setStartDate(final LocalDate startDate) {
             this.startDate = startDate;
             return this;
         }
 
-        public OffenceDetailBuilder setEndDate(LocalDate endDate) {
+        public OffenceDetailBuilder setEndDate(final LocalDate endDate) {
             this.endDate = endDate;
             return this;
         }
 
-        public OffenceDetailBuilder setChargeDate(LocalDate chargeDate) {
+        public OffenceDetailBuilder setChargeDate(final LocalDate chargeDate) {
             this.chargeDate = chargeDate;
             return this;
         }
 
-        public OffenceDetailBuilder setConvictionDate(LocalDate convictionDate) {
+        public OffenceDetailBuilder setConvictionDate(final LocalDate convictionDate) {
             this.convictionDate = convictionDate;
             return this;
         }
         
-        public OffenceDetailBuilder withOffenceIndicatedPlea(OffenceIndicatedPlea offenceIndicatedPlea) {
+        public OffenceDetailBuilder withOffenceIndicatedPlea(final OffenceIndicatedPlea offenceIndicatedPlea) {
             this.offenceIndicatedPlea = offenceIndicatedPlea;
             return this;
         }
 
-        public OffenceDetailBuilder withSection(String section) {
+        public OffenceDetailBuilder withSection(final String section) {
             this.section = section;
             return this;
         }
 
-        public OffenceDetailBuilder withOrderIndex(int orderIndex) {
+        public OffenceDetailBuilder withOrderIndex(final int orderIndex) {
             this.orderIndex = orderIndex;
             return this;
         }
 
-        public OffenceDetailBuilder withCount(Integer count) {
+        public OffenceDetailBuilder withCount(final Integer count) {
             this.count = count;
             return this;
         }

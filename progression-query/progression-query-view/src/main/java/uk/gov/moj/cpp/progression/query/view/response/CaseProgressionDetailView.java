@@ -1,13 +1,19 @@
 package uk.gov.moj.cpp.progression.query.view.response;
 
-import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.query.view.service.ProgressionDataConstant;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.query.view.service.ProgressionDataConstant;
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class CaseProgressionDetailView {
 
     private String caseId;
@@ -41,19 +47,18 @@ public class CaseProgressionDetailView {
     }
 
     public static CaseProgressionDetailView createCaseView(final CaseProgressionDetail caseProgressionDetail) {
-        CaseProgressionDetailView caseProgressionDetailView=new CaseProgressionDetailView(caseProgressionDetail);
-        List<DefendantView> defendantViews = caseProgressionDetailView.getDefendantsView(caseProgressionDetail).getDefendants();
+        final CaseProgressionDetailView caseProgressionDetailView=new CaseProgressionDetailView(caseProgressionDetail);
+        final List<DefendantView> defendantViews = caseProgressionDetailView.getDefendantsView(caseProgressionDetail).getDefendants();
         caseProgressionDetailView.setDefendants(defendantViews);
         return caseProgressionDetailView;
     }
 
     public static CaseProgressionDetailView createCaseWithoutDefendantView(final CaseProgressionDetail caseProgressionDetail) {
-        CaseProgressionDetailView caseProgressionDetailView=new CaseProgressionDetailView(caseProgressionDetail);
-        return caseProgressionDetailView;
+        return new CaseProgressionDetailView(caseProgressionDetail);
     }
 
 
-    private DefendantsView getDefendantsView(CaseProgressionDetail caseProgressionDetail) {
+    private DefendantsView getDefendantsView(final CaseProgressionDetail caseProgressionDetail) {
         return new DefendantsView(caseProgressionDetail.getDefendants().stream().map(DefendantView::new).collect(Collectors.toList()));
     }
 
@@ -67,7 +72,7 @@ public class CaseProgressionDetailView {
         return defendants;
     }
 
-    public void setDefendants(List<DefendantView> defendants) {
+    public void setDefendants(final List<DefendantView> defendants) {
         this.defendants = defendants;
     }
 
@@ -75,7 +80,7 @@ public class CaseProgressionDetailView {
         return courtCentreId;
     }
 
-    public void setCourtCentreId(String courtCentreId) {
+    public void setCourtCentreId(final String courtCentreId) {
         this.courtCentreId = courtCentreId;
     }
 
@@ -131,7 +136,7 @@ public class CaseProgressionDetailView {
         return caseUrn;
     }
 
-    public void setCaseUrn(String caseUrn) {
+    public void setCaseUrn(final String caseUrn) {
         this.caseUrn = caseUrn;
     }
 

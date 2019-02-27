@@ -17,7 +17,13 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class SentenceHearingDateAddedEventListenerTest {
 

@@ -3,8 +3,153 @@ title: Progression Command API
 version: 1.0
 baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progression
 
+/courtdocument/{courtDocumentId}/material/{materialId}:
+  uriParameters:
+    courtDocumentId:
+      description: CourtDocumentId of the document of which a meterial being removed
+      type: string
+    materialId:
+      description: materialId of material being removed
+      type: string
+  post:
+      description: |
+        Court document is being removed.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.remove-court-document+json
+            name: progression.remove-court-document
+        ...
+      body:
+        application/vnd.progression.remove-court-document+json:
+            example:
+             !include json/progression.remove-court-document.json
+            schema:
+             !include json/schema/progression.remove-court-document.json
+
+      responses:
+            202:
+                description: OK
 
 
+
+/courtdocument/{materialId}:
+  uriParameters:
+    materialId:
+      description: The ID of the material for the document
+      type: string
+  post:
+    description: |
+      Upload a case document for a case
+      ...
+      (mapping):
+          requestType: multipart/form-data
+          name: progression.upload-court-document
+      (mapping):
+          requestType: application/vnd.progression.upload-court-document+json
+          name: progression.upload-court-document
+      (mapping):
+          requestType: application/vnd.progression.add-court-document+json
+          name: progression.add-court-document
+      ...
+    body:
+      application/vnd.progression.upload-court-document+json:
+        example:
+          !include json/progression.upload-court-document.json
+        schema:
+          !include json/schema/progression.upload-court-document.json
+      application/vnd.progression.add-court-document+json:
+        example:
+          !include json/progression.add-court-document.json
+        schema:
+          !include json/schema/progression.add-court-document.json
+      multipart/form-data:
+        formParameters:
+          fileServiceId:
+            description: fileServiceId for the document to be uploaded
+            type: file
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/refertocourt :
+  post:
+      description: |
+        Case is sent to a Court for Hearing.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.refer-cases-to-court+json
+            name: progression.refer-cases-to-court
+        ...
+      body:
+        application/vnd.progression.refer-cases-to-court+json:
+            example:
+             !include json/progression.refer-cases-to-court.json
+            schema:
+             !include json/schema/progression.refer-cases-to-court.json
+      responses:
+            202:
+                description: OK
+
+
+/prosecutioncases/{prosecutionCaseId}/defendants/{id}:
+  uriParameters:
+    prosecutionCaseId:
+      description: The ID of the case
+      type: string
+    id:
+      description: The ID of the defendant to modify
+      type: string
+  post:
+    description: |
+      Update defendant details.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-defendant-for-prosecution-case+json
+          name: progression.update-defendant-for-prosecution-case
+      (mapping):
+          requestType: application/vnd.progression.update-offences-for-prosecution-case+json
+          name: progression.update-offences-for-prosecution-case
+
+      ...
+    body:
+      application/vnd.progression.update-defendant-for-prosecution-case+json:
+        example:
+          !include json/progression.update-defendant-for-prosecution-case.json
+        schema:
+          !include json/schema/progression.update-defendant-for-prosecution-case.json
+      application/vnd.progression.update-offences-for-prosecution-case+json:
+        example:
+          !include json/progression.update-offences-for-prosecution-case.json
+        schema:
+          !include json/schema/progression.update-offences-for-prosecution-case.json
+
+    responses:
+          202:
+              description: OK
+
+/nows:
+    post:
+      description: |
+        ...
+        (mapping):
+            requestType: application/vnd.progression.generate-nows+json
+            name: progression.generate-nows
+        ...
+      body:
+        application/vnd.progression.generate-nows+json:
+            example:
+             !include json/progression.generate-nows.json
+            schema:
+             !include json/schema/progression.generate-nows.json
+      responses:
+            202:
+                description: OK
+
+
+# ***** Deprecated API - Start ********
+# ***** Do not add any new API in this section *****
 /cases/{caseId} :
   post:
       description: |
@@ -12,7 +157,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         Case is sent to a Crown Court for Hearing by a Magistrates Court.
         The Case is identified on the Common Platform  and added to appropriate Crown Court.
         Sending committal hearing information to be added to the case
-        Assign the status Ready for Review which signifies that a case is ready to be assigned to a Judge for Sentencing Hearing Review.
         Moves a case with a  to status "Assigned for Review " once the case is referred to a named Judge/Judicial Officer
         Marks a  case as Ready for Sentencing when a Judge/Judicial Officer following a SHR, confirms the decision
         ...
@@ -25,9 +169,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.command.sending-committal-hearing-information+json
             name: progression.command.sending-committal-hearing-information
-        (mapping):
-            requestType: application/vnd.progression.command.case-to-be-assigned+json
-            name: progression.command.case-to-be-assigned
         (mapping):
             requestType: application/vnd.progression.command.complete-sending-sheet+json
             name: progression.command.complete-sending-sheet
@@ -52,12 +193,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
             schema:
              !include json/schema/progression.command.sending-committal-hearing-information.json
-        application/vnd.progression.command.case-to-be-assigned+json:
-            example:
-             !include json/progression.command.case-to-be-assigned.json
 
-            schema:
-             !include json/schema/progression.command.case-to-be-assigned.json
         application/vnd.progression.command.complete-sending-sheet+json:
             example:
              !include json/progression.command.complete-sending-sheet.json
@@ -68,6 +204,7 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+# Deprecated API Section - End
 
 /cases/{caseId}/defendant:
   uriParameters:
@@ -102,13 +239,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       description:  |
         the defendant progression details
         ...
-        (mapping):
-            requestType: application/vnd.progression.command.add-defendant-additional-information+json
-            name: progression.command.add-defendant-additional-information
-        (mapping):
-            requestType: application/vnd.progression.command.no-more-information-required+json
-            name: progression.command.no-more-information-required
-        (mapping):
             requestType: application/vnd.progression.command.update-offences-for-defendant+json
             name: progression.command.update-offences-for-defendant
         (mapping):
@@ -116,17 +246,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             name: progression.command.update-defendant
         ...
       body:
-        application/vnd.progression.command.add-defendant-additional-information+json:
-            example:
-             !include json/progression.command.add-defendant-additional-information.json
-            schema:
-             !include json/schema/progression.command.add-defendant-additional-information.json
-
-        application/vnd.progression.command.no-more-information-required+json:
-            example:
-             !include json/progression.command.no-more-information-required.json
-            schema:
-             !include json/schema/progression.command.no-more-information-required.json
         application/vnd.progression.command.update-offences-for-defendant+json:
           example:
             !include json/progression.command.update-offences-for-defendant.json
@@ -163,3 +282,4 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+# Deprecated API  - End

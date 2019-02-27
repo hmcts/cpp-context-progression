@@ -1,77 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/hearing/public.hearing-detail-changed.json",
   "type": "object",
   "properties": {
     "hearing": {
-      "type": "object",
-      "items": {
-        "$ref": "#/definitions/hearing"
-      }
+      "$ref": "http://justice.gov.uk/core/courts/hearingListingUpdated.json"
     }
   },
   "required": [
     "hearing"
   ],
-  "additionalProperties": true,
-  "definitions": {
-    "hearing": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/uuid"
-        },
-        "type": {
-          "type": "string"
-        },
-        "courtRoomId": {
-          "$ref": "#/definitions/uuid"
-        },
-        "courtRoomName": {
-          "type": "string"
-        },
-        "judge": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "$ref": "#/definitions/uuid"
-            },
-            "title": {
-              "type": "string"
-            },
-            "firstName": {
-              "type": "string"
-            },
-            "lastName": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "title",
-            "firstName",
-            "lastName"
-          ]
-        },
-        "hearingDays": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "type",
-        "courtRoomId",
-        "judgeId",
-        "hearingDays"
-      ],
-      "additionalProperties": true
-    },
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
+  "additionalProperties": false
 }

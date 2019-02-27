@@ -1,0 +1,236 @@
+package uk.gov.moj.cpp.progression.transformer;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ID;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
+
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AllocationDecision;
+import uk.gov.justice.core.courts.BailStatus;
+import uk.gov.justice.core.courts.CourtDecision;
+import uk.gov.justice.core.courts.DefendantRepresentation;
+import uk.gov.justice.core.courts.Gender;
+import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
+import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PleaValue;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionRepresentation;
+import uk.gov.justice.core.courts.Source;
+import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
+import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
+import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+
+@SuppressWarnings({"squid:S3655", "squid:S1213", "squid:S00116", "squid:CallToDeprecatedMethod", "pmd:NullAssignment"})
+public class SendingSheetCompleteTransformer {
+
+    @Inject
+    private ReferenceDataOffenceService referenceDataOffenceService;
+
+    @Inject
+    private ReferenceDataService referenceDataService;
+
+    private SendingSheetCompleteTransformer() {
+
+    }
+
+    //Constants for CPS cases
+    protected static final String PROSECUTION_AUTHORITY_CODE = ProsecutingAuthority.CPS.getDescription();
+
+    // id from ref-data for POLICE
+    protected static final UUID PROSECUTION_AUTHORITY_ID = UUID.fromString("52b27284-0686-4894-b1c7-7d4b634cacdb");
+    // SendingSheetComplete does not have hearingId as hearing is only created after public message is sent
+    // to hearing context. So this is being set with a random hearingId. Approved by tech Arch.
+    private final UUID ORIGINATING_HEARING_ID = randomUUID();
+
+
+    public ProsecutionCase transformToProsecutionCase(final SendingSheetCompleted sendingSheetCompleted, final JsonEnvelope jsonEnvelope) {
+        final Hearing hearing = sendingSheetCompleted.getHearing();
+        final String caseUrn = hearing.getCaseUrn();
+        final List<Defendant> defendants = hearing.getDefendants();
+        final UUID caseId = hearing.getCaseId();
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(transformDefendants(defendants, caseId, hearing.getSendingCommittalDate(), jsonEnvelope))
+                .withInitiationCode(InitiationCode.C)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withCaseURN(caseUrn)
+                        .withProsecutionAuthorityCode(PROSECUTION_AUTHORITY_CODE)
+                        .withProsecutionAuthorityId(PROSECUTION_AUTHORITY_ID)
+                        .build())
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.toString())
+                .build();
+    }
+
+    private List<uk.gov.justice.core.courts.Defendant> transformDefendants(final List<Defendant> defendants, final UUID caseId,
+                                                                           final String sendingCommitalDate, final JsonEnvelope jsonEnvelope) {
+        return defendants.stream().map(d -> transformDefendant(d, caseId, sendingCommitalDate, jsonEnvelope)).collect(Collectors.toList());
+    }
+
+    private List<Offence> transformOffences(final List<uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence> offences, final String sendingCommitalDate, final JsonEnvelope
+            jsonEnvelope) {
+        return offences.stream().map(o -> transformOffence(o, sendingCommitalDate, jsonEnvelope)).collect(Collectors.toList());
+    }
+
+    private Offence transformOffence(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence, final String sendingCommitalDate, final JsonEnvelope
+            jsonEnvelope) {
+        final JsonObject offenceJson = referenceDataOffenceService.getOffenceByCjsCode(offence
+                .getOffenceCode(), jsonEnvelope)
+                .orElseThrow(() -> new ReferenceDataNotFoundException("Offence", offence.getId().toString()));
+
+        return Offence.offence()
+                .withId(offence.getId())
+                .withWording(offence.getWording())
+                .withStartDate(offence.getStartDate())
+                .withOffenceDefinitionId(UUID.fromString(fetchValueFromKey(offenceJson, "offenceId", offence.getId())))
+                .withEndDate(offence.getEndDate())
+                .withConvictionDate(offence.getConvictionDate() == null ? null : LocalDates.to(offence.getConvictionDate()))
+                .withPlea(getPlea(offence))
+                .withCount(0)
+                .withOffenceLegislation(fetchValueFromKey(offenceJson, LEGISLATION, offence.getId()))
+                .withOffenceLegislationWelsh(fetchValueFromKey(offenceJson, LEGISLATION_WELSH, offence.getId()))
+                .withOffenceTitle(fetchValueFromKey(offenceJson, OFFENCE_TITLE, offence.getId()))
+                .withOffenceTitleWelsh(fetchValueFromKey(offenceJson, WELSH_OFFENCE_TITLE, offence.getId()))
+                .withModeOfTrial(fetchValueFromKey(offenceJson, "modeOfTrial", offence.getId()))
+                .withOffenceCode(offence.getOffenceCode())
+                .withOrderIndex(offence.getOrderIndex())
+                .withIndicatedPlea(getIndicatedPlea(offence, sendingCommitalDate))
+                .build();
+    }
+
+    private String fetchValueFromKey(final JsonObject jsonObject, final String key, final UUID offenceId) {
+        if (!jsonObject.containsKey(key)) {
+            throw new ReferenceDataNotFoundException(key, offenceId.toString());
+        }
+        return jsonObject.getString(key);
+    }
+
+    private static String fetchValueFromKey(final JsonObject jsonObject, final String key) {
+        return jsonObject.getString(key, null);
+    }
+
+    private IndicatedPlea getIndicatedPlea(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence, final String sendingCommitalDate) {
+        return isNull(offence.getIndicatedPlea()) ? null : buildIndicatedPlea(offence.getIndicatedPlea(), offence.getId(), sendingCommitalDate);
+    }
+
+    private Plea getPlea(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence) {
+        return offence.getPlea() == null ? null : Plea.plea()
+                .withPleaValue(PleaValue.valueFor(offence.getPlea().getValue()).get())
+                .withPleaDate(offence.getPlea().getPleaDate().toString())
+                .withOffenceId(offence.getId())
+                .withOriginatingHearingId(ORIGINATING_HEARING_ID)
+                .build();
+    }
+
+    private IndicatedPlea buildIndicatedPlea(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.IndicatedPlea indicatedPlea, final UUID offenceId, final String sendingCommitalDate) {
+        return IndicatedPlea.indicatedPlea()
+                .withOffenceId(offenceId)
+                .withIndicatedPleaValue(IndicatedPleaValue.valueFor(indicatedPlea.getValue()).get())
+                .withIndicatedPleaDate(sendingCommitalDate)
+                .withSource(Source.IN_COURT)
+                .withAllocationDecision(buildAllocationDecision(indicatedPlea.getAllocationDecision()))
+                .build();
+
+    }
+
+    private AllocationDecision buildAllocationDecision(final String allocationDecision) {
+        if (allocationDecision == null || "ELECT_TRIAL".equalsIgnoreCase(allocationDecision) || "COURT_DECLINED".equalsIgnoreCase(allocationDecision)) {
+            return AllocationDecision.allocationDecision()
+                    .withCourtDecision(CourtDecision.ELECT_TRIAL_ON_INDICTMENT)
+                    .withProsecutionRepresentation(ProsecutionRepresentation.ELECT_TRIAL_ON_INDICTMENT)
+                    .withDefendantRepresentation(DefendantRepresentation.ELECT_TRIAL_ON_INDICTMENT)
+                    .build();
+        } else {
+            return AllocationDecision.allocationDecision()
+                    .withCourtDecision(CourtDecision.INDICTABLE_ONLY_LINKED_TO_INDICTABLE)
+                    .build();
+        }
+    }
+
+    private uk.gov.justice.core.courts.Defendant transformDefendant(final Defendant defendant, final UUID caseId, final String sendingCommitalDate, final JsonEnvelope
+            jsonEnvelope) {
+        return uk.gov.justice.core.courts.Defendant.defendant()
+                .withDefenceOrganisation(defendant.getDefenceOrganisation() == null ? null : Organisation.organisation()
+                        .withName(defendant.getDefenceOrganisation())
+                        .build())
+                .withId(defendant.getId())
+                .withProsecutionCaseId(caseId)
+                .withOffences(transformOffences(defendant.getOffences(), sendingCommitalDate, jsonEnvelope))
+                .withPersonDefendant(buildPersonDefendant(defendant, jsonEnvelope))
+                .build();
+    }
+
+    private PersonDefendant buildPersonDefendant(final Defendant defendant, final JsonEnvelope jsonEnvelope) {
+        return PersonDefendant.personDefendant()
+                .withBailStatus(defendant.getBailStatus() == null ? null : BailStatus.valueFor(defendant.getBailStatus().toUpperCase()).get())
+                .withCustodyTimeLimit(defendant.getCustodyTimeLimitDate())
+                .withPersonDetails(buildPerson(defendant, jsonEnvelope))
+                .build();
+    }
+
+    private Person buildPerson(final Defendant defendant, final JsonEnvelope jsonEnvelope) {
+
+        final JsonObject nationalityJson = getNationalityJson(defendant.getNationality(), jsonEnvelope);
+        return Person.person()
+                .withDateOfBirth(defendant.getDateOfBirth())
+                .withFirstName(defendant.getFirstName())
+                .withLastName(defendant.getLastName())
+                .withNationalityId(UUID.fromString(fetchValueFromKey(nationalityJson, ID)))
+                .withNationalityCode(fetchValueFromKey(nationalityJson, NATIONALITY_CODE))
+                .withNationalityDescription(fetchValueFromKey(nationalityJson, NATIONALITY))
+                .withGender(Gender.valueFor(defendant.getGender().toUpperCase()).get())
+                .withAddress(
+                        isNull(defendant.getAddress()) ? null :
+                                Address.address()
+                                        .withAddress1(defendant.getAddress().getAddress1())
+                                        .withAddress2(defendant.getAddress().getAddress2())
+                                        .withAddress3(defendant.getAddress().getAddress3())
+                                        .withAddress4(defendant.getAddress().getAddress4())
+                                        .withPostcode(defendant.getAddress().getPostcode())
+                                        .build())
+                .withInterpreterLanguageNeeds(getInterpreterLanguageNeeds(defendant))
+                .build();
+
+    }
+
+    private JsonObject getNationalityJson(final String nationality, final JsonEnvelope jsonEnvelope) {
+        if (nonNull(nationality)) {
+            return referenceDataService
+                    .getNationalityByNationality(jsonEnvelope, nationality)
+                    .orElseThrow(() -> new ReferenceDataNotFoundException("Country Nationality", nationality));
+        }
+        return Json.createObjectBuilder().build();
+    }
+
+    private String getInterpreterLanguageNeeds(final Defendant defendant) {
+        return isNull(defendant.getInterpreter()) || isNull(defendant.getInterpreter().getLanguage()) ? null : defendant.getInterpreter().getLanguage();
+    }
+}

@@ -10,14 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 
-import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +19,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +27,21 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
+/**
+ * 
+ * @deprecated
+ *
+ */
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
     
@@ -97,7 +103,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
                                         .thenReturn(function);
         when(function.apply(anyObject())).thenReturn(responseJson);
 
-        JsonEnvelope response = queryView.getCaseProgressionDetails(query);
+        final JsonEnvelope response = queryView.getCaseProgressionDetails(query);
 
         verify(casePrgDetailService, atMost(1)).getCaseProgressionDetail(anyObject());
         verify(query, atMost(2)).payloadAsJsonObject();
@@ -129,7 +135,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
 
-        Optional<String> status = Optional.of("READY_FOR_REVIEW");
+        final Optional<String> status = Optional.of("READY_FOR_REVIEW");
         final JsonObject jsonObject = Json.createObjectBuilder()
                         .add(ProgressionQueryView.FIELD_STATUS, status.get())
                         .add(ProgressionQueryView.FIELD_CASE_ID, caseId.toString()).build();
@@ -140,7 +146,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
         when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
         when(function.apply(anyObject())).thenReturn(responseJson);
 
-        JsonEnvelope response = queryView.getCases(query);
+        final JsonEnvelope response = queryView.getCases(query);
 
         verify(casePrgDetailService, atMost(1)).getCases(anyObject());
         verify(query, atMost(2)).payloadAsJsonObject();
@@ -154,7 +160,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
     public void shouldGetCaseProgressionDetailsWithCaseId() throws Exception {
 
         reset(query);
-        Optional<UUID> caseId = Optional.of(UUID.randomUUID());
+        final Optional<UUID> caseId = Optional.of(UUID.randomUUID());
         final UUID defendantId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add(ProgressionQueryView.FIELD_CASE_ID, caseId.get().toString()).build();
@@ -165,7 +171,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
         when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
         when(function.apply(anyObject())).thenReturn(responseJson);
 
-        JsonEnvelope response = queryView.getCases(query);
+        final JsonEnvelope response = queryView.getCases(query);
 
         verify(casePrgDetailService, atMost(1)).getCases(anyObject());
         verify(query, atMost(2)).payloadAsJsonObject();
@@ -187,7 +193,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
         when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
         when(function.apply(anyObject())).thenReturn(responseJson);
 
-        JsonEnvelope response  = queryView.getDefendants(query);
+        final JsonEnvelope response  = queryView.getDefendants(query);
 
         verify(query, atMost(1)).payloadAsJsonObject();
         verify(objectMapper, atMost(2)).writeValueAsString(anyObject());
@@ -225,7 +231,7 @@ public class ProgressionQueryViewTest extends AbstractProgressionQueryBaseTest {
         when(enveloper.withMetadataFrom(anyObject(), anyString())).thenReturn(function);
         when(function.apply(anyObject())).thenReturn(responseJson);
 
-        JsonEnvelope response  = queryView.getDefendants(query);
+        final JsonEnvelope response  = queryView.getDefendants(query);
 
         verify(query, atMost(1)).payloadAsJsonObject();
         verify(objectMapper, atMost(2)).writeValueAsString(anyObject());

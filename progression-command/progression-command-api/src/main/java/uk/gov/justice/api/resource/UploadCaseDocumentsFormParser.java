@@ -21,7 +21,7 @@ public class UploadCaseDocumentsFormParser {
     private static final String FILE_PART_KEY = "file";
 
     /**
-     * 
+     *
      * @param multipartFormDataInput
      * @return
      * @throws IOException
@@ -44,7 +44,7 @@ public class UploadCaseDocumentsFormParser {
         return parse(filePart);
     }
 
-    private KeyValue<Optional<String>, Optional<InputStream>> parse(InputPart filePart)
+    private KeyValue<Optional<String>, Optional<InputStream>> parse(final InputPart filePart)
                     throws IOException {
 
         final Optional<String> fileNameUnSplitted = Pattern.compile(";")
@@ -72,7 +72,7 @@ public class UploadCaseDocumentsFormParser {
 
     }
 
-    public Optional<InputPart> getFilePart(MultipartFormDataInput multipartFormDataInput) {
+    public Optional<InputPart> getFilePart(final MultipartFormDataInput multipartFormDataInput) {
 
         final Map<String, List<InputPart>> uploadForm = multipartFormDataInput.getFormDataMap();
 

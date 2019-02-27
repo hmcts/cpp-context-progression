@@ -19,7 +19,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 @Table(name = "CaseProgressionDetail")
 public class CaseProgressionDetail implements Serializable {
@@ -73,7 +78,7 @@ public class CaseProgressionDetail implements Serializable {
         return caseStatusUpdatedDateTime;
     }
 
-    public void setCaseStatusUpdatedDateTime(ZonedDateTime caseStatusUpdatedDateTime) {
+    public void setCaseStatusUpdatedDateTime(final ZonedDateTime caseStatusUpdatedDateTime) {
         this.caseStatusUpdatedDateTime = caseStatusUpdatedDateTime;
     }
 
@@ -121,12 +126,12 @@ public class CaseProgressionDetail implements Serializable {
         this.defendants = defendants;
     }
 
-    public Defendant getDefendant(UUID defendentId) {
+    public Defendant getDefendant(final UUID defendentId) {
         return defendants.stream().filter(defendent -> defendent.getDefendantId().equals(defendentId))
                 .findFirst().orElse(null);
     }
 
-    public void addDefendant(Defendant defendantDetail) {
+    public void addDefendant(final Defendant defendantDetail) {
         Objects.requireNonNull(defendantDetail);
         defendants.add(defendantDetail);
         defendantDetail.setCaseProgressionDetail(this);
@@ -136,7 +141,7 @@ public class CaseProgressionDetail implements Serializable {
         return caseUrn;
     }
 
-    public void setCaseUrn(String caseUrn) {
+    public void setCaseUrn(final String caseUrn) {
         this.caseUrn = caseUrn;
     }
 }

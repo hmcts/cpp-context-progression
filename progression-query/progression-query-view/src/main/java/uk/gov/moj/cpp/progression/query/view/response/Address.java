@@ -1,7 +1,13 @@
 package uk.gov.moj.cpp.progression.query.view.response;
 
 import java.util.UUID;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class Address {
 
     private UUID addressId;
@@ -101,7 +107,7 @@ public class Address {
         }
 
         public Address build() {
-            Address address = new Address();
+            final Address address = new Address();
             address.setAddress1(address1);
             address.setAddress2(address2);
             address.setAddress3(address3);

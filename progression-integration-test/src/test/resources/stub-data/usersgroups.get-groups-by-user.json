@@ -14,11 +14,15 @@
     },
     {
       "groupId": "c529dac4-1ba8-414e-962d-84af6a4d9ae3",
-      "groupName": "Case Officer"
+      "groupName": "System Users"
     },
     {
       "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba0",
       "groupName": "CMS"
+    },
+    {
+      "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba1",
+      "groupName": "Legal Advisers"
     }
   ]
 }

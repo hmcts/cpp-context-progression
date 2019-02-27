@@ -1,19 +1,21 @@
 package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.kie.api.runtime.ExecutionResults;
-import org.mockito.Mock;
-import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+import static org.mockito.BDDMockito.given;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.TestRuleConstants.getAddDefendantActionGroups;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.mockito.BDDMockito.given;
-import static uk.gov.moj.cpp.progression.command.api.accesscontrol.RuleConstants.getAddDefendantActionGroups;
+import org.junit.Test;
+import org.kie.api.runtime.ExecutionResults;
+import org.mockito.Mock;
 
+import com.google.common.collect.ImmutableMap;
+
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+@Deprecated
 public class AddDefendantTest extends BaseDroolsAccessControlTest {
 
     private static final String PROGRESSION_COMMAND_ADD_DEFENDANT = "progression.command.add-defendant";

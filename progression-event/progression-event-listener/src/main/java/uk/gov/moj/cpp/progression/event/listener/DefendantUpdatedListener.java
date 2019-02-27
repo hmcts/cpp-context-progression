@@ -1,23 +1,39 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.event.defendant.*;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Address;
+import uk.gov.moj.cpp.progression.domain.event.defendant.BailDocument;
+import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantUpdated;
+import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
 import uk.gov.moj.cpp.progression.persistence.entity.InterpreterDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantUpdatedListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantUpdatedListener.class);
 
     public static final String UNCONDITIONAL = "unconditional";
 
@@ -27,14 +43,17 @@ public class DefendantUpdatedListener {
     @Inject
     private CaseProgressionDetailRepository caseRepository;
 
+    @Inject
+    private SearchProsecutionCase searchCase;
+
     @Handles("progression.events.defendant-updated")
     @Transactional
     public void defendantUpdated(final JsonEnvelope envelope) {
-        DefendantUpdated event = jsonObjectToObjectConverter.convert(
+        final DefendantUpdated event = jsonObjectToObjectConverter.convert(
                 envelope.payloadAsJsonObject(), DefendantUpdated.class);
 
-        CaseProgressionDetail caseDetail = caseRepository.findBy(event.getCaseId());
-        Defendant defendant = caseDetail.getDefendant(event.getDefendantId());
+        final CaseProgressionDetail caseDetail = caseRepository.findBy(event.getCaseId());
+        final Defendant defendant = caseDetail.getDefendant(event.getDefendantId());
 
         if(event.getBailStatus() !=null ) {
             defendant.setBailStatus(event.getBailStatus());
@@ -55,20 +74,27 @@ public class DefendantUpdatedListener {
         if(event.getDefenceSolicitorFirm() != null){
             defendant.setDefenceSolicitorFirm(event.getDefenceSolicitorFirm());
         }
+        updateSearchable(caseDetail, defendant);
+    }
+
+    private void updateSearchable(final CaseProgressionDetail caseDetail, final Defendant defendant) {
+        LOGGER.info("DefendantUpdatedListener: Case URN {} ", caseDetail.getCaseUrn());
+        searchCase.makeSearchable(caseDetail, defendant);
     }
 
 
-    private void updatedActiveDocument(BailDocument bailDocument, Defendant defendant) {
-        DefendantBailDocument defendantBailDocument = new DefendantBailDocument();
+    private void updatedActiveDocument(final BailDocument bailDocument, final Defendant defendant) {
+        final DefendantBailDocument defendantBailDocument = new DefendantBailDocument();
         defendantBailDocument.setDocumentId(bailDocument.getMaterialId());
         defendantBailDocument.setId(bailDocument.getId());
         defendantBailDocument.setActive(Boolean.TRUE);
         defendant.addDefendantBailDocument(defendantBailDocument);
     }
 
-    private void updatePerson(Person person, Defendant defendant){
+    private void updatePerson(final Person person, final Defendant defendant){
         if(defendant.getPerson() == null){
-            uk.gov.moj.cpp.progression.persistence.entity.Person personEntity = new uk.gov.moj.cpp.progression.persistence.entity.Person();
+            final uk.gov.moj.cpp.progression.persistence.entity.Person personEntity =
+                    new uk.gov.moj.cpp.progression.persistence.entity.Person();
             personEntity.setPersonId(person.getId());
             defendant.setPerson(personEntity);
         }
@@ -91,7 +117,7 @@ public class DefendantUpdatedListener {
     private void updateAddress(final uk.gov.moj.cpp.progression.persistence.entity.Person person, final Address address) {
 
         if(person.getAddress() == null){
-            uk.gov.moj.cpp.progression.persistence.entity.Address addressEntity = new uk.gov.moj.cpp.progression.persistence.entity.Address();
+            final uk.gov.moj.cpp.progression.persistence.entity.Address addressEntity = new uk.gov.moj.cpp.progression.persistence.entity.Address();
             person.setAddress(addressEntity);
         }
         person.getAddress().setAddress1(address.getAddress1());

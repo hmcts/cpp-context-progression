@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-sent.json",
+  "type": "object",
+  "properties": {
+    "notificationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "sentTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "notificationId",
+    "sentTime"
+  ],
+  "additionalProperties": false
+}

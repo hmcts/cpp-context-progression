@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class AdditionalInformation {
     private Boolean noMoreInformationRequired;
 
@@ -13,7 +19,7 @@ public class AdditionalInformation {
         return defence;
     }
 
-    public void setDefence(Defence defence) {
+    public void setDefence(final Defence defence) {
         this.defence = defence;
     }
 
@@ -21,7 +27,7 @@ public class AdditionalInformation {
         return probation;
     }
 
-    public void setProbation(Probation probation) {
+    public void setProbation(final Probation probation) {
         this.probation = probation;
     }
 
@@ -29,7 +35,7 @@ public class AdditionalInformation {
         return prosecution;
     }
 
-    public void setProsecution(Prosecution prosecution) {
+    public void setProsecution(final Prosecution prosecution) {
         this.prosecution = prosecution;
     }
 
@@ -37,7 +43,7 @@ public class AdditionalInformation {
         return noMoreInformationRequired;
     }
 
-    public void setNoMoreInformationRequired(Boolean noMoreInformationRequired) {
+    public void setNoMoreInformationRequired(final Boolean noMoreInformationRequired) {
         this.noMoreInformationRequired = noMoreInformationRequired;
     }
 }

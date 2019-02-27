@@ -29,8 +29,12 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.moj.cpp.progression.listener.progression.ProgressionDocumentAddedListener;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionDocumentAddedListenerTest {
 
@@ -41,7 +45,7 @@ public class ProgressionDocumentAddedListenerTest {
     private Sender sender;
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(JsonObject.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(JsonObject.class);
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
@@ -68,7 +72,7 @@ public class ProgressionDocumentAddedListenerTest {
         final String fileName = randomString();
 
 
-        JsonEnvelope envelope = JsonEnvelopeBuilder.envelope()
+        final JsonEnvelope envelope = JsonEnvelopeBuilder.envelope()
                 .with(metadataOf(randomId, metaField)
                         .withUserId(userId.toString())
                         .withSessionId(sessionId.toString())

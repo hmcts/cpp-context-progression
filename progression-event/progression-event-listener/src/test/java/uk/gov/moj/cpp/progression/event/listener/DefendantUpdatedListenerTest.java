@@ -16,6 +16,7 @@ import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
 import uk.gov.moj.cpp.progression.persistence.entity.InterpreterDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -35,13 +36,18 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
-@SuppressWarnings("WeakerAccess")
+/**
+ * 
+ * @deprecated
+ *
+ */
+@Deprecated
+@SuppressWarnings({"WeakerAccess", "squid:S1133"})
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantUpdatedListenerTest {
 
-    private UUID caseId = UUID.randomUUID();
-    private UUID defendantId = UUID.randomUUID();
+    private final UUID caseId = UUID.randomUUID();
+    private final UUID defendantId = UUID.randomUUID();
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -66,6 +72,9 @@ public class DefendantUpdatedListenerTest {
 
     @Mock
     private JsonObject payload;
+
+    @Mock
+    private SearchProsecutionCase searchCase;
 
     @InjectMocks
     private DefendantUpdatedListener listener;
@@ -113,9 +122,9 @@ public class DefendantUpdatedListenerTest {
 
     @Test
     public void shouldUpdateDefendantBailDocument() {
-        UUID documentId = UUID.randomUUID();
-        Set<DefendantBailDocument> listDefendantBailDocument = new HashSet<>();
-        DefendantBailDocument defendantBailDocument = new DefendantBailDocument();
+        final UUID documentId = UUID.randomUUID();
+        final Set<DefendantBailDocument> listDefendantBailDocument = new HashSet<>();
+        final DefendantBailDocument defendantBailDocument = new DefendantBailDocument();
         defendantBailDocument.setDocumentId(documentId);
         defendantBailDocument.setActive(Boolean.TRUE);
         listDefendantBailDocument.add(defendantBailDocument);

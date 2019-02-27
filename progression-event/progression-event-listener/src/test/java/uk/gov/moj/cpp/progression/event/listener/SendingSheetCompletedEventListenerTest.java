@@ -1,10 +1,18 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -12,14 +20,13 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
-
-import javax.json.JsonObject;
-
-import java.util.UUID;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class SendingSheetCompletedEventListenerTest {
 
@@ -44,7 +51,7 @@ public class SendingSheetCompletedEventListenerTest {
     @Test
     public void testProcessEvent() throws Exception {
 
-        SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
+        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
         sendingSheetCompleted.setHearing(new Hearing());
         sendingSheetCompleted.getHearing().setCaseId( UUID.randomUUID());
 

@@ -14,23 +14,29 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantOffencesChanged;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
 
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class UpdateOffenceForDefendantTest {
 
     private static final AddDefendant addDefendant = DefendantBuilder.defaultAddDefendant();
-    private CaseProgressionAggregate caseProgressionAggregate;
+    private CaseAggregate caseAggregate;
 
 
     @Before
     public void setUp(){
-        caseProgressionAggregate =new CaseProgressionAggregate();
-        caseProgressionAggregate.addDefendant(addDefendant);
+        caseAggregate =new CaseAggregate();
+        caseAggregate.addDefendant(addDefendant);
     }
     @Test
     public void shouldApplyOffencesForDefendantUpdated() {
@@ -44,14 +50,11 @@ public class UpdateOffenceForDefendantTest {
         final OffencesForDefendantUpdated offencesForDefendantUpdated =
                 new OffencesForDefendantUpdated(caseId, addDefendant.getDefendantId(), offenceForDefendants);
 
-        final List<Object> eventStream = caseProgressionAggregate.updateOffencesForDefendant(offencesForDefendantUpdated ).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateOffencesForDefendant(offencesForDefendantUpdated ).collect(toList());
 
-        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.size(), is(1));
         Object object = eventStream.get(0);
         assertThat(object.getClass() , is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantUpdated.class)));
-        object = eventStream.get(1);
-        assertThat(object.getClass(),
-                        is(CoreMatchers.<Class<?>>equalTo(DefendantOffencesChanged.class)));
 
     }
 

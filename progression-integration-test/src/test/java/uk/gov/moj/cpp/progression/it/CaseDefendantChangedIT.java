@@ -8,24 +8,23 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
+import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
+import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
+import uk.gov.moj.cpp.progression.stub.ListingStub;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.google.common.io.Resources;
+import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
-
-import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
-import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
@@ -61,39 +60,41 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     public void shouldPublishCaseDefendantChanged() throws Exception {
         // Set wiremocks required for activity workflow only after add defendant is done
         init();
-        completeSendingSheet();
-        updateDefendantHelper = new UpdateDefendantHelper(caseId,
-                        addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
         updateDefendantHelper.updateDefendantBailStatus();
         updateDefendantHelper.verifyInActiveMQ();
         updateDefendantHelper.verifyDefendantBailStatusUpdated();
         updateDefendantHelper.verifyInMessagingQueueForDefendentUpdated();
-        updateDefendantHelper.verifyInMessagingQueueForDefendentChanged();
     }
+
+    @Test
+    public void shouldPublishCaseDefendantCannotChanged() throws Exception {
+        // Set wiremocks required for activity workflow only after add defendant is done
+        init();
+        completeSendingSheet();
+        updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        updateDefendantHelper.updateDefendantBailStatus();
+        updateDefendantHelper.verifySendingSheetPreviouslyCompletedPublicEvent();
+    }
+
 
     @Test
     public void shouldNotPublishCaseDefendantChangedNoRealChangeInPerson() throws Exception {
         init();
         completeSendingSheet();
-        updateDefendantHelper = new UpdateDefendantHelper(caseId,
-                        addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
         updateDefendantHelper.updateDefendantPerson();
-        updateDefendantHelper.verifyInActiveMQ();
-        updateDefendantHelper.verifyDefendantPersonUpdated();
-        updateDefendantHelper.verifyInMessagingQueueForDefendentUpdated();
-        updateDefendantHelper.verifyInMessagingQueueForDefendentChangedNotPresent();
+        updateDefendantHelper.verifySendingSheetPreviouslyCompletedPublicEvent();
     }
 
     @Test
     public void shouldNotPublishCaseDefendantChangedSendingSheetNotCompleted() throws Exception {
         init();
-        updateDefendantHelper = new UpdateDefendantHelper(caseId,
-                        addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
+        updateDefendantHelper = new UpdateDefendantHelper(caseId, addDefendantHelper.getDefendantId(), addDefendantHelper.getPersonId());
         updateDefendantHelper.updateDefendantBailStatus();
         updateDefendantHelper.verifyInActiveMQ();
         updateDefendantHelper.verifyDefendantBailStatusUpdated();
         updateDefendantHelper.verifyInMessagingQueueForDefendentUpdated();
-        updateDefendantHelper.verifyInMessagingQueueForDefendentChangedNotPresent();
     }
 
     private void completeSendingSheet() throws IOException {

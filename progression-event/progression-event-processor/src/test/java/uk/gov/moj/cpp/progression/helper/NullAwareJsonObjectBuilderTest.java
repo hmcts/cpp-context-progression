@@ -8,7 +8,12 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.Test;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@Deprecated
 public class NullAwareJsonObjectBuilderTest {
     @Test
     public void testAddString() {

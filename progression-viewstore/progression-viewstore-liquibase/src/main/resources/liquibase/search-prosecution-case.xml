@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="search-prosecution-case" author="cpp.context.progression">
+        <createTable tableName="search_prosecution_case">
+            <column name="case_id" type="TEXT"/>
+            <column name="reference" type="TEXT"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="defendant_first_name" type="TEXT"/>
+            <column name="defendant_middle_name" type="TEXT"/>
+            <column name="defendant_last_name" type="TEXT"/>
+            <column name="defendant_dob" type="TEXT"/>
+            <column name="case_status" type="TEXT"/>
+            <column name="prosecutor" type="TEXT"/>
+            <column name="search_target" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="search-prosecution-case-key-constraints" author="cpp.context.progression">
+        <addPrimaryKey columnNames="defendant_id" constraintName="search_prosecution_case_primary_key"
+                       tableName="search_prosecution_case"/>
+    </changeSet>
+
+</databaseChangeLog>

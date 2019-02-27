@@ -2,35 +2,40 @@ package uk.gov.moj.cpp.progression.query.view.response;
 
 import static java.util.stream.Collectors.toList;
 
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.InterpreterDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.InterpreterDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class DefendantView {
-    private ZonedDateTime sentenceHearingReviewDecisionDateTime;
-    private String defendantId;
-    private AdditionalInformation additionalInformation;
-    private Boolean sentenceHearingReviewDecision;
-    private Person person;
-    private List<OffenceView> offences;
-    private UUID caseId;
-    private String policeDefendantId;
-    private String bailStatus;
+    private final ZonedDateTime sentenceHearingReviewDecisionDateTime;
+    private final String defendantId;
+    private final AdditionalInformation additionalInformation;
+    private final Boolean sentenceHearingReviewDecision;
+    private final Person person;
+    private final List<OffenceView> offences;
+    private final UUID caseId;
+    private final String policeDefendantId;
+    private final String bailStatus;
     private List<DefendantBailDocumentView> defendantBailDocuments;
-    private String defenceSolicitorFirm;
+    private final String defenceSolicitorFirm;
     private InterpreterDetail interpreter;
-    private LocalDate custodyTimeLimitDate;
+    private final LocalDate custodyTimeLimitDate;
     private UUID personId;
 
-    public DefendantView(Defendant defendant) {
+    public DefendantView(final Defendant defendant) {
         this.sentenceHearingReviewDecisionDateTime = defendant.getSentenceHearingReviewDecisionDateTime();
         this.defendantId = defendant.getDefendantId().toString();
         this.additionalInformation = convertAdditionalInformation(defendant);
@@ -61,21 +66,21 @@ public class DefendantView {
 
     }
 
-    private AdditionalInformation convertAdditionalInformation(Defendant defendant) {
-        AdditionalInformation information = new AdditionalInformation();
+    private AdditionalInformation convertAdditionalInformation(final Defendant defendant) {
+        final AdditionalInformation information = new AdditionalInformation();
         information.setNoMoreInformationRequired(defendant.getIsNoMoreInformationRequired());
-        Defence defence = new Defence(defendant.getDefenceOthers(),
+        final Defence defence = new Defence(defendant.getDefenceOthers(),
                 new StatementOfMeans(defendant.getStatementOfMeans(),
                         defendant.getIsStatementOffMeans()),
                 new MedicalDocumentation(defendant.getMedicalDocumentation(),
                         defendant.getIsMedicalDocumentation()));
         information.setDefence(defence);
-        Probation probation = new Probation(defendant.getDangerousnessAssessment(),
+        final Probation probation = new Probation(defendant.getDangerousnessAssessment(),
                 new PreSentenceReport(defendant.getProvideGuidance(),
                         defendant.getIsPSRRequested(),
                         defendant.getDrugAssessment()));
         information.setProbation(probation);
-        Prosecution prosecution = new Prosecution(defendant.getProsecutionOthers(),
+        final Prosecution prosecution = new Prosecution(defendant.getProsecutionOthers(),
                 new AncillaryOrders(defendant.getAncillaryOrders(),
                         defendant.getIsAncillaryOrders()));
         information.setProsecution(prosecution);
@@ -103,7 +108,7 @@ public class DefendantView {
                 .build();
     }
 
-    private static OffencesView constructDefendantOffencesView(Defendant defendant) {
+    private static OffencesView constructDefendantOffencesView(final Defendant defendant) {
         final Set<OffenceDetail> offences = defendant.getOffences();
         if (offences == null) {
             return new OffencesView(new ArrayList<>());

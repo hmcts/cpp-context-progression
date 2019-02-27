@@ -8,7 +8,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 @Table(name = "Defendant_Document")
 public class DefendantDocument {
@@ -27,8 +32,8 @@ public class DefendantDocument {
     @Column(name = "last_modified", nullable = false)
     private LocalDateTime lastModified;
 
-    public DefendantDocument(UUID caseId, UUID defendantId, UUID fileId,
-                             String fileName, LocalDateTime lastModified) {
+    public DefendantDocument(final UUID caseId, final UUID defendantId, final UUID fileId,
+                             final String fileName, final LocalDateTime lastModified) {
         super();
         this.id = UUID.randomUUID();
         this.caseId = caseId;
@@ -46,7 +51,7 @@ public class DefendantDocument {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
@@ -54,7 +59,7 @@ public class DefendantDocument {
         return caseId;
     }
 
-    public void setCaseId(UUID caseId) {
+    public void setCaseId(final UUID caseId) {
         this.caseId = caseId;
     }
 
@@ -62,7 +67,7 @@ public class DefendantDocument {
         return defendantId;
     }
 
-    public void setDefendantId(UUID defendantId) {
+    public void setDefendantId(final UUID defendantId) {
         this.defendantId = defendantId;
     }
 
@@ -70,7 +75,7 @@ public class DefendantDocument {
         return fileId;
     }
 
-    public void setFileId(UUID fileId) {
+    public void setFileId(final UUID fileId) {
         this.fileId = fileId;
     }
 
@@ -78,7 +83,7 @@ public class DefendantDocument {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
+    public void setFileName(final String fileName) {
         this.fileName = fileName;
     }
 
@@ -86,12 +91,12 @@ public class DefendantDocument {
         return lastModified;
     }
 
-    public void setLastModified(LocalDateTime lastModified) {
+    public void setLastModified(final LocalDateTime lastModified) {
         this.lastModified = lastModified;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o){
             return true;
         }
@@ -100,11 +105,11 @@ public class DefendantDocument {
             return false;
         }
 
-        DefendantDocument that = (DefendantDocument) o;
-        boolean checkIdCaseIdAndDefendantId = Objects.equals(getId(), that.getId()) &&
+        final DefendantDocument that = (DefendantDocument) o;
+        final boolean checkIdCaseIdAndDefendantId = Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getCaseId(), that.getCaseId()) &&
                 Objects.equals(getDefendantId(), that.getDefendantId());
-        boolean checkfileIdFileNameAndLastModified = Objects.equals(getFileId(), that.getFileId()) &&
+        final boolean checkfileIdFileNameAndLastModified = Objects.equals(getFileId(), that.getFileId()) &&
                 Objects.equals(getFileName(), that.getFileName()) &&
                 Objects.equals(getLastModified(), that.getLastModified());
         return checkIdCaseIdAndDefendantId && checkfileIdFileNameAndLastModified;

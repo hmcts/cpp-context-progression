@@ -9,13 +9,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
-import uk.gov.moj.cpp.progression.command.defendant.AdditionalInformationCommand;
-import uk.gov.moj.cpp.progression.command.defendant.AncillaryOrdersCommand;
-import uk.gov.moj.cpp.progression.command.defendant.DefenceCommand;
 import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
-import uk.gov.moj.cpp.progression.command.defendant.MedicalDocumentationCommand;
-import uk.gov.moj.cpp.progression.command.defendant.PreSentenceReportCommand;
-import uk.gov.moj.cpp.progression.command.defendant.ProbationCommand;
 import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantCommand;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Address;
 import uk.gov.moj.cpp.progression.domain.event.defendant.CPR;
@@ -25,7 +19,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 
 
-
+@Deprecated
 public class DefendantBuilder {
 
     private static final Long VERSION = 2l;
@@ -66,63 +60,9 @@ public class DefendantBuilder {
         }}, CASEURN);
     }
 
-    public static DefendantCommand defaultDefendant() {
-        final UUID defendantId = randomUUID();
-        return defaultDefendantWith(defendantId);
-    }
 
-    public static DefendantCommand defaultDefendantWith(final UUID defendantId) {
-        final MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
-        medicalDocumentation.setDetails(randomString());
 
-        final DefenceCommand defence = new DefenceCommand();
-        defence.setMedicalDocumentation(medicalDocumentation);
 
-        final AncillaryOrdersCommand ancillaryOrders = new AncillaryOrdersCommand();
-        ancillaryOrders.setDetails(randomString());
-
-        final AdditionalInformationCommand additionalInformation = new AdditionalInformationCommand();
-        additionalInformation.setDefence(defence);
-
-        final PreSentenceReportCommand preSentenceReport = new PreSentenceReportCommand();
-        preSentenceReport.setDrugAssessment(randomBoolean());
-        preSentenceReport.setProvideGuidance(randomString());
-
-        final ProbationCommand probation = new ProbationCommand();
-        probation.setDangerousnessAssessment(randomBoolean());
-        probation.setPreSentenceReport(preSentenceReport);
-
-        additionalInformation.setProbation(probation);
-
-        final DefendantCommand defendant = new DefendantCommand();
-        defendant.setDefendantId(defendantId);
-        defendant.setAdditionalInformation(additionalInformation);
-        return defendant;
-    }
-
-    public static DefendantCommand defaultDefendantWithoutAdditionalInfo(final UUID defendantId) {
-        final MedicalDocumentationCommand medicalDocumentation = new MedicalDocumentationCommand();
-        medicalDocumentation.setDetails(randomString());
-
-        final DefenceCommand defence = new DefenceCommand();
-        defence.setMedicalDocumentation(medicalDocumentation);
-
-        final AncillaryOrdersCommand ancillaryOrders = new AncillaryOrdersCommand();
-        ancillaryOrders.setDetails(randomString());
-
-        final PreSentenceReportCommand preSentenceReport = new PreSentenceReportCommand();
-        preSentenceReport.setDrugAssessment(randomBoolean());
-        preSentenceReport.setProvideGuidance(randomString());
-
-        final ProbationCommand probation = new ProbationCommand();
-        probation.setDangerousnessAssessment(randomBoolean());
-        probation.setPreSentenceReport(preSentenceReport);
-
-        final DefendantCommand defendant = new DefendantCommand();
-        defendant.setDefendantId(defendantId);
-
-        return defendant;
-    }
 
     public static UpdateDefendantCommand defaultUpdateDefendant() {
         return new UpdateDefendantCommand(CASE_ID, DEFENDANT_ID, new Person(), new Interpreter(),

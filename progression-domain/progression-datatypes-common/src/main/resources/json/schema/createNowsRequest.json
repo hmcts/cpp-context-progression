@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/createNowsRequest.json",
+  "description": "instruction to create nows",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    },
+    "sharedResultLines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/sharedResultLine.json"
+      }
+    },
+    "nows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/now.json"
+      }
+    },
+    "nowTypes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/nowType.json"
+      }
+    },
+    "courtClerk": {
+      "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+    }
+  },
+  "required": [
+    "hearing",
+    "sharedResultLines",
+    "nows",
+    "nowTypes",
+    "courtClerk"
+  ]
+}

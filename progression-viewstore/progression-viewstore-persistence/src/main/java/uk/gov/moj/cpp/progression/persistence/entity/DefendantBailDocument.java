@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import java.io.Serializable;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -7,9 +10,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.io.Serializable;
-import java.util.UUID;
-
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 @Entity
 @Table(name = "defendant_bail_document",
                 uniqueConstraints = @UniqueConstraint(columnNames = "id"))
@@ -41,7 +47,7 @@ public class DefendantBailDocument implements Serializable {
     }
 
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
@@ -51,7 +57,7 @@ public class DefendantBailDocument implements Serializable {
     }
 
 
-    public void setDocumentId(UUID documentId) {
+    public void setDocumentId(final UUID documentId) {
         this.documentId = documentId;
     }
 
@@ -65,16 +71,16 @@ public class DefendantBailDocument implements Serializable {
     }
 
 
-    public void setDefendant(Defendant defendant) {
+    public void setDefendant(final Defendant defendant) {
         this.defendant = defendant;
     }
 
 
-    public void setActive(Boolean active) {
+    public void setActive(final Boolean active) {
         this.active = active;
     }
 
-    public DefendantBailDocument(DefendantBailDocumentBuilder builder) {
+    public DefendantBailDocument(final DefendantBailDocumentBuilder builder) {
         this.id = builder.id;
         this.documentId = builder.documentId;
         this.active = builder.active;
@@ -93,22 +99,22 @@ public class DefendantBailDocument implements Serializable {
             return new DefendantBailDocument(this);
         }
 
-        public DefendantBailDocumentBuilder setId(UUID id) {
+        public DefendantBailDocumentBuilder setId(final UUID id) {
             this.id = id;
             return this;
         }
 
-        public DefendantBailDocumentBuilder setDocumentId(UUID documentId) {
+        public DefendantBailDocumentBuilder setDocumentId(final UUID documentId) {
             this.documentId = documentId;
             return this;
         }
 
-        public DefendantBailDocumentBuilder setActive(Boolean active) {
+        public DefendantBailDocumentBuilder setActive(final Boolean active) {
             this.active = active;
             return this;
         }
 
-        public DefendantBailDocumentBuilder setDefendant(Defendant defendant) {
+        public DefendantBailDocumentBuilder setDefendant(final Defendant defendant) {
             this.defendant = defendant;
             return this;
         }

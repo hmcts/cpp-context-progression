@@ -27,8 +27,8 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.aggregate.CaseProgressionAggregate;
-
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class CaseProgressionCommandHandlerTest {
 
@@ -57,7 +57,7 @@ public class CaseProgressionCommandHandlerTest {
     protected EventStream eventStream;
 
     @Mock
-    protected CaseProgressionAggregate caseProgressionAggregate;
+    protected CaseAggregate caseAggregate;
 
     @Mock
     protected Function function;
@@ -75,8 +75,8 @@ public class CaseProgressionCommandHandlerTest {
     @InjectMocks
     private CaseProgressionCommandHandler caseProgressionCommandHandler;
 
-    private Function<CaseProgressionAggregate, Stream<Object>> aggregateFunction =
-                    caseProgressionAggregate -> events;
+    private final Function<CaseAggregate, Stream<Object>> aggregateFunction =
+                    caseAggregate -> events;
 
     @Before
     @SuppressWarnings("unchecked")
@@ -87,8 +87,8 @@ public class CaseProgressionCommandHandlerTest {
         when(jsonObject.getString(CaseProgressionCommandHandler.FIELD_STREAM_ID))
                         .thenReturn(CASE_ID.toString());
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseProgressionAggregate.class))
-                        .thenReturn(caseProgressionAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class))
+                        .thenReturn(caseAggregate);
         when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
         when(events.map(function)).thenReturn(jsonEvents);
     }
@@ -99,7 +99,7 @@ public class CaseProgressionCommandHandlerTest {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();
         verify(jsonObject, atLeast(1)).getString(CaseProgressionCommandHandler.FIELD_STREAM_ID);
         verify(eventSource).getStreamById(CASE_ID);
-        verify(aggregateService).get(eventStream, CaseProgressionAggregate.class);
+        verify(aggregateService).get(eventStream, CaseAggregate.class);
         verify(enveloper).withMetadataFrom(jsonEnvelope);
         verify(events).map(function);
         verify(eventStream).append(jsonEvents);
@@ -110,7 +110,7 @@ public class CaseProgressionCommandHandlerTest {
         verifyNoMoreInteractions(converter);
         verifyNoMoreInteractions(jsonEnvelope);
         verifyNoMoreInteractions(eventStream);
-        verifyNoMoreInteractions(caseProgressionAggregate);
+        verifyNoMoreInteractions(caseAggregate);
         verifyNoMoreInteractions(function);
         verifyNoMoreInteractions(events);
         verifyNoMoreInteractions(jsonEvents);
@@ -118,7 +118,7 @@ public class CaseProgressionCommandHandlerTest {
 
     @Test
     public void testApplyToCaseAggregate() throws EventStreamException {
-        caseProgressionCommandHandler.applyToCaseProgressionAggregate(jsonEnvelope,
+        caseProgressionCommandHandler.applyToCaseAggregate(jsonEnvelope,
                         aggregateFunction);
     }
 

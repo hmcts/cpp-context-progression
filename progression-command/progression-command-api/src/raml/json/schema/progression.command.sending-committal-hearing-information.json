@@ -7,6 +7,9 @@
     },
     "sendingCommittalDate": {
       "type": "string"
+    },
+    "courtCenterID": {
+      "type": "string"
     }
   },
   "required": [

@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class PreSentenceReport {
     private String provideGuidance;
 
@@ -11,7 +17,7 @@ public class PreSentenceReport {
         return provideGuidance;
     }
 
-    public void setProvideGuidance(String provideGuidance) {
+    public void setProvideGuidance(final String provideGuidance) {
         this.provideGuidance = provideGuidance;
     }
 
@@ -19,7 +25,7 @@ public class PreSentenceReport {
         return psrIsRequested;
     }
 
-    public void setPsrIsRequested(Boolean psrIsRequested) {
+    public void setPsrIsRequested(final Boolean psrIsRequested) {
         this.psrIsRequested = psrIsRequested;
     }
 
@@ -27,12 +33,12 @@ public class PreSentenceReport {
         return drugAssessment;
     }
 
-    public void setDrugAssessment(Boolean drugAssessment) {
+    public void setDrugAssessment(final Boolean drugAssessment) {
         this.drugAssessment = drugAssessment;
     }
 
-    public PreSentenceReport(String provideGuidance, Boolean psrIsRequested,
-                    Boolean drugAssessment) {
+    public PreSentenceReport(final String provideGuidance, final Boolean psrIsRequested,
+                    final Boolean drugAssessment) {
         super();
         this.provideGuidance = provideGuidance;
         this.psrIsRequested = psrIsRequested;

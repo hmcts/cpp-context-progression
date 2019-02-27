@@ -1,18 +1,20 @@
 package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.kie.api.runtime.ExecutionResults;
-import org.mockito.Mock;
-import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+import static org.mockito.BDDMockito.given;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.mockito.BDDMockito.given;
+import org.junit.Test;
+import org.kie.api.runtime.ExecutionResults;
+import org.mockito.Mock;
 
+import com.google.common.collect.ImmutableMap;
+
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+@Deprecated
 public class UpdateOffencesForDefendantApiAccessControlTest extends BaseDroolsAccessControlTest {
 
     @Mock
@@ -21,7 +23,7 @@ public class UpdateOffencesForDefendantApiAccessControlTest extends BaseDroolsAc
     @Test
     public void shouldAllowUserInAuthorisedGroupToUpdateOffencesForDefendant() {
         final Action action = createActionFor("progression.command.update-offences-for-defendant");
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, RuleConstants.getUpdateOffencesForDefendantActionGroups()))
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, TestRuleConstants.getUpdateOffencesForDefendantActionGroups()))
                 .willReturn(true);
 
         final ExecutionResults results = executeRulesWith(action);

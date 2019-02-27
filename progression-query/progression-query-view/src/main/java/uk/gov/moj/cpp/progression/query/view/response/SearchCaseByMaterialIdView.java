@@ -1,12 +1,18 @@
 package uk.gov.moj.cpp.progression.query.view.response;
 
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class SearchCaseByMaterialIdView {
 
-    private String caseId;
-    private ProsecutingAuthority prosecutingAuthority;
+    private final String caseId;
+    private final ProsecutingAuthority prosecutingAuthority;
 
-    public SearchCaseByMaterialIdView(String caseId, ProsecutingAuthority prosecutingAuthority) {
+    public SearchCaseByMaterialIdView(final String caseId, final ProsecutingAuthority prosecutingAuthority) {
         this.caseId = caseId;
         this.prosecutingAuthority = prosecutingAuthority;
     }

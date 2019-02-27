@@ -1,0 +1,29 @@
+
+{
+  "countryNationality": [
+    {
+      "id": "NATIONALITYID",
+      "cjsCode": 0,
+      "isoCode": "",
+      "govCode": "",
+      "countryName": "Unknown",
+      "nationality": "Unknown",
+      "startDate": "",
+      "endDate": "",
+      "validFrom": "",
+      "validTo": ""
+    },
+    {
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+      "cjsCode": 1,
+      "isoCode": "GBR",
+      "govCode": "GB",
+      "countryName": "United Kingdom",
+      "nationality": "British",
+      "startDate": "",
+      "endDate": "",
+      "validFrom": "",
+      "validTo": ""
+    }
+  ]
+}

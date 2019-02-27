@@ -1,19 +1,25 @@
 package uk.gov.moj.cpp.progression.command.handler.convertor;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceIndicatedPlea;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffencePlea;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+/**
+ *
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 public class OffencesForDefendantConverter {
 
     public OffencesForDefendantUpdated convert(final JsonEnvelope command) {
@@ -46,14 +52,14 @@ public class OffencesForDefendantConverter {
         return new OffenceForDefendant(offenceId, offenceCode, section, wording, startDate, endDate, orderIndex, count, offencePlea, offenceIndicatedPlea, convictionDate);
     }
 
-    private OffencePlea convertToOffencePlea(JsonObject pleaJsonObject) {
+    private OffencePlea convertToOffencePlea(final JsonObject pleaJsonObject) {
         final UUID pleaId = JsonObjects.getUUID(pleaJsonObject, "id").orElse(null);
         final String value = JsonObjects.getString(pleaJsonObject, "value").orElse(null);
         final LocalDate pleaDate = JsonObjects.getString(pleaJsonObject, "pleaDate").map(s -> LocalDate.parse(s)).orElse(null);
         return new OffencePlea(pleaId, value, pleaDate);
     }
 
-    private OffenceIndicatedPlea convertToOffenceIndicatedPlea(JsonObject indicatedPleaJsonObject) {
+    private OffenceIndicatedPlea convertToOffenceIndicatedPlea(final JsonObject indicatedPleaJsonObject) {
         final UUID indicatedPleasId = JsonObjects.getUUID(indicatedPleaJsonObject, "id").orElse(null);
         final String value = JsonObjects.getString(indicatedPleaJsonObject, "value").orElse(null);
         final String allocationDecision = JsonObjects.getString(indicatedPleaJsonObject, "allocationDecision").orElse(null);

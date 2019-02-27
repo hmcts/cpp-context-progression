@@ -1,0 +1,34 @@
+package uk.gov.moj.cpp.progression.test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.justice.services.common.converter.exception.ConverterException;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import javax.json.JsonObject;
+import java.io.IOException;
+
+public class ObjectConverters {
+
+    private ObjectConverters() {
+
+    }
+
+    public static <T> T convert(Class<T> clazz, JsonObject source) {
+        final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
+        try {
+            final T object = mapper.readValue(mapper.writeValueAsString(source), clazz);
+            if (object == null) {
+                throw new ConverterException(String.format("Failed to convert %s to Object", source));
+            } else {
+                return object;
+            }
+        } catch (IOException var4) {
+            throw new IllegalArgumentException(String.format("Error while converting %s to JsonObject", source), var4);
+        }
+    }
+
+    public static <T> T asPojo(JsonEnvelope jsonEnvelope, Class<T> clazz) {
+        return convert(clazz, jsonEnvelope.payloadAsJsonObject());
+    }
+}

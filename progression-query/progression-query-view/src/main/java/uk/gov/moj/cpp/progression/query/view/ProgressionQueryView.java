@@ -1,8 +1,14 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.Json;
+
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -12,15 +18,14 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 import uk.gov.moj.cpp.progression.query.view.service.CaseProgressionDetailService;
 import uk.gov.moj.cpp.progression.query.view.service.OffencesService;
+/**
+ *
+ * @deprecated
+ *
+ */
+@Deprecated
 
-import javax.inject.Inject;
-import javax.json.Json;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-@SuppressWarnings("squid:S3655")
+@SuppressWarnings({"squid:S3655", "squid:S1133"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProgressionQueryView {
 

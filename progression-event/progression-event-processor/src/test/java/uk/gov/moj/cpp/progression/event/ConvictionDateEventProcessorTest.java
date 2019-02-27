@@ -13,8 +13,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 
-import java.util.UUID;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,9 +24,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import uk.gov.justice.core.courts.ConvictionDateAdded;
+import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -35,8 +33,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
-import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConvictionDateEventProcessorTest {
@@ -76,43 +73,47 @@ public class ConvictionDateEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleDefendantAddedEventMessage() throws Exception {
+    public void addConvictionDate() throws Exception {
 
-        ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.builder().withCaseId(UUID.randomUUID())
-                .withOffenceId(UUID.randomUUID()).withConvictionDate(PAST_LOCAL_DATE.next()).build();
+        final ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.convictionDateAdded()
+                .withCaseId(UUID.randomUUID())
+                .withOffenceId(UUID.randomUUID())
+                .withConvictionDate(PAST_LOCAL_DATE.next().toString())
+                .build();
 
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.offence-conviction-date-changed"),
                 objectToJsonObjectConverter.convert(convictionDateAdded));
 
-        this.eventProcessor.handleHearingOffenceConvictionDateChangedPublicEvent(event);
+        this.eventProcessor.handleHearingConvictionDateChangedPublicEvent(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName("progression.command.offence-conviction-date-changed"),
+                metadata().withName("progression.command.add-conviction-date"),
                 payloadIsJson(allOf(withJsonPath("$.caseId", is(convictionDateAdded.getCaseId().toString())),
                         withJsonPath("$.offenceId", is(convictionDateAdded.getOffenceId().toString())),
-                        withJsonPath("$.convictionDate", is(convictionDateAdded.getConvictionDate().toString()))))));
+                        withJsonPath("$.convictionDate", is(convictionDateAdded.getConvictionDate()))))));
 
     }
 
     @Test
-    public void shouldHandleDefendantRemovedEventMessage() throws Exception {
+    public void removeConvictionDate() throws Exception {
 
-        ConvictionDateRemoved convictionDateRemoved = ConvictionDateRemoved.builder().withCaseId(UUID.randomUUID())
+        final ConvictionDateRemoved convictionDateRemoved = ConvictionDateRemoved.convictionDateRemoved()
+                .withCaseId(UUID.randomUUID())
                 .withOffenceId(UUID.randomUUID()).build();
 
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.offence-conviction-date-removed"),
                 objectToJsonObjectConverter.convert(convictionDateRemoved));
 
-        this.eventProcessor.handleHearingOffenceConvictionDateRemovedPublicEvent(event);
+        this.eventProcessor.handleHearingConvictionDateRemovedPublicEvent(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(),
-                jsonEnvelope(metadata().withName("progression.command.offence-conviction-date-removed"),
+                jsonEnvelope(metadata().withName("progression.command.remove-conviction-date"),
                         payloadIsJson(allOf(withJsonPath("$.caseId", is(convictionDateRemoved.getCaseId().toString())),
                                 withJsonPath("$.offenceId", is(convictionDateRemoved.getOffenceId().toString()))))));
 

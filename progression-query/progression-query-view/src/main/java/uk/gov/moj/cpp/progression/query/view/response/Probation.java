@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class Probation {
     private Boolean dangerousnessAssessment;
 
@@ -9,7 +15,7 @@ public class Probation {
         return dangerousnessAssessment;
     }
 
-    public void setDangerousnessAssessment(Boolean dangerousnessAssessment) {
+    public void setDangerousnessAssessment(final Boolean dangerousnessAssessment) {
         this.dangerousnessAssessment = dangerousnessAssessment;
     }
 
@@ -17,11 +23,11 @@ public class Probation {
         return preSentenceReport;
     }
 
-    public void setPreSentenceReport(PreSentenceReport preSentenceReport) {
+    public void setPreSentenceReport(final PreSentenceReport preSentenceReport) {
         this.preSentenceReport = preSentenceReport;
     }
 
-    public Probation(Boolean dangerousnessAssessment, PreSentenceReport preSentenceReport) {
+    public Probation(final Boolean dangerousnessAssessment, final PreSentenceReport preSentenceReport) {
         super();
         this.dangerousnessAssessment = dangerousnessAssessment;
         this.preSentenceReport = preSentenceReport;

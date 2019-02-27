@@ -1,12 +1,18 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class StatementOfMeans {
 
     public StatementOfMeans() {
         super();
     }
 
-    public StatementOfMeans(String details, Boolean isStatementOfMeans) {
+    public StatementOfMeans(final String details, final Boolean isStatementOfMeans) {
         super();
         this.details = details;
         this.isStatementOfMeans = isStatementOfMeans;
@@ -20,7 +26,7 @@ public class StatementOfMeans {
         return details;
     }
 
-    public void setDetails(String details) {
+    public void setDetails(final String details) {
         this.details = details;
     }
 
@@ -29,7 +35,7 @@ public class StatementOfMeans {
     }
 
 
-    public void setIsStatementOfMeans(Boolean isStatementOfMeans) {
+    public void setIsStatementOfMeans(final Boolean isStatementOfMeans) {
         this.isStatementOfMeans = isStatementOfMeans;
     }
 }

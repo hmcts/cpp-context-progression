@@ -37,19 +37,18 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
      */
     @Test
     public void updateOffencesForDefendantAndVerify() {
-        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        final UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
         updateOffenceForDefendantHelper.updateOffencesForDefendant();
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
         updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
-        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentAdded(addDefendantHelper.getOffenceId());
 
     }
 
     @Test
     public void updateOffencesForDefendantWithOrderAndVerify() {
-        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        final UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
         updateOffenceForDefendantHelper.updateMultipleOffencesForDefendant();
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
@@ -59,27 +58,24 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
 
     @Test
     public void updateOffenceForDefendantAndVerifyPublicEvent() {
-        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        final UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
         updateOffenceForDefendantHelper.updateOffencesForDefendant(addDefendantHelper.getOffenceId());
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
         updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
-        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentChanged();
     }
 
     @Test
     public void updateOffenceForDefendantAndVerifyPublicEventNotRaised() {
-        UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
+        final UpdateOffencesForDefendantHelper updateOffenceForDefendantHelper = new UpdateOffencesForDefendantHelper(caseId, addDefendantHelper.getDefendantId());
         updateOffenceForDefendantHelper.updateOffencesForDefendant(addDefendantHelper.getOffenceId());
         updateOffenceForDefendantHelper.verifyInActiveMQ();
         updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentUpdated();
         updateOffenceForDefendantHelper.verifyOffencesForDefendantUpdated();
         updateOffenceForDefendantHelper.verifyOffencesPleasForDefendantUpdated();
-        updateOffenceForDefendantHelper.verifyInMessagingQueueOffencesForDefendentChanged();
 
         updateOffenceForDefendantHelper.updateOffencesForDefendant(addDefendantHelper.getOffenceId());
-        updateOffenceForDefendantHelper.verifyInMessagingQueueForDefendentChangedNotPresent();
 
     }
 

@@ -1,18 +1,25 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
+import java.util.UUID;
+
+import javax.inject.Inject;
+
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.progression.query.view.response.OffenceView;
 import uk.gov.moj.cpp.progression.query.view.response.OffencesView;
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.UUID;
-
-import static java.util.stream.Collectors.toList;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class OffencesService {
 
     static final String FIELD_CASE_ID = "caseId";
@@ -33,7 +40,7 @@ public class OffencesService {
      */
     public OffencesView findOffences(final String caseId, final String defendantId) {
 
-        Defendant defendantDetail = caseRepository
+        final Defendant defendantDetail = caseRepository
                 .findCaseDefendants(UUID.fromString(caseId))
                 .stream().filter(defendant -> defendant.getDefendantId().equals(UUID.fromString(defendantId))).findFirst().orElse(null);
 
@@ -41,7 +48,7 @@ public class OffencesService {
         if (defendantDetail == null) {
             return null;
         }
-        List<OffenceView> offences = offenceRepository.findByDefendantOrderByOrderIndex(defendantDetail).stream()
+        final List<OffenceView> offences = offenceRepository.findByDefendantOrderByOrderIndex(defendantDetail).stream()
                 .map(OffenceView::new).collect(toList());
 
         return new OffencesView(offences);

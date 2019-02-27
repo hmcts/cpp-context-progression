@@ -1,16 +1,21 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.newCaseDocumentReceivedEvent;
+
+import java.util.UUID;
+import java.util.stream.Stream;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.newCaseDocumentReceivedEvent;
-
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class NewCaseDocumentReceivedHandler extends CaseProgressionCommandHandler {
 

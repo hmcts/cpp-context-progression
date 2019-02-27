@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class AddConvictionDateHandlerTest extends CaseProgressionCommandHandlerTest {
 
@@ -22,18 +22,18 @@ public class AddConvictionDateHandlerTest extends CaseProgressionCommandHandlerT
     @Test
     public void addConvictionDateToOffence() throws EventStreamException {
 
-        UUID offenceId = UUID.randomUUID();
-        LocalDate convictionDate = LocalDate.now();
+        final UUID offenceId = UUID.randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
 
         when(jsonObject.getString("caseId")).thenReturn(CASE_ID.toString());
         when(jsonObject.getString("offenceId")).thenReturn(offenceId.toString());
         when(jsonObject.getString("convictionDate")).thenReturn(convictionDate.toString());
-        when(caseProgressionAggregate.addConvictionDateToOffence(CASE_ID, offenceId, convictionDate))
+        when(caseAggregate.addConvictionDateToOffence(CASE_ID, offenceId, convictionDate))
                 .thenReturn(events);
 
         addConvictionDateHandler.addConvictionDateToOffence(jsonEnvelope);
 
-        verify(caseProgressionAggregate).addConvictionDateToOffence(CASE_ID, offenceId, convictionDate);
+        verify(caseAggregate).addConvictionDateToOffence(CASE_ID, offenceId, convictionDate);
 
     }
 }

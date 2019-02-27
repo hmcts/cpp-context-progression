@@ -14,9 +14,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-@SuppressWarnings({"squid:S1186","squid:S1067"})
+
+/**
+ *
+ * @deprecated
+ *
+ */
+@Deprecated
 @Entity
 @Table(name = "person")
+@SuppressWarnings({"squid:S1186","squid:S1067", "squid:S1133"})
 public class Person implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -232,8 +239,8 @@ public class Person implements Serializable {
             return this;
         }
 
-        public Builder address(UUID addressId, String address1, String address2, String address3, String address4, String postCode) {
-            Address personAddress = new Address();
+        public Builder address(final UUID addressId, final String address1, final String address2, final String address3, final String address4, final String postCode) {
+            final Address personAddress = new Address();
             personAddress.builder()
                     .addressId(addressId)
                     .address1(address1)
@@ -247,7 +254,7 @@ public class Person implements Serializable {
         }
 
         public Builder address(final uk.gov.moj.cpp.progression.persistence.entity.Address address) {
-            Address personAddress = new Address();
+            final Address personAddress = new Address();
             personAddress.builder()
                     .addressId(address.getAddressId())
                     .address1(address.getAddress1())
@@ -261,7 +268,7 @@ public class Person implements Serializable {
         }
 
         public Person build() {
-            Person person = new Person();
+            final Person person = new Person();
             person.setFirstName(getFirstName());
             person.setLastName(getLastName());
             person.setPersonId(getPersonId());
@@ -282,7 +289,7 @@ public class Person implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }

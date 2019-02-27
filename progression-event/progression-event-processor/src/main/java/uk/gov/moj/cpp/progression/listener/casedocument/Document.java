@@ -1,7 +1,13 @@
 package uk.gov.moj.cpp.progression.listener.casedocument;
 
 import java.io.Serializable;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class Document implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -10,11 +16,11 @@ public class Document implements Serializable {
     private String fileReference;
     private String mimeType;
     
-    public Document(String externalLink) {
+    public Document(final String externalLink) {
         this.externalLink = externalLink;
     }
     
-    public Document(String fileReference, String mimeType) {
+    public Document(final String fileReference, final String mimeType) {
         this.fileReference = fileReference;
         this.mimeType = mimeType;
     }

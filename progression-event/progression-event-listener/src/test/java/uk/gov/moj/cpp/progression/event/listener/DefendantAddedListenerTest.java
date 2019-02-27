@@ -1,43 +1,45 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdded;
 import uk.gov.moj.cpp.progression.event.converter.DefendantAddedToDefendant;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
-import javax.json.JsonObject;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import javax.json.JsonObject;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-@SuppressWarnings("WeakerAccess")
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
+@SuppressWarnings({"WeakerAccess", "squid:S1133"})
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantAddedListenerTest {
 
     private static final UUID VICTIM_ID = randomUUID();
-    private UUID caseId = randomUUID();
+    private final UUID caseId = randomUUID();
+    private final UUID caseUrn = randomUUID();
+    private final UUID defendantId = randomUUID();
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -63,18 +65,32 @@ public class DefendantAddedListenerTest {
     private CaseProgressionDetail caseDetail;
 
     @Mock
+    private SearchProsecutionCaseRepository searchRepository;
+
+    @Mock
+    private SearchProsecutionCase jpaMapper;
+
+    @Mock
     private Defendant defendantDetail;
 
     @InjectMocks
     private DefendantAddedListener listener;
 
+
     @Test
-    public void shouldAddDefendant() {
+    public void shouldAddDefendantAndMakeItSearchable() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, DefendantAdded.class)).thenReturn(defendantAddedEvent);
         when(defendantAddedEvent.getCaseId()).thenReturn(caseId);
+        when(defendantAddedEvent.getCaseUrn()).thenReturn(caseUrn.toString());
+        when(defendantAddedEvent.getDefendantId()).thenReturn(defendantId);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         when(defendantAddedConverter.convert(defendantAddedEvent)).thenReturn(defendantDetail);
+
+        SearchProsecutionCaseEntity searchEntity = new SearchProsecutionCaseEntity();
+        searchEntity.setSearchTarget("URN-101 | John Smith | 22-06-1977");
+
+        when(jpaMapper.makeSearchable(any(CaseProgressionDetail.class), any(Defendant.class))).thenReturn(searchEntity);
 
         listener.addDefendant(envelope);
 

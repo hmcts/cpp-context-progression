@@ -2,13 +2,19 @@ package uk.gov.moj.cpp.progression.query.view.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 public class DefendantDocumentView {
-    private UUID fileId;
-    private String fileName;
-    private LocalDateTime lastModified;
+    private final UUID fileId;
+    private final String fileName;
+    private final LocalDateTime lastModified;
 
-    public DefendantDocumentView(UUID fileId, String fileName, LocalDateTime lastModified) {
+    public DefendantDocumentView(final UUID fileId, final String fileName, final LocalDateTime lastModified) {
         this.fileId = fileId;
         this.fileName = fileName;
         this.lastModified = lastModified;

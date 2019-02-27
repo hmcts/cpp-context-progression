@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.response;
-
+/**
+ * 
+ * @deprecated
+ *
+ */
+@SuppressWarnings({"squid:S1133", "squid:S1213"})
+@Deprecated
 public class Defence {
     private String otherDetails;
 
@@ -11,7 +17,7 @@ public class Defence {
         return otherDetails;
     }
 
-    public void setOtherDetails(String otherDetails) {
+    public void setOtherDetails(final String otherDetails) {
         this.otherDetails = otherDetails;
     }
 
@@ -19,7 +25,7 @@ public class Defence {
         return statementOfMeans;
     }
 
-    public void setStatementOfMeans(StatementOfMeans statementOfMeans) {
+    public void setStatementOfMeans(final StatementOfMeans statementOfMeans) {
         this.statementOfMeans = statementOfMeans;
     }
 
@@ -27,12 +33,12 @@ public class Defence {
         return medicalDocumentation;
     }
 
-    public void setMedicalDocumentation(MedicalDocumentation medicalDocumentation) {
+    public void setMedicalDocumentation(final MedicalDocumentation medicalDocumentation) {
         this.medicalDocumentation = medicalDocumentation;
     }
 
-    public Defence(String otherDetails, StatementOfMeans statementOfMeans,
-                    MedicalDocumentation medicalDocumentation) {
+    public Defence(final String otherDetails, final StatementOfMeans statementOfMeans,
+                    final MedicalDocumentation medicalDocumentation) {
         super();
         this.otherDetails = otherDetails;
         this.statementOfMeans = statementOfMeans;

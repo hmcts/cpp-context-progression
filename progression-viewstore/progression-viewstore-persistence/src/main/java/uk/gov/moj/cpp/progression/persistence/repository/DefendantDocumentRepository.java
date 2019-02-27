@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.progression.persistence.repository;
 
-import uk.gov.moj.cpp.progression.persistence.entity.DefendantDocument;
-
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
@@ -9,6 +7,13 @@ import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
 
+import uk.gov.moj.cpp.progression.persistence.entity.DefendantDocument;
+/**
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@Deprecated
+@SuppressWarnings("squid:S1133")
 @Repository
 public interface DefendantDocumentRepository extends EntityRepository<DefendantDocument, UUID> {
 

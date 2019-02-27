@@ -7,9 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -17,6 +14,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionQueryApiTest {
@@ -62,23 +62,23 @@ public class ProgressionQueryApiTest {
     }
 
     @Test
-    public void shouldReturnListOfMagistrateCourtsForLCC() {
-        // given
-        final JsonObject queryPayload = createObjectBuilder().add("crownCourtId", "LCC").build();
-        when(query.payloadAsJsonObject()).thenReturn(queryPayload);
-
-        // when
-        final JsonEnvelope jsonEnvelope = progressionHearingsQueryApi.getMagistratesCourts(query);
-
-        // then
-        final JsonObject expectedPayload = createObjectBuilder()
-                .add("values", createArrayBuilder()
-                        .add(createObjectBuilder().add("name", "Liverpool"))
-                        .add(createObjectBuilder().add("name", "Bootle"))
-                        .add(createObjectBuilder().add("name", "Birkenhead"))
-                        .add(createObjectBuilder().add("name", "Warrington"))
-                        .build())
-                .build();
-        assertThat(jsonEnvelope.payloadAsJsonObject(), is(expectedPayload));
+    public void shouldGetDefendantDocumentQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getDefendantDocument(query), equalTo(response));
     }
+
+    @Test
+    public void shouldGetCaseSearchByMaterialId() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getCaseSearchByMaterialId(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldGetCaseByUrn() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getCaseByUrn(query), equalTo(response));
+    }
+
+
+
 }

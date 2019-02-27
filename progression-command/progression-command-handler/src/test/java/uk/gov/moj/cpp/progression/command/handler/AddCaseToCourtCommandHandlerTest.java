@@ -1,17 +1,16 @@
 package uk.gov.moj.cpp.progression.command.handler;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
-import java.util.UUID;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class AddCaseToCourtCommandHandlerTest
                 extends CaseProgressionCommandHandlerTest {
@@ -22,10 +21,10 @@ public class AddCaseToCourtCommandHandlerTest
     @Test
     public void shouldAddCaseToCourt() throws EventStreamException {
 
-        when(caseProgressionAggregate.addCaseToCrownCourt(jsonEnvelope))
+        when(caseAggregate.addCaseToCrownCourt(jsonEnvelope))
                         .thenReturn(events);
 
         addCaseToCrownCourtHandler.addCaseToCrownCourt(jsonEnvelope);
-        verify(caseProgressionAggregate).addCaseToCrownCourt(jsonEnvelope);
+        verify(caseAggregate).addCaseToCrownCourt(jsonEnvelope);
     }
 }

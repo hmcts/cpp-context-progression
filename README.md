@@ -1,4 +1,4 @@
-# Wildfly 10 configuration
+# Wildfly 10 configuration 
 
 * Use `standalone-progression.xml`:
 

@@ -54,7 +54,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
     @InjectMocks
     private DefaultCasesCaseidCasedocumentsResource resource;
 
-    
+
     @Test
     public void shouldReturnBadRequestWhenFormisEmpty() throws IOException {
         // given
@@ -65,7 +65,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput)).thenReturn(getEmptyKeyValue());
 
         // when
-        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
+        final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
                         "clientCorrelationId", "caseId");
 
         // then
@@ -83,7 +83,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput))
                         .thenReturn(getEmptyKey("data"));
 
-        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
+        final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
                         "clientCorrelationId", "caseId");
 
         assertThat(Response.Status.BAD_REQUEST.getStatusCode(), equalTo(response.getStatus()));
@@ -100,7 +100,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         when(accessControlService.checkAccessControl(eq(Component.COMMAND_API), any(JsonEnvelope.class))).thenReturn(Optional.empty());
 
 
-        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
+        final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
                 "clientCorrelationId", "caseId");
 
         assertThat(response.getStatus(), equalTo(Response.Status.BAD_REQUEST.getStatusCode()));
@@ -118,7 +118,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         when(uploadCaseDocumentsFormParser.parse(multipartFormDataInput))
                         .thenReturn(getEmptyValue("fileName"));
 
-        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
+        final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
                         "clientCorrelationId", "caseId");
 
         assertThat(Response.Status.BAD_REQUEST.getStatusCode(), equalTo(response.getStatus()));
@@ -137,7 +137,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
         final MultipartFormDataInput multipartFormDataInput = mock(MultipartFormDataInput.class);
 
-        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session","clientCorrelationId", "caseId");
+        final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session","clientCorrelationId", "caseId");
 
         Assert.assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
         final String errorJson = response.getEntity().toString();
@@ -156,11 +156,11 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
                         .thenReturn(getKeyValue("fileName.pdf", "data"));
 
         final FileData fd = new FileData(UUID.randomUUID().toString(), "application/pdf");
-        
+
         when(fileSender.send(eq("fileName.pdf"), any(InputStream.class)))
                         .thenReturn(fd);
-       
-        Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
+
+        final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session",
                         "clientCorrelationId", "caseId");
 
         assertThat(Response.Status.ACCEPTED.getStatusCode(), equalTo(response.getStatus()));
@@ -197,7 +197,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
         return fileSender;
     }
 
-    public void setFileSender(FileSender fileSender) {
+    public void setFileSender(final FileSender fileSender) {
         this.fileSender = fileSender;
     }
 

@@ -1,9 +1,15 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
 
-import javax.persistence.Embeddable;
 import java.io.Serializable;
 
+import javax.persistence.Embeddable;
+/**
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Embeddable
 public class DefendantOffenderDetails implements Serializable {
 
@@ -17,7 +23,7 @@ public class DefendantOffenderDetails implements Serializable {
         super();
     }
 
-    public DefendantOffenderDetails(String year, String organisationUnit, String number, String checkDigit){
+    public DefendantOffenderDetails(final String year, final String organisationUnit, final String number, final String checkDigit){
         this.year = year;
         this.organisationUnit = organisationUnit;
         this.number = number;
@@ -40,19 +46,19 @@ public class DefendantOffenderDetails implements Serializable {
         return checkDigit;
     }
 
-    public void setYear(String year) {
+    public void setYear(final String year) {
         this.year = year;
     }
 
-    public void setOrganisationUnit(String organisationUnit) {
+    public void setOrganisationUnit(final String organisationUnit) {
         this.organisationUnit = organisationUnit;
     }
 
-    public void setNumber(String number) {
+    public void setNumber(final String number) {
         this.number = number;
     }
 
-    public void setCheckDigit(String checkDigit) {
+    public void setCheckDigit(final String checkDigit) {
         this.checkDigit = checkDigit;
     }
 

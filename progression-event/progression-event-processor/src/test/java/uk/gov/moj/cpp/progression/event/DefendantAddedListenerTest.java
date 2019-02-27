@@ -1,18 +1,5 @@
 package uk.gov.moj.cpp.progression.event;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.json.JsonObject;
-import java.util.UUID;
-import java.util.function.Function;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +9,27 @@ import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.DESCRIPTION;
 
+import java.util.UUID;
+import java.util.function.Function;
+
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+/**
+ * 
+ * @deprecated This is deprecated for Release 2.4
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantAddedListenerTest {
 

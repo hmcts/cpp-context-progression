@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -25,7 +24,13 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
+/**
+ *
+ * @deprecated
+ *
+ */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @Entity
 @Table(name = "Defendant")
 public class Defendant implements Serializable  {
@@ -49,7 +54,7 @@ public class Defendant implements Serializable  {
 
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendant")
-    private Set<DefendantBailDocument> defendantBailDocuments = new HashSet<>();
+    private final Set<DefendantBailDocument> defendantBailDocuments = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "person_id", unique = true)
@@ -117,8 +122,8 @@ public class Defendant implements Serializable  {
     @Embedded
     private InterpreterDetail interpreter;
 
-    public Defendant(UUID defendantId, CaseProgressionDetail caseProgressionDetail,
-                    Boolean sentenceHearingReviewDecision,Set<OffenceDetail> offences) {
+    public Defendant(final UUID defendantId, final CaseProgressionDetail caseProgressionDetail,
+                    final Boolean sentenceHearingReviewDecision,final Set<OffenceDetail> offences) {
         super();
         this.defendantId = defendantId;
         this.caseProgressionDetail = caseProgressionDetail;
@@ -126,16 +131,16 @@ public class Defendant implements Serializable  {
         setOffences(offences);
     }
 
-    public Defendant(UUID defendantId, CaseProgressionDetail caseProgressionDetail,
-                     Boolean sentenceHearingReviewDecision) {
+    public Defendant(final UUID defendantId, final CaseProgressionDetail caseProgressionDetail,
+                     final Boolean sentenceHearingReviewDecision) {
         super();
         this.defendantId = defendantId;
         this.caseProgressionDetail = caseProgressionDetail;
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
-    public Defendant(UUID defendantId, Person person,
-                     String policeDefendantId, Set<OffenceDetail> offences, Boolean sentenceHearingReviewDecision) {
+    public Defendant(final UUID defendantId, final Person person,
+                     final String policeDefendantId, final Set<OffenceDetail> offences, final Boolean sentenceHearingReviewDecision) {
         super();
         this.defendantId = defendantId;
         this.person = person;
@@ -152,7 +157,7 @@ public class Defendant implements Serializable  {
         return defendantId;
     }
 
-    public void setDefendantId(UUID defendantId) {
+    public void setDefendantId(final UUID defendantId) {
         this.defendantId = defendantId;
     }
 
@@ -160,7 +165,7 @@ public class Defendant implements Serializable  {
         return caseProgressionDetail;
     }
 
-    public void setCaseProgressionDetail(CaseProgressionDetail caseProgressionDetail) {
+    public void setCaseProgressionDetail(final CaseProgressionDetail caseProgressionDetail) {
         this.caseProgressionDetail = caseProgressionDetail;
     }
 
@@ -168,7 +173,7 @@ public class Defendant implements Serializable  {
         return sentenceHearingReviewDecision;
     }
 
-    public void setSentenceHearingReviewDecision(Boolean sentenceHearingReviewDecision) {
+    public void setSentenceHearingReviewDecision(final Boolean sentenceHearingReviewDecision) {
         this.sentenceHearingReviewDecision = sentenceHearingReviewDecision;
     }
 
@@ -177,7 +182,7 @@ public class Defendant implements Serializable  {
     }
 
     public void setSentenceHearingReviewDecisionDateTime(
-            ZonedDateTime sentenceHearingReviewDecisionDateTime) {
+            final ZonedDateTime sentenceHearingReviewDecisionDateTime) {
         this.sentenceHearingReviewDecisionDateTime = sentenceHearingReviewDecisionDateTime;
     }
 
@@ -185,7 +190,7 @@ public class Defendant implements Serializable  {
         return drugAssessment;
     }
 
-    public void setDrugAssessment(Boolean drugAssessment) {
+    public void setDrugAssessment(final Boolean drugAssessment) {
         this.drugAssessment = drugAssessment;
     }
 
@@ -193,7 +198,7 @@ public class Defendant implements Serializable  {
         return dangerousnessAssessment;
     }
 
-    public void setDangerousnessAssessment(Boolean dangerousnessAssessment) {
+    public void setDangerousnessAssessment(final Boolean dangerousnessAssessment) {
         this.dangerousnessAssessment = dangerousnessAssessment;
     }
 
@@ -201,7 +206,7 @@ public class Defendant implements Serializable  {
         return statementOfMeans;
     }
 
-    public void setStatementOfMeans(String statementOfMeans) {
+    public void setStatementOfMeans(final String statementOfMeans) {
         this.statementOfMeans = statementOfMeans;
     }
 
@@ -209,7 +214,7 @@ public class Defendant implements Serializable  {
         return medicalDocumentation;
     }
 
-    public void setMedicalDocumentation(String medicalDocumentation) {
+    public void setMedicalDocumentation(final String medicalDocumentation) {
         this.medicalDocumentation = medicalDocumentation;
     }
 
@@ -217,7 +222,7 @@ public class Defendant implements Serializable  {
         return defenceOthers;
     }
 
-    public void setDefenceOthers(String defenceOthers) {
+    public void setDefenceOthers(final String defenceOthers) {
         this.defenceOthers = defenceOthers;
     }
 
@@ -225,7 +230,7 @@ public class Defendant implements Serializable  {
         return ancillaryOrders;
     }
 
-    public void setAncillaryOrders(String ancillaryOrders) {
+    public void setAncillaryOrders(final String ancillaryOrders) {
         this.ancillaryOrders = ancillaryOrders;
     }
 
@@ -233,7 +238,7 @@ public class Defendant implements Serializable  {
         return prosecutionOthers;
     }
 
-    public void setProsecutionOthers(String prosecutionOthers) {
+    public void setProsecutionOthers(final String prosecutionOthers) {
         this.prosecutionOthers = prosecutionOthers;
     }
 
@@ -241,7 +246,7 @@ public class Defendant implements Serializable  {
         return isPSRRequested;
     }
 
-    public void setIsPSRRequested(Boolean isPSRRequested) {
+    public void setIsPSRRequested(final Boolean isPSRRequested) {
         this.isPSRRequested = isPSRRequested;
     }
 
@@ -249,7 +254,7 @@ public class Defendant implements Serializable  {
         return isStatementOffMeans;
     }
 
-    public void setIsStatementOffMeans(Boolean isStatementOffMeans) {
+    public void setIsStatementOffMeans(final Boolean isStatementOffMeans) {
         this.isStatementOffMeans = isStatementOffMeans;
     }
 
@@ -257,7 +262,7 @@ public class Defendant implements Serializable  {
         return isMedicalDocumentation;
     }
 
-    public void setIsMedicalDocumentation(Boolean isMedicalDocumentation) {
+    public void setIsMedicalDocumentation(final Boolean isMedicalDocumentation) {
         this.isMedicalDocumentation = isMedicalDocumentation;
     }
 
@@ -265,7 +270,7 @@ public class Defendant implements Serializable  {
         return isAncillaryOrders;
     }
 
-    public void setIsAncillaryOrders(Boolean isAncillaryOrders) {
+    public void setIsAncillaryOrders(final Boolean isAncillaryOrders) {
         this.isAncillaryOrders = isAncillaryOrders;
     }
 
@@ -273,7 +278,7 @@ public class Defendant implements Serializable  {
         return provideGuidance;
     }
 
-    public void setProvideGuidance(String provideGuidance) {
+    public void setProvideGuidance(final String provideGuidance) {
         this.provideGuidance = provideGuidance;
     }
     
@@ -281,7 +286,7 @@ public class Defendant implements Serializable  {
         return isNoMoreInformationRequired;
     }
 
-    public void setIsNoMoreInformationRequired(Boolean isNoMoreInformationRequired) {
+    public void setIsNoMoreInformationRequired(final Boolean isNoMoreInformationRequired) {
         this.isNoMoreInformationRequired = isNoMoreInformationRequired;
     }
 
@@ -290,7 +295,7 @@ public class Defendant implements Serializable  {
         return bailStatus;
     }
 
-    public void setBailStatus(String bailStatus) {
+    public void setBailStatus(final String bailStatus) {
         this.bailStatus = bailStatus;
         if(UNCONDITIONAL.equals(this.bailStatus)) {
             this.makeAllBailDocumentsNotActive();
@@ -305,17 +310,18 @@ public class Defendant implements Serializable  {
         return defenceSolicitorFirm;
     }
 
-    public void setDefenceSolicitorFirm(String defenceSolicitorFirm) {
+    public void setDefenceSolicitorFirm(final String defenceSolicitorFirm) {
         this.defenceSolicitorFirm = defenceSolicitorFirm;
     }
 
-    public void addDefendantBailDocument(DefendantBailDocument defendantBailDocument) {
+    public void addDefendantBailDocument(final DefendantBailDocument defendantBailDocument) {
         Objects.requireNonNull(defendantBailDocument);
         this.makeAllBailDocumentsNotActive();
         this.defendantBailDocuments.add(defendantBailDocument);
         defendantBailDocument.setDefendant(this);
     }
 
+    @SuppressWarnings("squid:S2583")
     public Set<DefendantBailDocument> getDefendantBailDocuments() {
         return defendantBailDocuments != null ? new HashSet<>(defendantBailDocuments) : new HashSet<>();
     }
@@ -324,7 +330,7 @@ public class Defendant implements Serializable  {
         return custodyTimeLimitDate;
     }
 
-    public void setCustodyTimeLimitDate(LocalDate custodyTimeLimitDate) {
+    public void setCustodyTimeLimitDate(final LocalDate custodyTimeLimitDate) {
         this.custodyTimeLimitDate = custodyTimeLimitDate;
     }
 
@@ -332,7 +338,7 @@ public class Defendant implements Serializable  {
         return offences;
     }
 
-    public void setOffences(Set<OffenceDetail> offences) {
+    public void setOffences(final Set<OffenceDetail> offences) {
         if (offences != null) {
             this.offences = new HashSet<>(offences);
             this.offences.forEach(offence -> offence.setDefendant(this));
@@ -348,7 +354,7 @@ public class Defendant implements Serializable  {
         }
     }
 
-    public void addOffence(OffenceDetail offenceDetail) {
+    public void addOffence(final OffenceDetail offenceDetail) {
         Objects.requireNonNull(offenceDetail);
         offences.add(offenceDetail);
         offenceDetail.setDefendant(this);
@@ -358,7 +364,7 @@ public class Defendant implements Serializable  {
         return policeDefendantId;
     }
 
-    public void setPoliceDefendantId(String policeDefendantId) {
+    public void setPoliceDefendantId(final String policeDefendantId) {
         this.policeDefendantId = policeDefendantId;
     }
 
@@ -366,7 +372,7 @@ public class Defendant implements Serializable  {
         return interpreter;
     }
 
-    public void setInterpreter(InterpreterDetail interpreter) {
+    public void setInterpreter(final InterpreterDetail interpreter) {
         this.interpreter = interpreter;
     }
 
@@ -379,7 +385,7 @@ public class Defendant implements Serializable  {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj == null) {
             return false;
         }
@@ -389,7 +395,7 @@ public class Defendant implements Serializable  {
         if (!(obj instanceof Defendant)) {
             return false;
         }
-        Defendant defendant = (Defendant) obj;
+        final Defendant defendant = (Defendant) obj;
 
         return new EqualsBuilder().append(defendantId, defendant.getDefendantId())
                         .append(sentenceHearingReviewDecision,

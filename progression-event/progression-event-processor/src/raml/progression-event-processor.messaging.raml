@@ -6,10 +6,11 @@ version: v1
 /public.event:
   post:
       body:
+# ***** Deprecated API - Start ********
+# ***** Do not add any new API in this section *****
           application/vnd.material.material-added+json:
               schema: !include json/schema/material.material-added.json
               example: !include json/material.material-added.json
-
 
           application/vnd.public.progression.case-document-added+json:
               schema: !include json/schema/public.progression.case-document-added.json
@@ -20,12 +21,12 @@ version: v1
           application/vnd.public.listing.case-sent-for-listing+json:
               schema: !include json/schema/public.listing.case-sent-for-listing.json
               example: !include json/public.listing.case-sent-for-listing.json
-          application/vnd.public.hearing-confirmed+json:
-              schema: !include json/schema/public.hearing-confirmed.json
-              example: !include json/public.hearing-confirmed.json
-          application/vnd.public.hearing-updated+json:
-              schema: !include json/schema/public.hearing-updated.json
-              example: !include json/public.hearing-updated.json
+          application/vnd.public.listing.hearing-confirmed+json:
+              schema: !include json/schema/public.listing.hearing-confirmed.json
+              example: !include json/public.listing.hearing-confirmed.json
+          application/vnd.public.listing.hearing-updated+json:
+              schema: !include json/schema/public.listing.hearing-updated.json
+              example: !include json/public.listing.hearing-updated.json
 
             ############  Listing End ############
 
@@ -34,26 +35,70 @@ version: v1
           application/vnd.public.hearing.adjourned+json:
               schema: !include json/schema/public.hearing.adjourned.json
               example: !include json/public.hearing.adjourned.json
-          application/vnd.public.hearing.initiated+json:
-              schema: !include json/schema/public.hearing.initiated.json
-              example: !include json/public.hearing.initiated.json
-            
-             ############  Hearing End ############
-
-             ############ Conviction Date #########      
-                            
           application/vnd.public.hearing.offence-conviction-date-changed+json:
               schema: !include json/schema/public.hearing.offence-conviction-date-changed.json
               example: !include json/public.hearing.offence-conviction-date-changed.json
           application/vnd.public.hearing.offence-conviction-date-removed+json:
               schema: !include json/schema/public.hearing.offence-conviction-date-removed.json
               example: !include json/public.hearing.offence-conviction-date-removed.json
-            
-            ############ Conviction Date #########
+          application/vnd.public.hearing.resulted+json:
+              schema: !include json/schema/public.hearing.resulted.json
+              example: !include json/public.hearing.resulted.json
 
+             ############  Hearing End ############
+
+            ############ Print starts#########
+
+          application/vnd.public.notificationnotify.events.notification-failed+json:
+                schema: !include json/schema/public.notificationnotify.events.notification-failed.json
+                example: !include json/public.notificationnotify.events.notification-failed.json
+          application/vnd.public.notificationnotify.events.notification-sent+json:
+                schema: !include json/schema/public.notificationnotify.events.notification-sent.json
+                example: !include json/public.notificationnotify.events.notification-sent.json
+
+            ############ Print ends #########
 /progression.event:
   post:
     body:
+        application/vnd.progression.event.prosecution-case-defendant-updated+json:
+            example: !include json/progression.event.prosecution-case-defendant-updated.json
+            schema: !include json/schema/progression.event.prosecution-case-defendant-updated.json
+        application/vnd.progression.event.court-document-added+json:
+            example: !include json/progression.event.court-document-added.json
+            schema: !include json/schema/progression.event.court-document-added.json
+        application/vnd.progression.event.court-document-uploaded+json:
+            example: !include json/progression.event.court-document-uploaded.json
+            schema: !include json/schema/progression.event.court-document-uploaded.json
+        application/vnd.progression.event.court-document-removed+json:
+            example: !include json/progression.event.court-document-removed.json
+            schema: !include json/schema/progression.event.court-document-removed.json
+        application/vnd.progression.event.defendant-bail-document-created+json:
+            example: !include json/progression.event.defendant-bail-document-created.json
+            schema: !include json/schema/progression.event.defendant-bail-document-created.json
+        application/vnd.progression.events.offences-for-defendant-changed+json:
+            example: !include json/progression.events.offences-for-defendant-changed.json
+            schema: !include json/schema/progression.events.offences-for-defendant-changed.json
+        application/vnd.progression.event.print-requested+json:
+            example: !include json/progression.event.print-requested.json
+            schema: !include json/schema/progression.event.print-requested.json
+        application/vnd.progression.event.summons-data-prepared+json:
+            example: !include json/progression.event.summons-data-prepared.json
+            schema: !include json/schema/progression.event.summons-data-prepared.json
+        application/vnd.progression.event.nows-requested+json:
+            schema: !include json/schema/progression.event.nows-requested.json
+            example: !include json/progression.event.nows-requested.json
+        application/vnd.progression.event.nows-material-request-recorded+json:
+            schema: !include json/schema/progression.event.nows-material-request-recorded.json
+            example: !include json/progression.event.nows-material-request-recorded.json
+        application/vnd.progression.event.nows-material-status-updated+json:
+            schema: !include json/schema/progression.event.nows-material-status-updated.json
+            example: !include json/progression.event.nows-material-status-updated.json
+
+# ***** Deprecated API - Start ********
+# ***** Do not add any new API in this section *****
+        application/vnd.progression.event.cases-referred-to-court+json:
+            example: !include json/progression.event.cases-referred-to-court.json
+            schema: !include json/schema/progression.event.cases-referred-to-court.json
         application/vnd.progression.events.new-case-document-received+json:
             example: !include json/progression.events.new-case-document-received.json
             schema: !include json/schema/progression.events.new-case-document-received.json
@@ -87,10 +132,6 @@ version: v1
         application/vnd.progression.events.sending-sheet-invalidated+json:
             schema: !include json/schema/progression.events.sending-sheet-invalidated.json
             example: !include json/progression.events.sending-sheet-invalidated.json
-        application/vnd.progression.events.defendant-update-confirmed+json:
-            schema: !include json/schema/progression.events.defendant-update-confirmed.json
-            example: !include json/progression.events.defendant-update-confirmed.json            
-        application/vnd.progression.events.defendant-offences-changed+json:
-            schema: !include json/schema/progression.events.defendant-offences-changed.json
-            example: !include json/progression.events.defendant-offences-changed.json
+
+# Deprecated API  - End
 

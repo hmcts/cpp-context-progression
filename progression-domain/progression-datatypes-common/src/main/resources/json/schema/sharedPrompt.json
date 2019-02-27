@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/sharedPrompt.json",
+  "description": "Shared Prompt",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "isAvailableForCourtExtract": {
+      "description": "Indicates if the result prompt is available to be included in a court extract",
+      "type": "boolean"
+    },
+    "promptSequence": {
+      "type": "number"
+    },
+    "label": {
+      "type": "string"
+    },
+    "welshLabel": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "welshValue": {
+      "type": "string"
+    },
+    "fixedListCode": {
+      "type": "string"
+    },
+    "usergroups": {
+      "description": "The user groups that are authorised to view the result prompts",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id", "isAvailableForCourtExtract", "label", "value"
+  ]
+}

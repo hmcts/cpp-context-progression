@@ -12,9 +12,12 @@ import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformatio
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 
 /**
- * @author jchondig
+ * 
+ * @deprecated This is deprecated for Release 2.4
  *
  */
+@SuppressWarnings("squid:S1133")
+@Deprecated
 @ServiceComponent(EVENT_LISTENER)
 public class SendingCommittalHearingInformationAddedEventListener {
 
