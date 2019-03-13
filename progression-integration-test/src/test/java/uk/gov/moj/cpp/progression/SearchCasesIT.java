@@ -17,7 +17,6 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -139,7 +138,6 @@ public class SearchCasesIT {
         assertTrue(prosecutioncasesJsonObject.getJsonArray("searchResults").getJsonObject(0).getString("defendantName").contains(updatedFirstName));
     }
 
-    @Ignore ("commenting out flaky test - done by mahesh")
     @Test
     public void shouldGetProsecutionCaseByReference() throws Exception {
         // given
