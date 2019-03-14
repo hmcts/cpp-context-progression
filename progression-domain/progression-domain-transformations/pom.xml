@@ -11,6 +11,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>progression-domain-transformations-cleanup-and-archive</module>
+        <module>progression-domain-transformation-keep-only-defendant-added</module>
+        <module>progression-domain-transformation-deactivate-all-stream-that-has-no-defendant-added</module>
     </modules>
 
 

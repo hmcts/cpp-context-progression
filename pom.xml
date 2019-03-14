@@ -40,7 +40,7 @@
         <referencedata.version>2.0.174</referencedata.version>
         <listing.version>1.0.10</listing.version>
         <hearing.version>2.0.132</hearing.version>
-        <referencedata.offence.version>1.0.18</referencedata.offence.version>
+        <referencedata.offence.version>1.0.19</referencedata.offence.version>
     </properties>
 
     <build>
