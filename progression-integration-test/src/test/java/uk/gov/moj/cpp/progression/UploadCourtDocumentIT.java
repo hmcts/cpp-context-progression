@@ -75,6 +75,7 @@ public class UploadCourtDocumentIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
+        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
 
         final JsonObject courtDocument = getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonArray("courtDocuments").getJsonObject(0);
         assertThat(courtDocument.getString("courtDocumentId"), equalTo(docId));
