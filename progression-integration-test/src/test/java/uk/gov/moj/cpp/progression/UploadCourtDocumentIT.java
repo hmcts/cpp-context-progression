@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,6 +14,7 @@ import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFil
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
 
+import org.hamcrest.Matcher;
 import uk.gov.moj.cpp.progression.helper.MultipartFileUploadHelper;
 
 import java.io.IOException;
@@ -56,6 +58,7 @@ public class UploadCourtDocumentIT {
 
     @Test
     public void shouldAddCourtDocument() throws IOException, InterruptedException {
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         // when
@@ -75,9 +78,12 @@ public class UploadCourtDocumentIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
+        Matcher[] matcher = {
+                withJsonPath("$.prosecutionCase.id",equalTo(caseId)),
+                withJsonPath("$.courtDocuments[0].courtDocumentId",equalTo(docId))
+        };
 
-        final JsonObject courtDocument = getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonArray("courtDocuments").getJsonObject(0);
+        final JsonObject courtDocument = getJsonObject(getProsecutioncasesProgressionFor(caseId, matcher)).getJsonArray("courtDocuments").getJsonObject(0);
         assertThat(courtDocument.getString("courtDocumentId"), equalTo(docId));
         assertThat(courtDocument.getJsonObject("documentCategory").getJsonObject("defendantDocument").getString("prosecutionCaseId"), equalTo(caseId));
 

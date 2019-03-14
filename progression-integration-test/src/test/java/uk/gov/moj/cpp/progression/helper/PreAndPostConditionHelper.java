@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
 import org.json.JSONObject;
 
 import javax.json.Json;
@@ -163,21 +164,30 @@ public class PreAndPostConditionHelper {
     }
 
     public static String getProsecutioncasesProgressionFor(final String caseId) {
+        return getProsecutioncasesProgressionFor(caseId, new Matcher[]{withJsonPath("$.prosecutionCase.id",equalTo(caseId))});
+
+    }
+
+    public static String getProsecutioncasesProgressionFor(final String caseId, final Matcher[] matchers) {
         return poll(requestParams(getQueryUri("/prosecutioncases/"+ caseId), "application/vnd.progression.query.prosecutioncase+json").withHeader(USER_ID, UUID.randomUUID()))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.id",equalTo(caseId))
+                                matchers
                         ))).getPayload();
-
     }
 
     public static String getProsecutionCaseAtAGlanceFor(final String caseId) {
         return pollForResponse(join("", "/prosecutioncases/", caseId), "application/vnd.progression.query.case-at-a-glance+json");
     }
 
-    public static String getCasesForSearchCriteria(final String searchCriteria) {
-        return pollForResponse(join("", "/search?q=", searchCriteria), "application/vnd.progression.query.search-cases+json");
+    public static void verifyCasesForSearchCriteria(final String searchCriteria, final Matcher[] matchers) {
+        poll(requestParams(getQueryUri(join("", "/search?q=", searchCriteria)), "application/vnd.progression.query.search-cases+json").withHeader(USER_ID, UUID.randomUUID()))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                matchers
+                        ))).getPayload();
     }
 
     public static String getUsergroupsByMaterialId(final String materialId) {
