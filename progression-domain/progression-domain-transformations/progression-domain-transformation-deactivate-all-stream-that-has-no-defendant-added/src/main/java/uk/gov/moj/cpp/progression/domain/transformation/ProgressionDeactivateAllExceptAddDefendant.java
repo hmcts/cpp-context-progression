@@ -18,7 +18,11 @@ import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_AC
 public class ProgressionDeactivateAllExceptAddDefendant implements EventTransformation {
 
     private static final List<String> EVENTS_TO_KEEP = newArrayList(
-            "progression.events.defendant-added"
+            "progression.events.defendant-added",
+            "progression.event.cases-referred-to-court",
+            "progression.event.hearing-defendant-request-created",
+            "progression.event.prosecution-case-created",
+            "progression.event.prosecutionCase-defendant-listing-status-changed"
     );
 
     private Enveloper enveloper;
@@ -33,9 +37,8 @@ public class ProgressionDeactivateAllExceptAddDefendant implements EventTransfor
         if (EVENTS_TO_KEEP.stream()
                 .anyMatch(eventToArchive -> event.metadata().name().equalsIgnoreCase(eventToArchive))) {
             return NO_ACTION;
-        } else {
-            return DEACTIVATE;
         }
+        return DEACTIVATE;
     }
 
     @Override

@@ -8,7 +8,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.DEACTIVATE;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -16,6 +15,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
 import uk.gov.justice.tools.eventsourcing.transformation.api.EventTransformation;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,13 +42,6 @@ public class ProgressionSeparateDefendantAddedTest {
     }
 
     @Test
-    public void shouldSetCustomActionForEventsThatMatch() {
-        final JsonEnvelope event = buildEnvelope("progression.events.case-added-to-crown-court.archived.1.9.release");
-
-        assertThat(underTest.actionFor(event), is(new Action(true, false, false)));
-    }
-
-    @Test
     public void shouldSetDeactivateActionForEventsThatMatch() {
         final JsonEnvelope event = buildEnvelope("progression.events.case-added-to-crown-court");
 
@@ -58,9 +55,33 @@ public class ProgressionSeparateDefendantAddedTest {
         assertThat(underTest.actionFor(event), is(NO_ACTION));
     }
 
+    @Test
+    public void shouldSetNoActionForEventGenerateAfterGivenDate() {
+        final JsonEnvelope event = buildEnvelope("progression.event.cases-referred-to-court");
+
+        assertThat(underTest.actionFor(event), is(NO_ACTION));
+    }
+
+    @Test
+    public void shouldSetNoActionForEventGenerateBeforeGivenDate() {
+
+        final ZonedDateTime zonedDateTime = ZonedDateTime.of(LocalDate.of(2019, Month.JANUARY, 1), LocalTime.of(0, 0), ZoneId.of("UTC"));
+
+        final JsonEnvelope event = buildEnvelope("progression.event.cases-referred-to-court", zonedDateTime);
+
+
+        assertThat(underTest.actionFor(event), is(new Action(true, false, false)));
+    }
+
     private JsonEnvelope buildEnvelope(final String eventName) {
         return envelopeFrom(
-                metadataBuilder().withId(randomUUID()).withName(eventName),
+                metadataBuilder().withId(randomUUID()).withName(eventName).createdAt(ZonedDateTime.now()),
+                createObjectBuilder().add("field", "value").build());
+    }
+
+    private JsonEnvelope buildEnvelope(final String eventName, final ZonedDateTime zonedDateTime) {
+        return envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName(eventName).createdAt(zonedDateTime),
                 createObjectBuilder().add("field", "value").build());
     }
 
