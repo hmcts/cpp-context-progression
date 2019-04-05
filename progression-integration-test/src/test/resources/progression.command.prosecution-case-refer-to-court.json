@@ -93,8 +93,8 @@
                     "home": "123456",
                     "work": "7891011",
                     "mobile": "45678910",
-                    "primaryEmail": "harry.kane@spurs.co.uk",
-                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "primaryEmail": "HARRY.Kane@spurs.co.uk",
+                    "secondaryEmail": "Harry.KANE@hotmail.com",
                     "fax": "3425678"
                   }
                 },
@@ -131,8 +131,8 @@
                   "home": "123456",
                   "work": "7891011",
                   "mobile": "45678910",
-                  "primaryEmail": "harry.kanejunior@spurs.co.uk",
-                  "secondaryEmail": "harry.kanejunior@hotmail.com",
+                  "primaryEmail": "Harry.Kanejunior@spurs.co.uk",
+                  "secondaryEmail": "Harry.Kanejunior@hotmail.com",
                   "fax": "3425678"
                 }
               },
@@ -161,8 +161,8 @@
                 },
                 "contact": {
                   "work": "0207 654 3246 extn 1234",
-                  "primaryEmail": "person@hotmail.com",
-                  "secondaryEmail": "associate@hotmail.com",
+                  "primaryEmail": "Person@hotmail.com",
+                  "secondaryEmail": "Associate@hotmail.com",
                   "fax": "a"
                 }
               },

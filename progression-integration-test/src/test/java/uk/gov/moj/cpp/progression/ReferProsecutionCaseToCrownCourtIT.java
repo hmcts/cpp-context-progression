@@ -63,6 +63,19 @@ public class ReferProsecutionCaseToCrownCourtIT {
     }
 
     @Test
+    public void shouldCreateProsecutionCaseWithCapitalCaseEmailAddress() throws Exception {
+        createMockEndpoints();
+        // given
+        addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
+        // when
+        final String response = getProsecutioncasesProgressionFor(caseId);
+        // then
+        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+
+        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
+    }
+
+    @Test
     public void shouldGetProsecutionCaseWithDocumentsAndGetConfirmation() throws Exception {
         createMockEndpoints();
         // given
