@@ -77,7 +77,7 @@
     },
     "email": {
       "type": "string",
-      "pattern": "email"
+      "format": "email"
     },
     "jurisdictionType": {
       "type": "string",
