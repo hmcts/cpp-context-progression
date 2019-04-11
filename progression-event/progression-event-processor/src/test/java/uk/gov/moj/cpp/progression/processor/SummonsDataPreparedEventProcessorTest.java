@@ -126,6 +126,7 @@ public class SummonsDataPreparedEventProcessorTest {
         assertThat(summonsDataJson.getString("summonsType"), is("SJP_REFERRAL"));
         assertThat(summonsDataJson.getString("ljaCode"), is("2577"));
         assertThat(summonsDataJson.getString("ljaName"), is("South West London Magistrates' Court"));
+        assertThat(summonsDataJson.getString("summonsCourtTime"), is("11:00"));
         assertThat(uuidArgumentCaptor.getValue(), is(CASE_ID));
 
     }

@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractReferra
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateCourtCentre;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateRefferal;
 
+import org.apache.commons.lang3.StringUtils;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
@@ -30,8 +31,7 @@ import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +46,7 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1135", "squid:S2789"})
+@SuppressWarnings({"squid:S1135", "squid:S2789", "squid:S1166"})
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class SummonsDataPreparedEventProcessor {
 
@@ -100,7 +100,18 @@ public class SummonsDataPreparedEventProcessor {
     }
 
     private static String getCourtTime(final ZonedDateTime hearingDateTime) {
-        return TIME_FORMATTER.format(hearingDateTime);
+        try {
+            final ZoneId zid = ZoneId.of("Europe/London");
+            final ZoneOffset zoneOffset = hearingDateTime.withZoneSameInstant(zid).getOffset();
+            final int plusHoursGMT = zoneOffset.getTotalSeconds() / 3600;
+            return TIME_FORMATTER.format(hearingDateTime.plusHours(plusHoursGMT));
+        }
+        catch (DateTimeException dte) {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Unable to parse invalid date time {} exception is {} ", hearingDateTime, dte.getMessage());
+            }
+            return StringUtils.EMPTY;
+        }
     }
 
     private static String getCourtDate(final ZonedDateTime hearingDateTime) {
