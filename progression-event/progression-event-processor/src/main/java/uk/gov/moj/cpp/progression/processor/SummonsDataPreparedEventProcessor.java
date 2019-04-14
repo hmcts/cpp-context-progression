@@ -10,7 +10,6 @@ import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractReferra
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateCourtCentre;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateRefferal;
 
-import org.apache.commons.lang3.StringUtils;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
@@ -53,7 +52,8 @@ public class SummonsDataPreparedEventProcessor {
     public static final String SUMMONS = "Summons";
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.STANDARD.getValue());
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.TIME_HHMM.getValue());
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.TIME_HMMA.getValue());
+    private static final String TIME_ZONE =  "Europe/London";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SummonsDataPreparedEventProcessor.class.getName());
     private static final String SUMMONS_TYPE = "summonsType";
@@ -100,18 +100,20 @@ public class SummonsDataPreparedEventProcessor {
     }
 
     private static String getCourtTime(final ZonedDateTime hearingDateTime) {
+        String courtTime = EMPTY;
         try {
-            final ZoneId zid = ZoneId.of("Europe/London");
+            final ZoneId zid = ZoneId.of(TIME_ZONE);
             final ZoneOffset zoneOffset = hearingDateTime.withZoneSameInstant(zid).getOffset();
             final int plusHoursGMT = zoneOffset.getTotalSeconds() / 3600;
-            return TIME_FORMATTER.format(hearingDateTime.plusHours(plusHoursGMT));
+            courtTime = TIME_FORMATTER.format(hearingDateTime.plusHours(plusHoursGMT));
         }
         catch (DateTimeException dte) {
             if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unable to parse invalid date time {} exception is {} ", hearingDateTime, dte.getMessage());
+                LOGGER.error("Invalid Summons hearing date time  {} exception is {} ", hearingDateTime, dte.getMessage());
+                throw new SummonGenerationException("Invalid Summons hearing date time ");
             }
-            return StringUtils.EMPTY;
         }
+        return courtTime;
     }
 
     private static String getCourtDate(final ZonedDateTime hearingDateTime) {

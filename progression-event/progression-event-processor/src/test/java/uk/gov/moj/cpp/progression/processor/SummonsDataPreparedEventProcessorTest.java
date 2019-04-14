@@ -126,7 +126,7 @@ public class SummonsDataPreparedEventProcessorTest {
         assertThat(summonsDataJson.getString("summonsType"), is("SJP_REFERRAL"));
         assertThat(summonsDataJson.getString("ljaCode"), is("2577"));
         assertThat(summonsDataJson.getString("ljaName"), is("South West London Magistrates' Court"));
-        assertThat(summonsDataJson.getString("summonsCourtTime"), is("11:00"));
+        assertThat(summonsDataJson.getString("summonsCourtTime"), is("2:00 PM"));
         assertThat(uuidArgumentCaptor.getValue(), is(CASE_ID));
 
     }
@@ -209,7 +209,7 @@ public class SummonsDataPreparedEventProcessorTest {
         return SummonsData.summonsData()
                 .withConfirmedProsecutionCaseIds(Arrays.asList(generateConfirmedProsecutionId()))
                 .withCourtCentre(generateCourtCentre())
-                .withHearingDateTime(ZonedDateTimes.fromString("2018-06-01T10:00:00.000Z"))
+                .withHearingDateTime(ZonedDateTimes.fromString("2018-04-01T13:00:00.000Z"))
                 .withListDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
                         .withSummonsRequired(SummonsRequired.SJP_REFERRAL)
                         .withProsecutionCaseId(CASE_ID)
