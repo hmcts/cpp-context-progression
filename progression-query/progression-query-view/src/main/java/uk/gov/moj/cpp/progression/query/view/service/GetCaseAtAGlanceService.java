@@ -75,7 +75,8 @@ public class GetCaseAtAGlanceService {
         final List<HearingEntity> hearingEntities = new ArrayList<>();
         final List<UUID> hearingIds = new ArrayList<>();
         for (final CaseDefendantHearingEntity entity : caseDefendantHearingEntities) {
-            if (!hearingIds.contains(entity.getId().getHearingId())) {
+            //should not show unallocated hearing
+            if(!hearingIds.contains(entity.getId().getHearingId()) && !"SENT_FOR_LISTING".equals(entity.getHearing().getListingStatus().toString())) {
                 hearingEntities.add(entity.getHearing());
                 hearingIds.add(entity.getId().getHearingId());
             }

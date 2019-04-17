@@ -64,11 +64,13 @@ public class HearingUpdatedIT {
     private String defendantId;
     private String userId;
     private String courtCentreId;
+    private String hearingId;
 
     @Before
     public void setUp() {
         createMockEndpoints();
         HearingStub.stubInitiateHearing();
+        hearingId = randomUUID().toString();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -88,8 +90,7 @@ public class HearingUpdatedIT {
         final JsonObject prosecutionCaseJson = getJsonObject(getProsecutioncasesProgressionFor(caseId));
         assertProsecutionCase(prosecutionCaseJson.getJsonObject("prosecutionCase"), caseId, defendantId);
 
-        JsonObject prosecutionCaseAtAGlanceJson = getJsonObject(getProsecutionCaseAtAGlanceFor(caseId));
-        final String hearingId = prosecutionCaseAtAGlanceJson.getJsonArray("hearings").getJsonObject(0).getString("id");
+        getProsecutionCaseAtAGlanceFor(caseId);
 
         final Metadata hearingConfirmedMetadata = createMetadata(PUBLIC_LISTING_HEARING_CONFIRMED);
         final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(hearingId);
@@ -115,7 +116,8 @@ public class HearingUpdatedIT {
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.hearings[0].courtCentre.id", equalTo(courtCentreId))
+                                withJsonPath("$.hearings[0].courtCentre.id", equalTo(courtCentreId)),
+                                withJsonPath("$.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
                         )));
     }
 

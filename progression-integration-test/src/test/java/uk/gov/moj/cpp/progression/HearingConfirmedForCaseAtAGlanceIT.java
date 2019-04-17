@@ -92,6 +92,15 @@ public class HearingConfirmedForCaseAtAGlanceIT {
         assertProsecutionCase(getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonObject
                 ("prosecutionCase"), caseId, defendantId);
 
+        //should not show unallocated hearing
+        poll(requestParams(getQueryUri("/prosecutioncases/"+ caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON).withHeader(USER_ID, UUID.randomUUID()))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.id",equalTo(caseId)),
+                                withJsonPath("$.hearings.length()",equalTo(0))
+                        )));
+
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
                         caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
@@ -101,8 +110,6 @@ public class HearingConfirmedForCaseAtAGlanceIT {
                         .build());
 
 
-        getProsecutionCaseAtAGlanceFor(caseId);
-
         poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
                 .until(
@@ -110,7 +117,8 @@ public class HearingConfirmedForCaseAtAGlanceIT {
                         status().is(OK),
                         payload().isJson(allOf(
                                 withJsonPath("$.id", equalTo(caseId)),
-                                withJsonPath("$.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId)))
+                                withJsonPath("$.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
+                                withJsonPath("$.hearings.[*].hearingListingStatus", hasItem(equalTo("HEARING_INITIALISED")))
                         )));
 
     }
