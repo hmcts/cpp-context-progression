@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
@@ -17,16 +18,25 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.getHearingIdFromSendCaseForListingRequest;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostSendCaseForListing;
+import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
+import static uk.gov.moj.cpp.progression.test.matchers.ElementAtListMatcher.first;
 
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentIndex;
+import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
+import uk.gov.moj.cpp.progression.util.QueryUtil;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -36,6 +46,7 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.core.Is;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,6 +71,10 @@ public class RequestSummonsIT {
     private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
     private static final MessageConsumer PRIVATE_MESSAGE_CONSUMER = privateEvents.createConsumer("progression.event.nows-material-request-recorded");
     private static final String DOCUMENT_TEXT = STRING.next();
+    public static final String PROGRESSION_QUERY_COURTDOCUMENTSSEARCH = "progression.query.courtdocuments";
+    public static final String COURT_DOCUMENT_SEARCH_NAME = "progression.query.courtdocument";
+
+    public static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -96,12 +111,32 @@ public class RequestSummonsIT {
         verifyPostSendCaseForListing(CASE_ID, DEFENDANT_ID);
 
         String hearingId = getHearingIdFromSendCaseForListingRequest();
+        System.out.println("hearingId=" + hearingId + " CASE_ID=" + CASE_ID);
         final Metadata metadata = generateMetadata();
         JsonObject hearingConfirmedPayload = generateHearingConfirmedPayload(hearingId);
         sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONFIRMED, hearingConfirmedPayload, metadata);
 
         verifyPrintRequestAccepted();
+
+        // check document query
+        AbstractIT.readConfig();
+        final BeanMatcher<Courtdocuments> pregeneratedResultMatcher = isBean(Courtdocuments.class)
+                .with(Courtdocuments::getDocumentIndices, first(Is.is(isBean(CourtDocumentIndex.class)
+                        .with(CourtDocumentIndex::getDocument, isBean(CourtDocument.class)
+                                .withValue(CourtDocument::getDocumentTypeDescription, "Summons")
+                        )
+                )));
+
+        final RequestParams preGeneratedRequestParams = requestParams(AbstractIT.getURL(PROGRESSION_QUERY_COURTDOCUMENTSSEARCH, CASE_ID),
+                APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON)
+                .withHeader(AbstractIT.CPP_UID_HEADER.getName(), AbstractIT.CPP_UID_HEADER.getValue())
+                .build();
+
+        QueryUtil.waitForQueryMatch(preGeneratedRequestParams, 30, pregeneratedResultMatcher, Courtdocuments.class);
+
+
     }
+
 
     private JsonObject generateHearingConfirmedPayload(final String hearingId) throws IOException {
         String payloadStr = getStringFromResource(PUBLIC_HEARING_CONFIRMED + ".json")

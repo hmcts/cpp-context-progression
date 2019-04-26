@@ -241,7 +241,7 @@ public class GetCaseAtAGlanceService {
     }
 
     private static String getDefendantAge(final uk.gov.justice.core.courts.Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant())) {
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth())) {
             final String dateOfBirthText = defendant.getPersonDefendant().getPersonDetails().getDateOfBirth();
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             final LocalDate dateOfBirth = LocalDate.parse(dateOfBirthText, formatter);

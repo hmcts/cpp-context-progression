@@ -145,7 +145,8 @@ public class CourtDocumentQuery {
     private CourtDocument filterPermittedMaterial(final CourtDocument courtDocument, final Set<String> permittedGroups) {
         final List<Material> filteredMaterials =
                 courtDocument.getMaterials().stream().filter(
-                        m -> m.getUserGroups() != null && m.getUserGroups().stream().anyMatch(ug -> permittedGroups.contains(ug))
+                        m -> (m.getUserGroups() == null || m.getUserGroups().isEmpty() ||
+                                m.getUserGroups().stream().anyMatch(ug -> permittedGroups.contains(ug)))
                 ).collect(Collectors.toList());
 
         return CourtDocument.courtDocument()
