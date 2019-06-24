@@ -126,14 +126,14 @@ function buildDeployAndTest {
 
 function deployAndTest {
   deleteWars
-  deployWiremock
   startVagrant
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase
   runViewStoreLiquibase
   runEventBufferLiquibase
   runFileServiceLiquibase
-  deleteWars
+  deployWars
+  deployWiremock
   healthCheck
   integrationTests
 }

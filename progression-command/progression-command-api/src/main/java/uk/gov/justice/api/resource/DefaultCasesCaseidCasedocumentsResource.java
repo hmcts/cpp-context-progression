@@ -92,28 +92,30 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
 
             final KeyValue<Optional<String>, Optional<InputStream>> fileNameAndContent = uploadCaseDocumentsFormParser.parse(multipartFormDataInput);
 
-            if (!fileNameAndContent.getKey().isPresent()) {
+
+            final Optional<String> optionalFileName = fileNameAndContent.getKey();
+            if (!optionalFileName.isPresent()) {
                 LOG.error(getErrorMsg(userId, session, correlationId, caseId, "file name absent"));
                 return Response.status(BAD_REQUEST).build();
             }
-
-            final String fileName = fileNameAndContent.getKey().get();
+            final String fileName = optionalFileName.get();
 
             if (!(fileName.endsWith(".pdf") || fileName.endsWith(".doc") || fileName.endsWith(".docx"))) {
               LOG.error(SUPPORTED_FILE_FORMATS);
               return Response.status(BAD_REQUEST).entity(SUPPORTED_FILE_FORMATS).build();
             }
-            if (!fileNameAndContent.getValue().isPresent()) {
+
+            final Optional<InputStream> optionalFileContent = fileNameAndContent.getValue();
+            if (!optionalFileContent.isPresent()) {
                 LOG.error(getErrorMsg(userId, session, correlationId, caseId,
                         "file content missing"));
                 return Response.status(BAD_REQUEST).build();
             }
-
             LOG.info("Parsed Document upload request from userId = {} sessionId = {} clientCorrelationId = {}, caseId = {}",
                     userId, session, correlationId, caseId);
 
             // File is sent
-            final FileData fileData = fileSender.send(fileName, fileNameAndContent.getValue().get());
+            final FileData fileData = fileSender.send(fileName, optionalFileContent.get());
             final String fileId = fileData.fileId();
             final String fileMimeType = fileData.fileMimeType();
 
