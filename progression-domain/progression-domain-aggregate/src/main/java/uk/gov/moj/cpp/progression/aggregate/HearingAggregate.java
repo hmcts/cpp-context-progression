@@ -1,15 +1,21 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
+import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.SharedHearing;
 import uk.gov.justice.core.courts.SharedResultLine;
 import uk.gov.justice.core.courts.SummonsData;
@@ -19,13 +25,14 @@ import uk.gov.justice.hearing.courts.HearingResulted;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
@@ -62,6 +69,39 @@ public class HearingAggregate implements Aggregate {
                     .build()));
         }
         return null;
+    }
+
+    public Stream<Object> enrichInitiateHearing(final Hearing hearing) {
+        if (!listDefendantRequests.isEmpty()) {
+            final List<UUID> defendantIds = hearing.getProsecutionCases().stream()
+                    .map(ProsecutionCase::getDefendants)
+                    .flatMap(Collection::stream)
+                    .map(Defendant::getId)
+                    .collect(Collectors.toList());
+            final List<ReferralReason> referralReasons = listDefendantRequests.stream()
+                    .filter(listDefendantRequest -> defendantIds.contains(listDefendantRequest.getReferralReason().getDefendantId()))
+                    .map(ListDefendantRequest::getReferralReason)
+                    .collect(Collectors.toList());
+            final Hearing enrichedHearing = new Hearing(
+                    hearing.getCourtCentre(),
+                    hearing.getDefenceCounsels(),
+                    hearing.getDefendantAttendance(),
+                    referralReasons,
+                    hearing.getHasSharedResults(),
+                    hearing.getHearingCaseNotes(),
+                    hearing.getHearingDays(),
+                    hearing.getHearingLanguage(),
+                    hearing.getId(),
+                    hearing.getJudiciary(),
+                    hearing.getJurisdictionType(),
+                    hearing.getProsecutionCases(),
+                    hearing.getProsecutionCounsels(),
+                    hearing.getReportingRestrictionReason(),
+                    hearing.getType()
+            );
+            return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
+        }
+        return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
     }
 
     public Stream<Object> updateDefedantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
