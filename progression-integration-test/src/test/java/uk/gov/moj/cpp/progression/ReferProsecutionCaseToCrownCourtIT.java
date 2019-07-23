@@ -10,29 +10,19 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper
         .addProsecutionCaseToCrownCourtWithMinimumAttributes;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseAtAGlanceFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpointsWithEmpty;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertcourtDocuments;
 
@@ -42,15 +32,12 @@ public class ReferProsecutionCaseToCrownCourtIT {
 
     private static final MessageConsumer consumerForReferToCourtRejected = publicEvents.createConsumer(REFER_PROSECUTION_CASES_TO_COURT_REJECTED);
 
-
-
     private String caseId;
     private String courtDocumentId;
     private String materialIdActive;
     private String materialIdDeleted;
     private String defendantId;
     private String referraReasonId;
-
 
     @Before
     public void setUp() throws IOException {
@@ -60,19 +47,6 @@ public class ReferProsecutionCaseToCrownCourtIT {
         courtDocumentId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
         referraReasonId = UUID.randomUUID().toString();
-    }
-
-    @Test
-    public void shouldCreateProsecutionCaseWithCapitalCaseEmailAddress() throws Exception {
-        createMockEndpoints();
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
-        // when
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        // then
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
     }
 
     @Test
@@ -173,17 +147,8 @@ public class ReferProsecutionCaseToCrownCourtIT {
 
         assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
         assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(0));
-
-        getProsecutionCaseAtAGlanceFor(caseId);
-
-        poll(requestParams(getQueryUri("/prosecutioncases/"+ caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON).withHeader(USER_ID, UUID.randomUUID()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.id",equalTo(caseId))
-                        )));
+        assertEquals(caseId, prosecutioncasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
     }
-
 
 
     public static void verifyInMessagingQueueForReferToCourtsRejcted() {

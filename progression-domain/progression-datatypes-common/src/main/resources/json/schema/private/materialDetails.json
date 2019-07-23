@@ -20,6 +20,10 @@
       "description": "The caseId",
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
+    "applicationId": {
+      "description": "The ApplicationId",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
     "materialId": {
       "description": "The address4",
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
@@ -27,6 +31,14 @@
     "nowsNotificationDocumentState": {
       "description": "State need to notify",
       "$ref": "http://justice.gov.uk/core/courts/notificationDocumentState.json#"
+    },
+    "emailNotifications": {
+      "description": "The email notifications required to be sent for this document",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/notification/email-channel.json"
+      }
     },
     "isRemotePrintingRequired": {
       "type": "boolean"

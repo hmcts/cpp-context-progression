@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowdocument/result.json",
+  "description": "The details for a result rendered in a now document",
+  "type": "object",
+  "properties": {
+    "label": {
+	  "type": "string"
+	},
+	"prompts": {
+      "type": "array",
+      "title": "prompts",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/nowdocument/prompt.json"
+      }
+    }
+  },
+  "required": [
+    "label"
+  ],
+  "additionalProperties": true
+}

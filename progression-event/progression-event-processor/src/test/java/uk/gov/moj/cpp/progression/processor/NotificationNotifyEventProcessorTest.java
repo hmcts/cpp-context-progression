@@ -8,9 +8,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.PrintService;
+import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
@@ -28,7 +29,7 @@ import org.slf4j.Logger;
 public class NotificationNotifyEventProcessorTest {
 
     @Mock
-    private PrintService printService;
+    private NotificationService notificationService;
 
     @Mock
     private SystemIdMapperService systemIdMapperService;
@@ -50,7 +51,7 @@ public class NotificationNotifyEventProcessorTest {
 
         notificationNotifyEventProcessor.markNotificationAsFailed(letterNotification);
 
-        verify(printService).recordPrintRequestFailure(letterNotification, systemIdMapping.get().getTargetId());
+        verify(notificationService).recordNotificationRequestFailure(letterNotification, systemIdMapping.get().getTargetId(), CASE);
     }
 
     @Test
@@ -59,11 +60,14 @@ public class NotificationNotifyEventProcessorTest {
 
         final JsonEnvelope letterNotification = envelope()
                 .withPayloadOf(notificationId.toString(), "notificationId").build();
+
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
+
+        when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
 
         notificationNotifyEventProcessor.markNotificationAsFailed(letterNotification);
 
-        verify(logger).error(format("No case found for the given notification id: %s", notificationId));
+        verify(logger).error(format("No Case or Application found for the given notification id: %s", notificationId));
     }
 
     @Test
@@ -77,6 +81,6 @@ public class NotificationNotifyEventProcessorTest {
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
-        verify(printService).recordPrintRequestSuccess(letterNotification, systemIdMapping.get().getTargetId());
+        verify(notificationService).recordNotificationRequestSuccess(letterNotification, systemIdMapping.get().getTargetId(), CASE);
     }
 }

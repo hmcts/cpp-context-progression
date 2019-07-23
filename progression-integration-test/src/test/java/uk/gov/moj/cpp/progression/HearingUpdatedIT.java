@@ -12,9 +12,8 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseAtAGlanceFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -41,7 +40,6 @@ import javax.json.JsonObject;
 import com.google.common.io.Resources;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingUpdatedIT {
@@ -90,8 +88,6 @@ public class HearingUpdatedIT {
         final JsonObject prosecutionCaseJson = getJsonObject(getProsecutioncasesProgressionFor(caseId));
         assertProsecutionCase(prosecutionCaseJson.getJsonObject("prosecutionCase"), caseId, defendantId);
 
-        getProsecutionCaseAtAGlanceFor(caseId);
-
         final Metadata hearingConfirmedMetadata = createMetadata(PUBLIC_LISTING_HEARING_CONFIRMED);
         final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(hearingId);
         sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, hearingConfirmedMetadata);
@@ -111,13 +107,13 @@ public class HearingUpdatedIT {
     }
 
     private static void verifyCourtCentreIdInCaseAtAGlance(final String caseId, final String courtCentreId) {
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON)
+        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.hearings[0].courtCentre.id", equalTo(courtCentreId)),
-                                withJsonPath("$.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
+                                withJsonPath("$.caseAtAGlance.hearings[0].courtCentre.id", equalTo(courtCentreId)),
+                                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
                         )));
     }
 

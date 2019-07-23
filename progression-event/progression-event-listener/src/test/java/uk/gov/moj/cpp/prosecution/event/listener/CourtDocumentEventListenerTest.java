@@ -10,10 +10,13 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.NowDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -25,6 +28,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
 import javax.json.JsonObject;
+
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -94,5 +99,92 @@ public class CourtDocumentEventListenerTest {
         MatcherAssert.assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
                 Matchers.is(caseDocument.getProsecutionCaseId()));
         //TODO expand this out
+    }
+
+
+    @Test
+    public void shouldHandleApplicationDocumentCreatedEventWithProsecutionIdAndApplicationId() throws Exception {
+
+        final ApplicationDocument applicationDocument =  ApplicationDocument.applicationDocument()
+                .withProsecutionCaseId(UUID.randomUUID())
+                .withApplicationId(UUID.randomUUID())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentCreated.class))
+                .thenReturn(courtsDocumentCreated);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(courtDocument.getCourtDocumentId()).thenReturn(UUID.randomUUID());
+        when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
+        when(documentCategory.getApplicationDocument()).thenReturn(applicationDocument);
+        when(documentCategory.getCaseDocument()).thenReturn(null);
+        when(documentCategory.getDefendantDocument()).thenReturn(null);
+        when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
+        when(objectToJsonObjectConverter.convert(courtDocument)).thenReturn(jsonObject);
+        eventListener.processCourtDocumentCreated(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        final CourtDocumentEntity entity = argumentCaptor.getValue();
+        MatcherAssert.assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
+                Matchers.is(applicationDocument.getProsecutionCaseId()));
+        MatcherAssert.assertThat(entity.getIndices().iterator().next().getApplicationId(),
+                Matchers.is(applicationDocument.getApplicationId()));
+    }
+
+    @Test
+    public void shouldHandleApplicationDocumentCreatedEventWithNoProsecutionId() throws Exception {
+
+        final ApplicationDocument applicationDocument =  ApplicationDocument.applicationDocument()
+                .withProsecutionCaseId(null)
+                .withApplicationId(UUID.randomUUID())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentCreated.class))
+                .thenReturn(courtsDocumentCreated);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(courtDocument.getCourtDocumentId()).thenReturn(UUID.randomUUID());
+        when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
+        when(documentCategory.getApplicationDocument()).thenReturn(applicationDocument);
+        when(documentCategory.getCaseDocument()).thenReturn(null);
+        when(documentCategory.getDefendantDocument()).thenReturn(null);
+        when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
+        when(objectToJsonObjectConverter.convert(courtDocument)).thenReturn(jsonObject);
+        eventListener.processCourtDocumentCreated(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        final CourtDocumentEntity entity = argumentCaptor.getValue();
+        MatcherAssert.assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
+                Matchers.is(applicationDocument.getProsecutionCaseId()));
+        MatcherAssert.assertThat(entity.getIndices().iterator().next().getApplicationId(),
+                Matchers.is(applicationDocument.getApplicationId()));
+    }
+
+    @Test
+    public void shouldHandleNowDocumentCreatedEvent() throws Exception {
+
+        final NowDocument nowDocument =  NowDocument.nowDocument()
+                .withDefendantId(UUID.randomUUID())
+                .withOrderHearingId(UUID.randomUUID())
+                .withProsecutionCases(Arrays.asList(UUID.randomUUID()))
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentCreated.class))
+                .thenReturn(courtsDocumentCreated);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(courtDocument.getCourtDocumentId()).thenReturn(UUID.randomUUID());
+        when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
+        when(documentCategory.getApplicationDocument()).thenReturn(null);
+        when(documentCategory.getCaseDocument()).thenReturn(null);
+        when(documentCategory.getDefendantDocument()).thenReturn(null);
+        when(documentCategory.getNowDocument()).thenReturn(nowDocument);
+        when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
+        when(objectToJsonObjectConverter.convert(courtDocument)).thenReturn(jsonObject);
+        eventListener.processCourtDocumentCreated(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        final CourtDocumentEntity entity = argumentCaptor.getValue();
+        MatcherAssert.assertThat(entity.getIndices().iterator().next().getHearingId(),
+                Matchers.is(nowDocument.getOrderHearingId()));
+        MatcherAssert.assertThat(entity.getIndices().iterator().next().getDefendantId(),
+                Matchers.is(nowDocument.getDefendantId()));
     }
 }

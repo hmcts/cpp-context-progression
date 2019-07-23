@@ -78,7 +78,7 @@ public class ConvictionDateEventProcessorTest {
         final ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.convictionDateAdded()
                 .withCaseId(UUID.randomUUID())
                 .withOffenceId(UUID.randomUUID())
-                .withConvictionDate(PAST_LOCAL_DATE.next().toString())
+                .withConvictionDate(PAST_LOCAL_DATE.next())
                 .build();
 
         final JsonEnvelope event = envelopeFrom(
@@ -93,7 +93,7 @@ public class ConvictionDateEventProcessorTest {
                 metadata().withName("progression.command.add-conviction-date"),
                 payloadIsJson(allOf(withJsonPath("$.caseId", is(convictionDateAdded.getCaseId().toString())),
                         withJsonPath("$.offenceId", is(convictionDateAdded.getOffenceId().toString())),
-                        withJsonPath("$.convictionDate", is(convictionDateAdded.getConvictionDate()))))));
+                        withJsonPath("$.convictionDate", is(convictionDateAdded.getConvictionDate().toString()))))));
 
     }
 

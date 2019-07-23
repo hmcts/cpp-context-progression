@@ -3,8 +3,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsMaterialStatusUpdated;
@@ -16,8 +15,6 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("squid:S1948")
 public class MaterialAggregate implements Aggregate {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MaterialAggregate.class);
 
     private MaterialDetails details;
 
@@ -32,7 +29,6 @@ public class MaterialAggregate implements Aggregate {
     }
 
     public Stream<Object> create(final MaterialDetails materialDetails) {
-        LOGGER.debug("material context started ");
         return apply(Stream.of(NowsMaterialRequestRecorded
                 .nowsMaterialRequestRecorded()
                 .withContext(materialDetails).build()));

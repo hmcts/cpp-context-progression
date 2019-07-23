@@ -5,7 +5,6 @@ import uk.gov.justice.core.courts.RecordNowsMaterialRequest;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 
-
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
@@ -20,20 +19,20 @@ public class UploadMaterialService {
     private Enveloper enveloper;
 
     public void uploadFile(final UploadMaterialContext uploadMaterialContext) {
-        final RecordNowsMaterialRequest recordNowsMaterialRequest = RecordNowsMaterialRequest
-                .recordNowsMaterialRequest()
+        final RecordNowsMaterialRequest recordNowsMaterialRequest = RecordNowsMaterialRequest.recordNowsMaterialRequest()
                 .withContext(MaterialDetails.materialDetails()
                         .withMaterialId(uploadMaterialContext.getMaterialId())
                         .withFileId(uploadMaterialContext.getFileId())
                         .withHearingId(uploadMaterialContext.getHearingId())
                         .withUserId(uploadMaterialContext.getUserId())
-                        .withNowsNotificationDocumentState(uploadMaterialContext.getNowsNotificationDocumentState())
                         .withCaseId(uploadMaterialContext.getCaseId())
+                        .withApplicationId(uploadMaterialContext.getApplicationId())
                         .withIsRemotePrintingRequired(uploadMaterialContext.isRemotePrintingRequired())
+                        .withEmailNotifications(uploadMaterialContext.getEmailNotifications())
                         .build())
-
                 .build();
         final JsonObject payload = objectToJsonObjectConverter.convert(recordNowsMaterialRequest);
         uploadMaterialContext.getSender().send(enveloper.withMetadataFrom(uploadMaterialContext.getOriginatingEnvelope(), PROGRESSION_COMMAND_RECORD_NOWS_MATERIAL_REQUEST).apply(payload));
     }
+
 }

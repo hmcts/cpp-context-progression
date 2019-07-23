@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/courtApplicationResponse.json",
+  "description": "The response from a respondent regarding an application",
+  "type": "object",
+  "properties": {
+    "originatingHearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "applicationResponseDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "isAdmitted": {
+		"type": "boolean"
+	}
+  },
+  "additionalProperties": false,
+  "required": ["originatingHearingId", "applicationId", "applicationResponseDate", "isAdmitted"]
+}

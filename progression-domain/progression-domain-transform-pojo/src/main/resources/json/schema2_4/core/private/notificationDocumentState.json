@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/v24/core/courts/notificationDocumentState.json",
+  "description": "The context for material",
+  "type": "object",
+
+
+  "properties": {
+    "originatingCourtCentreId": {
+      "description": "The court centre",
+      "$ref": "http://justice.gov.uk/v24/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "usergroups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nowsTypeId": {
+      "description": "The nows type",
+      "$ref": "http://justice.gov.uk/v24/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "caseUrns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "courtClerkName": {
+      "description": "The cases",
+      "type": "string"
+    },
+    "defendantName": {
+      "description": "The cases",
+      "type": "string"
+    },
+    "jurisdiction": {
+      "description": "The cases",
+      "type": "string"
+    },
+    "courtCentreName": {
+      "description": "The cases",
+      "type": "string"
+    },
+    "orderName": {
+      "description": "The cases",
+      "type": "string"
+    },
+    "priority": {
+      "description": "The cases",
+      "type": "string"
+    },
+    "materialId": {
+      "description": "The material",
+      "$ref": "http://justice.gov.uk/v24/core/courts/courtsDefinitions.json#/definitions/uuid"
+    }
+
+  },
+
+  "required": [
+    "originatingCourtCentreId",
+    "nowsTypeId"
+  ],
+  "additionalProperties": false
+}

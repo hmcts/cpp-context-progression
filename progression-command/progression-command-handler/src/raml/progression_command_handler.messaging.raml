@@ -31,9 +31,6 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.remove-court-document+json:
             example: !include json/progression.command.remove-court-document.json
             schema: !include json/schema/progression.command.remove-court-document.json
-        application/vnd.progression.command.generate-nows+json:
-            example: !include json/progression.command.generate-nows.json
-            schema: !include json/schema/progression.command.generate-nows.json
         application/vnd.progression.command.update-nows-material-status+json:
             example: !include json/progression.command.update-nows-material-status.json
             schema:  !include json/schema/progression.command.update-nows-material-status.json
@@ -46,15 +43,18 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.print+json:
             example: !include json/progression.command.print.json
             schema: !include json/schema/progression.command.print.json
-        application/vnd.progression.command.record-print-request-failure+json:
-            example: !include json/progression.command.record-print-request-failure.json
-            schema: !include json/schema/progression.command.record-print-request-failure.json
-        application/vnd.progression.command.record-print-request-success+json:
-            example: !include json/progression.command.record-print-request-success.json
-            schema: !include json/schema/progression.command.record-print-request-success.json
-        application/vnd.progression.command.record-print-request-accepted+json:
-            example: !include json/progression.command.record-print-request-accepted.json
-            schema: !include json/schema/progression.command.record-print-request-accepted.json
+        application/vnd.progression.command.record-notification-request-failure+json:
+            example: !include json/progression.command.record-notification-request-failure.json
+            schema: !include json/schema/progression.command.record-notification-request-failure.json
+        application/vnd.progression.command.record-notification-request-success+json:
+            example: !include json/progression.command.record-notification-request-success.json
+            schema: !include json/schema/progression.command.record-notification-request-success.json
+        application/vnd.progression.command.record-notification-request-accepted+json:
+            example: !include json/progression.command.record-notification-request-accepted.json
+            schema: !include json/schema/progression.command.record-notification-request-accepted.json
+        application/vnd.progression.command.email+json:
+            example: !include json/progression.command.email.json
+            schema: !include json/schema/progression.command.email.json
         application/vnd.progression.command.create-defendant-request+json:
             example: !include json/progression.command.create-defendant-request.json
             schema: !include json/schema/progression.command.create-defendant-request.json
@@ -76,6 +76,34 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command-enrich-hearing-initiate+json:
             example: !include json/progression.command-enrich-hearing-initiate.json
             schema: !include json/schema/progression.command-enrich-hearing-initiate.json
+        application/vnd.progression.command.create-court-application+json:
+            example: !include json/progression.command.create-court-application.json
+            schema: !include json/schema/progression.command.create-court-application.json
+        application/vnd.progression.command.initiate-court-proceedings+json:
+            example: !include json/progression.command.initiate-court-proceedings.json
+            schema: !include json/schema/progression.command.initiate-court-proceedings.json
+        application/vnd.progression.command.refer-application-to-court+json:
+            example: !include json/progression.command.refer-application-to-court.json
+            schema: !include json/schema/progression.command.refer-application-to-court.json
+        application/vnd.progression.command.extend-hearing+json:
+            example: !include json/progression.command.extend-hearing.json
+            schema: !include json/schema/progression.command.extend-hearing.json
+        application/vnd.progression.command.update-court-application-status+json:
+            example: !include json/progression.command.update-court-application-status.json
+            schema: !include json/schema/progression.command.update-court-application-status.json
+        application/vnd.progression.command.update-court-application+json:
+            example: !include json/progression.command.update-court-application.json
+            schema: !include json/schema/progression.command.update-court-application.json
+        application/vnd.progression.command.add-court-application-to-case+json:
+            example: !include json/progression.command.add-court-application-to-case.json
+            schema: !include json/schema/progression.command.add-court-application-to-case.json
+        application/vnd.progression.command.create-hearing-application-link+json:
+            example: !include json/progression.command.create-hearing-application-link.json
+            schema: !include json/schema/progression.command.create-hearing-application-link.json
+        application/vnd.progression.command.add-defendants-to-court-proceedings+json:
+            example: !include json/progression.command.add-defendants-to-court-proceedings.json
+            schema: !include json/schema/progression.command.add-defendants-to-court-proceedings.json
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
         application/vnd.progression.command.handler.add-case-to-crown-court+json:

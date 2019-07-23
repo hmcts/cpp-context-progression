@@ -1,0 +1,58 @@
+{ "hearing": {
+  "courtCentreName": "Warwick Justice Centre",
+  "courtCentreId": "courtCentreId",
+  "type": "MAGS Sending Hearing",
+  "sendingCommittalDate": "2017-05-19",
+  "caseId": "9b42e998-158a-4683-8073-8e9453fe6cc9",
+  "caseUrn": "87GD9945217",
+  "defendants": [
+    {
+      "id": "1905c665-a146-4efc-a01b-d7f035820656",
+      "personId": "0baecac5-222b-402d-9047-84803689edad",
+      "firstName": "David",
+      "lastName": "Lloyd",
+      "nationality": "British",
+      "gender": "Male",
+      "address": {
+        "address1": "222 Furze Road",
+        "address2": "Exeter",
+        "address3": "England",
+        "address4": "UK",
+        "postcode": "W1T 1JY"
+      },
+      "dateOfBirth": "1995-03-23",
+      "bailStatus": "bailed",
+      "custodyTimeLimitDate": "2018-01-30",
+      "defenceOrganisation": "Solicitor XYZ",
+      "interpreter": {
+        "needed": false,
+        "language": "English"
+      },
+      "offences": [
+        {
+          "id": "26887c9d-0954-4209-b189-bcd7d5c34eee",
+          "offenceCode": "OF61131",
+          "convictionDate": "2017-08-01",
+          "plea": {
+            "id": "0baecac5-222b-402d-9047-84803679edae",
+            "value": "GUILTY",
+            "pleaDate": "2017-02-02"
+          },
+          "section": "Section 51",
+          "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+          "reason": "xyz reason",
+          "description": "description",
+          "category": "category",
+          "startDate": "2016-06-21",
+          "endDate": "2017-08-01"
+        }
+      ]
+    }
+  ]
+},
+  "crownCourtHearing": {
+    "ccHearingDate": "2017-07-19",
+    "courtCentreName": "Liverpool Crown Court",
+    "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f"
+  }
+}

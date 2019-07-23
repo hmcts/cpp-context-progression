@@ -6,13 +6,6 @@
       "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04"
     },
     "jurisdictionType": "MAGISTRATES",
-    "hearingDays": [
-      {
-        "sittingDay": "2018-11-12T09:27:12Z",
-        "listedDurationMinutes": 0,
-        "listingSequence": 0
-      }
-    ],
     "hearingLanguage": "ENGLISH",
     "judiciary": [
       {
@@ -51,6 +44,14 @@
       },
       {
         "sittingDay": "2018-09-30T09:30:00.000Z",
+        "listedDurationMinutes": 0
+      },
+      {
+        "sittingDay": "2019-05-23T09:30:00.000Z",
+        "listedDurationMinutes": 0
+      },
+      {
+        "sittingDay": "2020-05-23T09:30:00.000Z",
         "listedDurationMinutes": 0
       }
     ]

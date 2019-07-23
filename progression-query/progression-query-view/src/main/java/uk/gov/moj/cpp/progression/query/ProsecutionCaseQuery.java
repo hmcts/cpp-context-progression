@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.progression.query;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+
+import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -14,15 +17,26 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.service.GetCaseAtAGlanceService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.CourtApplicationSummary;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.SearchCaseBuilder;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -30,14 +44,13 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 
-import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3655", "squid:S1612"})
+@SuppressWarnings({"squid:S3655", "squid:S1612", "squid:S1067"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProsecutionCaseQuery {
 
@@ -70,6 +83,10 @@ public class ProsecutionCaseQuery {
     @Inject
     private GetCaseAtAGlanceService getCaseAtAGlanceService;
 
+    @Inject
+    private CourtApplicationRepository courtApplicationRepository;
+
+
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
@@ -81,14 +98,39 @@ public class ProsecutionCaseQuery {
             final List<CourtDocumentEntity> courtDocuments = courtDocumentRepository.findByProsecutionCaseId(caseId
                     .get());
 
+            final List<CourtDocument> courtDocumentList = courtDocuments.stream().map(courtDocumentEntity ->
+                    jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(courtDocumentEntity.getPayload()), CourtDocument.class)
+            ).sorted((o1, o2) -> {
+                if (CollectionUtils.isNotEmpty(o1.getMaterials()) &&
+                        CollectionUtils.isNotEmpty(o2.getMaterials()) &&
+                        nonNull(o2.getMaterials().get(0).getUploadDateTime()) &&
+                        nonNull(o1.getMaterials().get(0).getUploadDateTime())) {
+                    return o2.getMaterials().get(0).getUploadDateTime().compareTo(o1.getMaterials().get(0).getUploadDateTime());
+                }
+                return -1;
+            }).collect(Collectors.toList());
+
             final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-            courtDocuments.stream().forEach(courtDocumentEntity ->
-                    prepareResponse(courtDocumentEntity.getPayload(), jsonArrayBuilder)
+            courtDocumentList.forEach(courtDocument ->
+                    prepareResponse(courtDocument, jsonArrayBuilder, courtDocuments.size())
             );
             jsonObjectBuilder.add("courtDocuments", jsonArrayBuilder.build());
 
+            final GetCaseAtAGlance getCaseAtAGlance = getCaseAtAGlanceService.getCaseAtAGlance(caseId.get());
+            final List<CourtApplicationEntity> courtApplicationEntities = courtApplicationRepository.findByLinkedCaseId(caseId.get());
+
+            if (!courtApplicationEntities.isEmpty()) {
+                final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
+                courtApplicationEntities.forEach(courtApplicationEntity -> buildApplicationSummary(courtApplicationEntity.getPayload(), jsonApplicationBuilder));
+                jsonObjectBuilder.add("linkedApplicationsSummary", jsonApplicationBuilder.build());
+                addCourtApplication(getCaseAtAGlance, courtApplicationEntities);
+            }
+
+            final JsonObject getCaseAtAGlanceJson = objectToJsonObjectConverter.convert(getCaseAtAGlance);
+            jsonObjectBuilder.add("caseAtAGlance", getCaseAtAGlanceJson);
+
         } catch (final NoResultException e) {
-            LOGGER.info("### No case found with caseId='{}'", caseId, e);
+            LOGGER.info("### No case found with caseId='{}'", caseId.get(), e);
         }
 
         return JsonEnvelope.envelopeFrom(
@@ -97,17 +139,13 @@ public class ProsecutionCaseQuery {
 
     }
 
-    @Handles("progression.query.case-at-a-glance")
-    public JsonEnvelope getCaseAtAGlance(final JsonEnvelope envelope) {
-        final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
-
-        final GetCaseAtAGlance getCaseAtAGlance = getCaseAtAGlanceService.getCaseAtAGlance(caseId.get());
-        final JsonObject getCaseAtAGlanceJson = objectToJsonObjectConverter.convert(getCaseAtAGlance);
-
-        return JsonEnvelope.envelopeFrom(
-                envelope.metadata(),
-                getCaseAtAGlanceJson);
+    private void addCourtApplication(final GetCaseAtAGlance getCaseAtAGlance, final List<CourtApplicationEntity> courtApplicationEntities) {
+        getCaseAtAGlance.getCourtApplications()
+                .addAll(courtApplicationEntities.stream()
+                        .map(o -> jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(o.getPayload()), CourtApplication.class))
+                        .collect(Collectors.toList()));
     }
+
 
     @Handles("progression.query.usergroups-by-material-id")
     public JsonEnvelope searchByMaterialId(final JsonEnvelope envelope) {
@@ -118,7 +156,7 @@ public class ProsecutionCaseQuery {
         final CourtDocumentMaterialEntity courtDocumentMaterialEntity = courtDocumentMaterialRepository.findBy(UUID
                 .fromString(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
         if (courtDocumentMaterialEntity != null) {
-            courtDocumentMaterialEntity.getUserGroups().forEach(s -> jsonArrayBuilder.add(s));
+            courtDocumentMaterialEntity.getUserGroups().forEach(jsonArrayBuilder::add);
         } else {
             LOGGER.info("No user groups found with materialId='{}'", FIELD_QUERY);
         }
@@ -150,16 +188,15 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.build());
     }
 
-    private void prepareResponse(final String resultPayload, final JsonArrayBuilder jsonArrayBuilder) {
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert
-                (resultPayload), CourtDocument.class);
+    private void prepareResponse(final CourtDocument courtDocument, final JsonArrayBuilder jsonArrayBuilder, final int numberOfDocuments) {
         if (Objects.isNull(courtDocument.getIsRemoved()) || !courtDocument.getIsRemoved()) {
+
             jsonArrayBuilder.add(objectToJsonObjectConverter.convert(CourtDocument.courtDocument()
                     .withCourtDocumentId(courtDocument.getCourtDocumentId())
                     .withDocumentCategory(courtDocument.getDocumentCategory())
                     .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
                     .withDocumentTypeId(courtDocument.getDocumentTypeId())
-                    .withName(courtDocument.getName())
+                    .withName(numberOfDocuments > 1 ? getNameWithUserGroup(courtDocument) : getName(courtDocument))
                     .withMaterials(courtDocument.getMaterials())
                     .withMimeType(courtDocument.getMimeType())
                     .withIsRemoved(courtDocument.getIsRemoved())
@@ -167,4 +204,40 @@ public class ProsecutionCaseQuery {
         }
     }
 
+    private String getName(final CourtDocument courtDocument) {
+        return Stream.of(ofNullable(courtDocument).filter(document -> nonNull(courtDocument.getDocumentCategory())).map(CourtDocument::getName).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining());
+    }
+
+    private String getNameWithUserGroup(final CourtDocument courtDocument) {
+        final String commaDelimiter = ", ";
+        final String hyphenDelimiter = " - ";
+        return Stream.of(ofNullable(courtDocument).filter(document -> nonNull(courtDocument.getDocumentCategory())).map(CourtDocument::getName).orElse(null),
+                ofNullable(courtDocument).map(CourtDocument::getMaterials).orElse(new ArrayList<>()).stream().filter(material -> nonNull(material.getUserGroups())).flatMap(material -> material.getUserGroups().stream()).collect(Collectors.joining(commaDelimiter)))
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(hyphenDelimiter));
+    }
+
+    private void buildApplicationSummary(final String applicationPayload, final JsonArrayBuilder jsonApplicationBuilder) {
+        final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert
+                (applicationPayload), CourtApplication.class);
+
+        jsonApplicationBuilder.add(objectToJsonObjectConverter.convert(CourtApplicationSummary.applicationSummary()
+                .withApplicationId(courtApplication.getId().toString())
+                .withApplicationReference(courtApplication.getApplicationReference())
+                .withApplicationStatus(courtApplication.getApplicationStatus())
+                .withApplicationTitle(courtApplication.getType())
+                .withApplicantDisplayName(courtApplication.getApplicant())
+                .withRespondentDisplayNames(courtApplication.getRespondents())
+                .withIsAppeal(isAppealApplication(courtApplication))
+                .build()));
+    }
+
+    private Boolean isAppealApplication(final CourtApplication courtApplication) {
+        return Objects.nonNull(courtApplication.getType()) && Objects.nonNull(courtApplication.getType().getIsAppealApplication())
+                && (courtApplication.getType().getIsAppealApplication() &&
+                        (ApplicationStatus.DRAFT.equals(courtApplication.getApplicationStatus()) ||
+                                ApplicationStatus.LISTED.equals(courtApplication.getApplicationStatus())));
+    }
 }

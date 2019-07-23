@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/offences-for-defendant-updated.json",
   "type": "object",
   "additionalProperties": false,
   "properties": {

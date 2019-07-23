@@ -19,11 +19,15 @@ import java.util.UUID;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtExtractPdf;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseAtAGlanceFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -39,6 +43,7 @@ public class CourtExtractIT {
     private String userId;
     private String hearingId;
     private String courtCentreId;
+    private String courtApplicationId;
 
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
@@ -47,6 +52,7 @@ public class CourtExtractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
 
     @Before
     public void setUp() throws IOException {
@@ -55,6 +61,7 @@ public class CourtExtractIT {
         userId = randomUUID().toString();
         hearingId = randomUUID().toString();
         courtCentreId = UUID.randomUUID().toString();
+        courtApplicationId = UUID.randomUUID().toString();
 
         createMockEndpoints();
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
@@ -70,8 +77,10 @@ public class CourtExtractIT {
     public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        assertProsecutionCase(getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonObject
-                ("prosecutionCase"), caseId, defendantId);
+        final String prosecutionCasesResponse = getProsecutioncasesProgressionFor(caseId);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+
+        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -81,7 +90,9 @@ public class CourtExtractIT {
                         .withUserId(userId)
                         .build());
 
-        getProsecutionCaseAtAGlanceFor(caseId);
+
+
+        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
 
         // when
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
@@ -93,8 +104,10 @@ public class CourtExtractIT {
     public void shouldGetCourtExtract_whenExtractTypeIsCertificateOfConviction() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        assertProsecutionCase(getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonObject
-                ("prosecutionCase"), caseId, defendantId);
+        final String prosecutionCasesResponse = getProsecutioncasesProgressionFor(caseId);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+
+        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -104,12 +117,44 @@ public class CourtExtractIT {
                         .withUserId(userId)
                         .build());
 
-        getProsecutionCaseAtAGlanceFor(caseId);
+        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
 
         // when
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
         // then
         assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
+    }
+
+    @Test
+    public void shouldGetCourtExtract_whenLinkedApplicationAdded() throws Exception {
+        // given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String prosecutionCasesResponse = getProsecutioncasesProgressionFor(caseId);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+
+        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
+                        caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                        .withUserId(userId)
+                        .build());
+        doAddCourtApplicationAndVerify();
+        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
+
+        // when
+        final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
+        // then
+        assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
+    }
+
+    private void doAddCourtApplicationAndVerify() throws Exception {
+        // Creating first application for the case
+        addCourtApplication(caseId, courtApplicationId, PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON);
+        final String caseResponse = getApplicationFor(courtApplicationId);
+        assertThat(caseResponse, is(notNullValue()));
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

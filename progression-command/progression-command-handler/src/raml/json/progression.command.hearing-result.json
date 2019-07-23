@@ -109,37 +109,5 @@
       }
     ]
   },
-  "variants": [
-    {
-      "key": {
-        "hearingId": "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
-        "defendantId": "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
-        "nowsTypeId": "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
-        "usergroups": [
-          "Listings Officers",
-          "Court Clerks"
-        ]
-      },
-      "materialId": "f79bf106-84e0-4bd9-911a-fc28cd6a8c9c",
-      "description": "Imprisonment Order",
-      "templateName": "SingleTemplate",
-      "status": "GENERATED"
-    },
-    {
-      "key": {
-        "hearingId": "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
-        "defendantId": "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
-        "nowsTypeId": "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
-        "usergroups": [
-          "System Users",
-          "Court Clerks"
-        ]
-      },
-      "materialId": "a7757369-8382-4a4b-9640-ace82d5222f6",
-      "description": "Imprisonment Order",
-      "templateName": "SingleTemplate",
-      "status": "BUILDING"
-    }
-  ],
   "sharedTime": "2016-06-01T10:00:00Z"
 }

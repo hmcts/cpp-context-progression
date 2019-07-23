@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -11,25 +12,20 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.SharedHearing;
-import uk.gov.justice.core.courts.SharedResultLine;
-import uk.gov.justice.hearing.courts.HearingLanguage;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.hearing.courts.HearingResulted;
-import uk.gov.justice.hearing.courts.JurisdictionType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.HearingResultEventListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -56,9 +52,6 @@ public class HearingResultEventListenerTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Spy
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
-
     @Before
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -66,7 +59,7 @@ public class HearingResultEventListenerTest {
     }
 
     @Test
-    public void hearingResult() throws Exception {
+    public void hearingResult() {
 
         final UUID hearingId = UUID.randomUUID();
         final UUID courtCentreId = UUID.randomUUID();
@@ -75,7 +68,7 @@ public class HearingResultEventListenerTest {
         final UUID offenceId = UUID.randomUUID();
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
-                .withHearing(SharedHearing.sharedHearing()
+                .withHearing(Hearing.hearing()
                         .withId(hearingId)
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withHearingLanguage(HearingLanguage.ENGLISH)
@@ -91,17 +84,7 @@ public class HearingResultEventListenerTest {
                                                 .build()))
                                         .build()))
                                 .build()))
-                        .withSharedResultLines(Arrays.asList(
-                                SharedResultLine.sharedResultLine()
-                                        .withId(UUID.randomUUID())
-                                        .withDefendantId(UUID.randomUUID())
-                                        .withOffenceId(UUID.randomUUID())
-                                        .build(),
-                                SharedResultLine.sharedResultLine()
-                                        .withId(UUID.randomUUID())
-                                        .withDefendantId(UUID.randomUUID())
-                                        .withOffenceId(UUID.randomUUID())
-                                        .build()))
+
                         .build())
                 .build();
 
@@ -112,11 +95,6 @@ public class HearingResultEventListenerTest {
         HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
-        HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setId(UUID.randomUUID());
-        Set<HearingResultLineEntity> hearingResultLineEntities = new HashSet<>();
-        hearingResultLineEntities.add(hearingResultLineEntity);
-        hearingEntity.setResultLines(hearingResultLineEntities);
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
@@ -127,10 +105,11 @@ public class HearingResultEventListenerTest {
 
         verify(this.hearingRepository).save(hearingEntityArgumentCaptor.capture());
 
-        final SharedHearing hearingResponse = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(hearingEntityArgumentCaptor.getValue().getPayload()), SharedHearing.class);
+        HearingEntity savedHearingEntity = hearingEntityArgumentCaptor.getValue();
 
-        assertThat(hearingResponse.getId(), is(hearingId));
-        assertThat(hearingResponse.getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendantId));
-        assertThat(hearingResponse.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+        assertThat(savedHearingEntity.getHearingId(), equalTo(hearingId));
+        assertThat(savedHearingEntity.getPayload(), notNullValue());
+        assertThat(savedHearingEntity.getListingStatus(), equalTo(HearingListingStatus.HEARING_RESULTED));
+
     }
 }

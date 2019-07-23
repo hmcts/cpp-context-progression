@@ -62,6 +62,8 @@ public class AbstractIT {
     private static final String ENDPOINT_PROPERTIES_FILE = "endpoint.properties";
     protected static final Properties ENDPOINT_PROPERTIES = new Properties();
     protected static final String PUBLIC_EVENT_TOPIC = "public.event";
+    protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
+
 
     protected static RequestSpecification requestSpec;
     protected static String baseUri;
@@ -106,7 +108,9 @@ public class AbstractIT {
         return header;
     }
 
-    public static void readConfig() {
+
+    protected static void readConfig() {
+
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream(ENDPOINT_PROPERTIES_FILE)) {
             ENDPOINT_PROPERTIES.load(stream);

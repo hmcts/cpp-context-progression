@@ -51,6 +51,9 @@
           "id": "5d980a3f-4eb5-4b5d-ac0d-5cf76c7bf5eb"
         },
         "jurisdictionType": "MAGISTRATES",
+        "courtCentre": {
+      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+      	},
         "listDefendantRequests": [
           {
             "datesToAvoid": "thursdays",
@@ -133,8 +136,8 @@
                 "offenceCode": "TTH105HY",
                 "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
                 "offenceFacts": {
-                  "alcoholReadingAmount": "111",
-                  "alcoholReadingMethod": "2222",
+                  "alcoholReadingAmount": 111,
+                  "alcoholReadingMethodCode": "2222",
                   "vehicleRegistration": "AA12345"
                 },
                 "orderIndex": 1,

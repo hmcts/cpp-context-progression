@@ -37,8 +37,8 @@
             },
             "offenceFacts": {
               "vehicleRegistration": "AA12345",
-              "alcoholReadingAmount": "111",
-              "alcoholReadingMethod": "2222"
+              "alcoholReadingAmount": 111,
+              "alcoholReadingMethodCode": "2222"
             }
           }
         ],
@@ -52,7 +52,6 @@
             "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
             "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
             "disabilityStatus": "a",
-            "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
             "gender": "MALE",
             "interpreterLanguageNeeds": "Welsh",
             "documentationLanguageNeeds": "WELSH",
@@ -80,15 +79,10 @@
           "bailStatus": "IN_CUSTODY",
           "custodyTimeLimit": "2018-01-01",
           "perceivedBirthYear": 2015,
-          "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
-          "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
           "driverNumber": "AACC12345",
-          "pncId": "1234567",
+
           "arrestSummonsNumber": "arrest123",
-          "aliases": [
-            "johnny robber",
-            "jack the knife"
-          ],
+
           "employerOrganisation": {
             "name": "Disneyland Paris",
             "incorporationNumber": "Mickeymouse1",

@@ -3,6 +3,9 @@
   "id": "http://justice.gov.uk/core/courts/progression.event.print-requested.json",
   "type": "object",
   "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
     "caseId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
@@ -13,10 +16,21 @@
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     }
   },
-  "required": [
-    "caseId",
-    "notificationId",
-    "materialId"
+  "oneOf": [
+    {
+      "required": [
+        "caseId",
+        "notificationId",
+        "materialId"
+      ]
+    },
+    {
+      "required": [
+        "applicationId",
+        "notificationId",
+        "materialId"
+      ]
+    }
   ],
-  "additionalProperties": true
+  "additionalProperties": false
 }

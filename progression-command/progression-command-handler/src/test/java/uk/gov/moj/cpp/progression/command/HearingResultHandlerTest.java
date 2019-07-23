@@ -15,14 +15,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.SharedHearing;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -36,8 +29,17 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.HearingResultHandler;
+
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultHandlerTest {
@@ -80,7 +82,7 @@ public class HearingResultHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
         final HearingResult hearingResult = HearingResult.hearingResult()
-                .withHearing(SharedHearing.sharedHearing()
+                .withHearing(Hearing.hearing()
                         .withId(UUID.randomUUID())
                         .build())
                 .build();

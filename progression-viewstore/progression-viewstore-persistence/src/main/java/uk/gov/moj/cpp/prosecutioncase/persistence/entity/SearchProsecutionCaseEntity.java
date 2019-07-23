@@ -45,6 +45,8 @@ public class SearchProsecutionCaseEntity implements Serializable {
     @Column(name = "search_target")
     private String searchTarget;
 
+    @Column(name = "is_standalone_application", nullable = false)
+    private Boolean isStandaloneApplication;
 
     public UUID getDefendantId() {
         return defendantId;
@@ -124,5 +126,13 @@ public class SearchProsecutionCaseEntity implements Serializable {
 
     public void setSearchTarget(final String searchTarget) {
         this.searchTarget = searchTarget;
+    }
+
+    public Boolean getStandaloneApplication() {
+        return isStandaloneApplication;
+    }
+
+    public void setStandaloneApplication(final Boolean standaloneApplication) {
+        isStandaloneApplication = standaloneApplication;
     }
 }

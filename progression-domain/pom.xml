@@ -13,5 +13,6 @@
     <module>progression-domain-aggregate</module>
     <module>progression-domain-transformations</module>
     <module>progression-datatypes-common</module>
+    <module>progression-domain-transform-pojo</module>
   </modules>
 </project>

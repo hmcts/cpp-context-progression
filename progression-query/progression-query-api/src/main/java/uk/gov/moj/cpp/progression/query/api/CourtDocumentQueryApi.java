@@ -14,6 +14,8 @@ public class CourtDocumentQueryApi {
 
     public static final String COURT_DOCUMENT_SEARCH_NAME = "progression.query.courtdocument";
     public static final String COURT_DOCUMENTS_SEARCH_NAME = "progression.query.courtdocuments";
+    public static final String COURT_DOCUMENT_PROSECUTION_NOTIFICATION_STATUS = "progression.query.prosecution.notification-status";
+    public static final String COURT_DOCUMENT_APPLICATION_NOTIFICATION_STATUS = "progression.query.application.notification-status";
 
     @Inject
     private Requester requester;
@@ -28,5 +30,13 @@ public class CourtDocumentQueryApi {
         return requester.request(query);
     }
 
+    @Handles(COURT_DOCUMENT_PROSECUTION_NOTIFICATION_STATUS)
+    public JsonEnvelope getCaseNotificationStatus(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 
+    @Handles(COURT_DOCUMENT_APPLICATION_NOTIFICATION_STATUS)
+    public JsonEnvelope getApplicationNotificationStatus(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

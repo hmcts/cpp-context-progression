@@ -68,7 +68,7 @@ public class SendingSheetCompleteIT {
 
     public static void init() {
         createMockEndpoints();
-        ListingStub.stubSendCaseForListing();
+        ListingStub.stubListCourtHearing();
         ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         ReferenceDataStub.stubQueryAllDocumentsTypeData("/restResource/ref-data-all-documents-type.json");

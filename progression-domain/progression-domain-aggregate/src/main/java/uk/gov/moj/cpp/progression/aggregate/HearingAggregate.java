@@ -16,7 +16,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.SharedHearing;
 import uk.gov.justice.core.courts.SharedResultLine;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
@@ -27,10 +26,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,26 +80,35 @@ public class HearingAggregate implements Aggregate {
                     .map(Defendant::getId)
                     .collect(Collectors.toList());
             final List<ReferralReason> referralReasons = listDefendantRequests.stream()
-                    .filter(listDefendantRequest -> defendantIds.contains(listDefendantRequest.getReferralReason().getDefendantId()))
+                    .filter(listDefendantRequest -> {
+                        if (Objects.nonNull(listDefendantRequest.getReferralReason())) {
+                            return defendantIds.contains(listDefendantRequest.getReferralReason().getDefendantId());
+                        } else {
+                            return false;
+                        }
+                    })
                     .map(ListDefendantRequest::getReferralReason)
                     .collect(Collectors.toList());
-            final Hearing enrichedHearing = new Hearing(
-                    hearing.getCourtCentre(),
-                    hearing.getDefenceCounsels(),
-                    hearing.getDefendantAttendance(),
-                    referralReasons,
-                    hearing.getHasSharedResults(),
-                    hearing.getHearingCaseNotes(),
-                    hearing.getHearingDays(),
-                    hearing.getHearingLanguage(),
-                    hearing.getId(),
-                    hearing.getJudiciary(),
-                    hearing.getJurisdictionType(),
-                    hearing.getProsecutionCases(),
-                    hearing.getProsecutionCounsels(),
-                    hearing.getReportingRestrictionReason(),
-                    hearing.getType()
-            );
+
+            final Hearing enrichedHearing = Hearing.hearing()
+                    .withCourtCentre(hearing.getCourtCentre())
+                    .withDefenceCounsels(hearing.getDefenceCounsels())
+                    .withDefendantAttendance(hearing.getDefendantAttendance())
+                    .withDefendantReferralReasons(CollectionUtils.isNotEmpty(referralReasons)?referralReasons:null)
+                    .withHasSharedResults(hearing.getHasSharedResults())
+                    .withHearingCaseNotes(hearing.getHearingCaseNotes())
+                    .withHearingDays(hearing.getHearingDays())
+                    .withHearingLanguage(hearing.getHearingLanguage())
+                    .withId(hearing.getId())
+                    .withJudiciary(hearing.getJudiciary())
+                    .withJurisdictionType(hearing.getJurisdictionType())
+                    .withProsecutionCases(hearing.getProsecutionCases())
+                    .withCourtApplications(hearing.getCourtApplications())
+                    .withProsecutionCounsels(hearing.getProsecutionCounsels())
+                    .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
+                    .withType(hearing.getType())
+                    .build();
+
             return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
         }
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
@@ -127,8 +137,8 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(HearingDefendantRequestCreated.hearingDefendantRequestCreated().withDefendantRequests(listDefendantRequests).build()));
     }
 
-    public Stream<Object> saveHearingResult(SharedHearing hearing) {
+    public Stream<Object> saveHearingResult(Hearing hearing, ZonedDateTime sharedTime) {
         LOGGER.debug("Hearing Resulted.");
-        return apply(Stream.of(HearingResulted.hearingResulted().withHearing(hearing).build()));
+        return apply(Stream.of(HearingResulted.hearingResulted().withHearing(hearing).withSharedTime(sharedTime).build()));
     }
 }

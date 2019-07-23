@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/progression/courts/prosecution-cases-referred-to-court.json",
+  "id": "http://justice.gov.uk/progression/courts/public.progression.prosecution-cases-referred-to-court.json",
   "description": "A private and public event that is published by progression context for each prosecutionCase~defendant that is referred to court.  Acknowledges that the defendant has been listed in a court hearing by way of the details of that hearing.  Additionally acknowledges that a summons was generated when requested in the initiating referral by way of the identifier of the generated material for the summons",
   "type": "object",
   "properties": {

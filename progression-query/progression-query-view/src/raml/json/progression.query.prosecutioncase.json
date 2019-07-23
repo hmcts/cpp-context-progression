@@ -38,7 +38,7 @@
 						"witnessStatement": "I did not do it",
 						"mitigation": "I was not there",
 						"alcoholReadingAmount": "111",
-						"alcoholReadingMethod": "2222",
+						"alcoholReadingMethodCode": "2222",
 						"basisOfDefence": "prejudice"
 					}
 				}
@@ -197,5 +197,168 @@
 				}
 			]
 		}
-	]
+	],
+	"caseAtAGlance" : {
+		"defendantHearings": [
+		{
+			"defendantId": "47e35e53-c520-4062-a72a-de5c80802d53",
+			"defendantName": "Harry JackKane Junior",
+			"hearingIds": [
+				"279807b2-0427-4157-9974-06ef0c1cc255",
+				"ff431c9c-2a44-4c8d-9621-d8265337541c"
+			]
+		}
+	],
+		"hearings": [
+			{
+				"courtCentre": {
+					"id": "0cc8b59f-7067-4acb-9fd7-5e422c2c4140",
+					"name": "South Western (Lavender Hill)"
+				},
+				"defendants": [
+					{
+						"address": {
+							"address1": "22",
+							"address2": "Acacia Avenue",
+							"address3": "Acacia Town",
+							"address4": "Acacia City",
+							"address5": "Acacia Country",
+							"postcode": "CR7 0AA"
+						},
+						"age": "8",
+						"dateOfBirth": "2010-01-01",
+						"defenceOrganisation": {
+							"defenceCounsels": [
+							],
+							"defendantId": "47e35e53-c520-4062-a72a-de5c80802d53"
+						},
+						"id": "47e35e53-c520-4062-a72a-de5c80802d53",
+						"name": "Harry JackKane Junior",
+						"offences": [
+							{
+								"count": 0,
+								"endDate": "2018-01-01",
+								"id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+								"notifiedPlea": {
+									"notifiedPleaDate": "2018-04-01",
+									"notifiedPleaValue": "NOTIFIED_GUILTY",
+									"offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+								},
+								"offenceCode": "TTH105HY",
+								"offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+								"offenceLegislation": "ABCDE",
+								"offenceLegislationWelsh": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+								"offenceTitle": "ABCDE",
+								"offenceTitleWelsh": "ABCDEFGHIJKLMNOP",
+								"pleas": [
+								],
+								"results": [
+								],
+								"startDate": "2018-01-01",
+								"verdicts": [
+								],
+								"wording": "No Travel Card",
+								"wordingWelsh": "No Travel Card In Welsh"
+							}
+						],
+						"results": [
+						]
+					}
+				],
+				"hearingDays": [
+					{
+						"listedDurationMinutes": 0,
+						"sittingDay": "2018-09-28T12:13:00.000Z"
+					},
+					{
+						"listedDurationMinutes": 0,
+						"sittingDay": "2018-09-30T09:30:00.000Z"
+					}
+				],
+				"id": "279807b2-0427-4157-9974-06ef0c1cc255",
+				"judiciary": [
+					{
+						"isBenchChairman": false,
+						"isDeputy": false,
+						"judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+						"judicialRoleType": "MAGISTRATE"
+					}
+				],
+				"reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+				"type": "Sentence"
+			},
+			{
+				"courtCentre": {
+					"id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+					"name": "South Western (Lavender Hill)",
+					"welshName": "welshName_Test"
+				},
+				"defendants": [
+					{
+						"address": {
+							"address1": "22",
+							"address2": "Acacia Avenue",
+							"address3": "Acacia Town",
+							"address4": "Acacia City",
+							"address5": "Acacia Country",
+							"postcode": "CR7 0AA"
+						},
+						"age": "8",
+						"dateOfBirth": "2010-01-01",
+						"defenceOrganisation": {
+							"defenceCounsels": [
+							],
+							"defendantId": "47e35e53-c520-4062-a72a-de5c80802d53"
+						},
+						"id": "47e35e53-c520-4062-a72a-de5c80802d53",
+						"name": "Harry JackKane Junior",
+						"offences": [
+							{
+								"count": 0,
+								"endDate": "2018-01-01",
+								"id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+								"notifiedPlea": {
+									"notifiedPleaDate": "2018-04-01",
+									"notifiedPleaValue": "NOTIFIED_GUILTY",
+									"offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+								},
+								"offenceCode": "TTH105HY",
+								"offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+								"offenceLegislation": "ABCDE",
+								"offenceLegislationWelsh": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+								"offenceTitle": "ABCDE",
+								"offenceTitleWelsh": "ABCDEFGHIJKLMNOP",
+								"pleas": [
+								],
+								"results": [
+								],
+								"startDate": "2018-01-01",
+								"verdicts": [
+								],
+								"wording": "No Travel Card",
+								"wordingWelsh": "No Travel Card In Welsh"
+							}
+						],
+						"results": [
+						]
+					}
+				],
+				"hearingDays": [
+					{
+						"listedDurationMinutes": 20,
+						"sittingDay": "2018-03-01T00:00:00.000Z"
+					}
+				],
+				"id": "ff431c9c-2a44-4c8d-9621-d8265337541c",
+				"reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+				"type": "Further Plea & Trial Preparation"
+			}
+		],
+		"id": "368b9b20-e357-41b5-9452-6b2092c80ad0",
+		"prosecutionCaseIdentifier": {
+			"prosecutionAuthorityCode": "TFL",
+			"prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+			"prosecutionAuthorityReference": "0fcca896"
+		}
+	}
 }

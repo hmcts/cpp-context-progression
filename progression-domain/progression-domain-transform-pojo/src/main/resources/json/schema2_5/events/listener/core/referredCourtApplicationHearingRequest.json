@@ -1,0 +1,32 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/core/courts/referredCourtApplicationHearingRequest.json",
+	"type": "object",
+	"properties": {
+		"listedStartDateTime": {
+			"description": "The date and time that has been pre-arranged and therefore must be listed accordingly.  Since the Police grant bail, Police requests will arrive at court with a pre-agreed date and time as per the bail arrangements.  Similarly adjournments will result in a pre-arranged date and time",
+			"type": "string",
+			"format": "date-time"
+		},
+		"reportingRestrictionReason": {
+			"type": "string"
+		},
+		"courtCentre": {
+			"$ref": "http://justice.gov.uk/core/courts/referredCourtCentre.json"
+		},
+		"listingDirections": {
+			"type": "string"
+		},
+		"listCourtApplicationPartyRequests": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"$ref": "http://justice.gov.uk/core/courts/listCourtApplicationPartyRequest.json"
+			}
+		}
+	},
+	"required": [
+		"listCourtApplicationPartyRequests"
+	],
+	"additionalProperties": false
+}

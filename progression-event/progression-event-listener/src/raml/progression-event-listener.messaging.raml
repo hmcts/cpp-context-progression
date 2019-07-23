@@ -48,21 +48,44 @@ version: v1
             schema: !include json/schema/progression.event.print-requested.json
             example: !include json/progression.event.print-requested.json
 
-        application/vnd.progression.event.print-request-failed+json:
-            schema: !include json/schema/progression.event.print-request-failed.json
-            example: !include json/progression.event.print-request-failed.json
+        application/vnd.progression.event.email-requested+json:
+            schema: !include json/schema/progression.event.email-requested.json
+            example: !include json/progression.event.email-requested.json
 
-        application/vnd.progression.event.print-request-succeeded+json:
-            schema: !include json/schema/progression.event.print-request-succeeded.json
-            example: !include json/progression.event.print-request-succeeded.json
+        application/vnd.progression.event.notification-request-failed+json:
+            schema: !include json/schema/progression.event.notification-request-failed.json
+            example: !include json/progression.event.notification-request-failed.json
 
-        application/vnd.progression.event.print-request-accepted+json:
-            schema: !include json/schema/progression.event.print-request-accepted.json
-            example: !include json/progression.event.print-request-accepted.json
+        application/vnd.progression.event.notification-request-succeeded+json:
+            schema: !include json/schema/progression.event.notification-request-succeeded.json
+            example: !include json/progression.event.notification-request-succeeded.json
+
+        application/vnd.progression.event.notification-request-accepted+json:
+            schema: !include json/schema/progression.event.notification-request-accepted.json
+            example: !include json/progression.event.notification-request-accepted.json
 
         application/vnd.progression.event.hearing-resulted+json:
             schema: !include json/schema/progression.event.hearing-resulted.json
             example: !include json/progression.event.hearing-resulted.json
+
+        application/vnd.progression.event.court-application-created+json:
+            schema: !include json/schema/progression.event.court-application-created.json
+            example: !include json/progression.event.court-application-created.json
+            
+        application/vnd.progression.event.court-application-status-changed+json:
+            schema: !include json/schema/progression.event.court-application-status-changed.json
+            example: !include json/progression.event.court-application-status-changed.json
+
+        application/vnd.progression.event.court-application-updated+json:
+            schema: !include json/schema/progression.event.court-application-updated.json
+            example: !include json/progression.event.court-application-updated.json
+        application/vnd.progression.event.hearing-application-link-created+json:
+            schema: !include json/schema/progression.event.hearing-application-link-created.json
+            example: !include json/progression.event.hearing-application-link-created.json
+
+        application/vnd.progression.event.defendants-added-to-court-proceedings+json:
+            schema: !include json/schema/progression.event.defendants-added-to-court-proceedings.json
+            example: !include json/progression.event.defendants-added-to-court-proceedings.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

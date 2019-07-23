@@ -1,0 +1,20 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/core/courts/authorisedResource.json",
+	"type": "object",
+	"properties": {
+		"name": {
+		  "type": "string"
+		},
+		"uri": {
+		  "type": "string"
+		},
+		"rank": {
+		  "type": "string"
+		}
+	},
+	"required": [
+		"uri", "name"
+	],
+	"additionalProperties": false
+}

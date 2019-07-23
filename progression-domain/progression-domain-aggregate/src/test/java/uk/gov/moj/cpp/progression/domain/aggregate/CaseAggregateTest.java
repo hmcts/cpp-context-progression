@@ -10,10 +10,19 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
@@ -38,11 +47,11 @@ import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -102,8 +111,18 @@ public class CaseAggregateTest {
     static final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<uk.gov.justice.core.courts.Defendant>() {{
         add(defendant);
     }};
-    private static final ProsecutionCase prosecutionCase = new ProsecutionCase("caseStatus", defendants, randomUUID(), InitiationCode.C, "originatingOrganisation", null, null, null);
-
+    private static final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+            .withCaseStatus("caseStatus")
+            .withId(randomUUID())
+            .withOriginatingOrganisation("originatingOrganisation")
+            .withDefendants(defendants)
+            .withInitiationCode(InitiationCode.C)
+            .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                    .withProsecutionAuthorityReference("reference")
+                    .withProsecutionAuthorityCode("code")
+                    .withProsecutionAuthorityId(randomUUID())
+                    .build())
+            .build();
 
     @Mock
     JsonEnvelope envelope;
@@ -463,5 +482,128 @@ public class CaseAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseCreated.class)));
+    }
+
+    @Test
+    public void shouldDefendantsNotAddedToCourtProceedings() {
+
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+
+        final DefendantsNotAddedToCourtProceedings defendantsNotAddedToCourtProceedings = DefendantsNotAddedToCourtProceedings
+                                                                                            .defendantsNotAddedToCourtProceedings()
+                                                                                            .withDefendants(new ArrayList<>())
+                                                                                            .withListHearingRequests(new ArrayList<>())
+                                                                                            .build();
+
+        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProcessdings(defendantsNotAddedToCourtProceedings.getDefendants(),
+                defendantsNotAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantsNotAddedToCourtProceedings.class)));
+
+        //Assert total defedants are empty
+        assertThat(defendantsNotAddedToCourtProceedings.getDefendants().isEmpty(), is(true));
+        //Assert total listHearingRequests are empty
+        assertThat( ((DefendantsNotAddedToCourtProceedings)object).getListHearingRequests().isEmpty(), is(true));
+    }
+
+    @Test
+    public void shouldDefendantsAddedToCourtProceedings() {
+
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+
+        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProcessdings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantsAddedToCourtProceedings.class)));
+
+        //Assert total defedants with count 3 including duplicates
+        assertThat(defendantsAddedToCourtProceedings.getDefendants().size(), is(3));
+        //Assert total defedants with count 2 excluded duplicates
+        assertThat( ((DefendantsAddedToCourtProceedings)object).getDefendants().size(), is(2));
+    }
+
+    private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
+            final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
+
+
+        uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId)
+                .withOffenceDefinitionId(UUID.randomUUID())
+                .withOffenceCode("TFL123")
+                .withOffenceTitle("TFL Ticket Dodger")
+                .withWording("TFL ticket dodged")
+                .withStartDate(LocalDate.of(2019, 05, 01))
+                .withCount(0)
+                .build();
+        uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(Collections.singletonList(offence))
+                .build();
+
+        //Add duplicate defendant
+        uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(Collections.singletonList(offence))
+                .build();
+
+        uk.gov.justice.core.courts.Defendant defendant2 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withOffences(Collections.singletonList(offence))
+                .build();
+
+        ReferralReason referralReason = ReferralReason.referralReason()
+                .withId(UUID.randomUUID())
+                .withDefendantId(defendantId)
+                .withDescription("Dodged TFL tickets with passion")
+                .build();
+
+        ReferralReason referralReason2 = ReferralReason.referralReason()
+                .withId(UUID.randomUUID())
+                .withDefendantId(defendantId2)
+                .withDescription("Dodged TFL tickets with passion")
+                .build();
+
+        ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(caseId)
+                .withDefendantOffences(Collections.singletonList(offenceId))
+                .withReferralReason(referralReason)
+                .build();
+        ListDefendantRequest listDefendantRequest2 = ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(caseId)
+                .withDefendantOffences(Collections.singletonList(offenceId))
+                .withReferralReason(referralReason2)
+                .build();
+
+        HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
+        CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+
+        ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withCourtCentre(courtCentre).withHearingType(hearingType)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(Arrays.asList(listDefendantRequest, listDefendantRequest2))
+                .build();
+
+        return DefendantsAddedToCourtProceedings
+                .defendantsAddedToCourtProceedings()
+                .withDefendants(Arrays.asList(defendant, defendant1, defendant2))
+                .withListHearingRequests(Collections.singletonList(listHearingRequest))
+                .build();
+
     }
 }

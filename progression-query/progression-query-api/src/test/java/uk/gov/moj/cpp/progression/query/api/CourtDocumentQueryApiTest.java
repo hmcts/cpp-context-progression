@@ -47,6 +47,9 @@ public class CourtDocumentQueryApiTest {
     @InjectMocks
     private CourtDocumentApi courtDocumentApi;
 
+    @InjectMocks
+    private CourtDocumentQueryApi courtDocumentQueryApi;
+
     @Test
     public void shouldHandleCaseDocumentMetadataQuery() {
 
@@ -63,5 +66,9 @@ public class CourtDocumentQueryApiTest {
         assertThat(courtDocumentApi.getCaseDocumentDetails(query), equalTo(query));
     }
 
-
+    @Test
+    public void shouldHandleCourtDocumentNotificationStatusQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(courtDocumentQueryApi.getCaseNotificationStatus(query), equalTo(response));
+    }
 }

@@ -3,9 +3,8 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 
-import uk.gov.justice.core.courts.CreateNowsRequest;
-import uk.gov.justice.core.courts.NotificationDocumentState;
-import uk.gov.justice.core.courts.NowType;
+import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -13,10 +12,8 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.activiti.common.JsonHelper;
-import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
-import uk.gov.moj.cpp.progression.processor.NowsNotificationDocumentState;
 import uk.gov.moj.cpp.progression.processor.NowsTemplateNameNotFoundException;
-import uk.gov.moj.cpp.progression.processor.SummonGenerationException;
+import uk.gov.moj.cpp.progression.processor.InvalidHearingTimeException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
@@ -26,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -43,9 +40,9 @@ public class DocumentGeneratorService {
     public static final String PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS = "progression.command.update-nows-material-status";
     public static final String RESULTS_UPDATE_NOWS_MATERIAL_STATUS = "results.update-nows-material-status";
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentGeneratorService.class);
-    private static final String SUMMONS = "Summons";
     private static final String FAILED = "failed";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final String ERROR_MESSAGE = "Error while uploading document generation or upload ";
 
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
@@ -71,70 +68,64 @@ public class DocumentGeneratorService {
         this.uploadMaterialService = uploadMaterialService;
     }
 
-    private NotificationDocumentState convert(final NowsNotificationDocumentState nowsNotificationDocumentState) {
-        return NotificationDocumentState.notificationDocumentState()
-                .withCaseUrns(nowsNotificationDocumentState.getCaseUrns())
-                .withCourtCentreName(nowsNotificationDocumentState.getCourtCentreName())
-                .withCourtClerkName(nowsNotificationDocumentState.getCourtClerkName())
-                .withDefendantName(nowsNotificationDocumentState.getDefendantName())
-                .withJurisdiction(nowsNotificationDocumentState.getJurisdiction())
-                .withMaterialId(nowsNotificationDocumentState.getMaterialId())
-                .withNowsTypeId(nowsNotificationDocumentState.getNowsTypeId())
-                .withOrderName(nowsNotificationDocumentState.getOrderName())
-                .withOriginatingCourtCentreId(nowsNotificationDocumentState.getOriginatingCourtCentreId())
-                .withPriority(nowsNotificationDocumentState.getPriority())
-                .withUsergroups(nowsNotificationDocumentState.getUsergroups())
-                .build();
-    }
-
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public void generateNow(final Sender sender, final JsonEnvelope originatingEnvelope, final UUID userId, final CreateNowsRequest nowsRequested,
-                            final String hearingId, final Map<NowsDocumentOrder, NowsNotificationDocumentState> nowsDocumentOrderToNotificationState,
-                            final NowsDocumentOrder nowsDocumentOrder) {
+    public void generateNow(final Sender sender, final JsonEnvelope originatingEnvelope,
+                            final UUID userId, final NowDocumentRequest nowDocumentRequest) {
         try {
-            final NowsNotificationDocumentState nowsNotificationDocumentState = nowsDocumentOrderToNotificationState.get(nowsDocumentOrder);
-            final String templateName = getTemplateName(nowsRequested, nowsNotificationDocumentState);
+            final String orderName = nowDocumentRequest.getNowContent().getOrderName();
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
-            final JsonObject nowsDocumentOrderJson = objectToJsonObjectConverter.convert(nowsDocumentOrder);
-            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, templateName, getSystemUserUuid());
-            final UUID caseId = nowsRequested.getHearing().getProsecutionCases().get(0).getId();
-            addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(nowsNotificationDocumentState.getOrderName()), new ByteArrayInputStream(resultOrderAsByteArray),
-                    userId, hearingId, fromString(nowsNotificationDocumentState.getMaterialId().toString()), convert(nowsNotificationDocumentState), caseId, nowsNotificationDocumentState.getIsRemotePrintingRequired());
+            final JsonObject nowsDocumentOrderJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), getSystemUserUuid());
+            addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
+                    new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
+                    nowDocumentRequest.getCaseId(),
+                    null,
+                    nowDocumentRequest.getIsRemotePrintingRequired(),
+                    nowDocumentRequest.getEmailNotifications());
         } catch (IOException | RuntimeException e) {
-            LOGGER.error("Error while uploading document generation or upload ", e);
-            updateStatus(sender, hearingId, nowsDocumentOrder.getMaterialId().toString(), userId.toString(), FAILED, PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS);
-            updateStatus(sender, hearingId, nowsDocumentOrder.getMaterialId().toString(), userId.toString(), FAILED, RESULTS_UPDATE_NOWS_MATERIAL_STATUS);
+            LOGGER.error(ERROR_MESSAGE, e);
+            updateStatus(sender, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId().toString(), userId.toString(), FAILED, PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS);
+            updateStatus(sender, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId().toString(), userId.toString(), FAILED, RESULTS_UPDATE_NOWS_MATERIAL_STATUS);
         }
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public UUID generateSummons(final JsonEnvelope envelope, final JsonObject documentPayload, final Sender sender, final UUID prosecutionCaseId) {
+    public UUID generateDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final Sender sender, final UUID prosecutionCaseId, final UUID applicationId) {
+
         final UUID materialId = UUID.randomUUID();
+
         try {
             final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
 
-            final byte[] resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(documentPayload, SUMMONS, getSystemUserUuid());
-            addDocumentToMaterial(sender, envelope, getTimeStampAmendedFileName(SUMMONS), new ByteArrayInputStream(resultOrderAsByteArray), userId, UUID.randomUUID().toString(), materialId, null, prosecutionCaseId, true);
+            final byte[] resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
+
+            addDocumentToMaterial(
+                    sender,
+                    envelope,
+                    getTimeStampAmendedFileName(templateName),
+                    new ByteArrayInputStream(resultOrderAsByteArray),
+                    userId,
+                    UUID.randomUUID().toString(),
+                    materialId,
+                    prosecutionCaseId,
+                    applicationId,
+                    true,
+                    null);
 
         } catch (IOException | RuntimeException e) {
-            LOGGER.error("Error while uploading document generation or upload ", e);
-            throw new SummonGenerationException("Error while generating simmons");
+            LOGGER.error(ERROR_MESSAGE, e);
+            throw new InvalidHearingTimeException("Error while generating document");
         }
         return materialId;
     }
 
-    private String getTemplateName(CreateNowsRequest nowsRequested, NowsNotificationDocumentState nowsNotificationDocumentState) {
-        final UUID nowsTypeId = nowsNotificationDocumentState.getNowsTypeId();
-        return nowsRequested.getNowTypes().stream()
-                .filter(nt -> nowsTypeId.equals(nt.getId()))
-                .findFirst()
-                .map(NowType::getTemplateName)
-                .orElseThrow(() -> new NowsTemplateNameNotFoundException(String.format("Could not find templateName for nowsTypeId: %s", nowsTypeId)));
-    }
-
     private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
                                        final UUID userId, final String hearingId,
-                                       final UUID materialId, final NotificationDocumentState nowsDocumentOrder, final UUID caseId, final boolean isRemotePrintingRequired) {
+                                       final UUID materialId,
+                                       final UUID caseId,
+                                       final UUID applicationId,
+                                       final boolean isRemotePrintingRequired,
+                                       final List<EmailChannel> emailNotifications) {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
@@ -146,8 +137,11 @@ public class DocumentGeneratorService {
                     .setHearingId(fromString(hearingId))
                     .setMaterialId(materialId)
                     .setFileId(fileId)
-                    .setNowsNotificationDocumentState(nowsDocumentOrder)
-                    .setCaseId(caseId).setIsRemotePrintingRequired(isRemotePrintingRequired).createUploadMaterialContext());
+                    .setCaseId(caseId)
+                    .setApplicationId(applicationId)
+                    .setIsRemotePrintingRequired(isRemotePrintingRequired)
+                    .setEmailNotifications(emailNotifications)
+                    .build());
 
         } catch (final FileServiceException e) {
             LOGGER.error("Error while uploading file {}", filename);
@@ -160,7 +154,8 @@ public class DocumentGeneratorService {
         return fileStorer.store(metadata, fileContent);
     }
 
-    private void updateStatus(Sender sender, String hearingId, String materialId, String userId, String status, String commandName) {
+    private void updateStatus(Sender sender, String hearingId, String materialId,
+                              String userId, String status, String commandName) {
         final JsonObject payload = Json.createObjectBuilder()
                 .add("hearing_id", hearingId)
                 .add("material_id", materialId)

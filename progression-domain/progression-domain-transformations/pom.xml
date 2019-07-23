@@ -13,6 +13,7 @@
         <module>progression-domain-transformations-cleanup-and-archive</module>
         <module>progression-domain-transformation-keep-only-defendant-added</module>
         <module>progression-domain-transformation-deactivate-all-stream-that-has-no-defendant-added</module>
+        <module>progression-domain-transformations-for-2.5</module>
     </modules>
 
 

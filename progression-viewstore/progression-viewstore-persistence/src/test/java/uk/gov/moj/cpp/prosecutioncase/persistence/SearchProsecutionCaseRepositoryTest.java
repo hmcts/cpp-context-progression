@@ -85,6 +85,7 @@ public class SearchProsecutionCaseRepositoryTest {
         searchProsecutionCaseEntity.setDefendantDob("01-01-1977");
         searchProsecutionCaseEntity.setProsecutor("TFL");
         searchProsecutionCaseEntity.setStatus("SJP Referral");
+        searchProsecutionCaseEntity.setStandaloneApplication(false);
         searchProsecutionCaseEntity.setSearchTarget(searchTarget);
         return searchProsecutionCaseEntity;
     }

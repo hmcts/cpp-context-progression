@@ -69,6 +69,9 @@
         "jurisdictionType": "MAGISTRATES",
         "estimateMinutes": 20,
         "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+        "courtCentre": {
+      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+      	},
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",
         "listDefendantRequests": [

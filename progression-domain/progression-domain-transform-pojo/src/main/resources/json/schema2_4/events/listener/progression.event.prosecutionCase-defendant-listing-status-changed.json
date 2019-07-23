@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/v24/progression/events/listener/prosecutionCase-defendant-listing-status-changed.json",
+  "type": "object",
+  "description": "update listing status for each defendant ",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/v24/core/courts/hearing.json#"
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/v24/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    }
+  },
+  "required": [
+    "hearing",
+    "hearingListingStatus"
+  ],
+  "additionalProperties": false
+}

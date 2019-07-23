@@ -1,5 +1,6 @@
 {
    "$schema": "http://json-schema.org/draft-04/schema#",
+   "id": "http://justice.gov.uk/progression/courts/defendant-updated.json",
    "type": "object",
    "additionalProperties": false,
    "properties": {
@@ -60,6 +61,16 @@
             "legalEntityDefendant": {
                "description": "When the defendant is a legal entity the additional legal entity specific details for the defendant",
                "$ref": "http://justice.gov.uk/core/courts/legalEntityDefendant.json"
+            },
+            "aliases": {
+               "type": "array",
+               "minItems": 1,
+               "items": {
+                  "$ref": "http://justice.gov.uk/core/courts/defendantAlias.json"
+               }
+            },
+            "pncId": {
+               "type": "string"
             }
          },
          "required": [

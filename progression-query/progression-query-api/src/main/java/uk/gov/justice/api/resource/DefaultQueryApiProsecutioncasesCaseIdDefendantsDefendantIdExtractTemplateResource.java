@@ -10,6 +10,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
@@ -61,7 +62,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.class);
 
-    public static final String PROGRESSION_QUERY_CASE_AT_A_GLANCE = "progression.query.case-at-a-glance";
+    public static final String PROGRESSION_QUERY_PROSECUTION_CASE = "progression.query.prosecutioncase";
     public static final String COURT_EXTRACT = "CrownCourtExtract";
 
     @Inject
@@ -114,7 +115,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final JsonEnvelope documentQuery = envelopeFrom(
                 metadataBuilder()
                         .withId(randomUUID())
-                        .withName(PROGRESSION_QUERY_CASE_AT_A_GLANCE)
+                        .withName(PROGRESSION_QUERY_PROSECUTION_CASE)
                         .withUserId(userId.toString())
                         .build(),
                 createObjectBuilder()
@@ -157,7 +158,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final byte[] resultOrderAsByteArray;
         final InputStream documentInputStream;
         try {
-
+            LOGGER.info("transform court extract payload : {}", document.payloadAsJsonObject());
             final JsonObject payload = transformToTemplateConvert(document.payloadAsJsonObject(), defendantId, extractType, hearingIdList);
             LOGGER.info("create court extract with payload : {}", payload);
             resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(payload, COURT_EXTRACT, systemUser);
@@ -170,8 +171,9 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     }
 
     private JsonObject transformToTemplateConvert(JsonObject jsonObject, final String defendantId, final String extractType, final List<String> hearingIdList) {
-        final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.convert(jsonObject, GetCaseAtAGlance.class);
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(caseAtAGlance, defendantId, extractType, hearingIdList, userId);
+        final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("caseAtAGlance"), GetCaseAtAGlance.class);
+        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(caseAtAGlance, defendantId, extractType, hearingIdList, userId, prosecutionCase);
         return objectToJsonObjectConverter.convert(courtExtractRequested);
     }
 

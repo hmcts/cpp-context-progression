@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/summons/referral-summons-document-content.json",
+  "description": "The contents of a summons document for referrals from SJS",
+  "type": "object",
+  "properties": {
+	"id": {
+		"description": "The reference data identifier for the referral reason",
+		"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+	},
+	"referralReason": {
+		"type": "string"
+	},
+	"referralReasonWelsh": {
+		"type": "string"
+	},
+	"referralText": {
+		"type": "string"
+	},
+	"referralTextWelsh": {
+		"type": "string"
+	}
+  },
+  "required": [
+	"id",
+	"referralReason",
+	"referralText"
+  ],
+  "additionalProperties": false
+}

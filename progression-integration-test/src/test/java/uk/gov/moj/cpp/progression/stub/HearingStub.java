@@ -1,30 +1,30 @@
 package uk.gov.moj.cpp.progression.stub;
 
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.String.format;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
+import org.json.JSONObject;
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import javax.json.JsonObject;
 
-import java.util.UUID;
-
 public class HearingStub {
 
     public static final String HEARING_COMMAND = "/hearing-service/command/api/rest/hearing/hearings";
-    public static final String HEARING_COMMAND_TYPE = "hearing.initiate";
+    public static final String HEARING_RESPONSE_TYPE = "application/vnd.hearing.initiate+json";
 
     private static final String HEARING_SUBSCRIPTION_QUERY_URL =
             "/hearing-service/query/api/rest/hearing/retrieve?referenceDate=%s&nowTypeId=%s";
@@ -39,12 +39,12 @@ public class HearingStub {
         stubFor(post(urlPathEqualTo(HEARING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)));
+                        .withHeader("Content-Type", HEARING_RESPONSE_TYPE)));
 
         stubFor(get(urlPathEqualTo(HEARING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_OK)));
 
-        waitForStubToBeReady(HEARING_COMMAND, HEARING_COMMAND_TYPE);
+        waitForStubToBeReady(HEARING_COMMAND, HEARING_RESPONSE_TYPE);
     }
 
     public static void  stubSubscriptions(final JsonObject jsonSubscriptions, UUID nowsTypeId) {
@@ -72,10 +72,23 @@ public class HearingStub {
 
     }
 
+    public static void verifyPostInitiateCourtHearing(final String hearingId) {
+        try {
+            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
+                    getListCourtHearingRequestsAsStream().get()
+                            .getJSONObject("hearing").get("id").toString().equalsIgnoreCase(hearingId)
+            );
 
+        } catch (Exception e) {
+            throw new AssertionError("HearingStub.verifyPostCourtHearing failed with: " + e);
+        }
+    }
 
-
-
-
-
+    private static Optional<JSONObject> getListCourtHearingRequestsAsStream() {
+        return findAll(postRequestedFor(urlPathEqualTo(HEARING_COMMAND))
+                .withHeader(CONTENT_TYPE, equalTo(HEARING_RESPONSE_TYPE)))
+                .stream()
+                .map(LoggedRequest::getBodyAsString)
+                .map(JSONObject::new).findFirst();
+    }
 }

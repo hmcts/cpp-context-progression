@@ -1,29 +1,23 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.util.Arrays.asList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.core.courts.CreateNowsRequest;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.NowType;
-import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
-import uk.gov.moj.cpp.progression.processor.NowsNotificationDocumentState;
+import uk.gov.moj.cpp.progression.test.TestTemplates;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -87,53 +81,30 @@ public class DocumentGeneratorServiceTest {
         test(true);
     }
 
-    public void test(final boolean isRemotePrintingRequired) throws Exception {
+    private void test(final boolean isRemotePrintingRequired) throws Exception {
+        final NowDocumentRequest nowDocumentRequest = TestTemplates.generateNowDocumentRequestTemplate(UUID.randomUUID(),
+                JurisdictionType.CROWN, false, isRemotePrintingRequired);
 
         final UUID systemUserId = UUID.randomUUID();
-        final String templateName = "testTemplate";
         final byte[] documentData = {34, 56, 78, 90};
         final JsonObject nowsDocumentOrderJson = mock(JsonObject.class);
 
+        when(objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent())).thenReturn(nowsDocumentOrderJson);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, "templateIdentifier", systemUserId))
+        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), systemUserId))
                 .thenReturn(documentData);
 
         final UUID userId = UUID.randomUUID();
-        final UUID nowsTypeId = UUID.randomUUID();
-        final CreateNowsRequest nowsRequested = CreateNowsRequest.createNowsRequest()
-                .withHearing(Hearing.hearing()
-                        .withProsecutionCases(asList(
-                                ProsecutionCase.prosecutionCase()
-                                        .withId(UUID.randomUUID())
-                                        .build()
-                        ))
-                        .build())
-                .withNowTypes(asList(
-                        NowType.nowType()
-                                .withId(nowsTypeId)
-                                .withTemplateName(templateName)
-                                .build()
-                ))
-                .build();
-        final UUID hearingId = UUID.randomUUID();
-        final Map<NowsDocumentOrder, NowsNotificationDocumentState> nowsDocumentOrderToNotificationState = new HashMap<>();
-        final NowsNotificationDocumentState nowsNotificationDocumentState = (new NowsNotificationDocumentState())
-                .setMaterialId(UUID.randomUUID())
-                .setIsRemotePrintingRequired(isRemotePrintingRequired)
-                .setOrderName("orderName")
-                .setNowsTypeId(nowsTypeId);
+
         final NowsDocumentOrder nowsDocumentOrder = NowsDocumentOrder.nowsDocumentOrder()
                 .build();
 
         when(objectToJsonObjectConverter.convert(nowsDocumentOrder)).thenReturn(nowsDocumentOrderJson);
 
-        nowsDocumentOrderToNotificationState.put(nowsDocumentOrder, nowsNotificationDocumentState);
+        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), systemUserId)).thenReturn(documentData);
 
-        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, templateName, systemUserId)).thenReturn(documentData);
-
-        documentGeneratorService.generateNow(sender, originatingEnvelope, userId, nowsRequested,
-                hearingId.toString(), nowsDocumentOrderToNotificationState, nowsDocumentOrder);
+        documentGeneratorService.generateNow(sender, originatingEnvelope, userId, nowDocumentRequest);
 
         verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
 
@@ -144,8 +115,9 @@ public class DocumentGeneratorServiceTest {
         verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
         Assert.assertEquals(uploadMaterialContext.isRemotePrintingRequired(), isRemotePrintingRequired);
-        Assert.assertEquals(uploadMaterialContext.getMaterialId(), nowsNotificationDocumentState.getMaterialId());
-        Assert.assertEquals(uploadMaterialContext.getCaseId(), nowsRequested.getHearing().getProsecutionCases().get(0).getId());
+        Assert.assertEquals(uploadMaterialContext.getMaterialId(), nowDocumentRequest.getMaterialId());
+        Assert.assertEquals(uploadMaterialContext.getCaseId(), nowDocumentRequest.getCaseId());
+
 
     }
 

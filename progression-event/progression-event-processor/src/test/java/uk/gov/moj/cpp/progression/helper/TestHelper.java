@@ -33,10 +33,9 @@ public class TestHelper {
                         .withCaseDocument(CaseDocument.caseDocument()
                                 .withProsecutionCaseId(randomUUID())
                                 .build()).build())
-                .withDocumentTypeDescription(randomUUID().toString().substring(0, 10))
+//                .withDocumentTypeDescription(randomUUID().toString().substring(0, 10))
                 .withDocumentTypeId(documentTypeId)
-                .withIsRemoved
-                        (false)
+//                .withIsRemoved(false)
                 .withMaterials
                         (Arrays.asList(Material.material().withId(randomUUID())
                                 .withUserGroups(Arrays.asList("Listing Officers", "Legal")).build()))

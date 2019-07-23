@@ -1,56 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.time.LocalDate.parse;
-import static java.util.Optional.of;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
-
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.ReferredDefendant;
-import uk.gov.justice.core.courts.ReferredHearingType;
-import uk.gov.justice.core.courts.ReferredListHearingRequest;
-import uk.gov.justice.core.courts.ReferredOffence;
-import uk.gov.justice.core.courts.ReferredPerson;
-import uk.gov.justice.core.courts.ReferredPersonDefendant;
-import uk.gov.justice.core.courts.ReferredProsecutionCase;
-import uk.gov.justice.core.courts.SendCaseForListing;
-import uk.gov.justice.core.courts.SjpCourtReferral;
-import uk.gov.justice.core.courts.SjpReferral;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.function.Function;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,8 +10,44 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialRole;
+import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 
-@SuppressWarnings("unused")
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
+import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
+
+@SuppressWarnings({"squid:S1607","unused"})
 @RunWith(MockitoJUnitRunner.class)
 public class ListingServiceTest {
 
@@ -84,34 +69,31 @@ public class ListingServiceTest {
         MockitoAnnotations.initMocks(this);
     }
 
-
     @Test
-    public void shouldSendCaseForListing() throws IOException {
+    public void shouldListCourtHearing() throws IOException {
         //given
+        ListCourtHearing listCourtHearing = getListCourtHearing();
 
-        PodamFactory factory = new PodamFactoryImpl();
-        SendCaseForListing sendCaseForListing = factory.manufacturePojoWithFullData(SendCaseForListing.class);
-
-        final JsonObject sendCaseForListingJson = Json.createObjectBuilder().build();
+        final JsonObject ListCourtHearingJson = Json.createObjectBuilder().build();
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
 
-        final JsonEnvelope envelopeSendCaseForListing = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope envelopeListCourtHearing = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_COMMAND_SEND_CASE_FOR_LISTING).build(),
-                sendCaseForListingJson);
+                ListCourtHearingJson);
 
 
-        when(objectToJsonObjectConverter.convert(any(SendCaseForListing.class)))
-                .thenReturn(sendCaseForListingJson);
+        when(objectToJsonObjectConverter.convert(any(ListCourtHearing.class)))
+                .thenReturn(ListCourtHearingJson);
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
-        listingService.sendCaseForListing(jsonEnvelope,sendCaseForListing);
+        listingService.listCourtHearing(jsonEnvelope,listCourtHearing);
 
         when(enveloper.withMetadataFrom(envelopeReferral, LISTING_COMMAND_SEND_CASE_FOR_LISTING)).thenReturn(objectJsonEnvelopeFunction);
-        when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelopeSendCaseForListing);
+        when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelopeListCourtHearing);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
@@ -121,8 +103,69 @@ public class ListingServiceTest {
         verifyNoMoreInteractions(sender);
     }
 
+    private ListCourtHearing getListCourtHearing() {
+        return ListCourtHearing.listCourtHearing()
+                .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                        .withId(UUID.randomUUID())
+                        .withCourtCentre(createCourtCenter())
+                        .withCourtApplications(createCourtApplications())
+                        .withEstimatedMinutes(15)
+                        .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
+                                .withJudicialId(UUID.randomUUID())
+                                .build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(UUID.randomUUID())
+                                .build()))
+                        .withType(HearingType.hearingType()
+                                .withId(UUID.randomUUID())
+                                .withDescription("SENTENCING")
+                                .build())
 
+                        .build()))
+                .build();
+    }
 
+    private List<CourtApplication> createCourtApplications() {
+        List<CourtApplication> courtApplications = new ArrayList<>();
+        courtApplications.add(CourtApplication.courtApplication()
+                .withId(UUID.randomUUID())
+                .withLinkedCaseId(UUID.randomUUID())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withId(UUID.randomUUID())
+                        .withDefendant(Defendant.defendant()
+                                .withId(UUID.randomUUID())
+                                .build())
+                        .build())
+                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
+                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                .withId(UUID.randomUUID())
+                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                        .withProsecutionAuthorityId(UUID.randomUUID())
 
+                                        .build())
+                                .build())
 
+                        .build()))
+                .build());
+        return courtApplications;
+    }
+
+    private CourtCentre createCourtCenter() {
+        return CourtCentre.courtCentre()
+                .withId(UUID.randomUUID())
+                .withName("Court Name")
+                .withRoomId(UUID.randomUUID())
+                .withRoomName("Court Room Name")
+                .withWelshName("Welsh Name")
+                .withWelshRoomName("Welsh Room Name")
+                .withAddress(Address.address()
+                        .withAddress1("Address 1")
+                        .withAddress2("Address 2")
+                        .withAddress3("Address 3")
+                        .withAddress4("Address 4")
+                        .withAddress5("Address 5")
+                        .withPostcode("DD4 4DD")
+                        .build())
+                .build();
+    }
 }

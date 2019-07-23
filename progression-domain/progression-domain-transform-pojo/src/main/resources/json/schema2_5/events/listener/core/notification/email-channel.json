@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/notification/email-channel.json",
+  "description": "The email notification channel for sending a notification",
+  "type": "object",
+  "properties": {
+    "templateId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "sendToAddress": {
+      "type": "string"
+    },
+    "replyToAddress": {
+      "type": "string"
+    },
+    "personalisation": {
+      "type": "object",
+      "properties": {
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "sendToAddress",
+    "templateId"
+  ],
+  "additionalProperties": false
+}

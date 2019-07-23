@@ -16,8 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.getHearingIdFromSendCaseForListingRequest;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostSendCaseForListing;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.getHearingIdFromListCourtHearingRequest;
 import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
 import static uk.gov.moj.cpp.progression.test.matchers.ElementAtListMatcher.first;
 
@@ -30,6 +29,7 @@ import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
+import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.QueryUtil;
@@ -54,8 +54,6 @@ import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 @Ignore
-// Temporarily ignoring the tests to debug the issue
-// also unblock hearing
 public class RequestSummonsIT {
 
     public static final String PUBLIC_EVENT = "public.event";
@@ -108,14 +106,14 @@ public class RequestSummonsIT {
     @Test
     public void shouldRequestSummons() throws Exception {
         addProsecutionCaseToCrownCourt(CASE_ID, DEFENDANT_ID, MATERIAL_ID_ACTIVE, MATERIAL_ID_DELETED, COURT_DOCUMENT_ID, "2daefec3-2f76-8109-82d9-2e60544a6c02");
-        verifyPostSendCaseForListing(CASE_ID, DEFENDANT_ID);
+        ListingStub.verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID);
 
-        String hearingId = getHearingIdFromSendCaseForListingRequest();
-        System.out.println("hearingId=" + hearingId + " CASE_ID=" + CASE_ID);
+        String hearingId = getHearingIdFromListCourtHearingRequest();
+
         final Metadata metadata = generateMetadata();
         JsonObject hearingConfirmedPayload = generateHearingConfirmedPayload(hearingId);
         sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONFIRMED, hearingConfirmedPayload, metadata);
-
+      
         verifyPrintRequestAccepted();
 
         // check document query
@@ -164,6 +162,6 @@ public class RequestSummonsIT {
     public void verifyPrintRequestAccepted() {
         final JsonPath jsonResponse = retrieveMessage(PRIVATE_MESSAGE_CONSUMER);
 
-        assertThat(jsonResponse.get("context.caseId"), is(CASE_ID.toString()));
+        assertThat(jsonResponse.get("context.caseId"), is(CASE_ID));
     }
 }

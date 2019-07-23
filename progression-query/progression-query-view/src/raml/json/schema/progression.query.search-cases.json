@@ -25,6 +25,9 @@
             },
             "prosecutor": {
               "type": "string"
+            },
+            "isStandaloneApplication":{
+              "type": "boolean"
             }
           },
           "required": [

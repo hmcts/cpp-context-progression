@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/boxHearingNeeds.json",
+  "type": "object",
+  "properties": {
+		"courtCentre": {
+			 "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+		},
+		"jurisdictionType": {
+			 "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/jurisdictionType"
+		}
+	},
+	 "required": [
+		"courtCentre",
+		"jurisdictionType"
+	],
+	 "additionalProperties": false
+}

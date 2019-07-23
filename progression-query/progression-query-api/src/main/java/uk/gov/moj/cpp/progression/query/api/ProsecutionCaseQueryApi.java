@@ -20,11 +20,6 @@ public class ProsecutionCaseQueryApi {
         return requester.request(query);
     }
 
-    @Handles("progression.query.case-at-a-glance")
-    public JsonEnvelope getCaseAtAGlance(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("progression.query.usergroups-by-material-id")
     public JsonEnvelope searchForUserGroupsByMaterialId(final JsonEnvelope query) {
         return this.requester.request(query);

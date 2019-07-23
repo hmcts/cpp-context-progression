@@ -35,7 +35,12 @@ import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.stubSendCaseForListing;
+import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
@@ -137,12 +142,12 @@ public class RestHelper {
     }
 
     private static void defaultStubs() {
-        StubUtil.resetStubs();
-        StubUtil.setupUsersGroupQueryStub();
-        AuthorisationServiceStub.stubEnableAllCapabilities();
+        resetStubs();
+        setupUsersGroupQueryStub();
+        stubEnableAllCapabilities();
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
         stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");
-        stubSendCaseForListing();
+        stubListCourtHearing();
         stubReferenceDataOffencesGetOffenceById("/restResource/referencedataoffences.get-offences-by-id.json");
         stubReferenceDataOffencesGetOffenceByOffenceCode("/restResource/referencedataoffences.get-offences-by-offence-code.json");
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
@@ -154,6 +159,8 @@ public class RestHelper {
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
         stubQueryCourtOURoom("/restResource/referencedata.ou-courtroom.json");
         stubQueryOrganisation("/restResource/ref-data-get-organisation.json");
+        stubNotifications();
+        stubMaterialUploadFile();
     }
 
 

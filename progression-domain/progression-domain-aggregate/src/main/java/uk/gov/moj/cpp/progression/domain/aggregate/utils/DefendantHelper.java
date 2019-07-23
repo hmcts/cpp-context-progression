@@ -79,7 +79,7 @@ public class DefendantHelper {
     public static Optional<OffencesForDefendantChanged> getOffencesForDefendantChanged(final List<Offence> offences, final List<Offence> existingOffences, final UUID prosecutionCaseId, final UUID defendantId) {
         final List<Offence> offencesAddedList = DefendantHelper.getAddedOffences(offences, existingOffences);
         final OffencesForDefendantChanged.Builder builder = OffencesForDefendantChanged.offencesForDefendantChanged();
-        builder.withModifiedDate(LocalDate.now().toString());
+        builder.withModifiedDate(LocalDate.now());
         boolean defendantOffencesChanged = false;
         if (!offencesAddedList.isEmpty()) {
             final List<AddedOffences> addedOffences = Arrays.asList(AddedOffences.addedOffences().withProsecutionCaseId(prosecutionCaseId).withDefendantId(defendantId).withOffences(offencesAddedList).build());

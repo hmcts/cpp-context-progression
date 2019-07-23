@@ -16,12 +16,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.CommandEnrichHearingInitiate;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
-import uk.gov.justice.core.courts.Initiate;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -91,7 +91,7 @@ public class EnrichInitiateHearingHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
         //Given
-        final Initiate arbitraryInitiateObj = generateInitiateTestObj();
+        final CommandEnrichHearingInitiate arbitraryInitiateObj = generateInitiateTestObj();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -99,7 +99,7 @@ public class EnrichInitiateHearingHandlerTest {
                 .withId(UUID.randomUUID())
                 .build();
 
-        final Envelope<Initiate> envelope = envelopeFrom(metadata, arbitraryInitiateObj);
+        final Envelope<CommandEnrichHearingInitiate> envelope = envelopeFrom(metadata, arbitraryInitiateObj);
 
         //When
         testObj.enrichHearingInitiate(envelope);
@@ -122,7 +122,7 @@ public class EnrichInitiateHearingHandlerTest {
     @Test
     public void shouldProcessCommandAndReferralReason() throws Exception {
         //Given
-        final Initiate arbitraryInitiate = generateInitiateTestObj();
+        final CommandEnrichHearingInitiate arbitraryInitiate = generateInitiateTestObj();
         ListDefendantRequest arbitraryListDefendantRequest = generateInitiateListDefendantRequest(arbitraryInitiate);
         aggregate.createHearingDefendantRequest(Arrays.asList(arbitraryListDefendantRequest));
 
@@ -132,7 +132,7 @@ public class EnrichInitiateHearingHandlerTest {
                 .withId(UUID.randomUUID())
                 .build();
 
-        final Envelope<Initiate> envelope = envelopeFrom(metadata, arbitraryInitiate);
+        final Envelope<CommandEnrichHearingInitiate> envelope = envelopeFrom(metadata, arbitraryInitiate);
 
         //When
         testObj.enrichHearingInitiate(envelope);
@@ -154,7 +154,7 @@ public class EnrichInitiateHearingHandlerTest {
         );
     }
 
-    private ListDefendantRequest generateInitiateListDefendantRequest(final Initiate arbitraryInitiate) {
+    private ListDefendantRequest generateInitiateListDefendantRequest(final CommandEnrichHearingInitiate arbitraryInitiate) {
         return ListDefendantRequest.listDefendantRequest()
                 .withReferralReason(ReferralReason.referralReason()
                         .withDefendantId(arbitraryInitiate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getId())
@@ -163,8 +163,8 @@ public class EnrichInitiateHearingHandlerTest {
                 .build();
     }
 
-    private Initiate generateInitiateTestObj() {
-        return Initiate.initiate().withHearing(
+    private CommandEnrichHearingInitiate generateInitiateTestObj() {
+        return CommandEnrichHearingInitiate.commandEnrichHearingInitiate().withHearing(
                 Hearing.hearing()
                         .withId(UUID.randomUUID())
                         .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))

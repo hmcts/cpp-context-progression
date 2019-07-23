@@ -50,4 +50,15 @@ public class Notification {
     public void setNotificationId(UUID notificationId) {
         this.notificationId = notificationId;
     }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "notificationId=" + notificationId +
+                ", templateId=" + templateId +
+                ", sendToAddress='" + sendToAddress + '\'' +
+                ", replyToAddress='" + replyToAddress + '\'' +
+                ", personalisation=" + personalisation +
+                '}';
+    }
 }

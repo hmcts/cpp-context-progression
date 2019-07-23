@@ -45,6 +45,10 @@ version: v1
               schema: !include json/schema/public.hearing.resulted.json
               example: !include json/public.hearing.resulted.json
 
+          application/vnd.public.hearing.now-document-requested+json:
+              schema: !include json/schema/public.hearing.now-document-requested.json
+              example: !include json/public.hearing.now-document-requested.json
+
              ############  Hearing End ############
 
             ############ Print starts#########
@@ -81,12 +85,12 @@ version: v1
         application/vnd.progression.event.print-requested+json:
             example: !include json/progression.event.print-requested.json
             schema: !include json/schema/progression.event.print-requested.json
+        application/vnd.progression.event.email-requested+json:
+            example: !include json/progression.event.email-requested.json
+            schema: !include json/schema/progression.event.email-requested.json
         application/vnd.progression.event.summons-data-prepared+json:
             example: !include json/progression.event.summons-data-prepared.json
             schema: !include json/schema/progression.event.summons-data-prepared.json
-        application/vnd.progression.event.nows-requested+json:
-            schema: !include json/schema/progression.event.nows-requested.json
-            example: !include json/progression.event.nows-requested.json
         application/vnd.progression.event.nows-material-request-recorded+json:
             schema: !include json/schema/progression.event.nows-material-request-recorded.json
             example: !include json/progression.event.nows-material-request-recorded.json
@@ -96,6 +100,30 @@ version: v1
         application/vnd.progression.hearing-initiate-enriched+json:
             schema: !include json/schema/progression.event-hearing-initiate-enriched.json
             example: !include json/progression.event-hearing-initiate-enriched.json
+        application/vnd.progression.event.court-application-created+json:
+            schema: !include json/schema/progression.event.court-application-created.json
+            example: !include json/progression.event.court-application-created.json
+        application/vnd.progression.event.court-application-updated+json:
+            schema: !include json/schema/progression.event.court-application-updated.json
+            example: !include json/progression.event.court-application-updated.json
+        application/vnd.progression.event.court-application-rejected+json:
+            schema: !include json/schema/progression.event.court-application-rejected.json
+            example: !include json/progression.event.court-application-rejected.json
+        application/vnd.progression.event.court-proceedings-initiated+json:
+            schema: !include json/schema/progression.event.court-proceedings-initiated.json
+            example: !include json/progression.event.court-proceedings-initiated.json
+        application/vnd.progression.event.listed-court-application-changed+json:
+            example: !include json/progression.event.listed-court-application-changed.json
+            schema: !include json/schema/progression.event.listed-court-application-changed.json
+        application/vnd.progression.event.application-referred-to-court+json:
+            schema: !include json/schema/progression.event.application-referred-to-court.json
+            example: !include json/progression.event.application-referred-to-court.json
+        application/vnd.progression.event.hearing-extended+json:
+            schema: !include json/schema/progression.event.hearing-extended.json
+            example: !include json/progression.event.hearing-extended.json
+        application/vnd.progression.event.defendants-added-to-court-proceedings+json:
+            schema: !include json/schema/progression.event.defendants-added-to-court-proceedings.json
+            example: !include json/progression.event.defendants-added-to-court-proceedings.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

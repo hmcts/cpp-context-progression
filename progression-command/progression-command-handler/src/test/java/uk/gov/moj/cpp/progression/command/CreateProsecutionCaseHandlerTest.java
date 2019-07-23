@@ -13,6 +13,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -88,9 +89,16 @@ public class CreateProsecutionCaseHandlerTest {
     public void shouldProcessCommand() throws Exception {
         final Defendant defendant = Defendant.defendant().withId(UUID.randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build()).build();
         final List<Defendant> defendants = new ArrayList<Defendant>() {{ add(defendant); }};
-        final CreateProsecutionCase createProsecutionCase =
-                CreateProsecutionCase.createProsecutionCase().withProsecutionCase(
-                        ProsecutionCase.prosecutionCase().withDefendants(defendants).build()).build();
+        final CreateProsecutionCase createProsecutionCase = CreateProsecutionCase.createProsecutionCase()
+                .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                        .withDefendants(defendants)
+                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityId(UUID.randomUUID())
+                                .withProsecutionAuthorityCode("code")
+                                .withProsecutionAuthorityReference("reference")
+                                .build())
+                        .build())
+                .build();
         aggregate.apply(createProsecutionCase.getProsecutionCase());
 
 

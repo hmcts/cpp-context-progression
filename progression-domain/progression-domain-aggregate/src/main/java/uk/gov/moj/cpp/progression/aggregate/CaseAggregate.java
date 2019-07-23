@@ -1,17 +1,37 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
+
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationRejected;
+import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
+import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
 import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantCommand;
+import uk.gov.moj.cpp.progression.domain.Notification;
+import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
+import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
+import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper;
 import uk.gov.moj.cpp.progression.domain.event.CaseAlreadyExistsInCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
@@ -32,13 +52,9 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
 import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
-import uk.gov.moj.cpp.progression.domain.event.print.PrintRequestAccepted;
-import uk.gov.moj.cpp.progression.domain.event.print.PrintRequestFailed;
-import uk.gov.moj.cpp.progression.domain.event.print.PrintRequestSucceeded;
+import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -53,13 +69,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
@@ -73,6 +87,8 @@ public class CaseAggregate implements Aggregate {
     private final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>();
 
     private String courtCentreId;
+    private String reference;
+    private int arnCount = 0;
     private final Set<String> policeDefendantIds = new HashSet<>();
     private final Set<Defendant> defendants = new HashSet<>();
     private final Map<UUID, List<OffenceForDefendant>> offenceForDefendants = new HashMap<>();
@@ -138,12 +154,19 @@ public class CaseAggregate implements Aggregate {
                 ), when(SendingSheetCompleted.class).apply(e ->
                         caseIdsWithCompletedSendingSheet.add(e.getHearing().getCaseId())
                 ),
-                when(ProsecutionCaseCreated.class).apply(e -> {
+                when(ProsecutionCaseCreated.class)
+                        .apply(e -> {
+                            final ProsecutionCaseIdentifier prosecutionCaseIdentifier = e.getProsecutionCase().getProsecutionCaseIdentifier();
+                            if (Objects.nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {
+                                reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
+                            }
+                            if (Objects.nonNull(prosecutionCaseIdentifier.getCaseURN())) {
+                                reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getCaseURN();
+                            }
                             if (Objects.nonNull(e.getProsecutionCase()) && !e.getProsecutionCase().getDefendants().isEmpty()) {
                                 e.getProsecutionCase().getDefendants().forEach(d ->
                                         this.defendantCaseOffences.put(d.getId(), d.getOffences())
                                 );
-
                             }
                         }
                 ),
@@ -156,6 +179,14 @@ public class CaseAggregate implements Aggregate {
                                 this.defendantCaseOffences.put(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getOffences());
                             }
                         }
+                ),
+                when(CourtApplicationCreated.class).apply(
+                        e -> arnCount = e.getCount()
+                ),
+                when(DefendantsAddedToCourtProceedings.class).apply(
+                        e ->
+                            e.getDefendants().forEach(
+                                    ed -> this.defendantCaseOffences.put( ed.getId(), ed.getOffences()) )
                 ),
                 otherwiseDoNothing());
 
@@ -177,7 +208,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> requestPsrForDefendant(final JsonEnvelope jsonEnvelope) {
         final UUID caseId = UUID.fromString(jsonEnvelope.payloadAsJsonObject().getString(CASE_ID));
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info("Sending sheet already completed, not allowed to perform requestPsrForDefendant  for case Id %s ",  caseId);
+            LOGGER.info("Sending sheet already completed, not allowed to perform requestPsrForDefendant  for case Id %s ", caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform requestPsrForDefendant after sending sheet completed with case Id " + caseId)));
         }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -188,7 +219,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> sendingHearingCommittal(final JsonEnvelope jsonEnvelope) {
         final UUID caseId = UUID.fromString(jsonEnvelope.payloadAsJsonObject().getString(CASE_ID));
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info("Sending sheet already completed, not allowed to perform sending hearing committal  for case Id %s ",  caseId);
+            LOGGER.info("Sending sheet already completed, not allowed to perform sending hearing committal  for case Id %s ", caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform sending hearing committal after sending sheet completed with case Id " + caseId)));
         }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -199,7 +230,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> addSentenceHearingDate(final UUID caseId, final LocalDate sentenceHearingDate) {
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info(SENDING_SHEET_ALREADY_COMPLETED_MSG,  caseId);
+            LOGGER.info(SENDING_SHEET_ALREADY_COMPLETED_MSG, caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform add sentence hearing date after sending sheet completed with case Id " + caseId)));
         }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -210,7 +241,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> addConvictionDateToOffence(final UUID caseId,
                                                      final UUID offenceId, final LocalDate convictionDate) {
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info(SENDING_SHEET_ALREADY_COMPLETED_MSG,  caseId);
+            LOGGER.info(SENDING_SHEET_ALREADY_COMPLETED_MSG, caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform add sentence hearing date after sending sheet completed with case Id " + caseId)));
         }
         return apply(Stream.of(ConvictionDateAdded.builder()
@@ -222,7 +253,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> removeConvictionDateFromOffence(final UUID caseId, final UUID offenceId) {
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info(SENDING_SHEET_ALREADY_COMPLETED_MSG,  caseId);
+            LOGGER.info(SENDING_SHEET_ALREADY_COMPLETED_MSG, caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform add sentence hearing date after sending sheet completed with case Id " + caseId)));
         }
         return apply(Stream.of(ConvictionDateRemoved.builder()
@@ -317,7 +348,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateOffencesForDefendant(final OffencesForDefendantUpdated offencesForDefendantUpdated) {
         final UUID caseId = offencesForDefendantUpdated.getCaseId();
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info("Sending sheet already completed, not allowed to perform update offences for defendant for case Id %s ",  caseId);
+            LOGGER.info("Sending sheet already completed, not allowed to perform update offences for defendant for case Id %s ", caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform update offences for defendant after sending sheet completed with case Id " + caseId)));
         }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -331,7 +362,7 @@ public class CaseAggregate implements Aggregate {
         final String caseUrn = addDefendantCommand.getCaseUrn();
         final String policeDefendantId = addDefendantCommand.getPoliceDefendantId();
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info("Sending sheet already completed, not allowed to perform add defendant for case Id %s ",  caseId);
+            LOGGER.info("Sending sheet already completed, not allowed to perform add defendant for case Id %s ", caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform add defendant after sending sheet completed with case Id " + caseId)));
         }
         if (offenceIdsByDefendantId.containsKey(defendantId)
@@ -354,7 +385,7 @@ public class CaseAggregate implements Aggregate {
             final UpdateDefendantCommand updateDefendantCommandCommand) {
         final UUID caseId = updateDefendantCommandCommand.getCaseId();
         if (caseIdsWithCompletedSendingSheet.contains(caseId)) {
-            LOGGER.info("Sending sheet already completed, not allowed to perform update defendant for case Id %s ",  caseId);
+            LOGGER.info("Sending sheet already completed, not allowed to perform update defendant for case Id %s ", caseId);
             return apply(Stream.of(new SendingSheetPreviouslyCompleted(caseId, "not allowed to perform update defendant after sending sheet completed with case Id " + caseId)));
         }
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -413,14 +444,36 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
     }
 
-    public Stream<Object> updateDefedantDetails(final uk.gov.justice.core.courts.Defendant updatedDefendant) {
-        LOGGER.debug("Defedent information is being updated .");
+    public Stream<Object> defendantsAddedToCourtProcessdings(final List<uk.gov.justice.core.courts.Defendant> addedDefendants,
+                                                             final List<ListHearingRequest> listHearingRequests) {
+        LOGGER.debug("Defendants Added To CourtProcessdings");
+
+        final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
+                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(d -> d.getId(), d->d, (i, d) -> d)).values().stream().collect(toList());
+
+        if(newDefendantsList.isEmpty()) {
+            return apply( Stream.of(DefendantsNotAddedToCourtProceedings.defendantsNotAddedToCourtProceedings()
+                    .withDefendants(addedDefendants)
+                    .withListHearingRequests(listHearingRequests)
+                    .build())
+            );
+        }
+
+        return apply( Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withDefendants(newDefendantsList)
+                .withListHearingRequests(listHearingRequests)
+                .build())
+        );
+    }
+
+    public Stream<Object> updateDefendantDetails(final DefendantUpdate updatedDefendant) {
+        LOGGER.debug("Defendant information is being updated.");
         return apply(Stream.of(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(updatedDefendant).build()));
     }
 
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId) {
-        LOGGER.debug("Offences information is being updated .");
+        LOGGER.debug("Offences information is being updated.");
         final DefendantCaseOffences newDefendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
                 .withOffences(offences)
                 .withDefendantId(defendantId)
@@ -444,34 +497,62 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> recordPrintRequest(final UUID caseId,
                                              final UUID notificationId,
                                              final UUID materialId) {
-        return apply(Stream.of(new PrintRequested(caseId, notificationId, materialId)));
+        return apply(Stream.of(new PrintRequested(notificationId, null, caseId, materialId)));
     }
 
-    public Stream<Object> recordPrintRequestFailure(final UUID caseId,
+    public Stream<Object> recordEmailRequest(final UUID caseId,
+                                             final UUID materialId,
+                                             final List<Notification> notifications) {
+        return apply(Stream.of(new EmailRequested(caseId, materialId, null, notifications)));
+    }
+
+    public Stream<Object> recordNotificationRequestFailure(final UUID caseId,
                                                     final UUID notificationId,
                                                     final ZonedDateTime failedTime,
                                                     final String errorMessage,
                                                     final Optional<Integer> statusCode) {
-        return apply(Stream.of(new PrintRequestFailed(caseId, notificationId, failedTime, errorMessage, statusCode)));
+        return apply(Stream.of(new NotificationRequestFailed(caseId, null, notificationId, failedTime, errorMessage, statusCode)));
     }
 
-    public Stream<Object> recordPrintRequestSuccess(final UUID caseId,
+    public Stream<Object> recordNotificationRequestSuccess(final UUID caseId,
                                                     final UUID notificationId,
                                                     final ZonedDateTime sentTime) {
-        return apply(Stream.of(new PrintRequestSucceeded(caseId, notificationId, sentTime)));
+        return apply(Stream.of(new NotificationRequestSucceeded(caseId, null, notificationId, sentTime)));
     }
 
-    public Stream<Object> recordPrintRequestAccepted(final UUID caseId,
+    public Stream<Object> recordNotificationRequestAccepted(final UUID caseId,
                                                      final UUID notificationId,
                                                      final ZonedDateTime acceptedTime) {
-        return apply(Stream.of(new PrintRequestAccepted(caseId, notificationId, acceptedTime)));
+        return apply(Stream.of(new NotificationRequestAccepted(caseId, null, notificationId, acceptedTime)));
     }
 
-    public Stream<Object> addConvictionDate(final UUID prosecutionCaseId, final UUID offenceId, final String convictionDate) {
+    public Stream<Object> addConvictionDate(final UUID prosecutionCaseId, final UUID offenceId, final LocalDate convictionDate) {
         return apply(Stream.of(new uk.gov.justice.core.courts.ConvictionDateAdded(prosecutionCaseId, convictionDate, offenceId)));
     }
 
     public Stream<Object> removeConvictionDate(final UUID prosecutionCaseId, final UUID offenceId) {
         return apply(Stream.of(new uk.gov.justice.core.courts.ConvictionDateRemoved(prosecutionCaseId, offenceId)));
+    }
+
+    public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
+        if (courtApplication.getRespondents() != null && !courtApplication.getRespondents().isEmpty()) {
+            Optional<CourtApplicationRespondent> respondent = courtApplication.getRespondents().stream()
+                    .filter(o -> o.getPartyDetails().getId().equals(courtApplication.getApplicant().getId()))
+                    .findFirst();
+            if (respondent.isPresent()) {
+                return apply(Stream.of(CourtApplicationRejected.courtApplicationRejected()
+                        .withApplicationId(courtApplication.getId().toString())
+                        .withCaseId(courtApplication.getLinkedCaseId().toString())
+                        .withDescription("Applicant cannot be respondent")
+                        .build()));
+            }
+        }
+        return apply(
+                Stream.of(
+                        CourtApplicationCreated.courtApplicationCreated()
+                                .withCourtApplication(courtApplication)
+                                .withCount(++arnCount)
+                                .withArn(reference + "-" + arnCount)
+                                .build()));
     }
 }

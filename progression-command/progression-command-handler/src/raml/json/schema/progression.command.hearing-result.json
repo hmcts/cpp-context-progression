@@ -4,22 +4,15 @@
   "type": "object",
   "properties": {
     "hearing": {
-      "$ref": "http://justice.gov.uk/core/courts/sharedHearing.json"
-    },
-    "variants": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "http://justice.gov.uk/core/courts/sharedVariant.json"
-      }
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
     },
     "sharedTime": {
-      "type": "string",
       "format": "date-time"
     }
   },
-  "additionalProperties": false,
   "required": [
-    "hearing"
-  ]
+    "hearing",
+    "sharedTime"
+  ],
+  "additionalProperties": false
 }

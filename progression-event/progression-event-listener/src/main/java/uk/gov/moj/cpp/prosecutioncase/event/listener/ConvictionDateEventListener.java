@@ -19,6 +19,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -81,7 +82,7 @@ public class ConvictionDateEventListener {
         repository.save(getProsecutionCaseEntity(prosecutionCase));
     }
 
-    private Offence updateOffence(Offence offence, String convictionDate) {
+    private Offence updateOffence(Offence offence, LocalDate convictionDate) {
         return Offence.offence()
                 .withArrestDate(offence.getArrestDate())
                 .withChargeDate(offence.getChargeDate())

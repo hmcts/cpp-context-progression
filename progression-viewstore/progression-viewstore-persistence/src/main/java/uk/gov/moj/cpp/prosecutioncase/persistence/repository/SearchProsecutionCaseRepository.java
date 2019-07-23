@@ -14,7 +14,7 @@ import org.apache.deltaspike.data.api.Repository;
 @Repository(forEntity = SearchProsecutionCaseEntity.class)
 public abstract class SearchProsecutionCaseRepository extends AbstractEntityRepository<SearchProsecutionCaseEntity, UUID> {
 
-    @Query("from SearchProsecutionCaseEntity sc where LOWER(sc.searchTarget) LIKE LOWER(:searchCriteria)")
+    @Query("from SearchProsecutionCaseEntity sc where LOWER(sc.searchTarget) LIKE LOWER(:searchCriteria) order by isStandaloneApplication, (defendantFirstName || defendantLastName) NULLS LAST, (defendantFirstName || defendantLastName), prosecutor")
     public abstract List<SearchProsecutionCaseEntity> findBySearchCriteria(@QueryParam("searchCriteria") final String searchCriteria);
 }
 

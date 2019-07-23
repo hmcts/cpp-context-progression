@@ -25,6 +25,7 @@ public class SearchCaseBuilder {
     private static final String DOB = "dob";
     private static final String STATUS = "status";
     private static final String PROSECUTOR = "prosecutor";
+    private static final String IS_STANDALONE_APPLICATION = "isStandaloneApplication";
 
     private UUID defendantId;
 
@@ -50,7 +51,12 @@ public class SearchCaseBuilder {
 
     private String defendantFullName;
 
-    public SearchCaseBuilder(final UUID defendantId, final String caseId, final String reference, final String defendantFirstName, final String defendantMiddleName, final String defendantLastName, final String defendantFullName, final String defendantDob, final String prosecutor, final String status, final String searchTarget, final String resultPayload) {
+    private Boolean isStandaloneApplication;
+
+    public SearchCaseBuilder(final UUID defendantId, final String caseId, final String reference, final String defendantFirstName,
+                             final String defendantMiddleName, final String defendantLastName, final String defendantFullName,
+                             final String defendantDob, final String prosecutor, final String status, final String searchTarget,
+                             final String resultPayload, final Boolean isStandaloneApplication) {
         this.defendantId = defendantId;
         this.caseId = caseId;
         this.reference = reference;
@@ -63,7 +69,7 @@ public class SearchCaseBuilder {
         this.status = status;
         this.searchTarget = searchTarget;
         this.resultPayload = resultPayload;
-
+        this.isStandaloneApplication = isStandaloneApplication;
     }
 
     public static CaseBuilder searchCaseBuilder() {
@@ -122,6 +128,10 @@ public class SearchCaseBuilder {
         return defendantFullName;
     }
 
+    public Boolean getStandaloneApplication() {
+        return isStandaloneApplication;
+    }
+
     public static class CaseBuilder {
 
         private UUID defendantId;
@@ -148,6 +158,8 @@ public class SearchCaseBuilder {
 
         private String defendantFullName;
 
+        private Boolean isStandaloneApplication;
+
         public SearchCaseBuilder.CaseBuilder withDefendantId(final UUID defendantId) {
             this.defendantId = defendantId;
             return this;
@@ -172,7 +184,9 @@ public class SearchCaseBuilder {
                 defendantFirstName = defaultString(person.getFirstName());
                 defendantMiddleName = defaultString(person.getMiddleName());
                 defendantLastName = person.getLastName();
-                defendantDob = defaultString(person.getDateOfBirth());
+                if (person.getDateOfBirth() != null) {
+                    defendantDob = person.getDateOfBirth().toString();
+                }
             }
             return this;
         }
@@ -187,21 +201,37 @@ public class SearchCaseBuilder {
             this.defendantDob = searchCaseEntity.getDefendantDob();
             this.prosecutor = searchCaseEntity.getProsecutor();
             this.status = searchCaseEntity.getStatus();
+            this.isStandaloneApplication = searchCaseEntity.getStandaloneApplication();
             return this;
         }
 
         public SearchCaseBuilder.CaseBuilder withSearchTarget() {
+            final StringBuilder searchTargetStringBuilder =  new StringBuilder();
+            searchTargetStringBuilder.append(this.reference);
+            if(StringUtils.isNotBlank(defendantFullName)){
+                searchTargetStringBuilder.append(DELIMITER)
+                        .append(defendantFullName);
+            }
+            if(StringUtils.isNotBlank(defendantDob)){
+                searchTargetStringBuilder.append(DELIMITER)
+                        .append(defendantDob);
+            }
+            this.searchTarget = searchTargetStringBuilder.toString();
+            return this;
+        }
+
+        public SearchCaseBuilder.CaseBuilder withSearchTargetForApplication() {
             this.searchTarget = new StringBuilder().append(this.reference).append(DELIMITER)
                     .append(defendantFullName).append(DELIMITER)
-                    .append(defendantDob).toString();
+                    .append(defaultString(prosecutor)).toString();
             return this;
         }
 
         public SearchCaseBuilder.CaseBuilder withDefendantFullName() {
             this.defendantFullName = new StringBuilder()
-                    .append(defendantFirstName).append(" ")
-                    .append(defendantMiddleName).append(" ")
-                    .append(defendantLastName).toString();
+                    .append(defaultString(defendantFirstName)).append(" ")
+                    .append(defaultString(defendantMiddleName)).append(" ")
+                    .append(defaultString(defendantLastName)).toString();
             return this;
         }
 
@@ -210,15 +240,16 @@ public class SearchCaseBuilder {
                     .add(CASE_ID, this.caseId)
                     .add(REFERENCE, this.reference)
                     .add(DEFENDANT_NAME, defendantFullName)
-                    .add(DOB, this.defendantDob)
-                    .add(STATUS, this.status)
-                    .add(PROSECUTOR, this.prosecutor)
+                    .add(DOB, defaultString(this.defendantDob))
+                    .add(STATUS, defaultString(this.status))
+                    .add(PROSECUTOR, defaultString(this.prosecutor))
+                    .add(IS_STANDALONE_APPLICATION, this.isStandaloneApplication)
                     .build().toString();
             return this;
         }
 
         public SearchCaseBuilder build() {
-            return new SearchCaseBuilder(defendantId, caseId, reference, defendantFirstName, defendantMiddleName, defendantLastName, defendantFullName, defendantDob, prosecutor, status, searchTarget, resultPayload);
+            return new SearchCaseBuilder(defendantId, caseId, reference, defendantFirstName, defendantMiddleName, defendantLastName, defendantFullName, defendantDob, prosecutor, status, searchTarget, resultPayload, isStandaloneApplication);
         }
     }
 

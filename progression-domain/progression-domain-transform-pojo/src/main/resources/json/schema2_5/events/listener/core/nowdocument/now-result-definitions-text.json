@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowdocument/now-result-definitions-text.json",
+  "description": "Dynamic model for result definitions text that vary per renderd result definition now type combination",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {}
+}

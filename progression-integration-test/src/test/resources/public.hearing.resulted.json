@@ -114,7 +114,7 @@
 									"offenceId": "00000000-0000-0000-0000-000000000000",
 									"verdictDate": "2018-01-01",
 									"verdictType": {
-										"verdictTypeId": "00000000-0000-0000-0000-000000000000",
+										"id": "00000000-0000-0000-0000-000000000000",
 										"sequence": 0,
 										"description": "a",
 										"category": "a",
@@ -136,10 +136,8 @@
 								},
 								"offenceFacts": {
 									"vehicleRegistration": "a",
-									"alcoholReadingAmount": "a",
-									"alcoholReadingMethod": "a"
-								},
-								"isAcquitted": true
+									"alcoholReadingAmount": 123
+								}
 							}
 						],
 						"associatedPersons": [
@@ -157,9 +155,6 @@
 									"additionalNationalityCode": "a",
 									"additionalNationalityDescription": "a",
 									"disabilityStatus": "a",
-									"ethnicityId": "00000000-0000-0000-0000-000000000000",
-									"ethnicityCode": "a",
-									"ethnicityDescription": "a",
 									"gender": "MALE",
 									"interpreterLanguageNeeds": "a",
 									"documentationLanguageNeeds": "ENGLISH",
@@ -222,9 +217,6 @@
 								"additionalNationalityCode": "a",
 								"additionalNationalityDescription": "a",
 								"disabilityStatus": "a",
-								"ethnicityId": "00000000-0000-0000-0000-000000000000",
-								"ethnicityCode": "a",
-								"ethnicityDescription": "a",
 								"gender": "MALE",
 								"interpreterLanguageNeeds": "a",
 								"documentationLanguageNeeds": "ENGLISH",
@@ -252,18 +244,8 @@
 							"bailStatus": "CONDITIONAL",
 							"custodyTimeLimit": "2018-01-01",
 							"perceivedBirthYear": 0,
-							"observedEthnicityId": "00000000-0000-0000-0000-000000000000",
-							"observedEthnicityCode": "a",
-							"observedEthnicityDescription": "a",
-							"selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
-							"selfDefinedEthnicityCode": "a",
-							"selfDefinedEthnicityDescription": "a",
 							"driverNumber": "a",
-							"pncId": "a",
 							"arrestSummonsNumber": "a",
-							"aliases": [
-								"a"
-							],
 							"employerOrganisation": {
 								"name": "a",
 								"incorporationNumber": "a",
@@ -365,58 +347,12 @@
 				]
 			}
 		],
-		"sharedResultLines": [
-			{
-				"id": "00000000-0000-0000-0000-000000000000",
-				"delegatedPowers": {
-					"userId": "00000000-0000-0000-0000-000000000000",
-					"firstName": "a",
-					"lastName": "a"
-				},
-				"isFinancial": true,
-				"isAvailableForCourtExtract": true,
-				"prosecutionCaseId": "00000000-0000-0000-0000-000000000000",
-				"defendantId": "00000000-0000-0000-0000-000000000000",
-				"offenceId": "00000000-0000-0000-0000-000000000000",
-				"level": "a",
-				"label": "a",
-				"welshLabel": "a",
-				"rank": 0.1,
-				"lastSharedDateTime": "a",
-				"orderedDate": "2018-01-01",
-				"usergroups": [
-					"a"
-				],
-				"courtClerk": {
-					"userId": "00000000-0000-0000-0000-000000000000",
-					"firstName": "a",
-					"lastName": "a"
-				},
-				"prompts": [
-					{
-						"id": "00000000-0000-0000-0000-000000000000",
-						"resultDefinitionId": "00000000-0000-0000-0000-000000000000",
-						"isAvailableForCourtExtract": true,
-						"promptSequence": 0.1,
-						"promptReference": "a",
-						"label": "a",
-						"welshLabel": "a",
-						"value": "a",
-						"welshValue": "a",
-						"fixedListCode": "a",
-						"usergroups": [
-							"a"
-						]
-					}
-				]
-			}
-		],
 		"hearingCaseNotes": [
 			{
 				"id": "a4cd3c1d-be10-410d-a50d-e260cdaf6d19",
 				"originatingHearingId": "00000000-0000-0000-0000-000000000000",
 				"courtClerk": {
-					"id": "00000000-0000-0000-0000-000000000000",
+					"userId": "00000000-0000-0000-0000-000000000000",
 					"firstName": "a",
 					"lastName": "a"
 				},
@@ -429,21 +365,5 @@
 			}
 		]
 	},
-	"variants": [
-		{
-			"key": {
-				"hearingId": "00000000-0000-0000-0000-000000000000",
-				"defendantId": "00000000-0000-0000-0000-000000000000",
-				"nowsTypeId": "00000000-0000-0000-0000-000000000000",
-				"usergroups": [
-					"a"
-				]
-			},
-			"materialId": "00000000-0000-0000-0000-000000000000",
-			"templateName": "a",
-			"description": "a",
-			"status": "a"
-		}
-	],
 	"sharedTime": "2016-06-01T10:00:00Z"
 }

@@ -26,9 +26,8 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseAtAGlanceFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -92,15 +91,6 @@ public class HearingConfirmedForCaseAtAGlanceIT {
         assertProsecutionCase(getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonObject
                 ("prosecutionCase"), caseId, defendantId);
 
-        //should not show unallocated hearing
-        poll(requestParams(getQueryUri("/prosecutioncases/"+ caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON).withHeader(USER_ID, UUID.randomUUID()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.id",equalTo(caseId)),
-                                withJsonPath("$.hearings.length()",equalTo(0))
-                        )));
-
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
                         caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
@@ -110,15 +100,16 @@ public class HearingConfirmedForCaseAtAGlanceIT {
                         .build());
 
 
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON)
+        getProsecutioncasesProgressionFor(caseId);
+
+        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
                 .until(
                         print(),
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.id", equalTo(caseId)),
-                                withJsonPath("$.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
-                                withJsonPath("$.hearings.[*].hearingListingStatus", hasItem(equalTo("HEARING_INITIALISED")))
+                                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId)))
                         )));
 
     }

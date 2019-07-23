@@ -17,5 +17,11 @@ public interface CourtDocumentRepository extends EntityRepository<CourtDocumentE
     List<CourtDocumentEntity> findByProsecutionCaseId(@QueryParam("caseId") final UUID caseId);
 
     @Query("select courtDocument FROM CourtDocumentIndexEntity where defendant_id=:defendantId")
-    public abstract List<CourtDocumentEntity> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
+    List<CourtDocumentEntity> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
+
+    @Query("select courtDocument FROM CourtDocumentIndexEntity where application_id=:applicationId")
+    List<CourtDocumentEntity> findByApplicationId(@QueryParam("applicationId") final UUID applicationId);
+
+    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where cdi.hearingId=:hearingId and cdi.documentCategory=:documentCategory and cdi.defendantId=:defendantId")
+    List<CourtDocumentEntity> findCourtDocumentForNow(@QueryParam("hearingId") final UUID hearingId, @QueryParam("documentCategory") final String documentCategory, @QueryParam("defendantId") final UUID defendantId);
 }

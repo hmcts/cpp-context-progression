@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
         <version>2.0.136-SNAPSHOT</version>
     </parent>
-
     <properties>
         <artemis.version>1.2.0</artemis.version>
         <rest-assured.version>2.5.0</rest-assured.version>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
     </properties>
-
     <artifactId>progression-integration-test</artifactId>
     <dependencies>
         <dependency>
@@ -76,81 +73,92 @@
             <version>3.0.7.Final</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-test-utilities</artifactId>
             <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-domain-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>criminal-court-public-model</artifactId>
+            <version>${criminal-court-public-model.version}</version>
+        </dependency>
 
     </dependencies>
-
     <build>
-    <plugins>
-        <plugin>
-            <artifactId>generator-plugin</artifactId>
-            <groupId>uk.gov.justice.maven.generator</groupId>
-            <executions>
-                <execution>
-                    <id>pojo-generation</id>
-                    <configuration>
-                        <basePackageName>uk.gov.moj.cpp.progression.it</basePackageName>
-                        <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
-                        <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
-                            <plugins>
-                                <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
-                                <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
-                                <!--plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddAdditionalPropertiesToClassPlugin</plugin-->
-                                <!--plugin>
-                                    uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
-                                </plugin-->
-                            </plugins>
-                            <typeMappings>
-                                <typeMapping>
-                                    <name>uuid</name>
-                                    <type>reference</type>
-                                    <implementation>java.util.UUID</implementation>
-                                </typeMapping>
-                                <typeMapping>
-                                    <name>date</name>
-                                    <type>reference</type>
-                                    <implementation>java.time.LocalDate</implementation>
-                                </typeMapping>
-                                <typeMapping>
-                                    <name>date</name>
-                                    <type>format</type>
-                                    <implementation>java.time.LocalDate</implementation>
-                                </typeMapping>
-                                <typeMapping>
-                                    <name>date-time</name>
-                                    <type>format</type>
-                                    <implementation>java.time.ZonedDateTime</implementation>
-                                </typeMapping>
-                            </typeMappings>
-                        </generatorProperties>
-                    </configuration>
-                </execution>
-            </executions>
-            <dependencies>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>progression-datatypes-common</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </plugin>
+        <plugins>
+            <plugin>
+                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
+                <executions>
+                    <execution>
+                        <id>pojo-generation</id>
+                        <configuration>
+                            <basePackageName>uk.gov.moj.cpp.progression.it</basePackageName>
+                            <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
+                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                                <plugins>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddAdditionalPropertiesToClassPlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.MakeClassSerializablePlugin</plugin>
+                                    <!--plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
+                                    </plugin-->
+                                </plugins>
+                                <typeMappings>
+                                    <typeMapping>
+                                        <name>uuid</name>
+                                        <type>reference</type>
+                                        <implementation>java.util.UUID</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>datePattern</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>format</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date-time</name>
+                                        <type>format</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
+                                    </typeMapping>
+                                </typeMappings>
+                            </generatorProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${project.groupId}</groupId>
+                        <artifactId>progression-datatypes-common</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                        <artifactId>criminal-court-public-model</artifactId>
+                        <version>${criminal-court-public-model.version}</version>
+                    </dependency>
 
-    </plugins>
+                </dependencies>
+            </plugin>
+        </plugins>
     </build>
-
-
     <profiles>
         <profile>
             <id>build</id>
@@ -167,7 +175,6 @@
                     </plugin>
                 </plugins>
             </build>
-
         </profile>
         <profile>
             <id>progression-integration-test</id>
@@ -207,6 +214,5 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 </project>

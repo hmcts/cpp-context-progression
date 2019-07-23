@@ -64,7 +64,7 @@ public class ConvictionDateEventListenerTest {
 
         final UUID prosecutionCaseId = UUID.randomUUID();
         final UUID offenceId = UUID.randomUUID();
-        final String convictionDate = LocalDate.now().toString();
+        final LocalDate convictionDate = LocalDate.now();
 
         final ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.convictionDateAdded()
                 .withCaseId(prosecutionCaseId)
@@ -117,7 +117,7 @@ public class ConvictionDateEventListenerTest {
                 .withDefendants(Arrays.asList(Defendant.defendant()
                         .withOffences(Arrays.asList(Offence.offence()
                                 .withId(offenceId)
-                                .withConvictionDate(LocalDate.now().toString())
+                                .withConvictionDate(LocalDate.now())
                                 .build()))
                         .build()))
                 .build();

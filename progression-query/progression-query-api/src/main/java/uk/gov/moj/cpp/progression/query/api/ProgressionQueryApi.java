@@ -56,5 +56,10 @@ public class ProgressionQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.hearing")
+    public JsonEnvelope getHearing(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 
 }

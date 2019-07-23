@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import uk.gov.justice.core.courts.Initiate;
+import uk.gov.justice.core.courts.CommandEnrichHearingInitiate;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -34,9 +34,9 @@ public class EnrichInitiateHearingHandler {
     private Enveloper enveloper;
 
     @Handles("progression.command-enrich-hearing-initiate")
-    public void enrichHearingInitiate(final Envelope<Initiate> initiateEnvelope) throws EventStreamException {
+    public void enrichHearingInitiate(final Envelope<CommandEnrichHearingInitiate> initiateEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command-enrich-hearing-initiate {}", initiateEnvelope.payload());
-        final Initiate initiate = initiateEnvelope.payload();
+        final CommandEnrichHearingInitiate initiate = initiateEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(initiate.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.enrichInitiateHearing(initiate.getHearing());

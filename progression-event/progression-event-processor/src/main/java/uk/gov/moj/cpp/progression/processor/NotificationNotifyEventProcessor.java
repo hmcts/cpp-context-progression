@@ -3,11 +3,13 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.lang.String.format;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.APPLICATION;
+import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.PrintService;
+import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
@@ -25,7 +27,7 @@ public class NotificationNotifyEventProcessor {
     private static final String NOTIFICATION_ID = "notificationId";
 
     @Inject
-    private PrintService printService;
+    private NotificationService notificationService;
 
     @Inject
     private SystemIdMapperService systemIdMapperService;
@@ -38,12 +40,27 @@ public class NotificationNotifyEventProcessor {
     //supressing Sonar warning of logger not being called conditionally
     @Handles("public.notificationnotify.events.notification-failed")
     public void markNotificationAsFailed(final JsonEnvelope event) {
+
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
+
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
-        if (!systemIdMapping.isPresent()) {
-            logger.error(format("No case found for the given notification id: %s", notificationId));
+
+        if (systemIdMapping.isPresent()) {
+
+            notificationService.recordNotificationRequestFailure(event, systemIdMapping.get().getTargetId(), CASE);
+
         } else {
-            printService.recordPrintRequestFailure(event, systemIdMapping.get().getTargetId());
+
+            final Optional<SystemIdMapping> applicationSystemIdMapping = systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
+
+            if (applicationSystemIdMapping.isPresent()) {
+
+                notificationService.recordNotificationRequestFailure(event, applicationSystemIdMapping.get().getTargetId(), APPLICATION);
+
+            } else {
+
+                logger.error(format("No Case or Application found for the given notification id: %s", notificationId));
+            }
         }
     }
 
@@ -51,12 +68,27 @@ public class NotificationNotifyEventProcessor {
     //supressing Sonar warning of logger not being called conditionally
     @Handles("public.notificationnotify.events.notification-sent")
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
+
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
+
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
-        if (!systemIdMapping.isPresent()) {
-            logger.error(format("No case found for the given notification id: %s", notificationId));
+
+        if (systemIdMapping.isPresent()) {
+
+            notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);
+
         } else {
-            printService.recordPrintRequestSuccess(event, systemIdMapping.get().getTargetId());
+
+            final Optional<SystemIdMapping> applicationSystemIdMapping = systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
+
+            if (applicationSystemIdMapping.isPresent()) {
+
+                notificationService.recordNotificationRequestSuccess(event, applicationSystemIdMapping.get().getTargetId(), APPLICATION);
+
+            } else {
+
+                logger.error(format("No Case or Application found for the given notification id: %s", notificationId));
+            }
         }
     }
 }

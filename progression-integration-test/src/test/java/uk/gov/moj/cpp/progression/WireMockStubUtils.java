@@ -43,6 +43,7 @@ public class WireMockStubUtils {
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final String CONTENT_TYPE_QUERY_GROUPS = "application/vnd.usersgroups.groups+json";
     private static final String CONTENT_TYPE_QUERY_PROGRESSION_CASE_DETAILS = "application/vnd.progression.query.caseprogressiondetail+json";
+    public static final String BASE_URI = "http://" + HOST + ":8080";
 
     static {
         configureFor(HOST, 8080);
