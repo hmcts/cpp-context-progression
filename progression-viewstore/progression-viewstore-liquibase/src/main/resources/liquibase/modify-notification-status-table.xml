@@ -7,7 +7,7 @@
     <changeSet id="modify-notification-status-table" author="CCR2" logicalFilePath="liquibase/changelog.xml">
         <addColumn tableName="notification_status">
             <column name="application_id" type="uuid" />
-            <column name="notification_type" type="TEXT">
+            <column name="notification_type" type="TEXT" defaultValue="PRINT">
                 <constraints nullable="false"/>
             </column>
             <column name="payload" type="TEXT"/>
