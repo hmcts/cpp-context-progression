@@ -1,16 +1,17 @@
 package uk.gov.moj.cpp.progression.domain.transformation.util;
 
 
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import java.util.Map;
-
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.JudicialResultHelper.transformJudicialResults;
+
+import java.util.Map;
+
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 @SuppressWarnings({"squid:S1188", "squid:S3776"})
 public class OffenceHelper {
@@ -174,8 +175,13 @@ public class OffenceHelper {
         if (jsonObject.containsKey(CommonHelper.VEHICLE_REGISTRATION)) {
             jsonObjectBuilder.add(CommonHelper.VEHICLE_REGISTRATION, jsonObject.getString(CommonHelper.VEHICLE_REGISTRATION));
         }
-        if (jsonObject.containsKey(CommonHelper.ALCOHOL_READING_AMOUNT)) {
-            jsonObjectBuilder.add(CommonHelper.ALCOHOL_READING_AMOUNT, jsonObject.getString(CommonHelper.ALCOHOL_READING_AMOUNT));
+        if (jsonObject.containsKey(CommonHelper.ALCOHOL_READING_AMOUNT) && jsonObject.getString(CommonHelper.ALCOHOL_READING_AMOUNT)!=null) {
+            try {
+                int alcoholReadingAmount = Integer.parseInt(jsonObject.getString(CommonHelper.ALCOHOL_READING_AMOUNT).replaceAll("\\s+", ""));
+                jsonObjectBuilder.add(CommonHelper.ALCOHOL_READING_AMOUNT, alcoholReadingAmount);
+            } catch (NumberFormatException numberFormatException) {
+                jsonObjectBuilder.add(CommonHelper.ALCOHOL_READING_AMOUNT, 0);
+            }
         }
         if (jsonObject.containsKey(CommonHelper.ALCOHOL_READING_METHOD)) {
             jsonObjectBuilder.add("alcoholReadingMethodCode", jsonObject.getString(CommonHelper.ALCOHOL_READING_METHOD));
@@ -210,7 +216,7 @@ public class OffenceHelper {
                 .add(CommonHelper.CATEGORY, jsonObject.getString(CommonHelper.CATEGORY))
                 .add(CommonHelper.CATEGORY_TYPE, jsonObject.getString(CommonHelper.CATEGORY_TYPE));
 
-        if(jsonObject.containsKey(CommonHelper.VERDICT_TYPE_ID)) {
+        if (jsonObject.containsKey(CommonHelper.VERDICT_TYPE_ID)) {
             jsonObjectBuilder.add(CommonHelper.ID, jsonObject.getString(CommonHelper.VERDICT_TYPE_ID));
         } else {
             jsonObjectBuilder.add(CommonHelper.ID, jsonObject.getString(CommonHelper.ID));
