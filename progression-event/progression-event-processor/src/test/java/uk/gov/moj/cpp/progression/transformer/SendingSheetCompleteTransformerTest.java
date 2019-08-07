@@ -65,22 +65,22 @@ public class SendingSheetCompleteTransformerTest {
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
     private static final String CASE_URN = "URN";
-    private static final String SENDING_COMMITAL_DATE = LocalDate.now().toString();
+    private static final LocalDate SENDING_COMMITAL_DATE = LocalDate.now();
     private static final String FIRST_NAME = "NAME1";
     private static final String LAST_NAME = "NAME2";
     private static final String NATIONALITY = "NAME2";
-    private static final String DATE_OF_BIRTH = LocalDate.now().toString();
+    private static final LocalDate DATE_OF_BIRTH = LocalDate.now();
     private static final String INTERPRETER_LANGUAGE = "GERMAN";
     private static final String GENDER = "MALE";
     private static final String ADDRESS_1 = "3, Brunswick Road";
     private static final String POST_CODE = "NR2 6HF";
-    private static final String CUSTODY_TIME_LIMIT_DATE = LocalDate.now().toString();
+    private static final LocalDate CUSTODY_TIME_LIMIT_DATE = LocalDate.now();
     private static final String DEFENCE_ORGNISATION = "ABC Solicitors";
     private static final String OFFENCE_CODE = "BRG";
     private static final String OFFENCE_SECTION = "SECT";
     private static final String OFFENCE_WORDING = "WRDG";
-    private static final String OFFENCE_START_DATE = LocalDate.now().toString();
-    private static final String OFFENCE_END_DATE = LocalDate.now().toString();
+    private static final LocalDate OFFENCE_START_DATE = LocalDate.now();
+    private static final LocalDate OFFENCE_END_DATE = LocalDate.now();
     private static final LocalDate CONVICTION_DATE = LocalDate.now();
     private static final String PLEA_GUILTY = "GUILTY";
     private static final LocalDate PLEA_DATE = LocalDate.now();
@@ -126,7 +126,7 @@ public class SendingSheetCompleteTransformerTest {
         defendant.setLastName(LAST_NAME);
         defendant.setNationality(NATIONALITY);
         defendant.setGender(GENDER);
-        defendant.setDateOfBirth(DATE_OF_BIRTH);
+        defendant.setDateOfBirth(DATE_OF_BIRTH.toString());
         final Interpreter interpreter = new Interpreter();
         interpreter.setLanguage(INTERPRETER_LANGUAGE);
         interpreter.setNeeded(true);
@@ -135,7 +135,7 @@ public class SendingSheetCompleteTransformerTest {
         address.setAddress1(ADDRESS_1);
         address.setPostcode(POST_CODE);
         defendant.setAddress(address);
-        defendant.setCustodyTimeLimitDate(CUSTODY_TIME_LIMIT_DATE);
+        defendant.setCustodyTimeLimitDate(CUSTODY_TIME_LIMIT_DATE.toString());
         defendant.setDefenceOrganisation(DEFENCE_ORGNISATION);
         defendant.setOffences(createOffences());
         defendants.add(defendant);
@@ -185,7 +185,7 @@ public class SendingSheetCompleteTransformerTest {
 
     private void assertOffence(final uk.gov.justice.core.courts.Offence offence) {
         assertThat(offence.getId(),equalTo(OFFENCE_ID));
-        assertThat(offence.getConvictionDate(),equalTo(CONVICTION_DATE.toString()));
+        assertThat(offence.getConvictionDate(),equalTo(CONVICTION_DATE));
         assertThat(offence.getEndDate(),equalTo(OFFENCE_END_DATE));
         assertThat(offence.getStartDate(),equalTo(OFFENCE_START_DATE));
         assertThat(offence.getWording(),equalTo(OFFENCE_WORDING));
@@ -193,9 +193,9 @@ public class SendingSheetCompleteTransformerTest {
         assertThat(offence.getOffenceTitle(),equalTo(OFFENCE_TITLE));
         assertThat(offence.getOffenceLegislation(),equalTo(LEGISLATION));
         assertThat(offence.getOrderIndex(),equalTo(ORDER_INDEX));
-        assertThat(offence.getPlea().getPleaDate(),equalTo(PLEA_DATE.toString()));
+        assertThat(offence.getPlea().getPleaDate(),equalTo(PLEA_DATE));
         assertThat(offence.getPlea().getPleaValue().toString(),equalTo(PLEA_GUILTY));
-        assertThat(offence.getIndicatedPlea().getIndicatedPleaDate() ,equalTo(CONVICTION_DATE.toString()));
+        assertThat(offence.getIndicatedPlea().getIndicatedPleaDate() ,equalTo(CONVICTION_DATE));
         assertThat(offence.getIndicatedPlea().getIndicatedPleaValue().toString() ,equalTo(INDICATED_PLEA));
         assertThat(offence.getIndicatedPlea().getAllocationDecision().getCourtDecision() ,equalTo(CourtDecision.ELECT_TRIAL_ON_INDICTMENT));
         assertThat(offence.getIndicatedPlea().getAllocationDecision().getDefendantRepresentation() ,equalTo(DefendantRepresentation.ELECT_TRIAL_ON_INDICTMENT));

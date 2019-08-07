@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/v24/progression/events/listener/progression.event.print-request-succeeded.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/v24/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "notificationId": {
+      "$ref": "http://justice.gov.uk/v24/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "sentTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "notificationId",
+    "sentTime"
+  ],
+  "additionalProperties": false
+}

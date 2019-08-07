@@ -9,6 +9,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -19,9 +20,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.progression.handler.UpdateDefedantHandler;
+import uk.gov.moj.cpp.progression.handler.UpdateDefendantHandler;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertThat;
@@ -49,7 +49,7 @@ public class UpdateDefedentHandlerTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class);
 
     @InjectMocks
-    private UpdateDefedantHandler updateDefedantHandler;
+    private UpdateDefendantHandler updateDefendantHandler;
 
     private CaseAggregate aggregate;
 
@@ -62,7 +62,7 @@ public class UpdateDefedentHandlerTest {
 
     @Test
     public void shouldHandleCommand() {
-        assertThat(new UpdateDefedantHandler(), isHandler(COMMAND_HANDLER)
+        assertThat(new UpdateDefendantHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("handle")
                         .thatHandles("progression.command.update-defendant-for-prosecution-case")
                 ));
@@ -71,13 +71,13 @@ public class UpdateDefedentHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
 
-        final Defendant defendant =
-                Defendant.defendant().withPersonDefendant(PersonDefendant.personDefendant().build())
+        final DefendantUpdate defendant =
+                DefendantUpdate.defendantUpdate().withPersonDefendant(PersonDefendant.personDefendant().build())
                         .withProsecutionCaseId(UUID.randomUUID())
                         .withId(UUID.randomUUID())
                         .build();
         UpdateDefendantForProsecutionCase updateDefendant = UpdateDefendantForProsecutionCase.updateDefendantForProsecutionCase().withDefendant(defendant).build();
-        aggregate.updateDefedantDetails(updateDefendant.getDefendant());
+        aggregate.updateDefendantDetails(updateDefendant.getDefendant());
 
 
         final Metadata metadata = Envelope
@@ -88,7 +88,7 @@ public class UpdateDefedentHandlerTest {
 
         final Envelope<UpdateDefendantForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendant);
 
-        updateDefedantHandler.handle(envelope);
+        updateDefendantHandler.handle(envelope);
 
         verifyAppendAndGetArgumentFrom(eventStream);
     }

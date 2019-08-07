@@ -18,7 +18,6 @@ import javax.json.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class ProsecutionCaseUpdateDefendantIT {
 
     ProsecutionCaseUpdateDefendantHelper helper;
@@ -50,6 +49,9 @@ public class ProsecutionCaseUpdateDefendantIT {
         response = getProsecutioncasesProgressionFor(caseId);
         prosecutioncasesJsonObject = getJsonObject(response);
         assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonObject("personDefendant").getJsonObject("personDetails").getString("firstName"), equalTo("updatedName"));
+        JsonObject defendantJson = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0);
+        assertThat(defendantJson.getString("pncId"), equalTo("1234567"));
+        assertThat(defendantJson.getJsonArray("aliases").size(), equalTo(1));
         helper.verifyInMessagingQueueForDefendentChanged();
     }
 

@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowdocument/now-document-content.json",
+  "description": "The contents of a now document",
+  "type": "object",
+  "properties": {
+    "orderName": {
+      "type": "string"
+    },
+    "subTemplateName": {
+      "type": "string"
+    },
+    "ljaCode": {
+      "type": "string"
+    },
+    "ljaName": {
+      "type": "string"
+    },
+    "courtCentreName": {
+      "type": "string"
+    },
+    "courtClerkName": {
+      "type": "string"
+    },
+    "orderDate": {
+      "type": "string"
+    },
+    "amendmentDate": {
+      "type": "string"
+    },
+    "orderAddressee": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/order-addressee.json"
+    },
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/nowdefendant.json"
+    },
+    "financialOrderDetails": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/financial-order-details.json"
+    },
+    "nextHearingCourtDetails": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/next-hearing-court-details.json"
+    },
+    "caseUrns": {
+      "type": "array",
+      "title": "caseUrns",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "title": "cases",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/nowdocument/prosecution-case.json"
+      }
+    },
+    "nowText": {
+      "type": "string"
+    },
+    "nowResultDefinitionsText": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-result-definitions-text.json"
+    },
+    "isCrownCourt": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "orderName",
+    "ljaCode",
+    "ljaName",
+    "courtCentreName",
+    "courtClerkName",
+    "orderDate",
+    "orderAddressee",
+    "defendant",
+    "caseUrns"
+  ],
+  "additionalProperties": false
+}

@@ -18,8 +18,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class CourtDocumentAggregateTest {
-    private static final CourtDocument courtDocument = new CourtDocument(UUID.randomUUID(), null, "documentTypeDescription",
-             UUID.randomUUID(), false, null, "pdf", "name");
+
+    private static final CourtDocument courtDocument = CourtDocument.courtDocument()
+            .withCourtDocumentId(UUID.randomUUID())
+            .withDocumentTypeDescription("documentTypeDescription")
+            .withDocumentTypeId(UUID.randomUUID())
+            .withIsRemoved(false)
+            .withMimeType("pdf")
+            .withName("name")
+            .build();
+
     private CourtDocumentAggregate aggregate;
 
     @Before

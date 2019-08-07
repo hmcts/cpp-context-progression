@@ -1,0 +1,67 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/core/courts/summons/summons-document-content.json",
+	"description": "The contents of a summons document",
+	"type": "object",
+	"properties": {
+		"subTemplateName": {
+			"type": "string"
+		},
+		"type": {
+			"description": "The type of summons required",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/summonsType"
+		},
+		"issueDate": {
+			"description": "The court date and time that the summons is for",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+		},
+		"ljaCode": {
+			"type": "string"
+		},
+		"ljaName": {
+			"type": "string"
+		},
+		"courtCentreName": {
+			"type": "string"
+		},
+		"addressee": {
+			"$ref": "http://justice.gov.uk/core/courts/summons/summons-addressee.json"
+		},
+		"defendant": {
+			"$ref": "http://justice.gov.uk/core/courts/summons/summons-defendant.json"
+		},
+		"offences": {
+		  "type": "array",
+		  "description": "The offences for which a defendant is being summonsed.  Only applies to First Hearing and Referral summons",
+		  "minItems": 1,
+		  "additionalItems": false,
+		  "items": {
+			"$ref": "http://justice.gov.uk/core/courts/summons/summons-offence.json"
+		  }
+		},
+		"hearingCourtDetails": {
+			"$ref": "http://justice.gov.uk/core/courts/summons/summons-hearing-court-details.json"
+		},
+		"caseReference": {
+			"description": "The reference to the individual case that is the subject of the hearing (caseURN or PRN)",
+			"type": "string"
+		},
+		"referralContent": {
+			"description": "The specific content for summons to an SJP referral",
+			"$ref": "http://justice.gov.uk/core/courts/summons/referral-summons-document-content.json"
+		},
+		"applicationContent": {
+			"description": "The specific content for summons to an application hearing",
+			"$ref": "http://justice.gov.uk/core/courts/summons/application-summons-document-content.json"
+		},
+		"breachContent": {
+			"description": "The specific content for summons to a breach application hearing",
+			"$ref": "http://justice.gov.uk/core/courts/summons/breach-summons-document-content.json"
+		},
+		"youthContent": {
+			"description": "The specific content for summons to a youth hearing",
+			"$ref": "http://justice.gov.uk/core/courts/summons/youth-hearing-summons-document-content.json"
+		}
+	},
+	"additionalProperties": false
+}

@@ -42,6 +42,14 @@
     <include file="liquibase/create-defendant-request.xml"/>
     <include file="liquibase/add-print-status-table.xml"/>
     <include file="liquibase/alter-court-document2.xml"/>
-
-
-</databaseChangeLog>	
+    <include file="liquibase/create-court-application.xml"/>
+    <include file="liquibase/add-linked-ids-court-application.xml"/>
+    <include file="liquibase/add-isStandaloneApplication-search-prosecution-case.xml"/>
+    <include file="liquibase/modify-is-standalone-application-search-type.xml"/>
+	<include file="liquibase/modify-is-standalone-application-add-default.xml"/>
+    <include file="liquibase/alter-court-application-modify-linked-application-id.xml"/>
+    <include file="liquibase/update-court_document_index-add-columns.xml"/>
+    <include file="liquibase/create-hearing-application.xml"/>
+    <include file="liquibase/rename-print-status-table.xml"/>
+    <include file="liquibase/modify-notification-status-table.xml"/>
+</databaseChangeLog>

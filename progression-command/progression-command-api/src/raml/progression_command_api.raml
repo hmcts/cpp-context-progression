@@ -92,6 +92,44 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/adddefendantstocourtproceedings :
+  post:
+      description: |
+        Defendants added to court proceedings.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-defendants-to-court-proceedings+json
+            name: progression.add-defendants-to-court-proceedings
+        ...
+      body:
+        application/vnd.progression.add-defendants-to-court-proceedings+json:
+            example:
+             !include json/progression.add-defendants-to-court-proceedings.json
+            schema:
+             !include json/schema/progression.add-defendants-to-court-proceedings.json
+      responses:
+            202:
+                description: OK
+
+/initiatecourtproceedings :
+  post:
+      description: |
+        Case is sent to a Court to initiate proceedings.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.initiate-court-proceedings+json
+            name: progression.initiate-court-proceedings
+        ...
+      body:
+        application/vnd.progression.initiate-court-proceedings+json:
+            example:
+             !include json/progression.initiate-court-proceedings.json
+            schema:
+             !include json/schema/progression.initiate-court-proceedings.json
+      responses:
+            202:
+                description: OK
+
 
 /prosecutioncases/{prosecutionCaseId}/defendants/{id}:
   uriParameters:
@@ -129,24 +167,59 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           202:
               description: OK
 
-/nows:
-    post:
+/application :
+  post:
       description: |
+        Create court application.
         ...
         (mapping):
-            requestType: application/vnd.progression.generate-nows+json
-            name: progression.generate-nows
+            requestType: application/vnd.progression.create-court-application+json
+            name: progression.create-court-application
+        (mapping):
+            requestType: application/vnd.progression.update-court-application+json
+            name: progression.update-court-application
         ...
       body:
-        application/vnd.progression.generate-nows+json:
+        application/vnd.progression.create-court-application+json:
             example:
-             !include json/progression.generate-nows.json
+             !include json/progression.create-court-application.json
             schema:
-             !include json/schema/progression.generate-nows.json
+             !include json/schema/progression.create-court-application.json
+        application/vnd.progression.update-court-application+json:
+            example:
+             !include json/progression.update-court-application.json
+            schema:
+             !include json/schema/progression.update-court-application.json
       responses:
             202:
                 description: OK
 
+/referapplicationtocourt:
+  post:
+      description: |
+        Application is sent to a Court for Hearing.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.refer-application-to-court+json
+            name: progression.refer-application-to-court
+        (mapping):
+            requestType: application/vnd.progression.extend-hearing+json
+            name: progression.extend-hearing
+        ...
+      body:
+        application/vnd.progression.refer-application-to-court+json:
+            example:
+             !include json/progression.refer-application-to-court.json
+            schema:
+             !include json/schema/progression.refer-application-to-court.json
+        application/vnd.progression.extend-hearing+json:
+            example:
+             !include json/progression.extend-hearing.json
+            schema:
+             !include json/schema/progression.extend-hearing.json
+      responses:
+            202:
+                description: OK
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

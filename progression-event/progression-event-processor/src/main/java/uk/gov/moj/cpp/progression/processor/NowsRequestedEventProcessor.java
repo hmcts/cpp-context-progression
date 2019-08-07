@@ -5,13 +5,10 @@ import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CreateNowsRequest;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.core.courts.Now;
 import uk.gov.justice.core.courts.NowDocument;
-import uk.gov.justice.core.courts.NowType;
-import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -19,16 +16,16 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -38,7 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
+@SuppressWarnings("squid:S00112")
 public class NowsRequestedEventProcessor {
+
+    public static final UUID NOW_DOCUMENT_TYPE_ID = UUID.fromString("460fbc00-c002-11e8-a355-529269fb1459");
 
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final Logger LOGGER = LoggerFactory.getLogger(NowsRequestedEventProcessor.class);
@@ -50,60 +50,63 @@ public class NowsRequestedEventProcessor {
     private DocumentGeneratorService documentGeneratorService;
 
     @Inject
+    private ReferenceDataService refDataService;
+
+    @Inject
     public NowsRequestedEventProcessor(final Enveloper enveloper, final Sender sender,
                                        final DocumentGeneratorService documentGeneratorService,
                                        final JsonObjectToObjectConverter jsonObjectToObjectConverter,
-                                       final ObjectToJsonObjectConverter objectToJsonObjectConverter
+                                       final ObjectToJsonObjectConverter objectToJsonObjectConverter,
+                                       final ReferenceDataService refDataService
     ) {
         this.enveloper = enveloper;
         this.sender = sender;
         this.jsonObjectToObjectConverter = jsonObjectToObjectConverter;
         this.objectToJsonObjectConverter = objectToJsonObjectConverter;
         this.documentGeneratorService = documentGeneratorService;
+        this.refDataService = refDataService;
     }
 
-    @Handles("progression.event.nows-requested")
-    public void processNowsRequested(final JsonEnvelope event) {
+    //handle the public now document request from the hearing service
+    @Handles("public.hearing.now-document-requested")
+    public void processPublicNowDocumentRequested(final JsonEnvelope event) {
         final UUID userId = fromString(event.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
 
-        final JsonObject requestJson = event.payloadAsJsonObject().getJsonObject("createNowsRequest");
-        final CreateNowsRequest createNowsRequest = jsonObjectToObjectConverter.convert(requestJson, CreateNowsRequest.class);
-        final String hearingId = createNowsRequest.getHearing().getId().toString();
-        LOGGER.info("Nows requested for hearing id {}", hearingId);
+        final JsonObject requestJson = event.payloadAsJsonObject();
+        final NowDocumentRequest nowDocumentRequest = jsonObjectToObjectConverter.convert(requestJson, NowDocumentRequest.class);
 
-        final Map<NowsDocumentOrder, NowsNotificationDocumentState> nowsDocumentOrderToNotificationState = NowsRequestedToOrderConverter.convert(createNowsRequest);
-        final List<NowsDocumentOrder> nowsDocumentOrdersList = new ArrayList<>(nowsDocumentOrderToNotificationState.keySet());
-
-        addAsCourtDocuments(event, createNowsRequest);
-
-        nowsDocumentOrdersList.stream().sorted(Comparator.comparing(NowsDocumentOrder::getPriority)).forEach(nowsDocumentOrder -> {
-            LOGGER.info("Input for docmosis order {}", objectToJsonObjectConverter.convert(nowsDocumentOrder));
-            documentGeneratorService.generateNow(sender, event, userId, createNowsRequest, hearingId, nowsDocumentOrderToNotificationState, nowsDocumentOrder);
-        });
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Nows requested payload - {}", requestJson);
+        }
+        addAsCourtDocuments(event, nowDocumentRequest);
+        documentGeneratorService.generateNow(sender, event, userId, nowDocumentRequest);
     }
 
-    private void addAsCourtDocuments(final JsonEnvelope incomingEvent, final CreateNowsRequest createNowsRequest) {
+    private void addAsCourtDocuments(final JsonEnvelope incomingEvent, final NowDocumentRequest nowDocumentRequest) {
         // GPE-6752 could also iterate resultLines to discover case and hearing associations
         // this is assuming that all cases in the hearing relate to this document
-        final List<UUID> prosecutionIds = createNowsRequest.getHearing()
-                .getProsecutionCases().stream()
-                .map(ProsecutionCase::getId).collect(Collectors.toList());
+        final List<UUID> prosecutionIds = Arrays.asList(nowDocumentRequest.getCaseId());
 
-        createNowsRequest.getNows().forEach(
-                now -> {
-                    final String orderName = createNowsRequest.getNowTypes().stream()
-                            .filter(nowType -> nowType.getId().equals(now.getNowsTypeId()))
-                            .map(NowType::getDescription).findFirst()
-                            .orElse(now.getRequestedMaterials().get(0).getTemplateName());
+        final String orderName = nowDocumentRequest.getNowContent().getOrderName();
 
-                    final CourtDocument courtDocument = courtDocument(now, prosecutionIds, createNowsRequest.getHearing().getId(), orderName);
+        final Optional<JsonObject> documentTypeData = refDataService.getDocumentTypeData(NOW_DOCUMENT_TYPE_ID, incomingEvent);
+        if (!documentTypeData.isPresent()) {
+            throw new RuntimeException("failed to look up nows document type " + NOW_DOCUMENT_TYPE_ID);
+        }
+        if (!documentTypeData.get().containsKey("documentAccess")) {
+            throw new RuntimeException("no document access specified for  nows document type " + NOW_DOCUMENT_TYPE_ID);
+        }
+        final List<String> permittedGroups = Stream.concat(documentTypeData.get().getJsonArray("documentAccess").stream()
+                .map(el -> el.toString().replace("\"", "")), nowDocumentRequest.getUsergroups().stream())
+                .collect(Collectors.toList());
 
-                    final JsonObject jsonObject = Json.createObjectBuilder()
-                            .add("courtDocument", objectToJsonObjectConverter
-                                    .convert(courtDocument)).build();
-                    sender.send(enveloper.withMetadataFrom(incomingEvent, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
-                }
-        );
+        final CourtDocument courtDocument =
+                courtDocument(nowDocumentRequest, prosecutionIds, orderName, permittedGroups);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("courtDocument", objectToJsonObjectConverter
+                        .convert(courtDocument)).build();
+        sender.send(enveloper.withMetadataFrom(incomingEvent, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
     }
 
     @Handles("hearing.events.nows-material-status-updated")
@@ -115,32 +118,28 @@ public class NowsRequestedEventProcessor {
                 ));
     }
 
-    private final NowDocument nowDocument(final Now nows, final List<UUID> prosecutionCaseIds, final UUID hearingId) {
+    private NowDocument nowDocument(final UUID defendantId, final List<UUID> prosecutionCaseIds, final UUID hearingId) {
         return NowDocument.nowDocument()
-                .withDefendantId(nows.getDefendantId())
+                .withDefendantId(defendantId)
                 .withOrderHearingId(hearingId)
                 .withProsecutionCases(prosecutionCaseIds)
                 .build();
     }
 
-    private final CourtDocument courtDocument(final Now nows, final List<UUID> prosecutionCaseIds, final UUID hearingId, final String orderName) {
-        final NowDocument nowDocument = nowDocument(nows, prosecutionCaseIds, hearingId);
+    private CourtDocument courtDocument(final NowDocumentRequest nowDocumentRequest, final List<UUID> prosecutionCaseIds, final String orderName,
+                                        List<String> permittedGroups) {
+        final NowDocument nowDocument = nowDocument(nowDocumentRequest.getDefendantId(), prosecutionCaseIds, nowDocumentRequest.getHearingId());
         return CourtDocument.courtDocument()
-                .withCourtDocumentId(nows.getId())
-                //this doesnt seem necessary
-                //GPE-6752 this could be hard code to a nows document type
+                .withCourtDocumentId(UUID.randomUUID())
                 .withDocumentTypeId(UUID.randomUUID())
                 .withDocumentTypeDescription("Court Final orders")
-                .withMaterials(
-                        nows.getRequestedMaterials().stream().map(
-                                variant -> Material.material()
-                                        .withId(variant.getMaterialId())
-                                        .withGenerationStatus(null)
-                                        .withUserGroups(variant.getKey().getUsergroups())
-                                        .withUploadDateTime(ZonedDateTime.now())
-                                        .withName(orderName)
-                                        .build()
-                        ).collect(Collectors.toList())
+                .withMaterials(Arrays.asList(Material.material()
+                        .withId(nowDocumentRequest.getMaterialId())
+                        .withGenerationStatus(null)
+                        .withUserGroups(permittedGroups)
+                        .withUploadDateTime(ZonedDateTime.now())
+                        .withName(orderName)
+                        .build())
                 )
                 .withDocumentCategory(
                         DocumentCategory.documentCategory()

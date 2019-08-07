@@ -1,0 +1,19 @@
+{
+  "events": [
+    {
+      "eventName" : "data.anon.test-event2",
+      "fieldsToBeAnonymised": [
+        {"firstName" : "StringAnonymisedString"},
+        {"lastName" : "StringAnonymisedString"},
+        {"dateOfBirth" : "StringAnonymisedDOB"},
+        {"defenceOrganisation" : "StringAnonymisedString"},
+        {"address1" : "StringAnonymisedString"},
+        {"address2" : "StringAnonymisedString"},
+        {"address3" : "StringAnonymisedString"},
+        {"address4" : "StringAnonymisedString"},
+        {"postcode" : "StringAnonymisedPostcode"},
+        {"wording" : "StringAnonymisedString"}
+      ]
+    }
+  ]
+}

@@ -56,22 +56,43 @@ public class CourtDocumentEventListener {
     }
 
     private CourtDocumentEntity getCourtDocumentEntity(final CourtDocument courtDocument) {
-        CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(courtDocument.getCourtDocumentId());
         courtDocumentEntity.setIndices(new HashSet<>());
-        getLinkedCaseIds(courtDocument.getDocumentCategory()).forEach(
-                caseId -> {
-                    final CourtDocumentIndexEntity index = new CourtDocumentIndexEntity();
-                    index.setProsecutionCaseId(caseId);
-                    index.setCourtDocument(courtDocumentEntity);
-                    index.setId(UUID.randomUUID());
-                    courtDocumentEntity.getIndices().add(index);
-                }
-        );
+        final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
+        final List<UUID> linkedCaseIds = getLinkedCaseIds(documentCategory);
+        if(!linkedCaseIds.isEmpty()) {
+            linkedCaseIds.forEach(caseId -> addCourtDocumentIndexEntity(courtDocument, courtDocumentEntity, caseId, null));
+        }
+        if (nonNull(documentCategory.getApplicationDocument())) {
+            if(!linkedCaseIds.isEmpty()) {
+                courtDocumentEntity
+                        .getIndices()
+                        .forEach(index -> index.setApplicationId(documentCategory.getApplicationDocument().getApplicationId()));
+            } else {
+                addCourtDocumentIndexEntity(courtDocument, courtDocumentEntity, null, documentCategory.getApplicationDocument().getApplicationId());
+            }
+        }
         courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(courtDocument).toString());
         return courtDocumentEntity;
     }
 
+    private void addCourtDocumentIndexEntity(final CourtDocument courtDocument,
+                                             final CourtDocumentEntity courtDocumentEntity,
+                                             final UUID prosecutionCaseId,
+                                             final UUID applicationDocumentId) {
+        final CourtDocumentIndexEntity index = new CourtDocumentIndexEntity();
+        index.setProsecutionCaseId(prosecutionCaseId);
+        index.setApplicationId(applicationDocumentId);
+        index.setCourtDocument(courtDocumentEntity);
+        if (nonNull(courtDocument.getDocumentCategory().getNowDocument())) {
+            index.setDefendantId(courtDocument.getDocumentCategory().getNowDocument().getDefendantId());
+            index.setHearingId(courtDocument.getDocumentCategory().getNowDocument().getOrderHearingId());
+        }
+        index.setDocumentCategory(courtDocumentEntity.getDocumentCategory());
+        index.setId(UUID.randomUUID());
+        courtDocumentEntity.getIndices().add(index);
+    }
 
     private List<UUID> getLinkedCaseIds(final DocumentCategory documentCategory) {
 
@@ -81,10 +102,14 @@ public class CourtDocumentEventListener {
             return asList(documentCategory.getCaseDocument().getProsecutionCaseId());
         } else if (nonNull(documentCategory.getDefendantDocument())) {
             return asList(documentCategory.getDefendantDocument().getProsecutionCaseId());
+        } else if (nonNull(documentCategory.getApplicationDocument())) {
+            if(null != documentCategory.getApplicationDocument().getProsecutionCaseId()) {
+                return asList(documentCategory.getApplicationDocument().getProsecutionCaseId());
+            } else {
+                return Collections.emptyList();
+            }
         } else {
-            return nonNull(documentCategory.getApplicationDocument().getProsecutionCaseId()) ?
-                    asList(documentCategory.getApplicationDocument().getProsecutionCaseId()) : Collections.emptyList();
-
+            return Collections.emptyList();
         }
     }
 

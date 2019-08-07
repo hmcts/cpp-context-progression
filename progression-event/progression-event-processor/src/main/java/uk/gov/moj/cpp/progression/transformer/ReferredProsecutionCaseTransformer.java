@@ -19,6 +19,8 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.SHORT_NAME
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantAlias;
+import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
@@ -31,8 +33,6 @@ import uk.gov.justice.core.courts.ReferredOffence;
 import uk.gov.justice.core.courts.ReferredPerson;
 import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
@@ -41,6 +41,8 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -48,14 +50,8 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-@SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067"})
+@SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067","squid:S1854","squid:S1135","squid:S1481"})
 public class ReferredProsecutionCaseTransformer {
-
-    @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Inject
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -111,6 +107,19 @@ public class ReferredProsecutionCaseTransformer {
 
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final
     InitiationCode initiationCode) {
+        List<DefendantAlias> defendantAliases = null;
+        String pncId = null;
+        
+        if(nonNull(referredDefendant.getPersonDefendant())) {
+            pncId = referredDefendant.getPersonDefendant().getPncId();
+            
+            final List<String> aliases = referredDefendant.getPersonDefendant().getAliases();
+            if(nonNull(aliases)) {
+                defendantAliases = new ArrayList<>();
+                defendantAliases = aliases.stream().map(alias -> DefendantAlias.defendantAlias().withFirstName(alias).build()).collect(Collectors.toList());
+            }
+        }
+        
         return Defendant.defendant()
                 .withOffences(referredDefendant
                         .getOffences().stream()
@@ -132,33 +141,37 @@ public class ReferredProsecutionCaseTransformer {
                         .getAssociatedPersons().stream()
                         .map(referredAssociatedPerson -> transform(referredAssociatedPerson, jsonEnvelope))
                         .collect(Collectors.toList()) : null)
+                .withAliases(defendantAliases)
+                .withPncId(pncId)
                 .build();
     }
 
     public PersonDefendant transform(final ReferredPersonDefendant personDefendant, final
     JsonEnvelope jsonEnvelope) {
         if (nonNull(personDefendant)) {
-            final JsonObject selfDefinedEthnicityJson = getEthnicityJson(personDefendant
-                    .getSelfDefinedEthnicityId(), jsonEnvelope);
+            final JsonObject selfDefinedEthnicityJson = getEthnicityJson(personDefendant.getSelfDefinedEthnicityId(),
+                    jsonEnvelope);
             final JsonObject observedEthnicityJson = getEthnicityJson(personDefendant.getObservedEthnicityId(),
                     jsonEnvelope);
+            
+            final Ethnicity ethnicity = Ethnicity.ethnicity()
+            .withObservedEthnicityCode(fetchValueFromKey(observedEthnicityJson, ETHNICITY_CODE))
+            .withObservedEthnicityDescription(fetchValueFromKey(observedEthnicityJson, ETHNICITY))
+            .withObservedEthnicityId(personDefendant.getObservedEthnicityId())
+            .withSelfDefinedEthnicityCode(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY_CODE))
+            .withSelfDefinedEthnicityDescription(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY))
+            .withSelfDefinedEthnicityId(personDefendant.getSelfDefinedEthnicityId())
+            .build();
+            
             return PersonDefendant.personDefendant()
-                    .withPersonDetails(transform(personDefendant.getPersonDetails(), jsonEnvelope))
-                    .withAliases(personDefendant.getAliases())
+                    .withPersonDetails(transform(personDefendant.getPersonDetails(), ethnicity, jsonEnvelope))
                     .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
                     .withBailStatus(personDefendant.getBailStatus())
                     .withCustodyTimeLimit(personDefendant.getCustodyTimeLimit())
                     .withDriverNumber(personDefendant.getDriverNumber())
                     .withEmployerOrganisation(personDefendant.getEmployerOrganisation())
                     .withEmployerPayrollReference(personDefendant.getEmployerPayrollReference())
-                    .withObservedEthnicityCode(fetchValueFromKey(observedEthnicityJson, ETHNICITY_CODE))
-                    .withObservedEthnicityDescription(fetchValueFromKey(observedEthnicityJson, ETHNICITY))
-                    .withObservedEthnicityId(personDefendant.getObservedEthnicityId())
                     .withPerceivedBirthYear(personDefendant.getPerceivedBirthYear())
-                    .withPncId(personDefendant.getPncId())
-                    .withSelfDefinedEthnicityCode(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY_CODE))
-                    .withSelfDefinedEthnicityDescription(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY))
-                    .withSelfDefinedEthnicityId(personDefendant.getSelfDefinedEthnicityId())
                     .build();
         }
         return null;
@@ -195,7 +208,6 @@ public class ReferredProsecutionCaseTransformer {
                 .withModeOfTrial(fetchValueFromKey(offenceJson, MODEOFTRIAL_CODE))
                 .withOffenceCode(fetchValueFromKey(offenceJson, CJS_OFFENCE_CODE, referredOffence.getId()))
                 .withOrderIndex(referredOffence.getOrderIndex())
-
                 .withStartDate(referredOffence.getStartDate())
                 .withWording(referredOffence.getWording())
                 .withWordingWelsh(referredOffence.getWordingWelsh())
@@ -210,8 +222,7 @@ public class ReferredProsecutionCaseTransformer {
         return offence;
     }
 
-    public Person transform(final ReferredPerson referredPerson, final JsonEnvelope jsonEnvelope) {
-        final JsonObject ethnicityJson = getEthnicityJson(referredPerson.getEthnicityId(), jsonEnvelope);
+    public Person transform(final ReferredPerson referredPerson, Ethnicity ethnicity, final JsonEnvelope jsonEnvelope) {
         final JsonObject nationalityJson = getNationalityJson(referredPerson.getNationalityId(), jsonEnvelope);
         final JsonObject additionalNationalityJson = getNationalityJson(referredPerson.getAdditionalNationalityId(),
                 jsonEnvelope);
@@ -227,9 +238,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withDateOfBirth(referredPerson.getDateOfBirth())
                 .withDisabilityStatus(referredPerson.getDisabilityStatus())
                 .withDocumentationLanguageNeeds(referredPerson.getDocumentationLanguageNeeds())
-                .withEthnicityCode(fetchValueFromKey(ethnicityJson, ETHNICITY_CODE))
-                .withEthnicityDescription(fetchValueFromKey(ethnicityJson, ETHNICITY))
-                .withEthnicityId(referredPerson.getEthnicityId())
+                .withEthnicity(ethnicity)
                 .withFirstName(referredPerson.getFirstName())
                 .withGender(referredPerson.getGender())
                 .withInterpreterLanguageNeeds(referredPerson.getInterpreterLanguageNeeds())
@@ -246,10 +255,11 @@ public class ReferredProsecutionCaseTransformer {
                 .build();
     }
 
+
     public AssociatedPerson transform(final ReferredAssociatedPerson referredAssociatedPerson, final JsonEnvelope
             jsonEnvelope) {
         return AssociatedPerson.associatedPerson()
-                .withPerson(transform(referredAssociatedPerson.getPerson(), jsonEnvelope))
+                .withPerson(transform(referredAssociatedPerson.getPerson(), null, jsonEnvelope))
                 .withRole(referredAssociatedPerson.getRole())
                 .build();
     }

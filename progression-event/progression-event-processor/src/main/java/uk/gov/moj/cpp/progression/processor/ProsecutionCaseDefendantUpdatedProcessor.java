@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
-import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -21,7 +21,7 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3457", "squid:S3655", })
+@SuppressWarnings({"squid:S3457", "squid:S3655",})
 @ServiceComponent(EVENT_PROCESSOR)
 public class ProsecutionCaseDefendantUpdatedProcessor {
 
@@ -43,7 +43,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     @Handles("progression.event.prosecution-case-defendant-updated")
     public void handleProsecutionCaseDefendantUpdatedEvent(final JsonEnvelope jsonEnvelope) {
         final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantUpdated.class);
-        final Defendant defendant = prosecutionCaseDefendantUpdated.getDefendant();
+        final DefendantUpdate defendant = prosecutionCaseDefendantUpdated.getDefendant();
         LOGGER.debug("Received prosecution case defendant updated for caseId: " + defendant.getProsecutionCaseId());
         if (Objects.nonNull(defendant.getOffences())) {
             defendant.getOffences().clear();

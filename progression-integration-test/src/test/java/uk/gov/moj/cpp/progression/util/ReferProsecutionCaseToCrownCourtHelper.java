@@ -21,6 +21,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertThat(defendant.getString("id"), equalTo(defendantId));
         assertThat(defendant.getString("prosecutionCaseId"), equalTo(caseId));
         assertThat(defendant.getString("prosecutionAuthorityReference"), equalTo("TFL12345-ABC"));
+        assertThat(defendant.getString("pncId"), equalTo("1234567"));
         assertOffence(defendant.getJsonArray("offences").getJsonObject(0));
         assertPersons(defendant.getJsonArray("associatedPersons").getJsonObject(0).getJsonObject("person"));
         assertPersonDefendant(defendant.getJsonObject("personDefendant"));
@@ -31,8 +32,6 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertThat(personDefendant.getString("bailStatus"), equalTo("IN_CUSTODY"));
         assertThat(personDefendant.getString("custodyTimeLimit"), equalTo("2018-01-01"));
         assertThat(personDefendant.getString("driverNumber"), equalTo("AACC12345"));
-        assertThat(personDefendant.getString("pncId"), equalTo("1234567"));
-
         assertemployerOrganisation(personDefendant.getJsonObject("employerOrganisation"));
     }
 
@@ -46,6 +45,8 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertThat(personDetails.getString("title"), equalTo("MR"));
         assertThat(personDetails.getString("middleName"), equalTo("Jack"));
         assertThat(personDetails.getString("lastName"), equalTo("Kane Junior"));
+        assertThat(personDetails.getJsonObject("ethnicity").getString("observedEthnicityId"), equalTo("2daefec3-2f76-8109-82d9-2e60544a6c02"));
+        assertThat(personDetails.getJsonObject("ethnicity").getString("selfDefinedEthnicityId"), equalTo("2daefec3-2f76-8109-82d9-2e60544a6c02"));
     }
 
 
@@ -60,8 +61,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertThat(offence.getString("chargeDate"), equalTo("2018-01-01"));
         assertThat(offence.getInt("orderIndex"), equalTo(1));
         assertThat(offence.getInt("count"), equalTo(0));
-//        assertThat(offence.getString("offenceCode"), equalTo("TTH105HY"));
-
+        assertThat(offence.getString("offenceCode"), equalTo("TTH105HY"));
         assertOffenceFacts(offence.getJsonObject("offenceFacts"));
         assertNotifiedPlea(offence.getJsonObject("notifiedPlea"));
 
@@ -75,8 +75,8 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     private static void assertOffenceFacts(final JsonObject offenceFact) {
         assertThat(offenceFact.getString("vehicleRegistration"), equalTo("AA12345"));
-        assertThat(offenceFact.getString("alcoholReadingAmount"), equalTo("111"));
-        assertThat(offenceFact.getString("alcoholReadingMethod"), equalTo("2222"));
+        assertThat(offenceFact.getInt("alcoholReadingAmount"), equalTo(111));
+        assertThat(offenceFact.getString("alcoholReadingMethodCode"), equalTo("2222"));
     }
 
     public static void assertcourtDocuments(final JsonObject courtDocument, final String caseId, final String courtDocumentId, final String materialIdActive) {
@@ -107,7 +107,6 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertThat(person.getString("nationalityId"), equalTo("2daefec3-2f76-8109-82d9-2e60544a6c02"));
         assertThat(person.getString("additionalNationalityId"), equalTo("2daefec3-2f76-8109-82d9-2e60544a6c02"));
         assertThat(person.getString("disabilityStatus"), equalTo("a"));
-        assertThat(person.getString("ethnicityId"), equalTo("2daefec3-2f76-8109-82d9-2e60544a6c02"));
         assertThat(person.getString("gender"), equalTo("MALE"));
         assertThat(person.getString("interpreterLanguageNeeds"), equalTo("Hindi"));
         assertThat(person.getString("documentationLanguageNeeds"), equalTo("WELSH"));
@@ -130,7 +129,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
     private static void assertContact(final JsonObject contact) {
         assertThat(contact.getString("home"), equalTo("123456"));
         assertThat(contact.getString("work"), equalTo("7891011"));
-        assertThat(contact.getString("mobile"), equalTo("45678910"));
+        assertThat(contact.getString("mobile"), equalTo("+45678910"));
         assertThat(contact.getString("primaryEmail"), equalTo("harry.kane@spurs.co.uk"));
         assertThat(contact.getString("secondaryEmail"), equalTo("harry.kane@hotmail.com"));
         assertThat(contact.getString("fax"), equalTo("3425678"));

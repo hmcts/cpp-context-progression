@@ -5,7 +5,7 @@
   "description": "The defendant for an individual prosecution case.  Defendant details are NOT associated to multiple prosecution cases.  HMCTS business does not have authority to merge defendant details or recognise a single view of defendant",
   "properties": {
     "defendant": {
-      "$ref": "http://justice.gov.uk/core/courts/defendant.json#"
+      "$ref": "http://justice.gov.uk/core/courts/defendant-update.json#"
     },
     "prosecutionCaseId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"

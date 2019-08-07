@@ -1,0 +1,104 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/core/courts/sharedResultLine.json",
+	"description": "The shared results from a hearing resulting process",
+	"type": "object",
+	"properties": {
+		"id": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"delegatedPowers": {
+			"description": "The details of the user who has ordered a resulted with delegated powers",
+			"$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+		},
+		"isFinancial": {
+			"description": "Indicates if the result is a financial result",
+			"type": "boolean"
+		},
+		"amendmentDate": {
+			"description": "Indicates if the result is amended and the date of amendment",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+		},
+		"amendmentReasonid": {
+			"description": "Reference data for result amendment reasons",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"isAvailableForCourtExtract": {
+			"description": "Indicates if the result is available to be included in a court extract",
+			"type": "boolean"
+		},
+		"prosecutionCaseId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"defendantId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"offenceId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"applicationId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"applicantId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"respondentId": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		},
+		"level": {
+			"type": "string"
+		},
+		"label": {
+			"type": "string"
+		},
+		"welshLabel": {
+			"type": "string"
+		},
+		"rank": {
+			"type": "number"
+		},
+		"lastSharedDateTime": {
+			"type": "string"
+		},
+		"orderedDate": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+		},
+		"category": {
+			"description": "The category of a result indicates if it is final, intermediate or ancilliary",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/judicialResultCategory"
+		},
+		"usergroups": {
+			"description": "The user groups that are authorised to view the result",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"courtClerk": {
+			"description": "The details of the court clerk that has recorded the result",
+			"$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+		},
+		"fourEyesApproval": {
+			"description": "The details of the user that has approved an amended result",
+			"$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+		},
+		"approvedDate": {
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+		},
+		"prompts": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"$ref": "http://justice.gov.uk/core/courts/resultPrompt.json"
+			}
+		}
+	},
+	"required": [
+		"id",
+		"isAvailableForCourtExtract",
+		"level",
+		"label",
+		"courtClerk"
+	],
+	"additionalProperties": false
+}

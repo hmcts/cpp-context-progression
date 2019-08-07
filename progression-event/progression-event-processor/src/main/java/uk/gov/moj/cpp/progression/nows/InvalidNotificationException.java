@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.nows;
 
-public class InvalidNotificationException extends Exception {
+public class InvalidNotificationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

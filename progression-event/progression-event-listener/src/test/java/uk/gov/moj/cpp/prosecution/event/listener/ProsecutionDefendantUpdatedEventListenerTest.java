@@ -1,28 +1,5 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpdatedEventListener;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-
-import java.util.UUID;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +10,37 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpdatedEventListener;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -48,16 +56,22 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private ProsecutionCaseRepository repository;
 
     @Mock
+    private CourtApplicationRepository courtApplicationRepository;
+
+    @Mock
     private JsonEnvelope envelope;
 
     @Mock
     private ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated;
 
     @Mock
-    private Defendant defendant;
+    private DefendantUpdate defendant;
 
     @Mock
     private ProsecutionCaseEntity prosecutionCaseEntity;
+
+    @Mock
+    private List<CourtApplicationEntity> applicationEntities;
 
     @Captor
     private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
@@ -74,14 +88,17 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     @InjectMocks
     private ProsecutionCaseDefendantUpdatedEventListener eventListener;
 
-    @Spy
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    @Mock
+    private StringToJsonObjectConverter stringToJsonObjectConverterMock;
 
     @Mock
     private ObjectMapper objectMapper;
 
     @Spy
     private ListToJsonArrayConverter jsonConverter;
+
+    @Mock
+    private SearchProsecutionCase searchProsecutionCase;
 
     @Before
     public void initMocks() {
@@ -113,10 +130,72 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .thenReturn(prosecutionCase);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
         when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
+        when(courtApplicationRepository.findByLinkedCaseId(defendant.getProsecutionCaseId())).thenReturn(applicationEntities);
         when(objectToJsonObjectConverter.convert(prosecutionCase)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
         eventListener.processProsecutionCaseDefendantUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
 
     }
-}
+
+    @Test
+    public void shouldUpdateMatchedRespondents(){
+
+        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
+        UUID commonUUID = UUID.randomUUID();
+        Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
+        Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
+        Defendant defendant3 = Defendant.defendant().withId(UUID.randomUUID()).build();
+
+        List<Defendant> defendantList = new ArrayList<>();
+        defendantList.add(defendant1);
+        defendantList.add(defendant2);
+        defendantList.add(defendant3);
+
+        CourtApplicationParty party1 = CourtApplicationParty.courtApplicationParty().withDefendant(defendant1).build();
+        CourtApplicationParty party2 = CourtApplicationParty.courtApplicationParty().withDefendant(defendant2).build();
+        CourtApplicationParty party3 = CourtApplicationParty.courtApplicationParty().withDefendant(defendant3).build();
+
+        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent.courtApplicationRespondent().withPartyDetails(party1).build();
+        CourtApplicationRespondent courtApplicationRespondent2 = CourtApplicationRespondent.courtApplicationRespondent().withPartyDetails(party2).build();
+        CourtApplicationRespondent courtApplicationRespondent3 = CourtApplicationRespondent.courtApplicationRespondent().withPartyDetails(party3).build();
+
+        courtApplicationRespondentList.add(courtApplicationRespondent1);
+        courtApplicationRespondentList.add(courtApplicationRespondent2);
+        courtApplicationRespondentList.add(courtApplicationRespondent3);
+
+        CourtApplication courtApplication = CourtApplication.courtApplication().withRespondents(courtApplicationRespondentList).build();
+
+        DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().withId(commonUUID).build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(defendant.getId()).thenReturn(UUID.randomUUID());
+        when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("payload", Json.createObjectBuilder()
+                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                .add("id", defendant.getId().toString()).build())
+                                .build())
+                        .build()).build();
+
+        ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase().withDefendants(defendantList).build();
+        List<CourtApplicationEntity> courtApplicationEntityList = new ArrayList<>();
+        CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntityList.add(courtApplicationEntity);
+
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
+        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
+        when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
+        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
+        when(courtApplicationRepository.findByLinkedCaseId(defendant1.getProsecutionCaseId())).thenReturn(courtApplicationEntityList);
+        when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+        when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+        when(searchProsecutionCase.makeSearchable(prosecutionCase1,defendant1)).thenReturn(null);
+        eventListener.processProsecutionCaseDefendantUpdated(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        }
+     }

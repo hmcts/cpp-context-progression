@@ -1,21 +1,33 @@
 package uk.gov.moj.cpp.progression.service;
 
-import uk.gov.justice.core.courts.NotificationDocumentState;
+import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.List;
 import java.util.UUID;
 
 public class UploadMaterialContext {
+
     private  Sender sender;
+
     private  JsonEnvelope originatingEnvelope;
+
     private  UUID userId;
+
     private  UUID hearingId;
+
     private  UUID materialId;
+
     private  UUID fileId;
-    private  NotificationDocumentState nowsNotificationDocumentState;
+
     private  UUID caseId;
+
+    private  UUID applicationId;
+
     private  boolean isRemotePrintingRequired;
+
+    private List<EmailChannel> emailNotifications;
 
     public Sender getSender() {
         return sender;
@@ -41,12 +53,12 @@ public class UploadMaterialContext {
         return fileId;
     }
 
-    public NotificationDocumentState getNowsNotificationDocumentState() {
-        return nowsNotificationDocumentState;
-    }
-
     public UUID getCaseId() {
         return caseId;
+    }
+
+    public UUID getApplicationId() {
+        return applicationId;
     }
 
     public boolean isRemotePrintingRequired() {
@@ -77,15 +89,23 @@ public class UploadMaterialContext {
         this.fileId = fileId;
     }
 
-    public void setNowsNotificationDocumentState(final NotificationDocumentState nowsNotificationDocumentState) {
-        this.nowsNotificationDocumentState = nowsNotificationDocumentState;
-    }
-
     public void setCaseId(final UUID caseId) {
         this.caseId = caseId;
     }
 
+    public void setApplicationId(final UUID applicationId) {
+        this.applicationId = applicationId;
+    }
+
     public void setRemotePrintingRequired(final boolean remotePrintingRequired) {
         isRemotePrintingRequired = remotePrintingRequired;
+    }
+
+    public List<EmailChannel> getEmailNotifications() {
+        return emailNotifications;
+    }
+
+    public void setEmailNotifications(final List<EmailChannel> emailNotifications) {
+        this.emailNotifications = emailNotifications;
     }
 }

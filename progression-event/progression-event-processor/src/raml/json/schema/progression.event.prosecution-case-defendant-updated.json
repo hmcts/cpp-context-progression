@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "defendant": {
-      "$ref": "http://justice.gov.uk/core/courts/defendant.json#"
+      "$ref": "http://justice.gov.uk/core/courts/defendant-update.json#"
     }
   }
 }

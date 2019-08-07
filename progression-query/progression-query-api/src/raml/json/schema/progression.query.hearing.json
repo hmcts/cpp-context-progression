@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "hearing":{
+      "type":"object",
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    }
+  },
+  "required": [
+    "hearing"
+  ]
+}

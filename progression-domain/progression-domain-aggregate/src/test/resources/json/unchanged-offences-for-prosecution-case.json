@@ -20,7 +20,7 @@
       "offenceFacts": {
         "vehicleRegistration": "AA12345",
         "alcoholReadingAmount": "111",
-        "alcoholReadingMethod": "2222"
+        "alcoholReadingMethodCode": "2222"
       }
     }
   ],

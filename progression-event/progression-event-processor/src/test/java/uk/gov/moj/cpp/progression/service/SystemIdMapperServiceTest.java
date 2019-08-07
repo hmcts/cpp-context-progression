@@ -50,9 +50,9 @@ public class SystemIdMapperServiceTest {
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
 
-        final SystemIdMapping systemIdMapping = new SystemIdMapping(randomUUID(), notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, mappedCppCaseId, SystemIdMapperService.TARGET_TYPE, now());
+        final SystemIdMapping systemIdMapping = new SystemIdMapping(randomUUID(), notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, mappedCppCaseId, SystemIdMapperService.CASE_TARGET_TYPE, now());
 
-        when(systemIdMapperClient.findBy(notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, SystemIdMapperService.TARGET_TYPE, userId)).thenReturn(Optional.of(systemIdMapping));
+        when(systemIdMapperClient.findBy(notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, SystemIdMapperService.CASE_TARGET_TYPE, userId)).thenReturn(Optional.of(systemIdMapping));
 
         assertThat(systemIdMapping.getTargetId(), is(mappedCppCaseId));
     }

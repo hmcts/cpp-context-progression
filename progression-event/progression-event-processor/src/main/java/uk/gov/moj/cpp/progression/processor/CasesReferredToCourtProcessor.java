@@ -1,16 +1,15 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
+import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferProsecutionCasesToCourtRejected;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
-import uk.gov.justice.core.courts.SendCaseForListing;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -27,10 +26,8 @@ import uk.gov.moj.cpp.progression.service.MessageService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ReferredCourtDocumentTransformer;
 import uk.gov.moj.cpp.progression.transformer.ReferredProsecutionCaseTransformer;
-import uk.gov.moj.cpp.progression.transformer.SendCaseForListingTransformer;
+import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,11 +35,16 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @ServiceComponent(EVENT_PROCESSOR)
-@SuppressWarnings({"squid:CommentedOutCodeLine","squid:S2789"})
+@SuppressWarnings({"squid:CommentedOutCodeLine","squid:S2789","squid:S1135"})
 public class CasesReferredToCourtProcessor {
 
     static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
@@ -71,7 +73,7 @@ public class CasesReferredToCourtProcessor {
     @Inject
     private ReferredCourtDocumentTransformer referredCourtDocumentTransformer;
     @Inject
-    private SendCaseForListingTransformer sendCaseForListingTransformer;
+    private ListCourtHearingTransformer listCourtHearingTransformer;
 
     /**
      * The inbound progression.event.cases-referred-to-court should be enriched  before it is
@@ -101,6 +103,11 @@ public class CasesReferredToCourtProcessor {
      * <p>
      * 7) In case of SJP referrals, Post code is mandatory.
      * <p>
+     * 8) private command progression.command.create-hearing-defendant-request is created to support summons generation.
+     * This command contains List<ListDefendantRequest> which is the source for Summons and this details to whom the
+     * summons will be generated and what type of Summons required to be generated.
+     * This event information will be used to  generate Summons when Hearing is confirmed from Listing context.
+     *
      * Once enrichment is complete, the event processor call a private command handler to sync it to view store
      */
     @Handles("progression.event.cases-referred-to-court")
@@ -111,7 +118,7 @@ public class CasesReferredToCourtProcessor {
         final SjpCourtReferral sjpCourtReferral = jsonObjectToObjectConverter.convert(privateEventPayload.getJsonObject("courtReferral"), SjpCourtReferral.class);
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         final List<CourtDocument> courtDocuments = new ArrayList<>();
-        SendCaseForListing sendCaseForListing = null;
+        ListCourtHearing listCourtHearing = null;
         try {
             sjpCourtReferral.getProsecutionCases().stream().forEach(referredProsecutionCase -> {
                 searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
@@ -121,7 +128,7 @@ public class CasesReferredToCourtProcessor {
             });
             prosecutionCases.addAll(convertToCourtReferral(jsonEnvelope, sjpCourtReferral));
             courtDocuments.addAll(convertToCourtDocument(jsonEnvelope, sjpCourtReferral));
-            sendCaseForListing = prepareSendCaseForListing(jsonEnvelope, sjpCourtReferral, prosecutionCases, hearingId);
+            listCourtHearing = prepareListCourtHearing(jsonEnvelope, sjpCourtReferral, prosecutionCases, hearingId);
 
 
         } catch (MissingRequiredFieldException | DataValidationException | ReferenceDataNotFoundException e) {
@@ -132,8 +139,8 @@ public class CasesReferredToCourtProcessor {
                     .withSjpCourtReferral(sjpCourtReferral)
                     .withRejectedReason(e.getMessage())
                     .build();
-
             messageService.sendMessage(jsonEnvelope, objectToJsonObjectConverter.convert(referProsecutionCasesToCourtRejected), REFER_PROSECUTION_CASES_TO_COURT_REJECTED);
+            
             return;
         }
 
@@ -144,14 +151,15 @@ public class CasesReferredToCourtProcessor {
                                                                                                                         .withHearingId(hearingId)
                                                                                                                         .withDefendantRequests(listDefendantRequests)
                                                                                                                         .build());
+        // Look at point 8 in the documentation about the usage of this command.
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
 
 
         progressionService.createProsecutionCases(jsonEnvelope, prosecutionCases);
         progressionService.createCourtDocument(jsonEnvelope, courtDocuments);
 
-        listingService.sendCaseForListing(jsonEnvelope, sendCaseForListing);
-        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, sendCaseForListing);
+        listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
     }
 
     private void searchForDuplicateCases(final JsonEnvelope jsonEnvelope, final String reference) {
@@ -163,8 +171,8 @@ public class CasesReferredToCourtProcessor {
         }
     }
 
-    private SendCaseForListing prepareSendCaseForListing(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral, final List<ProsecutionCase> prosecutionCases, final UUID hearingId) {
-        return sendCaseForListingTransformer
+    private ListCourtHearing prepareListCourtHearing(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral, final List<ProsecutionCase> prosecutionCases, final UUID hearingId) {
+        return listCourtHearingTransformer
                 .transform(jsonEnvelope, prosecutionCases, sjpCourtReferral.getSjpReferral(),sjpCourtReferral.getListHearingRequests(),hearingId);
     }
 

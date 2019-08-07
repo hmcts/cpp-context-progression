@@ -27,8 +27,7 @@
           "dateOfBirth":"1995-01-01",
           "disabilityStatus":"a",
           "documentationLanguageNeeds":"WELSH",
-          "ethnicityCode":"IC1",
-          "ethnicityId":"d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+
           "firstName":"Harry",
           "gender":"MALE",
           "interpreterLanguageNeeds":"Welsh",
@@ -47,10 +46,7 @@
     "id":"e1d32d9d-29ec-4934-a932-22a50f223966",
     "numberOfPreviousConvictionsCited":5,
     "personDefendant":{
-      "aliases":[
-        "johnny robber",
-        "jack the knife"
-      ],
+
       "arrestSummonsNumber":"arrest123",
       "bailStatus":"IN_CUSTODY",
       "custodyTimeLimit":"2018-01-01",
@@ -76,8 +72,6 @@
         "name":"Disneyland Paris"
       },
       "employerPayrollReference":"payyou1234",
-      "observedEthnicityCode":"IC1",
-      "observedEthnicityId":"d36d2ba2-6862-4114-b9f9-0c620e1e903c",
       "perceivedBirthYear":2015,
       "personDetails":{
         "additionalNationalityCode":"USA",
@@ -101,8 +95,6 @@
         "dateOfBirth":"2010-01-01",
         "disabilityStatus":"a",
         "documentationLanguageNeeds":"WELSH",
-        "ethnicityCode":"IC1",
-        "ethnicityId":"d36d2ba2-6862-4114-b9f9-0c620e1e903c",
         "firstName":"Harry",
         "gender":"MALE",
         "interpreterLanguageNeeds":"Welsh",
@@ -115,10 +107,9 @@
         "occupationCode":"F",
         "specificRequirements":"Screen",
         "title":"MR"
-      },
-      "pncId":"1234567",
-      "selfDefinedEthnicityCode":"IC1",
-      "selfDefinedEthnicityId":"d36d2ba2-6862-4114-b9f9-0c620e1e903c"
+      }
+
+
     },
     "prosecutionAuthorityReference":"TFL12345-ABC",
     "prosecutionCaseId":"2279b2c3-b0d3-4889-ae8e-1ecc20c39e27"

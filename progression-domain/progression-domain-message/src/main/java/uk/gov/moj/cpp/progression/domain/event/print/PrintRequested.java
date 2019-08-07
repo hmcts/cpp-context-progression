@@ -11,15 +11,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Event("progression.event.print-requested")
 public class PrintRequested {
 
+    private final UUID applicationId;
     private final UUID caseId;
     private final UUID notificationId;
     private final UUID materialId;
 
     @JsonCreator
     public PrintRequested(
-            @JsonProperty("caseId") final UUID caseId,
             @JsonProperty("notificationId") final UUID notificationId,
+            @JsonProperty("applicationId") final UUID applicationId,
+            @JsonProperty("caseId") final UUID caseId,
             @JsonProperty("materialId") final UUID materialId) {
+        this.applicationId = applicationId;
         this.caseId = caseId;
         this.notificationId = notificationId;
         this.materialId = materialId;
@@ -37,6 +40,8 @@ public class PrintRequested {
         return materialId;
     }
 
+    public UUID getApplicationId() { return applicationId; }
+
     @SuppressWarnings("squid:S00121")
     @Override
     public boolean equals(final Object o) {
@@ -47,19 +52,21 @@ public class PrintRequested {
             return false;
         }
         final PrintRequested that = (PrintRequested) o;
-        return Objects.equals(caseId, that.caseId) &&
+        return Objects.equals(applicationId, that.applicationId) &&
+                Objects.equals(caseId, that.caseId) &&
                 Objects.equals(notificationId, that.notificationId) &&
                 Objects.equals(materialId, that.materialId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(caseId, notificationId, materialId);
+        return Objects.hash(applicationId, caseId, notificationId, materialId);
     }
 
     @Override
     public String toString() {
         return "PrintRequested{" +
+                "applicationId=" + applicationId +
                 "caseId=" + caseId +
                 ", notificationId=" + notificationId +
                 ", materialId=" + materialId +

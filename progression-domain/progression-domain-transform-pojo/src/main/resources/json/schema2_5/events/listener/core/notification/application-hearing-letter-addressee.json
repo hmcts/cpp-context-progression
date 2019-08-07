@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/sommonsdocument/summons-addressee.json",
+  "description": "The addressee that a summonsdocument is addressed to",
+  "type": "object",
+  "properties": {
+    "name": {
+	  "type": "string"
+	},
+	"address": {
+	  "$ref": "http://justice.gov.uk/core/courts/sommonsdocument/application-hearing-letter-address.json"
+	}
+  },
+  "required": [
+    "name", "address"
+  ],
+  "additionalProperties": false
+}

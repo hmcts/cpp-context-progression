@@ -79,6 +79,11 @@ public class ProgressionQueryApiTest {
         assertThat(progressionHearingsQueryApi.getCaseByUrn(query), equalTo(response));
     }
 
+    @Test
+    public void shouldGetHearingByHearingId(){
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getHearing(query), equalTo(response));
+    }
 
 
 }

@@ -69,6 +69,7 @@ public class ReferenceDataServiceTest {
     private static final String JUDICIARY_TITLE_2 = STRING.next();
     private static final String JUDICIARY_FIRST_NAME_2 = STRING.next();
     private static final String JUDICIARY_LAST_NAME_2 = STRING.next();
+    private static final String ORGANISATION_UNIT = "referencedata.query.organisation-unit.v2";
 
     @Mock
     private Requester requester;
@@ -229,11 +230,11 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.request(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID("referencedata.query.organisation-unit"), payload));
+                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID(ORGANISATION_UNIT), payload));
 
 
         //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("referencedata.query.organisation-unit"))
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(ORGANISATION_UNIT))
                 .build();
         final Optional<JsonObject> result = referenceDataService.getOrganisationUnitById(courtCentreId, envelope);
 
@@ -242,7 +243,7 @@ public class ReferenceDataServiceTest {
 
         assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope)
-                        .withName("referencedata.query.organisation-unit"),
+                        .withName(ORGANISATION_UNIT),
                 payloadIsJson(
                         withJsonPath("$.id", equalTo(courtCentreId.toString()))
                 ))

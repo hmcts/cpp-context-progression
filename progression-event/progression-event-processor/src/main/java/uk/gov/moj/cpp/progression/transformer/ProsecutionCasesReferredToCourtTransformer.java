@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import uk.gov.justice.core.courts.Initiate;
+import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
 
 import java.util.ArrayList;
@@ -16,20 +16,22 @@ public class ProsecutionCasesReferredToCourtTransformer {
 
     public static List<ProsecutionCasesReferredToCourt> transform(Initiate hearingInitiate, UUID summonsMaterialId) {
         final List<ProsecutionCasesReferredToCourt> listProsecutionCasesReferredToCourts = new ArrayList<>();
-        hearingInitiate.getHearing().getProsecutionCases().stream().forEach(prosecutionCase ->
-            prosecutionCase.getDefendants().stream().forEach(defendant ->
-                listProsecutionCasesReferredToCourts.add(
-                        ProsecutionCasesReferredToCourt.prosecutionCasesReferredToCourt()
-                                .withCourtCentre(hearingInitiate.getHearing().getCourtCentre())
-                                .withDefendantId(defendant.getId())
-                                .withDefendantOffences(defendant.getOffences().stream().map(offence -> offence.getId()).collect(Collectors.toList()))
-                                .withHearingId(hearingInitiate.getHearing().getId())
-                                .withProsecutionCaseId(prosecutionCase.getId())
-                                .withSummonsMaterialId(summonsMaterialId)
-                                .withHearingDays(hearingInitiate.getHearing().getHearingDays())
-                                .build())
-            )
-        );
+        if ( hearingInitiate.getHearing().getProsecutionCases()!=null) {
+            hearingInitiate.getHearing().getProsecutionCases().stream().forEach(prosecutionCase ->
+                    prosecutionCase.getDefendants().stream().forEach(defendant ->
+                            listProsecutionCasesReferredToCourts.add(
+                                    ProsecutionCasesReferredToCourt.prosecutionCasesReferredToCourt()
+                                            .withCourtCentre(hearingInitiate.getHearing().getCourtCentre())
+                                            .withDefendantId(defendant.getId())
+                                            .withDefendantOffences(defendant.getOffences().stream().map(offence -> offence.getId()).collect(Collectors.toList()))
+                                            .withHearingId(hearingInitiate.getHearing().getId())
+                                            .withProsecutionCaseId(prosecutionCase.getId())
+                                            .withSummonsMaterialId(summonsMaterialId)
+                                            .withHearingDays(hearingInitiate.getHearing().getHearingDays())
+                                            .build())
+                    )
+            );
+        }
         return listProsecutionCasesReferredToCourts;
     }
 

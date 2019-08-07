@@ -17,7 +17,7 @@ public class DefaultRequests {
     public static final String SEARCH_BY_MATERIAL_ID = "application/vnd.progression.query.cases-search-by-material-id+json";
     public static final String GET_CASE_BY_URN_MEDIA_TYPE = "application/vnd.progression.query.case-by-urn+json";
     public static final String GET_OFFENCES_BY_CASE_ID_MEDIA_TYPE = "application/vnd.progression.query.defendant-offences+json";
-    public static final String PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON = "application/vnd.progression.query.case-at-a-glance+json";
+    public static final String PROGRESSION_QUERY_PROSECUTION_CASE_JSON = "application/vnd.progression.query.prosecutioncase+json";
 
 
     public static RequestParamsBuilder getCaseByUrn(final String caseUrn) {

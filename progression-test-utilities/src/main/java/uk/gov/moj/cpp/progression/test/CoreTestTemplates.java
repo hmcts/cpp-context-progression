@@ -10,6 +10,7 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.NI_
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -17,8 +18,10 @@ import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantAlias;
 import uk.gov.justice.core.courts.DefendantRepresentation;
 import uk.gov.justice.core.courts.DocumentationLanguageNeeds;
+import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -53,7 +56,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"squid:ClassVariableVisibilityCheck", "squid:S1067", "pmd:NullAssignment"})
+@SuppressWarnings({"squid:ClassVariableVisibilityCheck", "squid:S1067", "pmd:NullAssignment","squid:CommentedOutCodeLine","squid:S1135"})
 public class CoreTestTemplates {
 
     public enum DefendantType {
@@ -211,11 +214,13 @@ public class CoreTestTemplates {
                 .withContact((contactNumber().build()))
                 .withAdditionalNationalityCode((STRING.next()))
                 .withAdditionalNationalityId((randomUUID()))
-                .withDateOfBirth((PAST_LOCAL_DATE.next().toString()))
+                .withDateOfBirth((PAST_LOCAL_DATE.next()))
                 .withDisabilityStatus((STRING.next()))
-                .withDocumentationLanguageNeeds((args.hearingLanguage == HearingLanguage.WELSH ? uk.gov.justice.core.courts.DocumentationLanguageNeeds.WELSH : DocumentationLanguageNeeds.ENGLISH))
-                .withEthnicityId((randomUUID()))
-                .withEthnicityDescription((STRING.next()))
+                .withDocumentationLanguageNeeds((args.hearingLanguage == HearingLanguage.WELSH ? DocumentationLanguageNeeds.WELSH : DocumentationLanguageNeeds.ENGLISH))
+                .withEthnicity(Ethnicity.ethnicity()
+                        .withSelfDefinedEthnicityId(randomUUID())
+                        .withSelfDefinedEthnicityDescription(STRING.next())
+                        .build())
                 .withAddress((address().build()))
                 .withFirstName((STRING.next()))
                 .withMiddleName((STRING.next()))
@@ -242,14 +247,14 @@ public class CoreTestTemplates {
         return NotifiedPlea.notifiedPlea()
                 .withOffenceId(offenceId)
                 .withNotifiedPleaValue(RandomGenerator.values(NotifiedPleaValue.values()).next())
-                .withNotifiedPleaDate(PAST_LOCAL_DATE.next().toString());
+                .withNotifiedPleaDate(PAST_LOCAL_DATE.next());
     }
 
     public static IndicatedPlea.Builder indicatedPlea(UUID offenceId) {
         return IndicatedPlea.indicatedPlea()
                 .withOffenceId(offenceId)
                 .withAllocationDecision(allocationDecision().build())
-                .withIndicatedPleaDate(PAST_LOCAL_DATE.next().toString())
+                .withIndicatedPleaDate(PAST_LOCAL_DATE.next())
                 .withIndicatedPleaValue(RandomGenerator.values(IndicatedPleaValue.values()).next())
                 .withSource(RandomGenerator.values(Source.values()).next());
     }
@@ -257,8 +262,8 @@ public class CoreTestTemplates {
 
     public static OffenceFacts.Builder offenceFacts() {
         return OffenceFacts.offenceFacts()
-                .withAlcoholReadingAmount((STRING.next()))
-                .withAlcoholReadingMethod((STRING.next()))
+                .withAlcoholReadingAmount(INTEGER.next())
+                .withAlcoholReadingMethodCode((STRING.next()))
                 .withVehicleRegistration((STRING.next()));
     }
 
@@ -267,7 +272,7 @@ public class CoreTestTemplates {
         if (args.isMinimumOffence()) {
             return Offence.offence()
                     .withId(offenceId)
-                    .withStartDate(PAST_LOCAL_DATE.next().toString())
+                    .withStartDate(PAST_LOCAL_DATE.next())
                     .withOffenceDefinitionId(randomUUID())
                     .withOffenceCode(STRING.next())
                     .withCount(INTEGER.next())
@@ -277,10 +282,10 @@ public class CoreTestTemplates {
 
         final Offence.Builder result = Offence.offence()
                 .withId(offenceId)
-                .withStartDate(PAST_LOCAL_DATE.next().toString())
-                .withEndDate((PAST_LOCAL_DATE.next().toString()))
-                .withArrestDate((PAST_LOCAL_DATE.next().toString()))
-                .withChargeDate((PAST_LOCAL_DATE.next().toString()))
+                .withStartDate(PAST_LOCAL_DATE.next())
+                .withEndDate((PAST_LOCAL_DATE.next()))
+                .withArrestDate((PAST_LOCAL_DATE.next()))
+                .withChargeDate((PAST_LOCAL_DATE.next()))
 
                 .withIndicatedPlea((indicatedPlea(offenceId).build()))
                 .withNotifiedPlea((notifiedPlea(offenceId).build()))
@@ -300,12 +305,12 @@ public class CoreTestTemplates {
 
         if (args.jurisdictionType == JurisdictionType.MAGISTRATES) {
             final LocalDate convictionDate = PAST_LOCAL_DATE.next();
-            result.withConvictionDate((convictionDate.toString()));
+            result.withConvictionDate((convictionDate));
         }
 
         if(args.convicted) {
             final LocalDate convictionDate = PAST_LOCAL_DATE.next();
-            result.withConvictionDate((convictionDate.toString()));
+            result.withConvictionDate((convictionDate));
         }
         return result;
     }
@@ -328,22 +333,22 @@ public class CoreTestTemplates {
     public static PersonDefendant.Builder personDefendant(CoreTemplateArguments args) {
         return PersonDefendant.personDefendant()
                 .withPersonDetails(person(args).build())
-                .withAliases(asList(STRING.next()))
                 .withArrestSummonsNumber((STRING.next()))
                 .withBailStatus((BailStatus.IN_CUSTODY))
                 .withDriverNumber((STRING.next()))
                 .withPerceivedBirthYear((INTEGER.next()))
 
-                .withSelfDefinedEthnicityId((randomUUID()))
-                .withSelfDefinedEthnicityCode((STRING.next()))
-                .withObservedEthnicityCode((STRING.next()))
-                .withObservedEthnicityId((randomUUID()))
+                .withPersonDetails(Person.person()
+                        .withEthnicity(Ethnicity.ethnicity()
+                                .withSelfDefinedEthnicityId(randomUUID())
+                                .withSelfDefinedEthnicityDescription(STRING.next())
+                                .build()).build())
+
 
                 .withEmployerOrganisation((organisation(args).build()))
                 .withEmployerPayrollReference((STRING.next()))
 
-                .withCustodyTimeLimit((PAST_LOCAL_DATE.next().toString()))
-                .withPncId((STRING.next()));
+                .withCustodyTimeLimit((PAST_LOCAL_DATE.next()));
     }
 
     public static LegalEntityDefendant.Builder legalEntityDefendant(CoreTemplateArguments args) {
@@ -366,7 +371,9 @@ public class CoreTestTemplates {
                 .withAssociatedPersons(args.isMinimumAssociatedPerson() ? asList(associatedPerson(args).build()) : null)
                 .withDefenceOrganisation((args.isMinimumDefenceOrganisation() ? organisation(args).build() : null))
                 .withPersonDefendant((args.defendantType == DefendantType.PERSON ? personDefendant(args).build() : null))
-                .withLegalEntityDefendant((args.defendantType == DefendantType.ORGANISATION ? legalEntityDefendant(args).build() : null));
+                .withLegalEntityDefendant((args.defendantType == DefendantType.ORGANISATION ? legalEntityDefendant(args).build() : null))
+                .withAliases(asList(DefendantAlias.defendantAlias().withLastName(STRING.next()).build()))
+                .withPncId((STRING.next()));
     }
 
     public static ProsecutionCase.Builder prosecutionCase(CoreTemplateArguments args, Pair<UUID, Map<UUID, List<UUID>>> structure) {

@@ -44,9 +44,13 @@ import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.google.common.base.Strings;
 
 
 @SuppressWarnings({"squid:S3655", "squid:S1213", "squid:S00116", "squid:CallToDeprecatedMethod", "pmd:NullAssignment"})
@@ -100,6 +104,10 @@ public class SendingSheetCompleteTransformer {
         return offences.stream().map(o -> transformOffence(o, sendingCommitalDate, jsonEnvelope)).collect(Collectors.toList());
     }
 
+    private LocalDate sendingSheetAsDate(String str) {
+        return Strings.isNullOrEmpty(str)?null:LocalDate.parse(str);
+    }
+
     private Offence transformOffence(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence, final String sendingCommitalDate, final JsonEnvelope
             jsonEnvelope) {
         final JsonObject offenceJson = referenceDataOffenceService.getOffenceByCjsCode(offence
@@ -109,10 +117,10 @@ public class SendingSheetCompleteTransformer {
         return Offence.offence()
                 .withId(offence.getId())
                 .withWording(offence.getWording())
-                .withStartDate(offence.getStartDate())
+                .withStartDate(sendingSheetAsDate(offence.getStartDate()))
                 .withOffenceDefinitionId(UUID.fromString(fetchValueFromKey(offenceJson, "offenceId", offence.getId())))
-                .withEndDate(offence.getEndDate())
-                .withConvictionDate(offence.getConvictionDate() == null ? null : LocalDates.to(offence.getConvictionDate()))
+                .withEndDate(sendingSheetAsDate(offence.getEndDate()))
+                .withConvictionDate(offence.getConvictionDate())
                 .withPlea(getPlea(offence))
                 .withCount(0)
                 .withOffenceLegislation(fetchValueFromKey(offenceJson, LEGISLATION, offence.getId()))
@@ -144,7 +152,7 @@ public class SendingSheetCompleteTransformer {
     private Plea getPlea(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence) {
         return offence.getPlea() == null ? null : Plea.plea()
                 .withPleaValue(PleaValue.valueFor(offence.getPlea().getValue()).get())
-                .withPleaDate(offence.getPlea().getPleaDate().toString())
+                .withPleaDate(offence.getPlea().getPleaDate())
                 .withOffenceId(offence.getId())
                 .withOriginatingHearingId(ORIGINATING_HEARING_ID)
                 .build();
@@ -154,7 +162,7 @@ public class SendingSheetCompleteTransformer {
         return IndicatedPlea.indicatedPlea()
                 .withOffenceId(offenceId)
                 .withIndicatedPleaValue(IndicatedPleaValue.valueFor(indicatedPlea.getValue()).get())
-                .withIndicatedPleaDate(sendingCommitalDate)
+                .withIndicatedPleaDate(sendingSheetAsDate(sendingCommitalDate))
                 .withSource(Source.IN_COURT)
                 .withAllocationDecision(buildAllocationDecision(indicatedPlea.getAllocationDecision()))
                 .build();
@@ -191,7 +199,7 @@ public class SendingSheetCompleteTransformer {
     private PersonDefendant buildPersonDefendant(final Defendant defendant, final JsonEnvelope jsonEnvelope) {
         return PersonDefendant.personDefendant()
                 .withBailStatus(defendant.getBailStatus() == null ? null : BailStatus.valueFor(defendant.getBailStatus().toUpperCase()).get())
-                .withCustodyTimeLimit(defendant.getCustodyTimeLimitDate())
+                .withCustodyTimeLimit(sendingSheetAsDate(defendant.getCustodyTimeLimitDate()))
                 .withPersonDetails(buildPerson(defendant, jsonEnvelope))
                 .build();
     }
@@ -200,7 +208,7 @@ public class SendingSheetCompleteTransformer {
 
         final JsonObject nationalityJson = getNationalityJson(defendant.getNationality(), jsonEnvelope);
         return Person.person()
-                .withDateOfBirth(defendant.getDateOfBirth())
+                .withDateOfBirth(sendingSheetAsDate(defendant.getDateOfBirth()))
                 .withFirstName(defendant.getFirstName())
                 .withLastName(defendant.getLastName())
                 .withNationalityId(UUID.fromString(fetchValueFromKey(nationalityJson, ID)))

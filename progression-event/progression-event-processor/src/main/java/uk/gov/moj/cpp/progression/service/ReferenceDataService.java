@@ -31,7 +31,7 @@ public class ReferenceDataService {
     public static final String OFFENCES = "offences";
     public static final String REFERENCEDATA_GET_JUDGE = "referencedata.get.judge";
     public static final String REFERENCEDATA_GET_COURT_CENTRE = "referencedata.get.court-centre";
-    public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit";
+    public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit.v2";
     public static final String GET_ENFORCEMENT_AREA_BY_COURT_CODE = "referencedata.query.enforcement-area";
     public static final String REFERENCEDATA_GET_DOCUMENT_TYPE = "referencedata.query.document-metadata";
     public static final String REFERENCEDATA_GET_ALL_DOCUMENTS_TYPE = "referencedata.get-all-document-metadata";
@@ -120,7 +120,7 @@ public class ReferenceDataService {
         final JsonEnvelope request = enveloper.withMetadataFrom(event, REFERENCEDATA_GET_ORGANISATION).apply(payload);
         final JsonEnvelope jsonEnvelop = requester.request(request);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("'referencedata.query.organisation-unit' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
+            LOGGER.info("'referencedata.query.organisation-unit.v2' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
         }
         return Optional.of(jsonEnvelop.payloadAsJsonObject());
     }

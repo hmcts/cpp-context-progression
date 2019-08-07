@@ -9,7 +9,7 @@ Feature: CaseAggregate
   Scenario: Update prosecution case defendant whenever the prosecution defendant updated
 
     Given prosecution case created
-    When you updateDefedantDetails on a CaseAggregate with a update defendant for prosecution case
+    When you updateDefendantDetails on a CaseAggregate with a update defendant for prosecution case
     Then prosecution case defendant updated
 
   Scenario: Update prosecution case offences whenever the prosecution defendant offences updated

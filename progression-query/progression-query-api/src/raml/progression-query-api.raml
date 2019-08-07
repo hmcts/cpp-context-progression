@@ -75,9 +75,6 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.prosecutioncase+json
             name: progression.query.prosecutioncase
-        (mapping):
-            responseType: application/vnd.progression.query.case-at-a-glance+json
-            name: progression.query.case-at-a-glance
         ...
       responses:
             200:
@@ -86,9 +83,6 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.prosecutioncase+json:
                     example:  !include json/progression.query.prosecutioncase.json
                     schema:  !include json/schema/progression.query.prosecutioncase.json
-                  application/vnd.progression.query.case-at-a-glance+json:
-                    example:  !include json/progression.query.case-at-a-glance.json
-                    schema:  !include json/schema/progression.query.case-at-a-glance.json
 
 /defendant-requests/{defendantId}:
   uriParameters:
@@ -143,10 +137,20 @@ protocols: [ HTTP, HTTPS ]
         ...
       queryParameters:
               caseId:
-                description: caseId(s) to be searched
+                description: caseId(s) - comma separated to be searched
                 type: string
                 example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
-                required: true
+                required: false
+              defendantId:
+                description: defendant id to be searched
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+                required: false
+              applicationId:
+                description: application id (s) - comma separated to be searched
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+                required: false
       responses:
             200:
                 description: OK
@@ -205,6 +209,122 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.material-nows-content+json:
+
+
+/applications/{applicationId}:
+  uriParameters:
+        applicationId:
+          description: primary key of court application to get
+          type: string
+  get:
+      description: |
+        Return the application details for the  Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.application+json
+            name: progression.query.application
+        (mapping):
+            responseType: application/vnd.progression.query.application.summary+json
+            name: progression.query.application.summary
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.application+json:
+                    example:  !include json/progression.query.application.json
+                    schema:  !include json/schema/progression.query.application.json
+                  application/vnd.progression.query.application.summary+json:
+                    example:  !include json/progression.query.application.summary.json
+                    schema:  !include json/schema/progression.query.application.summary.json
+
+
+/applications/{applicationId}/extract:
+  description: get court application extract content as pdf
+  uriParameters:
+    applicationId:
+      description: ID of parent application to be extracted
+      type: string
+
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.court-extract-application+json
+          name: progression.query.court-extract-application
+      ...
+    queryParameters:
+        hearingIds:
+          description: comma separated list of application hearingIds
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.court-extract-application+json:
+
+/applications/{applicationId}/notification-status:
+  description: get notification status for application Id
+  uriParameters:
+    applicationId:
+      description: application Id
+      type: string
+
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application.notification-status+json
+          name: progression.query.application.notification-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.application.notification-status+json:
+            schema: !include json/schema/progression.query.application.notification-status.json
+            example: !include json/progression.query.application.notification-status.json
+
+/hearingSearch/{hearingId}:
+  uriParameters:
+        hearingId:
+          description: ID of hearing to get
+          type: string
+  get:
+      description: |
+        Return the hearing details for the  Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.hearing+json
+            name: progression.query.hearing
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.hearing+json:
+                    example:  !include json/progression.query.hearing.json
+                    schema:  !include json/schema/progression.query.hearing.json
+
+/prosecutioncases/{caseId}/notification-status:
+  description: get notification status for Case Id
+  uriParameters:
+    caseId:
+      description: Case Id
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.prosecution.notification-status+json
+          name: progression.query.prosecution.notification-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.prosecution.notification-status+json:
+            schema: !include json/schema/progression.query.prosecution.notification-status.json
+            example: !include json/progression.query.prosecution.notification-status.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
@@ -337,5 +457,6 @@ protocols: [ HTTP, HTTPS ]
                  application/vnd.progression.query.defendant-offences+json:
                    schema: !include json/schema/progression.query.defendant-offences.json
                    example: !include json/progression.query.defendant-offences.json
+
 
 # Deprecated API  - End

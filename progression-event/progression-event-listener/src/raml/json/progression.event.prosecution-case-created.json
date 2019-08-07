@@ -40,7 +40,7 @@
                 "witnessStatement": "I did not do it",
                 "mitigation": "I was not there",
                 "alcoholReadingAmount": "111",
-                "alcoholReadingMethod": "2222"
+                "alcoholReadingMethodCode": "2222"
               }
             }
           ],

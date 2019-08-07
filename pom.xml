@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>2.0.117-FRAMEWORK-SNAPSHOT</version>
+    <version>2.0.142-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -35,12 +35,14 @@
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
-        <material.version>2.0.112</material.version>
+        <material.version>2.0.118</material.version>
         <access.control.version>4.1.8-R2</access.control.version>
-        <referencedata.version>2.0.177</referencedata.version>
-        <listing.version>1.0.10</listing.version>
-        <hearing.version>2.0.132</hearing.version>
-        <referencedata.offence.version>1.0.18</referencedata.offence.version>
+        <referencedata.version>2.0.240</referencedata.version>
+        <listing.version>1.0.18</listing.version>
+        <hearing.version>2.0.154</hearing.version>
+        <referencedata.offence.version>1.0.19</referencedata.offence.version>
+        <criminal-court-public-model.version>1.0.31</criminal-court-public-model.version>
+
     </properties>
 
     <build>

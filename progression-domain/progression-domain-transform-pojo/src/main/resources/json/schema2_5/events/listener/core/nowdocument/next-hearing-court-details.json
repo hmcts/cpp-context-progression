@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowdocument/next-hearing-court-details.json",
+  "description": "The details for a next hearing in a now document",
+  "type": "object",
+  "properties": {
+    "courtName": {
+	  "type": "string"
+	},
+	"hearingDate": {
+	  "type": "string"
+	},
+	"hearingTime": {
+	  "type": "string"
+	},
+	"courtAddress": {
+	  "$ref": "http://justice.gov.uk/core/courts/nowdocument/nowaddress.json"
+	}
+  },
+  "required": [
+    "courtName",
+	"courtAddress",
+	"hearingDate",
+	"hearingTime"
+  ],
+  "additionalProperties": false
+}

@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings({"squid:S1607"})
 public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
 
@@ -41,7 +42,7 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
     private static void init() {
         createMockEndpoints();
-        ListingStub.stubSendCaseForListing();
+        ListingStub.stubListCourtHearing();
         ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
     }
 
@@ -76,7 +77,6 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
         updateDefendantHelper.updateDefendantBailStatus();
         updateDefendantHelper.verifySendingSheetPreviouslyCompletedPublicEvent();
     }
-
 
     @Test
     public void shouldNotPublishCaseDefendantChangedNoRealChangeInPerson() throws Exception {

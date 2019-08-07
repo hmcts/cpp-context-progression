@@ -3,12 +3,13 @@
   "id": "http://justice.gov.uk/core/courts/progression.nows-requested",
   "type": "object",
   "properties": {
-    "createNowsRequest": {
-      "$ref": "http://justice.gov.uk/core/courts/createNowsRequest.json"
+    "nowDocumentRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-document-request.json"
     }
   },
   "required": [
-    "createNowsRequest"
+    "nowDocumentRequest"
   ],
   "additionalProperties": false
 }
+

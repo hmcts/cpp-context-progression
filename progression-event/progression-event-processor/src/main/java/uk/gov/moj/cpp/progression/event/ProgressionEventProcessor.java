@@ -7,9 +7,9 @@ import uk.gov.justice.core.courts.DefendantListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.SendCaseForListing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -19,6 +19,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -34,7 +35,6 @@ import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 
 
 @SuppressWarnings({"WeakerAccess", "squid:S3655", "squid:S3457", "squid:CallToDeprecatedMethod", "squid:S1612"})
@@ -124,7 +124,7 @@ public class ProgressionEventProcessor {
             estimatedMinutes=30;
         }
 
-        final SendCaseForListing sendCaseForListing = SendCaseForListing.sendCaseForListing()
+        final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
                 .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
                         .withCourtCentre(CourtCentre.courtCentre()
                                 .withId(sendingSheetCompleted.getCrownCourtHearing().getCourtCentreId())
@@ -141,7 +141,7 @@ public class ProgressionEventProcessor {
                 .build();
 
 
-        listingService.sendCaseForListing(event, sendCaseForListing);
+        listingService.listCourtHearing(event, listCourtHearing);
 
         sender.send(enveloper.withMetadataFrom(event, PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE).apply(pCasePayload));
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_COMPLETED)

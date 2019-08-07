@@ -67,9 +67,11 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         ReferCaseToCourtTest("progression.refer-cases-to-court", "Legal Advisers"),
         UpdateDefendentDetails("progression.update-defendant-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         UpdateOffences("progression.update-offences-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
-        UploadCourtDocument("progression.upload-court-document","Legal Advisers", "Listing Officers"),
-        AddCourtDocument("progression.add-court-document","Legal Advisers", "Listing Officers", "Court Clerks");
-
+        UploadCourtDocument("progression.upload-court-document","Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators"),
+        AddCourtDocument("progression.add-court-document","Legal Advisers", "Listing Officers", "Court Clerks","Crown Court Admin", "Court Administrators"),
+        CreateCourtApplication("progression.create-court-application","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
+        InitiateCourtProceedings("progression.initiate-court-proceedings","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
+        AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users");
 
         private final String actionName;
         private final String[] allowedUserGroups;

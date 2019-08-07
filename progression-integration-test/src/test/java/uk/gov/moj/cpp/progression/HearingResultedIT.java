@@ -13,9 +13,8 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseAtAGlanceFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -27,6 +26,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import com.google.common.io.Resources;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -41,6 +41,7 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
 
+@Ignore
 public class HearingResultedIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -124,17 +125,17 @@ public class HearingResultedIT {
                         .build());
 
 
-        //getProsecutionCaseAtAGlanceFor(caseId);
+        getProsecutioncasesProgressionFor(caseId);
 
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON)
+        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.id", equalTo(caseId)),
-                                withJsonPath("$.hearings.[*].type", hasItem(equalTo("Sentence"))),
-                                withJsonPath("$.hearings.[*].courtCentre.id", hasItem(equalTo(newCourtCentreId))),
-                                withJsonPath("$.hearings.[*].defendants.[*].id", hasItem(equalTo(defendantId)))
+                                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                                withJsonPath("$.caseAtAGlance.hearings.[*].type", hasItem(equalTo("Sentence"))),
+                                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(newCourtCentreId))),
+                                withJsonPath("$.caseAtAGlance.hearings.[*].defendants.[*].id", hasItem(equalTo(defendantId)))
                         )));
 
     }

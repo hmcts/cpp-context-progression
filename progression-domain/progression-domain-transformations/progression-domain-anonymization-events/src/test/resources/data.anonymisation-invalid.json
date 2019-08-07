@@ -1,0 +1,13 @@
+{
+  "events": [
+    {
+      "eventName": "structure.events.witness-added",
+      "fieldsToBeAnonymised":
+        {
+          "policePersonType": "StringAnonymisedString",
+          "classificationType": "StringAnonymisedString"
+        }
+
+    }
+  ]
+}

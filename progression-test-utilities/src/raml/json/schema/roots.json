@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.roots.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    }
+  }
+}

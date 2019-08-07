@@ -13,9 +13,8 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseAtAGlanceFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -88,18 +87,19 @@ public class InitiateHearingIT {
                 .build();
 
         final JsonObject hearingConfimedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId);
+
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfimedJson, metadata);
 
         verifyInMessagingQueueForCasesReferredToCourts();
 
-        getProsecutionCaseAtAGlanceFor(caseId);
+        getProsecutioncasesProgressionFor(caseId);
 
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_CASE_AT_A_GLANCE_JSON).withHeader(USER_ID, UUID.randomUUID()))
+        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON).withHeader(USER_ID, UUID.randomUUID()))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.id", equalTo(caseId))
+                                withJsonPath("$.prosecutionCase.id", equalTo(caseId))
 
                         )));
 

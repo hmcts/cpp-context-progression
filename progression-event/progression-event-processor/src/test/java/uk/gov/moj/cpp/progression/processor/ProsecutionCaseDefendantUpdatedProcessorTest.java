@@ -7,6 +7,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
 
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -77,7 +78,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(prosecutionCaseDefendantUpdated);
         when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
-        final Defendant pc = Defendant.defendant().withId(UUID.randomUUID())
+        final DefendantUpdate pc = DefendantUpdate.defendantUpdate().withId(UUID.randomUUID())
                 .withProsecutionCaseId(UUID.randomUUID())
                 .withOffences(Collections.emptyList())
                 .build();

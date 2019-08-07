@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/offenceFacts.json",
+  "type": "object",
+  "properties": {
+    "vehicleRegistration": {
+      "type": "string"
+    },
+    "alcoholReadingAmount": {
+      "type": "string"
+    },
+    "alcoholReadingMethodCode": {
+      "type": "string"
+    },
+    "alcoholReadingMethodDescription": {
+      "type": "string"
+    },
+    "vehicleCode": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/vehicleCode"
+    }
+  },
+  "additionalProperties": false
+}

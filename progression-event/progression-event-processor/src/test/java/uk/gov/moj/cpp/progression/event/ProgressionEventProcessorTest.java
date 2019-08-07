@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -24,8 +23,8 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
+import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.SendCaseForListing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
@@ -41,6 +40,8 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
+import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -52,7 +53,6 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -61,8 +61,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -233,12 +231,12 @@ public class ProgressionEventProcessorTest {
                 metadata().withName("public.progression.events.sending-sheet-completed"),
                 payloadIsJson(withJsonPath(format("$.%s.%s", "hearing", "caseId"), equalTo(CASE_ID)))));
 
-        final ArgumentCaptor<SendCaseForListing> sendCaseForListingCaptor =
-                forClass(SendCaseForListing.class);
+        final ArgumentCaptor<ListCourtHearing> listCourtHearingArgumentCaptor =
+                forClass(ListCourtHearing.class);
 
-        verify(listingService).sendCaseForListing(envelopeArgumentCaptor.capture(), sendCaseForListingCaptor.capture());
+        verify(listingService).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
-        assertThat(sendCaseForListingCaptor.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
+        assertThat(listCourtHearingArgumentCaptor.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
     }
 
     @Test

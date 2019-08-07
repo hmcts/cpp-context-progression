@@ -11,6 +11,45 @@ import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithR
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingLanguage;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialRole;
+import uk.gov.justice.core.courts.JudicialRoleType;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.NextHearing;
+import uk.gov.justice.core.courts.NextHearingDefendant;
+import uk.gov.justice.core.courts.NextHearingOffence;
+import uk.gov.justice.core.courts.NextHearingProsecutionCase;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.hearing.courts.HearingAdjourned;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,37 +61,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.JudicialRole;
-import uk.gov.justice.core.courts.JudicialRoleType;
-import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.NextHearingDefendant;
-import uk.gov.justice.core.courts.NextHearingOffence;
-import uk.gov.justice.core.courts.NextHearingProsecutionCase;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.SendCaseForListing;
-import uk.gov.justice.hearing.courts.HearingAdjourned;
-import uk.gov.justice.hearing.courts.JurisdictionType;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ListingService;
-import uk.gov.moj.cpp.progression.service.ProgressionService;
-import javax.json.JsonObject;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdjournHearingEventProcessorTest {
@@ -98,7 +106,7 @@ public class AdjournHearingEventProcessorTest {
     }
 
     @Test
-    public void sendCaseForListing() throws Exception {
+    public void listCourtHearing() throws Exception {
 
         final UUID previousHearingId = randomUUID();
         final UUID courtCentreId = randomUUID();
@@ -154,6 +162,28 @@ public class AdjournHearingEventProcessorTest {
 
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
 
+        final UUID courtApplicationId = UUID.randomUUID();
+        final UUID linkedApplicationId = UUID.randomUUID();
+        final UUID applicantId = UUID.randomUUID();
+        final UUID applicantDefendantId = UUID.randomUUID();
+        final UUID respondentId = UUID.randomUUID();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withParentApplicationId(linkedApplicationId)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withId(applicantId)
+                        .withDefendant(Defendant.defendant()
+                                .withId(applicantDefendantId)
+                                .build())
+                        .build())
+                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
+                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                .withId(respondentId)
+                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                        .withProsecutionAuthorityId(UUID.randomUUID())
+                                        .build())
+                                .build())
+                        .build())).build();
         final HearingAdjourned hearingAdjourned = HearingAdjourned.hearingAdjourned()
                 .withAdjournedHearing(previousHearingId)
                 .withNextHearings(Arrays.asList(NextHearing.nextHearing()
@@ -165,7 +195,7 @@ public class AdjournHearingEventProcessorTest {
                                 .withRoomName("Room Name")
                                 .withWelshRoomName("Welsh Room Name")
                                 .build())
-                        .withEarliestStartDateTime(earliestStartDateTime)
+                        .withListedStartDateTime(earliestStartDateTime)
                         .withEstimatedMinutes(estimatedMinutes)
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
@@ -191,6 +221,8 @@ public class AdjournHearingEventProcessorTest {
                                                 .build()))
                                         .build()))
                                 .build()))
+                        .withNextHearingCourtApplicationId(Arrays.asList(courtApplication.getId()))
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
                         .build()))
                 .build();
 
@@ -199,31 +231,32 @@ public class AdjournHearingEventProcessorTest {
                 objectToJsonObjectConverter.convert(hearingAdjourned));
 
         when(progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId1.toString())).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+        when(progressionService.getCourtApplicationByIdTyped(event, courtApplication.getId().toString())).thenReturn(Optional.of(courtApplication));
         this.eventProcessor.handleHearingAdjournedPublicEvent(event);
 
-        final ArgumentCaptor<SendCaseForListing> sendCaseForListingCaptorForListingService =
-                forClass(SendCaseForListing.class);
+        final ArgumentCaptor<ListCourtHearing> listCourtHearingArgumentCaptorForListingService =
+                forClass(ListCourtHearing.class);
 
-        final ArgumentCaptor<SendCaseForListing> sendCaseForListingCaptorForProgressionService =
-                forClass(SendCaseForListing.class);
+        final ArgumentCaptor<ListCourtHearing> listCourtHearingArgumentCaptorForProgressionService =
+                forClass(ListCourtHearing.class);
 
-        verify(listingService).sendCaseForListing(envelopeArgumentCaptor.capture(), sendCaseForListingCaptorForListingService.capture());
-        verify(progressionService).updateHearingListingStatusToSentForListing(envelopeArgumentCaptor.capture(), sendCaseForListingCaptorForProgressionService.capture());
+        verify(listingService).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptorForListingService.capture());
+        verify(progressionService).updateHearingListingStatusToSentForListing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptorForProgressionService.capture());
 
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCentreId));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getRoomId(), is((roomId)));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getName(), is(("Name")));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getWelshName(), is(("Welsh Name")));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getRoomName(), is(("Room Name")));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getWelshRoomName(), is(("Welsh Room Name")));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCentreId));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getRoomId(), is((roomId)));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getName(), is(("Name")));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getWelshName(), is(("Welsh Name")));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getRoomName(), is(("Room Name")));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getWelshRoomName(), is(("Welsh Room Name")));
+      assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getEarliestStartDateTime(), is(earliestStartDateTime));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getEstimatedMinutes(), is(estimatedMinutes));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJurisdictionType(), is(uk.gov.justice.core.courts.JurisdictionType.CROWN));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialId(), is(judicialId));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
 
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getEarliestStartDateTime(), is(earliestStartDateTime));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getEstimatedMinutes(), is(estimatedMinutes));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getJurisdictionType(), is(uk.gov.justice.core.courts.JurisdictionType.CROWN));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialId(), is(judicialId));
-        assertThat(sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
-
-        List<ProsecutionCase> responseProsecutionCases = sendCaseForListingCaptorForListingService.getValue().getHearings().get(0).getProsecutionCases();
+        List<ProsecutionCase> responseProsecutionCases = listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getProsecutionCases();
         assertThat(responseProsecutionCases.size(), is(1));
         assertThat(responseProsecutionCases.get(0).getId(), is(prosecutionCaseId1));
         assertThat(responseProsecutionCases.get(0).getDefendants().size(), is(1));
@@ -231,18 +264,25 @@ public class AdjournHearingEventProcessorTest {
         assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getOffences().size(), is(1));
         assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
 
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCentreId));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getRoomId(), is((roomId)));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getName(), is(("Name")));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getWelshName(), is(("Welsh Name")));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getRoomName(), is(("Room Name")));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getWelshRoomName(), is(("Welsh Room Name")));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCentreId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getRoomId(), is((roomId)));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getName(), is(("Name")));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getWelshName(), is(("Welsh Name")));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getRoomName(), is(("Room Name")));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getWelshRoomName(), is(("Welsh Room Name")));
 
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getEarliestStartDateTime(), is(earliestStartDateTime));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getEstimatedMinutes(), is(estimatedMinutes));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getJurisdictionType(), is(uk.gov.justice.core.courts.JurisdictionType.CROWN));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialId(), is(judicialId));
-        assertThat(sendCaseForListingCaptorForProgressionService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getEarliestStartDateTime(), is(earliestStartDateTime));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getEstimatedMinutes(), is(estimatedMinutes));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getJurisdictionType(), is(uk.gov.justice.core.courts.JurisdictionType.CROWN));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialId(), is(judicialId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getApplicant().getId(), is(applicantId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getRespondents().get(0).getPartyDetails().getId(), is(respondentId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getApplicant().getDefendant().getId(), is(applicantDefendantId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getParentApplicationId(), is(linkedApplicationId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getId(), is(courtApplicationId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplicationPartyListingNeeds().get(0).getHearingLanguageNeeds().toString(), is("ENGLISH"));
+
     }
 
 

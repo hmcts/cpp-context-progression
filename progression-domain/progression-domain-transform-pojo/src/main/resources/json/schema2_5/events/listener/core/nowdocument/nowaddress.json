@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowdocument/nowaddress.json",
+  "description": "The address rendered in a NOW document",
+  "type": "object",
+  "properties": {
+    "line1": {
+	  "type": "string"
+	},
+	"line2": {
+	  "type": "string"
+	},
+	"line3": {
+	  "type": "string"
+	},
+	"line4": {
+	  "type": "string"
+	},
+	"line5": {
+	  "type": "string"
+	},
+	"postCode": {
+	  "type": "string"
+	}
+  },
+  "required": [
+    "line1"
+  ],
+  "additionalProperties": false
+}

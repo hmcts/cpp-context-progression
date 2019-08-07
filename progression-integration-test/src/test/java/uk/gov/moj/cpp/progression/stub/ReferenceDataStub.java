@@ -66,7 +66,7 @@ public class ReferenceDataStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(judge.toString())));
 
-        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.query.organisation-unit+json");
+        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.query.organisation-unit.v2+json");
     }
 
     public static void stubQueryCourtCentre(final String resourceName) {

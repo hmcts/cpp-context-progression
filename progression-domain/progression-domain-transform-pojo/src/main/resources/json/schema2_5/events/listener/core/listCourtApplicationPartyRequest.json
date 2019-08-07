@@ -1,0 +1,30 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/core/courts/listCourtApplicationPartyRequest.json",
+	"type": "object",
+	"properties": {
+		"datesToAvoid": {
+			"type": "string"
+		},
+		"emailNotificationRequired": {
+			"description": "Indicates that the courtApplication party should be notified of the confirmed hearing details via email",
+			"type": "boolean"
+		},
+		"letterNotificationRequired": {
+			"description": "Indicates that the courtApplication party should be notified of the confirmed hearing details via letter",
+			"type": "boolean"
+		},
+		"hearingLanguageNeeds": {
+			"description": "The parties hearing needs.  Indicates the court application party preference for the hearing to be conducted in non English",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingLanguage"
+		},
+		"courtApplicationPartyId": {
+			"description": "The identifier of the applicant or respondent(s) of the courtApplication being listed",
+			"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+		}
+	},
+	"required": [
+		"courtApplicationPartyId", "emailNotificationRequired", "letterNotificationRequired"
+	],
+	"additionalProperties": false
+}

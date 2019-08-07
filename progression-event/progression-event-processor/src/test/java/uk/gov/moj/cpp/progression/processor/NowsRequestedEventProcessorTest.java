@@ -21,8 +21,40 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.progression.processor.NowsRequestedEventProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.RESULTS_UPDATE_NOWS_MATERIAL_STATUS;
-import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowsRequestTemplate;
+import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
+
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.fileservice.api.FileServiceException;
+import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.UploadMaterialContext;
+import uk.gov.moj.cpp.progression.service.UploadMaterialService;
+import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
+import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
+import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
+import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,41 +66,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import uk.gov.justice.core.courts.CreateNowsRequest;
-import uk.gov.justice.core.courts.NotificationDocumentState;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.events.NowsRequested;
-import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
-import uk.gov.moj.cpp.progression.service.UploadMaterialContext;
-import uk.gov.moj.cpp.progression.service.UploadMaterialContextBuilder;
-import uk.gov.moj.cpp.progression.service.UploadMaterialService;
-import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
-import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 public class NowsRequestedEventProcessorTest {
 
     public static final String USER_ID = UUID.randomUUID().toString();
 
     public static final UUID fileId = UUID.randomUUID();
+
+    private String referenceDataUsergroup = "Test Group";
 
     private NowsRequestedEventProcessor nowsRequestedEventProcessor;
 
@@ -94,6 +99,9 @@ public class NowsRequestedEventProcessorTest {
     private FileStorer fileStorer;
 
     @Mock
+    private ReferenceDataService refDataService;
+
+    @Mock
     private SystemUserProvider systemUserProvider;
 
     @Spy
@@ -117,6 +125,22 @@ public class NowsRequestedEventProcessorTest {
     @Captor
     private ArgumentCaptor<UUID> uuidArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<Sender> senderCaptor;
+
+    @Captor
+    private ArgumentCaptor<NowDocumentRequest> nowDocumentRequestCaptor;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> originatingEnvelopeCaptor;
+
+    @Captor
+    private ArgumentCaptor<UUID> fileIdCaptor;
+
+    @Captor
+    private ArgumentCaptor<UUID> userIdCaptor;
+
+
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
@@ -136,19 +160,20 @@ public class NowsRequestedEventProcessorTest {
                 new DocumentGeneratorService(this.systemUserProvider, this.documentGeneratorClientProducer,
                         this.objectToJsonObjectConverter, this.fileStorer, this.uploadMaterialService),
                 this.jsonObjectToObjectConverter,
-                this.objectToJsonObjectConverter
+                this.objectToJsonObjectConverter, this.refDataService
         );
+
     }
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
+
     @Test
     public void shouldGenerateNowAndStoreInFileStore() throws IOException, FileServiceException {
 
         final UUID systemUserid = UUID.randomUUID();
-        final NowsRequested nowsRequested = nowsRequestedTemplate();
-        final CreateNowsRequest createNowsRequest = nowsRequested.getCreateNowsRequest();
+        final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
 
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
@@ -157,24 +182,30 @@ public class NowsRequestedEventProcessorTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class)))
                 .thenReturn(fileId);
-        final JsonEnvelope eventEnvelope = envelope(createNowsRequest);
-        this.nowsRequestedEventProcessor.processNowsRequested( eventEnvelope );
+        final JsonEnvelope eventEnvelope = envelope(nowDocumentRequest);
+        initReferenceDate(eventEnvelope);
+
+        this.nowsRequestedEventProcessor.processPublicNowDocumentRequested(eventEnvelope);
 
         verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
         verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-
-        assertThat(jsonObjectArgumentCaptor.getValue().getString("fileName"),
-                is(startsWith(createNowsRequest.getNowTypes().get(0).getDescription())));
+        assertThat(jsonObjectArgumentCaptor.getValue().getString("fileName"), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
-        final NotificationDocumentState nowsNotificationDocumentState = uploadMaterialContextArgumentCaptor.getValue().getNowsNotificationDocumentState();
-        assertThat(normalizeName(nowsNotificationDocumentState.getDefendantName()), is(normalizeName(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getNowVariantDefendant().getName())));
+
+        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
+        JsonEnvelope jsonEnvelope = this.envelopeArgumentCaptor.getValue();
+        System.out.println(jsonEnvelope.payloadAsJsonObject());
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
+        Assert.assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(referenceDataUsergroup));
+        System.out.println("" + courtDocument);
+
     }
 
     @Test
     public void shouldNotGenerateNowOnDocumentGenerationException() throws IOException, FileServiceException {
 
-        final CreateNowsRequest createNowsRequest = nowsRequestedTemplate().getCreateNowsRequest();
+        final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
 
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenThrow(new DocumentGenerationException());
@@ -182,9 +213,13 @@ public class NowsRequestedEventProcessorTest {
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
 
-        this.nowsRequestedEventProcessor.processNowsRequested(envelopeFrom(metadataWithRandomUUID("hearing.events.nows-requested").withUserId(USER_ID),
-                Json.createObjectBuilder().add("createNowsRequest", objectToJsonObjectConverter.convert(createNowsRequest)).build()
-                ));
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("progression.events.nows-requested")
+                        .withUserId(USER_ID),
+                objectToJsonObjectConverter.convert(nowDocumentRequest));
+
+        initReferenceDate(eventEnvelope);
+
+        this.nowsRequestedEventProcessor.processPublicNowDocumentRequested(eventEnvelope);
 
         verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
 
@@ -193,30 +228,30 @@ public class NowsRequestedEventProcessorTest {
         assertThat(allMessagesSent.get(0), jsonEnvelope(
                 metadata().withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT),
                 payloadIsJson(allOf(
-                        withJsonPath("$.courtDocument.materials[0].id", is(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getMaterialId().toString()))
-                        ))));
+                        withJsonPath("$.courtDocument.materials[0].id", is(nowDocumentRequest.getMaterialId().toString()))
+                ))));
 
         assertThat(allMessagesSent.get(1), jsonEnvelope(
                 metadata().withName(PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS),
-                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(createNowsRequest.getHearing().getId().toString())),
+                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(nowDocumentRequest.getHearingId().toString())),
                         withJsonPath("$.material_id",
-                                is(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getMaterialId().toString()))))));
+                                is(nowDocumentRequest.getMaterialId().toString()))))));
 
         assertThat(allMessagesSent.get(2), jsonEnvelope(
                 metadata().withName(RESULTS_UPDATE_NOWS_MATERIAL_STATUS),
-                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(createNowsRequest.getHearing().getId().toString())),
+                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(nowDocumentRequest.getHearingId().toString())),
                         withJsonPath("$.material_id",
-                                is(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getMaterialId().toString()))))));
+                                is(nowDocumentRequest.getMaterialId().toString()))))));
 
         verifyNoMoreInteractions(this.fileStorer);
         verifyNoMoreInteractions(this.uploadMaterialService);
 
     }
 
-    public JsonEnvelope envelope(final CreateNowsRequest createNowsRequest) {
-        final JsonObject jsonObject = Json.createObjectBuilder().add("createNowsRequest", objectToJsonObjectConverter.convert(createNowsRequest)).build();
+    public JsonEnvelope envelope(final NowDocumentRequest nowDocumentRequest) {
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(nowDocumentRequest);
         return envelopeFrom(
-                metadataWithRandomUUID("hearing.events.nows-requested").withUserId(USER_ID),
+                metadataWithRandomUUID("progression.event.nows-requested").withUserId(USER_ID),
                 objectToJsonObjectConverter.convert(jsonObject)
         );
     }
@@ -224,7 +259,7 @@ public class NowsRequestedEventProcessorTest {
     @Test
     public void shouldNotGenerateNowOnFileUploadException() throws IOException, FileServiceException {
 
-        final CreateNowsRequest createNowsRequest = nowsRequestedTemplate().getCreateNowsRequest();
+        final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
 
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
@@ -232,7 +267,11 @@ public class NowsRequestedEventProcessorTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
         doThrow(new FileUploadException()).when(fileStorer).store(any(), any());
-        this.nowsRequestedEventProcessor.processNowsRequested(envelope(createNowsRequest));
+
+        final JsonEnvelope eventEnvelope = envelope(nowDocumentRequest);
+        initReferenceDate(eventEnvelope);
+
+        this.nowsRequestedEventProcessor.processPublicNowDocumentRequested(eventEnvelope);
 
         verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserId));
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
@@ -246,20 +285,20 @@ public class NowsRequestedEventProcessorTest {
         assertThat(allMessagesSent.get(0), jsonEnvelope(
                 metadata().withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT),
                 payloadIsJson(allOf(
-                        withJsonPath("$.courtDocument.materials[0].id", is(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getMaterialId().toString()))
+                        withJsonPath("$.courtDocument.materials[0].id", is(nowDocumentRequest.getMaterialId().toString()))
                 ))));
-        
-        assertThat(allMessagesSent.get(1), jsonEnvelope(
-                metadata().withName(PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS),
-                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(createNowsRequest.getHearing().getId().toString())),
-                        withJsonPath("$.material_id",
-                                is(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getMaterialId().toString()))))));
+
+//        assertThat(allMessagesSent.get(1), jsonEnvelope(
+//                metadata().withName(PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS),
+//                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(nowDocumentRequest.getHearingId())),
+//                        withJsonPath("$.material_id",
+//                                is(nowDocumentRequest.getMaterialId().toString()))))));
 
         assertThat(allMessagesSent.get(2), jsonEnvelope(
                 metadata().withName(RESULTS_UPDATE_NOWS_MATERIAL_STATUS),
-                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(createNowsRequest.getHearing().getId().toString())),
+                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(nowDocumentRequest.getHearingId().toString())),
                         withJsonPath("$.material_id",
-                                is(createNowsRequest.getNows().get(0).getRequestedMaterials().get(0).getMaterialId().toString()))))));
+                                is(nowDocumentRequest.getMaterialId().toString()))))));
         verifyNoMoreInteractions(this.uploadMaterialService);
     }
 
@@ -268,8 +307,8 @@ public class NowsRequestedEventProcessorTest {
      *
      * @Test public void shouldRaiseAnPublicEventNowsMaterialStatusWasUpdated() {
      * <p>
-     * final NowsMaterialStatusUpdated nowsMaterialStatusUpdated = new NowsMaterialStatusUpdated(UUID.randomUUID(),
-     * UUID.randomUUID(), "GENERATED_STATUS_VALUE");
+     * final NowsMaterialStatusUpdated nowsMaterialStatusUpdated = new
+     * NowsMaterialStatusUpdated(UUID.randomUUID(), UUID.randomUUID(), "GENERATED_STATUS_VALUE");
      * <p>
      * final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("hearing.events.nows-material-status-updated").withUserId(USER_ID),
      * objectToJsonObjectConverter.convert(nowsMaterialStatusUpdated));
@@ -281,7 +320,8 @@ public class NowsRequestedEventProcessorTest {
      * verify(sender).send(jsonEnvelopeCaptor.capture());
      * <p>
      * assertThat(jsonEnvelopeCaptor.getValue().metadata().name(), is("public.hearing.events.nows-material-status-updated"));
-     * assertThat(jsonEnvelopeCaptor.getValue().payloadAsJsonObject().getString("materialId"), is(nowsMaterialStatusUpdated.getMaterialId().toString()));
+     * assertThat(jsonEnvelopeCaptor.getValue().payloadAsJsonObject().getString("materialId"),
+     * is(nowsMaterialStatusUpdated.getMaterialId().toString()));
      * <p>
      * }
      **/
@@ -289,9 +329,12 @@ public class NowsRequestedEventProcessorTest {
         return name.replaceAll(" ", "").toLowerCase();
     }
 
-    public static NowsRequested nowsRequestedTemplate() {
-        return NowsRequested.nowsRequested()
-                .withCreateNowsRequest(generateNowsRequestTemplate(UUID.randomUUID()))
-                .build();
+    private void initReferenceDate(final JsonEnvelope eventEnvelope) {
+        JsonObject docTypeData = Json.createObjectBuilder().add("documentAccess", Json.createArrayBuilder().add(referenceDataUsergroup).build()).build();
+        when(refDataService.getDocumentTypeData(NowsRequestedEventProcessor.NOW_DOCUMENT_TYPE_ID, eventEnvelope)).thenReturn(Optional.of(docTypeData));
+    }
+
+    public static NowDocumentRequest nowsRequestedTemplate() {
+        return generateNowDocumentRequestTemplate(UUID.randomUUID());
     }
 }

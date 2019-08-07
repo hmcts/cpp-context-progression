@@ -144,7 +144,7 @@
 									"offenceFacts": {
 										"vehicleRegistration": "a",
 										"alcoholReadingAmount": "a",
-										"alcoholReadingMethod": "a"
+										"alcoholReadingMethodCode": "a"
 									}
 								}
 							],

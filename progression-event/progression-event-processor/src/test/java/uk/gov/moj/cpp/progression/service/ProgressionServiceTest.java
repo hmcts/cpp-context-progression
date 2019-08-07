@@ -1,5 +1,33 @@
 package uk.gov.moj.cpp.progression.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.*;
+import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.function.Function;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
@@ -14,54 +42,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.service.ProgressionService.PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA;
-import static uk.gov.moj.cpp.progression.service.ProgressionService.PUBLIC_EVENT_HEARING_DETAIL_CHANGED;
-
-import uk.gov.justice.core.courts.ConfirmedDefendant;
-import uk.gov.justice.core.courts.ConfirmedHearing;
-import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.HearingLanguage;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.HearingUpdated;
-import uk.gov.justice.core.courts.JudicialRole;
-import uk.gov.justice.core.courts.JudicialRoleType;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionServiceTest {
@@ -71,9 +51,6 @@ public class ProgressionServiceTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
-
-    @Mock
-    private Requester requester;
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -94,6 +71,12 @@ public class ProgressionServiceTest {
     @InjectMocks
     private ProgressionService progressionService;
 
+    @Mock
+    private Function<Object, JsonEnvelope> enveloperFunction;
+
+    @Mock
+    private JsonEnvelope finalEnvelope;
+
     private static final UUID CASE_ID_1 = UUID.randomUUID();
     private static final UUID CASE_ID_2 = UUID.randomUUID();
     private static final UUID DEFENDANT_ID_1 = UUID.randomUUID();
@@ -113,6 +96,9 @@ public class ProgressionServiceTest {
     private static final String JUDICIARY_LAST_NAME_2 = STRING.next();
     private static final String JUDICIARY_TYPE_1 = "RECORDER";
     private static final String JUDICIARY_TYPE_2 = "MAGISTRATE";
+    private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
+    private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
 
 
     @Before
@@ -356,5 +342,23 @@ public class ProgressionServiceTest {
                         .withIsBenchChairman(Boolean.TRUE)
                         .build()
         );
+    }
+
+    @Test
+    public void testCreateHearingApplicationLink() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        final UUID hearingId = randomUUID();
+        final List<UUID> applicationId = Arrays.asList(randomUUID());
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingListingStatus", "HEARING_INITIALISED")
+                .add("applicationId", applicationId.get(0).toString())
+                .build();
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.linkApplicationsToHearing(envelope, hearing, applicationId, HearingListingStatus.HEARING_INITIALISED);
+        verify(sender).send(finalEnvelope);
     }
 }

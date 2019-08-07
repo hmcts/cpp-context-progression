@@ -38,7 +38,7 @@ public class HearingResultHandler {
         final HearingResult hearingResult = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(hearingResult.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.saveHearingResult(hearingResult.getHearing());
+        final Stream<Object> events = hearingAggregate.saveHearingResult(hearingResult.getHearing(), hearingResult.getSharedTime());
         appendEventsToStream(envelope, eventStream, events);
     }
 

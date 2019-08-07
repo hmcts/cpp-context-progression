@@ -65,14 +65,21 @@ public class DefendantHelper {
     }
 
     private static boolean isOffenceForDefendantChanged(final Offence commandOffenceForDefendant, final Offence previousOffenceForDefendant) {
-        return !new EqualsBuilder().append(commandOffenceForDefendant.getOffenceCode(), previousOffenceForDefendant.getOffenceCode()).append(commandOffenceForDefendant.getWording(), previousOffenceForDefendant.getWording()).append(commandOffenceForDefendant.getStartDate(), previousOffenceForDefendant.getStartDate()).append(commandOffenceForDefendant.getOffenceTitle(), previousOffenceForDefendant.getOffenceTitle()).append(nonNull(commandOffenceForDefendant.getOffenceTitleWelsh()) ? commandOffenceForDefendant.getOffenceTitleWelsh() : previousOffenceForDefendant.getOffenceTitleWelsh(), previousOffenceForDefendant.getOffenceTitleWelsh()).append(nonNull(commandOffenceForDefendant.getOffenceLegislation()) ? commandOffenceForDefendant.getOffenceLegislation() : previousOffenceForDefendant.getOffenceLegislation(), previousOffenceForDefendant.getOffenceLegislation()).append(nonNull(commandOffenceForDefendant.getOffenceLegislationWelsh()) ? commandOffenceForDefendant.getOffenceLegislationWelsh() : previousOffenceForDefendant.getOffenceLegislationWelsh(), previousOffenceForDefendant.getOffenceLegislationWelsh()).isEquals();
+        return !new EqualsBuilder().append(commandOffenceForDefendant.getOffenceCode(), previousOffenceForDefendant.getOffenceCode())
+                .append(commandOffenceForDefendant.getWording(), previousOffenceForDefendant.getWording())
+                .append(commandOffenceForDefendant.getStartDate(), previousOffenceForDefendant.getStartDate())
+                .append(commandOffenceForDefendant.getOffenceTitle(), previousOffenceForDefendant.getOffenceTitle())
+                .append(commandOffenceForDefendant.getCount(), previousOffenceForDefendant.getCount())
+                .append(nonNull(commandOffenceForDefendant.getOffenceTitleWelsh()) ? commandOffenceForDefendant.getOffenceTitleWelsh() : previousOffenceForDefendant.getOffenceTitleWelsh(), previousOffenceForDefendant.getOffenceTitleWelsh())
+                .append(nonNull(commandOffenceForDefendant.getOffenceLegislation()) ? commandOffenceForDefendant.getOffenceLegislation() : previousOffenceForDefendant.getOffenceLegislation(), previousOffenceForDefendant.getOffenceLegislation())
+                .append(nonNull(commandOffenceForDefendant.getOffenceLegislationWelsh()) ? commandOffenceForDefendant.getOffenceLegislationWelsh() : previousOffenceForDefendant.getOffenceLegislationWelsh(), previousOffenceForDefendant.getOffenceLegislationWelsh()).isEquals();
     }
 
 
     public static Optional<OffencesForDefendantChanged> getOffencesForDefendantChanged(final List<Offence> offences, final List<Offence> existingOffences, final UUID prosecutionCaseId, final UUID defendantId) {
         final List<Offence> offencesAddedList = DefendantHelper.getAddedOffences(offences, existingOffences);
         final OffencesForDefendantChanged.Builder builder = OffencesForDefendantChanged.offencesForDefendantChanged();
-        builder.withModifiedDate(LocalDate.now().toString());
+        builder.withModifiedDate(LocalDate.now());
         boolean defendantOffencesChanged = false;
         if (!offencesAddedList.isEmpty()) {
             final List<AddedOffences> addedOffences = Arrays.asList(AddedOffences.addedOffences().withProsecutionCaseId(prosecutionCaseId).withDefendantId(defendantId).withOffences(offencesAddedList).build());

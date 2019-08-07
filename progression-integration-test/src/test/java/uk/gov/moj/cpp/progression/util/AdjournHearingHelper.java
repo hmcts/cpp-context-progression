@@ -14,6 +14,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
@@ -46,32 +47,36 @@ public class AdjournHearingHelper extends AbstractTestHelper {
 
     private final String offenceId;
 
-    public AdjournHearingHelper(final String caseId, final String defendantId, final String offenceId) {
+    private final String applicationId;
+
+    public AdjournHearingHelper(final String caseId, final String defendantId, final String offenceId, final String applicationId) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.offenceId = offenceId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("listing.command.send-case-for-listing");
+        this.applicationId = applicationId;
+        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("listing.command.list-court-hearing");
     }
 
     public void adjournHearing() {
         final Metadata metadata = generateMetadata(PUBLIC_HEARING_HEARING_ADJOURNED);
-        JsonObject adjournHearingPayload = generateAdjournHearingPayload(caseId, defendantId, offenceId, PUBLIC_HEARING_HEARING_ADJOURNED);
+        JsonObject adjournHearingPayload = generateAdjournHearingPayload(caseId, defendantId, offenceId,applicationId, PUBLIC_HEARING_HEARING_ADJOURNED);
         adjournHearingRequest = adjournHearingPayload.toString();
         sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_HEARING_ADJOURNED, adjournHearingPayload, metadata);
     }
 
     private Metadata generateMetadata(String eventName) {
-        return metadataBuilder()
+        return JsonEnvelope.metadataBuilder()
                 .withId(UUID.randomUUID())
                 .withName(eventName)
                 .build();
     }
 
-    private JsonObject generateAdjournHearingPayload(String caseId, String defendantId, String offenceId, String eventName) {
+    private JsonObject generateAdjournHearingPayload(String caseId, String defendantId, String offenceId, String applicationId, String eventName) {
         String payloadStr = getStringFromResource(eventName + ".json")
                 .replaceAll("PROSECUTION_CASE_ID", caseId)
                 .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("OFFENCE_ID", offenceId);
+                .replaceAll("OFFENCE_ID", offenceId)
+                .replaceAll("APPLICATION_ID", applicationId);
         return new StringToJsonObjectConverter().convert(payloadStr);
     }
 

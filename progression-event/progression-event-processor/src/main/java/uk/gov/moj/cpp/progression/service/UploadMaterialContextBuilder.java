@@ -1,9 +1,10 @@
 package uk.gov.moj.cpp.progression.service;
 
-import uk.gov.justice.core.courts.NotificationDocumentState;
+import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.List;
 import java.util.UUID;
 
 public class UploadMaterialContextBuilder {
@@ -13,9 +14,10 @@ public class UploadMaterialContextBuilder {
     private UUID hearingId;
     private UUID materialId;
     private UUID fileId;
-    private NotificationDocumentState nowsNotificationDocumentState;
     private UUID caseId;
+    private UUID applicationId;
     private boolean isRemotePrintingRequired;
+    private List<EmailChannel> emailNotifications;
 
     public UploadMaterialContextBuilder setSender(final Sender sender) {
         this.sender = sender;
@@ -47,13 +49,13 @@ public class UploadMaterialContextBuilder {
         return this;
     }
 
-    public UploadMaterialContextBuilder setNowsNotificationDocumentState(final NotificationDocumentState nowsNotificationDocumentState) {
-        this.nowsNotificationDocumentState = nowsNotificationDocumentState;
+    public UploadMaterialContextBuilder setCaseId(final UUID caseId) {
+        this.caseId = caseId;
         return this;
     }
 
-    public UploadMaterialContextBuilder setCaseId(final UUID caseId) {
-        this.caseId = caseId;
+    public UploadMaterialContextBuilder setApplicationId(final UUID applicationId) {
+        this.applicationId = applicationId;
         return this;
     }
 
@@ -62,7 +64,12 @@ public class UploadMaterialContextBuilder {
         return this;
     }
 
-    public UploadMaterialContext createUploadMaterialContext() {
+    public UploadMaterialContextBuilder setEmailNotifications(final List<EmailChannel> emailNotifications) {
+        this.emailNotifications = emailNotifications;
+        return this;
+    }
+
+    public UploadMaterialContext build() {
         final UploadMaterialContext uploadMaterialContext = new UploadMaterialContext();
         uploadMaterialContext.setSender(sender);
         uploadMaterialContext.setOriginatingEnvelope(originatingEnvelope);
@@ -70,9 +77,10 @@ public class UploadMaterialContextBuilder {
         uploadMaterialContext.setHearingId(hearingId);
         uploadMaterialContext.setFileId(fileId);
         uploadMaterialContext.setMaterialId(materialId);
-        uploadMaterialContext.setNowsNotificationDocumentState(nowsNotificationDocumentState);
         uploadMaterialContext.setCaseId(caseId);
+        uploadMaterialContext.setApplicationId(applicationId);
         uploadMaterialContext.setRemotePrintingRequired(isRemotePrintingRequired);
+        uploadMaterialContext.setEmailNotifications(emailNotifications);
         return uploadMaterialContext;
     }
 }

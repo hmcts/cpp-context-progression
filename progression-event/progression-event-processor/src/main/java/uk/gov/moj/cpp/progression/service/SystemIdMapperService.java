@@ -23,7 +23,9 @@ public class SystemIdMapperService {
 
     protected static final String SOURCE_TYPE = "PROGRESSION_NOTIFICATION_ID";
 
-    protected static final String TARGET_TYPE = "CASE_ID";
+    protected static final String CASE_TARGET_TYPE = "CASE_ID";
+
+    protected static final String APPLICATION_TARGET_TYPE = "APPLICATION_ID";
 
     @Inject
     private SystemUserProvider systemUserProvider;
@@ -33,19 +35,35 @@ public class SystemIdMapperService {
 
     public Optional<SystemIdMapping> getCppCaseIdForNotificationId(final String notificationId) {
 
-        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, TARGET_TYPE, getSystemUserId());
+        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, CASE_TARGET_TYPE, getSystemUserId());
+    }
+
+    public Optional<SystemIdMapping> getCppApplicationIdForNotificationId(final String notificationId) {
+
+        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, APPLICATION_TARGET_TYPE, getSystemUserId());
     }
 
 
     @SuppressWarnings("squid:S3655")
     public void mapNotificationIdToCaseId(final UUID caseId, final UUID notificationId) {
 
-        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, caseId, TARGET_TYPE);
+        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, caseId, CASE_TARGET_TYPE);
 
         final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
 
         if (!response.isSuccess()) {
             throw new IllegalStateException(format("Failed to map case Id: %s to notification id %s", caseId, notificationId));
+        }
+    }
+
+    public void mapNotificationIdToApplicationId(final UUID applicationId, final UUID notificationId) {
+
+        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, applicationId, APPLICATION_TARGET_TYPE);
+
+        final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
+
+        if (!response.isSuccess()) {
+            throw new IllegalStateException(format("Failed to map case Id: %s to notification id %s", applicationId, notificationId));
         }
     }
 

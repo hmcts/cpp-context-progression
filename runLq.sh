@@ -7,8 +7,8 @@
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=progression
-EVENT_LOG_VERSION=1.1.4
-EVENT_BUFFER_VERSION=1.1.4
+EVENT_LOG_VERSION=1.1.8
+EVENT_BUFFER_VERSION=1.1.8
 
 
 

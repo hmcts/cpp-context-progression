@@ -17,6 +17,25 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.WireMockStubUtils.mockMaterialUpload;
 import static uk.gov.moj.cpp.progression.WireMockStubUtils.setupAsSystemUser;
+
+import uk.gov.justice.services.test.utils.core.http.RequestParams;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.justice.services.test.utils.core.rest.RestClient;
+import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+
 import com.google.common.io.Resources;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.response.Header;
@@ -30,22 +49,6 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.test.utils.core.http.RequestParams;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
-import uk.gov.justice.services.test.utils.core.rest.RestClient;
-import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
-
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 public class AbstractIT {
 
@@ -53,12 +56,14 @@ public class AbstractIT {
     protected static final UUID USER_ID_VALUE = randomUUID();
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
 
-    protected static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
+    public static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
     protected static final Header CPP_UID_HEADER_AS_ADMIN = new Header(USER_ID, USER_ID_VALUE_AS_ADMIN.toString());
 
     private static final String ENDPOINT_PROPERTIES_FILE = "endpoint.properties";
     protected static final Properties ENDPOINT_PROPERTIES = new Properties();
     protected static final String PUBLIC_EVENT_TOPIC = "public.event";
+    protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
+
 
     protected static RequestSpecification requestSpec;
     protected static String baseUri;
@@ -103,14 +108,16 @@ public class AbstractIT {
         return header;
     }
 
-    private static void readConfig() {
+
+    protected static void readConfig() {
+
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream(ENDPOINT_PROPERTIES_FILE)) {
             ENDPOINT_PROPERTIES.load(stream);
         } catch (final IOException e) {
             LOGGER.warn("Error reading properties from {}", ENDPOINT_PROPERTIES_FILE, e);
         }
-        final String baseUriProp = System.getProperty("INTEGRATION_HOST_KEY");
+        final String baseUriProp  = System.getProperty("INTEGRATION_HOST_KEY");
         baseUri = isNotEmpty(baseUriProp) ? format("http://%s:8080", baseUriProp) : ENDPOINT_PROPERTIES.getProperty("base-uri");
     }
 
@@ -181,7 +188,7 @@ public class AbstractIT {
         return Resources.toString(getResource(path), defaultCharset());
     }
 
-    protected static String getURL(final String property, final Object... args) {
+    public static String getURL(final String property, final Object... args) {
         return getBaseUri() + "/" + MessageFormat.format(ENDPOINT_PROPERTIES.getProperty(property), args);
     }
 

@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/courtApplicationParty.json",
+  "description": "The applicant or respondent of an application",
+  "type": "object",
+  "properties": {
+    "id": {
+		"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+	},
+    "synonym": {
+    	"description": "Provides the additional business persona of an applicant or respondent e.g. appellant, complainant, appellee, suspect",
+		"type": "string"
+	},
+	"personDetails": {
+	  "description": "Provided when the party is a person",
+      "$ref": "http://justice.gov.uk/core/courts/person.json"
+    },
+    "organisation": {
+	  "description": "Provided when the party is an organisation",
+      "$ref": "http://justice.gov.uk/core/courts/organisation.json"
+	},
+	"organisationPersons": {
+	  "description": "Provided when the party is an organisation",
+	  "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/associatedPerson.json"
+      }
+	},
+	"prosecutingAuthority": {
+		"description": "Provided when the party is a prosecutingAuthority for a linked case",
+		"$ref": "http://justice.gov.uk/core/courts/prosecutingAuthority.json"
+	},
+	"defendant": {
+		"description": "Provided when the party is a defendant for a linked case",
+		"$ref": "http://justice.gov.uk/core/courts/defendant.json"
+	},
+	"representationOrganisation": {
+      "description": "The organisation details of the appointed representation",
+      "$ref": "http://justice.gov.uk/core/courts/organisation.json"
+    }
+  },
+  "required": [
+		"id"
+	],
+  "additionalProperties": false
+}

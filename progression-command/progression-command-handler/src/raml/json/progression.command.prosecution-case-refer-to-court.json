@@ -45,7 +45,7 @@
                   "witnessStatement": "I did not do it",
                   "mitigation": "I was not there",
                   "alcoholReadingAmount": "111",
-                  "alcoholReadingMethod": "2222"
+                  "alcoholReadingMethodCode": "2222"
                 }
               }
             ],
@@ -206,6 +206,9 @@
         "jurisdictionType": "magistrates",
         "estimateMinutes": 20,
         "hasReportingRestrictions": true,
+        "courtCentre": {
+      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+      	},
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",
         "listingCalculationPoint": "2018-01-28",

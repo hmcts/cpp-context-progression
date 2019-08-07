@@ -17,6 +17,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
@@ -99,7 +101,8 @@ public class CourtDocumentAddedProcessorTest {
 
         return CourtDocument.courtDocument().withName("SJP notice")
                 .withDocumentTypeId(randomUUID()).withCourtDocumentId(randomUUID())
-                .withMaterials(Collections.singletonList(Material.material().withId(randomUUID()).build()))
+                .withMaterials(Collections.singletonList(Material.material().withId(randomUUID())
+                        .withUploadDateTime(ZonedDateTime.now(ZoneOffset.UTC)).build()))
                 .build();
 
     }

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/summons/summons-offence.json",
+  "description": "The details for of an offence rendered in a summons document",
+  "type": "object",
+  "properties": {
+    "offenceTitle": {
+		"description": "The CJS Title for the offence",
+		"type": "string"
+	},
+	"offenceTitleWelsh": {
+		"type": "string"
+	},
+	"offenceLegislation": {
+		"type": "string"
+	},
+	"offenceLegislationWelsh": {
+		"type": "string"
+	}
+  },
+  "required": [
+    "offenceTitle",
+	"offenceLegislation"
+  ],
+  "additionalProperties": false
+}

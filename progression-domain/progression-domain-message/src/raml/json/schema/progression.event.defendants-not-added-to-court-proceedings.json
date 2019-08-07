@@ -1,0 +1,26 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "id" : "http://justice.gov.uk/core/courts/defendants-not-added-to-court-proceedings.json",
+  "type" : "object",
+  "properties" : {
+    "defendants" : {
+      "type" : "array",
+      "minItems" : 1,
+      "items" : {
+        "$ref" : "http://justice.gov.uk/core/courts/defendant.json#"
+      }
+    },
+    "listHearingRequests" : {
+      "type" : "array",
+      "minItems" : 1,
+      "items" : {
+        "$ref" : "http://justice.gov.uk/core/courts/listHearingRequest.json#"
+      }
+    }
+  },
+  "required" : [
+    "defendants",
+    "listHearingRequests"
+  ],
+  "additionalProperties" : false
+}

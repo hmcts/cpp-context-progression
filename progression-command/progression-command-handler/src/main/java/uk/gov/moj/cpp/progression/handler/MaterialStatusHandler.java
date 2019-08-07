@@ -50,13 +50,6 @@ public class MaterialStatusHandler {
         appendEventsToStream(envelope, eventStream, events);
     }
 
-    private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
-        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
-        eventStream.append(
-                events
-                        .map(enveloper.withMetadataFrom(jsonEnvelope)));
-    }
-
     @Handles(PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS)
     public void updateStatus(final JsonEnvelope envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
@@ -69,5 +62,9 @@ public class MaterialStatusHandler {
         appendEventsToStream(envelope, eventStream, events);
     }
 
+    private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
+        eventStream.append(events.map(enveloper.withMetadataFrom(jsonEnvelope)));
+    }
 
 }

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class ReferenceDataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
-    public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit";
+    public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit.v2";
     public static final String REFERENCEDATA_GET_PROSECUTOR = "referencedata.query.prosecutor";
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
@@ -45,7 +45,7 @@ public class ReferenceDataService {
         final JsonEnvelope request = enveloper.withMetadataFrom(event, REFERENCEDATA_GET_ORGANISATION).apply(payload);
         final JsonEnvelope jsonEnvelop = requester.request(request);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("'referencedata.query.organisation-unit' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
+            LOGGER.info("'referencedata.query.organisation-unit.v2' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
         }
         return Optional.of(jsonEnvelop.payloadAsJsonObject());
     }

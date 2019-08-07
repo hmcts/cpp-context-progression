@@ -1,0 +1,29 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/core/courts/authorisedResourceGroup.json",
+	"type": "object",
+	"properties": {
+		"name": {
+		  "type": "string"
+		},
+		"rank": {
+		  "type": "string"
+		},
+		"isSearchResourceGroup": {
+		  "type": "boolean"
+		},
+		"authorisedResources": {
+             "description": "The web resources that are top level resources (accessable from the homepage) that the authenticated user is authorised to access",
+			 "type": "array",
+			 "minItems": 1,
+			 "additionalItems": false,
+			 "items": {
+				 "$ref": "http://justice.gov.uk/core/courts/authorisedResource.json"
+			}
+		}
+	},
+	"required": [
+		"name", "rank", "isSearchResourceGroup", "authorisedResources"
+	],
+	"additionalProperties": false
+}

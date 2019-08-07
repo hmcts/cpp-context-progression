@@ -14,6 +14,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;
@@ -68,7 +69,7 @@ public class CourtDocumentAddedProcessor {
         final Material material = Material.material().withId(commandMaterial
                 .getId()).withGenerationStatus(commandMaterial.getGenerationStatus())
                 .withName(commandMaterial.getName())
-                .withUploadDateTime(ZonedDateTime.now())
+                .withUploadDateTime(ZonedDateTime.now(ZoneOffset.UTC))
                 .withUserGroups(userGroupsArray.stream().map(ug -> ((JsonString)ug).getString()).collect(Collectors.toList()))
                 .build();
         return CourtDocument.courtDocument()

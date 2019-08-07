@@ -30,6 +30,12 @@ public class CourtDocumentIndexEntity implements Serializable {
     @JoinColumn(name = "court_document_id", nullable=false)
     private CourtDocumentEntity courtDocument;
 
+    @Column(name = "document_category")
+    private String documentCategory;
+
+    @Column(name="hearing_id")
+    private UUID hearingId;
+
     public UUID getId() {
         return id;
     }
@@ -68,5 +74,21 @@ public class CourtDocumentIndexEntity implements Serializable {
 
     public void setCourtDocument(CourtDocumentEntity courtDocument) {
         this.courtDocument = courtDocument;
+    }
+
+    public String getDocumentCategory() {
+        return documentCategory;
+    }
+
+    public UUID getHearingId() {
+        return hearingId;
+    }
+
+    public void setDocumentCategory(final String documentCategory) {
+        this.documentCategory = documentCategory;
+    }
+
+    public void setHearingId(final UUID hearingId) {
+        this.hearingId = hearingId;
     }
 }

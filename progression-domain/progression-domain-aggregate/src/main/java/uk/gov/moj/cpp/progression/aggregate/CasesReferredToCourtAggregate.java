@@ -5,6 +5,8 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoN
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
+import uk.gov.justice.core.courts.CourtProceedingsInitiated;
+import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.domain.aggregate.Aggregate;
 
@@ -26,7 +28,11 @@ public class CasesReferredToCourtAggregate implements Aggregate {
                 when(CasesReferredToCourt.class).apply(e -> {
                             //do nothing
                         }
-                ), otherwiseDoNothing());
+                ),
+                when(CourtProceedingsInitiated.class).apply(courtProceedingsInitiated -> {
+                    // do nothing
+                }),
+                otherwiseDoNothing());
 
     }
 
@@ -36,4 +42,8 @@ public class CasesReferredToCourtAggregate implements Aggregate {
     }
 
 
+    public Stream<Object> initiateCourtProceedings(CourtReferral courtReferral) {
+        LOGGER.info("Court Proceedings being initiated");
+        return apply(Stream.of(CourtProceedingsInitiated.courtProceedingsInitiated().withCourtReferral(courtReferral).build()));
+    }
 }
