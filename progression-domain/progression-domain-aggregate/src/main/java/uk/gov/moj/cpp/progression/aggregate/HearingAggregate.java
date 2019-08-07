@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 7006066325447433090L;
+    private static final long serialVersionUID = 100L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
 
     @Override

@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("squid:S1948")
 public class MaterialAggregate implements Aggregate {
-
+    private static final long serialVersionUID = 100L;
     private MaterialDetails details;
 
     @Override
