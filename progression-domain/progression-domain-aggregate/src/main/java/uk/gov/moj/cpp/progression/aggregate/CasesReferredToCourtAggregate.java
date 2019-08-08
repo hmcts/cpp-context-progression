@@ -20,7 +20,7 @@ public class CasesReferredToCourtAggregate implements Aggregate {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtAggregate.class);
-    private static final long serialVersionUID = 171032067089771351L;
+    private static final long serialVersionUID = 100L;
 
     @Override
     public Object apply(final Object event) {
