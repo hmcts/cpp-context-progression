@@ -5,7 +5,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -17,10 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
 @Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandApiTest {
@@ -46,11 +45,6 @@ public class ProgressionCommandApiTest {
         final String userId = UUID.randomUUID().toString();
         final String caseId = UUID.randomUUID().toString();
         final JsonObject value = mock(JsonObject.class);
-        final JsonObjectMetadata metadata = mock(JsonObjectMetadata.class);
-        when(command.payloadAsJsonObject()).thenReturn(value);
-        when(value.getString("caseId")).thenReturn(caseId);
-        when(metadata.userId()).thenReturn(Optional.of(userId));
-        when(command.metadata()).thenReturn(metadata);
         when(enveloper.withMetadataFrom(command, "progression.command.handler.add-case-to-crown-court"))
                 .thenReturn(function);
         when(function.apply(any())).thenReturn(command);

@@ -6,12 +6,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>7.1.4</version>
+        <version>9.0.18-FRAMEWORK-SNAPSHOT</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>2.0.145-FRAMEWORK-SNAPSHOT</version>
+    <version>6.0.0-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -27,6 +27,7 @@
         <module>progression-performance-test</module>
         <module>progression-service</module>
         <module>progression-test-utilities</module>
+        <module>progression-event-sources</module>
     </modules>
 
     <properties>
@@ -43,7 +44,7 @@
         <referencedata.version>2.0.240</referencedata.version>
         <listing.version>1.0.18</listing.version>
         <hearing.version>2.0.154</hearing.version>
-        <referencedata.offence.version>1.0.19</referencedata.offence.version>
+        <referencedata.offence.version>1.0.21</referencedata.offence.version>
         <criminal-court-public-model.version>1.0.31</criminal-court-public-model.version>
 
     </properties>

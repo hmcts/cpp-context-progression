@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 
 @SuppressWarnings({"squid:S3776", "squid:S134", "squid:MethodCyclomaticComplexity"})
 @Transformation

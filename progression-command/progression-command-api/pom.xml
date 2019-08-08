@@ -3,8 +3,8 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
-       <version>2.0.145-FRAMEWORK-SNAPSHOT</version>
-    </parent>
+        <version>6.0.0-FRAMEWORK-SNAPSHOT</version>
+</parent>
     <artifactId>progression-command-api</artifactId>
     <packaging>war</packaging>
 
@@ -84,8 +84,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>uk.gov.justice.maven.generator</groupId>
-                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.framework-generators</groupId>
+                <artifactId>messaging-client-generator-plugin</artifactId>
                 <dependencies>
                         <dependency>
                         <groupId>uk.gov.moj.cpp.progression</groupId>

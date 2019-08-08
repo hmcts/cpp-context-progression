@@ -11,13 +11,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_COURTCENTER;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_DOCUMENT_TYPE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_OUCODE;
@@ -29,7 +29,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -46,7 +45,6 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 
 import com.google.common.io.Resources;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -98,7 +96,7 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.requestAsAdmin(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID("referencedata.query.offences"), payload));
+                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.query.offences"), payload));
 
 
         //when
@@ -133,7 +131,7 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.requestAsAdmin(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID("referencedata.query.offences"), payload));
+                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.query.offences"), payload));
 
 
         //when
@@ -163,7 +161,7 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.request(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID("referencedata.get.judge"), payload));
+                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.get.judge"), payload));
 
 
         //when
@@ -198,7 +196,7 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.request(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID("referencedata.get.court-centre"), payload));
+                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.get.court-centre"), payload));
 
 
         //when
@@ -230,7 +228,7 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.request(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID(ORGANISATION_UNIT), payload));
+                .thenReturn(envelopeFrom(metadataWithRandomUUID(ORGANISATION_UNIT), payload));
 
 
         //when
@@ -269,7 +267,7 @@ public class ReferenceDataServiceTest {
                 new ByteArrayInputStream(getDocumentTypeDataById(documentTypeId).getBytes()))
                 .readObject();
         when(requester.request(any()))
-                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(metadataWithRandomUUID(REFERENCEDATA_GET_DOCUMENT_TYPE), payload));
+                .thenReturn(envelopeFrom(metadataWithRandomUUID(REFERENCEDATA_GET_DOCUMENT_TYPE), payload));
 
 
         //when
@@ -303,11 +301,11 @@ public class ReferenceDataServiceTest {
         final JsonObject payload = getPayloadForCourts();
 
         when(requester.request(any()))
-                .thenReturn(JsonEnvelope.envelopeFrom(
+                .thenReturn(envelopeFrom(
                         JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE).build(),
                         payload));
         //when
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope envelope = envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE).build(),
                 payload);
 
@@ -337,11 +335,11 @@ public class ReferenceDataServiceTest {
         final JsonObject payload = getPayloadForOrgUnits(id.toString());
 
         when(requester.request(any()))
-                .thenReturn(JsonEnvelope.envelopeFrom(
+                .thenReturn(envelopeFrom(
                         JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER).build(),
                         payload));
         //when
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope envelope = envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER).build(),
                 payload);
 
@@ -456,13 +454,13 @@ public class ReferenceDataServiceTest {
     }
 
     private JsonEnvelope getEnvelope(final String name) {
-        return JsonEnvelope.envelopeFrom(
+        return envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
                 Json.createObjectBuilder().build());
     }
 
     private JsonEnvelope getEnvelope(final String name,JsonObject jsonObject) {
-        return JsonEnvelope.envelopeFrom(
+        return envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
                 jsonObject);
     }

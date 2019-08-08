@@ -3,7 +3,7 @@
     <parent>
         <artifactId>progression-domain</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-       <version>2.0.145-FRAMEWORK-SNAPSHOT</version>
+        <version>6.0.0-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>progression-domain-aggregate</artifactId>
@@ -73,8 +73,8 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>generator-plugin</artifactId>
-                <groupId>uk.gov.justice.maven.generator</groupId>
+                <groupId>uk.gov.justice.schema</groupId>
+                <artifactId>catalog-generation-plugin</artifactId>
                 <configuration>
                     <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
                 </configuration>

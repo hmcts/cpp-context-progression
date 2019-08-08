@@ -1,22 +1,3 @@
-#!/usr/bin/env bash
+CONTEXT_NAME=progression
 
-#The prerequisite for this script is that vagrant is running
-#Script that runs, liquibase, deploys wars and runs integration tests
-
-
-${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
-declare WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
-declare CONTEXT_NAME=progression
-declare EVENT_LOG_VERSION=1.1.8
-declare EVENT_BUFFER_VERSION=1.1.8
-declare FILE_SERVICE_VERSION=1.17.2
-
-
-#fail script on error
-set -e
-
-source function.sh
-
-runViewStoreLiquibase
-
-
+mvn -f ${CONTEXT_NAME}-viewstore/${CONTEXT_NAME}-viewstore-liquibase/pom.xml -Dliquibase.url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore -Dliquibase.username=${CONTEXT_NAME} -Dliquibase.password=${CONTEXT_NAME} -Dliquibase.logLevel=info resources:resources liquibase:update

@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/public/progression/case-document-added",
   "type": "object",
   "properties": {
     "cppCaseId": {

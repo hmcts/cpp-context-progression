@@ -3,12 +3,22 @@ package uk.gov.justice.api.resource;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
+import static javax.ws.rs.core.Response.status;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+
+import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
+import uk.gov.justice.services.core.accesscontrol.AccessControlService;
+import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
+import uk.gov.justice.services.core.annotation.Adapter;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.file.api.sender.FileData;
+import uk.gov.justice.services.file.api.sender.FileSender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,18 +32,8 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
 
-import uk.gov.justice.services.core.accesscontrol.AccessControlFailureMessageGenerator;
-import uk.gov.justice.services.core.accesscontrol.AccessControlService;
-import uk.gov.justice.services.core.accesscontrol.AccessControlViolation;
-import uk.gov.justice.services.core.annotation.Adapter;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.file.api.sender.FileData;
-import uk.gov.justice.services.file.api.sender.FileSender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 /**
- *
  * @deprecated This is deprecated for Release 2.4
- *
  */
 @Deprecated
 @Adapter(Component.COMMAND_API)
@@ -60,16 +60,19 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
 
     @Override
     public Response uploadCaseDocument(final MultipartFormDataInput multipartFormDataInput,
-                    final String userId, final String session, final String correlationId,
-                    final String caseId) {
+                                       final String userId, final String session, final String correlationId,
+                                       final String caseId) {
 
         LOG.info("Received Document upload request from userId = {} sessionId = {} correlationId = {} caseId = {}",
                 userId, session, correlationId, caseId);
 
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.command.upload-case-documents")
+                .withUserId(userId);
+
         final JsonEnvelope envelope = envelopeFrom(
-                metadataOf(randomUUID(), "progression.command.upload-case-documents")
-                        .withUserId(userId)
-                        .build(),
+                metadataBuilder,
                 createObjectBuilder()
                         .add("caseId", caseId)
                         .build());
@@ -88,7 +91,7 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
             return status(FORBIDDEN).entity(responseErrorMsg.toString()).build();
         }
 
-        try{
+        try {
 
             final KeyValue<Optional<String>, Optional<InputStream>> fileNameAndContent = uploadCaseDocumentsFormParser.parse(multipartFormDataInput);
 
@@ -101,8 +104,8 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
             final String fileName = optionalFileName.get();
 
             if (!(fileName.endsWith(".pdf") || fileName.endsWith(".doc") || fileName.endsWith(".docx"))) {
-              LOG.error(SUPPORTED_FILE_FORMATS);
-              return Response.status(BAD_REQUEST).entity(SUPPORTED_FILE_FORMATS).build();
+                LOG.error(SUPPORTED_FILE_FORMATS);
+                return Response.status(BAD_REQUEST).entity(SUPPORTED_FILE_FORMATS).build();
             }
 
             final Optional<InputStream> optionalFileContent = fileNameAndContent.getValue();
@@ -129,8 +132,9 @@ public class DefaultCasesCaseidCasedocumentsResource implements UploadCaseDocume
 
             return Response.status(ACCEPTED)
                     .entity(new GenericEntity<String>(createObjectBuilder()
-                        .add("materialId", fileData.fileId())
-                        .build().toString()) {})
+                            .add("materialId", fileData.fileId())
+                            .build().toString()) {
+                    })
                     .build();
 
         } catch (final IOException e) {
