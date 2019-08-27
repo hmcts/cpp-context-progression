@@ -59,7 +59,7 @@ public class SearchProsecutionCase {
                     .withSearchCaseEntity(searchEntity)
                     .withDefendantFullName()
                     .withSearchTarget()
-                    .build().getSearchTarget());
+                    .build().getSearchTarget().trim());
             searchRepository.save(searchEntity);
             LOGGER.info("Non CPS Search target created : {}", searchEntity.getSearchTarget());
         } else {
@@ -137,6 +137,7 @@ public class SearchProsecutionCase {
                 .withDefendantId(defendant.getId())
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withPersonDefendant(defendant.getPersonDefendant())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                 .build();
     }
 

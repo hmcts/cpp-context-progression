@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.domain.transformation.util;
 
-
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -177,7 +176,7 @@ public class OffenceHelper {
         }
         if (jsonObject.containsKey(CommonHelper.ALCOHOL_READING_AMOUNT) && jsonObject.getString(CommonHelper.ALCOHOL_READING_AMOUNT)!=null) {
             try {
-                int alcoholReadingAmount = Integer.parseInt(jsonObject.getString(CommonHelper.ALCOHOL_READING_AMOUNT).replaceAll("\\s+", ""));
+                final int alcoholReadingAmount = Integer.parseInt(jsonObject.getString(CommonHelper.ALCOHOL_READING_AMOUNT).replaceAll("\\s+", ""));
                 jsonObjectBuilder.add(CommonHelper.ALCOHOL_READING_AMOUNT, alcoholReadingAmount);
             } catch (NumberFormatException numberFormatException) {
                 jsonObjectBuilder.add(CommonHelper.ALCOHOL_READING_AMOUNT, 0);

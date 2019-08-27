@@ -1,10 +1,13 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.util.Objects.nonNull;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.COURT_EXTRACT;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
+import uk.gov.justice.core.courts.CompanyRepresentative;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.CourtApplicationOutcomeType;
@@ -29,6 +32,7 @@ import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
 import uk.gov.justice.progression.courts.exract.AttendanceDays;
+import uk.gov.justice.progression.courts.exract.CompanyRepresentatives;
 import uk.gov.justice.progression.courts.exract.CourtApplications;
 import uk.gov.justice.progression.courts.exract.CourtDecisions;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
@@ -56,15 +60,11 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
-
-
 @SuppressWarnings({"squid:S1612", "squid:S3655", "squid:S2259", "squid:S1188", "squid:S2789", "squid:S1067","squid:MethodCyclomaticComplexity", "pmd:NullAssignment"})
 public class CourtExtractTransformer {
 
     @Inject
     TransformationHelper transformationHelper;
-
 
     public CourtExtractRequested getCourtExtractRequested(final GetCaseAtAGlance caseAtAGlance, final String defendantId, final String extractType, final List<String> selectedHearingIdList, final UUID userId, final ProsecutionCase prosecutionCase) {
         final CourtExtractRequested.Builder courtExtract = CourtExtractRequested.courtExtractRequested();
@@ -103,6 +103,11 @@ public class CourtExtractTransformer {
         if (latestHearing.getProsecutionCounsels() != null) {
             courtExtract.withProsecutionCounsels(transformProsecutionCounsels(latestHearing.getProsecutionCounsels()));
         }
+
+        if(!isEmpty(latestHearing.getCompanyRepresentatives())){
+            courtExtract.withCompanyRepresentatives(transformCompanyRepresentatives(latestHearing.getCompanyRepresentatives()));
+        }
+
         courtExtract.withCourtDecisions(transformCourtDecisions(hearingsList));
 
         //parentGuardian
@@ -188,7 +193,7 @@ public class CourtExtractTransformer {
                     .map(r -> r.getApplicationResponse())
                     .filter(Objects::nonNull)
                     .findAny()
-                    .orElse(StringUtils.EMPTY);
+                    .orElse(EMPTY);
 
             final LocalDate responseDate = resultedApplication.getRespondents().stream()
                     .filter(Objects::nonNull)
@@ -471,4 +476,12 @@ public class CourtExtractTransformer {
         return prosecutionCaseIdentifier.getCaseURN() != null ? prosecutionCaseIdentifier.getCaseURN() : prosecutionCaseIdentifier.getProsecutionAuthorityReference();
     }
 
+    private List<CompanyRepresentatives> transformCompanyRepresentatives(final List<CompanyRepresentative> companyRepresentatives) {
+        return companyRepresentatives.stream().map(cr -> CompanyRepresentatives.companyRepresentatives()
+                .withName(transformationHelper.getName(cr.getFirstName(),EMPTY,cr.getLastName()))
+                .withAttendanceDays(transformAttendanceDay(cr.getAttendanceDays()))
+                .withRole(cr.getPosition() != null ? cr.getPosition().toString() : EMPTY)
+                .build()
+        ).collect(Collectors.toList());
+    }
 }

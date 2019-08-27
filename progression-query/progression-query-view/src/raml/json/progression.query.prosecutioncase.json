@@ -285,7 +285,25 @@
 					}
 				],
 				"reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
-				"type": "Sentence"
+				"type": "Sentence",
+				"companyRepresentatives":[ {
+					"id": "231947a3-c50c-4dbb-accf-b2758b1d2d6d",
+					"title": "Mr",
+					"firstName": "Rob",
+					"lastName": "Billworth",
+					"position": "DIRECTOR",
+					"defendants": [
+						"0305de0e-eb0e-478f-8ae4-f2c7966961e3",
+						"d06f6539-2a7c-4bc8-bca3-A1e5a225471a"
+					],
+					"attendanceDays": [
+						"2018-07-17",
+						"2018-07-18",
+						"2018-07-19",
+						"2018-07-21",
+						"2018-07-22"
+					]
+				}]
 			},
 			{
 				"courtCentre": {
@@ -351,7 +369,25 @@
 				],
 				"id": "ff431c9c-2a44-4c8d-9621-d8265337541c",
 				"reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
-				"type": "Further Plea & Trial Preparation"
+				"type": "Further Plea & Trial Preparation",
+				"companyRepresentatives":[ {
+					"id": "231947a3-c50c-4dbb-accf-b2758b1d2d6d",
+					"title": "Mr",
+					"firstName": "Rob",
+					"lastName": "Billworth",
+					"position": "DIRECTOR",
+					"defendants": [
+						"0305de0e-eb0e-478f-8ae4-f2c7966961e3",
+						"d06f6539-2a7c-4bc8-bca3-A1e5a225471a"
+					],
+					"attendanceDays": [
+						"2018-07-17",
+						"2018-07-18",
+						"2018-07-19",
+						"2018-07-21",
+						"2018-07-22"
+					]
+				}]
 			}
 		],
 		"id": "368b9b20-e357-41b5-9452-6b2092c80ad0",

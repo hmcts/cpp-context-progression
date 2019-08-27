@@ -79,7 +79,6 @@ public class HearingConfirmedEventProcessorTest {
     private ProgressionService progressionService;
     @Mock
     private SummonsService summonsService;
-
     @Mock
     private Function<Object, JsonEnvelope> enveloperFunction;
     @Mock

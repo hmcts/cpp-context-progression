@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.nonNull;
+
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -13,7 +15,6 @@ import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -180,10 +181,30 @@ public class PostalService {
 
     private PostalDefendant buildDefendant(final Defendant defendant) {
         return PostalDefendant.builder()
-                .withName(defendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + defendant.getPersonDefendant().getPersonDetails().getLastName())
-                .withDateOfBirth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth())
-                .withAddress(getPostalAddress(defendant.getPersonDefendant().getPersonDetails().getAddress()))
+                .withName(getDefendantName(defendant))
+                .withDateOfBirth(nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getPersonDetails().getDateOfBirth() : null)
+                .withAddress(getDefendantPostalAddress(defendant))
                 .build();
+    }
+
+    private String getDefendantName(Defendant defendant){
+        if(nonNull(defendant.getPersonDefendant())){
+            return defendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + defendant.getPersonDefendant().getPersonDetails().getLastName();
+        }
+        if(nonNull(defendant.getLegalEntityDefendant())){
+            return defendant.getLegalEntityDefendant().getOrganisation().getName();
+        }
+        return EMPTY;
+    }
+
+    private PostalAddress getDefendantPostalAddress(Defendant defendant){
+        if(nonNull(defendant.getPersonDefendant())){
+            return getPostalAddress(defendant.getPersonDefendant().getPersonDetails().getAddress());
+        }
+        if(nonNull(defendant.getLegalEntityDefendant())){
+            return getPostalAddress(defendant.getLegalEntityDefendant().getOrganisation().getAddress());
+        }
+        return null;
     }
 
     private PostalAddress getPostalAddress(final Address address) {
@@ -225,13 +246,15 @@ public class PostalService {
             return organisationOptional.map(Organisation::getName).orElse(EMPTY);
         }
 
-        return defendantOptional.map(Defendant::getPersonDefendant).map(PersonDefendant::getPersonDetails)
-                .map(person -> {
-                    final String firstName = ofNullable(person.getFirstName()).orElse(EMPTY);
-                    final String lastName = ofNullable(person.getLastName()).orElse(EMPTY);
-                    return firstName + " " +lastName;
-                })
-                .orElseGet(() -> prosecutingAuthorityOptional.map(ProsecutingAuthority::getName).orElse(EMPTY));
+        if(prosecutingAuthorityOptional.isPresent()){
+            return prosecutingAuthorityOptional.get().getName();
+        }
+
+        if(defendantOptional.isPresent()){
+            return getDefendantName(defendantOptional.get());
+        }
+
+        return EMPTY;
     }
 
     private PostalAddress getAddress(final CourtApplicationParty courtApplicationParty) {
@@ -252,8 +275,11 @@ public class PostalService {
             return getPostalAddress(organisationOptional.get().getAddress());
         }
 
-        return defendantOptional.map(defendant -> getPostalAddress(defendant.getPersonDefendant().getPersonDetails().getAddress()))
-                .orElseGet(() -> prosecutingAuthorityOptional.map(prosecutingAuthority -> getPostalAddress(prosecutingAuthority.getAddress())).orElse(null));
+        if(defendantOptional.isPresent()){
+            return getDefendantPostalAddress(defendantOptional.get());
+        }
+
+        return prosecutingAuthorityOptional.map(prosecutingAuthority -> getPostalAddress(prosecutingAuthority.getAddress())).orElse(null);
     }
 
     private CourtDocument courtDocument(final UUID applicationId, final UUID materialId) {

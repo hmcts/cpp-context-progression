@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.AttendanceDay;
+import uk.gov.justice.core.courts.CompanyRepresentative;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -36,6 +37,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.PleaValue;
+import uk.gov.justice.core.courts.Position;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -275,6 +277,11 @@ public class CourtExtractTransformerTest {
         //referralReason
         assertThat(courtExtractRequested.getReferralReason(), is(DESCRIPTION));
 
+        //
+        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getName(),is(FIRST_NAME+" "+LAST_NAME));
+        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getRole(),is(Position.DIRECTOR.toString()));
+        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getAttendanceDays().size(), is((1)));
+
         //courtApplications
         assertThat(courtExtractRequested.getCourtApplications().get(0).getApplicationType(), is(APPLICATION_TYPE));
         assertThat(courtExtractRequested.getCourtApplications().get(0).getDecisionDate(), is(OUTCOME_DATE));
@@ -323,6 +330,8 @@ public class CourtExtractTransformerTest {
                         .withApplicantCounsels(createApplicationCounsels())
                         .withRespondentCounsels(createRespondentCounsels())
                         .withDefendantAttendance(createDefendantAttendance(DEFENDANT_ID))
+                        .withCompanyRepresentatives(createCompanyRepresentstives())
+
                         .build(),
                 Hearings.hearings()
                         .withId(HEARING_ID_2)
@@ -337,8 +346,18 @@ public class CourtExtractTransformerTest {
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels())
                         .withRespondentCounsels(createRespondentCounsels())
+                        .withCompanyRepresentatives(createCompanyRepresentstives())
                         .build()
         );
+    }
+
+    private List<CompanyRepresentative> createCompanyRepresentstives() {
+        return Arrays.asList(CompanyRepresentative.companyRepresentative()
+                .withFirstName(FIRST_NAME)
+                .withLastName(LAST_NAME)
+                .withPosition(Position.DIRECTOR)
+                .withAttendanceDays(Arrays.asList(LocalDate.now()))
+                .build());
     }
 
     private List<DefendantAttendance> createDefendantAttendance(final UUID defendantId) {

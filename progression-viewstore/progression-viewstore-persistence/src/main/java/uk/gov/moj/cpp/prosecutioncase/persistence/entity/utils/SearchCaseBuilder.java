@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -191,6 +193,13 @@ public class SearchCaseBuilder {
             return this;
         }
 
+        public SearchCaseBuilder.CaseBuilder withLegalEntityDefendant(final LegalEntityDefendant legalEntityDefendant) {
+            if (Objects.nonNull(legalEntityDefendant)) {
+                final Organisation organisation  = legalEntityDefendant.getOrganisation();
+                defendantFirstName = defaultString(organisation.getName());
+            }
+            return this;
+        }
         public SearchCaseBuilder.CaseBuilder withSearchCaseEntity(final SearchProsecutionCaseEntity searchCaseEntity) {
             this.defendantId = searchCaseEntity.getDefendantId();
             this.caseId = searchCaseEntity.getCaseId();

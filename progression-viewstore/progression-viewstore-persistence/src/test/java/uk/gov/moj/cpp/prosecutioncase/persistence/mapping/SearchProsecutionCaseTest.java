@@ -23,6 +23,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -62,7 +63,9 @@ public class SearchProsecutionCaseTest {
     @Mock
     private SearchProsecutionCaseRepository searchRepository;
     private ProsecutionCase prosecutionCase;
+    private ProsecutionCase prosecutionCaseWithLegalEntity;
     private Defendant defendant;
+    private Defendant defendantWithLegalEntity;
     private CaseProgressionDetail cpsCaseDetail;
     private uk.gov.moj.cpp.progression.persistence.entity.Defendant cpsDefendant;
 
@@ -80,6 +83,9 @@ public class SearchProsecutionCaseTest {
                 .withPersonDetails(personDetails)
                 .build();
 
+        LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
+                .withOrganisation(Organisation.organisation().withName("ABC LTD").build()).build();
+
         ProsecutionCaseIdentifier prosecutionCaseIdentifier
                 = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                 .withProsecutionAuthorityReference("PAR-100")
@@ -91,11 +97,23 @@ public class SearchProsecutionCaseTest {
                 .withPersonDefendant(personDefendant)
                 .build();
 
+        defendantWithLegalEntity = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withLegalEntityDefendant(legalEntityDefendant)
+                .build();
+
         prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66"))
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier)
                 .withCaseStatus("SJP Referral")
                 .withDefendants(Collections.singletonList(defendant))
+                .build();
+
+        prosecutionCaseWithLegalEntity = ProsecutionCase.prosecutionCase()
+                .withId(UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66"))
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier)
+                .withCaseStatus("SJP Referral")
+                .withDefendants(Collections.singletonList(defendantWithLegalEntity))
                 .build();
 
         cpsCaseDetail = new CaseProgressionDetail();
@@ -117,6 +135,18 @@ public class SearchProsecutionCaseTest {
         assertEquals(expectedSearchTarget, searchProsecutionCaseDetails.getSearchTarget());
 
     }
+
+    @Test
+    public void testExpectedSearchTargetForSJPCasesWithLegalEntity() {
+        final SearchProsecutionCaseEntity searchProsecutionCaseDetails
+                = jpaMapper.makeSearchable(prosecutionCaseWithLegalEntity, defendantWithLegalEntity);
+
+        final String expectedSearchTarget = "PAR-100 | ABC LTD";
+        assertNotNull(searchProsecutionCaseDetails);
+        assertEquals(expectedSearchTarget, searchProsecutionCaseDetails.getSearchTarget());
+
+    }
+
     @Test
     public void testExpectedSearchTargetNoPersonDefendant() {
         defendant = Defendant.defendant()
@@ -183,35 +213,35 @@ public class SearchProsecutionCaseTest {
                         .build())
                 .withRespondents(Arrays.asList(
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withPersonDetails(Person.person()
-                                        .withFirstName(RESPONDENTS_1_PERSON_FIRST_NAME)
-                                        .withMiddleName(RESPONDENTS_1_PERSON_MIDDLE_NAME)
-                                        .withLastName(RESPONDENTS_1_PERSON_LAST_NAME)
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withPersonDetails(Person.person()
+                                                .withFirstName(RESPONDENTS_1_PERSON_FIRST_NAME)
+                                                .withMiddleName(RESPONDENTS_1_PERSON_MIDDLE_NAME)
+                                                .withLastName(RESPONDENTS_1_PERSON_LAST_NAME)
+                                                .build())
                                         .build())
-                                .build())
-                        .build(),
+                                .build(),
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_2_ORGANISATION_NAME)
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withOrganisation(Organisation.organisation()
+                                                .withName(RESPONDENTS_2_ORGANISATION_NAME)
+                                                .build())
                                         .build())
-                                .build())
-                        .build(),
+                                .build(),
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withPersonDetails(Person.person()
-                                        .withLastName(RESPONDENTS_3_PERSON_LAST_NAME) //Missing first & middle names.
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withPersonDetails(Person.person()
+                                                .withLastName(RESPONDENTS_3_PERSON_LAST_NAME) //Missing first & middle names.
+                                                .build())
                                         .build())
-                                .build())
-                        .build(),
+                                .build(),
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_4_ORGANISATION_NAME)
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withOrganisation(Organisation.organisation()
+                                                .withName(RESPONDENTS_4_ORGANISATION_NAME)
+                                                .build())
                                         .build())
-                                .build())
-                        .build()))
+                                .build()))
                 .build();
         //when
         final SearchProsecutionCaseEntity searchProsecutionCaseDetails = jpaMapper.makeApplicationSearchable(courtApplication);
@@ -228,7 +258,7 @@ public class SearchProsecutionCaseTest {
                 .concat(SPACE).concat(SPACE)
                 .concat(RESPONDENTS_3_PERSON_LAST_NAME).concat(COMMA)
                 .concat(RESPONDENTS_4_ORGANISATION_NAME);
-        
+
         assertNotNull(searchProsecutionCaseDetails);
         assertEquals(expectedSearchTarget, searchProsecutionCaseDetails.getSearchTarget());
 
@@ -279,14 +309,14 @@ public class SearchProsecutionCaseTest {
         final static String APPLICANT_PERSON_MIDDLE_NAME = "ApplicantPersonMiddleName";
         final static String APPLICANT_PERSON_LAST_NAME = "ApplicantPersonLastName";
         final static String APPLICANT_ORGANISATION_NAME = "ApplicantOrganisationName";
-        
+
         final static String RESPONDENTS_1_PERSON_FIRST_NAME = "Respondent1PersonFirstName";
         final static String RESPONDENTS_1_PERSON_MIDDLE_NAME = "Respondent1PersonMiddleName";
         final static String RESPONDENTS_1_PERSON_LAST_NAME = "Respondent1PersonLastName";
         final static String RESPONDENTS_2_ORGANISATION_NAME = "Respondent2Organisation";
-        
+
         final static String RESPONDENTS_3_PERSON_LAST_NAME = "Respondent3PersonLastName";
         final static String RESPONDENTS_4_ORGANISATION_NAME = "Respondent4Organisation";
-        
+
     }
 }
