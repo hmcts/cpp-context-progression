@@ -125,6 +125,24 @@ version: v1
             schema: !include json/schema/progression.event.defendants-added-to-court-proceedings.json
             example: !include json/progression.event.defendants-added-to-court-proceedings.json
 
+  ############  Association Start ############
+
+        application/vnd.progression.event.defence-organisation-associated+json:
+            schema: !include json/schema/progression.event.defence-organisation-associated.json
+            example: !include json/progression.event.defence-organisation-associated.json
+        application/vnd.progression.event.defence-organisation-disassociated+json:
+            schema: !include json/schema/progression.event.defence-organisation-disassociated.json
+            example: !include json/progression.event.defence-organisation-disassociated.json
+        application/vnd.progression.event.defence-access-granted+json:
+            schema: !include json/schema/progression.event.defence-access-granted.json
+            example: !include json/progression.event.defence-access-granted.json
+        application/vnd.progression.event.defence-access-removed+json:
+            schema: !include json/schema/progression.event.defence-access-removed.json
+            example: !include json/progression.event.defence-access-removed.json
+
+  ############  Association End ############
+
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
         application/vnd.progression.event.cases-referred-to-court+json:
