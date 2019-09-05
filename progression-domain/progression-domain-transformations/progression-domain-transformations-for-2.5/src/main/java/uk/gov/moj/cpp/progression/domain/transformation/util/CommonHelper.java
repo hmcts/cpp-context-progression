@@ -51,8 +51,6 @@ public class CommonHelper {
     public static final String COURT_APPLICATIONS = "courtApplications";
     public static final String HEARING_CASE_NOTES = "hearingCaseNotes";
     public static final String PROSECUTION_COUNSELS = "prosecutionCounsels";
-    public static final String RESPONDENT_COUNSELS = "respondentCounsels";
-    public static final String APPLICANT_COUNSELS = "applicantCounsels";
     public static final String DEFENCE_COUNSELS = "defenceCounsels";
     public static final String APPLICATION_PARTY_COUNSELS = "applicationPartyCounsels";
     public static final String DEFENDANT_ATTENDANCE = "defendantAttendance";

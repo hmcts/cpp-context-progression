@@ -90,14 +90,14 @@
 									"offenceId": "00000000-0000-0000-0000-000000000000",
 									"indicatedPleaDate": "2018-01-01",
 									"indicatedPleaValue": "INDICATED_GUILTY",
-									"source": "ONLINE",
-									"allocationDecision": {
-										"courtDecision": "CONSENT_SUMMARY_TRIAL",
-										"prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
-										"defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
-										"indicationOfSentence": "a"
-									}
+									"source": "ONLINE"
+
 								},
+                              "allocationDecision": {
+                                "offenceId": "00000000-0000-0000-0000-000000000000",
+								  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+								  "allocationDecisionDate" : "2018-01-01"
+                              },
 								"plea": {
 									"originatingHearingId": "00000000-0000-0000-0000-000000000000",
 									"delegatedPowers": {

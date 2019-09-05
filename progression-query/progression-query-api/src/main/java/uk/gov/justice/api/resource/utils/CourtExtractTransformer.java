@@ -1,7 +1,7 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.util.Objects.nonNull;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.COURT_EXTRACT;
 
@@ -50,6 +50,7 @@ import uk.gov.justice.progression.courts.exract.RespondentRepresentation;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,13 +101,9 @@ public class CourtExtractTransformer {
         courtExtract.withDefendant(defendant);
         courtExtract.withPublishingCourt(transformCourtCentre(latestHearing.getCourtCentre(), userId));
         courtExtract.withProsecutingAuthority(transformationHelper.transformProsecutingAuthority(caseAtAGlance.getProsecutionCaseIdentifier(), userId));
-        if (latestHearing.getProsecutionCounsels() != null) {
-            courtExtract.withProsecutionCounsels(transformProsecutionCounsels(latestHearing.getProsecutionCounsels()));
-        }
 
-        if(!isEmpty(latestHearing.getCompanyRepresentatives())){
-            courtExtract.withCompanyRepresentatives(transformCompanyRepresentatives(latestHearing.getCompanyRepresentatives()));
-        }
+        courtExtract.withProsecutionCounsels(nonNull(latestHearing.getProsecutionCounsels()) ? transformProsecutionCounsels(hearingsList) : null);
+        courtExtract.withCompanyRepresentatives(transformCompanyRepresentatives(hearingsList));
 
         courtExtract.withCourtDecisions(transformCourtDecisions(hearingsList));
 
@@ -293,7 +290,7 @@ public class CourtExtractTransformer {
     }
 
 
-    private List<ProsecutionCounsels> transformProsecutionCounsels(final List<ProsecutionCounsel> prosecutionCounselsList) {
+    private List<ProsecutionCounsels> transformProsecutionCounsel(final List<ProsecutionCounsel> prosecutionCounselsList) {
         return prosecutionCounselsList.stream().map(pc -> ProsecutionCounsels.prosecutionCounsels()
                 .withName(transformationHelper.getName(pc.getFirstName(), pc.getMiddleName(), pc.getLastName()))
                 .withAttendanceDays(transformAttendanceDay(pc.getAttendanceDays()))
@@ -302,7 +299,7 @@ public class CourtExtractTransformer {
         ).collect(Collectors.toList());
     }
 
-    private List<DefenceCounsels> transformDefenceCounsels(final List<DefenceCounsel> defenceCounselList) {
+    private List<DefenceCounsels> transformDefenceCounsel(final List<DefenceCounsel> defenceCounselList) {
         return defenceCounselList.stream().map(dc -> DefenceCounsels.defenceCounsels()
                 .withName(transformationHelper.getName(dc.getFirstName(), dc.getMiddleName(), dc.getLastName()))
                 .withAttendanceDays(dc.getAttendanceDays() != null ? transformAttendanceDay(dc.getAttendanceDays()) : new ArrayList<>())
@@ -351,18 +348,18 @@ public class CourtExtractTransformer {
                 defendantBuilder.withOffences(offences);
             }
             if (nonNull(defendant.getDefenceOrganisation())) {
-                defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(defendant.getDefenceOrganisation()));
+                defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, defendant.getDefenceOrganisation(),defendantId));
             }
         }
 
         return defendantBuilder.build();
     }
 
-    private List<DefenceOrganisations> transformDefenceOrganisation(final DefenceOrganisation defenceOrganisation) {
+    private List<DefenceOrganisations> transformDefenceOrganisation(final List<Hearings> hearingsList,final DefenceOrganisation defenceOrganisation,final String defendantId) {
         return Arrays.asList(
                 DefenceOrganisations.defenceOrganisations()
                         .withDefendantId(defenceOrganisation.getDefendantId())
-                        .withDefenceCounsels(transformDefenceCounsels(defenceOrganisation.getDefenceCounsels()))
+                        .withDefenceCounsels(transformDefenceCounsels(hearingsList,defendantId))
                         .withDefenceOrganisation(defenceOrganisation.getDefenceOrganisation())
                         .build()
         );
@@ -413,6 +410,7 @@ public class CourtExtractTransformer {
                 .withCount(o.getCount())
                 .withEndDate(o.getEndDate())
                 .withIndicatedPlea(o.getIndicatedPlea())
+                .withAllocationDecision(o.getAllocationDecision())
                 .withStartDate(o.getStartDate())
                 .withOffenceDefinitionId(o.getOffenceDefinitionId())
                 .withOffenceLegislation(o.getOffenceLegislation())
@@ -476,12 +474,35 @@ public class CourtExtractTransformer {
         return prosecutionCaseIdentifier.getCaseURN() != null ? prosecutionCaseIdentifier.getCaseURN() : prosecutionCaseIdentifier.getProsecutionAuthorityReference();
     }
 
-    private List<CompanyRepresentatives> transformCompanyRepresentatives(final List<CompanyRepresentative> companyRepresentatives) {
+    private List<CompanyRepresentatives> transformCompanyRepresentative(final List<CompanyRepresentative> companyRepresentatives) {
         return companyRepresentatives.stream().map(cr -> CompanyRepresentatives.companyRepresentatives()
                 .withName(transformationHelper.getName(cr.getFirstName(),EMPTY,cr.getLastName()))
                 .withAttendanceDays(transformAttendanceDay(cr.getAttendanceDays()))
                 .withRole(cr.getPosition() != null ? cr.getPosition().toString() : EMPTY)
                 .build()
         ).collect(Collectors.toList());
+    }
+
+    private List<ProsecutionCounsels> transformProsecutionCounsels(final List<Hearings> hearingsList) {
+        return hearingsList.stream()
+                .filter(hearing -> isNotEmpty(hearing.getProsecutionCounsels()) )
+                .map(hearing -> transformProsecutionCounsel(hearing.getProsecutionCounsels()))
+                .flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    private List<DefenceCounsels> transformDefenceCounsels(final List<Hearings> hearingsList,final String defendantId) {
+        return hearingsList.stream()
+                .filter(hearing -> isNotEmpty(hearing.getDefendants()) )
+                .flatMap((h -> h.getDefendants().stream()))
+                .filter( da -> da.getId().toString().equals(defendantId))
+                .map(da -> transformDefenceCounsel(da.getDefenceOrganisation().getDefenceCounsels()))
+                .flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    private List<CompanyRepresentatives> transformCompanyRepresentatives(final List<Hearings> hearingsList) {
+        return hearingsList.stream()
+                .filter(hearing -> isNotEmpty(hearing.getCompanyRepresentatives()))
+                .map(hearing -> transformCompanyRepresentative(hearing.getCompanyRepresentatives()))
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
 }

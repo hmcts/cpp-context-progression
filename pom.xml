@@ -38,10 +38,10 @@
         <material.version>2.0.118</material.version>
         <access.control.version>4.1.8-R2</access.control.version>
         <referencedata.version>2.0.240</referencedata.version>
-        <listing.version>1.0.23</listing.version>
-        <hearing.version>2.0.164</hearing.version>
-        <referencedata.offence.version>1.0.19</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.40</criminal-court-public-model.version>
+        <listing.version>1.0.24</listing.version>
+        <hearing.version>2.0.165</hearing.version>
+        <referencedata.offence.version>1.0.26</referencedata.offence.version>
+        <criminal-court-public-model.version>1.0.41</criminal-court-public-model.version>
     </properties>
 
     <build>

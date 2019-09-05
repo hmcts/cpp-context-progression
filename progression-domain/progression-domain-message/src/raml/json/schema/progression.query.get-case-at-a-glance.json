@@ -266,6 +266,9 @@
 				"indicatedPlea": {
 					"$ref": "http://justice.gov.uk/core/courts/indicatedPlea.json"
 				},
+				"allocationDecision": {
+					"$ref": "http://justice.gov.uk/core/courts/allocationDecision.json"
+				},
 				"pleas": {
 					"type": "array",
 					"minItems": 1,
