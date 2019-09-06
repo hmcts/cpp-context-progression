@@ -1,0 +1,66 @@
+package uk.gov.moj.cpp.progression.command;
+
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verify;
+
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
+
+import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+
+@RunWith(MockitoJUnitRunner.class)
+public class AssociateDefenceOrganisationApiTest {
+
+    @Mock
+    private Sender sender;
+
+    @Captor
+    private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
+
+    @InjectMocks
+    private AssociateDefenceOrganisationApi associateDefenceOrganisationApi;
+
+    @Test
+    public void shouldAssociateDefenceOrganisation() {
+
+        final UUID uuid = randomUUID();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("organisationId", randomUUID().toString())
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.associate-defence-organisation")
+                .withId(uuid)
+                .build();
+
+        final JsonEnvelope commandEnvelope = new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, payload);
+
+        associateDefenceOrganisationApi.handle(commandEnvelope);
+        verify(sender).send(envelopeCaptor.capture());
+
+        final DefaultEnvelope capturedEnvelope = envelopeCaptor.getValue();
+        assertThat(capturedEnvelope.metadata().name(), is("progression.command.handler.associate-defence-organisation"));
+        assertThat(capturedEnvelope.payload(), is(payload));
+    }
+
+}
