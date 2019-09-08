@@ -10,8 +10,6 @@ import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CASE_ID;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COUNT;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_APPLICATION;
-import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_DOCUMENTS;
-import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_REFERRAL;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CROWN_COURT_HEARING;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DELETED_OFFENCES;
@@ -19,23 +17,21 @@ import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.HEARING_LISTING_STATUS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.HEARING_REQUEST;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ID;
-import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.LIST_HEARING_REQUESTS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.MODIFIED_DATE;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.OFFENCES;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTION_CASE;
-import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTION_CASES;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTION_CASE_ID;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.SHARED_TIME;
-import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.SJP_REFERRAL;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.UPDATED_OFFENCES;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CourtApplicationHelper.transformCourtApplication;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.HearingHelper.transformHearing;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.HearingHelper.transformHearingForSendingSheet;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.HearingListingNeeds.transformHearingListingNeeds;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.NowsHelper.transformNowsHearing;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.OffenceHelper.transformOffences;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.OffenceHelper.transformOffencesForDefendantCaseOffences;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.OffenceHelper.transformOffencesforDefendents;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.ProsecutionCaseHelper.transformProsecutionCase;
-import static uk.gov.moj.cpp.progression.domain.transformation.util.ProsecutionCaseHelper.transformReferedProsecutionCases;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -56,14 +52,14 @@ public class TransformationEventHelper {
 
     public JsonEnvelope buildTransformedPayloadForHearing(final JsonEnvelope event, final String newEvent) {
         final JsonObject payload = event.payloadAsJsonObject();
-        LOGGER.debug(ACTUAL_PAYLOAD_AS_PER_MASTER, payload);
+        LOGGER.info(ACTUAL_PAYLOAD_AS_PER_MASTER, payload);
 
         final JsonObjectBuilder transformedPayloadObjectBuilder = createObjectBuilder()
                 .add(HEARING, transformHearing(payload.getJsonObject(HEARING)))
                 .add(SHARED_TIME, payload.getJsonString(SHARED_TIME));
 
         final JsonObject transformedObject = transformedPayloadObjectBuilder.build();
-        LOGGER.debug(TRANSFORMED_PAYLOAD_AS_PER_MOT, transformedObject);
+        LOGGER.info(TRANSFORMED_PAYLOAD_AS_PER_MOT, transformedObject);
 
         return envelopeFrom(metadataBuilder()
                         .withName(newEvent)
@@ -113,7 +109,7 @@ public class TransformationEventHelper {
         LOGGER.debug(ACTUAL_PAYLOAD_AS_PER_MASTER, payload);
 
         final JsonObjectBuilder transformedPayloadObjectBuilder = createObjectBuilder()
-                .add(HEARING, transformHearing(payload.getJsonObject(HEARING)))
+                .add(HEARING, transformHearingForSendingSheet(payload.getJsonObject(HEARING)))
                 .add(CROWN_COURT_HEARING, payload.getJsonObject(CROWN_COURT_HEARING));
 
 
@@ -152,10 +148,10 @@ public class TransformationEventHelper {
             transformedPayloadObjectBuilder.add(COURT_APPLICATION, transformCourtApplication(payload.getJsonObject(COURT_APPLICATION)));
         }
         if(payload.containsKey(COUNT)){
-            transformedPayloadObjectBuilder.add(COUNT, payload.getJsonObject(COUNT));
+            transformedPayloadObjectBuilder.add(COUNT, payload.getInt(COUNT));
         }
         if(payload.containsKey(ARN)){
-            transformedPayloadObjectBuilder.add(ARN, payload.getJsonObject(ARN));
+            transformedPayloadObjectBuilder.add(ARN, payload.getString(ARN));
         }
 
         final JsonObject transformedObject = transformedPayloadObjectBuilder.build();
@@ -202,7 +198,7 @@ public class TransformationEventHelper {
                 .add(HEARING_LISTING_STATUS, payload.getString(HEARING_LISTING_STATUS));
         if(payload.containsKey(APPLICATION_ID)){
             //Please refer event "hearing-application-link-created" for this property
-            transformedPayloadObjectBuilder.add(APPLICATION_ID, payload.getJsonObject(APPLICATION_ID));
+            transformedPayloadObjectBuilder.add(APPLICATION_ID, payload.getString(APPLICATION_ID));
         }
         final JsonObject transformedObject = transformedPayloadObjectBuilder.build();
         LOGGER.debug(TRANSFORMED_PAYLOAD_AS_PER_MOT, transformedObject);
@@ -275,13 +271,12 @@ public class TransformationEventHelper {
         return jsonObjectBuilder.build();
     }
 
-    @SuppressWarnings({"squid:S4144"})
-    public JsonEnvelope buildCaseReferToCourtPayload(final JsonEnvelope event, final String newEvent) {
+    public JsonEnvelope buildNowsHearingPayload(final JsonEnvelope event, final String newEvent) {
         final JsonObject payload = event.payloadAsJsonObject();
         LOGGER.debug(ACTUAL_PAYLOAD_AS_PER_MASTER, payload);
         final JsonObjectBuilder transformedPayloadObjectBuilder = createObjectBuilder();
 
-        transformedPayloadObjectBuilder.add(COURT_REFERRAL, transformCourtReferral(payload.getJsonObject(COURT_REFERRAL)));
+        transformedPayloadObjectBuilder.add(HEARING, transformNowsHearing(payload.getJsonObject(HEARING)));
 
         final JsonObject transformedObject = transformedPayloadObjectBuilder.build();
         LOGGER.debug(TRANSFORMED_PAYLOAD_AS_PER_MOT, transformedObject);
@@ -289,38 +284,6 @@ public class TransformationEventHelper {
                         .withName(newEvent)
                         .withId(UUID.fromString(event.metadata().asJsonObject().getString(ID))),
                 transformedObject);
-
-    }
-
-    private JsonObject transformCourtReferral(final JsonObject jsonObject) {
-        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
-
-        //refer Events "progression.event.cases-referred-to-court" and "progression.event.court-proceedings-initiated" for below condition
-        if(jsonObject.containsKey(SJP_REFERRAL)){
-            jsonObjectBuilder.add(SJP_REFERRAL, jsonObject.getJsonObject(SJP_REFERRAL));
-        }
-
-        jsonObjectBuilder.add(PROSECUTION_CASES, transformReferedProsecutionCases(jsonObject.getJsonArray(PROSECUTION_CASES)));
-        jsonObjectBuilder.add(COURT_DOCUMENTS, jsonObject.getJsonArray(COURT_DOCUMENTS));
-        jsonObjectBuilder.add(LIST_HEARING_REQUESTS, jsonObject.getJsonArray(LIST_HEARING_REQUESTS));
-        return jsonObjectBuilder.build();
-    }
-
-    @SuppressWarnings({"squid:S4144"})
-    public JsonEnvelope buildCourtProceedingPayload(final JsonEnvelope event, final String newEvent) {
-        final JsonObject payload = event.payloadAsJsonObject();
-        LOGGER.debug(ACTUAL_PAYLOAD_AS_PER_MASTER, payload);
-        final JsonObjectBuilder transformedPayloadObjectBuilder = createObjectBuilder();
-
-        transformedPayloadObjectBuilder.add(COURT_REFERRAL, transformCourtReferral(payload.getJsonObject(COURT_REFERRAL)));
-
-        final JsonObject transformedObject = transformedPayloadObjectBuilder.build();
-        LOGGER.debug(TRANSFORMED_PAYLOAD_AS_PER_MOT, transformedObject);
-        return envelopeFrom(metadataBuilder()
-                        .withName(newEvent)
-                        .withId(UUID.fromString(event.metadata().asJsonObject().getString(ID))),
-                transformedObject);
-
     }
 
 }

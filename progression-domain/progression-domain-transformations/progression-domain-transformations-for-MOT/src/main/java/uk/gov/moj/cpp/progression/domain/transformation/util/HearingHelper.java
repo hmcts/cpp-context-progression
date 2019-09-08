@@ -3,11 +3,16 @@ package uk.gov.moj.cpp.progression.domain.transformation.util;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.APPLICANT_COUNSELS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.APPLICATION_PARTY_COUNSELS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CASE_ID;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CASE_URN;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_APPLICATIONS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_APPLICATION_PARTY_ATTENDANCE;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_CENTRE;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_CENTRE_ID;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.COURT_CENTRE_NAME;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CRACKED_INEFFECTIVE_TRIAL;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENCE_COUNSELS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENDANTS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENDANT_ATTENDANCE;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENDANT_REFERRAL_REASONS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.HAS_SHARED_RESULTS;
@@ -22,7 +27,9 @@ import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTION_COUNSELS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.REPORTING_RESTRICTION_REASON;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.RESPONDENT_COUNSELS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.SENDING_COMMITTAL_DATE;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.TYPE;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.DefendantHelper.transformDefendentForSendingSheet;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.ProsecutionCaseHelper.transformProsecutionCases;
 
 import javax.json.JsonObject;
@@ -116,4 +123,17 @@ public class HearingHelper {
         return transformedPayloadObjectBuilder.build();
     }
 
+
+    public static JsonObject transformHearingForSendingSheet(final JsonObject hearing) {
+
+        final JsonObjectBuilder transformedPayloadObjectBuilder = createObjectBuilder()
+                .add(COURT_CENTRE_NAME, hearing.getString(COURT_CENTRE_NAME))
+                .add(COURT_CENTRE_ID, hearing.getString(COURT_CENTRE_ID))
+                .add(TYPE, hearing.getString(TYPE))
+                .add(SENDING_COMMITTAL_DATE, hearing.getString(SENDING_COMMITTAL_DATE))
+                .add(CASE_ID, hearing.getString(CASE_ID))
+                .add(CASE_URN, hearing.getString(CASE_URN))
+                .add(DEFENDANTS, transformDefendentForSendingSheet(hearing.getJsonArray(DEFENDANTS)));
+        return transformedPayloadObjectBuilder.build();
+    }
 }

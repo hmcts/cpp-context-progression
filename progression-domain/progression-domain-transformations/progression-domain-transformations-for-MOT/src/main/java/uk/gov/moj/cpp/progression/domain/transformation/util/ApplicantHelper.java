@@ -1,7 +1,14 @@
 package uk.gov.moj.cpp.progression.domain.transformation.util;
 
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENDANT;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ID;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ORGANISATION;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ORGANISATION_PERSONS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PERSON_DETAILS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTING_AUTHORITY;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.REPRESENTATION_ORGANISATION;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.SYNONYM;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.DefendantHelper.transformDefendant;
 
 import javax.json.JsonObject;
@@ -9,13 +16,6 @@ import javax.json.JsonObjectBuilder;
 
 public class ApplicantHelper {
 
-    public static final String SYNONYM = "synonym";
-    public static final String ORGANISATION_PERSONS = "organisationPersons";
-    public static final String PERSON_DETAILS = "personDetails";
-    public static final String ORGANISATION = "organisation";
-    public static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
-    public static final String DEFENDANT = "defendant";
-    public static final String REPRESENTATION_ORGANISATION = "representationOrganisation";
 
     private ApplicantHelper() {
     }

@@ -69,10 +69,6 @@ public class ProsecutionCaseHelper {
                 transformProsecutionCaseBuilder.add(APPEAL_PROCEEDINGS_PENDING, prosecutionCase.getBoolean(APPEAL_PROCEEDINGS_PENDING));
             }
 
-            if (prosecutionCase.containsKey(APPEAL_PROCEEDINGS_PENDING)) {
-                transformProsecutionCaseBuilder.add(APPEAL_PROCEEDINGS_PENDING, prosecutionCase.getBoolean(APPEAL_PROCEEDINGS_PENDING));
-            }
-
             if (prosecutionCase.containsKey(CASE_MARKERS)) {
                 transformProsecutionCaseBuilder.add(CASE_MARKERS, prosecutionCase.getJsonArray(CASE_MARKERS));
             }
@@ -118,9 +114,6 @@ public class ProsecutionCaseHelper {
             transformProsecutionCaseBuilder.add(APPEAL_PROCEEDINGS_PENDING, prosecutionCase.getBoolean(APPEAL_PROCEEDINGS_PENDING));
         }
 
-        if (prosecutionCase.containsKey(APPEAL_PROCEEDINGS_PENDING)) {
-            transformProsecutionCaseBuilder.add(APPEAL_PROCEEDINGS_PENDING, prosecutionCase.getBoolean(APPEAL_PROCEEDINGS_PENDING));
-        }
 
         if (prosecutionCase.containsKey(CASE_MARKERS)) {
             transformProsecutionCaseBuilder.add(CASE_MARKERS, prosecutionCase.getJsonArray(CASE_MARKERS));
@@ -168,10 +161,6 @@ public class ProsecutionCaseHelper {
                 transformProsecutionCaseBuilder.add(APPEAL_PROCEEDINGS_PENDING, prosecutionCase.getBoolean(APPEAL_PROCEEDINGS_PENDING));
             }
 
-            if (prosecutionCase.containsKey(APPEAL_PROCEEDINGS_PENDING)) {
-                transformProsecutionCaseBuilder.add(APPEAL_PROCEEDINGS_PENDING, prosecutionCase.getBoolean(APPEAL_PROCEEDINGS_PENDING));
-            }
-
             if (prosecutionCase.containsKey(CASE_MARKERS)) {
                 transformProsecutionCaseBuilder.add(CASE_MARKERS, prosecutionCase.getJsonArray(CASE_MARKERS));
             }
@@ -180,36 +169,4 @@ public class ProsecutionCaseHelper {
         });
         return transformedPayloadObjectBuilder.build();
     }
-
-
-    public static JsonArray transformReferedProsecutionCases(final JsonArray prosecutionCases) {
-
-        final JsonArrayBuilder transformedPayloadObjectBuilder = createArrayBuilder();
-
-        prosecutionCases.stream().map(o -> (JsonObject) o).forEach(prosecutionCase -> {
-            final JsonObjectBuilder transformProsecutionCaseBuilder = createObjectBuilder()
-                    .add(ID, prosecutionCase.getString(ID))
-                    .add(PROSECUTION_CASE_IDENTIFIER, prosecutionCase.getJsonObject(PROSECUTION_CASE_IDENTIFIER))
-                    .add(INITIATION_CODE, prosecutionCase.getString(INITIATION_CODE))
-                    .add(DEFENDANTS, transformDefendants(prosecutionCase.getJsonArray(DEFENDANTS)));
-
-            if (prosecutionCase.containsKey(ORIGINATING_ORGANISATION)) {
-                transformProsecutionCaseBuilder.add(ORIGINATING_ORGANISATION, prosecutionCase.getString(ORIGINATING_ORGANISATION));
-            }
-
-            if (prosecutionCase.containsKey(STATEMENT_OF_FACTS)) {
-                transformProsecutionCaseBuilder.add(STATEMENT_OF_FACTS, prosecutionCase.getString(STATEMENT_OF_FACTS));
-            }
-
-            if (prosecutionCase.containsKey(STATEMENT_OF_FACTS_WELSH)) {
-                transformProsecutionCaseBuilder.add(STATEMENT_OF_FACTS_WELSH, prosecutionCase.getString(STATEMENT_OF_FACTS_WELSH));
-            }
-
-
-            transformedPayloadObjectBuilder.add(transformProsecutionCaseBuilder);
-        });
-        return transformedPayloadObjectBuilder.build();
-    }
-
-
 }

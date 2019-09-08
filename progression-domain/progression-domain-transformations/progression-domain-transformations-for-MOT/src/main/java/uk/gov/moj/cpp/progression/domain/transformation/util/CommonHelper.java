@@ -140,7 +140,34 @@ public class CommonHelper {
     public static final String MOT_REASON_ID_2 = "78efce20-8a52-3272-9d22-2e7e6e3e565e";
     public static final String MOT_REASON_ID_3 = "b8c37e33-defd-351c-b91e-1e03e51657da";
     public static final String INDICTABLE_ONLY_OFFENCE = "Indictable-only offence";
-
+    public static final String COURT_CENTRE_NAME = "courtCentreName";
+    public static final String COURT_CENTRE_ID = "courtCentreId";
+    public static final String SENDING_COMMITTAL_DATE = "sendingCommittalDate";
+    public static final String CASE_URN = "caseUrn";
+    public static final String PERSON_ID = "personId";
+    public static final String FIRST_NAME = "firstName";
+    public static final String LAST_NAME = "lastName";
+    public static final String NATIONALITY = "nationality";
+    public static final String GENDER = "gender";
+    public static final String ADDRESS = "address";
+    public static final String DATE_OF_BIRTH = "dateOfBirth";
+    public static final String INTERPRETER = "interpreter";
+    public static final String BAIL_STATUS = "bailStatus";
+    public static final String CUSTODY_TIME_LIMIT_DATE = "custodyTimeLimitDate";
+    public static final String REASON = "reason";
+    public static final String DESCRIPTION = "description";
+    public static final String CATEGORY = "category";
+    public static final String TITLE = "title";
+    public static final String LEGISLATION = "legislation";
+    public static final String COURT_APPLICATION_PARTY_LISTING_NEEDS = "courtApplicationPartyListingNeeds";
+    public static final String SYNONYM = "synonym";
+    public static final String ORGANISATION_PERSONS = "organisationPersons";
+    public static final String PERSON_DETAILS = "personDetails";
+    public static final String ORGANISATION = "organisation";
+    public static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
+    public static final String REPRESENTATION_ORGANISATION = "representationOrganisation";
+    public static final String PARTY_DETAILS = "partyDetails";
+    public static final String APPLICATION_RESPONSE = "applicationResponse";
 
     private CommonHelper() {
     }

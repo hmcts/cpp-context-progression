@@ -2,24 +2,35 @@ package uk.gov.moj.cpp.progression.domain.transformation.util;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ADDRESS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ALIASES;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ASSOCIATED_PERSONS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.BAIL_STATUS;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CRO_NUMBER;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.CUSTODY_TIME_LIMIT_DATE;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DATE_OF_BIRTH;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.DEFENCE_ORGANISATION;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.FIRST_NAME;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.GENDER;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.ID;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.INTERPRETER;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.JUDICIAL_RESULTS;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.LAST_NAME;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.LEGAL_ENTITY_DEFENDANT;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.MITIGATION;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.MITIGATION_WELSH;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.NATIONALITY;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.NUMBER_OF_PREVIOUS_CONVICTIONS_CITED;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.OFFENCES;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PERSON_DEFENDANT;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PERSON_ID;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PNC_ID;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTION_AUTHORITY_REFERENCE;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.PROSECUTION_CASE_ID;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.WITNESS_STATEMENT;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.CommonHelper.WITNESS_STATEMENT_WELSH;
 import static uk.gov.moj.cpp.progression.domain.transformation.util.OffenceHelper.transformOffences;
+import static uk.gov.moj.cpp.progression.domain.transformation.util.OffenceHelper.transformOffencesForSendingSheet;
 
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -233,6 +244,35 @@ public class DefendantHelper {
 
             if (defendant.containsKey(PNC_ID)) {
                 transformDefendantBuilder.add(PNC_ID, defendant.getString(PNC_ID));
+            }
+            transformedPayloadObjectBuilder.add(transformDefendantBuilder);
+        });
+        return transformedPayloadObjectBuilder.build();
+    }
+
+
+    public static JsonArray transformDefendentForSendingSheet(final JsonArray defendants) {
+        final JsonArrayBuilder transformedPayloadObjectBuilder = createArrayBuilder();
+        defendants.stream().map(o -> (JsonObject) o).forEach(defendant -> {
+            final JsonObjectBuilder transformDefendantBuilder = createObjectBuilder();
+            transformDefendantBuilder.add(ID, defendant.getJsonString(ID));
+            transformDefendantBuilder.add(PERSON_ID, defendant.getJsonString(PERSON_ID));
+            transformDefendantBuilder.add(FIRST_NAME, defendant.getJsonString(FIRST_NAME));
+            transformDefendantBuilder.add(LAST_NAME, defendant.getJsonString(LAST_NAME));
+            transformDefendantBuilder.add(NATIONALITY, defendant.getJsonString(NATIONALITY));
+            transformDefendantBuilder.add(GENDER, defendant.getJsonString(GENDER));
+            transformDefendantBuilder.add(ADDRESS, defendant.getJsonObject(ADDRESS));
+            transformDefendantBuilder.add(DATE_OF_BIRTH, defendant.getJsonString(DATE_OF_BIRTH));
+            transformDefendantBuilder.add(INTERPRETER, defendant.getJsonObject(INTERPRETER));
+            transformDefendantBuilder.add(OFFENCES, transformOffencesForSendingSheet(defendant.getJsonArray(OFFENCES)));
+            if (defendant.containsKey(BAIL_STATUS)) {
+                transformDefendantBuilder.add(BAIL_STATUS, defendant.getString(BAIL_STATUS));
+            }
+            if (defendant.containsKey(CUSTODY_TIME_LIMIT_DATE)) {
+                transformDefendantBuilder.add(CUSTODY_TIME_LIMIT_DATE, defendant.getString(CUSTODY_TIME_LIMIT_DATE));
+            }
+            if (defendant.containsKey(DEFENCE_ORGANISATION)) {
+                transformDefendantBuilder.add(DEFENCE_ORGANISATION, defendant.getString(DEFENCE_ORGANISATION));
             }
             transformedPayloadObjectBuilder.add(transformDefendantBuilder);
         });
