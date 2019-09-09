@@ -35,12 +35,11 @@ public class ReferenceDataOffenceService {
     public static final String WELSH_OFFENCE_TITLE = "welshoffencetitle";
     public static final String LEGISLATION = "legislation";
     public static final String LEGISLATION_WELSH = "welshlegislation";
-    public static final String MODEOFTRIAL = "modeoftrial";
+    public static final String MODEOFTRIAL_DERIVED = "modeOfTrialDerived";
     public static final String MODEOFTRIAL_CODE = "code";
     public static final String CJS_OFFENCE_CODE = "cjsOffenceCode";
     public static final String OFFENCE_ID = "offenceId";
     public static final String OFFENCES = "offences";
-    public static final String OTHER = "other";
 
 
     @Inject
@@ -71,7 +70,7 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(WELSH_OFFENCE_TITLE) : StringUtils.EMPTY);
         jsonObjectBuilder.add(LEGISLATION_WELSH, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(LEGISLATION_WELSH) : StringUtils.EMPTY);
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE)!= null?offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(MODEOFTRIAL_CODE, offenceDocument.getJsonObject(OTHER) != null ? offenceDocument.getJsonObject(OTHER).getJsonObject(MODEOFTRIAL).getString(MODEOFTRIAL_CODE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(MODEOFTRIAL_CODE, offencePayload.getString(MODEOFTRIAL_DERIVED)!= null?offencePayload.getString(MODEOFTRIAL_DERIVED) : StringUtils.EMPTY);
 
         return Optional.of(jsonObjectBuilder.build());
     }
@@ -101,7 +100,7 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(LEGISLATION_WELSH, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(LEGISLATION_WELSH) : StringUtils.EMPTY);
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE)!= null?offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
         jsonObjectBuilder.add(OFFENCE_ID, offencePayload.getString(OFFENCE_ID)!= null?offencePayload.getString(OFFENCE_ID) : StringUtils.EMPTY);
-        jsonObjectBuilder.add("modeOfTrial", offencePayload.getString("modeOfTrial"));
+        jsonObjectBuilder.add("modeOfTrial", offencePayload.getString(MODEOFTRIAL_DERIVED));
         return Optional.of(jsonObjectBuilder.build());
     }
 }

@@ -88,8 +88,13 @@
             <artifactId>system-documentgenerator-client</artifactId>
             <version>1.0.4</version>
         </dependency>
-
         <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-reflect</artifactId>
+            <version>2.0.2</version>
+            <scope>test</scope>
+        </dependency>
+         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-test-utilities</artifactId>
             <scope>test</scope>

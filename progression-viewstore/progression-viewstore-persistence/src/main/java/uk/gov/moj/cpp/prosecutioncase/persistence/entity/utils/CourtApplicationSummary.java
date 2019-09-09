@@ -143,17 +143,25 @@ public class CourtApplicationSummary {
         private String extractDisplayName(final CourtApplicationParty applicationParty) {
             Optional<String> displayName = Optional.empty();
             final Defendant defendant = applicationParty.getDefendant();
-            if (Objects.nonNull(defendant) && Objects.nonNull(defendant.getPersonDefendant())) {
-                displayName = getPersonName(defendant.getPersonDefendant().getPersonDetails());
+            if(Objects.nonNull(defendant)){
+                if(Objects.nonNull(defendant.getPersonDefendant())){
+                    displayName = getPersonName(defendant.getPersonDefendant().getPersonDetails());
+                }
+                if(Objects.nonNull(defendant.getLegalEntityDefendant())){
+                    displayName = Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getName());
+                }
             }
-            if (!displayName.isPresent() && Objects.nonNull(applicationParty.getPersonDetails())) {
-                displayName = getPersonName(applicationParty.getPersonDetails());
-            }
-            if (!displayName.isPresent() && Objects.nonNull(applicationParty.getOrganisation())) {
-                displayName = Optional.of(defaultString(applicationParty.getOrganisation().getName()));
-            }
-            if (!displayName.isPresent() && Objects.nonNull(applicationParty.getProsecutingAuthority())) {
-                displayName = Optional.of(defaultString(applicationParty.getProsecutingAuthority().getProsecutionAuthorityCode()));
+
+            if(!displayName.isPresent()){
+                if(Objects.nonNull(applicationParty.getPersonDetails())){
+                    displayName = getPersonName(applicationParty.getPersonDetails());
+                }
+                if(Objects.nonNull(applicationParty.getOrganisation())){
+                    displayName = Optional.of(defaultString(applicationParty.getOrganisation().getName()));
+                }
+                if(Objects.nonNull(applicationParty.getProsecutingAuthority())){
+                    displayName = Optional.of(defaultString(applicationParty.getProsecutingAuthority().getProsecutionAuthorityCode()));
+                }
             }
             return displayName.orElse(EMPTY);
         }

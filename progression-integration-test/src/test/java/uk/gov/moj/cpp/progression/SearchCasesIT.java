@@ -1,108 +1,92 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.containsString;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
+import java.io.IOException;
+import java.util.UUID;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseWithUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 
-import org.hamcrest.Matcher;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-
-import java.util.UUID;
-
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 @SuppressWarnings({"squid:S1607"})
-@Ignore
 public class SearchCasesIT {
 
-    private String caseId;
-    private String defendantId;
     private String firstName;
     private String middleName;
     private String lastName;
 
-    private final String dob = "2010-01-01";
-    private ProsecutionCaseUpdateDefendantHelper helper;
+    private static final String JSON_RESULTS_DEFENDANT_PATH  = "$.searchResults[0].defendantName";
+    private static final String JSON_RESULTS_DOB = "$.searchResults[0].dob";
+    private static final String DOB="2010-01-01";
+    private static ProsecutionCaseUpdateDefendantHelper helper;
 
     @Before
     public void setUp() {
-        caseId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
         firstName = "Harry";
         middleName="Jack";
         lastName="Kane Junior";
+    }
+
+    @BeforeClass
+    public static void setUpCommonData() throws IOException {
+        String caseId = UUID.randomUUID().toString();
+        String defendantId = UUID.randomUUID().toString();
+        helper = new ProsecutionCaseUpdateDefendantHelper(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         createMockEndpoints();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+    }
+
+    @AfterClass
+    public static void tearDown(){
+        helper = null;
     }
 
     @Test
-    public void shouldGetProsecutionCaseByCaseInsensitiveFirstName() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        // then
-        verifyCasesForSearchCriteria("harry", new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString(firstName))});
-
+    public void shouldGetProsecutionCaseByCaseInsensitiveFirstName() {
+        verifyCasesForSearchCriteria("harry", new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString(firstName))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByCaseInsensitiveLastName() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        // then
-        verifyCasesForSearchCriteria("KANE", new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString("Kane"))});
-
+    public void shouldGetProsecutionCaseByCaseInsensitiveLastName()  {
+        verifyCasesForSearchCriteria("KANE", new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString("Kane"))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByFirstName() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        // then
-        verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString("Harry"))});
-
+    public void shouldGetProsecutionCaseByFirstName()  {
+        verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString("Harry"))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByMiddleName() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria(middleName, new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString(middleName))});
+    public void shouldGetProsecutionCaseByMiddleName()  {
+        verifyCasesForSearchCriteria(middleName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString(middleName))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByLastName() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("Kane+Junior", new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString(lastName))});
+    public void shouldGetProsecutionCaseByLastName()  {
+        verifyCasesForSearchCriteria("Kane+Junior", new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString(lastName))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByFirstAndMiddleName() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+    public void shouldGetProsecutionCaseByFirstAndMiddleName()  {
         final String firstAndMiddleName = "Harry+Jack";
-        // then
-        verifyCasesForSearchCriteria(firstAndMiddleName, new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString(middleName))});
+        verifyCasesForSearchCriteria(firstAndMiddleName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString(middleName))});
     }
 
-   @Test
-    public void shouldGetProsecutionCaseByFirstNameAfterDefendantUpdate() throws Exception {
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString(firstName))});
+    @Test
+    @Ignore
+    public void shouldGetProsecutionCaseByFirstNameAfterDefendantUpdate() {
+        verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString(firstName))});
         final String updatedFirstName = "updatedName";
         // when
         helper.updateDefendant();
@@ -110,63 +94,43 @@ public class SearchCasesIT {
         // then
         helper.verifyInActiveMQ();
         helper.verifyInMessagingQueueForDefendentChanged();
-        verifyCasesForSearchCriteria(updatedFirstName, new Matcher[]{withJsonPath("$.searchResults[0].defendantName",containsString(updatedFirstName))});
+        verifyCasesForSearchCriteria(updatedFirstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH,containsString(updatedFirstName))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByReference() throws Exception {
-        // when
-        addProsecutionCaseWithUrn(caseId, defendantId,"URN12345");
-        // then
+    public void shouldGetProsecutionCaseByReference() throws IOException {
+        addProsecutionCaseWithUrn(UUID.randomUUID().toString(), UUID.randomUUID().toString(),"URN12345");
         verifyCasesForSearchCriteria("URN12345", new Matcher[]{withJsonPath("$.searchResults[0].reference",equalTo("URN12345"))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByDobDDMMMyy() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("1-Jan-2010", new Matcher[]{withJsonPath("$.searchResults[0].dob",equalTo("2010-01-01"))});
+    public void shouldGetProsecutionCaseByDobDDMMMyy()  {
+        verifyCasesForSearchCriteria("1-Jan-2010", new Matcher[]{withJsonPath(JSON_RESULTS_DOB,equalTo(DOB))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByDobyyyyMMDD() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("01/01/10", new Matcher[]{withJsonPath("$.searchResults[0].dob",equalTo("2010-01-01"))});
+    public void shouldGetProsecutionCaseByDobyyyyMMDD()  {
+        verifyCasesForSearchCriteria("01/01/10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB,equalTo(DOB))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByDobDMMyy() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("1/01/10", new Matcher[]{withJsonPath("$.searchResults[0].dob",equalTo("2010-01-01"))});
+    public void shouldGetProsecutionCaseByDobDMMyy()  {
+        verifyCasesForSearchCriteria("1/01/10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB,equalTo(DOB))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByDOBDdMMyyyy() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("01/01/2010", new Matcher[]{withJsonPath("$.searchResults[0].dob",equalTo("2010-01-01"))});
+    public void shouldGetProsecutionCaseByDOBDdMMyyyy()  {
+        verifyCasesForSearchCriteria("01/01/2010", new Matcher[]{withJsonPath(JSON_RESULTS_DOB,equalTo(DOB))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByDOB_d_MM_yyyy() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("1-01-2010", new Matcher[]{withJsonPath("$.searchResults[0].dob",equalTo("2010-01-01"))});
+    public void shouldGetProsecutionCaseByDOB_d_MM_yyyy()  {
+        verifyCasesForSearchCriteria("1-01-2010", new Matcher[]{withJsonPath(JSON_RESULTS_DOB,equalTo(DOB))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByDOB_dd_MM_yy() throws Exception {
-        // when
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // then
-        verifyCasesForSearchCriteria("01-01-10", new Matcher[]{withJsonPath("$.searchResults[0].dob",equalTo("2010-01-01"))});
+    public void shouldGetProsecutionCaseByDOB_dd_MM_yy()  {
+        verifyCasesForSearchCriteria("01-01-10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB,equalTo(DOB))});
     }
 }
 

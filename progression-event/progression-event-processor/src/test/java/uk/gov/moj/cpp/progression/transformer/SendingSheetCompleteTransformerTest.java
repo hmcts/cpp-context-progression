@@ -7,24 +7,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ID;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_ID;
 
-import org.junit.Ignore;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import uk.gov.justice.core.courts.CourtDecision;
-import uk.gov.justice.core.courts.DefendantRepresentation;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionRepresentation;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
@@ -197,9 +189,9 @@ public class SendingSheetCompleteTransformerTest {
         assertThat(offence.getPlea().getPleaValue().toString(),equalTo(PLEA_GUILTY));
         assertThat(offence.getIndicatedPlea().getIndicatedPleaDate() ,equalTo(CONVICTION_DATE));
         assertThat(offence.getIndicatedPlea().getIndicatedPleaValue().toString() ,equalTo(INDICATED_PLEA));
-        assertThat(offence.getIndicatedPlea().getAllocationDecision().getCourtDecision() ,equalTo(CourtDecision.ELECT_TRIAL_ON_INDICTMENT));
-        assertThat(offence.getIndicatedPlea().getAllocationDecision().getDefendantRepresentation() ,equalTo(DefendantRepresentation.ELECT_TRIAL_ON_INDICTMENT));
-        assertThat(offence.getIndicatedPlea().getAllocationDecision().getProsecutionRepresentation(),equalTo(ProsecutionRepresentation.ELECT_TRIAL_ON_INDICTMENT));
+        assertThat(offence.getAllocationDecision().getMotReasonCode() ,equalTo("4"));
+        assertThat(offence.getAllocationDecision().getMotReasonDescription() ,equalTo("Defendant chooses trial by jury"));
+        assertThat(offence.getAllocationDecision().getOffenceId() ,equalTo(OFFENCE_ID));
     }
 
     private static JsonObject getOffence(final String modeoftrial) {

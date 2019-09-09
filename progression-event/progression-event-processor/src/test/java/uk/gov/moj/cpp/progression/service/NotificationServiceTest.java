@@ -21,8 +21,16 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getCourtTime;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithLegalEntity;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithPersonDefendant;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithLegalEntity;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithPersonDefendant;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCompanyAddress;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCompanyEmail;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonAddress;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonEmail;
 
+import org.powermock.reflect.Whitebox;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -49,6 +57,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -512,5 +521,55 @@ public class NotificationServiceTest {
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
                                 withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())))))));
 
+    }
+
+    @Test
+    public void getDefendantEmailAddressWithLegalEntityTest() throws Exception {
+        Defendant defendantWithLegalEntityMock = buildDefendantWithLegalEntity();
+        Optional<String> resultEmailAddress = Whitebox.invokeMethod(notificationService, "getDefendantEmailAddress", defendantWithLegalEntityMock);
+        verifyCompanyEmail(resultEmailAddress.get());
+    }
+
+    @Test
+    public void getDefendantEmailAddressWithPersonDefendantTest() throws Exception {
+        Defendant defendantWithPersonDefendantMock = buildDefendantWithPersonDefendant();
+        Optional<String>  resultEmailAddress = Whitebox.invokeMethod(notificationService, "getDefendantEmailAddress", defendantWithPersonDefendantMock);
+        verifyPersonEmail(resultEmailAddress.get());
+    }
+
+    @Test
+    public void getDefendantAddressWithLegalEntityTest() throws Exception {
+        Defendant defendantWithLegalEntityMock = buildDefendantWithLegalEntity();
+        Optional<Address> resultAddress = Whitebox.invokeMethod(notificationService, "getDefendantAddress", defendantWithLegalEntityMock);
+        verifyCompanyAddress(resultAddress.get());
+    }
+
+    @Test
+    public void getDefendantAddressWithPersonDefendantTest() throws Exception {
+        Defendant defendantWithPersonDefendantMock = buildDefendantWithPersonDefendant();
+        Optional<Address> resultAddress = Whitebox.invokeMethod(notificationService, "getDefendantAddress", defendantWithPersonDefendantMock);
+        verifyPersonAddress(resultAddress.get());
+    }
+
+    @Test
+    public void getApplicantEmailAddressTest() throws Exception {
+        CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
+        Optional<String> companyEmail  = Whitebox.invokeMethod(notificationService, "getApplicantEmailAddress", courtApplicationPartyMock);
+        verifyCompanyEmail(companyEmail.get());
+
+        CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
+        Optional<String> personEmail  = Whitebox.invokeMethod(notificationService, "getApplicantEmailAddress", courtApplicationPartyMock1);
+        verifyPersonEmail(personEmail.get());
+    }
+
+    @Test
+    public void getApplicantAddressTest() throws Exception {
+        CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
+        Optional<Address> companyAddress  = Whitebox.invokeMethod(notificationService, "getApplicantAddress", courtApplicationPartyMock);
+        verifyCompanyAddress(companyAddress.get());
+
+        CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
+        Optional<Address> personAddress  = Whitebox.invokeMethod(notificationService, "getApplicantAddress", courtApplicationPartyMock1);
+        verifyPersonAddress(personAddress.get());
     }
 }

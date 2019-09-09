@@ -100,6 +100,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withEndDate(updatedOffence.getEndDate())
                 .withIndicatedPlea(persistedOffence.getIndicatedPlea())
                 .withPlea(persistedOffence.getPlea())
+                .withAllocationDecision(persistedOffence.getAllocationDecision())
                 .withOffenceTitle(updatedOffence.getOffenceTitle())
                 .withOffenceTitleWelsh(updatedOffence.getOffenceTitleWelsh())
                 .withWording(updatedOffence.getWording())

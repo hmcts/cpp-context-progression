@@ -5,10 +5,10 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
 import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.SummonsRequired.YOUTH;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractAddresse;
+import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractAddressee;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractCaseReference;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractDefendant;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractGuardianAddresse;
+import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractGuardianAddressee;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractOffences;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractReferralReason;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractYouth;
@@ -78,7 +78,7 @@ public class SummonsDataPreparedEventProcessor {
     private static final String COURT_ADDRESS = "courtAddress";
     private static final String CASE_REFERENCE = "caseReference";
     private static final String REFERRAL_CONTENT = "referralContent";
-    private static final String ADDRESSE = "addressee";
+    private static final String ADDRESSEE = "addressee";
     private static final String YOUTH_CONTENT = "youthContent";
     private static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
     private static final String NATIONAL_COURT_CODE = "nationalCourtCode";
@@ -120,7 +120,7 @@ public class SummonsDataPreparedEventProcessor {
                 .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
                 .add(DEFENDANT, extractDefendant(defendantJson))
                 .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSE, extractAddresse(defendantJson))
+                .add(ADDRESSEE, extractAddressee(defendantJson))
                 .add(HEARING_COURT_DETAILS, createObjectBuilder()
                         .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
                         .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
@@ -144,7 +144,7 @@ public class SummonsDataPreparedEventProcessor {
                 .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
                 .add(DEFENDANT, extractDefendant(defendantJson))
                 .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSE, extractAddresse(defendantJson))
+                .add(ADDRESSEE, extractAddressee(defendantJson))
                 .add(HEARING_COURT_DETAILS, createObjectBuilder()
                         .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
                         .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
@@ -168,7 +168,7 @@ public class SummonsDataPreparedEventProcessor {
                 .add(YOUTH_CONTENT, extractYouth(defendantJson, false))
                 .add(DEFENDANT, extractDefendant(defendantJson))
                 .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSE, extractAddresse(defendantJson))
+                .add(ADDRESSEE, extractAddressee(defendantJson))
                 .add(HEARING_COURT_DETAILS, createObjectBuilder()
                         .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
                         .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
@@ -192,7 +192,7 @@ public class SummonsDataPreparedEventProcessor {
                 .add(YOUTH_CONTENT, extractYouth(defendantJson, true))
                 .add(DEFENDANT, extractDefendant(defendantJson))
                 .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSE, extractGuardianAddresse(defendantJson))
+                .add(ADDRESSEE, extractGuardianAddressee(defendantJson))
                 .add(HEARING_COURT_DETAILS, createObjectBuilder()
                         .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
                         .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
