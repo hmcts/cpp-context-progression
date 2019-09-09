@@ -51,4 +51,6 @@
     <include file="liquibase/create-hearing-application.xml"/>
     <include file="liquibase/rename-print-status-table.xml"/>
     <include file="liquibase/modify-notification-status-table.xml"/>
+    <include file="liquibase/create-defence-association.xml"/>
+    <include file="liquibase/create-defence-association-access-history.xml"/>
 </databaseChangeLog>
