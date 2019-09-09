@@ -1,0 +1,60 @@
+package uk.gov.moj.cpp.defence.association.event.listener;
+
+import static javax.json.Json.createObjectBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.defence.asscociation.event.listener.DefenceAssociationAccessEventListener;
+import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
+import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
+
+import java.util.UUID;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class DefenceAssociationAccessEventListenerTest {
+
+    private static final UUID DEFENDANT_ID = UUID.randomUUID();
+    private static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID ORGANISATION_ID = UUID.randomUUID();
+
+    @Mock
+    private DefenceAssociationRepository repository;
+
+    @Captor
+    private ArgumentCaptor<DefenceAssociation> argumentCaptor;
+
+    @InjectMocks
+    private DefenceAssociationAccessEventListener eventListener;
+
+    @Test
+    public void shouldPerformAssocitation() {
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                metadataWithRandomUUID("progression.event.defence-organisation-associated"),
+                createObjectBuilder()
+                        .add("requesterUserId", USER_ID.toString())
+                        .add("defendantId", DEFENDANT_ID.toString())
+                        .add("defenceOrganisationId", ORGANISATION_ID.toString())
+                        .build());
+
+        eventListener.processOrganisationAssociated(requestEnvelope);
+
+        verify(repository).save(argumentCaptor.capture());
+        final DefenceAssociation entity = argumentCaptor.getValue();
+        assertEquals(DEFENDANT_ID ,entity.getDefendantId());
+        assertEquals(ORGANISATION_ID,entity.getDefenceAssociationHistories().stream().findFirst().get().getGrantorOrgId());
+        assertEquals(USER_ID,entity.getDefenceAssociationHistories().stream().findFirst().get().getGrantorUserId());
+
+    }
+}

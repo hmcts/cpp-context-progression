@@ -22,7 +22,7 @@ public class DefenceAssociation implements Serializable {
     @Column(name = "defendant_id", unique = true, nullable = false)
     private UUID defendantId;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defenceAssociation", orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "defenceAssociation", orphanRemoval = true)
     private Set<DefenceAssociationHistory> defenceAssociationHistories = new HashSet<>();
 
     public UUID getDefendantId() {
