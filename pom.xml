@@ -6,7 +6,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.0.18-FRAMEWORK-SNAPSHOT</version>
+        <version>9.1.5</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>

@@ -22,7 +22,7 @@ public class ViewStoreQueryUtil {
         this.viewStoreDataSource = viewStoreDataSource;
     }
 
-    public List<UUID> findDefendantIdsFromViewStore() {
+    public Optional<List<UUID>> findIdsFromViewStore(final int expectedNumberOfIds) {
 
         final List<UUID> ids = new ArrayList<>();
 
@@ -35,11 +35,15 @@ public class ViewStoreQueryUtil {
                 ids.add((UUID) resultSet.getObject("defendant_id"));
             }
 
+            if (ids.size() >= expectedNumberOfIds) {
+                return of(ids);
+            }
+
+            return empty();
+
         } catch (SQLException e) {
             throw new RuntimeException("Failed to run " + sql, e);
         }
-
-        return ids;
     }
 
     public Optional<Integer> countEventsProcessed(final int expectedNumberOfEvents) {

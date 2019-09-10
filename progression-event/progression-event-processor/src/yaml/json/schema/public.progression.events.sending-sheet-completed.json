@@ -1,5 +1,6 @@
 {
   "$schema":"http://json-schema.org/draft-04/schema#",
+  "id":"http://cpp.moj.gov.uk/progression/json/schemas/event/public-sending-sheet-completed.json",
   "type":"object",
   "required": [
     "hearing",

@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-already-exists-in-crown-court.json",
   "type": "object",
   "properties": {
     "caseId": {

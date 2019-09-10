@@ -83,4 +83,4 @@ subscriptions_descriptor:
 
           # Deprecated API  - End
 
-      event_source_name: progression.event.source
+      event_source_name: progression

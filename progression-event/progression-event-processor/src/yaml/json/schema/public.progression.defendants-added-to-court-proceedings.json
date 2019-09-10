@@ -1,6 +1,6 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
-  "id" : "http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json",
+  "id" : "http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendants-added-to-court-proceedings.json",
   "type" : "object",
   "properties" : {
     "defendants" : {

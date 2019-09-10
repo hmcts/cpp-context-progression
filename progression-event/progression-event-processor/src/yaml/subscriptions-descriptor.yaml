@@ -113,7 +113,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/conviction-date-removed.json
 
           # Deprecated API  - End
-      event_source_name: progression.event.source
+      event_source_name: progression
 
     - name: public event subscription
       events:
@@ -147,4 +147,5 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-failed.json
         - name: public.notificationnotify.events.notification-sent
           schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-sent.json
+
       event_source_name: public.event.source

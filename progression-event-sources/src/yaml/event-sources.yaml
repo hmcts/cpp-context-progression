@@ -1,5 +1,5 @@
 event_sources:
-  - name: progression.event.source
+  - name: progression
     is_default: true
     location:
       jms_uri:  jms:topic:progression.event

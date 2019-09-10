@@ -1,21 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/public/progression/case-document-added",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendant-addition-failed.json",
   "type": "object",
   "properties": {
-    "cppCaseId": {
+    "caseId": {
       "type": "string"
     },
-    "fileId": {
+    "defendantId": {
       "type": "string"
     },
-    "fileMimeType": {
+    "description": {
       "type": "string"
     }
   },
   "required": [
-    "cppCaseId",
-    "fileId",
-    "fileMimeType"
+    "caseId",
+    "defendantId",
+    "description"
   ]
 }
