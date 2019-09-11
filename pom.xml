@@ -42,7 +42,7 @@
         <hearing.version>2.0.154</hearing.version>
         <referencedata.offence.version>1.0.19</referencedata.offence.version>
         <criminal-court-public-model.version>1.0.31</criminal-court-public-model.version>
-
+        <usersgroups.version>2.0.115</usersgroups.version>
     </properties>
 
     <build>
