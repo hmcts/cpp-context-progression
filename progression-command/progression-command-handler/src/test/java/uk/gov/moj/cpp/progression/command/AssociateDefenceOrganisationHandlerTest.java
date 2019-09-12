@@ -111,7 +111,6 @@ public class AssociateDefenceOrganisationHandlerTest {
                 .withDefendantId(randomUUID())
                 .withRepresentationType(RepresentationType.PRIVATE_FUNDED)
                 .withRequesterDefenceOrganisationId(randomUUID())
-                .withRequesterUserId(randomUUID())
                 .build();
     }
 

@@ -42,6 +42,7 @@ public class AssociateDefenceOrganisationApiTest {
     public void shouldAssociateDefenceOrganisation() {
 
         final UUID uuid = randomUUID();
+        final UUID userId = randomUUID();
 
         final JsonObject payload = Json.createObjectBuilder()
                 .add("organisationId", randomUUID().toString())
@@ -51,6 +52,7 @@ public class AssociateDefenceOrganisationApiTest {
                 .metadataBuilder()
                 .withName("progression.associate-defence-organisation")
                 .withId(uuid)
+                .withUserId(userId.toString())
                 .build();
 
         final JsonEnvelope commandEnvelope = new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, payload);

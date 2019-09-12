@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.moj.cpp.progression.aggregate.DefenceAssociationAggregate;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociated;
+import uk.gov.moj.cpp.progression.events.RepresentationType;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,8 @@ public class DefenceAssociationAggregateTest {
 
     @Test
     public void shouldReturnCasesReferredToCourt() {
-        final List<Object> eventStream = aggregate.associateOrganization(UUID.randomUUID()).collect(toList());
+        final List<Object> eventStream = aggregate.associateOrganization(UUID.randomUUID(),
+                UUID.randomUUID(), RepresentationType.REPRESENTATION_ORDER.toString()).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(DefenceOrganisationAssociated.class)));

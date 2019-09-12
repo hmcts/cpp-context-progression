@@ -41,7 +41,8 @@ public class AssociateDefenceOrganisationHandler {
         final AssociateDefenceOrganisation associateDefenceOrganisation = associateDefenceOrganisationEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(associateDefenceOrganisation.getDefendantId());
         final DefenceAssociationAggregate defenceAssociationAggregate = aggregateService.get(eventStream, DefenceAssociationAggregate.class);
-        final Stream<Object> events = defenceAssociationAggregate.associateOrganization(associateDefenceOrganisation.getRequesterDefenceOrganisationId());
+        final Stream<Object> events = defenceAssociationAggregate.associateOrganization(associateDefenceOrganisation.getDefendantId(),
+                associateDefenceOrganisation.getRequesterDefenceOrganisationId(),associateDefenceOrganisation.getRepresentationType().toString());
         if (events != null) {
             appendEventsToStream(associateDefenceOrganisationEnvelope, eventStream, events);
         }

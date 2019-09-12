@@ -6,7 +6,9 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.defence.asscociation.event.listener.DefenceAssociationAccessEventListener;
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
 import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
@@ -40,10 +42,16 @@ public class DefenceAssociationAccessEventListenerTest {
     @Test
     public void shouldPerformAssocitation() {
 
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.event.defence-organisation-associated")
+                .withId(UUID.randomUUID())
+                .withUserId(USER_ID.toString())
+                .build();
+
         final JsonEnvelope requestEnvelope = envelopeFrom(
-                metadataWithRandomUUID("progression.event.defence-organisation-associated"),
+                metadata,
                 createObjectBuilder()
-                        .add("requesterUserId", USER_ID.toString())
                         .add("defendantId", DEFENDANT_ID.toString())
                         .add("defenceOrganisationId", ORGANISATION_ID.toString())
                         .build());

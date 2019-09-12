@@ -3,9 +3,6 @@
   "id": "http://moj.gov.uk/cpp/progression/events/progression.defence-organisation-associated.json",
   "type": "object",
   "properties": {
-    "requesterUserId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-    },
     "defendantId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
@@ -27,7 +24,6 @@
     }
   },
   "required": [
-    "requesterUserId",
     "defendantId",
     "defenceOrganisationId",
     "representationType"

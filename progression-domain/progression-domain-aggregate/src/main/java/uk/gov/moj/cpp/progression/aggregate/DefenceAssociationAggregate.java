@@ -7,6 +7,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefenceAccess;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociated;
+import uk.gov.moj.cpp.progression.events.RepresentationType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,9 +35,14 @@ public class DefenceAssociationAggregate implements Aggregate {
         );
     }
 
-    public Stream<Object> associateOrganization(UUID organizationId) {
+    public Stream<Object> associateOrganization(UUID defendantId, UUID organizationId,
+                                                String representationType) {
         LOGGER.debug("A defence organization is associated to defendant");
-        return apply(Stream.of(DefenceOrganisationAssociated.defenceOrganisationAssociated().withDefenceOrganisationId(organizationId).build()));
+        return apply(Stream.of(DefenceOrganisationAssociated.defenceOrganisationAssociated()
+                .withDefenceOrganisationId(organizationId)
+                .withDefendantId(defendantId)
+                .withRepresentationType(RepresentationType.valueOf(representationType))
+                .build()));
     }
 
 }

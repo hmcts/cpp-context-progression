@@ -14,7 +14,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "defence_association_defendant")
+@Table(name = "defence_association")
 @SuppressWarnings("squid:S2384")
 public class DefenceAssociation implements Serializable {
 

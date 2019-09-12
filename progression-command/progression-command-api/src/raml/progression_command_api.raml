@@ -111,9 +111,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-/defendants/{id}/defenceorganisation :
+/defendants/{defendantId}/defenceorganisation :
   uriParameters:
-      id:
+      defendantId:
         description: The id of the defendant
         type: string
   post:
@@ -139,9 +139,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           schema:
              !include json/schema/progression.disassociate-defence-organisation.json
 
-/defendants/{id}/defenceaccess :
+/defendants/{defendantId}/defenceaccess :
   uriParameters:
-      id:
+      defendantId:
         description: The id of the defendant
         type: string
   post:

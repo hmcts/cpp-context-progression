@@ -35,7 +35,7 @@ public class DefenceAssociationAccessEventListener {
         }
 
         final String defendantId = event.payloadAsJsonObject().getString("defendantId");
-        final String requesterUserId = event.payloadAsJsonObject().getString("requesterUserId");
+        final String requesterUserId = event.metadata().userId().get();
         final String defenceOrganisationId = event.payloadAsJsonObject().getString("defenceOrganisationId");
 
         final DefenceAssociation defenceAssociation = prepareDefenceAssociationEntity(defendantId, requesterUserId, defenceOrganisationId);
@@ -49,6 +49,7 @@ public class DefenceAssociationAccessEventListener {
         defenceAssociation.setDefendantId(UUID.fromString(defendantId));
 
         final DefenceAssociationHistory defenceAssociationHistory = new DefenceAssociationHistory();
+        defenceAssociationHistory.setId(UUID.randomUUID());
         defenceAssociationHistory.setGrantorUserId(UUID.fromString(requesterUserId));
         defenceAssociationHistory.setGrantorOrgId(UUID.fromString(defenceOrganisationId));
         defenceAssociationHistory.setStartDate(ZonedDateTime.now());

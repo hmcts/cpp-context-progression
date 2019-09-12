@@ -6,9 +6,6 @@
     "defendantId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
-    "requesterUserId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-    },
     "requesterDefenceOrganisationId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
@@ -28,7 +25,6 @@
   },
   "required": [
     "defendantId",
-    "requesterUserId",
     "requesterDefenceOrganisationId",
     "representationType"
   ]
