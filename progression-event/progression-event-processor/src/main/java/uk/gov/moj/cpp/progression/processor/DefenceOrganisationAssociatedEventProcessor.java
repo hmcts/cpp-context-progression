@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.listener;
+package uk.gov.moj.cpp.progression.processor;
 
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;

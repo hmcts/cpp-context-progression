@@ -10,6 +10,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.moj.cpp.progression.processor.DefenceOrganisationAssociatedEventProcessor;
 
 import java.util.UUID;
 
