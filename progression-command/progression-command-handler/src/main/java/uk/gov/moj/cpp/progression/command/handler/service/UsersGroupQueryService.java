@@ -28,9 +28,7 @@ public class UsersGroupQueryService {
         final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest).withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
         final JsonEnvelope response = requester.request(requestEnvelope);
-        final JsonValue payload = response.payload();
-        if ((payload == null)
-                || (payload.equals(JsonValue.NULL))
+        if (notFound(response)
                 || (response.payloadAsJsonObject().getString("organisationId") == null)) {
             LOGGER.debug("Unable to retrieve Organisation for User {}", userId);
             throw new IllegalArgumentException(format("Missing Organisation for User %s", userId));
@@ -38,4 +36,9 @@ public class UsersGroupQueryService {
         return response.payloadAsJsonObject();
     }
 
+    private static boolean notFound(JsonEnvelope response) {
+        final JsonValue payload = response.payload();
+        return payload == null
+                || payload.equals(JsonValue.NULL);
+    }
 }

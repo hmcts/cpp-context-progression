@@ -29,17 +29,19 @@ public class DefenceAssociationAggregate implements Aggregate {
     public Object apply(final Object event) {
         return match(event).with(
                 when(DefenceOrganisationAssociated.class).apply(e ->
-                        this.associatedOrganizationId = e.getDefenceOrganisationId()
+                        this.associatedOrganizationId = e.getOrganisationId()
                 ),
                 otherwiseDoNothing()
         );
     }
 
     public Stream<Object> associateOrganization(UUID defendantId, UUID organizationId,
+                                                String organisationName,
                                                 String representationType) {
         LOGGER.debug("A defence organization is associated to defendant");
         return apply(Stream.of(DefenceOrganisationAssociated.defenceOrganisationAssociated()
-                .withDefenceOrganisationId(organizationId)
+                .withOrganisationId(organizationId)
+                .withOrganisationName(organisationName)
                 .withDefendantId(defendantId)
                 .withRepresentationType(RepresentationType.valueOf(representationType))
                 .build()));

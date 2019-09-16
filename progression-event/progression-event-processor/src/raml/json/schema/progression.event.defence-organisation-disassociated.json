@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://moj.gov.uk/cpp/progression/events/progression.defence-organisation-disassociated.json",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json",
   "type": "object",
   "properties": {
     "requesterUserId": {

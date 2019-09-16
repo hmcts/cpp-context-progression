@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.listener;
+package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
@@ -9,12 +9,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.moj.cpp.progression.events.RepresentationType;
 import uk.gov.moj.cpp.progression.processor.DefenceOrganisationAssociatedEventProcessor;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -40,23 +41,38 @@ public class DefenceOrganisationAssociatedEventProcessorTest {
     @InjectMocks
     private DefenceOrganisationAssociatedEventProcessor defenceOrganisationAssociatedEventProcessor;
 
+    private static final String ORGANISATION_NAME = "CompanyZ";
+
     @Test
     public void shouldAssociateDefenceOrganisation() {
+
         final UUID userId = randomUUID();
         final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
 
         final MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
                 .withName("public.progression.defence-organisation-associated")
                 .withUserId(userId.toString());
 
-        final JsonEnvelope event = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(defendantId.toString(), "defendantId").build();
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("defendantId", defendantId.toString())
+                .add("organisationId", organisationId.toString())
+                .add("organisationName", ORGANISATION_NAME)
+                .add("representationType", RepresentationType.REPRESENTATION_ORDER.toString())
+                .build();
+
+        JsonEnvelope event = JsonEnvelope.envelopeFrom(
+                metadataBuilder, payload);
 
         defenceOrganisationAssociatedEventProcessor.processEvent(event);
-
         verify(sender).send(envelopeArgumentCaptor.capture());
-
         assertEquals("public.progression.defence-organisation-associated", envelopeArgumentCaptor.getValue().metadata().name());
-        assertEquals(defendantId.toString(), envelopeArgumentCaptor.getValue().payload().getString("defendantId"));
+
+        JsonObject capturedPayload = envelopeArgumentCaptor.getValue().payload();
+        assertEquals(defendantId.toString(), capturedPayload.getString("defendantId"));
+        assertEquals(organisationId.toString(), envelopeArgumentCaptor.getValue().payload().getString("organisationId"));
+        assertEquals(ORGANISATION_NAME, envelopeArgumentCaptor.getValue().payload().getString("organisationName"));
+        assertEquals(RepresentationType.REPRESENTATION_ORDER.toString(), envelopeArgumentCaptor.getValue().payload().getString("representationType"));
     }
 }

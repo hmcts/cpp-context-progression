@@ -1,13 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://moj.gov.uk/cpp/progression/events/progression.defence-organisation-associated.json",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json",
   "type": "object",
   "properties": {
     "defendantId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
-    "defenceOrganisationId": {
+    "organisationId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "organisationName": {
+      "type": "string"
     },
     "representationType": {
       "type": "string",
@@ -25,7 +28,8 @@
   },
   "required": [
     "defendantId",
-    "defenceOrganisationId",
+    "organisationId",
+    "organisationName",
     "representationType"
   ]
 }

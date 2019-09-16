@@ -19,6 +19,8 @@ public class DefenceAssociationAggregateTest {
 
     private DefenceAssociationAggregate aggregate;
 
+    private static final String ORGANISATION_NAME = "CompanyZ";
+
     @Before
     public void setUp() {
         aggregate = new DefenceAssociationAggregate();
@@ -27,7 +29,9 @@ public class DefenceAssociationAggregateTest {
     @Test
     public void shouldReturnCasesReferredToCourt() {
         final List<Object> eventStream = aggregate.associateOrganization(UUID.randomUUID(),
-                UUID.randomUUID(), RepresentationType.REPRESENTATION_ORDER.toString()).collect(toList());
+                UUID.randomUUID(),
+                ORGANISATION_NAME,
+                RepresentationType.REPRESENTATION_ORDER.toString()).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(DefenceOrganisationAssociated.class)));
