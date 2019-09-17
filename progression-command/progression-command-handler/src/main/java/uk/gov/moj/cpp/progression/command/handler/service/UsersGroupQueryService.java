@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.command.handler.service;
 
 import static java.lang.String.format;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -15,10 +17,12 @@ import javax.json.JsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class UsersGroupQueryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UsersGroupQueryService.class.getName());
     @Inject
+    @ServiceComponent(COMMAND_HANDLER)
     private Requester requester;
     @Inject
     private Enveloper enveloper;
