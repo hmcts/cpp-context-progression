@@ -179,7 +179,9 @@ public class CourtExtractTransformerTest {
         assertThat(courtExtractRequested.getDefendant().getDefenceOrganisations().get(0).getDefenceCounsels().size(), is(2));
         assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().size(), is(2));
         assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getApplicantRepresentation().getApplicantCounsels().size(), is(2));
-
+        assertThat(courtExtractRequested.getDefendant().getOffences().size(), is(2));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(1).getResults().size(), is(1));
     }
 
     @Test
@@ -299,8 +301,8 @@ public class CourtExtractTransformerTest {
         assertThat(courtExtractRequested.getReferralReason(), is(DESCRIPTION));
 
         //
-        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getName(),is(FIRST_NAME+" "+LAST_NAME));
-        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getRole(),is(Position.DIRECTOR.toString()));
+        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getName(), is(FIRST_NAME + " " + LAST_NAME));
+        assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getRole(), is(Position.DIRECTOR.toString()));
         assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getAttendanceDays().size(), is((1)));
 
         //courtApplications
@@ -364,7 +366,7 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(DEFENDANT_ID,HEARING2))
+                        .withDefendants(createDefendants(DEFENDANT_ID, HEARING2))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING2))
                         .withRespondentCounsels(createRespondentCounsels(HEARING2))
@@ -491,6 +493,7 @@ public class CourtExtractTransformerTest {
     private List<Offences> createOffence(final UUID defendantId) {
         return Arrays.asList(
                 Offences.offences()
+                        .withId(UUID.randomUUID())
                         .withConvictionDate(CONVICTION_DATE)
                         .withJudicialResults(createResults())
                         .withPleas(createPlea())
@@ -668,7 +671,7 @@ public class CourtExtractTransformerTest {
 
     private List<CompanyRepresentative> createCompanyRepresentatives(final String hearing) {
         return Arrays.asList(CompanyRepresentative.companyRepresentative()
-                .withFirstName(hearing.equals(HEARING1)? FIRST_NAME : FIRST_NAME_2)
+                .withFirstName(hearing.equals(HEARING1) ? FIRST_NAME : FIRST_NAME_2)
                 .withLastName(hearing.equals(HEARING1) ? LAST_NAME : LAST_NAME_2)
                 .withPosition(Position.DIRECTOR)
                 .withAttendanceDays(Arrays.asList(LocalDate.now()))

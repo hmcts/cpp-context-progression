@@ -98,22 +98,20 @@ public class CourtDocumentQuery {
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
-
-
         final Optional<UUID> id = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID_PARAMETER);
-        JsonObject jsonDocument = null;
+        CourtDocumentEntity courtDocumentEntity = null;
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
         if (id.isPresent()) {
-            final CourtDocumentEntity courtDocumentEntity = courtDocumentRepository.findBy(id.get());
-            jsonDocument = jsonFromString(courtDocumentEntity.getPayload());
+            courtDocumentEntity = courtDocumentRepository.findBy(id.get());
+            if (nonNull(courtDocumentEntity)) {
+                jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, jsonFromString(courtDocumentEntity.getPayload()));
+            } else {
+                jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, Json.createObjectBuilder().build());
+            }
         }
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, jsonDocument);
-
-        return JsonEnvelope.envelopeFrom(
-                envelope.metadata(),
-                jsonObjectBuilder.build());
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
     private List<UUID> commaSeparatedUuidParam2UUIDs(final String strUuids) {

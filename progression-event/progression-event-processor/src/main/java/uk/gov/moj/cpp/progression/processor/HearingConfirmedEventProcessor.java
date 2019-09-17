@@ -81,7 +81,8 @@ public class HearingConfirmedEventProcessor {
 
         final Hearing hearing = hearingInitiate.getHearing();
         final ZonedDateTime hearingStartDateTime = getEarliestDate(hearing.getHearingDays());
-        LOGGER.info("List of application ids {} ",applicationIds);
+        LOGGER.info("List of application ids {} ", applicationIds);
+
         final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
         courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
@@ -94,7 +95,7 @@ public class HearingConfirmedEventProcessor {
             summonsService.generateSummonsPayload(jsonEnvelope, hearingConfirmed.getConfirmedHearing());
         }
 
-        if (CollectionUtils.isNotEmpty(confirmedProsecutionCases)){
+        if (CollectionUtils.isNotEmpty(confirmedProsecutionCases)) {
             progressionService.prepareSummonsData(jsonEnvelope, hearingConfirmed.getConfirmedHearing());
         }
 
@@ -115,7 +116,7 @@ public class HearingConfirmedEventProcessor {
         final Initiate hearingInitiate = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), Initiate.class);
 
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, HEARING_INITIATE_COMMAND).apply(objectToJsonObjectConverter.convert(hearingInitiate)));
-        if (CollectionUtils.isNotEmpty(hearingInitiate.getHearing().getProsecutionCases())){
+        if (CollectionUtils.isNotEmpty(hearingInitiate.getHearing().getProsecutionCases())) {
             final List<ProsecutionCasesReferredToCourt> prosecutionCasesReferredToCourts = ProsecutionCasesReferredToCourtTransformer
                     .transform(hearingInitiate, null);
 
