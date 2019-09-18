@@ -126,6 +126,13 @@ public class RestHelper {
                 .extract().response();
     }
 
+    public static Response postCommandWithUserId(final String uri, final String mediaType,
+                                       final String jsonStringBody,final String userId) throws IOException {
+        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
+                .header("CJSCPPUID", userId).when().post(uri).then()
+                .extract().response();
+    }
+
     public static Response getCommand(final String uri, final String mediaType) throws IOException {
         return given().spec(reqSpec).and().accept(mediaType).header("CJSCPPUID", randomUUID().toString()).when().get(uri).then()
                 .extract().response();

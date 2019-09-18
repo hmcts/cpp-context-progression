@@ -87,6 +87,20 @@ public class UsersGroupQueryServiceTest {
         usersGroupQueryService.getOrganisationDetailsForUser(query);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void shouldNullPointerExceptionForMissingUserId() {
+
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(null);
+        final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
+
+        final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
+        when(requester.request(any())).thenReturn(response);
+
+        usersGroupQueryService.getOrganisationDetailsForUser(query);
+
+    }
+
     private MetadataBuilder getMetadataBuilder(final UUID userId) {
         return JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
@@ -95,5 +109,15 @@ public class UsersGroupQueryServiceTest {
                 .withClientCorrelationId(randomUUID().toString())
                 .withStreamId(randomUUID())
                 .withUserId(userId.toString());
+    }
+
+    private MetadataBuilder getMetadataBuilderWithNullUserId() {
+        return JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName("usersgroups.get-organisation-details-for-user")
+                .withCausation(randomUUID())
+                .withClientCorrelationId(randomUUID().toString())
+                .withStreamId(randomUUID())
+                .withUserId(null);
     }
 }

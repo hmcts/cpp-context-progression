@@ -28,9 +28,11 @@ public class UsersGroupQueryService {
     private Enveloper enveloper;
 
     public JsonObject getOrganisationDetailsForUser(final JsonEnvelope envelope) {
-        final String userId = envelope.metadata().userId().toString();
+
+        final String userId = envelope.metadata().userId().orElseThrow(() -> new NullPointerException("User id Not Supplied for the UserGroups look up"));
         final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
-        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest).withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
+        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest)
+                .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
         final JsonEnvelope response = requester.request(requestEnvelope);
         if (notFound(response)
                 || (response.payloadAsJsonObject().getString("organisationId") == null)) {

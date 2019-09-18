@@ -1,6 +1,13 @@
 package uk.gov.moj.cpp.progression.it;
 
+import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.associateOrganisation;
+import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociated;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQuery;
 
 import uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper;
 
@@ -10,24 +17,31 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefenceAssociationIT extends BaseIntegrationTest {
-
-    private DefenceAssociationHelper defenceAssociationHelper;
+public class DefenceAssociationIT  extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws IOException {
-        createMockEndpoints();
-        defenceAssociationHelper = new DefenceAssociationHelper();
+        resetStubs();
     }
 
     @Test
     public void shouldPerformAssociation() throws Exception {
 
+        //Given
+        final String userId = UUID.randomUUID().toString();
         final String defendantId = UUID.randomUUID().toString();
         final String organisationId = UUID.randomUUID().toString();
+        final String organisationName = "Smith Associates Ltd.";
 
-        defenceAssociationHelper.initiateDefenceAssociationForDefendant(defendantId, organisationId);
-        defenceAssociationHelper.verifyPublicEventRaisedForDefenceAssociationForDefendant(defendantId, organisationId);
+        stubGetUsersAndGroupsQuery(userId);
+        stubEnableAllCapabilities();
+        stubGetOrganisationQuery(userId, organisationId, organisationName);
+
+        //When
+        associateOrganisation(defendantId, organisationId, userId);
+
+        //Then
+        verifyDefenceOrganisationAssociated(defendantId, organisationId);
 
     }
 

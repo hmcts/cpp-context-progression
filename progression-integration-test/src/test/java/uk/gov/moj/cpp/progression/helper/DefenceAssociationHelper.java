@@ -8,7 +8,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -24,35 +25,36 @@ import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefenceAssociationHelper extends AbstractTestHelper {
+public class DefenceAssociationHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationHelper.class);
 
     private static final String DEFENCE_ASSOCIATION_MEDIA_TYPE = "application/vnd.progression.associate-defence-organisation+json";
     private static final String DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME = "progression.associate-defence-organisation.json";
 
-    private final MessageConsumer publicEventsConsumerForDefenceAssociationForDefendant =
+    private static final MessageConsumer publicEventsConsumerForDefenceAssociationForDefendant =
             QueueUtil.publicEvents.createConsumer(
                     EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT);
 
-    public void initiateDefenceAssociationForDefendant(final String defendantId, final String organisationId) throws IOException {
+    public static void associateOrganisation(final String defendantId,
+                                             final String organisationId,
+                                             final String userId) throws IOException {
 
         String body = Resources.toString(Resources.getResource(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME),
-                Charset.defaultCharset());
-        body = body.replaceAll("%REQUESTOR_ORGANISATION_ID%", organisationId);
+                Charset.forName("UTF-8"));
+        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
 
-        final Response writeResponse = postCommand(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
-                DEFENCE_ASSOCIATION_MEDIA_TYPE,
-                body);
+        final Response writeResponse = postCommandWithUserId(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
+                DEFENCE_ASSOCIATION_MEDIA_TYPE,body,userId);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    public void verifyPublicEventRaisedForDefenceAssociationForDefendant(final String defendantId, final String organisationId) {
+    public static void verifyDefenceOrganisationAssociated(final String defendantId, final String organisationId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForDefenceAssociationForDefendant);
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.defendantId", Matchers.hasToString(
                 Matchers.containsString(defendantId)))));
-        assertThat(message.get(), isJson(withJsonPath("$.defenceOrganisationId", Matchers.hasToString(
+        assertThat(message.get(), isJson(withJsonPath("$.organisationId", Matchers.hasToString(
                 Matchers.containsString(organisationId)))));
     }
 }
