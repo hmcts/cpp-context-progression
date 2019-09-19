@@ -53,7 +53,7 @@ public class DefenceAssociationAccessEventListenerTest {
                 metadata,
                 createObjectBuilder()
                         .add("defendantId", DEFENDANT_ID.toString())
-                        .add("defenceOrganisationId", ORGANISATION_ID.toString())
+                        .add("organisationId", ORGANISATION_ID.toString())
                         .build());
 
         eventListener.processOrganisationAssociated(requestEnvelope);

@@ -36,7 +36,7 @@ public class DefenceAssociationAccessEventListener {
 
         final String defendantId = event.payloadAsJsonObject().getString("defendantId");
         final String requesterUserId = event.metadata().userId().get();
-        final String defenceOrganisationId = event.payloadAsJsonObject().getString("defenceOrganisationId");
+        final String defenceOrganisationId = event.payloadAsJsonObject().getString("organisationId");
 
         final DefenceAssociation defenceAssociation = prepareDefenceAssociationEntity(defendantId, requesterUserId, defenceOrganisationId);
         repository.save(defenceAssociation);
