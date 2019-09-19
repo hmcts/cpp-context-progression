@@ -31,7 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class UsersGroupQueryServiceTest {
+public class UsersGroupServiceTest {
 
     @Mock
     private SystemUserProvider systemUserProvider;
@@ -42,7 +42,7 @@ public class UsersGroupQueryServiceTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @InjectMocks
-    private UsersGroupQueryService usersGroupQueryService;
+    private UsersGroupService usersGroupService;
 
     @Test
     public void shouldReturnOrganisationDetails() {
@@ -60,7 +60,7 @@ public class UsersGroupQueryServiceTest {
 
         when(requester.request(any())).thenReturn(response);
 
-        final JsonObject result = usersGroupQueryService.getOrganisationDetailsForUser(query);
+        final JsonObject result = usersGroupService.getOrganisationDetailsForUser(query);
 
         verify(requester).request(envelopeArgumentCaptor.capture());
 
@@ -84,7 +84,7 @@ public class UsersGroupQueryServiceTest {
 
         when(requester.request(any())).thenReturn(response);
 
-        usersGroupQueryService.getOrganisationDetailsForUser(query);
+        usersGroupService.getOrganisationDetailsForUser(query);
     }
 
     @Test(expected = NullPointerException.class)
@@ -97,7 +97,7 @@ public class UsersGroupQueryServiceTest {
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
         when(requester.request(any())).thenReturn(response);
 
-        usersGroupQueryService.getOrganisationDetailsForUser(query);
+        usersGroupService.getOrganisationDetailsForUser(query);
 
     }
 

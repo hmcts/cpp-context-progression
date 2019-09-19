@@ -1,0 +1,16 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - disassociate defence organisation"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.disassociate-defence-organisation");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+

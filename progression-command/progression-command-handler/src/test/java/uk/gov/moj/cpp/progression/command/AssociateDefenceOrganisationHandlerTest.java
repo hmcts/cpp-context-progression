@@ -6,7 +6,6 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -30,7 +29,8 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.DefenceAssociationAggregate;
-import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupQueryService;
+import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
+import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.handler.AssociateDefenceOrganisationHandler;
 
@@ -38,7 +38,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -53,7 +55,7 @@ public class AssociateDefenceOrganisationHandlerTest {
             DefenceOrganisationAssociated.class);
 
     @Mock
-    private UsersGroupQueryService usersGroupQueryService;
+    private UsersGroupService usersGroupService;
 
     @Mock
     private EventSource eventSource;
@@ -76,6 +78,7 @@ public class AssociateDefenceOrganisationHandlerTest {
 
     private static final String ORGANISATION_NAME = "CompanyZ";
 
+
     @Before
     public void setup() {
         aggregate = new DefenceAssociationAggregate();
@@ -95,16 +98,18 @@ public class AssociateDefenceOrganisationHandlerTest {
     public void shouldProcessCommandSucessfully() throws Exception {
 
         //Given
-        UUID userId = UUID.randomUUID();
-        UUID orgId = UUID.randomUUID();
-        final AssociateDefenceOrganisation associateDefenceOrganisation
-                = generateAssociateDefenceOrganisationCommand(orgId, ORGANISATION_NAME);
+        final UUID userId = UUID.randomUUID();
+        final OrganisationDetails ORGANISATION_1 = createOrganisation(UUID.randomUUID());
 
+
+        final AssociateDefenceOrganisation associateDefenceOrganisation
+                = generateAssociateDefenceOrganisationCommand(ORGANISATION_1.getId());
         final Envelope<AssociateDefenceOrganisation> envelope = createDefenceAssociationEnvelope(userId, associateDefenceOrganisation);
-        final JsonEnvelope queryResponse = getUserGroupsQueryResponse(userId, orgId);
+        final JsonEnvelope queryResponse = getUserGroupsQueryResponse(userId, ORGANISATION_1.getId());
+        when(usersGroupService.getUserOrgDetails(any())).thenReturn(ORGANISATION_1);
+
 
         //When
-        when(usersGroupQueryService.getOrganisationDetailsForUser(any())).thenReturn(queryResponse.payloadAsJsonObject());
         associateDefenceOrganisationHandler.handle(envelope);
 
         //Then
@@ -121,25 +126,28 @@ public class AssociateDefenceOrganisationHandlerTest {
         );
     }
 
-    @Test
+    private OrganisationDetails createOrganisation(final UUID orgId) {
+        return OrganisationDetails.newBuilder().withId(orgId).withName(ORGANISATION_NAME).build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void shouldProcessCommandNegatively() throws Exception {
 
         //Given - When a Non Expected Organisation Name is passed in....
         UUID userId = UUID.randomUUID();
         UUID orgId = UUID.randomUUID();
         final AssociateDefenceOrganisation associateDefenceOrganisation
-                = generateAssociateDefenceOrganisationCommand(orgId, ORGANISATION_NAME);
+                = generateAssociateDefenceOrganisationCommand(orgId);
 
         final Envelope<AssociateDefenceOrganisation> envelope = createDefenceAssociationEnvelope(userId, associateDefenceOrganisation);
         final JsonEnvelope queryResponse = getUserGroupsQueryResponse(userId, UUID.randomUUID());
 
+        when(usersGroupService.getUserOrgDetails(any())).thenReturn(OrganisationDetails.newBuilder().withId(randomUUID()).build());
+
         //When
-        when(usersGroupQueryService.getOrganisationDetailsForUser(any())).thenReturn(queryResponse.payloadAsJsonObject());
-        try {
-            associateDefenceOrganisationHandler.handle(envelope);
-        } catch (IllegalArgumentException exception) {
-            assertTrue(exception.getMessage().equals("The given Organisation ID does not belong to this particular user"));
-        }
+        associateDefenceOrganisationHandler.handle(envelope);
+
+        //Then - The IllegalArgumentException is expected...
     }
 
     private JsonEnvelope getUserGroupsQueryResponse(final UUID userId, final UUID orgId) {
@@ -167,7 +175,7 @@ public class AssociateDefenceOrganisationHandlerTest {
         return envelopeFrom(metadata, associateDefenceOrganisation);
     }
 
-    private AssociateDefenceOrganisation generateAssociateDefenceOrganisationCommand(UUID orgId, String organisationName) {
+    private AssociateDefenceOrganisation generateAssociateDefenceOrganisationCommand(UUID orgId) {
         return AssociateDefenceOrganisation.associateDefenceOrganisation()
                 .withDefendantId(randomUUID())
                 .withRepresentationType(RepresentationType.PRIVATE_FUNDED)
