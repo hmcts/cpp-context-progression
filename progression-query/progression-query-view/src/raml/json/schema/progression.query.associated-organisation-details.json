@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.associated-organisation",
+  "type": "object",
+  "properties": {
+    "association": {
+      "$ref": "#/definitions/association"
+    }
+  },
+  "definitions": {
+    "association": {
+      "type": "object",
+      "properties": {
+        "organisationId": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "organisationName": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "associationDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        }
+      },
+      "required": [
+        "organisationId",
+        "status",
+        "associationDate"
+      ]
+    }
+  }
+}

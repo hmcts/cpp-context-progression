@@ -2,13 +2,16 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponseWithUserId;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
 import java.io.IOException;
@@ -16,6 +19,7 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 
 import javax.jms.MessageConsumer;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -45,16 +49,29 @@ public class DefenceAssociationHelper {
         body = body.replaceAll("%ORGANISATION_ID%", organisationId);
 
         final Response writeResponse = postCommandWithUserId(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
-                DEFENCE_ASSOCIATION_MEDIA_TYPE,body,userId);
+                DEFENCE_ASSOCIATION_MEDIA_TYPE, body, userId);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    public static void verifyDefenceOrganisationAssociated(final String defendantId, final String organisationId) {
+    public static void verifyDefenceOrganisationAssociatedEventGenerated(final String defendantId, final String organisationId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForDefenceAssociationForDefendant);
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.defendantId", Matchers.hasToString(
                 Matchers.containsString(defendantId)))));
         assertThat(message.get(), isJson(withJsonPath("$.organisationId", Matchers.hasToString(
                 Matchers.containsString(organisationId)))));
+    }
+
+    public static void verifyDefenceOrganisationAssociatedDataPersisted(final String defendantId,
+                                                                        final String organisationId,
+                                                                        final String userId) {
+        final String associatedOrganisationResponse =
+                pollForResponseWithUserId(join("", "/defendants/", defendantId, "/associatedOrganisation"),
+                        "application/vnd.progression.query.associated-organisation+json", userId);
+
+        final JsonObject associatedOrganisationJsonObject = getJsonObject(associatedOrganisationResponse);
+        final JsonObject association = associatedOrganisationJsonObject.getJsonObject("association");
+        assertThat(association,notNullValue());
+        assertTrue(association.getString("organisationId").equals(organisationId));
     }
 }

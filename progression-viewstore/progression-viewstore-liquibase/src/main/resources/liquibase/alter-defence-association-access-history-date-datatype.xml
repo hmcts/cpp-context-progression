@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="alter-defence-association-access-history-date-datatype"
+               author="cpp.context.progression">
+
+
+        <modifyDataType columnName="start_date" newDataType="TIMESTAMP WITH TIME ZONE" tableName="defence_association_access_history"/>
+
+        <modifyDataType columnName="end_date" newDataType="TIMESTAMP WITH TIME ZONE" tableName="defence_association_access_history"/>
+
+    </changeSet>
+
+</databaseChangeLog>

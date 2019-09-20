@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationHistory;
 import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -22,6 +23,8 @@ import org.slf4j.LoggerFactory;
 public class DefenceAssociationAccessEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationAccessEventListener.class);
+    private static final String UTC = "UTC";
+    private static final ZoneId UTC_ZONE_ID = ZoneId.of(UTC);
 
     @Inject
     private DefenceAssociationRepository repository;
@@ -52,7 +55,8 @@ public class DefenceAssociationAccessEventListener {
         defenceAssociationHistory.setId(UUID.randomUUID());
         defenceAssociationHistory.setGrantorUserId(UUID.fromString(requesterUserId));
         defenceAssociationHistory.setGrantorOrgId(UUID.fromString(defenceOrganisationId));
-        defenceAssociationHistory.setStartDate(ZonedDateTime.now());
+        defenceAssociationHistory.setStartDate(ZonedDateTime.now(UTC_ZONE_ID));
+        defenceAssociationHistory.setAgentFlag(false);
         defenceAssociationHistory.setDefenceAssociation(defenceAssociation);
         defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
         return defenceAssociation;

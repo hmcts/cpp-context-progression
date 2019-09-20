@@ -14,9 +14,6 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
-import java.nio.charset.Charset;
-
-import com.google.common.io.Resources;
 import org.apache.http.HttpHeaders;
 
 public class UsersAndGroupsStub {

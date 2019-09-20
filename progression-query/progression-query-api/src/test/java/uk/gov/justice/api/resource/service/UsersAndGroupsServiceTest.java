@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.command.handler.service;
+package uk.gov.justice.api.resource.service;
 
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
@@ -22,82 +21,54 @@ import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 @RunWith(MockitoJUnitRunner.class)
-public class UsersGroupServiceTest {
+public class UsersAndGroupsServiceTest {
 
     @Mock
     private SystemUserProvider systemUserProvider;
     @Mock
     private Requester requester;
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private Metadata metadata;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @InjectMocks
-    private UsersGroupService usersGroupService;
+    private UsersAndGroupsService usersAndGroupsService;
 
     @Test
-    public void shouldReturnOrganisationDetails() {
+    public void shouldReturnOrganisationDetailsGivenValidUserId() {
 
+        //given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
-
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
-
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
-
         final JsonEnvelope response = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
-
-        when(requester.request(any())).thenReturn(response);
-
-        final JsonObject result = usersGroupService.getOrganisationDetailsForUser(query);
-
-        verify(requester).request(envelopeArgumentCaptor.capture());
-
-        assertThat(result.getString("organisationId"), is(organisationId.toString()));
-
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionForMissingOrganisation() {
-
-        final UUID userId = randomUUID();
-
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
-
-        final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
-
-        final JsonEnvelope response = JsonEnvelope.envelopeFrom(
-                metadataBuilder, JsonValue.NULL);
-
         when(requester.request(any())).thenReturn(response);
 
-        usersGroupService.getOrganisationDetailsForUser(query);
+        //when
+        final JsonObject result = usersAndGroupsService.getOrganisationDetailsForUser(query);
+
+        //then
+        verify(requester).request(envelopeArgumentCaptor.capture());
+        assertThat(result.getString("organisationId"), is(organisationId.toString()));
     }
 
     @Test(expected = NullPointerException.class)
-    public void shouldNullPointerExceptionForMissingUserId() {
+    public void shouldThrowNullPointerExceptionForMissingUserId() {
 
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(null);
         final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
-
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(null);
         when(requester.request(any())).thenReturn(response);
 
-        usersGroupService.getOrganisationDetailsForUser(query);
+        usersAndGroupsService .getOrganisationDetailsForUser(query);
 
     }
 

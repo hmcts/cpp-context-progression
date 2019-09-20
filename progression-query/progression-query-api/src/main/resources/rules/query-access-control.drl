@@ -244,3 +244,12 @@ rule "Query - Access control for  progression.query.prosecution.notification-sta
   then
     $outcome.setSuccess(true);
 end
+
+rule "Query - Access control for  progression.query.associated-organisation"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.associated-organisation");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Defence Users"))
+  then
+    $outcome.setSuccess(true);
+end

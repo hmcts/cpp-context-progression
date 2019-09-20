@@ -53,4 +53,6 @@
     <include file="liquibase/modify-notification-status-table.xml"/>
     <include file="liquibase/create-defence-association.xml"/>
     <include file="liquibase/create-defence-association-access-history.xml"/>
+    <include file="liquibase/alter-defence-association-access-history-date-datatype.xml"/>
 </databaseChangeLog>
+

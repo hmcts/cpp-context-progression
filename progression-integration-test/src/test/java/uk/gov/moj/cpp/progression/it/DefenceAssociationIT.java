@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.progression.it;
 
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.associateOrganisation;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociated;
+import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedDataPersisted;
+import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedEventGenerated;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
@@ -37,7 +38,8 @@ public class DefenceAssociationIT  extends BaseIntegrationTest {
         associateOrganisation(defendantId, organisationId, userId);
 
         //Then
-        verifyDefenceOrganisationAssociated(defendantId, organisationId);
+        verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId);
+        verifyDefenceOrganisationAssociatedDataPersisted(defendantId,organisationId,userId);
 
     }
 
