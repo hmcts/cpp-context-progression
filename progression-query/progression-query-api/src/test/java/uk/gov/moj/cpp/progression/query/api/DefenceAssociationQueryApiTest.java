@@ -40,9 +40,9 @@ public class DefenceAssociationQueryApiTest {
     public void shouldReturnAssociatedOrganisationDetails() {
 
         //Given
-        UUID userId = randomUUID();
-        UUID organisationId = randomUUID();
-        String organisationName = "TEST_ORG";
+        final UUID userId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final String organisationName = "TEST_ORG";
         when(requester.request(query))
                 .thenReturn(stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(userId.toString(), organisationId.toString()));
         when(usersAndGroupsService.getOrganisationDetailsForUser(query))
@@ -52,7 +52,7 @@ public class DefenceAssociationQueryApiTest {
         final JsonEnvelope associatedOrganizationResponse = defenceAssociationQueryApi.getAssociatedOrganisation(query);
 
         //Then
-        JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(getValue(association, "organisationId"), equalTo(organisationId.toString()));
         assertThat(getValue(association, "organisationName"), equalTo(organisationName));
         assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
@@ -62,14 +62,14 @@ public class DefenceAssociationQueryApiTest {
     public void shouldReturnEmptyOrganisationDetailsWhenNoOrganisationAssociated() {
 
         //Given
-        UUID userId = randomUUID();
+        final UUID userId = randomUUID();
         when(requester.request(query)).thenReturn(emptyOrganisationDetails(userId));
 
         //When
         final JsonEnvelope associatedOrganizationResponse = defenceAssociationQueryApi.getAssociatedOrganisation(query);
 
         //Then
-        JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association.toString(), equalTo("{}"));
     }
 
@@ -78,9 +78,9 @@ public class DefenceAssociationQueryApiTest {
     public void shouldReturnEmptyOrganisationDetailsWhenOrganisationIdReceivedFromUsersAndGroupIsDifferent() {
 
         //Given
-        UUID userId = randomUUID();
-        UUID organisationId = randomUUID();
-        String organisationName = "TEST_ORG";
+        final UUID userId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final String organisationName = "TEST_ORG";
         when(requester.request(query))
                 .thenReturn(stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(userId.toString(), organisationId.toString()));
         when(usersAndGroupsService.getOrganisationDetailsForUser(query))
@@ -90,7 +90,7 @@ public class DefenceAssociationQueryApiTest {
         final JsonEnvelope associatedOrganizationResponse = defenceAssociationQueryApi.getAssociatedOrganisation(query);
 
         //Then
-        JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association.toString(), equalTo("{}"));
     }
 
@@ -102,11 +102,11 @@ public class DefenceAssociationQueryApiTest {
                         .build());
     }
 
-    private String getValue(final JsonObject associationsJsonObject, String key) {
+    private String getValue(final JsonObject associationsJsonObject, final String key) {
         return associationsJsonObject.getString(key);
     }
 
-    private JsonEnvelope stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(String userId, String organisationId) {
+    private JsonEnvelope stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(final String userId, final String organisationId) {
         return JsonEnvelope.envelopeFrom(
                 stubbedMetadataBuilder(UUID.fromString(userId)),
                 stubbedDefenceAssociationDataToReturnFromPersistedData(organisationId));
@@ -122,17 +122,17 @@ public class DefenceAssociationQueryApiTest {
                 .withUserId(userId.toString());
     }
 
-    private JsonObject stubbedDefenceAssociationDataToReturnFromPersistedData(String organisationId) {
+    private JsonObject stubbedDefenceAssociationDataToReturnFromPersistedData(final String organisationId) {
         return Json.createObjectBuilder()
                 .add("association", Json.createObjectBuilder()
                         .add("organisationId", organisationId)
                         .add("status", "ASSOCIATED")
-                        .add("associationDate", new Date().toString())
+                        .add("startDate", new Date().toString())
                 )
                 .build();
     }
 
-    private JsonObject stubbedDefenceAssociationDataReturnedFromUsersAndGroupService(String organisationId, String organisationName) {
+    private JsonObject stubbedDefenceAssociationDataReturnedFromUsersAndGroupService(final String organisationId, final String organisationName) {
         return Json.createObjectBuilder()
                 .add("organisationId", organisationId)
                 .add("organisationName", organisationName)

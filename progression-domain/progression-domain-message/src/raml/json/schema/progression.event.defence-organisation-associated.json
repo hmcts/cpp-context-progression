@@ -15,10 +15,6 @@
     "organisationName": {
       "type": "string"
     },
-    "associationDate": {
-      "type":"string",
-      "format":"date-time"
-    },
     "representationType": {
       "type": "string",
       "enum": [
@@ -31,12 +27,17 @@
     },
     "laaContractNumber": {
       "type": "string"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [
     "defendantId",
     "organisationId",
     "organisationName",
-    "representationType"
+    "representationType",
+    "startDate"
   ]
 }

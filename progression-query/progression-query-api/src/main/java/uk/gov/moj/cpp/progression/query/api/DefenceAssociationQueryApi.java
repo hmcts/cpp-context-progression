@@ -17,7 +17,7 @@ public class DefenceAssociationQueryApi {
     public static final String ASSOCIATION = "association";
     public static final String ORGANISATION_ID = "organisationId";
     public static final String STATUS = "status";
-    public static final String ASSOCIATION_DATE = "associationDate";
+    public static final String START_DATE = "startDate";
     public static final String ORGANISATION_NAME = "organisationName";
     public static final String ADDRESS = "address";
     public static final String ADDRESS_LINE_1 = "addressLine1";
@@ -72,32 +72,32 @@ public class DefenceAssociationQueryApi {
                         .build());
     }
 
-    private JsonObject formResponsePayload(JsonObject association, JsonObject organisationDetailsForUserJsonObject) {
+    private JsonObject formResponsePayload(final JsonObject association, final JsonObject organisationDetailsForUserJsonObject) {
         final String status = association.getString(STATUS);
-        final String associationDate = association.getString(ASSOCIATION_DATE);
+        final String startDate = association.getString(START_DATE);
         String addressLine2 = "";
         String addressLine3 = "";
-        if(organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_2)){
+        if (organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_2)) {
             addressLine2 = organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_2);
         }
-        if(organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_3)){
+        if (organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_3)) {
             addressLine3 = organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_3);
         }
         return Json.createObjectBuilder()
-                        .add(ASSOCIATION,Json.createObjectBuilder()
-                                .add(ORGANISATION_ID, organisationDetailsForUserJsonObject.getString(ORGANISATION_ID))
-                                .add(ORGANISATION_NAME, organisationDetailsForUserJsonObject.getString(ORGANISATION_NAME))
-                                .add(ADDRESS, Json.createObjectBuilder()
-                                        .add(ADDRESS_LINE_1, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_1))
-                                        .add(ADDRESS_LINE_2, addressLine2)
-                                        .add(ADDRESS_LINE_3,addressLine3)
-                                        .add(ADDRESS_LINE_4, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_4))
-                                        .add(ADDRESS_POSTCODE, organisationDetailsForUserJsonObject.getString(ADDRESS_POSTCODE))
-                                        .add(EMAIL, organisationDetailsForUserJsonObject.getString(EMAIL))
-                                )
-                                .add(STATUS, status)
-                                .add(ASSOCIATION_DATE, associationDate)
+                .add(ASSOCIATION, Json.createObjectBuilder()
+                        .add(ORGANISATION_ID, organisationDetailsForUserJsonObject.getString(ORGANISATION_ID))
+                        .add(ORGANISATION_NAME, organisationDetailsForUserJsonObject.getString(ORGANISATION_NAME))
+                        .add(ADDRESS, Json.createObjectBuilder()
+                                .add(ADDRESS_LINE_1, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_1))
+                                .add(ADDRESS_LINE_2, addressLine2)
+                                .add(ADDRESS_LINE_3, addressLine3)
+                                .add(ADDRESS_LINE_4, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_4))
+                                .add(ADDRESS_POSTCODE, organisationDetailsForUserJsonObject.getString(ADDRESS_POSTCODE))
+                                .add(EMAIL, organisationDetailsForUserJsonObject.getString(EMAIL))
                         )
+                        .add(STATUS, status)
+                        .add(START_DATE, startDate)
+                )
                 .build();
     }
 }

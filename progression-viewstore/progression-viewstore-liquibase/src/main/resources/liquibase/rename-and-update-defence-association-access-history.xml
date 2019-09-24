@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="rename-and-update-defence-association-access-history.xml"
+               author="team-electro">
+
+        <renameTable oldTableName="defence_association_access_history"
+                     newTableName="defence_association"/>
+
+        <renameColumn tableName="defence_association"
+                      oldColumnName="grantor_user_id"
+                      newColumnName="user_id"
+        />
+
+        <renameColumn tableName="defence_association"
+                      oldColumnName="grantor_org_id"
+                      newColumnName="org_id"
+        />
+
+        <dropColumn tableName="defence_association">
+            <column name="grantee_user_id"/>
+            <column name="grantee_org_id" type="UUID"/>
+            <column name="agent_flag" type="BPCHAR(1)"/>
+        </dropColumn>
+
+        <addColumn tableName="defence_association">
+            <column name="representation_type" type="varchar(100)"/>
+            <column name="laa_contract_number" type="varchar(100)"/>
+        </addColumn>
+
+    </changeSet>
+
+</databaseChangeLog>

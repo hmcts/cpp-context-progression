@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import static java.time.ZoneId.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -9,7 +10,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
-import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationHistory;
+import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationDefendant;
 import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
 import uk.gov.moj.cpp.progression.query.DefenceAssociationQueryView;
 
@@ -29,9 +30,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DefenceAssociationQueryViewTest {
 
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
-    private static final UUID USER_ID = UUID.randomUUID();
-    private static final UUID ORGANISATION_ID = UUID.randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
+    private static final UUID USER_ID = randomUUID();
+    private static final UUID ORGANISATION_ID = randomUUID();
+    private static final String UTC = "UTC";
 
     @InjectMocks
     private DefenceAssociationQueryView defenceAssociationQueryView;
@@ -41,33 +43,32 @@ public class DefenceAssociationQueryViewTest {
 
 
     @Test
-    public void shouldReturnDefenceAssociationHistory() {
+    public void shouldReturnDefenceAssociation() {
 
         //Given
-        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedCurrentDefenceAssociation());
+        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedCurrentDefenceAssociationDefendant());
 
         //When
-        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getAssociatedOrganisation(stubbedQueryObject());
 
         //Then
-        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association, notNullValue());
         assertThat(getValue(association, "organisationId"), equalTo(ORGANISATION_ID.toString()));
         assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
     }
 
-
     @Test
     public void shouldReturnEmptyDataWhenNoAssociationExist() {
 
         //Given
-        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedEmptyDefenceAssociationHistory());
+        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedEmptyDefenceAssociation());
 
         //When
-        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getAssociatedOrganisation(stubbedQueryObject());
 
         //Then
-        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association.toString(), equalTo("{}"));
     }
 
@@ -79,10 +80,10 @@ public class DefenceAssociationQueryViewTest {
         when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(null);
 
         //When
-        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getAssociatedOrganisation(stubbedQueryObject());
 
         //Then
-        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association.toString(), equalTo("{}"));
     }
 
@@ -93,10 +94,10 @@ public class DefenceAssociationQueryViewTest {
         when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedExpiredAssociationAndCurrentAssociation());
 
         //When
-        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getAssociatedOrganisation(stubbedQueryObject());
 
         //Then
-        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association, notNullValue());
         assertThat(getValue(association, "organisationId"), equalTo(ORGANISATION_ID.toString()));
         assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
@@ -109,22 +110,22 @@ public class DefenceAssociationQueryViewTest {
         when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedOnlyExpiredAssociation());
 
         //When
-        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getAssociatedOrganisation(stubbedQueryObject());
 
         //Then
-        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association.toString(), equalTo("{}"));
 
     }
 
-    private DefenceAssociation stubbedEmptyDefenceAssociationHistory() {
-        final DefenceAssociation defenceAssociation = new DefenceAssociation();
-        defenceAssociation.setDefendantId(DEFENDANT_ID);
-        defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
-        return defenceAssociation;
+    private DefenceAssociationDefendant stubbedEmptyDefenceAssociation() {
+        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
+        defenceAssociationDefendant.setDefendantId(DEFENDANT_ID);
+        defenceAssociationDefendant.setDefenceAssociations(new HashSet<>());
+        return defenceAssociationDefendant;
     }
 
-    private String getValue(final JsonObject associationsJsonObject, String key) {
+    private String getValue(final JsonObject associationsJsonObject, final String key) {
         return associationsJsonObject.getString(key);
     }
 
@@ -150,50 +151,50 @@ public class DefenceAssociationQueryViewTest {
                 .withUserId(randomUUID().toString());
     }
 
-    private DefenceAssociation stubbedCurrentDefenceAssociation() {
-        final DefenceAssociation defenceAssociation = new DefenceAssociation();
-        defenceAssociation.setDefendantId(DEFENDANT_ID);
-        final DefenceAssociationHistory defenceAssociationHistory = stubbedAssociation(ZonedDateTime.now(), null, defenceAssociation, USER_ID, ORGANISATION_ID);
-        defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
-        defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
-        return defenceAssociation;
+    private DefenceAssociationDefendant stubbedCurrentDefenceAssociationDefendant() {
+        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
+        defenceAssociationDefendant.setDefendantId(DEFENDANT_ID);
+        final DefenceAssociation defenceAssociation = stubbedAssociation(ZonedDateTime.now(of(UTC)), null, defenceAssociationDefendant, USER_ID, ORGANISATION_ID);
+        defenceAssociationDefendant.setDefenceAssociations(new HashSet<>());
+        defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
+        return defenceAssociationDefendant;
     }
 
-    private DefenceAssociation stubbedOnlyExpiredAssociation() {
-        final DefenceAssociation defenceAssociation = new DefenceAssociation();
-        defenceAssociation.setDefendantId(DEFENDANT_ID);
-        DefenceAssociationHistory defenceAssociationHistory = stubbedAssociation(ZonedDateTime.now(), ZonedDateTime.now(), defenceAssociation, randomUUID(), randomUUID());
-        defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
-        defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
-        return defenceAssociation;
+    private DefenceAssociationDefendant stubbedOnlyExpiredAssociation() {
+        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
+        defenceAssociationDefendant.setDefendantId(DEFENDANT_ID);
+        final DefenceAssociation defenceAssociation = stubbedAssociation(ZonedDateTime.now(of(UTC)), ZonedDateTime.now(of(UTC)), defenceAssociationDefendant, randomUUID(), randomUUID());
+        defenceAssociationDefendant.setDefenceAssociations(new HashSet<>());
+        defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
+        return defenceAssociationDefendant;
     }
 
-    private DefenceAssociation stubbedExpiredAssociationAndCurrentAssociation() {
-        final DefenceAssociation defenceAssociation = new DefenceAssociation();
-        defenceAssociation.setDefendantId(DEFENDANT_ID);
-        DefenceAssociationHistory defenceAssociationHistory = stubbedAssociation(ZonedDateTime.now(), ZonedDateTime.now(), defenceAssociation, randomUUID(), randomUUID());
-        defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
-        defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
-        defenceAssociationHistory = stubbedAssociation(ZonedDateTime.now(), null, defenceAssociation, USER_ID, ORGANISATION_ID);
-        defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
-        assertThat(defenceAssociation.getDefenceAssociationHistories().size(), equalTo(2));
-        return defenceAssociation;
+    private DefenceAssociationDefendant stubbedExpiredAssociationAndCurrentAssociation() {
+        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
+        defenceAssociationDefendant.setDefendantId(DEFENDANT_ID);
+        DefenceAssociation defenceAssociation = stubbedAssociation(ZonedDateTime.now(of(UTC)), ZonedDateTime.now(of(UTC)), defenceAssociationDefendant, randomUUID(), randomUUID());
+        defenceAssociationDefendant.setDefenceAssociations(new HashSet<>());
+        defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
+        defenceAssociation = stubbedAssociation(ZonedDateTime.now(of(UTC)), null, defenceAssociationDefendant, USER_ID, ORGANISATION_ID);
+        defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
+        assertThat(defenceAssociationDefendant.getDefenceAssociations().size(), equalTo(2));
+        return defenceAssociationDefendant;
     }
 
-    private DefenceAssociationHistory stubbedAssociation(final ZonedDateTime startDate, final ZonedDateTime endDate,
-                                                         final DefenceAssociation defenceAssociation,
-                                                         final UUID grantorUserId,
-                                                         final UUID grantorOrgId) {
 
-        final DefenceAssociationHistory defenceAssociationHistory = new DefenceAssociationHistory();
-        defenceAssociationHistory.setId(UUID.randomUUID());
-        defenceAssociationHistory.setDefenceAssociation(defenceAssociation);
-        defenceAssociationHistory.setGrantorUserId(grantorUserId);
-        defenceAssociationHistory.setGrantorOrgId(grantorOrgId);
-        defenceAssociationHistory.setStartDate(startDate);
-        defenceAssociationHistory.setEndDate(endDate);
-        defenceAssociationHistory.setAgentFlag(false);
-        return defenceAssociationHistory;
+    private DefenceAssociation stubbedAssociation(final ZonedDateTime startDate,
+                                                  final ZonedDateTime endDate,
+                                                  final DefenceAssociationDefendant defenceAssociationDefendant,
+                                                  final UUID userId,
+                                                  final UUID orgId) {
+        final DefenceAssociation defenceAssociation = new DefenceAssociation();
+        defenceAssociation.setId(randomUUID());
+        defenceAssociation.setDefenceAssociationDefendant(defenceAssociationDefendant);
+        defenceAssociation.setUserId(userId);
+        defenceAssociation.setOrgId(orgId);
+        defenceAssociation.setStartDate(startDate);
+        defenceAssociation.setEndDate(endDate);
+        return defenceAssociation;
     }
 
 }

@@ -1,17 +1,17 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.UUID.fromString;
+
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
-import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationHistory;
+import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationDefendant;
 import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,10 +23,10 @@ import javax.persistence.NoResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3655"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class DefenceAssociationQueryView {
 
+    public static final String EMPTY_VALUE = "";
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationQueryView.class);
     private static final String ID = "defendantId";
     private static final String ASSOCIATED = "ASSOCIATED";
@@ -39,74 +39,69 @@ public class DefenceAssociationQueryView {
     private static final String ADDRESS_LINE_4 = "addressLine4";
     private static final String ADDRESS_POSTCODE = "addressPostcode";
     private static final String EMAIL = "email";
-    private static final String ASSOCIATION_DATE = "associationDate";
-    public static final String EMPTY_VALUE = "";
-
+    private static final String START_DATE = "startDate";
     @Inject
     private DefenceAssociationRepository defenceAssociationRepository;
 
     @Handles("progression.query.associated-organisation")
-    public JsonEnvelope getDefendantRequest(final JsonEnvelope envelope) {
-        final Optional<UUID> defendantId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
-        final DefenceAssociation defenceAssociationEntity;
+    public JsonEnvelope getAssociatedOrganisation(final JsonEnvelope envelope) {
+        final UUID defendantId = fromString(envelope.payloadAsJsonObject().getString(ID));
+        final DefenceAssociationDefendant defenceAssociationDefendant;
         try {
-            defenceAssociationEntity = defenceAssociationRepository.findByDefendantId(defendantId.get());
-        } catch (NoResultException nre) {
+            defenceAssociationDefendant = defenceAssociationRepository.findByDefendantId(defendantId);
+        } catch (final NoResultException nre) {
             LOGGER.debug("No Association exist", nre);
             return emptyAssociation(envelope);
         }
-        final DefenceAssociationHistory defenceAssociationHistory = extractDefenceAssociationDetails(defenceAssociationEntity);
-        if (defenceAssociationHistory == null) {
+        final DefenceAssociation defenceAssociation = extractCurrentDefenceAssociation(defenceAssociationDefendant);
+        if (defenceAssociation == null) {
             return emptyAssociation(envelope);
         }
-        return formResponseWithAssociationDetails(envelope, defenceAssociationHistory);
+        return formResponseWithAssociationDetails(envelope, defenceAssociation);
     }
 
-    private boolean isDefenceAssociationEmpty(final DefenceAssociation defenceAssociationEntity) {
-        return defenceAssociationEntity == null ||
-                defenceAssociationEntity.getDefenceAssociationHistories() == null ||
-                defenceAssociationEntity.getDefenceAssociationHistories().isEmpty();
+    private boolean isDefenceAssociationEmpty(final DefenceAssociationDefendant defenceAssociationDefendant) {
+        return defenceAssociationDefendant == null ||
+                defenceAssociationDefendant.getDefenceAssociations() == null ||
+                defenceAssociationDefendant.getDefenceAssociations().isEmpty();
     }
 
-    private JsonEnvelope formResponseWithAssociationDetails(final JsonEnvelope envelope, final DefenceAssociationHistory defenceAssociationHistory) {
+    private JsonEnvelope formResponseWithAssociationDetails(final JsonEnvelope envelope, final DefenceAssociation defenceAssociation) {
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
-                formDefenceAssociationPayload(defenceAssociationHistory));
+                formDefenceAssociationPayload(defenceAssociation));
     }
 
-    private boolean isAssociation(DefenceAssociationHistory defenceAssociationHistory) {
-        return defenceAssociationHistory.getGrantorUserId() != null &&
-                defenceAssociationHistory.getGranteeUserId() == null &&
-                defenceAssociationHistory.getEndDate() == null &&
-                defenceAssociationHistory.getAgentFlag().equals(false);
-    }
-
-    private DefenceAssociationHistory extractDefenceAssociationDetails(final DefenceAssociation defenceAssociationEntity) {
-        if (isDefenceAssociationEmpty(defenceAssociationEntity)) {
+    private DefenceAssociation extractCurrentDefenceAssociation(final DefenceAssociationDefendant defenceAssociationDefendant) {
+        if (isDefenceAssociationEmpty(defenceAssociationDefendant)) {
             return null;
         }
-        final List<DefenceAssociationHistory> defenceAssociationHistoryList =
-                defenceAssociationEntity.getDefenceAssociationHistories().stream()
-                        .filter(this::isAssociation)
-                        .collect(Collectors.toList());
+        final List<DefenceAssociation> defenceAssociations = defenceAssociationDefendant.getDefenceAssociations()
+                .stream()
+                .filter(d -> d.getEndDate() == null)
+                .collect(Collectors.toList());
 
-        return !defenceAssociationHistoryList.isEmpty() ? defenceAssociationHistoryList.get(0) : null;
+        if (defenceAssociations.size() > 1) {
+            throw new IllegalStateException("Cannot have more than one Organisation Associated at any point in time");
+        }
+
+        return !defenceAssociations.isEmpty() ? defenceAssociations.get(0) : null;
     }
 
-    private JsonObject formDefenceAssociationPayload(DefenceAssociationHistory defenceAssociationHistory) {
+    private JsonObject formDefenceAssociationPayload(final DefenceAssociation defenceAssociation) {
 
-        String organisationId = "";
-        String status = "";
-        String associationDate = "";
-        if (defenceAssociationHistory.getGrantorUserId() != null && defenceAssociationHistory.getStartDate() != null) {
-            organisationId = defenceAssociationHistory.getGrantorOrgId().toString();
-            associationDate = ZonedDateTimes.toString(defenceAssociationHistory.getStartDate());
+        String organisationId = EMPTY_VALUE;
+        String status = EMPTY_VALUE;
+        String startDate = EMPTY_VALUE;
+        if (defenceAssociation.getUserId() != null && defenceAssociation.getStartDate() != null) {
+            organisationId = defenceAssociation.getOrgId().toString();
+            startDate = ZonedDateTimes.toString(defenceAssociation.getStartDate());
             status = ASSOCIATED;
         }
-        return formResponse(organisationId, status, associationDate);
+        return formResponse(organisationId, status, startDate);
     }
 
-    private JsonObject formResponse(final String organisationId, final String status, final String associationDate) {
+    private JsonObject formResponse(final String organisationId, final String status, final String startDate) {
         return Json.createObjectBuilder()
                 .add(ASSOCIATION, Json.createObjectBuilder()
                         .add(ORGANISATION_ID, organisationId)
@@ -118,7 +113,7 @@ public class DefenceAssociationQueryView {
                                 .add(ADDRESS_POSTCODE, EMPTY_VALUE)
                                 .add(EMAIL, EMPTY_VALUE)
                         )
-                        .add(ASSOCIATION_DATE, associationDate)
+                        .add(START_DATE, startDate)
                 )
                 .build();
     }

@@ -1,16 +1,19 @@
 package uk.gov.moj.cpp.defence.association.persistence;
 
+import static java.time.ZoneId.of;
+import static java.time.ZonedDateTime.now;
+import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static uk.gov.moj.cpp.progression.events.RepresentationType.REPRESENTATION_ORDER;
 
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
-import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationHistory;
+import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationDefendant;
 import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -24,9 +27,12 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class DefenceAssociationRepositoryTest {
 
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
-    private static final UUID USER_ID = UUID.randomUUID();
-    private static final UUID ORGANISATION_ID = UUID.randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
+    private static final UUID USER_ID = randomUUID();
+    private static final UUID ORGANISATION_ID = randomUUID();
+    private static final String LAA_CONTRACT_NUMBER = "123-ABC-456-XYZ";
+    private static final String UTC = "UTC";
+
 
     @Inject
     private DefenceAssociationRepository repository;
@@ -36,76 +42,87 @@ public class DefenceAssociationRepositoryTest {
         repository.findAll().stream().forEach(defenceAssociation -> repository.removeAndFlush(defenceAssociation));
     }
 
-    @Test
-    public void shouldPerformAssociation () throws Exception {
-
-        repository.save(getDefenceAssociation());
-
-        DefenceAssociation actual = repository.findByDefendantId(DEFENDANT_ID);
-        assertNotNull("Should not be null", actual);
-
-        assertEquals(DEFENDANT_ID, actual.getDefendantId());
-        assertEquals(1, actual.getDefenceAssociationHistories().size());
-        assertEquals(ORGANISATION_ID, actual.getDefenceAssociationHistories().iterator().next().getGrantorOrgId());
-        assertEquals(USER_ID, actual.getDefenceAssociationHistories().iterator().next().getGrantorUserId());
-
-    }
-
-    @Test
-    public void shoulPerformDisAssociation () throws Exception {
-
-        ZonedDateTime testZonedDateTime = ZonedDateTime.now();
-
-        //Performing the Association
-        repository.save(getDefenceAssociation());
-
-        DefenceAssociation associatedCase = repository.findByDefendantId(DEFENDANT_ID);
-        assertNotNull("Should not be null", associatedCase);
-        assertNull(associatedCase.getDefenceAssociationHistories().iterator().next().getEndDate());
-
-        //A Disassociated Case has an active End Date....
-        performDisassociation(testZonedDateTime, associatedCase);
-
-        //Perform Disassociation
-        repository.save(associatedCase);
-
-        DefenceAssociation disAsssociatedCase = repository.findByDefendantId(DEFENDANT_ID);
-
-        //Check Values of the Disassociated Case...
-        assertEquals(DEFENDANT_ID, disAsssociatedCase.getDefendantId());
-        assertEquals(ORGANISATION_ID, disAsssociatedCase.getDefenceAssociationHistories().iterator().next().getGrantorOrgId());
-        assertEquals(USER_ID, disAsssociatedCase.getDefenceAssociationHistories().iterator().next().getGrantorUserId());
-        assertEquals(testZonedDateTime, disAsssociatedCase.getDefenceAssociationHistories().iterator().next().getEndDate());
-
-    }
-
     @Test(expected = NoResultException.class)
     public void shouldReturnExceptionIfNoAssociationExist() {
         repository.findByDefendantId(DEFENDANT_ID);
     }
 
-    private void performDisassociation(final ZonedDateTime testZonedDateTime, final DefenceAssociation associatedCase) {
-        DefenceAssociationHistory defenceAssociationHistory =  associatedCase.getDefenceAssociationHistories().iterator().next();
-        defenceAssociationHistory.setEndDate(testZonedDateTime);
-        associatedCase.getDefenceAssociationHistories().clear();
-        associatedCase.getDefenceAssociationHistories().add(defenceAssociationHistory);
+    @Test
+    public void shouldPerformAssociation() throws Exception {
+
+        //Given
+        final DefenceAssociationDefendant defenceAssociationDefendant = getDefenceAssociation();
+
+        //When
+        repository.save(defenceAssociationDefendant);
+
+        //Then
+        final DefenceAssociationDefendant actual = repository.findByDefendantId(DEFENDANT_ID);
+        assertNotNull("Should not be null", actual);
+
+        assertEquals(DEFENDANT_ID, actual.getDefendantId());
+        assertEquals(1, actual.getDefenceAssociations().size());
+
+        final DefenceAssociation association = actual.getDefenceAssociations().iterator().next();
+        assertEquals(ORGANISATION_ID, association.getOrgId());
+        assertEquals(USER_ID, association.getUserId());
+        assertEquals(REPRESENTATION_ORDER.toString(), association.getRepresentationType());
+        assertEquals(LAA_CONTRACT_NUMBER, association.getLaaContractNumber());
     }
 
-    private DefenceAssociation getDefenceAssociation() {
+    @Test
+    public void shoulPerformDisAssociation() throws Exception {
+
+        //Given
+        final DefenceAssociationDefendant defenceAssociationDefendant = getDefenceAssociation();
+        final ZonedDateTime testZonedDateTime = now(of(UTC));
+
+        //...performing the Association
+        repository.save(defenceAssociationDefendant);
+        final DefenceAssociationDefendant associatedCase = repository.findByDefendantId(DEFENDANT_ID);
+        assertNotNull("Should not be null", associatedCase);
+        assertNull(associatedCase.getDefenceAssociations().iterator().next().getEndDate());
+
+        //When
+        //...a Disassociated Case has an active End Date....
+        performDisassociation(testZonedDateTime, associatedCase);
+
+        //...perform Disassociation
+        repository.save(associatedCase);
+
+        //Then
+        final DefenceAssociationDefendant disassociatedCase = repository.findByDefendantId(DEFENDANT_ID);
+        assertEquals(DEFENDANT_ID, disassociatedCase.getDefendantId());
+        assertEquals(ORGANISATION_ID, disassociatedCase.getDefenceAssociations().iterator().next().getOrgId());
+        assertEquals(USER_ID, disassociatedCase.getDefenceAssociations().iterator().next().getUserId());
+        assertEquals(testZonedDateTime, disassociatedCase.getDefenceAssociations().iterator().next().getEndDate());
+
+    }
+
+    private void performDisassociation(final ZonedDateTime testZonedDateTime, final DefenceAssociationDefendant associatedCase) {
+        final DefenceAssociation defenceAssociation = associatedCase.getDefenceAssociations().iterator().next();
+        defenceAssociation.setEndDate(testZonedDateTime);
+        associatedCase.getDefenceAssociations().clear();
+        associatedCase.getDefenceAssociations().add(defenceAssociation);
+    }
+
+    private DefenceAssociationDefendant getDefenceAssociation() {
+
+        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
+        defenceAssociationDefendant.setDefendantId(DEFENDANT_ID);
 
         final DefenceAssociation defenceAssociation = new DefenceAssociation();
-        defenceAssociation.setDefendantId(DEFENDANT_ID);
+        defenceAssociation.setId(randomUUID());
+        defenceAssociation.setDefenceAssociationDefendant(defenceAssociationDefendant);
+        defenceAssociation.setUserId(USER_ID);
+        defenceAssociation.setOrgId(ORGANISATION_ID);
+        defenceAssociation.setStartDate(now(of(UTC)));
+        defenceAssociation.setRepresentationType(REPRESENTATION_ORDER.toString());
+        defenceAssociation.setLaaContractNumber(LAA_CONTRACT_NUMBER);
 
-        final DefenceAssociationHistory defenceAssociationHistory = new DefenceAssociationHistory();
-        defenceAssociationHistory.setId(UUID.randomUUID());
-        defenceAssociationHistory.setDefenceAssociation(defenceAssociation);
-        defenceAssociationHistory.setGrantorUserId(USER_ID);
-        defenceAssociationHistory.setGrantorOrgId(ORGANISATION_ID);
-        defenceAssociationHistory.setStartDate(ZonedDateTime.now());
+        defenceAssociationDefendant.setDefenceAssociations(new HashSet<>());
+        defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
 
-        defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
-        defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
-
-        return defenceAssociation;
+        return defenceAssociationDefendant;
     }
 }

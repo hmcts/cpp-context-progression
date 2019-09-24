@@ -62,7 +62,7 @@ public class DefenceAssociationAggregate implements Aggregate {
                 .withOrganisationId(organisationId)
                 .withOrganisationName(organisationName)
                 .withDefendantId(defendantId)
-                .withAssociationDate(ZonedDateTime.now(UTC_ZONE_ID))
+                .withStartDate(ZonedDateTime.now(UTC_ZONE_ID))
                 .withRepresentationType(RepresentationType.valueOf(representationType))
                 .withLaaContractNumber(laaContractNumber)
                 .withUserId(UUID.fromString(userId))
@@ -75,8 +75,12 @@ public class DefenceAssociationAggregate implements Aggregate {
                 .withOrganisationId(organisationId)
                 .withDefendantId(defendantId)
                 .withUserId(userId)
-                .withDisAssociationDate(ZonedDateTime.now(UTC_ZONE_ID))
+                .withEndDate(ZonedDateTime.now(UTC_ZONE_ID))
                 .build()));
+    }
+
+    public UUID getAssociatedOrganisationId() {
+        return associatedOrganisationId;
     }
 
     public void setAssociatedOrganisationId(final UUID associatedOrganisationId) {
