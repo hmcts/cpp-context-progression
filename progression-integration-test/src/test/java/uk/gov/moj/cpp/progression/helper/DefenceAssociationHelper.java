@@ -6,7 +6,6 @@ import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
@@ -19,19 +18,14 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 
 import javax.jms.MessageConsumer;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefenceAssociationHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationHelper.class);
 
     private static final String DEFENCE_ASSOCIATION_MEDIA_TYPE = "application/vnd.progression.associate-defence-organisation+json";
     private static final String DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME = "progression.associate-defence-organisation.json";
@@ -41,12 +35,10 @@ public class DefenceAssociationHelper {
                     EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT);
 
     public static void associateOrganisation(final String defendantId,
-                                             final String organisationId,
                                              final String userId) throws IOException {
 
         String body = Resources.toString(Resources.getResource(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME),
                 Charset.forName("UTF-8"));
-        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
 
         final Response writeResponse = postCommandWithUserId(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
                 DEFENCE_ASSOCIATION_MEDIA_TYPE, body, userId);
@@ -71,7 +63,7 @@ public class DefenceAssociationHelper {
 
         final JsonObject associatedOrganisationJsonObject = getJsonObject(associatedOrganisationResponse);
         final JsonObject association = associatedOrganisationJsonObject.getJsonObject("association");
-        assertThat(association,notNullValue());
+        assertThat(association, notNullValue());
         assertTrue(association.getString("organisationId").equals(organisationId));
     }
 }

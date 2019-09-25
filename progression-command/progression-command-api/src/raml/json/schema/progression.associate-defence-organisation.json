@@ -3,9 +3,6 @@
   "id": "http://moj.gov.uk/cpp/progression/command/progression.associate-defence-organisation.json",
   "type": "object",
   "properties": {
-    "organisationId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-    },
     "representationType": {
       "type": "string",
       "enum": [
@@ -21,7 +18,6 @@
     }
   },
   "required": [
-    "organisationId",
     "representationType"
   ]
 }

@@ -15,7 +15,6 @@ import uk.gov.moj.cpp.progression.command.AssociateDefenceOrganisation;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -49,26 +48,17 @@ public class AssociateDefenceOrganisationHandler {
         LOGGER.debug("progression.command.handler.associate-defence-organisation {}", envelope);
         final AssociateDefenceOrganisation associateDefenceOrganisation = envelope.payload();
 
-        //validate that the user that requested the association belongs to the organisation
         final OrganisationDetails userOrgDetails = usersGroupService.getUserOrgDetails(envelope);
-        validateAssociationCommand(associateDefenceOrganisation.getOrganisationId(), userOrgDetails.getId());
 
         final EventStream eventStream = eventSource.getStreamById(associateDefenceOrganisation.getDefendantId());
         final DefenceAssociationAggregate defenceAssociationAggregate = aggregateService.get(eventStream, DefenceAssociationAggregate.class);
         final Stream<Object> events =
                 defenceAssociationAggregate.associateOrganization(associateDefenceOrganisation.getDefendantId(),
-                        associateDefenceOrganisation.getOrganisationId(),
+                        userOrgDetails.getId(),
                         userOrgDetails.getName(),
                         associateDefenceOrganisation.getRepresentationType().toString());
         if (events != null) {
             appendEventsToStream(envelope, eventStream, events);
-        }
-    }
-
-    private void validateAssociationCommand(final UUID organisationId, final UUID userOrganisationId) {
-        if (!organisationId.equals(userOrganisationId)) {
-            LOGGER.error("The user does not belong to the requested organisation");
-            throw new IllegalArgumentException("The user does not belong to the requested organisation");
         }
     }
 

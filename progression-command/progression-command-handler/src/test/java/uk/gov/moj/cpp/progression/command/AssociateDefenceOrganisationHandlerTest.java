@@ -38,9 +38,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -100,14 +98,11 @@ public class AssociateDefenceOrganisationHandlerTest {
         //Given
         final UUID userId = UUID.randomUUID();
         final OrganisationDetails ORGANISATION_1 = createOrganisation(UUID.randomUUID());
-
-
         final AssociateDefenceOrganisation associateDefenceOrganisation
                 = generateAssociateDefenceOrganisationCommand(ORGANISATION_1.getId());
         final Envelope<AssociateDefenceOrganisation> envelope = createDefenceAssociationEnvelope(userId, associateDefenceOrganisation);
         final JsonEnvelope queryResponse = getUserGroupsQueryResponse(userId, ORGANISATION_1.getId());
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(ORGANISATION_1);
-
 
         //When
         associateDefenceOrganisationHandler.handle(envelope);
@@ -121,33 +116,12 @@ public class AssociateDefenceOrganisationHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.organisationId", notNullValue()))
                         ))
-
                 )
         );
     }
 
     private OrganisationDetails createOrganisation(final UUID orgId) {
         return OrganisationDetails.newBuilder().withId(orgId).withName(ORGANISATION_NAME).build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldProcessCommandNegatively() throws Exception {
-
-        //Given - When a Non Expected Organisation Name is passed in....
-        UUID userId = UUID.randomUUID();
-        UUID orgId = UUID.randomUUID();
-        final AssociateDefenceOrganisation associateDefenceOrganisation
-                = generateAssociateDefenceOrganisationCommand(orgId);
-
-        final Envelope<AssociateDefenceOrganisation> envelope = createDefenceAssociationEnvelope(userId, associateDefenceOrganisation);
-        final JsonEnvelope queryResponse = getUserGroupsQueryResponse(userId, UUID.randomUUID());
-
-        when(usersGroupService.getUserOrgDetails(any())).thenReturn(OrganisationDetails.newBuilder().withId(randomUUID()).build());
-
-        //When
-        associateDefenceOrganisationHandler.handle(envelope);
-
-        //Then - The IllegalArgumentException is expected...
     }
 
     private JsonEnvelope getUserGroupsQueryResponse(final UUID userId, final UUID orgId) {
@@ -179,7 +153,6 @@ public class AssociateDefenceOrganisationHandlerTest {
         return AssociateDefenceOrganisation.associateDefenceOrganisation()
                 .withDefendantId(randomUUID())
                 .withRepresentationType(RepresentationType.PRIVATE_FUNDED)
-                .withOrganisationId(orgId)
                 .build();
     }
 

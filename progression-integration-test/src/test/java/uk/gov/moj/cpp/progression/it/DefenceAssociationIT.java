@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefenceAssociationIT  extends BaseIntegrationTest {
+public class DefenceAssociationIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws IOException {
@@ -35,11 +35,11 @@ public class DefenceAssociationIT  extends BaseIntegrationTest {
         stubGetOrganisationQuery(userId, organisationId, organisationName);
 
         //When
-        associateOrganisation(defendantId, organisationId, userId);
+        associateOrganisation(defendantId, userId);
 
         //Then
         verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId);
-        verifyDefenceOrganisationAssociatedDataPersisted(defendantId,organisationId,userId);
+        verifyDefenceOrganisationAssociatedDataPersisted(defendantId, organisationId, userId);
 
     }
 
