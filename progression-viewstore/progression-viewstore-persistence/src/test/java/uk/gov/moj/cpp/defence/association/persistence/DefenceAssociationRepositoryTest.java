@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,6 +30,11 @@ public class DefenceAssociationRepositoryTest {
 
     @Inject
     private DefenceAssociationRepository repository;
+
+    @Before
+    public void setUp() {
+        repository.findAll().stream().forEach(defenceAssociation -> repository.removeAndFlush(defenceAssociation));
+    }
 
     @Test
     public void shouldPerformAssociation () throws Exception {
@@ -70,6 +77,11 @@ public class DefenceAssociationRepositoryTest {
         assertEquals(USER_ID, disAsssociatedCase.getDefenceAssociationHistories().iterator().next().getGrantorUserId());
         assertEquals(testZonedDateTime, disAsssociatedCase.getDefenceAssociationHistories().iterator().next().getEndDate());
 
+    }
+
+    @Test(expected = NoResultException.class)
+    public void shouldReturnExceptionIfNoAssociationExist() {
+        repository.findByDefendantId(DEFENDANT_ID);
     }
 
     private void performDisassociation(final ZonedDateTime testZonedDateTime, final DefenceAssociation associatedCase) {

@@ -56,6 +56,7 @@ public class DefenceAssociationQueryViewTest {
         assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
     }
 
+
     @Test
     public void shouldReturnEmptyDataWhenNoAssociationExist() {
 
@@ -67,17 +68,29 @@ public class DefenceAssociationQueryViewTest {
 
         //Then
         JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
-        assertThat(association, notNullValue());
-        assertThat(getValue(association, "organisationId"), equalTo(""));
-        assertThat(getValue(association, "status"), equalTo(""));
+        assertThat(association.toString(), equalTo("{}"));
+    }
 
+
+    @Test
+    public void shouldReturnEmptyDataWhenAssociationIsNull() {
+
+        //Given
+        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(null);
+
+        //When
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+
+        //Then
+        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        assertThat(association.toString(), equalTo("{}"));
     }
 
     @Test
     public void shouldReturnCurrentAssociationGivenExpiredAssociationExist() {
 
         //Given
-        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedExpiredAssociation());
+        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedExpiredAssociationAndCurrentAssociation());
 
         //When
         final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
@@ -89,10 +102,24 @@ public class DefenceAssociationQueryViewTest {
         assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
     }
 
+    @Test
+    public void shouldReturnEmptyDataWhenOnlyExpiredAssociationEntryExist() {
+
+        //Given
+        when(defenceAssociationRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(stubbedOnlyExpiredAssociation());
+
+        //When
+        final JsonEnvelope defenceAssociationResponse = defenceAssociationQueryView.getDefendantRequest(stubbedQueryObject());
+
+        //Then
+        JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
+        assertThat(association.toString(), equalTo("{}"));
+
+    }
+
     private DefenceAssociation stubbedEmptyDefenceAssociationHistory() {
         final DefenceAssociation defenceAssociation = new DefenceAssociation();
         defenceAssociation.setDefendantId(DEFENDANT_ID);
-        final DefenceAssociationHistory defenceAssociationHistory = new DefenceAssociationHistory();
         defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
         return defenceAssociation;
     }
@@ -132,7 +159,16 @@ public class DefenceAssociationQueryViewTest {
         return defenceAssociation;
     }
 
-    private DefenceAssociation stubbedExpiredAssociation() {
+    private DefenceAssociation stubbedOnlyExpiredAssociation() {
+        final DefenceAssociation defenceAssociation = new DefenceAssociation();
+        defenceAssociation.setDefendantId(DEFENDANT_ID);
+        DefenceAssociationHistory defenceAssociationHistory = stubbedAssociation(ZonedDateTime.now(), ZonedDateTime.now(), defenceAssociation, randomUUID(), randomUUID());
+        defenceAssociation.setDefenceAssociationHistories(new HashSet<>());
+        defenceAssociation.getDefenceAssociationHistories().add(defenceAssociationHistory);
+        return defenceAssociation;
+    }
+
+    private DefenceAssociation stubbedExpiredAssociationAndCurrentAssociation() {
         final DefenceAssociation defenceAssociation = new DefenceAssociation();
         defenceAssociation.setDefendantId(DEFENDANT_ID);
         DefenceAssociationHistory defenceAssociationHistory = stubbedAssociation(ZonedDateTime.now(), ZonedDateTime.now(), defenceAssociation, randomUUID(), randomUUID());

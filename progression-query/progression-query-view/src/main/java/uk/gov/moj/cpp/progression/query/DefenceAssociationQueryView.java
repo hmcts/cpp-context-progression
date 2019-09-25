@@ -18,11 +18,16 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.persistence.NoResultException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class DefenceAssociationQueryView {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationQueryView.class);
     private static final String ID = "defendantId";
     private static final String ASSOCIATED = "ASSOCIATED";
     private static final String ASSOCIATION = "association";
@@ -43,9 +48,24 @@ public class DefenceAssociationQueryView {
     @Handles("progression.query.associated-organisation")
     public JsonEnvelope getDefendantRequest(final JsonEnvelope envelope) {
         final Optional<UUID> defendantId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
-        final DefenceAssociation defenceAssociationEntity = defenceAssociationRepository.findByDefendantId(defendantId.get());
+        final DefenceAssociation defenceAssociationEntity;
+        try {
+            defenceAssociationEntity = defenceAssociationRepository.findByDefendantId(defendantId.get());
+        } catch (NoResultException nre) {
+            LOGGER.debug("No Association exist", nre);
+            return emptyAssociation(envelope);
+        }
         final DefenceAssociationHistory defenceAssociationHistory = extractDefenceAssociationDetails(defenceAssociationEntity);
+        if (defenceAssociationHistory == null) {
+            return emptyAssociation(envelope);
+        }
         return formResponseWithAssociationDetails(envelope, defenceAssociationHistory);
+    }
+
+    private boolean isDefenceAssociationEmpty(final DefenceAssociation defenceAssociationEntity) {
+        return defenceAssociationEntity == null ||
+                defenceAssociationEntity.getDefenceAssociationHistories() == null ||
+                defenceAssociationEntity.getDefenceAssociationHistories().isEmpty();
     }
 
     private JsonEnvelope formResponseWithAssociationDetails(final JsonEnvelope envelope, final DefenceAssociationHistory defenceAssociationHistory) {
@@ -62,12 +82,15 @@ public class DefenceAssociationQueryView {
     }
 
     private DefenceAssociationHistory extractDefenceAssociationDetails(final DefenceAssociation defenceAssociationEntity) {
+        if (isDefenceAssociationEmpty(defenceAssociationEntity)) {
+            return null;
+        }
         final List<DefenceAssociationHistory> defenceAssociationHistoryList =
                 defenceAssociationEntity.getDefenceAssociationHistories().stream()
                         .filter(this::isAssociation)
                         .collect(Collectors.toList());
 
-        return !defenceAssociationHistoryList.isEmpty() ? defenceAssociationHistoryList.get(0) : new DefenceAssociationHistory();
+        return !defenceAssociationHistoryList.isEmpty() ? defenceAssociationHistoryList.get(0) : null;
     }
 
     private JsonObject formDefenceAssociationPayload(DefenceAssociationHistory defenceAssociationHistory) {
@@ -98,5 +121,13 @@ public class DefenceAssociationQueryView {
                         .add(ASSOCIATION_DATE, associationDate)
                 )
                 .build();
+    }
+
+    private JsonEnvelope emptyAssociation(final JsonEnvelope envelope) {
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                Json.createObjectBuilder()
+                        .add(ASSOCIATION, Json.createObjectBuilder())
+                        .build());
     }
 }
