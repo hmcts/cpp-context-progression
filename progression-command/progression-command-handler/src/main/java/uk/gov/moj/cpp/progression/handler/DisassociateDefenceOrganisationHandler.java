@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.UUID.fromString;
+
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -11,10 +13,11 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.DefenceAssociationAggregate;
-import uk.gov.moj.cpp.progression.command.AssociateDefenceOrganisation;
+import uk.gov.moj.cpp.progression.command.DisassociateDefenceOrganisation;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -24,43 +27,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
-public class AssociateDefenceOrganisationHandler {
+public class DisassociateDefenceOrganisationHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AssociateDefenceOrganisationHandler.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DisassociateDefenceOrganisationHandler.class.getName());
+    private static final String HMCTS_ORGANISATION_TYPE = "HMCTS";
     @Inject
     private EventSource eventSource;
-
     @Inject
     private AggregateService aggregateService;
-
     @Inject
     private Enveloper enveloper;
-
     @Inject
     private UsersGroupService usersGroupService;
 
-
-    @Handles("progression.command.handler.associate-defence-organisation")
-    public void handle(final Envelope<AssociateDefenceOrganisation> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.handler.associate-defence-organisation {}", envelope);
-        final AssociateDefenceOrganisation associateDefenceOrganisation = envelope.payload();
-
+    @Handles("progression.command.handler.disassociate-defence-organisation")
+    public void handle(final Envelope<DisassociateDefenceOrganisation> envelope) throws EventStreamException {
+        final DisassociateDefenceOrganisation disassociateDefenceOrganisation = envelope.payload();
+        
         final String userId = envelope.metadata().userId()
                 .orElseThrow(() -> new IllegalArgumentException("No UserId Supplied"));
 
         final OrganisationDetails userOrgDetails = usersGroupService.getUserOrgDetails(envelope);
+        validateDisassociationCommand(disassociateDefenceOrganisation.getOrganisationId(), userOrgDetails.getId(), userOrgDetails.getType());
 
-        final EventStream eventStream = eventSource.getStreamById(associateDefenceOrganisation.getDefendantId());
+        final EventStream eventStream = eventSource.getStreamById(disassociateDefenceOrganisation.getDefendantId());
         final DefenceAssociationAggregate defenceAssociationAggregate = aggregateService.get(eventStream, DefenceAssociationAggregate.class);
         final Stream<Object> events =
-                defenceAssociationAggregate.associateOrganisation(associateDefenceOrganisation.getDefendantId(),
-                        userOrgDetails.getId(),
-                        userOrgDetails.getName(),
-                        associateDefenceOrganisation.getRepresentationType().toString(),
-                        associateDefenceOrganisation.getLaaContractNumber(),
-                        userId);
+                defenceAssociationAggregate.disassociateOrganisation(disassociateDefenceOrganisation.getDefendantId(),
+                        disassociateDefenceOrganisation.getOrganisationId(), fromString(userId));
         if (events != null) {
             appendEventsToStream(envelope, eventStream, events);
+        }
+    }
+
+    private void validateDisassociationCommand(final UUID organisationId,
+                                               final UUID userOrganisationId,
+                                               final String organisationType) {
+
+        if (!organisationId.equals(userOrganisationId) && !organisationType.equals(HMCTS_ORGANISATION_TYPE)) {
+            LOGGER.error("The given Organisation is not qualified to perform this disassociation");
+            throw new IllegalArgumentException("The given Organisation is not qualified to perform this disassociation");
         }
     }
 

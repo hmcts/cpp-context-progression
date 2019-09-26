@@ -11,11 +11,16 @@
     },
     "organisationId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "disAssociationDate": {
+      "type":"string",
+      "format":"date-time"
     }
   },
   "required": [
     "userId",
     "defendantId",
-    "organisationId"
+    "organisationId",
+    "disAssociationDate"
   ]
 }

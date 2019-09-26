@@ -5,12 +5,14 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoN
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
-import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefenceAccess;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociated;
+import uk.gov.moj.cpp.progression.events.DefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -22,29 +24,62 @@ public class DefenceAssociationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationAggregate.class);
     private static final long serialVersionUID = 7313423272698212459L;
-    private UUID associatedOrganizationId;
-    private final Set<DefenceAccess> defenceAccesses = new HashSet<>();
+    private static final String UTC = "UTC";
+    private static final ZoneId UTC_ZONE_ID = ZoneId.of(UTC);
+    private UUID associatedOrganisationId;
+    private List<UUID> disassociatedOrganisationIds;
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(DefenceOrganisationAssociated.class).apply(e ->
-                        this.associatedOrganizationId = e.getOrganisationId()
+                        this.setAssociatedOrganisationId(e.getOrganisationId())
+                ),
+                when(DefenceOrganisationDisassociated.class).apply(e ->
+                        {
+                            populatedDisassociatedOrganisationIds(e);
+                            this.setAssociatedOrganisationId(null);
+                        }
                 ),
                 otherwiseDoNothing()
         );
     }
 
-    public Stream<Object> associateOrganization(UUID defendantId, UUID organizationId,
-                                                String organisationName,
-                                                String representationType) {
-        LOGGER.debug("A defence organization is associated to defendant");
+    private void populatedDisassociatedOrganisationIds(final DefenceOrganisationDisassociated e) {
+        if (disassociatedOrganisationIds == null) {
+            disassociatedOrganisationIds = new ArrayList<>();
+        }
+        this.disassociatedOrganisationIds.add(e.getOrganisationId());
+    }
+
+    public Stream<Object> associateOrganisation(final UUID defendantId, final UUID organisationId,
+                                                final String organisationName,
+                                                final String representationType,
+                                                final String laaContractNumber,
+                                                final String userId) {
+        LOGGER.debug("A defence organisation is associated to defendant");
         return apply(Stream.of(DefenceOrganisationAssociated.defenceOrganisationAssociated()
-                .withOrganisationId(organizationId)
+                .withOrganisationId(organisationId)
                 .withOrganisationName(organisationName)
                 .withDefendantId(defendantId)
+                .withAssociationDate(ZonedDateTime.now(UTC_ZONE_ID))
                 .withRepresentationType(RepresentationType.valueOf(representationType))
+                .withLaaContractNumber(laaContractNumber)
+                .withUserId(UUID.fromString(userId))
                 .build()));
     }
 
+    public Stream<Object> disassociateOrganisation(final UUID defendantId, final UUID organisationId, final UUID userId) {
+        LOGGER.debug("A defence organisation is disassociated to defendant");
+        return apply(Stream.of(DefenceOrganisationDisassociated.defenceOrganisationDisassociated()
+                .withOrganisationId(organisationId)
+                .withDefendantId(defendantId)
+                .withUserId(userId)
+                .withDisAssociationDate(ZonedDateTime.now(UTC_ZONE_ID))
+                .build()));
+    }
+
+    public void setAssociatedOrganisationId(final UUID associatedOrganisationId) {
+        this.associatedOrganisationId = associatedOrganisationId;
+    }
 }

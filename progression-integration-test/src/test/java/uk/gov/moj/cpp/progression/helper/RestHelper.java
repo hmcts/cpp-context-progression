@@ -94,14 +94,14 @@ public class RestHelper {
     }
 
     public static String pollForResponse(final String url, final String path, final String mediaType) {
-        return poll(requestParams(baseUri + url + path, mediaType)
-                .withHeader("CJSCPPUID", randomUUID().toString()).build())
-                .timeout(10, TimeUnit.SECONDS).until(status().is(OK))
-                .getPayload();
+        return pollForResponse(path, mediaType, randomUUID().toString());
     }
 
     public static String pollForResponse(final String path, final String mediaType) {
-        return pollForResponseWithUserId(path,mediaType,randomUUID().toString());
+        return poll(requestParams(getQueryUri(path), mediaType)
+                .withHeader("CJSCPPUID", randomUUID().toString()).build())
+                .timeout(10, TimeUnit.SECONDS).until(status().is(OK))
+                .getPayload();
     }
 
     public static String pollForResponseWithUserId(final String path, final String mediaType, final String userId) {

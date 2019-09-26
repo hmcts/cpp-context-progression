@@ -34,7 +34,8 @@ public class UsersGroupService {
 
     public JsonObject getOrganisationDetailsForUser(final Envelope<?> envelope) {
 
-        final String userId = envelope.metadata().userId().orElseThrow(() -> new NullPointerException("User id Not Supplied for the UserGroups look up"));
+        final String userId = envelope.metadata().userId()
+                .orElseThrow(() -> new NullPointerException("User id Not Supplied for the UserGroups look up"));
         final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest)
                 .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);

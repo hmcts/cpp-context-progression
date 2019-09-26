@@ -13,6 +13,7 @@ import uk.gov.moj.cpp.defence.asscociation.event.listener.DefenceAssociationAcce
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
 import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
 
+import java.time.ZoneId;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -29,6 +30,8 @@ public class DefenceAssociationAccessEventListenerTest {
     private static final UUID DEFENDANT_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID ORGANISATION_ID = UUID.randomUUID();
+    private static final String UTC = "UTC";
+    private static final ZoneId UTC_ZONE_ID = ZoneId.of(UTC);
 
     @Mock
     private DefenceAssociationRepository repository;
@@ -54,6 +57,7 @@ public class DefenceAssociationAccessEventListenerTest {
                 createObjectBuilder()
                         .add("defendantId", DEFENDANT_ID.toString())
                         .add("organisationId", ORGANISATION_ID.toString())
+                        .add("associationDate","2019-07-09T16:27:39.744Z")
                         .build());
 
         eventListener.processOrganisationAssociated(requestEnvelope);
