@@ -20,13 +20,9 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.json.JsonValue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AssociateDefenceOrganisationHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AssociateDefenceOrganisationHandler.class.getName());
     @Inject
     private EventSource eventSource;
 
@@ -42,7 +38,6 @@ public class AssociateDefenceOrganisationHandler {
 
     @Handles("progression.command.handler.associate-defence-organisation")
     public void handle(final Envelope<AssociateDefenceOrganisation> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.handler.associate-defence-organisation {}", envelope);
         final AssociateDefenceOrganisation associateDefenceOrganisation = envelope.payload();
 
         final String userId = envelope.metadata().userId()
