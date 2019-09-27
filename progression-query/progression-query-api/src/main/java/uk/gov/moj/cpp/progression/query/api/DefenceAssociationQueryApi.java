@@ -20,12 +20,15 @@ public class DefenceAssociationQueryApi {
     public static final String START_DATE = "startDate";
     public static final String ORGANISATION_NAME = "organisationName";
     public static final String ADDRESS = "address";
+    public static final String ADDRESS_1 = "address1";
+    public static final String ADDRESS_2 = "address2";
+    public static final String ADDRESS_3 = "address3";
+    public static final String ADDRESS_4 = "address4";
     public static final String ADDRESS_LINE_1 = "addressLine1";
     public static final String ADDRESS_LINE_2 = "addressLine2";
     public static final String ADDRESS_LINE_3 = "addressLine3";
     public static final String ADDRESS_LINE_4 = "addressLine4";
     public static final String ADDRESS_POSTCODE = "addressPostcode";
-    public static final String EMAIL = "email";
     public static final String EMPTY_JSON_OBJECT = "{}";
 
     @Inject
@@ -75,25 +78,24 @@ public class DefenceAssociationQueryApi {
     private JsonObject formResponsePayload(final JsonObject association, final JsonObject organisationDetailsForUserJsonObject) {
         final String status = association.getString(STATUS);
         final String startDate = association.getString(START_DATE);
-        String addressLine2 = "";
-        String addressLine3 = "";
+        String address2 = "";
+        String address3 = "";
         if (organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_2)) {
-            addressLine2 = organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_2);
+            address2 = organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_2);
         }
         if (organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_3)) {
-            addressLine3 = organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_3);
+            address3 = organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_3);
         }
         return Json.createObjectBuilder()
                 .add(ASSOCIATION, Json.createObjectBuilder()
                         .add(ORGANISATION_ID, organisationDetailsForUserJsonObject.getString(ORGANISATION_ID))
                         .add(ORGANISATION_NAME, organisationDetailsForUserJsonObject.getString(ORGANISATION_NAME))
                         .add(ADDRESS, Json.createObjectBuilder()
-                                .add(ADDRESS_LINE_1, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_1))
-                                .add(ADDRESS_LINE_2, addressLine2)
-                                .add(ADDRESS_LINE_3, addressLine3)
-                                .add(ADDRESS_LINE_4, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_4))
+                                .add(ADDRESS_1, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_1))
+                                .add(ADDRESS_2, address2)
+                                .add(ADDRESS_3, address3)
+                                .add(ADDRESS_4, organisationDetailsForUserJsonObject.getString(ADDRESS_LINE_4))
                                 .add(ADDRESS_POSTCODE, organisationDetailsForUserJsonObject.getString(ADDRESS_POSTCODE))
-                                .add(EMAIL, organisationDetailsForUserJsonObject.getString(EMAIL))
                         )
                         .add(STATUS, status)
                         .add(START_DATE, startDate)

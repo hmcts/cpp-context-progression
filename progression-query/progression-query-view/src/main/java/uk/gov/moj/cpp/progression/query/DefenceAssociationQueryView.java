@@ -29,14 +29,14 @@ public class DefenceAssociationQueryView {
     public static final String EMPTY_VALUE = "";
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationQueryView.class);
     private static final String ID = "defendantId";
-    private static final String ASSOCIATED = "ASSOCIATED";
+    private static final String ASSOCIATED = "Active solicitor/barrister of record";
     private static final String ASSOCIATION = "association";
     private static final String ORGANISATION_ID = "organisationId";
     private static final String ORGANISATION_NAME = "organisationName";
     private static final String STATUS = "status";
     private static final String ADDRESS = "address";
-    private static final String ADDRESS_LINE_1 = "addressLine1";
-    private static final String ADDRESS_LINE_4 = "addressLine4";
+    private static final String ADDRESS_LINE_1 = "address1";
+    private static final String ADDRESS_LINE_4 = "address4";
     private static final String ADDRESS_POSTCODE = "addressPostcode";
     private static final String EMAIL = "email";
     private static final String START_DATE = "startDate";

@@ -55,7 +55,7 @@ public class DefenceAssociationQueryViewTest {
         final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association, notNullValue());
         assertThat(getValue(association, "organisationId"), equalTo(ORGANISATION_ID.toString()));
-        assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
+        assertThat(getValue(association, "status"), equalTo("Active solicitor/barrister of record"));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class DefenceAssociationQueryViewTest {
         final JsonObject association = defenceAssociationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(association, notNullValue());
         assertThat(getValue(association, "organisationId"), equalTo(ORGANISATION_ID.toString()));
-        assertThat(getValue(association, "status"), equalTo("ASSOCIATED"));
+        assertThat(getValue(association, "status"), equalTo("Active solicitor/barrister of record"));
     }
 
     @Test
