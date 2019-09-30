@@ -6,6 +6,7 @@ import static java.lang.String.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
@@ -29,6 +30,11 @@ public class DefenceAssociationHelper {
 
     private static final String DEFENCE_ASSOCIATION_MEDIA_TYPE = "application/vnd.progression.associate-defence-organisation+json";
     private static final String DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME = "progression.associate-defence-organisation.json";
+    private static final String ASSOCIATED_STATUS = "Active solicitor/barrister of record";
+    private static final String ADDRESS_LINE_1 = "Legal House";
+    private static final String ADDRESS_LINE_4 = "London";
+    private static final String POST_CODE = "SE14 2AB";
+
 
     private static final MessageConsumer publicEventsConsumerForDefenceAssociationForDefendant =
             QueueUtil.publicEvents.createConsumer(
@@ -65,5 +71,12 @@ public class DefenceAssociationHelper {
         final JsonObject association = associatedOrganisationJsonObject.getJsonObject("association");
         assertThat(association, notNullValue());
         assertTrue(association.getString("organisationId").equals(organisationId));
+        assertTrue(association.getString("status").equals(ASSOCIATED_STATUS));
+
+        final JsonObject organisationAddress = association.getJsonObject("address");
+        assertEquals(ADDRESS_LINE_1, organisationAddress.getString("address1"));
+        assertEquals(ADDRESS_LINE_4, organisationAddress.getString("address4"));
+        assertEquals(POST_CODE, organisationAddress.getString("addressPostcode"));
+
     }
 }
