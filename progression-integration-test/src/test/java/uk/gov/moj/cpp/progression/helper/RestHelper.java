@@ -1,13 +1,18 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static com.jayway.restassured.RestAssured.given;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
@@ -37,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -49,11 +55,13 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.io.Resources;
+import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +74,8 @@ public class RestHelper {
     private static String HOST = "localhost";
     private static final int PORT = 8080;
     private static final RestClient restClient = new RestClient();
+    private static final int MAX_TIMEOUT = 40;
+    private static final int POLL_INTERVAL = 2;
 
     static {
         prop = new Properties();
@@ -109,6 +119,20 @@ public class RestHelper {
                 .withHeader("CJSCPPUID", userId).build())
                 .timeout(10, TimeUnit.SECONDS).until(status().is(OK))
                 .getPayload();
+    }
+
+    public static String pollForResponse(final String path,
+                                         final String mediaType,
+                                         final String userId, List<Matcher<? super ReadContext>> matchers) {
+        return poll(requestParams(getQueryUri(path),
+                mediaType)
+                .withHeader(USER_ID, userId))
+                .pollInterval(POLL_INTERVAL, TimeUnit.SECONDS)
+                .timeout(MAX_TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(matchers))).getPayload();
+
     }
 
     public static String getQueryUri(final String path) {

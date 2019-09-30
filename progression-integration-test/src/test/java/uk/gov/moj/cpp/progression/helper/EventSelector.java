@@ -9,5 +9,6 @@ public class EventSelector {
     public static final String EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED = "progression.events.defendant-addition-failed";
     public static final String EVENT_SELECTOR_OFFENCES_FOR_DEFENDANT_UPDATED = "progression.events.offences-for-defendant-updated";
     public static final String EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT = "public.progression.defence-organisation-associated";
+    public static final String EVENT_SELECTOR_DEFENCE_DISASSOCIATION_FOR_DEFENDANT = "public.progression.defence-organisation-disassociated";
 
 }
