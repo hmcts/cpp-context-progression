@@ -55,7 +55,7 @@ public class DefenceAssociationQueryApiTest {
         final JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
         assertThat(getValue(association, "organisationId"), equalTo(organisationId.toString()));
         assertThat(getValue(association, "organisationName"), equalTo(organisationName));
-        assertThat(getValue(association, "status"), equalTo("Active solicitor/barrister of record"));
+        assertThat(getValue(association, "status"), equalTo("Active Barrister/Solicitor of record"));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class DefenceAssociationQueryApiTest {
         return Json.createObjectBuilder()
                 .add("association", Json.createObjectBuilder()
                         .add("organisationId", organisationId)
-                        .add("status", "Active solicitor/barrister of record")
+                        .add("status", "Active Barrister/Solicitor of record")
                         .add("startDate", ZonedDateTime.now().toString())
                 )
                 .build();

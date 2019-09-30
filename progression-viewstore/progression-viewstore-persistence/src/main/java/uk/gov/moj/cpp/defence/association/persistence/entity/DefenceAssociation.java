@@ -52,7 +52,6 @@ public class DefenceAssociation implements Serializable {
         this.id = id;
     }
 
-
     public DefenceAssociationDefendant getDefenceAssociationDefendant() {
         return defenceAssociationDefendant;
     }

@@ -29,7 +29,7 @@ public class DefenceAssociationQueryView {
     public static final String EMPTY_VALUE = "";
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationQueryView.class);
     private static final String ID = "defendantId";
-    private static final String ASSOCIATED = "Active solicitor/barrister of record";
+    private static final String ASSOCIATED = "Active Barrister/Solicitor of record";
     private static final String ASSOCIATION = "association";
     private static final String ORGANISATION_ID = "organisationId";
     private static final String ORGANISATION_NAME = "organisationName";

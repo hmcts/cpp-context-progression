@@ -30,7 +30,7 @@ public class DefenceAssociationHelper {
 
     private static final String DEFENCE_ASSOCIATION_MEDIA_TYPE = "application/vnd.progression.associate-defence-organisation+json";
     private static final String DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME = "progression.associate-defence-organisation.json";
-    private static final String ASSOCIATED_STATUS = "Active solicitor/barrister of record";
+    private static final String ASSOCIATED_STATUS = "Active Barrister/Solicitor of record";
     private static final String ADDRESS_LINE_1 = "Legal House";
     private static final String ADDRESS_LINE_4 = "London";
     private static final String POST_CODE = "SE14 2AB";
@@ -43,7 +43,7 @@ public class DefenceAssociationHelper {
     public static void associateOrganisation(final String defendantId,
                                              final String userId) throws IOException {
 
-        String body = Resources.toString(Resources.getResource(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME),
+        final String body = Resources.toString(Resources.getResource(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_REQUEST_NAME),
                 Charset.forName("UTF-8"));
 
         final Response writeResponse = postCommandWithUserId(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
