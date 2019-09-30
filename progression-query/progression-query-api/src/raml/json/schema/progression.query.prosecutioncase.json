@@ -392,6 +392,10 @@
           "description": "Indicates if the application is draft, listed or resulted",
           "type": "string"
         },
+        "removalReason": {
+          "description": "Removal reason if application is ejected",
+          "type": "string"
+        },
         "applicantDisplayName": {
           "type": "string"
         },

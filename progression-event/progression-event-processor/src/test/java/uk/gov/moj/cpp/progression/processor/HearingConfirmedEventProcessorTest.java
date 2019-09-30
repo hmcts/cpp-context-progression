@@ -124,10 +124,11 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender,times(1)).send(finalEnvelope);
+        verify(sender,times(2)).send(finalEnvelope);
         verify(progressionService, times(1)).prepareSummonsData(any(), any());
     }
 
@@ -206,10 +207,11 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court"))
                 .thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender,times(1)).send(finalEnvelope);
+        verify(sender,times(2)).send(finalEnvelope);
         verify(progressionService, times(1)).linkApplicationsToHearing(any(), any(), any(), any());
         verify(progressionService, times(1)).updateCourtApplicationStatus(any(), anyList(), any());
         verify(summonsService, times(1)).generateSummonsPayload(any(), any());

@@ -326,6 +326,28 @@ protocols: [ HTTP, HTTPS ]
             schema: !include json/schema/progression.query.prosecution.notification-status.json
             example: !include json/progression.query.prosecution.notification-status.json
 
+
+/prosecutioncases/{caseId}/defendants/{defendantId}/ejectcase/:
+  description: Extract case contents for a selected defendant as pdf
+  uriParameters:
+    caseId:
+      description: ID of prosecution case
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.eject-case+json
+          name: progression.query.eject-case
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.eject-case+json:
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 

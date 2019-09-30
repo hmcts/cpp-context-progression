@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.empty;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -9,6 +10,8 @@ import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.creat
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
 
+import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationRejected;
@@ -78,18 +81,20 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 100L;
+    private static final long serialVersionUID = 281032067089771387L;
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
     private static final String CROWN_COURT_HEARING_PROPERTY = "crownCourtHearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
     private static final String CASE_ID = "caseId";
     private static final String SENDING_SHEET_ALREADY_COMPLETED_MSG = "Sending sheet already completed, not allowed to perform add sentence hearing date  for case Id %s ";
+    private static final String CASE_STATUS_EJECTED = "EJECTED";
     private final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>();
 
     private String courtCentreId;
     private String reference;
     private int arnCount = 0;
     private final Set<String> policeDefendantIds = new HashSet<>();
+    private final Set<UUID> hearingIds = new HashSet<>() ;
     private final Set<Defendant> defendants = new HashSet<>();
     private final Map<UUID, List<OffenceForDefendant>> offenceForDefendants = new HashMap<>();
     private final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
@@ -101,7 +106,7 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, String> solicitorFirmForDefendant = new HashMap<>();
     private final Map<UUID, LocalDate> custodyTimeLimitForDefendant = new HashMap<>();
     private final Map<UUID, List<uk.gov.justice.core.courts.Offence>> defendantCaseOffences = new HashMap<>();
-
+    private String caseStatus;
 
     @Override
     public Object apply(final Object event) {
@@ -137,6 +142,10 @@ public class CaseAggregate implements Aggregate {
                         .apply(e ->
                                 this.courtCentreId = e.getCourtCentreId()
                         ),
+                when(CaseEjected.class)
+                        .apply(e ->
+                                this.caseStatus = CASE_STATUS_EJECTED
+                        ),
                 when(uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded.class)
                         .apply(e -> {
                             // Do Nothng
@@ -156,6 +165,7 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(ProsecutionCaseCreated.class)
                         .apply(e -> {
+                            this.caseStatus = e.getProsecutionCase().getCaseStatus();
                             final ProsecutionCaseIdentifier prosecutionCaseIdentifier = e.getProsecutionCase().getProsecutionCaseIdentifier();
                             if (Objects.nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {
                                 reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
@@ -187,6 +197,10 @@ public class CaseAggregate implements Aggregate {
                         e ->
                             e.getDefendants().forEach(
                                     ed -> this.defendantCaseOffences.put( ed.getId(), ed.getOffences()) )
+                ),
+                when(CaseLinkedToHearing.class).apply(
+                        e ->
+                                this.hearingIds.add(e.getHearingId())
                 ),
                 otherwiseDoNothing());
 
@@ -412,7 +426,14 @@ public class CaseAggregate implements Aggregate {
 
     }
 
-
+    public Stream<Object> ejectCase(final UUID prosecutionCaseId, final String removalReason) {
+        if(CASE_STATUS_EJECTED.equals(caseStatus)){
+            LOGGER.info("Case with id {} already ejected", prosecutionCaseId);
+            return empty();
+        }
+        return apply(Stream.of(CaseEjected.caseEjected()
+                .withProsecutionCaseId(prosecutionCaseId).withRemovalReason(removalReason).build()));
+    }
     private void updateDefendantRelatedMaps(final DefendantUpdated e) {
         if (e.getPerson() != null) {
             this.personForDefendant.put(e.getDefendantId(), e.getPerson());
@@ -449,7 +470,7 @@ public class CaseAggregate implements Aggregate {
         LOGGER.debug("Defendants Added To CourtProcessdings");
 
         final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
-                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(d -> d.getId(), d->d, (i, d) -> d)).values().stream().collect(toList());
+                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d->d, (i, d) -> d)).values().stream().collect(toList());
 
         if(newDefendantsList.isEmpty()) {
             return apply( Stream.of(DefendantsNotAddedToCourtProceedings.defendantsNotAddedToCourtProceedings()
@@ -536,7 +557,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
         if (courtApplication.getRespondents() != null && !courtApplication.getRespondents().isEmpty()) {
-            Optional<CourtApplicationRespondent> respondent = courtApplication.getRespondents().stream()
+            final Optional<CourtApplicationRespondent> respondent = courtApplication.getRespondents().stream()
                     .filter(o -> o.getPartyDetails().getId().equals(courtApplication.getApplicant().getId()))
                     .findFirst();
             if (respondent.isPresent()) {
@@ -554,5 +575,10 @@ public class CaseAggregate implements Aggregate {
                                 .withCount(++arnCount)
                                 .withArn(reference + "-" + arnCount)
                                 .build()));
+    }
+
+    public Stream<Object> linkProsecutionCaseToHearing(final UUID hearingId, final UUID caseId){
+        return apply(Stream.of(CaseLinkedToHearing.caseLinkedToHearing()
+                .withHearingId(hearingId).withCaseId(caseId).build()));
     }
 }

@@ -1,20 +1,5 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import com.google.common.collect.ImmutableMap;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider;
-import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.mockito.BDDMockito.given;
@@ -25,11 +10,31 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+
 public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessControlTest {
 
     private static final List<String> ALLOWED_USER_GROUPS = Arrays.asList(
             "Listing Officer",
             "Defence"
+    );
+
+    private static final List<String> ALLOWED_USER_GROUPS_EJECT_CASE = Arrays.asList(
+            "Eject Case Group","System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"
     );
 
     @Mock

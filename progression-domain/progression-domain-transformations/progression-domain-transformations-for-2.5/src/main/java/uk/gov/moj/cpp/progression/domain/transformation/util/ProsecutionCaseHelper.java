@@ -15,7 +15,7 @@ public class ProsecutionCaseHelper {
     }
 
     public static JsonObject transformProsecutionCase(final JsonObject prosecutionCase) {
-        JsonObjectBuilder transformProsecutionCaseBuilder = createObjectBuilder()
+        final JsonObjectBuilder transformProsecutionCaseBuilder = createObjectBuilder()
                 .add("id", prosecutionCase.getString("id"))
                 .add("prosecutionCaseIdentifier", prosecutionCase.getJsonObject("prosecutionCaseIdentifier"))
                 .add("initiationCode", prosecutionCase.getString("initiationCode"))

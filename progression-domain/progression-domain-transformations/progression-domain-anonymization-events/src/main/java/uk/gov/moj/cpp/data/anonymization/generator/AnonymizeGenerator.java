@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.data.anonymization.generator;
 
+@SuppressWarnings({"squid:S3776", "squid:S134", "squid:MethodCyclomaticComplexity"})
 public class AnonymizeGenerator implements Generator<String> {
 
     Generator<String> generator;
@@ -51,7 +52,7 @@ public class AnonymizeGenerator implements Generator<String> {
 
 
     @Override
-    public String convert(final String fieldValue) {
-        return generator.convert(fieldValue);
+    public String convert() {
+        return generator.convert();
     }
 }

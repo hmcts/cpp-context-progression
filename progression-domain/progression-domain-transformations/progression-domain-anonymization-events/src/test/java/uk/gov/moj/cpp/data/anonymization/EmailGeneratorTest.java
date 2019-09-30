@@ -13,7 +13,7 @@ public class EmailGeneratorTest {
     @Test
     public void shouldGenerateARandomEmail() {
         final EmailGenerator emailGenerator = new EmailGenerator();
-        final String jsonEmailValue = emailGenerator.convert("test@test.com");
+        final String jsonEmailValue = emailGenerator.convert();
         assertTrue(EmailValidator.getInstance().isValid(jsonEmailValue));
         assertThat(jsonEmailValue, equalTo("xyz@mail.com"));
     }

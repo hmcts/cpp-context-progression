@@ -1,0 +1,98 @@
+{
+  "courtApplications": [
+    {
+      "applicant": {
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "personDetails": {
+          "firstName": "ErCnQeQBTb",
+          "gender": "NOT_SPECIFIED",
+          "lastName": "s3BjASr49r",
+          "middleName": "ffqh7WQxaD"
+        }
+      },
+      "applicationReceivedDate": "0000-01-01",
+      "applicationReference": "QABP1D8IY1",
+      "applicationStatus": "DRAFT",
+      "id": "f5decee0-27b5-4dc7-8c42-66dfbc6168d6",
+      "outOfTimeReasons": "a",
+      "parentApplicationId": "61db597e-3c24-41aa-a740-29b581b47935",
+      "respondents": [
+        {
+          "partyDetails": {
+            "id": "18cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "personDetails": {
+              "firstName": "PsMicyXlOt",
+              "gender": "NOT_SPECIFIED",
+              "lastName": "cAjPhKsr6U",
+              "middleName": "VK954B99bI"
+            }
+          }
+        },
+        {
+          "partyDetails": {
+            "id": "28cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "organisation": {
+              "name": "JXIaqwMm2v"
+            }
+          }
+        }
+      ],
+      "type": {
+        "applicantSynonym": "a",
+        "applicationCategory": "a",
+        "applicationCode": "a",
+        "applicationJurisdictionType": "MAGISTRATES",
+        "applicationLegislation": "a",
+        "applicationLegislationWelsh": "a",
+        "applicationType": "a",
+        "applicationTypeWelsh": "a",
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "linkType": "STANDALONE",
+        "respondentSynonym": "a"
+      }
+    }
+  ],
+  "courtCentre": {
+    "address": {
+      "address1": "176a Lavender Hill",
+      "address2": "London",
+      "address3": "address line 3",
+      "address4": "address line 4",
+      "address5": "address line 5",
+      "postcode": "SW11 1JU"
+    },
+    "id": "57b1468c-d557-4953-ad4c-82d8826037ab",
+    "name": "South Western (Lavender Hill)"
+  },
+  "hearingDays": [
+    {
+      "listedDurationMinutes": 0,
+      "sittingDay": "2018-09-28T12:13:00.000Z"
+    },
+    {
+      "listedDurationMinutes": 0,
+      "sittingDay": "2018-09-30T09:30:00.000Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "118db744-510f-43ae-8685-9fd68a90dd25",
+  "judiciary": [
+    {
+      "firstName": "Mark J",
+      "isBenchChairman": false,
+      "isDeputy": false,
+      "judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+      "judicialRoleType": {
+        "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "judiciaryType": "Recorder"
+      },
+      "lastName": "Ainsworth",
+      "title": "Mr"
+    }
+  ],
+  "jurisdictionType": "MAGISTRATES",
+  "type": {
+    "description": "Sentence",
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04"
+  }
+}

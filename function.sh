@@ -8,6 +8,7 @@ function buildWars {
   echo "Finished building wars"
 }
 
+
 function startVagrant {
   echo "Starting Vagrant machine from " $VAGRANT_DIR
   export VAGRANT_CWD=$VAGRANT_DIR

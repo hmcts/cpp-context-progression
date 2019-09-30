@@ -15,6 +15,10 @@
       "description": "Should be 'StandaloneApplication' for application extract",
       "type": "string"
     },
+    "isAppealPending" :{
+      "description": "The flag to indicate if any appeal against any defendant is pending",
+      "type": "boolean"
+    },
     "parentGuardian": {
       "type": "object",
       "properties": {
