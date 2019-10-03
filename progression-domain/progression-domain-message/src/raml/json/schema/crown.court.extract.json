@@ -14,6 +14,10 @@
       "description": "The reference to the individual case that is the subject of the extract (caseURN or PRN)",
       "type": "string"
     },
+    "isAppealPending" :{
+      "description": "The flag to indicate if any appeal against any defendant is pending",
+      "type": "boolean"
+    },
     "prosecutingAuthority": {
       "description": "The prosecuting authority for the case in question",
       "$ref": "#/definitions/prosecutingAuthority"

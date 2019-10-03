@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Stream.empty;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+
+import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -17,7 +20,6 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListedCourtApplicationChanged;
 import uk.gov.justice.domain.aggregate.Aggregate;
-
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -26,21 +28,24 @@ import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S1948", "squid:S1068", "squid:S1450"})
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 281032067089771385L;
+    private static final long serialVersionUID = 281032067089771386L;
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
+    private Set<UUID> hearingIds = new HashSet<>();
     private CourtApplication courtApplication;
 
     @Override
@@ -69,8 +74,12 @@ public class ApplicationAggregate implements Aggregate {
                         }
                 ),
                 when(HearingApplicationLinkCreated.class).apply(
-                        e -> {
-                        }
+                        e -> hearingIds.add(e.getHearing().getId())
+                ),
+                when(ApplicationEjected.class).apply(
+                        e ->
+                                this.applicationStatus = ApplicationStatus.EJECTED
+
                 ),
                 otherwiseDoNothing());
 
@@ -131,6 +140,14 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(CourtApplicationAddedToCase.courtApplicationAddedToCase().withCourtApplication(application).build()));
     }
 
+    public Stream<Object> ejectApplication(final UUID courtApplicationId, final String removalReason) {
+        if (ApplicationStatus.EJECTED.equals(applicationStatus)) {
+            LOGGER.info("Application with id {} already ejected", courtApplicationId);
+            return empty();
+        }
+        return apply(Stream.of(ApplicationEjected.applicationEjected()
+                .withApplicationId(courtApplicationId).withRemovalReason(removalReason).build()));
+    }
     public Stream<Object> createHearingApplicationLink(final Hearing hearing, final UUID applicationId,
                                                        HearingListingStatus hearingListingStatus) {
         LOGGER.debug("Hearing Application link been created");

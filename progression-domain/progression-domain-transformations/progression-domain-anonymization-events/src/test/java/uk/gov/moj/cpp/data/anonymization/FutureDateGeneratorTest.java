@@ -13,9 +13,9 @@ public class FutureDateGeneratorTest {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Test
-    public void shouldGenerateHostName() {
+    public void shouldGenerateFutureDate() {
         final FutureDateGenerator futureDateGenerator = new FutureDateGenerator();
-        final String futureDate = futureDateGenerator.convert(LocalDate.now().plusMonths(1).toString());
+        final String futureDate = futureDateGenerator.convert();
         LocalDate localDate = LocalDate.parse(futureDate, FORMATTER);
         assertThat(true, is(localDate.isAfter(LocalDate.now())));
     }

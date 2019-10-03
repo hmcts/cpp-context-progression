@@ -24,7 +24,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.TRANSFORM;
 
-@SuppressWarnings("squid:S2259")
+@SuppressWarnings({"squid:S2259","squid:BeanMembersShouldSerialize"})
 @Transformation
 public class ProgressionEventTransformer implements EventTransformation {
 

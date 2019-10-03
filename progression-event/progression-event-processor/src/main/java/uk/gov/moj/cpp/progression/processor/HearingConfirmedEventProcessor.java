@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
@@ -43,6 +44,7 @@ public class HearingConfirmedEventProcessor {
 
     public static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
     private static final String HEARING_INITIATE_COMMAND = "hearing.initiate";
+    private static final String PRIVATE_PROGRESSION_EVENT_LINK_PROSECUTION_CASES_TO_HEARING = "progression.command-link-prosecution-cases-to-hearing";
 
     static final String PROGRESSION_PRIVATE_COMMAND_ERICH_HEARING_INITIATE = "progression.command-enrich-hearing-initiate";
     private static final Logger LOGGER =
@@ -95,6 +97,10 @@ public class HearingConfirmedEventProcessor {
         }
 
         if (CollectionUtils.isNotEmpty(confirmedProsecutionCases)){
+            confirmedProsecutionCases.forEach(prosecutionCase ->
+                    sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_EVENT_LINK_PROSECUTION_CASES_TO_HEARING).apply(
+                            CaseLinkedToHearing.caseLinkedToHearing().withHearingId(hearing.getId()).withCaseId(prosecutionCase.getId()).build()))
+            );
             progressionService.prepareSummonsData(jsonEnvelope, hearingConfirmed.getConfirmedHearing());
         }
 

@@ -9,20 +9,20 @@ public class FutureDateGenerator implements Generator<String> {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
-    public String convert(final String fieldValue) {
-        final LocalDate localDate = createRandomDate(new SecureRandom(), LocalDate.now().getYear(), LocalDate.now().getYear() +10);
+    public String convert() {
+        final LocalDate localDate = createRandomDate(new SecureRandom(), LocalDate.now().getYear());
         return localDate.format(FORMATTER);
 
     }
 
     private  int createRandomIntBetween(Random random, int start, int end) {
-        return random.nextInt((end - start) + 1) + start;
+         return random.nextInt(end - start) + start;
     }
 
-    public  LocalDate createRandomDate(Random random, int startYear, int endYear) {
+    public  LocalDate createRandomDate(Random random, int startYear) {
         final int day = createRandomIntBetween(random, 1, 28);
         final int month = createRandomIntBetween(random, 1, 12);
-        final int year = createRandomIntBetween(random, startYear, endYear);
+        final int year = startYear +10 ;
         return LocalDate.of(year, month, day);
     }
 }

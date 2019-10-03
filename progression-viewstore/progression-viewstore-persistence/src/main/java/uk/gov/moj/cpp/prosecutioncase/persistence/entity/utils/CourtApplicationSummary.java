@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.core.util.CollectionUtils;
 
-@SuppressWarnings({"squid:S2384", "pmd:BeanMembersShouldSerialize"})
+@SuppressWarnings({"squid:S2384","squid:S00107", "squid:BeanMembersShouldSerialize"})
 public class CourtApplicationSummary {
 
     private final String applicationId;
@@ -36,8 +36,11 @@ public class CourtApplicationSummary {
 
     private final Boolean isAppeal;
 
+    private final String removalReason;
+
     private CourtApplicationSummary(final String applicationId, final String applicationTitle, final String applicationReference,
-                                    final String applicationStatus, final String applicantDisplayName, final List<String> respondentDisplayNames, final Boolean isAppeal) {
+                                    final String applicationStatus, final String applicantDisplayName, final List<String> respondentDisplayNames,
+                                    final Boolean isAppeal, final String removalReason) {
         this.applicationId = applicationId;
         this.applicationTitle = applicationTitle;
         this.applicationReference = applicationReference;
@@ -45,6 +48,7 @@ public class CourtApplicationSummary {
         this.applicantDisplayName = applicantDisplayName;
         this.respondentDisplayNames = respondentDisplayNames;
         this.isAppeal = isAppeal;
+        this.removalReason = removalReason;
     }
 
     public String getApplicationId() {
@@ -75,6 +79,10 @@ public class CourtApplicationSummary {
         return isAppeal;
     }
 
+    public String getRemovalReason() {
+        return removalReason;
+    }
+
     public static CourtApplicationSummary.Builder applicationSummary() {
         return new CourtApplicationSummary.Builder();
     }
@@ -95,6 +103,8 @@ public class CourtApplicationSummary {
         private List<String> respondentDisplayNames;
 
         private Boolean isAppeal;
+
+        private String removalReason;
 
         public Builder withApplicationId(final String applicationId) {
             this.applicationId = applicationId;
@@ -120,7 +130,10 @@ public class CourtApplicationSummary {
             this.applicantDisplayName = extractDisplayName(courtApplicationParty);
             return this;
         }
-
+        public Builder withRemovalReason(final String removalReason) {
+            this.removalReason = removalReason;
+            return this;
+        }
         public Builder withRespondentDisplayNames(List<CourtApplicationRespondent> respondents) {
             if(!CollectionUtils.isEmpty(respondents)) {
                 this.respondentDisplayNames =
@@ -137,7 +150,7 @@ public class CourtApplicationSummary {
         }
 
         public CourtApplicationSummary build() {
-            return new CourtApplicationSummary(applicationId, applicationTitle, applicationReference, applicationStatus, applicantDisplayName, respondentDisplayNames, isAppeal);
+            return new CourtApplicationSummary(applicationId, applicationTitle, applicationReference, applicationStatus, applicantDisplayName, respondentDisplayNames, isAppeal, removalReason);
         }
 
         private String extractDisplayName(final CourtApplicationParty applicationParty) {

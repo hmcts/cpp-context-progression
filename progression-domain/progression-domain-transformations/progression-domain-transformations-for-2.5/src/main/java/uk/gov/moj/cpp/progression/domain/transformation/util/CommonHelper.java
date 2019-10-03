@@ -158,18 +158,19 @@ public class CommonHelper {
     public static final String APPEAL_PROCEEDINGS_PENDING = "appealProceedingsPending";
     public static final String POLICE_OFFICER_IN_CASE = "policeOfficerInCase";
     public static final String CASE_MARKERS = "caseMarkers";
+    private static final String USER_ID = "userId";
 
     private CommonHelper() {
     }
 
     public static JsonObject transformDelegatePowers(final JsonObject existingCourtClerk) {
-        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                .add("firstName", existingCourtClerk.getJsonString("firstName"))
-                .add("lastName", existingCourtClerk.getJsonString("lastName"));
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
+                .add(FIRST_NAME, existingCourtClerk.getJsonString(FIRST_NAME))
+                .add(LAST_NAME, existingCourtClerk.getJsonString(LAST_NAME));
         if (existingCourtClerk.containsKey("id")) {
-            jsonObjectBuilder.add("userId", existingCourtClerk.getJsonString("id"));
+            jsonObjectBuilder.add(USER_ID, existingCourtClerk.getJsonString("id"));
         } else {
-            jsonObjectBuilder.add("userId", existingCourtClerk.getJsonString("userId"));
+            jsonObjectBuilder.add(USER_ID, existingCourtClerk.getJsonString(USER_ID));
         }
         return jsonObjectBuilder.build();
     }

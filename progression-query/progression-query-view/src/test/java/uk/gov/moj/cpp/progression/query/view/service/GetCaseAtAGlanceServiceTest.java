@@ -1047,6 +1047,7 @@ public class GetCaseAtAGlanceServiceTest {
                         .withDefendantId(DEFENDANT_ID_1)
                         .build()))
                 .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(courtApplication != null ? Arrays.asList(courtApplication) : null)
                 .build();
     }
 

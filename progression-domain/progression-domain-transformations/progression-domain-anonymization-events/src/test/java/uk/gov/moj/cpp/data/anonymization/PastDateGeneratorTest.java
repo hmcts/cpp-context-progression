@@ -13,9 +13,9 @@ public class PastDateGeneratorTest {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Test
-    public void shouldGenerateHostName() {
+    public void shouldGeneratePastDate() {
         final PastDateGenerator pastDateGenerator = new PastDateGenerator();
-        final String pastDate = pastDateGenerator.convert("2018-05-19");
+        final String pastDate = pastDateGenerator.convert();
         LocalDate localDate = LocalDate.parse(pastDate, FORMATTER);
         assertThat(true, is(localDate.isBefore(LocalDate.now())));
     }

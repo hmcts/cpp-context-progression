@@ -44,6 +44,9 @@ subscriptions_descriptor:
         - name: public.progression.defendants-added-to-court-proceedings
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendants-added-to-court-proceedings.json
 
+        - name: public.progression.events.case-or-application-ejected
+          schema_uri: http://justice.gov.uk/progression/courts/case-or-application-ejected
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

@@ -1,16 +1,18 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
+
+import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -21,8 +23,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
-import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
@@ -42,8 +42,6 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,13 +56,19 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.Whitebox;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAggregateTest {
@@ -534,6 +538,21 @@ public class CaseAggregateTest {
         //Assert total defedants with count 2 excluded duplicates
         assertThat( ((DefendantsAddedToCourtProceedings)object).getDefendants().size(), is(2));
     }
+    @Test
+    public void shouldReturnCaseEjected() {
+        final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseEjected.class)));
+    }
+    @Test
+    public void shouldNotReturnCaseEjected() {
+        Whitebox.setInternalState(this.caseAggregate, "caseStatus", "EJECTED");
+        final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
+
+        assertThat(eventStream.size(), is(0));
+    }
 
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
             final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
@@ -606,4 +625,13 @@ public class CaseAggregateTest {
                 .build();
 
     }
+    @Test
+    public void shouldLinkCaseToHearing() {
+        final List<Object> eventStream = caseAggregate.linkProsecutionCaseToHearing(randomUUID(), randomUUID()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseLinkedToHearing.class)));
+    }
+
 }

@@ -248,7 +248,7 @@ public class GetCaseAtAGlanceService {
 
         if (CollectionUtils.isNotEmpty(prosecutionCases) && CollectionUtils.isNotEmpty(courtApplications)) {
             courtApplications.forEach(courtApplication -> {
-                List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
+                final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
                 if (CollectionUtils.isNotEmpty(respondents)) {
                     addNonDefendantsToDefendantsView(courtApplications, defendantsList, respondents);
                 }
@@ -268,7 +268,7 @@ public class GetCaseAtAGlanceService {
 
     private static void addNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final List<Defendants> defendantsList, final List<CourtApplicationRespondent> respondents) {
         respondents.forEach(courtApplicationRespondent -> {
-            CourtApplicationParty courtApplicationParty = courtApplicationRespondent.getPartyDetails();
+            final CourtApplicationParty courtApplicationParty = courtApplicationRespondent.getPartyDetails();
             if (Objects.nonNull(courtApplicationParty.getPersonDetails()) ||
                     Objects.nonNull(courtApplicationParty.getOrganisation()) ||
                     Objects.nonNull(courtApplicationParty.getProsecutingAuthority())) {
@@ -359,7 +359,7 @@ public class GetCaseAtAGlanceService {
     }
 
     private static List<CourtApplications> getCourtApplicationsForNonDefendant(final List<CourtApplication> courtApplications, final UUID partyDetailsId) {
-        List<CourtApplications> courtApplicationsViewList = new ArrayList<>();
+        final List<CourtApplications> courtApplicationsViewList = new ArrayList<>();
         courtApplications.forEach(courtApplication -> {
             if (CollectionUtils.isNotEmpty(courtApplication.getRespondents())) {
                 courtApplication.getRespondents().forEach(courtApplicationRespondent -> {

@@ -8,6 +8,7 @@ import uk.gov.justice.tools.eventsourcing.transformation.api.annotation.Transfor
 import uk.gov.moj.cpp.data.anonymization.generator.AnonymizeGenerator;
 import uk.gov.moj.cpp.data.anonymization.generator.AnonymizerType;
 import uk.gov.moj.cpp.data.anonymization.generator.DummyNumberReplacer;
+import uk.gov.moj.cpp.data.anonymization.generator.ParseDataGenerator;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -23,28 +24,29 @@ import java.util.stream.Stream;
 
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
-@SuppressWarnings({"squid:S3776", "squid:S134", "squid:MethodCyclomaticComplexity"})
+@SuppressWarnings({"squid:S1450","squid:S3776", "squid:S134", "squid:MethodCyclomaticComplexity"})
 @Transformation
 public final class EventStoreDataAnonymizer implements EventTransformation {
 
     private final AnonymizeGenerator anonymizeGenerator;
     private Enveloper enveloper;
+    private final ParseDataGenerator parseDataGenerator;
 
     private final Map<String, Map<String, String>> fieldRuleMap;
 
     public EventStoreDataAnonymizer() throws IOException {
         fieldRuleMap = new RuleParser().loadAnanymisationRules("/data.anonymisation.json");
         anonymizeGenerator = new AnonymizeGenerator();
+        parseDataGenerator = new ParseDataGenerator();
     }
 
     @Override
     public Action actionFor(JsonEnvelope event) {
-        if(isApplicable(event)) {
+        if (isApplicable(event)) {
             return new Action(true, false, false);
-        }
-        else {
+        } else {
             return Action.NO_ACTION;
         }
     }
@@ -56,10 +58,7 @@ public final class EventStoreDataAnonymizer implements EventTransformation {
 
     @Override
     public Stream<JsonEnvelope> apply(final JsonEnvelope event) {
-
-        final JsonEnvelope transformedEvent = buildTransformedPayload(event);
-        final JsonEnvelope transformedEnvelope = enveloper.withMetadataFrom(event, transformedEvent.metadata().asJsonObject().getString("name")).apply(transformedEvent.payload());
-        return Stream.of(transformedEnvelope);
+        return Stream.of(envelopeFrom(metadataFrom(event.metadata()), buildTransformedPayload(event)));
     }
 
     @Override
@@ -67,14 +66,12 @@ public final class EventStoreDataAnonymizer implements EventTransformation {
         this.enveloper = enveloper;
     }
 
-    public JsonEnvelope buildTransformedPayload(JsonEnvelope event) {
+    public JsonObject buildTransformedPayload(JsonEnvelope event) {
         final String eventName = event.metadata().name();
         final JsonObjectBuilder transformedPayloadObjectBuilder = createObjectBuilder();
         final JsonObject payload = event.payloadAsJsonObject();
         final Map<String, String> eventFieldRuleMap = fieldRuleMap.get(eventName);
-        final JsonObject transformedPayload = processJsonPayload(payload, eventFieldRuleMap, transformedPayloadObjectBuilder).build();
-        return envelopeFrom(metadataOf(event.metadata().asJsonObject().getString("id"), eventName).build(), transformedPayload);
-
+        return processJsonPayload(payload, eventFieldRuleMap, transformedPayloadObjectBuilder).build();
     }
 
     public JsonObjectBuilder processJsonPayload(JsonObject payload, Map<String, String> eventFieldRuleMap, JsonObjectBuilder transformedPayloadObjectBuilder) {
@@ -92,11 +89,11 @@ public final class EventStoreDataAnonymizer implements EventTransformation {
                 JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
                 for (int counter = 0; counter < jsonArray.size(); counter++) {
                     final JsonValue value = jsonArray.get(counter);
-                    if(value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                    if (value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
                         final JsonObject jsonObject = jsonArray.getJsonObject(counter);
                         jsonObjectBuilder = processJsonPayload(jsonObject, eventFieldRuleMap, jsonObjectBuilder);
                         jsonArrayBuilder.add(jsonObjectBuilder);
-                    } else if(value.getValueType().equals(JsonValue.ValueType.STRING)){
+                    } else if (value.getValueType().equals(JsonValue.ValueType.STRING)) {
                         final String fieldValue = value.toString();
                         final String rule = eventFieldRuleMap.get(fieldName);
                         setFieldValue(rule, fieldName, fieldValue, transformedPayloadObjectBuilder);
@@ -123,10 +120,9 @@ public final class EventStoreDataAnonymizer implements EventTransformation {
     private void setFieldValue(String rule, String fieldName, String fieldValue, JsonObjectBuilder transformedPayloadObjectBuilder) {
         if (null != rule) {
             final Object replacedFieldValue = applyAnonymizationRule(rule, fieldValue);
-            if(replacedFieldValue instanceof String) {
+            if (replacedFieldValue instanceof String) {
                 transformedPayloadObjectBuilder.add(fieldName, (String) replacedFieldValue);
-            }
-            else if(replacedFieldValue instanceof BigInteger) {
+            } else if (replacedFieldValue instanceof BigInteger) {
                 transformedPayloadObjectBuilder.add(fieldName, (BigInteger) replacedFieldValue);
             }
         } else {
@@ -135,11 +131,12 @@ public final class EventStoreDataAnonymizer implements EventTransformation {
     }
 
     private Object applyAnonymizationRule(String fieldRule, String fieldValue) {
-        if(fieldRule.startsWith(AnonymizerType.DUMMY_NUMBER_PREFIX.toString())) {
+        if (fieldRule.startsWith(AnonymizerType.DUMMY_NUMBER_PREFIX.toString())) {
             return DummyNumberReplacer.replace(fieldRule);
-        }
-        else {
-            return anonymizeGenerator.getGenerator(fieldRule).convert(fieldValue);
+        } else if(fieldRule.startsWith(AnonymizerType.STRING_ANONYMISED_PARSED_DATA.toString())){
+            return parseDataGenerator.convert(fieldValue);
+        } else {
+            return anonymizeGenerator.getGenerator(fieldRule).convert();
         }
     }
 }

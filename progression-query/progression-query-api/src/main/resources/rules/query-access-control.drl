@@ -172,6 +172,15 @@ rule "progression - Query - API - court-extract"
     $outcome.setSuccess(true);
 end
 
+rule "progression - Query - API - eject-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.eject-case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Eject Case Group","System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "progression - Query - API - application-extract"
   when
     $outcome: Outcome();

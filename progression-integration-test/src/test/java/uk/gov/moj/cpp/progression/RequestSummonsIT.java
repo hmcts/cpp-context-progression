@@ -16,13 +16,6 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.getHearingIdFromListCo
 import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
 import static uk.gov.moj.cpp.progression.test.matchers.ElementAtListMatcher.first;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.core.Is;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.courts.progression.query.Courtdocuments;
@@ -37,12 +30,21 @@ import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.QueryUtil;
 
+import java.nio.charset.Charset;
+import java.util.UUID;
+
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
-import java.nio.charset.Charset;
-import java.util.UUID;
+
+import com.google.common.io.Resources;
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.core.Is;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 @Ignore
@@ -122,7 +124,6 @@ public class RequestSummonsIT {
 
 
     }
-
 
     private JsonObject generateHearingConfirmedPayload(final String hearingId) {
         String payloadStr = getStringFromResource(PUBLIC_HEARING_CONFIRMED + ".json")
