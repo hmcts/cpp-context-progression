@@ -6,6 +6,7 @@ import static com.jayway.jsonpath.Filter.filter;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -287,6 +288,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
 
         endPointsToTest.forEach(endPoint ->
                 poll(endPoint)
+                        .timeout(20L, SECONDS)
                         .until(
                                 status().is(OK),
                                 payload()
@@ -389,7 +391,9 @@ public class AddDefendantHelper extends AbstractTestHelper {
         return personId;
     }
 
-    public String getCaseUrn(){return caseUrn;}
+    public String getCaseUrn() {
+        return caseUrn;
+    }
 
     public String getDefendantId() {
         return VALUE_DEFENDANT_ID;
