@@ -28,9 +28,11 @@ public class UsersAndGroupsStub {
     public static final String GET_ORGANISATION_QUERY = BASE_QUERY + ORGANISATION;
     public static final String GET_ORGANISATION_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-name-for-user+json";
 
+    public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
+
 
     public static void stubGetOrganisationQuery(final String userId, final String organisationId, final String organisationName) {
-        InternalEndpointMockUtils.stubPingFor("usergroups-service");
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
 
         String body = getPayload("stub-data/usersgroups.get-organisation-details-by-user.json");
         body = body.replaceAll("%ORGANISATION_ID%", organisationId);
@@ -46,16 +48,48 @@ public class UsersAndGroupsStub {
     }
 
     public static void stubGetUsersAndGroupsQuery(final String userId) {
-        InternalEndpointMockUtils.stubPingFor("usergroups-service");
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_QUERY,
+                GET_ORGANISATION_QUERY_MEDIA_TYPE,
+                userId,
+                "stub-data/usersgroups.get-groups-by-user.json");
+    }
 
-        stubFor(get(urlPathEqualTo(format(GET_GROUPS_QUERY, userId)))
+    public static void stubGetUsersAndGroupsQueryForDefenceUsers(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_QUERY,
+                GET_ORGANISATION_QUERY_MEDIA_TYPE,
+                userId,
+                "stub-data/usersgroups.get-defenceuser-groups-by-user.json");
+    }
+
+    public static void stubGetUsersAndGroupsQueryForHMCTSUsers(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_QUERY,
+                GET_ORGANISATION_QUERY_MEDIA_TYPE,
+                userId,
+                "stub-data/usersgroups.get-hmcts-groups-by-user.json");
+    }
+
+    public static void stubGetUsersAndGroupsQueryForSystemUsers(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_QUERY,
+                GET_ORGANISATION_QUERY_MEDIA_TYPE,
+                userId,
+                "stub-data/usersgroups.get-systemuser-groups-by-user.json");
+    }
+
+    public static void stubEndpoint(final String serviceName, final
+    String query,
+                                    String queryMediaType,
+                                    final String userId,
+                                    final String responseBodyPath) {
+        InternalEndpointMockUtils.stubPingFor(serviceName);
+        stubFor(get(urlPathEqualTo(format(query, userId)))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload("stub-data/usersgroups.get-groups-by-user.json"))));
-
-        waitForStubToBeReady(format(GET_GROUPS_QUERY, userId), GET_GROUPS_QUERY_MEDIA_TYPE);
+                        .withBody(getPayload(responseBodyPath))));
+        waitForStubToBeReady(format(query, userId), queryMediaType);
     }
-
-
 }

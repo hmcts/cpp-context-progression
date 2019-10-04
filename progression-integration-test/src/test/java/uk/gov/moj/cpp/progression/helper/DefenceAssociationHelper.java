@@ -21,6 +21,7 @@ import java.util.Optional;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableList;
 import com.jayway.jsonpath.ReadContext;
@@ -52,7 +53,8 @@ public class DefenceAssociationHelper implements AutoCloseable {
     public static void associateOrganisation(final String defendantId,
                                              final String userId) throws IOException {
         String body = readFile(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_NAME);
-        invokeCommand(defendantId, userId, body, DEFENCE_ASSOCIATION_MEDIA_TYPE);
+        final Response response = invokeCommand(defendantId, userId, body, DEFENCE_ASSOCIATION_MEDIA_TYPE);
+        assertThat(response.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     public static void disassociateOrganisation(final String defendantId,
@@ -60,22 +62,37 @@ public class DefenceAssociationHelper implements AutoCloseable {
                                                 final String organisationId) throws IOException {
         String body = readFile(DEFENCE_DISASSOCIATION_REQUEST_TEMPLATE_NAME);
         body = body.replaceAll("%ORGANISATION_ID%", organisationId);
-        invokeCommand(defendantId, userId, body, DEFENCE_DISASSOCIATION_MEDIA_TYPE);
+        final Response response = invokeCommand(defendantId, userId, body, DEFENCE_DISASSOCIATION_MEDIA_TYPE);
+        assertThat(response.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    private static void invokeCommand(final String defendantId,
-                                      final String userId,
-                                      final String body,
-                                      final String mediaType) {
+    public static Response invokeAssociateOrganisation(final String defendantId,
+                                                          final String userId) throws IOException {
+        String body = readFile(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_NAME);
+        return invokeCommand(defendantId, userId, body, DEFENCE_ASSOCIATION_MEDIA_TYPE);
+    }
+
+    public static Response invokeDisassociateOrganisation(final String defendantId,
+                                                          final String userId,
+                                                          final String organisationId) throws IOException {
+        String body = readFile(DEFENCE_DISASSOCIATION_REQUEST_TEMPLATE_NAME);
+        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
+        return invokeCommand(defendantId, userId, body, DEFENCE_DISASSOCIATION_MEDIA_TYPE);
+    }
+
+    private static Response invokeCommand(final String defendantId,
+                                          final String userId,
+                                          final String body,
+                                          final String mediaType) {
 
         final RestClient restClient = new RestClient();
-        final javax.ws.rs.core.Response writeResponse =
+        final Response response =
                 restClient.postCommand(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
                         mediaType,
                         body,
                         createHttpHeaders(userId)
                 );
-        assertThat(writeResponse.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        return response;
     }
 
     public static MultivaluedMap<String, Object> createHttpHeaders(final String userId) {

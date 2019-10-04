@@ -16,21 +16,21 @@ import uk.gov.moj.cpp.progression.aggregate.DefenceAssociationAggregate;
 import uk.gov.moj.cpp.progression.command.DisassociateDefenceOrganisation;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
+import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class DisassociateDefenceOrganisationHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DisassociateDefenceOrganisationHandler.class.getName());
-    private static final String HMCTS_ORGANISATION_TYPE = "HMCTS";
+    private static final List<String> allowedGroupsForDisassociation = Arrays.asList("Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers");
+
     @Inject
     private EventSource eventSource;
     @Inject
@@ -48,7 +48,8 @@ public class DisassociateDefenceOrganisationHandler {
                 .orElseThrow(() -> new IllegalArgumentException("No UserId Supplied"));
 
         final OrganisationDetails userOrgDetails = usersGroupService.getUserOrgDetails(envelope);
-        validateDisassociationCommand(disassociateDefenceOrganisation.getOrganisationId(), userOrgDetails.getId(), userOrgDetails.getType());
+        validateDisassociationCommand(disassociateDefenceOrganisation.getOrganisationId(),
+                userOrgDetails.getId(), envelope);
 
         final EventStream eventStream = eventSource.getStreamById(disassociateDefenceOrganisation.getDefendantId());
         final DefenceAssociationAggregate defenceAssociationAggregate = aggregateService.get(eventStream, DefenceAssociationAggregate.class);
@@ -60,19 +61,28 @@ public class DisassociateDefenceOrganisationHandler {
 
     private void validateDisassociationCommand(final UUID organisationId,
                                                final UUID userOrganisationId,
-                                               final String organisationType) {
+                                               final Envelope<DisassociateDefenceOrganisation> envelope) {
 
-        if (!organisationId.equals(userOrganisationId) && !organisationType.equals(HMCTS_ORGANISATION_TYPE)) {
-            LOGGER.error("The given Organisation is not qualified to perform this disassociation");
+        if (!organisationId.equals(userOrganisationId)
+                && !isHMCTSUser(envelope)) {
             throw new IllegalArgumentException("The given Organisation is not qualified to perform this disassociation");
         }
     }
 
-    private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
+    private void appendEventsToStream(final Envelope<?> envelope,
+                                      final EventStream eventStream,
+                                      final Stream<Object> events) throws EventStreamException {
+
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(
                 events
                         .map(Enveloper.toEnvelopeWithMetadataFrom(jsonEnvelope)));
     }
 
+    private boolean isHMCTSUser(final Envelope<DisassociateDefenceOrganisation> envelope) {
+        final List<UserGroupDetails> retrievedUserGroupDetails = usersGroupService.getUserGroupsForUser(envelope);
+        return retrievedUserGroupDetails.stream().anyMatch(userGroupDetails ->
+                allowedGroupsForDisassociation.contains(userGroupDetails.getGroupName())
+        );
+    }
 }

@@ -29,9 +29,12 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatch
 import uk.gov.moj.cpp.progression.aggregate.DefenceAssociationAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
+import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.handler.DisassociateDefenceOrganisationHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -119,8 +122,9 @@ public class DisassociateDefenceOrganisationHandlerTest {
                 = generateDisassociateDefenceOrganisationCommand(organisationDetails.getId());
         final Envelope<DisassociateDefenceOrganisation> envelope
                 = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
-
+        final List<UserGroupDetails> defenceUserGroupDetails = this.createDefenceUserGroupDetails();
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
+        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(defenceUserGroupDetails);
         return envelope;
     }
 
@@ -132,8 +136,9 @@ public class DisassociateDefenceOrganisationHandlerTest {
                 = generateDisassociateDefenceOrganisationCommand(UUID.randomUUID());
         final Envelope<DisassociateDefenceOrganisation> envelope
                 = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
-
+        final List<UserGroupDetails> hmctsUserGroupDetails = this.createHMCTSUserGroupDetails();
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
+        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(hmctsUserGroupDetails);
         return envelope;
     }
 
@@ -145,8 +150,9 @@ public class DisassociateDefenceOrganisationHandlerTest {
                 = generateDisassociateDefenceOrganisationCommand(UUID.randomUUID());
         final Envelope<DisassociateDefenceOrganisation> envelope
                 = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
-
+        final List<UserGroupDetails> systemUserGroupDetails = this.createSystemUserGroupDetails();
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
+        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(systemUserGroupDetails);
         return envelope;
     }
 
@@ -191,4 +197,27 @@ public class DisassociateDefenceOrganisationHandlerTest {
         );
     }
 
+    private List<UserGroupDetails> createHMCTSUserGroupDetails() {
+
+        UserGroupDetails userGroupListingOfficers = new UserGroupDetails(UUID.fromString("7e2f143e-d619-40b3-8611-8015f3a18957"), "Listing Officers");
+        UserGroupDetails userGroupListingCourtClerks = new UserGroupDetails(UUID.fromString("8c5327b6-354e-4574-9558-b13fce8c055a"), "Court Clerks");
+        List<UserGroupDetails> destinedUserGroups = new ArrayList<>();
+        destinedUserGroups.add(userGroupListingOfficers);
+
+        return destinedUserGroups;
+    }
+
+    private List<UserGroupDetails> createDefenceUserGroupDetails() {
+        UserGroupDetails userGroupDefenceUsers = new UserGroupDetails(UUID.fromString("7e2f143e-d619-40b3-8611-8015f3a18957"), "Defence Users");
+        List<UserGroupDetails> destinedUserGroups = new ArrayList<>();
+        destinedUserGroups.add(userGroupDefenceUsers);
+        return destinedUserGroups;
+    }
+
+    private List<UserGroupDetails> createSystemUserGroupDetails() {
+        UserGroupDetails userSystemUsers = new UserGroupDetails(UUID.fromString("7e2f143e-d619-40b3-8611-8015f3a18957"), "System Users");
+        List<UserGroupDetails> destinedUserGroups = new ArrayList<>();
+        destinedUserGroups.add(userSystemUsers);
+        return destinedUserGroups;
+    }
 }

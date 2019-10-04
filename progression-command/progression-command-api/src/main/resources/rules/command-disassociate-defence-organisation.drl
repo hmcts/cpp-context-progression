@@ -8,7 +8,7 @@ rule "Command - disassociate defence organisation"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.disassociate-defence-organisation");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Users"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers"));
   then
     $outcome.setSuccess(true);
 end
