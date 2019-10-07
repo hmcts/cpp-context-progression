@@ -1,0 +1,261 @@
+{
+  "events": [
+
+    {
+      "eventName": "progression.event.cases-referred-to-court",
+      "fieldsToBeIgnored": [
+        "$.courtReferral.listHearingRequests[*].jurisdictionType",
+        "$.courtReferral.listHearingRequests[*].listDefendantRequests[*].hearingLanguageNeeds",
+        "$.courtReferral.sjpReferral.referringJudicialDecision.judiciary[*].judicialRoleTypeSJP"
+      ]
+    },
+    {
+      "eventName": "progression.event.conviction-date-added",
+      "fieldsToBeIgnored": [
+        "$.convictionDate"
+      ]
+    },
+    {
+      "eventName": "progression.event.court-document-added",
+      "fieldsToBeIgnored": [
+        "$.courtDocument.mimeType"
+      ]
+    },
+    {
+      "eventName": "progression.event.court-document-created",
+      "fieldsToBeIgnored": [
+        "$.courtDocument.mimeType"
+      ]
+    },
+
+    {
+      "eventName": "progression.event.hearing-defendant-request-created",
+      "fieldsToBeIgnored": [
+        "$.defendantRequests[*].hearingLanguageNeeds"
+      ]
+    },
+    {
+      "eventName": "progression.event.hearing-resulted",
+      "fieldsToBeIgnored": [
+        "$.hearing.hearingLanguage",
+        "$.hearing.jurisdictionType",
+        "$.hearing.companyRepresentatives[*].position",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.event.nows-requested",
+      "fieldsToBeIgnored": [
+        "$.createNowsRequest.hearing.hearingLanguage",
+        "$.createNowsRequest.hearing.jurisdictionType",
+        "$.createNowsRequest.hearing.companyRepresentatives[*].position",
+        "$.courtApplication.applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.courtApplication.applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.courtApplication.applicant.defendant.offences[*].indicatedPlea.source",
+        "$.courtApplication.applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.courtApplication.applicant.defendant.offences[*].plea.pleaValue",
+        "$.createNowsRequest.nows[*].documentationLanguage"
+      ]
+    },
+
+    {
+      "eventName": "progression.event.prosecutionCase-defendant-listing-status-changed",
+      "fieldsToBeIgnored": [
+        "$.hearing.hearingLanguage",
+        "$.hearing.jurisdictionType",
+        "$.hearing.companyRepresentatives[*].position",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue",
+        "$.hearingListingStatus"
+      ]
+    },
+    {
+      "eventName": "progression.event.prosecution-case-defendant-updated",
+      "fieldsToBeIgnored": [
+        "$.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.defendant.offences[*].indicatedPlea.source",
+        "$.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.defendant.offences[*].plea.pleaValue"
+
+        ]
+      },
+    {
+      "eventName": "progression.event.prosecution-case-offences-updated",
+      "fieldsToBeIgnored": [
+        "$.defendantCaseOffences.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.defendantCaseOffences.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.defendantCaseOffences.offences[*].indicatedPlea.source",
+        "$.defendantCaseOffences.offences[*].offenceFacts.vehicleCode",
+        "$.defendantCaseOffences.offences[*].plea.pleaValue"
+      ]
+    },
+
+    {
+      "eventName": "progression.events.defendant-added",
+      "fieldsToBeIgnored": [
+        "$.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.offences[*].indicatedPlea.source",
+        "$.offences[*].offenceFacts.vehicleCode",
+        "$.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.events.offences-for-defendant-changed",
+      "fieldsToBeIgnored": [
+        "$.addedOffences.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.addedOffences.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.addedOffences.offences[*].indicatedPlea.source",
+        "$.addedOffences.offences[*].offenceFacts.vehicleCode",
+        "$.addedOffences.offences[*].plea.pleaValue",
+        "$.updatedOffences.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.updatedOffences.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.updatedOffences.offences[*].indicatedPlea.source",
+        "$.updatedOffences.offences[*].offenceFacts.vehicleCode",
+        "$.updatedOffences.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.events.offences-for-defendant-updated",
+      "fieldsToBeIgnored": [
+        "$.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.offences[*].indicatedPlea.source",
+        "$.offences[*].offenceFacts.vehicleCode",
+        "$.offences[*].plea.pleaValue"
+      ]
+    },
+
+    {
+      "eventName": "progression.events.sending-sheet-completed",
+      "fieldsToBeIgnored": [
+        "$.hearing.hearingLanguage",
+        "$.hearing.jurisdictionType",
+        "$.hearing.companyRepresentatives[*].position",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.offenceId",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue"
+      ]
+    },
+
+    {
+      "eventName": "progression.event.summons-data-prepared",
+      "fieldsToBeIgnored": [
+        "$.summonsData.listDefendantRequests[*].hearingLanguageNeeds",
+        "$.summonsData.listDefendantRequests[*].summonsRequired"
+      ]
+    },
+    {
+      "eventName": "progression.hearing-initiate-enriched",
+      "fieldsToBeIgnored": [
+        "$.hearing.hearingLanguage",
+        "$.hearing.jurisdictionType",
+        "$.hearing.companyRepresentatives[*].position",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.event.court-application-added-to-case",
+      "fieldsToBeIgnored": [
+        "$.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.event.court-proceedings-initiated",
+      "fieldsToBeIgnored": [
+        "$.courtReferral.listHearingRequests[*].jurisdictionType",
+        "$.courtReferral.listHearingRequests[*].listDefendantRequests[*].hearingLanguageNeeds"
+      ]
+    },
+    {
+      "eventName": "progression.event.hearing-extended",
+      "fieldsToBeIgnored": [
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue",
+        "$.hearingRequest.courtApplicationPartyListingNeeds[*].courtApplicationPartyListingNeeds",
+        "$.hearingRequest.defendantListingNeeds[*].hearingLanguageNeeds"
+      ]
+    },
+    {
+      "eventName": "progression.event.court-application-updated",
+      "fieldsToBeIgnored": [
+        "$.courtApplication.applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.courtApplication.applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.courtApplication.applicant.defendant.offences[*].indicatedPlea.source",
+        "$.courtApplication.applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.courtApplication.applicant.defendant.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.event.hearing-application-link-created",
+      "fieldsToBeIgnored": [
+        "$.hearing.hearingLanguage",
+        "$.hearing.jurisdictionType",
+        "$.hearing.companyRepresentatives[*].position",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearing.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue",
+        "$.hearingListingStatus"
+      ]
+    },
+    {
+      "eventName": "progression.event.court-application-created",
+      "fieldsToBeIgnored": [
+        "$.courtApplication.applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.courtApplication.applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.courtApplication.applicant.defendant.offences[*].indicatedPlea.source",
+        "$.courtApplication.applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.courtApplication.applicant.defendant.offences[*].plea.pleaValue"
+      ]
+    },
+    {
+      "eventName": "progression.event.application-referred-to-court",
+      "fieldsToBeIgnored": [
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].notifiedPlea.notifiedPleaValue",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.indicatedPleaValue",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].indicatedPlea.source",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].offenceFacts.vehicleCode",
+        "$.hearingRequest.courtApplications[*].applicant.defendant.offences[*].plea.pleaValue",
+        "$.hearingRequest.courtApplicationPartyListingNeeds[*].courtApplicationPartyListingNeeds",
+        "$.hearingRequest.defendantListingNeeds[*].hearingLanguageNeeds"
+      ]
+    },
+
+    {
+      "eventName": "progression.event.notification-request-failed",
+      "fieldsToBeIgnored": [
+        "$.statusCode"
+      ]
+    },
+
+    {
+      "eventName": "progression.event.court-application-status-changed",
+      "fieldsToBeIgnored": [
+        "$.applicationStatus"
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@
         <module>progression-domain-transformations-for-MOT</module>
         <module>progression-domain-transformations-ctl</module>
         <module>progression-domain-anonymization-events</module>
+        <module>progression-domain-transformation-anonymise</module>
     </modules>
 
 
