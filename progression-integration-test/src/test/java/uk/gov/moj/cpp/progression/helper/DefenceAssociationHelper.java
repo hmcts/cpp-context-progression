@@ -4,30 +4,19 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.text.MessageFormat.format;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_DISASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
@@ -42,7 +31,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 
-public class DefenceAssociationHelper {
+public class DefenceAssociationHelper implements AutoCloseable {
 
     private static final String DEFENCE_ASSOCIATION_MEDIA_TYPE = "application/vnd.progression.associate-defence-organisation+json";
     private static final String DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_NAME = "progression.associate-defence-organisation.json";
@@ -53,19 +42,11 @@ public class DefenceAssociationHelper {
     public static final String DEFENCE_ASSOCIATION_QUERY_ENDPOINT = "/defendants/{0}/associatedOrganisation";
     public static final String DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE = "application/vnd.progression.query.associated-organisation+json";
 
-    public static final String ASSOCIATED_STATUS = "Active Barrister/Solicitor of record";
-    private static final String ADDRESS_LINE_1 = "Legal House";
-    private static final String ADDRESS_LINE_4 = "London";
-    private static final String POST_CODE = "SE14 2AB";
+    private final MessageConsumer publicEventsConsumerForDefenceAssociationForDefendant =
+            QueueUtil.publicEvents.createConsumer(EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT);
 
-
-    private static final MessageConsumer publicEventsConsumerForDefenceAssociationForDefendant =
-            QueueUtil.publicEvents.createConsumer(
-                    EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT);
-
-    private static final MessageConsumer publicEventsConsumerForDefenceDisassociationForDefendant =
-            QueueUtil.publicEvents.createConsumer(
-                    EVENT_SELECTOR_DEFENCE_DISASSOCIATION_FOR_DEFENDANT);
+    private final MessageConsumer publicEventsConsumerForDefenceDisassociationForDefendant =
+            QueueUtil.publicEvents.createConsumer(EVENT_SELECTOR_DEFENCE_DISASSOCIATION_FOR_DEFENDANT);
 
 
     public static void associateOrganisation(final String defendantId,
@@ -103,19 +84,19 @@ public class DefenceAssociationHelper {
         return headers;
     }
 
-    public static void verifyDefenceOrganisationAssociatedEventGenerated(final String defendantId, final String organisationId) throws Exception {
+    public void verifyDefenceOrganisationAssociatedEventGenerated(final String defendantId, final String organisationId) throws Exception {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForDefenceAssociationForDefendant);
-        assertExternaPublicEventRaised(defendantId, organisationId, message);
-        publicEventsConsumerForDefenceAssociationForDefendant.close();
+        assertExternalPublicEventRaised(defendantId, organisationId, message);
+
     }
 
-    public static void verifyDefenceOrganisationDisassociatedEventGenerated(final String defendantId, final String organisationId) throws Exception {
+    public void verifyDefenceOrganisationDisassociatedEventGenerated(final String defendantId, final String organisationId) throws Exception {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForDefenceDisassociationForDefendant);
-        assertExternaPublicEventRaised(defendantId, organisationId, message);
-        publicEventsConsumerForDefenceDisassociationForDefendant.close();
+        assertExternalPublicEventRaised(defendantId, organisationId, message);
+
     }
 
-    private static void assertExternaPublicEventRaised(final String defendantId, final String organisationId, final Optional<JsonObject> message) {
+    private static void assertExternalPublicEventRaised(final String defendantId, final String organisationId, final Optional<JsonObject> message) {
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.defendantId", Matchers.hasToString(
                 Matchers.containsString(defendantId)))));
@@ -128,14 +109,14 @@ public class DefenceAssociationHelper {
                                                                         final String userId) {
 
         List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
-                .add(withJsonPath("$.association.organisationId" , IsEqual.equalTo(organisationId)))
-                .add(withJsonPath("$.association.status", IsEqual.equalTo(ASSOCIATED_STATUS)))
-                .add(withJsonPath("$.association.address.address1", IsEqual.equalTo(ADDRESS_LINE_1)))
-                .add(withJsonPath("$.association.address.address4", IsEqual.equalTo(ADDRESS_LINE_4)))
-                .add(withJsonPath("$.association.address.addressPostcode",IsEqual.equalTo(POST_CODE)))
+                .add(withJsonPath("$.association.organisationId", IsEqual.equalTo(organisationId)))
+                .add(withJsonPath("$.association.status", IsEqual.equalTo("Active Barrister/Solicitor of record")))
+                .add(withJsonPath("$.association.address.address1", IsEqual.equalTo("Legal House")))
+                .add(withJsonPath("$.association.address.address4", IsEqual.equalTo("London")))
+                .add(withJsonPath("$.association.address.addressPostcode", IsEqual.equalTo("SE14 2AB")))
                 .build();
 
-        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT,defendantId),
+        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
                 DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE,
                 userId,
                 matchers);
@@ -144,13 +125,13 @@ public class DefenceAssociationHelper {
     public static void verifyDefenceOrganisationDisassociatedDataPersisted(final String defendantId,
                                                                            final String organisationId,
                                                                            final String userId) {
-        
+
         List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
                 .add(withJsonPath("$.association"))
                 .add(withoutJsonPath("$.association.organisationId"))
                 .build();
 
-        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT,defendantId),
+        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
                 DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE,
                 userId,
                 matchers);
@@ -158,5 +139,20 @@ public class DefenceAssociationHelper {
 
     private static String readFile(final String filename) throws IOException {
         return IOUtils.toString(DefenceAssociationHelper.class.getClassLoader().getResourceAsStream(filename));
+    }
+
+    @Override
+    public void close() {
+        closeSilently(publicEventsConsumerForDefenceAssociationForDefendant);
+    }
+
+    private static void closeSilently(final AutoCloseable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                //close silently
+            }
+        }
     }
 }

@@ -3,13 +3,13 @@ package uk.gov.moj.cpp.progression.it;
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.associateOrganisation;
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.disassociateOrganisation;
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedDataPersisted;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedEventGenerated;
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationDisassociatedDataPersisted;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationDisassociatedEventGenerated;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQuery;
+
+import uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -36,18 +36,23 @@ public class DefenceDisassociationIT extends BaseIntegrationTest {
         stubGetUsersAndGroupsQuery(userId);
         stubEnableAllCapabilities();
         stubGetOrganisationQuery(userId, organisationId, organisationName);
-        associateOrganisation(defendantId, userId);
-        verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId);
-        verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
-                organisationId,
-                userId);
 
-        //When
-        disassociateOrganisation(defendantId, userId, organisationId);
+        try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
+            associateOrganisation(defendantId, userId);
+            helper.verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId);
+            verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
+                    organisationId,
+                    userId);
 
-        //Then
-        verifyDefenceOrganisationDisassociatedEventGenerated(defendantId, organisationId);
-        verifyDefenceOrganisationDisassociatedDataPersisted(defendantId, organisationId, userId);
+            //When
+            disassociateOrganisation(defendantId, userId, organisationId);
+
+            //Then
+            helper.verifyDefenceOrganisationDisassociatedEventGenerated(defendantId, organisationId);
+            verifyDefenceOrganisationDisassociatedDataPersisted(defendantId, organisationId, userId);
+        }
+
+
     }
 
 
