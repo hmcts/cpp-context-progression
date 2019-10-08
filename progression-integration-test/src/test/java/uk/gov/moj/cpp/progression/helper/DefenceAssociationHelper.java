@@ -103,14 +103,16 @@ public class DefenceAssociationHelper {
         return headers;
     }
 
-    public static void verifyDefenceOrganisationAssociatedEventGenerated(final String defendantId, final String organisationId) {
+    public static void verifyDefenceOrganisationAssociatedEventGenerated(final String defendantId, final String organisationId) throws Exception {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForDefenceAssociationForDefendant);
         assertExternaPublicEventRaised(defendantId, organisationId, message);
+        publicEventsConsumerForDefenceAssociationForDefendant.close();
     }
 
-    public static void verifyDefenceOrganisationDisassociatedEventGenerated(final String defendantId, final String organisationId) {
+    public static void verifyDefenceOrganisationDisassociatedEventGenerated(final String defendantId, final String organisationId) throws Exception {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForDefenceDisassociationForDefendant);
         assertExternaPublicEventRaised(defendantId, organisationId, message);
+        publicEventsConsumerForDefenceDisassociationForDefendant.close();
     }
 
     private static void assertExternaPublicEventRaised(final String defendantId, final String organisationId, final Optional<JsonObject> message) {
