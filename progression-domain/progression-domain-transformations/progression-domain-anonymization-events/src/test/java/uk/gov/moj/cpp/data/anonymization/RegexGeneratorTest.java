@@ -8,7 +8,10 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static java.util.UUID.fromString;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -21,7 +24,7 @@ public class RegexGeneratorTest {
     @Test
     public void shouldGenerateARandomStringFromARegularExpression() {
 
-        final String randomString = regexGenerator.convert("test");
+        final String randomString = regexGenerator.convert();
 
         final RegexValidator regexValidator = new RegexValidator(UUID_PATTERN);
 
@@ -31,7 +34,7 @@ public class RegexGeneratorTest {
 
         assertThat(uuid, is(notNullValue()));
 
-        assertThat(regexGenerator.convert("test"), is(not(equalTo(randomString))));
+        assertThat(regexGenerator.convert(), is(not(equalTo(randomString))));
 
     }
 

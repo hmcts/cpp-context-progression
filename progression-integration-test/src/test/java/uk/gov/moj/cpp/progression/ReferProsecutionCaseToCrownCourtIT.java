@@ -1,30 +1,32 @@
 package uk.gov.moj.cpp.progression;
 
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-
-import javax.jms.MessageConsumer;
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper
-        .addProsecutionCaseToCrownCourtWithMinimumAttributes;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithMinimumAttributes;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionForMaterials;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpointsWithEmpty;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertcourtDocuments;
+
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.MessageConsumer;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class ReferProsecutionCaseToCrownCourtIT {
@@ -55,7 +57,7 @@ public class ReferProsecutionCaseToCrownCourtIT {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
         // when
-        final String response = getProsecutioncasesProgressionFor(caseId);
+        final String response = getProsecutioncasesProgressionForMaterials(caseId);
         // then
         final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 

@@ -76,12 +76,6 @@ public class SummonsServiceTest {
     private final Enveloper enveloper = createEnveloper();
 
     @Spy
-    private ListToJsonArrayConverter listToJsonArrayConverter;
-
-    @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Spy
     private ObjectToJsonObjectConverter objectToJsonConverter;
 
     @Spy
@@ -119,23 +113,38 @@ public class SummonsServiceTest {
     }
 
     @Test
-    public void shouldGenerateGenericSummons() throws Exception {
+    public void shouldGenerateGenericSummonsForPersonDefendant() throws Exception {
 
-        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application.json");
-
-        assertThat(generatedSummonsPayload.getSubTemplateName(), is("APPLICATION"));
-
+        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application-for-person-defendant.json");
         SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
         SummonsAddress address = defendant.getAddress();
 
+        assertThat(generatedSummonsPayload.getSubTemplateName(), is("APPLICATION"));
         assertThat(defendant.getName(), is("Robin Maxwell Stuart"));
+        assertThat(defendant.getDateOfBirth(), is("1995-01-01"));
         assertThat(address.getLine1(), is("22 Acacia Avenue"));
         assertThat(address.getLine2(), is("Acacia Town"));
         assertThat(address.getLine3(), is("Acacia City"));
         assertThat(address.getLine4(), is("Acacia District"));
         assertThat(address.getLine5(), is("Acacia County"));
         assertThat(address.getPostCode(), is("AC1 4AC"));
+    }
 
+    @Test
+    public void shouldGenerateGenericSummonsForLegalEntityDefendant() throws Exception {
+
+        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application-for-legal-entity-defendant.json");
+        SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
+        SummonsAddress address = defendant.getAddress();
+
+        assertThat(generatedSummonsPayload.getSubTemplateName(), is("APPLICATION"));
+        assertThat(defendant.getName(), is("ABC Ltd"));
+        assertThat(address.getLine1(), is("address line 1"));
+        assertThat(address.getLine2(), is("address line 2"));
+        assertThat(address.getLine3(), is("address line 3"));
+        assertThat(address.getLine4(), is("address line 4"));
+        assertThat(address.getLine5(), is("address line 5"));
+        assertThat(address.getPostCode(), is("GIR0AA"));
     }
 
     @Test
@@ -163,7 +172,7 @@ public class SummonsServiceTest {
 
     @Test (expected = java.lang.IllegalArgumentException.class)
     public void shouldNotGenerateGenericApplicationSummons() throws Exception {
-        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("unsupported-summons-template-type.json");
+        prepareAndRunTest("unsupported-summons-template-type.json");
     }
 
     private SummonsDocumentContent prepareAndRunTest(String resource) throws Exception {

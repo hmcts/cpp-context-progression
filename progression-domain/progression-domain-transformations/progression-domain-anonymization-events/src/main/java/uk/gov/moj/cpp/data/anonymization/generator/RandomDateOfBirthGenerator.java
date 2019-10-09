@@ -14,7 +14,7 @@ public class RandomDateOfBirthGenerator implements Generator<String> {
 
 
     @Override
-    public String convert(final String fieldValue) {
+    public String convert() {
         final LocalDate dateUpperLimit = LocalDate.now().minusYears(MINAGE);
         final LocalDate dateLowerLimit = LocalDate.now().minusYears(NAXAGE);
         return dateLowerLimit.plusDays(ThreadLocalRandom.current().longs(0,

@@ -2,6 +2,7 @@
 <databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
     <include file="liquibase/viewdb-init.xml"/>
     <include file="liquibase/add-trial-estimates.xml"/>
     <include file="liquibase/add-direction-issued.xml"/>
@@ -51,6 +52,7 @@
     <include file="liquibase/create-hearing-application.xml"/>
     <include file="liquibase/rename-print-status-table.xml"/>
     <include file="liquibase/modify-notification-status-table.xml"/>
+    <include file="liquibase/alter-search-prosecution-case-add-index.xml"/>
     <include file="liquibase/create-defence-association.xml"/>
     <include file="liquibase/create-defence-association-access-history.xml"/>
     <include file="liquibase/alter-defence-association-access-history-date-datatype.xml"/>

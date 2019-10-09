@@ -1,9 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -34,9 +30,7 @@ import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.QueryUtil;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -56,9 +50,6 @@ import org.junit.Test;
 @Ignore
 public class RequestSummonsIT {
 
-    public static final String PUBLIC_EVENT = "public.event";
-    public static final String NOTIFICATION_NOTIFY_CONTENT_TYPE = "application/vnd.notificationnotify.letter+json";
-    private static final String PUBLIC_SUMMONS_REQUESTED = "public.summons-requested";
     private static final String PUBLIC_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String CASE_ID = randomUUIDString();
     private static final String COURT_DOCUMENT_ID = randomUUIDString();
@@ -70,7 +61,6 @@ public class RequestSummonsIT {
     private static final MessageConsumer PRIVATE_MESSAGE_CONSUMER = privateEvents.createConsumer("progression.event.nows-material-request-recorded");
     private static final String DOCUMENT_TEXT = STRING.next();
     public static final String PROGRESSION_QUERY_COURTDOCUMENTSSEARCH = "progression.query.courtdocuments";
-    public static final String COURT_DOCUMENT_SEARCH_NAME = "progression.query.courtdocument";
 
     public static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
 
@@ -95,7 +85,7 @@ public class RequestSummonsIT {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         createMockEndpoints();
         HearingStub.stubInitiateHearing();
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
@@ -113,7 +103,7 @@ public class RequestSummonsIT {
         final Metadata metadata = generateMetadata();
         JsonObject hearingConfirmedPayload = generateHearingConfirmedPayload(hearingId);
         sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONFIRMED, hearingConfirmedPayload, metadata);
-      
+
         verifyPrintRequestAccepted();
 
         // check document query
@@ -135,8 +125,7 @@ public class RequestSummonsIT {
 
     }
 
-
-    private JsonObject generateHearingConfirmedPayload(final String hearingId) throws IOException {
+    private JsonObject generateHearingConfirmedPayload(final String hearingId) {
         String payloadStr = getStringFromResource(PUBLIC_HEARING_CONFIRMED + ".json")
                 .replaceAll("CASE_ID", CASE_ID)
                 .replaceAll("COURT_CENTRE_ID", COURT_CENTRE_ID)
@@ -153,13 +142,7 @@ public class RequestSummonsIT {
                 .build();
     }
 
-    private void verifyPostSendLetterNotificationSend() {
-        verify(
-                postRequestedFor(urlMatching("/notificationnotify-service/command/api/rest/notificationnotify/notifications/.*"))
-                        .withHeader("Content-Type", equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE)));
-    }
-
-    public void verifyPrintRequestAccepted() {
+    private void verifyPrintRequestAccepted() {
         final JsonPath jsonResponse = retrieveMessage(PRIVATE_MESSAGE_CONSUMER);
 
         assertThat(jsonResponse.get("context.caseId"), is(CASE_ID));

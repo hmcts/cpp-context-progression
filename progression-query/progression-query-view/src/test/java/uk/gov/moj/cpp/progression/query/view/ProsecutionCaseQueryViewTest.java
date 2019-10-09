@@ -22,6 +22,8 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
@@ -181,6 +183,48 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
+    public void shouldFindApplicationsLinkedToProsecutionCaseWithLegalEntityDefendant() {
+        final UUID caseId = randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", caseId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                jsonObject);
+
+        final ProsecutionCaseEntity prosecutionCaseEntity=new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload("{}");
+
+        List <CourtApplication> courtApplications = new ArrayList<>();
+        CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
+        courtApplications.add(courtApplication);
+        final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
+                .withHearings(Arrays.asList(Hearings.hearings().build()))
+                .withDefendantHearings(Arrays.asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .withCourtApplications(courtApplications)
+                .build();
+
+        final CourtDocumentEntity courtDocumentEntity=new CourtDocumentEntity();
+        final Material material = Material.material().withId(randomUUID()).build();
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
+        when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
+        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.jsonObject);
+        when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
+        courtApplicationEntity.setPayload("{}");
+        when(courtApplicationRepository.findByLinkedCaseId(caseId)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(courtApplication);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("linkedApplicationsSummary"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("caseAtAGlance"), notNullValue());
+    }
+
+    @Test
     public void shouldFindUserGroupsByMaterialId() throws Exception {
         final UUID materialId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
@@ -274,6 +318,35 @@ public class ProsecutionCaseQueryViewTest {
                                 .build())
                         .build(), CourtApplicationRespondent.courtApplicationRespondent()
                         .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                .withOrganisation(Organisation.organisation()
+                                        .withName(RESPONDENTS_ORG_NAME)
+                                        .build())
+                                .build())
+                        .build()))
+                .build();
+    }
+
+    private CourtApplication getCourtApplicationWithLegalEntityDefendant() {
+        Defendant defendant = Defendant.defendant().
+                withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation()
+                                .withName("ABC LTD").build()).build()).build();
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.DRAFT)
+                .withType(CourtApplicationType.courtApplicationType().withApplicationType("Apil").build())
+                .withApplicationReference(APPLICATION_ARN)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withDefendant(defendant)
+                        .build())
+                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
+                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                        .withName(APPLICATION_PROSECUTOR_NAME)
+                                        .build())
+                                .build())
+                        .build(), CourtApplicationRespondent.courtApplicationRespondent()
+                        .withPartyDetails(CourtApplicationParty.courtApplicationParty().withDefendant(defendant)
                                 .withOrganisation(Organisation.organisation()
                                         .withName(RESPONDENTS_ORG_NAME)
                                         .build())

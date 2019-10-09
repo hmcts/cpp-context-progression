@@ -3,9 +3,12 @@ package uk.gov.justice.api.resource.utils;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.SPACE;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
@@ -56,8 +59,9 @@ public class ApplicationExtractTransformer {
                                                                                 final String extractType, final UUID userId) {
         return buildApplicationExtractRequested(courtApplication, hearingsForApplication, extractType, userId);
     }
+
     public List<Hearing> getHearingsForApplication(final JsonArray hearings, final List<String> hearingIds) {
-        return Objects.isNull(hearings) || hearings.isEmpty() ? emptyList() : hearings.getValuesAs(JsonObject.class).stream()
+        return Objects.isNull(hearings) || hearings.isEmpty() || isEmpty(hearingIds) ? emptyList() : hearings.getValuesAs(JsonObject.class).stream()
                 .map(hearing -> jsonObjectToObjectConverter.convert(hearing, Hearing.class))
                 .filter(hearing -> hearingIds.contains(hearing.getId().toString()))
                 .collect(toList());
@@ -75,13 +79,21 @@ public class ApplicationExtractTransformer {
                 .withCourtDecisions(hearings.isEmpty() ? null : getCourtDecisions(hearings))
                 .withReference(courtApplication.getApplicationReference())
                 .withHearings(getHearings(hearings))
-                .withCourtApplications(getCourtApplications(hearings))
+                .withCourtApplications(getCourtApplications(hearings, courtApplication))
+                .withIsAppealPending((nonNull(courtApplication.getType().getIsAppealApplication()) && courtApplication.getType().getIsAppealApplication()) &&
+                        (courtApplication.getApplicationStatus().equals(ApplicationStatus.DRAFT) || courtApplication.getApplicationStatus().equals(ApplicationStatus.LISTED))
+                        || courtApplication.getApplicationStatus().equals(ApplicationStatus.EJECTED))
                 .build();
     }
 
-    private List<CourtApplications> getCourtApplications(final List<Hearing> hearings) {
-        return hearings.stream().flatMap(hearing -> hearing.getCourtApplications().stream())
-                .filter(Objects::nonNull).map(ca -> mapCourtApplication(ca, hearings)).collect(toList());
+    private List<CourtApplications> getCourtApplications(final List<Hearing> hearings, final CourtApplication courtApplication) {
+        if (isNotEmpty(hearings)) {
+            return hearings.stream().flatMap(hearing -> hearing.getCourtApplications().stream())
+                    .filter(Objects::nonNull).map(ca -> mapCourtApplication(ca, hearings)).collect(toList());
+        } else {
+            // Only application has been added and no hearings have been allocated
+            return Arrays.asList(mapCourtApplication(courtApplication, emptyList()));
+        }
     }
 
     private CourtApplications mapCourtApplication(final CourtApplication courtApplication, final List<Hearing> hearings) {

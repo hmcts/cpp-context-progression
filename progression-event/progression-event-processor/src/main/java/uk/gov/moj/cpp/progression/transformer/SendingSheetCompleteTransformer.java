@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.transformer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
@@ -14,8 +15,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALIT
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.BailStatus;
-import uk.gov.justice.core.courts.CourtDecision;
-import uk.gov.justice.core.courts.DefendantRepresentation;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
@@ -28,9 +27,7 @@ import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionRepresentation;
 import uk.gov.justice.core.courts.Source;
-import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority;
@@ -131,6 +128,7 @@ public class SendingSheetCompleteTransformer {
                 .withOffenceCode(offence.getOffenceCode())
                 .withOrderIndex(offence.getOrderIndex())
                 .withIndicatedPlea(getIndicatedPlea(offence, sendingCommitalDate))
+                .withAllocationDecision(getAllocationDecision(offence, sendingCommitalDate))
                 .build();
     }
 
@@ -164,21 +162,34 @@ public class SendingSheetCompleteTransformer {
                 .withIndicatedPleaValue(IndicatedPleaValue.valueFor(indicatedPlea.getValue()).get())
                 .withIndicatedPleaDate(sendingSheetAsDate(sendingCommitalDate))
                 .withSource(Source.IN_COURT)
-                .withAllocationDecision(buildAllocationDecision(indicatedPlea.getAllocationDecision()))
                 .build();
 
     }
 
-    private AllocationDecision buildAllocationDecision(final String allocationDecision) {
+    private AllocationDecision getAllocationDecision(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence, final String sendingCommitalDate) {
+        return isNull(offence.getIndicatedPlea()) ? null : buildAllocationDecision(offence.getIndicatedPlea().getAllocationDecision(), offence.getId(), sendingCommitalDate);
+    }
+
+    private AllocationDecision buildAllocationDecision(final String allocationDecision, final UUID offenceId, final String sendingCommitalDate) {
         if (allocationDecision == null || "ELECT_TRIAL".equalsIgnoreCase(allocationDecision) || "COURT_DECLINED".equalsIgnoreCase(allocationDecision)) {
             return AllocationDecision.allocationDecision()
-                    .withCourtDecision(CourtDecision.ELECT_TRIAL_ON_INDICTMENT)
-                    .withProsecutionRepresentation(ProsecutionRepresentation.ELECT_TRIAL_ON_INDICTMENT)
-                    .withDefendantRepresentation(DefendantRepresentation.ELECT_TRIAL_ON_INDICTMENT)
+                    .withMotReasonDescription("Defendant chooses trial by jury")
+                    .withOffenceId(offenceId)
+                    .withOriginatingHearingId(ORIGINATING_HEARING_ID)
+                    .withAllocationDecisionDate(sendingSheetAsDate(sendingCommitalDate))
+                    .withMotReasonId(fromString("f8eb278a-8bce-373e-b365-b45e939da38a"))
+                    .withMotReasonCode("4")
+                    .withSequenceNumber(40)
                     .build();
         } else {
             return AllocationDecision.allocationDecision()
-                    .withCourtDecision(CourtDecision.INDICTABLE_ONLY_LINKED_TO_INDICTABLE)
+                    .withOffenceId(offenceId)
+                    .withOriginatingHearingId(ORIGINATING_HEARING_ID)
+                    .withAllocationDecisionDate(sendingSheetAsDate(sendingCommitalDate))
+                    .withMotReasonId(fromString("4ba29b9f-9e57-32ed-b376-1840f4ba6c53"))
+                    .withMotReasonCode("2")
+                    .withSequenceNumber(20)
+                    .withMotReasonDescription("Indictable-only offence")
                     .build();
         }
     }

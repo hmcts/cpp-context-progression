@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -168,6 +169,30 @@ public class ApplicationQueryViewTest {
     }
 
     @Test
+    public void shouldReturnApplicationSummaryWithLegalEntityDefendant() {
+        final UUID applicationId = randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("applicationId", applicationId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.application.summary").build(),
+                jsonObject);
+
+        CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(APPLICATION_ID);
+        courtApplicationEntity.setPayload("{}");
+
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
+        when(courtApplicationRepository.findByParentApplicationId(applicationId)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
+        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(jsonObject);
+
+        final JsonEnvelope response = applicationQueryView.getApplicationSummary(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("courtApplications"), notNullValue());
+    }
+
+    @Test
     public void shouldGetCourtDocumentNotificationStatus() {
         final UUID applicationId = UUID.randomUUID();
 
@@ -291,6 +316,35 @@ public class ApplicationQueryViewTest {
                                 .build())
                         .build(), CourtApplicationRespondent.courtApplicationRespondent()
                         .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                .withOrganisation(Organisation.organisation()
+                                        .withName(RESPONDENTS_ORG_NAME)
+                                        .build())
+                                .build())
+                        .build()))
+                .build();
+    }
+
+    private CourtApplication getCourtApplicationWithLegalEntityDefendant() {
+        Defendant defendant = Defendant.defendant().
+                withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation()
+                                .withName("ABC LTD").build()).build()).build();
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.DRAFT)
+                .withType(CourtApplicationType.courtApplicationType().withApplicationType("Apil").build())
+                .withApplicationReference(APPLICATION_ARN)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withDefendant(defendant)
+                        .build())
+                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
+                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                        .withName(APPLICATION_PROSECUTOR_NAME)
+                                        .build())
+                                .build())
+                        .build(), CourtApplicationRespondent.courtApplicationRespondent()
+                        .withPartyDetails(CourtApplicationParty.courtApplicationParty().withDefendant(defendant)
                                 .withOrganisation(Organisation.organisation()
                                         .withName(RESPONDENTS_ORG_NAME)
                                         .build())

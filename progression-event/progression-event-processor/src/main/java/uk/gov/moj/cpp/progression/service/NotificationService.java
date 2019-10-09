@@ -20,7 +20,6 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.notification.EmailChannel;
@@ -366,7 +365,7 @@ public class NotificationService {
 
         } else if (defendantOptional.isPresent()) {
 
-            addressOptional = defendantOptional.map(Defendant::getPersonDefendant).map(PersonDefendant::getPersonDetails).map(Person::getAddress);
+            addressOptional = getDefendantAddress(defendantOptional.get());
 
         } else if (prosecutingAuthorityOptional.isPresent()) {
 
@@ -374,6 +373,19 @@ public class NotificationService {
         }
 
         return addressOptional;
+    }
+
+    private Optional<Address> getDefendantAddress(Defendant defendant) {
+        Optional<Address> address = Optional.empty();
+
+        if(nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getAddress())){
+            address = Optional.of(defendant.getPersonDefendant().getPersonDetails().getAddress());
+        }
+
+        if(nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getAddress())){
+            address = Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getAddress());
+        }
+        return address;
     }
 
     private Optional<String> getApplicantEmailAddress(final CourtApplicationParty courtApplicationParty) {
@@ -398,13 +410,26 @@ public class NotificationService {
 
         } else if (defendantOptional.isPresent()) {
 
-            emailAddress = defendantOptional.map(Defendant::getPersonDefendant).map(PersonDefendant::getPersonDetails).map(Person::getContact).map(ContactNumber::getPrimaryEmail);
+            emailAddress = getDefendantEmailAddress(defendantOptional.get());
 
         } else if (prosecutingAuthorityOptional.isPresent()) {
 
             emailAddress = prosecutingAuthorityOptional.map(ProsecutingAuthority::getContact).map(ContactNumber::getPrimaryEmail);
         }
 
+        return emailAddress;
+    }
+
+    private Optional<String> getDefendantEmailAddress(Defendant defendant) {
+        final Optional<String> emailAddress = Optional.empty();
+
+        if(nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getContact())){
+            return Optional.of(defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail());
+        }
+
+        if(nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getContact())){
+           return  Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());
+        }
         return emailAddress;
     }
 

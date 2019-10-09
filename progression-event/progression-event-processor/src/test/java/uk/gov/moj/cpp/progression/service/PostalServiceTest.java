@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,7 +14,29 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_COMPANY_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_COMPANY_ADDRESS_POSTCODE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_COMPANY_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_FIRST_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_LAST_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PERSON_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PERSON_ADDRESS_POSTCODE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithLegalEntity;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithPersonDefendant;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithProsecutionAuthority;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithLegalEntity;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithPersonDefendant;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCompanyAddress;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCompanyName;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonAddress;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonName;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyProsecutionAuthorityAddress;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyProsecutionAuthorityName;
 
+import org.powermock.reflect.Whitebox;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -50,6 +73,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.progression.domain.PostalAddress;
+import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostalServiceTest {
@@ -216,5 +241,71 @@ public class PostalServiceTest {
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
                                 withJsonPath("$.courtDocument.name", equalTo("PostalNotification"))
                         )))));
+    }
+
+    @Test
+    public void getDefendantNameWithPersonDefendantTest() throws Exception {
+        Defendant personDefendantMock = buildDefendantWithPersonDefendant();
+        String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", personDefendantMock);
+        verifyPersonName(resultName);
+    }
+
+    @Test
+    public void getDefendantNameWithLegalEntityDefendantTest() throws Exception {
+        Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", legalEntityDefendantMock);
+        verifyCompanyName(resultName);
+    }
+
+    @Test
+    public void getDefendantPostalAddressWithPersonDefendantTest() throws Exception {
+        Defendant personDefendantMock = buildDefendantWithPersonDefendant();
+        PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", personDefendantMock);
+        verifyPersonAddress(resultAddress);
+    }
+
+    @Test
+    public void getDefendantPostalAddressWithLegalEntityDefendantTest() throws Exception {
+        Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", legalEntityDefendantMock);
+        verifyCompanyAddress(resultAddress);
+    }
+
+    @Test
+    public void buildDefendantWithLegalEntityTest() throws Exception {
+        Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        PostalDefendant resultPostalDefendant = Whitebox.invokeMethod(postalService, "buildDefendant", legalEntityDefendantMock);
+        verifyCompanyAddress(resultPostalDefendant.getAddress());
+        verifyCompanyName(resultPostalDefendant.getName());
+    }
+
+    @Test
+    public void getNameTest() throws Exception {
+        CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
+        String companyName  = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock);
+        verifyCompanyName(companyName);
+
+        CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
+        String personName  = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock1);
+        verifyPersonName(personName);
+
+        CourtApplicationParty courtApplicationPartyMock2 = buildCourtApplicationPartyWithProsecutionAuthority();
+        String prosecutionAuthorityName = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock2);
+        verifyProsecutionAuthorityName(prosecutionAuthorityName);
+    }
+
+    @Test
+    public void getAddressTest() throws Exception {
+        CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
+        PostalAddress companyAddress  = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock);
+        verifyCompanyAddress(companyAddress);
+
+        CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
+        PostalAddress personAddress  = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock1);
+        verifyPersonAddress(personAddress);
+
+        CourtApplicationParty courtApplicationPartyMock2 = buildCourtApplicationPartyWithProsecutionAuthority();
+        PostalAddress prosecutionAuthorityAddress = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock2);
+        verifyProsecutionAuthorityAddress(prosecutionAuthorityAddress);
     }
 }

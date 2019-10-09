@@ -6,7 +6,7 @@ public class UriGenerator implements Generator<String> {
             new uk.gov.justice.services.test.utils.core.random.UriGenerator();
 
     @Override
-    public String convert(String value) {
+    public String convert() {
         return generator.next().toString();
     }
 }

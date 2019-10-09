@@ -43,4 +43,9 @@ public class ProsecutionCaseQueryApi {
         return query;
     }
 
+    @Handles("progression.query.eject-case")
+    public JsonEnvelope ejectCase(final JsonEnvelope query) {
+
+        return query;
+    }
 }

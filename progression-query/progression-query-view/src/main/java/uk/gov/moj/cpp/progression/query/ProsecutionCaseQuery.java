@@ -50,7 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3655", "squid:S1612", "squid:S1067"})
+@SuppressWarnings({"squid:S3655", "squid:S1612", "squid:S1067","squid:S1166"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProsecutionCaseQuery {
 
@@ -130,7 +130,7 @@ public class ProsecutionCaseQuery {
             jsonObjectBuilder.add("caseAtAGlance", getCaseAtAGlanceJson);
 
         } catch (final NoResultException e) {
-            LOGGER.info("### No case found with caseId='{}'", caseId.get(), e);
+            LOGGER.info("# No case found yet for caseId '{}'", caseId.get());
         }
 
         return JsonEnvelope.envelopeFrom(
@@ -231,6 +231,7 @@ public class ProsecutionCaseQuery {
                 .withApplicantDisplayName(courtApplication.getApplicant())
                 .withRespondentDisplayNames(courtApplication.getRespondents())
                 .withIsAppeal(isAppealApplication(courtApplication))
+                .withRemovalReason(courtApplication.getRemovalReason())
                 .build()));
     }
 

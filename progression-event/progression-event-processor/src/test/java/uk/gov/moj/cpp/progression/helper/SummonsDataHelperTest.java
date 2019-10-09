@@ -14,7 +14,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -46,21 +48,34 @@ public class SummonsDataHelperTest {
     }
 
     @Test
-    public void shouldTransformDefendantToAddresse() {
-        Defendant defendant = createDefendant();
-        JsonObject addresseJson = SummonsDataHelper.extractAddresse(objectToJsonObjectConverter.convert(defendant));
-        assertThat("Tim Martin Paine", is(addresseJson.getString("name")));
-        assertThat("22 Crown House", is(addresseJson.getJsonObject("address").getString("line1")));
-        assertThat("40 Albert Street", is(addresseJson.getJsonObject("address").getString("line2")));
-        assertThat("Broad way", is(addresseJson.getJsonObject("address").getString("line3")));
-        assertThat("Taunton", is(addresseJson.getJsonObject("address").getString("line4")));
-        assertThat("Somerset", is(addresseJson.getJsonObject("address").getString("line5")));
-        assertThat("TA5 5TA", is(addresseJson.getJsonObject("address").getString("postCode")));
+    public void shouldTransformPersonDefendantToAddressee() {
+        Defendant defendant = createPersonDefendant();
+        JsonObject addresseeJson = SummonsDataHelper.extractAddressee(objectToJsonObjectConverter.convert(defendant));
+        assertThat("Tim Martin Paine", is(addresseeJson.getString("name")));
+        assertThat("22 Crown House", is(addresseeJson.getJsonObject("address").getString("line1")));
+        assertThat("40 Albert Street", is(addresseeJson.getJsonObject("address").getString("line2")));
+        assertThat("Broad way", is(addresseeJson.getJsonObject("address").getString("line3")));
+        assertThat("Taunton", is(addresseeJson.getJsonObject("address").getString("line4")));
+        assertThat("Somerset", is(addresseeJson.getJsonObject("address").getString("line5")));
+        assertThat("TA5 5TA", is(addresseeJson.getJsonObject("address").getString("postCode")));
     }
 
     @Test
-    public void shouldExtractDefendantFromDefendant() {
-        Defendant defendant = createDefendant();
+    public void shouldTransformLegalDefendantToAddressee() {
+        Defendant defendant = createLegalEntityDefendant();
+        JsonObject addresseeJson = SummonsDataHelper.extractAddressee(objectToJsonObjectConverter.convert(defendant));
+        assertThat("ABC Ltd", is(addresseeJson.getString("name")));
+        assertThat("22 Crown House", is(addresseeJson.getJsonObject("address").getString("line1")));
+        assertThat("40 Albert Street", is(addresseeJson.getJsonObject("address").getString("line2")));
+        assertThat("Broad way", is(addresseeJson.getJsonObject("address").getString("line3")));
+        assertThat("Taunton", is(addresseeJson.getJsonObject("address").getString("line4")));
+        assertThat("Somerset", is(addresseeJson.getJsonObject("address").getString("line5")));
+        assertThat("TA5 5TA", is(addresseeJson.getJsonObject("address").getString("postCode")));
+    }
+
+    @Test
+    public void shouldExtractDefendantFromPersonDefendant() {
+        Defendant defendant = createPersonDefendant();
         JsonObject defendantJson = SummonsDataHelper.extractDefendant(objectToJsonObjectConverter.convert(defendant));
         assertThat("Tim Martin Paine", is(defendantJson.getString("name")));
         assertThat("2000-01-15", is(defendantJson.getString("dateOfBirth")));
@@ -73,46 +88,59 @@ public class SummonsDataHelperTest {
     }
 
     @Test
+    public void shouldExtractDefendantFromLegalDefendant() {
+        Defendant defendant = createLegalEntityDefendant();
+        JsonObject defendantJson = SummonsDataHelper.extractDefendant(objectToJsonObjectConverter.convert(defendant));
+        assertThat("ABC Ltd", is(defendantJson.getString("name")));
+        assertThat("22 Crown House", is(defendantJson.getJsonObject("address").getString("line1")));
+        assertThat("40 Albert Street", is(defendantJson.getJsonObject("address").getString("line2")));
+        assertThat("Broad way", is(defendantJson.getJsonObject("address").getString("line3")));
+        assertThat("Taunton", is(defendantJson.getJsonObject("address").getString("line4")));
+        assertThat("Somerset", is(defendantJson.getJsonObject("address").getString("line5")));
+        assertThat("TA5 5TA", is(defendantJson.getJsonObject("address").getString("postCode")));
+    }
+
+    @Test
     public void shouldExtractGuardianFromDefendant() {
-        Defendant defendant = createDefendant();
-        JsonObject guardianAddresseJson = SummonsDataHelper.extractGuardianAddresse(objectToJsonObjectConverter.convert(defendant));
-        assertThat("Rob Martin Paine", is(guardianAddresseJson.getString("name")));
-        assertThat("36 Brown House", is(guardianAddresseJson.getJsonObject("address").getString("line1")));
-        assertThat("450 London Street", is(guardianAddresseJson.getJsonObject("address").getString("line2")));
-        assertThat("Ocean way", is(guardianAddresseJson.getJsonObject("address").getString("line3")));
-        assertThat("Bristol", is(guardianAddresseJson.getJsonObject("address").getString("line4")));
-        assertThat("Somerset", is(guardianAddresseJson.getJsonObject("address").getString("line5")));
-        assertThat("BS1 4TE", is(guardianAddresseJson.getJsonObject("address").getString("postCode")));
+        Defendant defendant = createPersonDefendant();
+        JsonObject guardianAddresseeJson = SummonsDataHelper.extractGuardianAddressee(objectToJsonObjectConverter.convert(defendant));
+        assertThat("Rob Martin Paine", is(guardianAddresseeJson.getString("name")));
+        assertThat("36 Brown House", is(guardianAddresseeJson.getJsonObject("address").getString("line1")));
+        assertThat("450 London Street", is(guardianAddresseeJson.getJsonObject("address").getString("line2")));
+        assertThat("Ocean way", is(guardianAddresseeJson.getJsonObject("address").getString("line3")));
+        assertThat("Bristol", is(guardianAddresseeJson.getJsonObject("address").getString("line4")));
+        assertThat("Somerset", is(guardianAddresseeJson.getJsonObject("address").getString("line5")));
+        assertThat("BS1 4TE", is(guardianAddresseeJson.getJsonObject("address").getString("postCode")));
     }
 
     @Test
     public void shouldExtractYouthOnlyFromDefendant() {
-        Defendant defendant = createDefendant();
-        JsonObject guardianAddresseJson = SummonsDataHelper.extractYouth(objectToJsonObjectConverter.convert(defendant), true);
-        assertThat("36 Brown House", is(guardianAddresseJson.getJsonObject("address").getString("line1")));
-        assertThat("450 London Street", is(guardianAddresseJson.getJsonObject("address").getString("line2")));
-        assertThat("Ocean way", is(guardianAddresseJson.getJsonObject("address").getString("line3")));
-        assertThat("Bristol", is(guardianAddresseJson.getJsonObject("address").getString("line4")));
-        assertThat("Somerset", is(guardianAddresseJson.getJsonObject("address").getString("line5")));
-        assertThat("BS1 4TE", is(guardianAddresseJson.getJsonObject("address").getString("postCode")));
+        Defendant defendant = createPersonDefendant();
+        JsonObject guardianAddresseeJson = SummonsDataHelper.extractYouth(objectToJsonObjectConverter.convert(defendant), true);
+        assertThat("36 Brown House", is(guardianAddresseeJson.getJsonObject("address").getString("line1")));
+        assertThat("450 London Street", is(guardianAddresseeJson.getJsonObject("address").getString("line2")));
+        assertThat("Ocean way", is(guardianAddresseeJson.getJsonObject("address").getString("line3")));
+        assertThat("Bristol", is(guardianAddresseeJson.getJsonObject("address").getString("line4")));
+        assertThat("Somerset", is(guardianAddresseeJson.getJsonObject("address").getString("line5")));
+        assertThat("BS1 4TE", is(guardianAddresseeJson.getJsonObject("address").getString("postCode")));
     }
 
     @Test
     public void shouldExtractYouthGuardianFromDefendant() {
-        Defendant defendant = createDefendant();
-        JsonObject guardianAddresseJson = SummonsDataHelper.extractYouth(objectToJsonObjectConverter.convert(defendant), false);
-        assertThat("Rob Martin Paine", is(guardianAddresseJson.getString("parentGuardianName")));
-        assertThat("36 Brown House", is(guardianAddresseJson.getJsonObject("address").getString("line1")));
-        assertThat("450 London Street", is(guardianAddresseJson.getJsonObject("address").getString("line2")));
-        assertThat("Ocean way", is(guardianAddresseJson.getJsonObject("address").getString("line3")));
-        assertThat("Bristol", is(guardianAddresseJson.getJsonObject("address").getString("line4")));
-        assertThat("Somerset", is(guardianAddresseJson.getJsonObject("address").getString("line5")));
-        assertThat("BS1 4TE", is(guardianAddresseJson.getJsonObject("address").getString("postCode")));
+        Defendant defendant = createPersonDefendant();
+        JsonObject guardianAddresseeJson = SummonsDataHelper.extractYouth(objectToJsonObjectConverter.convert(defendant), false);
+        assertThat("Rob Martin Paine", is(guardianAddresseeJson.getString("parentGuardianName")));
+        assertThat("36 Brown House", is(guardianAddresseeJson.getJsonObject("address").getString("line1")));
+        assertThat("450 London Street", is(guardianAddresseeJson.getJsonObject("address").getString("line2")));
+        assertThat("Ocean way", is(guardianAddresseeJson.getJsonObject("address").getString("line3")));
+        assertThat("Bristol", is(guardianAddresseeJson.getJsonObject("address").getString("line4")));
+        assertThat("Somerset", is(guardianAddresseeJson.getJsonObject("address").getString("line5")));
+        assertThat("BS1 4TE", is(guardianAddresseeJson.getJsonObject("address").getString("postCode")));
     }
 
     @Test
     public void shouldExtractOffencesFromDefendant() {
-        Defendant defendant = createDefendant();
+        Defendant defendant = createPersonDefendant();
         JsonArray offences = SummonsDataHelper.extractOffences(objectToJsonObjectConverter.convert(defendant));
         assertThat(1, is(offences.size()));
         assertThat("off title", is(offences.getJsonObject(0).getString("offenceTitle")));
@@ -166,7 +194,7 @@ public class SummonsDataHelperTest {
     }
 
 
-    private Defendant createDefendant() {
+    private Defendant createPersonDefendant() {
         return Defendant.defendant()
                 .withId(UUID.randomUUID())
                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -209,5 +237,44 @@ public class SummonsDataHelperTest {
                 .build();
     }
 
+    private Defendant createLegalEntityDefendant() {
+        return Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation()
+                                .withName("ABC Ltd")
+                                .withAddress(Address.address()
+                                        .withAddress1("22 Crown House")
+                                        .withAddress2("40 Albert Street")
+                                        .withAddress3("Broad way")
+                                        .withAddress4("Taunton")
+                                        .withAddress5("Somerset")
+                                        .withPostcode("TA5 5TA")
+                                        .build())
+                                .build())
+                        .build())
+                .withAssociatedPersons(Arrays.asList(AssociatedPerson.associatedPerson()
+                        .withPerson(Person.person()
+                                .withFirstName("Rob")
+                                .withMiddleName("Martin")
+                                .withLastName("Paine")
+                                .withAddress(Address.address()
+                                        .withAddress1("36 Brown House")
+                                        .withAddress2("450 London Street")
+                                        .withAddress3("Ocean way")
+                                        .withAddress4("Bristol")
+                                        .withAddress5("Somerset")
+                                        .withPostcode("BS1 4TE")
+                                        .build())
+                                .build())
+                        .build()))
+                .withOffences(Arrays.asList(Offence.offence()
+                        .withOffenceTitle("off title")
+                        .withOffenceTitleWelsh("off title wel")
+                        .withOffenceLegislation("off leg")
+                        .withOffenceLegislationWelsh("off leg wel")
+                        .build()))
+                .build();
+    }
 
 }

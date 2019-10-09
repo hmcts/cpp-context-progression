@@ -5,7 +5,7 @@ public class SimpleStringGenerator implements Generator<String> {
 
 
     @Override
-    public String convert(String fieldValue) {
+    public String convert() {
         return "XXXXX";
     }
 }

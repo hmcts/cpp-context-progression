@@ -11,6 +11,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
@@ -96,7 +97,7 @@ public class ListCourtHearingTransformer {
                             .withListingDirections(referredListHearingRequest.getListingDirections())
                             .withReportingRestrictionReason(referredListHearingRequest.getReportingRestrictionReason())
                             .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequest.getListDefendantRequests()))
-                            .withCourtCentre(referenceDataService.getCourtCentre(jsonEnvelope, getPostcode(listOfProsecutionCase), getProsecutionAuthorityCode(prosecutionCases)))
+                            .withCourtCentre(referenceDataService.getCourtCentre(jsonEnvelope, getDefendantPostcode(listOfProsecutionCase), getProsecutionAuthorityCode(prosecutionCases)))
                             .build();
                     hearingsList.add(hearings);
                 });
@@ -388,12 +389,23 @@ public class ListCourtHearingTransformer {
         return prosecutionCases.get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
     }
 
-    private static String getPostcode(final List<ProsecutionCase> prosecutionCases) {
-        return getRequiredField(
-                getRequiredField(
-                        getRequiredField(prosecutionCases.get(0).getDefendants().get(0).getPersonDefendant(), "Person Defendant missing")
-                                .getPersonDetails().getAddress(), "Address missing for Person defendant")
-                        .getPostcode(), "Postcode missing for person defendant address").split(" ")[0];
+    private static String getDefendantPostcode(List<ProsecutionCase> prosecutionCases) {
+        final Optional<Defendant> defendant = Optional.ofNullable(prosecutionCases.get(0).getDefendants().get(0));
+        final Optional<PersonDefendant> personDefendant;
+        final Optional<LegalEntityDefendant> legalEntityDefendant;
+
+        if (defendant.isPresent()) {
+            personDefendant = Optional.ofNullable(defendant.get().getPersonDefendant());
+            legalEntityDefendant = Optional.ofNullable(defendant.get().getLegalEntityDefendant());
+            if (personDefendant.isPresent()) {
+                return getRequiredField(getRequiredField(personDefendant.get().getPersonDetails().getAddress(), "Address is missing for personDefendant")
+                        .getPostcode(), "Postcode is missing for personDefendant").split(" ")[0];
+            } else if (legalEntityDefendant.isPresent()) {
+                return getRequiredField(getRequiredField(legalEntityDefendant.get().getOrganisation().getAddress(), "Address is missing for legalEntityDefendant")
+                        .getPostcode(), "Postcode is missing for legalEntityDefendant").split(" ")[0];
+            }
+        }
+        throw new MissingRequiredFieldException("Defendant is missing");
     }
 
     private static <T> T getRequiredField(final T field, final String message) {

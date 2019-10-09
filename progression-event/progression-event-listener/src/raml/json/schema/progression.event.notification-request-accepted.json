@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/progression.event.notification-request-accepted.json",
+  "id": "http://justice.gov.uk/core/courts/progression.event.print-request-accepted.json",
   "type": "object",
   "properties": {
     "applicationId": {

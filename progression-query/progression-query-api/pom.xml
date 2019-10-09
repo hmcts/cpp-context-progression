@@ -58,7 +58,7 @@
                     <dependency>
                         <groupId>uk.gov.moj.cpp.usersgroups</groupId>
                         <artifactId>usersgroups-query-api</artifactId>
-                        <version>${usersandgroups.version}</version>
+                        <version>${usersgroups.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

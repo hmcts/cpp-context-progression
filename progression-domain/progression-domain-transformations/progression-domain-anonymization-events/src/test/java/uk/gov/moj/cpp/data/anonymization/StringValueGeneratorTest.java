@@ -11,6 +11,6 @@ public class StringValueGeneratorTest {
     @Test
     public void shouldGenerateARandomString() {
         final SimpleStringGenerator stringValueGenerator = new SimpleStringGenerator();
-        assertThat(stringValueGenerator.convert("test `string"), equalTo("XXXXX"));
+        assertThat(stringValueGenerator.convert(), equalTo("XXXXX"));
     }
 }

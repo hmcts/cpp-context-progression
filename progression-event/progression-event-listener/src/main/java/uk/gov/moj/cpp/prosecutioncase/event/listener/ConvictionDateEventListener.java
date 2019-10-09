@@ -92,6 +92,7 @@ public class ConvictionDateEventListener {
                 .withEndDate(offence.getEndDate())
                 .withId(offence.getId())
                 .withIndicatedPlea(offence.getIndicatedPlea())
+                .withAllocationDecision(offence.getAllocationDecision())
                 .withModeOfTrial(offence.getModeOfTrial())
                 .withNotifiedPlea(offence.getNotifiedPlea())
                 .withOffenceCode(offence.getOffenceCode())

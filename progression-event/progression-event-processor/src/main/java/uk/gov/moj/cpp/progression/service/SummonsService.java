@@ -18,9 +18,11 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.summons.ApplicationSummonsDocumentContent;
@@ -284,13 +286,23 @@ public class SummonsService {
     private static SummonsAddressee populateAddresse(final CourtApplicationParty partyDetails) {
         final Defendant defendant = partyDetails.getDefendant();
         if (nonNull(defendant)) {
-            final Person person = defendant.getPersonDefendant().getPersonDetails();
-            if (nonNull(person)) {
+            final PersonDefendant personDefendant = defendant.getPersonDefendant();
+            if (nonNull(personDefendant)) {
+                final Person person = personDefendant.getPersonDetails();
                 return SummonsAddressee.summonsAddressee()
                         .withName(getFullName(person))
                         .withAddress(getSummonsAddress(person.getAddress()))
                         .build();
             }
+
+            final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
+            if (nonNull(legalEntityDefendant)) {
+                return SummonsAddressee.summonsAddressee()
+                        .withName(legalEntityDefendant.getOrganisation().getName())
+                        .withAddress(getSummonsAddress(legalEntityDefendant.getOrganisation().getAddress()))
+                        .build();
+            }
+
             return null;
         }
         final Person person = partyDetails.getPersonDetails();
@@ -334,12 +346,21 @@ public class SummonsService {
 
     private SummonsDefendant populateDefendant(final Defendant defendant) {
         if (nonNull(defendant)) {
-            final Person person = defendant.getPersonDefendant().getPersonDetails();
-            if (nonNull(person)) {
+            final PersonDefendant personDefendant = defendant.getPersonDefendant();
+            if (nonNull(personDefendant)) {
+                final Person person = personDefendant.getPersonDetails();
+
                 return SummonsDefendant.summonsDefendant()
                         .withName(getFullName(person))
                         .withDateOfBirth(populateDateOfBirth(person.getDateOfBirth()))
                         .withAddress(getSummonsAddress(person.getAddress()))
+                        .build();
+            }
+            final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
+            if (nonNull(legalEntityDefendant)) {
+                return SummonsDefendant.summonsDefendant()
+                        .withName(legalEntityDefendant.getOrganisation().getName())
+                        .withAddress(getSummonsAddress(legalEntityDefendant.getOrganisation().getAddress()))
                         .build();
             }
         }
