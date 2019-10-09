@@ -31,8 +31,10 @@ import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore // Ignored due to conflict with other tests, this will be enabled when system command status is available
 public class ShutteringIT {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
