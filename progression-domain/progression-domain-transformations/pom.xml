@@ -15,6 +15,7 @@
         <module>progression-domain-transformation-deactivate-all-stream-that-has-no-defendant-added</module>
         <module>progression-domain-transformations-for-2.5</module>
         <module>progression-domain-transformations-for-MOT</module>
+        <module>progression-domain-transformations-for-ctl</module>
         <module>progression-domain-anonymization-events</module>
     </modules>
 

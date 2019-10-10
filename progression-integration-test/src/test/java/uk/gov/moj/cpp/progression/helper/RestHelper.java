@@ -6,9 +6,11 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
 
@@ -101,9 +103,13 @@ public class RestHelper {
     }
 
     public static String pollForResponse(final String path, final String mediaType) {
+        return pollForResponse(path, mediaType, status().is(OK));
+    }
+
+    public static String pollForResponse(final String path, final String mediaType, final Matcher<ResponseData> matchSuccess) {
         return poll(requestParams(getQueryUri(path), mediaType)
                 .withHeader("CJSCPPUID", randomUUID().toString()).build())
-                .timeout(10, TimeUnit.SECONDS).until(status().is(OK))
+                .timeout(10, TimeUnit.SECONDS).until(matchSuccess)
                 .getPayload();
     }
 

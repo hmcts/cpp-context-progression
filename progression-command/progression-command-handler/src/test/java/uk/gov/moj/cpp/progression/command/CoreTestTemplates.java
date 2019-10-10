@@ -2,9 +2,9 @@ package uk.gov.moj.cpp.progression.command;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 import static uk.gov.justice.core.courts.HearingLanguage.WELSH;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.INTEGER;
@@ -16,11 +16,12 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
-import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
+//import uk.gov.justice.core.courts.CourtDecision;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAlias;
+//import uk.gov.justice.core.courts.DefendantRepresentation;
 import uk.gov.justice.core.courts.DocumentationLanguageNeeds;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
@@ -44,6 +45,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+//import uk.gov.justice.core.courts.ProsecutionRepresentation;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.Source;
 import uk.gov.justice.core.courts.Title;
@@ -235,17 +237,14 @@ public class CoreTestTemplates {
                 .withNationalityId((randomUUID()))
                 .withNationalityCode((STRING.next()));
     }
-
-    public static AllocationDecision.Builder allocationDecision(final UUID offenceId) {
+/*
+    public static AllocationDecision.Builder allocationDecision() {
         return AllocationDecision.allocationDecision()
-                .withOffenceId(offenceId)
-                .withMotReasonDescription("Defendant chooses trial by jury")
-                .withOriginatingHearingId(randomUUID())
-                .withAllocationDecisionDate(PAST_LOCAL_DATE.next())
-                .withMotReasonId(fromString("f8eb278a-8bce-373e-b365-b45e939da38a"))
-                .withSequenceNumber(40)
-                .withMotReasonCode("4");
-    }
+               .withCourtDecision(RandomGenerator.values(CourtDecision.values()).next())
+                .withDefendantRepresentation((RandomGenerator.values(DefendantRepresentation.values()).next()))
+                .withIndicationOfSentence((STRING.next()))
+                .withProsecutionRepresentation((RandomGenerator.values(ProsecutionRepresentation.values()).next()));
+    }*/
 
     public static NotifiedPlea.Builder notifiedPlea(UUID offenceId) {
         return NotifiedPlea.notifiedPlea()
@@ -257,6 +256,7 @@ public class CoreTestTemplates {
     public static IndicatedPlea.Builder indicatedPlea(UUID offenceId) {
         return IndicatedPlea.indicatedPlea()
                 .withOffenceId(offenceId)
+                //.withAllocationDecision(allocationDecision().build())
                 .withIndicatedPleaDate(PAST_LOCAL_DATE.next())
                 .withIndicatedPleaValue(RandomGenerator.values(IndicatedPleaValue.values()).next())
                 .withSource(RandomGenerator.values(Source.values()).next());
@@ -337,7 +337,7 @@ public class CoreTestTemplates {
         return PersonDefendant.personDefendant()
                 .withPersonDetails(person(args).build())
                 .withArrestSummonsNumber((STRING.next()))
-                .withBailStatus((BailStatus.IN_CUSTODY))
+                .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build())
                 .withDriverNumber((STRING.next()))
                 .withPerceivedBirthYear((INTEGER.next()))
 

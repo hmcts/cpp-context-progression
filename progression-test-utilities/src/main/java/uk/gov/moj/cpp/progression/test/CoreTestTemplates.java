@@ -11,11 +11,11 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.NI_
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
-import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -336,7 +336,7 @@ public class CoreTestTemplates {
         return PersonDefendant.personDefendant()
                 .withPersonDetails(person(args).build())
                 .withArrestSummonsNumber((STRING.next()))
-                .withBailStatus((BailStatus.IN_CUSTODY))
+                .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build())
                 .withDriverNumber((STRING.next()))
                 .withPerceivedBirthYear((INTEGER.next()))
 

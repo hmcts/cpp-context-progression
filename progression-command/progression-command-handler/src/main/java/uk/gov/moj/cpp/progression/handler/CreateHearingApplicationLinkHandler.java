@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import uk.gov.justice.core.courts.CreateHearingApplicationLink;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.CreateHearingApplicationLink;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -14,10 +15,13 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
-import java.util.stream.Stream;
+
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class CreateHearingApplicationLinkHandler {
@@ -43,6 +47,13 @@ public class CreateHearingApplicationLinkHandler {
         final Stream<Object> events = applicationAggregate.createHearingApplicationLink(
                 createHearingApplicationLink.getHearing(), createHearingApplicationLink.getApplicationId(), createHearingApplicationLink.getHearingListingStatus());
         appendEventsToStream(createHearingApplicationLinkEnvelope, eventStream, events);
+        if (applicationAggregate.getBoxHearingId() != null) {
+            final EventStream hearingEventStream = eventSource.getStreamById(applicationAggregate.getBoxHearingId());
+            final HearingAggregate hearingAggregate = aggregateService.get(hearingEventStream, HearingAggregate.class);
+            if (hearingAggregate.getSavedListingStatusChanged() != null && HearingListingStatus.HEARING_RESULTED == createHearingApplicationLink.getHearingListingStatus()) {
+                appendEventsToStream(createHearingApplicationLinkEnvelope, hearingEventStream, hearingAggregate.boxworkComplete());
+            }
+        }
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

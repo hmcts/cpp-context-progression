@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Optional.ofNullable;
 
+import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -92,6 +93,14 @@ public class ApplicationQueryView {
             final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
             jsonObjectBuilder.add("courtApplication", application);
 
+            if (courtApplicationEntity.getAssignedUserId() != null) {
+
+                final AssignedUser assignedUser = AssignedUser.assignedUser()
+                        .withUserId(courtApplicationEntity.getAssignedUserId())
+                        .build();
+                jsonObjectBuilder.add("assignedUser", buildAssignedUserJson(assignedUser));
+            }
+
             final List<CourtDocumentEntity> courtDocuments = courtDocumentRepository.findByApplicationId(applicationId);
             jsonObjectBuilder.add("courtDocuments", buildCourtDocuments(courtDocuments));
 
@@ -118,10 +127,12 @@ public class ApplicationQueryView {
                 final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
 
                 courtApplications.forEach(courtApplicationEntity ->
-                        buildApplicationSummary(courtApplicationEntity.getPayload(), jsonApplicationBuilder));
+                        buildApplicationSummary(courtApplicationEntity, jsonApplicationBuilder));
 
                 jsonObjectBuilder.add("courtApplications", jsonApplicationBuilder.build());
             }
+
+
         } catch (final NoResultException e) {
             LOGGER.info("### No applications found with applicationId='{}'", applicationId, e);
         }
@@ -147,7 +158,7 @@ public class ApplicationQueryView {
 
     private JsonArray buildApplicationSummaries(final List<CourtApplicationEntity> childApplications) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        childApplications.forEach(cae -> buildApplicationSummary(cae.getPayload(), jsonArrayBuilder));
+        childApplications.forEach(cae -> buildApplicationSummary(cae, jsonArrayBuilder));
         return jsonArrayBuilder.build();
     }
 
@@ -156,6 +167,20 @@ public class ApplicationQueryView {
         courtDocuments.forEach(courtDocumentEntity -> buildCourtDocument(courtDocumentEntity.getPayload(), jsonArrayBuilder));
         return jsonArrayBuilder.build();
     }
+
+
+    private JsonObject buildAssignedUserJson(final AssignedUser assignedUser) {
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("userId", assignedUser.getUserId().toString());
+        if (assignedUser.getFirstName() != null) {
+            jsonObjectBuilder.add("firstName", assignedUser.getFirstName());
+        }
+        if (assignedUser.getLastName() != null) {
+            jsonObjectBuilder.add("lastName", assignedUser.getLastName());
+        }
+        return jsonObjectBuilder.build();
+    }
+
 
     private JsonArray getHearings(final List<CourtApplicationEntity> courtApplicationEntities) {
         final List<HearingApplicationEntity> entities = new ArrayList<>();
@@ -206,9 +231,9 @@ public class ApplicationQueryView {
         jsonArrayBuilder.add(jsonObjectBuilder);
     }
 
-    private void buildApplicationSummary(final String applicationPayload, final JsonArrayBuilder jsonApplicationBuilder) {
+    private void buildApplicationSummary(final CourtApplicationEntity courtApplicationEntity, final JsonArrayBuilder jsonApplicationBuilder) {
         final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert
-                (applicationPayload), CourtApplication.class);
+                (courtApplicationEntity.getPayload()), CourtApplication.class);
 
         if (Objects.nonNull(courtApplication)) {
             jsonApplicationBuilder.add(objectToJsonObjectConverter.convert(CourtApplicationSummary.applicationSummary()
@@ -218,6 +243,7 @@ public class ApplicationQueryView {
                     .withApplicationTitle(courtApplication.getType())
                     .withApplicantDisplayName(courtApplication.getApplicant())
                     .withRespondentDisplayNames(courtApplication.getRespondents())
+                    .withAssignedUserId(courtApplicationEntity.getAssignedUserId())
                     .build()));
         }
     }

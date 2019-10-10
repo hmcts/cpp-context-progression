@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
@@ -9,6 +10,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
+import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -21,6 +23,12 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRep
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
+import java.io.StringReader;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -31,8 +39,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)
@@ -83,6 +92,34 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         repository.save(getProsecutionCaseEntity(prosecutionCase));
 
         updateSearchable(prosecutionCase);
+    }
+
+    @Handles("progression.event.hearing-resulted-case-updated")
+    public void processProsecutionCaseUpdated(final JsonEnvelope event) {
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("received event  progression.event.prosecution-case-updated {} ", event.toObfuscatedDebugString());
+        }
+
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedCaseUpdated.class);
+        final List<Defendant> defendants = hearingResultedCaseUpdated.getProsecutionCase().getDefendants();
+
+        if (CollectionUtils.isNotEmpty(defendants)) {
+            final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendants.get(0).getProsecutionCaseId());
+            final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
+
+            final ProsecutionCase prosecutionCaseInRepository = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+            for (final Defendant defendant : defendants) {
+                final Optional<Defendant> defendantFromRespository = prosecutionCaseInRepository.getDefendants().stream().filter(def -> def.getId().equals(defendant.getId())).findFirst();
+
+                if (defendantFromRespository.isPresent()) {
+                    prosecutionCaseInRepository.getDefendants().remove(defendantFromRespository.get());
+                    prosecutionCaseInRepository.getDefendants().add(defendant);
+                }
+            }
+            repository.save(getProsecutionCaseEntity(prosecutionCaseInRepository));
+            updateSearchable(prosecutionCaseInRepository);
+        }
     }
 
     private void updateSearchable(final ProsecutionCase prosecutionCase) {
@@ -141,7 +178,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     }
 
     private void updateRespondents(final CourtApplication persistedApplication, final Defendant updatedDefendant, final CourtApplicationEntity applicationEntity) {
-      if(getAllDefendantsUUID(persistedApplication).contains(updatedDefendant.getId())){
+        if (getAllDefendantsUUID(persistedApplication).contains(updatedDefendant.getId())) {
             final CourtApplication updatedApplication = CourtApplication.courtApplication()
                     .withId(persistedApplication.getId())
                     .withType(persistedApplication.getType())
@@ -157,8 +194,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .withParentApplicationId(persistedApplication.getParentApplicationId())
                     .withLinkedCaseId(persistedApplication.getLinkedCaseId())
                     .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .withRespondents( persistedApplication.getRespondents().stream()
-                            .map(r->r.getPartyDetails().getDefendant()!= null && r.getPartyDetails().getDefendant().getId().equals(updatedDefendant.getId()) ? updateRespondent(r, updatedDefendant) : r  )
+                    .withRespondents(persistedApplication.getRespondents().stream()
+                            .map(r -> r.getPartyDetails().getDefendant() != null && r.getPartyDetails().getDefendant().getId().equals(updatedDefendant.getId()) ? updateRespondent(r, updatedDefendant) : r)
                             .collect(Collectors.toList()))
                     .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
                     .build();
@@ -169,7 +206,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         }
     }
 
-    private  CourtApplicationRespondent updateRespondent(final CourtApplicationRespondent respondent, final Defendant updatedDefendant) {
+    private CourtApplicationRespondent updateRespondent(final CourtApplicationRespondent respondent, final Defendant updatedDefendant) {
         return CourtApplicationRespondent.courtApplicationRespondent()
                 .withApplicationResponse(respondent.getApplicationResponse())
                 .withPartyDetails(CourtApplicationParty.courtApplicationParty()
@@ -189,7 +226,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
         return Defendant.defendant().withOffences(originDefendant.getOffences())
                 .withPersonDefendant(defendant.getPersonDefendant())
-                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
                 .withAssociatedPersons(defendant.getAssociatedPersons())
                 .withId(defendant.getId())
                 .withMitigation(originDefendant.getMitigation())
@@ -220,7 +257,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         return object;
     }
 
-    private List<UUID> getAllDefendantsUUID(CourtApplication courtApplication){
+    private List<UUID> getAllDefendantsUUID(CourtApplication courtApplication) {
         return courtApplication.getRespondents()
                 .stream()
                 .filter(respondents -> respondents.getPartyDetails() != null && respondents.getPartyDetails().getDefendant() != null)

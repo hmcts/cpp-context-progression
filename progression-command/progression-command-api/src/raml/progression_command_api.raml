@@ -240,6 +240,44 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/changeboxworkassignment:
+  post:
+      description: |
+        Application assigned to a user
+        ...
+        (mapping):
+            requestType: application/vnd.progression.change-boxwork-assignment+json
+            name: progression.change-boxwork-assignment
+        ...
+      body:
+        application/vnd.progression.change-boxwork-assignment+json:
+            example:
+             !include json/progression.change-boxwork-assignment.json
+            schema:
+             !include json/schema/progression.change-boxwork-assignment.json
+
+      responses:
+            202:
+                description: OK
+
+/refertoboxwork:
+  post:
+      description: |
+        Box work Application is sent for Hearing.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.refer-box-work-application+json
+            name: progression.refer-box-work-application
+        ...
+      body:
+        application/vnd.progression.refer-box-work-application+json:
+            example:
+             !include json/progression.refer-boxwork-application.json
+            schema:
+             !include json/schema/progression.refer-boxwork-application.json
+      responses:
+            202:
+                description: OK
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 /cases/{caseId} :

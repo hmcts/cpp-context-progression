@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.BailStatus;
@@ -50,7 +51,7 @@ public class DefendantHelperTest {
                 .withDocumentationLanguageNeeds(DocumentationLanguageNeeds.WELSH).withNationalInsuranceNumber("SK384524").withOccupation("Student").withSpecificRequirements("Screen").withAddress(contactAddress).withContact(contactDetails).build();
 
         personDefendant = PersonDefendant.personDefendant()
-                .withBailStatus(BailStatus.IN_CUSTODY)
+                .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build())
                 .withCustodyTimeLimit(LocalDate.of(2018, 12, 01))
                 .withPersonDetails(Person.person()
                         .withEthnicity(Ethnicity.ethnicity()
@@ -63,13 +64,13 @@ public class DefendantHelperTest {
                 .withEmployerOrganisation(organisation).build();
 
         updatedPersonDefendant = PersonDefendant.personDefendant()
-                .withBailStatus(BailStatus.IN_CUSTODY).withCustodyTimeLimit(LocalDate.of(2018,12,01))
+                .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build()).withCustodyTimeLimit(LocalDate.of(2018,12,01))
                 .withPersonDetails(Person.person()
                         .withEthnicity(Ethnicity.ethnicity()
                                 .withSelfDefinedEthnicityId(selfDefEthnicityId)
                                 .withObservedEthnicityId(observedEthnicityId)
                                 .build())
-                        .build())                  
+                        .build())
 
                .withArrestSummonsNumber("arrest123")
                .withPersonDetails(personDetails)

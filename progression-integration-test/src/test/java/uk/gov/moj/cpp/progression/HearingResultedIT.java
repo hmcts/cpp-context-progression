@@ -6,6 +6,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
@@ -24,13 +25,14 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
 
 import com.google.common.io.Resources;
+import com.jayway.restassured.path.json.JsonPath;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import javax.jms.JMSException;
@@ -41,7 +43,6 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
 
-@Ignore
 public class HearingResultedIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -51,6 +52,7 @@ public class HearingResultedIT {
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String hearingId;
@@ -76,12 +78,6 @@ public class HearingResultedIT {
             fail("Error consuming file from location " + ramlPath);
         }
         return request;
-    }
-
-    public static void verifyInMessagingQueue() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject
-                (messageConsumerClientPublicForReferToCourtOnHearingInitiated);
-        assertTrue(message.isPresent());
     }
 
     @Before
@@ -127,16 +123,32 @@ public class HearingResultedIT {
 
         getProsecutioncasesProgressionFor(caseId);
 
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
+        final ResponseData responseData =  poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
                                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                                withJsonPath("$.caseAtAGlance.hearings.[*].type", hasItem(equalTo("Sentence"))),
+                                withJsonPath("$.caseAtAGlance.hearings.[*].type.description", hasItem(equalTo("Sentence"))),
                                 withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(newCourtCentreId))),
                                 withJsonPath("$.caseAtAGlance.hearings.[*].defendants.[*].id", hasItem(equalTo(defendantId)))
                         )));
+
+        verifyPersonDefendantAndOffenceIsUpdatedWithCTL(responseData);
+
+    }
+
+
+    private void verifyPersonDefendantAndOffenceIsUpdatedWithCTL(ResponseData responseData){
+
+        JsonPath jsonResponse = new JsonPath(responseData.getPayload());
+
+        assertThat(jsonResponse.get("prosecutionCase.defendants[0].personDefendant.custodyTimeLimit"), equalTo("2018-01-01"));
+
+        assertThat(jsonResponse.get("prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit"), equalTo("2018-09-10"));
+        assertThat(jsonResponse.get("prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent"), equalTo(44));
+        assertThat(jsonResponse.get("prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit"), equalTo("2018-09-14"));
+        assertThat(jsonResponse.get("prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent"), equalTo(55));
 
     }
 

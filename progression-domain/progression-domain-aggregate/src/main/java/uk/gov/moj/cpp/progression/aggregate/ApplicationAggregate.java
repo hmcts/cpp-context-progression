@@ -8,6 +8,8 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.BoxworkApplicationReferred;
+import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
@@ -43,16 +45,20 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 281032067089771386L;
+    private static final long serialVersionUID = 281032067089771390L;
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
-    private Set<UUID> hearingIds = new HashSet<>();
     private CourtApplication courtApplication;
+    private UUID boxHearingId;
+    private Set<UUID> hearingIds = new HashSet<>();
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(ApplicationReferredToCourt.class).apply(e ->
                     this.applicationStatus = ApplicationStatus.LISTED
+                ),
+                when(BoxworkApplicationReferred.class).apply(e ->
+                        this.applicationStatus = ApplicationStatus.IN_PROGRESS
                 ),
                 when(CourtApplicationStatusChanged.class).apply(e ->
                         this.applicationStatus = e.getApplicationStatus()
@@ -74,7 +80,12 @@ public class ApplicationAggregate implements Aggregate {
                         }
                 ),
                 when(HearingApplicationLinkCreated.class).apply(
-                        e -> hearingIds.add(e.getHearing().getId())
+                        e -> {
+                            hearingIds.add(e.getHearing().getId());
+                            if(e.getHearing() !=null && e.getHearing().getIsBoxHearing() != null && e.getHearing().getIsBoxHearing()){
+                                boxHearingId = e.getHearing().getId();
+                            }
+                        }
                 ),
                 when(ApplicationEjected.class).apply(
                         e ->
@@ -99,6 +110,18 @@ public class ApplicationAggregate implements Aggregate {
                 HearingExtended.hearingExtended()
                         .withHearingRequest(hearingListingNeeds)
                         .build()));
+    }
+
+    public Stream<Object> referBoxWorkApplication(final HearingListingNeeds hearingListingNeeds) {
+        LOGGER.debug("Box work application has been referred");
+        final Stream.Builder<Object> eventStreamBuilder = Stream.builder();
+        for (CourtApplication ca : hearingListingNeeds.getCourtApplications()) {
+            updateCourtApplication(ca).forEach(o -> eventStreamBuilder.accept(o));
+        }
+        eventStreamBuilder.accept(BoxworkApplicationReferred.boxworkApplicationReferred()
+                .withHearingRequest(hearingListingNeeds)
+                .build());
+        return apply(eventStreamBuilder.build());
     }
 
     public Stream<Object> updateApplicationStatus(final UUID applicationId, final ApplicationStatus applicationStatus) {
@@ -179,5 +202,14 @@ public class ApplicationAggregate implements Aggregate {
                                              final UUID notificationId,
                                              final UUID materialId) {
         return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId)));
+    }
+
+    public Stream<Object> changeBoxWorkAssignment(final UUID applicationId, final UUID userId) {
+        return apply(Stream.of(new BoxworkAssignmentChanged(applicationId, userId)));
+
+    }
+
+    public UUID getBoxHearingId() {
+        return boxHearingId;
     }
 }

@@ -1,0 +1,61 @@
+package uk.gov.moj.cpp.progression.handler;
+
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
+
+import uk.gov.justice.core.courts.HearingResultedUpdateCase;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.json.JsonValue;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@ServiceComponent(Component.COMMAND_HANDLER)
+public class UpdateCaseHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateCaseHandler.class.getName());
+
+    @Inject
+    private EventSource eventSource;
+
+    @Inject
+    private AggregateService aggregateService;
+
+    @Inject
+    private Enveloper enveloper;
+
+    @Handles("progression.command.hearing-resulted-update-case")
+    public void handle(final Envelope<HearingResultedUpdateCase> hearingResultedUpdateCaseEnvelope) throws EventStreamException {
+
+        LOGGER.debug("progression.command.hearing-resulted-update-case {}", hearingResultedUpdateCaseEnvelope.payload());
+
+        final HearingResultedUpdateCase hearingUpdate = hearingResultedUpdateCaseEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(hearingUpdate.getProsecutionCase().getId());
+
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase());
+
+        appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
+    }
+
+    private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
+        eventStream.append(
+                events.map(enveloper.withMetadataFrom(jsonEnvelope)));
+    }
+
+}

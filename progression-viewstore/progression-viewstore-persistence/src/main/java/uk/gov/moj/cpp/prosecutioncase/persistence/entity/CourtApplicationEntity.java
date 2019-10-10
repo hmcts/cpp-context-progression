@@ -26,6 +26,9 @@ public class CourtApplicationEntity implements Serializable {
     @Column(name = "payload")
     private String payload;
 
+    @Column(name = "assigned_user_id")
+    private UUID assignedUserId;
+
     public UUID getApplicationId() { return applicationId; }
 
     public void setApplicationId(final UUID applicationId) { this.applicationId = applicationId; }
@@ -44,5 +47,13 @@ public class CourtApplicationEntity implements Serializable {
 
     public void setPayload(final String payload) {
         this.payload = payload;
+    }
+
+    public UUID getAssignedUserId() {
+        return assignedUserId;
+    }
+
+    public void setAssignedUserId(UUID assignedUserId) {
+        this.assignedUserId = assignedUserId;
     }
 }

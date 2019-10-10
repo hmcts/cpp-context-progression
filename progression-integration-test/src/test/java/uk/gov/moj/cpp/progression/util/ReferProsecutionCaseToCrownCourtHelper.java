@@ -29,11 +29,18 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     private static void assertPersonDefendant(final JsonObject personDefendant) {
         assertPersonDetails(personDefendant.getJsonObject("personDetails"));
-        assertThat(personDefendant.getString("bailStatus"), equalTo("IN_CUSTODY"));
+        assertBailStatus(personDefendant.getJsonObject("bailStatus"));
         assertThat(personDefendant.getString("custodyTimeLimit"), equalTo("2018-01-01"));
         assertThat(personDefendant.getString("driverNumber"), equalTo("AACC12345"));
         assertemployerOrganisation(personDefendant.getJsonObject("employerOrganisation"));
     }
+
+    private static void assertBailStatus(final JsonObject bailStatus) {
+        assertThat(bailStatus.getString("id"), equalTo("2593cf09-ace0-4b7d-a746-0703a29f33b5"));
+        assertThat(bailStatus.getString("code"), equalTo("C"));
+        assertThat(bailStatus.getString("description"), equalTo("Remanded into Custody"));
+    }
+
 
     private static void assertemployerOrganisation(final JsonObject employerOrganisation) {
 

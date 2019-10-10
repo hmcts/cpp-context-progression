@@ -22,7 +22,11 @@
           "postCode": "W1T 1JY"
         },
         "dateOfBirth": "1995-03-23",
-        "bailStatus": "bailed",
+        "bailStatus": {
+          "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+          "code": "C",
+          "description": "Remanded into Custody"
+        },
         "custodyTimeLimitDate": "2018-01-30",
         "defenceOrganisation": "Solicitor XYZ",
         "interpreter": {
