@@ -61,13 +61,12 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class NotificationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class.getName());
-
     public static final String CASE_ID = "caseId";
-    private static final String APPLICATION_ID = "applicationId";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String MATERIAL_ID = "materialId";
     public static final String STATUS_CODE = "statusCode";
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class.getName());
+    private static final String APPLICATION_ID = "applicationId";
     private static final String ACCEPTED_TIME = "acceptedTime";
     private static final String NOTIFICATIONS = "notifications";
     private static final String FAILED_TIME = "failedTime";
@@ -77,32 +76,23 @@ public class NotificationService {
     private static final String SEND_TO_ADDRESS = "sendToAddress";
     private static final String REPLY_TO_ADDRESS = "replyToAddress";
     private static final String PERSONALISATION = "personalisation";
-
+    private static final String EMPTY = "";
     @Inject
     private Enveloper enveloper;
-
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Requester requester;
-
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
-
     @Inject
     private SystemIdMapperService systemIdMapperService;
-
     @Inject
     private ApplicationParameters applicationParameters;
-
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
     @Inject
     private ReferenceDataService referenceDataService;
-
-    private static final String EMPTY = "";
-
     @Inject
     private DocumentGeneratorService documentGeneratorService;
 
@@ -111,7 +101,7 @@ public class NotificationService {
 
     public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications) {
 
-        if(nonNull(emailNotifications)) {
+        if (nonNull(emailNotifications)) {
 
             final JsonArrayBuilder notificationBuilder = buildNotifications(notificationId, emailNotifications);
 
@@ -135,7 +125,7 @@ public class NotificationService {
             LOGGER.info("sending email payload - {}", emailPayload);
 
             sender.send(enveloper.withMetadataFrom(sourceEnvelope, "progression.command.email").apply(emailPayload));
-            
+
         } else {
 
             LOGGER.warn("No Email was sent.");
@@ -378,11 +368,11 @@ public class NotificationService {
     private Optional<Address> getDefendantAddress(Defendant defendant) {
         Optional<Address> address = Optional.empty();
 
-        if(nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getAddress())){
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getAddress())) {
             address = Optional.of(defendant.getPersonDefendant().getPersonDetails().getAddress());
         }
 
-        if(nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getAddress())){
+        if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getAddress())) {
             address = Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getAddress());
         }
         return address;
@@ -423,12 +413,12 @@ public class NotificationService {
     private Optional<String> getDefendantEmailAddress(Defendant defendant) {
         final Optional<String> emailAddress = Optional.empty();
 
-        if(nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getContact())){
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getContact()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail())) {
             return Optional.of(defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail());
         }
 
-        if(nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getContact())){
-           return  Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());
+        if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getContact()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail())) {
+            return Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());
         }
         return emailAddress;
     }
