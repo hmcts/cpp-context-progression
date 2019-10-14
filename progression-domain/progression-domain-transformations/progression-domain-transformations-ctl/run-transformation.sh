@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TRANSFORMATION_JAR=`echo target/progression-domain-transformations-for-CTL-*-SNAPSHOT.jar`
+TRANSFORMATION_JAR=`echo target/progression-domain-transformations-ctl-*-SNAPSHOT.jar`
 EVENT_TOOL_VERSION=5.2.1
 EVENT_TOOL_JAR=target/event-tool-${EVENT_TOOL_VERSION}-swarm.jar
 

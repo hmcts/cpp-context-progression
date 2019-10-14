@@ -17,7 +17,7 @@ import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_AC
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.tools.eventsourcing.transformation.api.EventTransformation;
-import uk.gov.moj.cpp.coredomain.transform.transforms.BailStatusEnum2ObjectTransformer;
+import uk.gov.moj.cpp.progression.domain.transformation.ctl.BailStatusEnum2ObjectTransformer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,30 +59,6 @@ public class ProgressionEventTransformerTest {
     public void shouldSetActionToNoActionForTheEventsThatDoesNotMatch() {
         final JsonEnvelope event = buildEnvelope("hearing.events.other");
         assertThat(target.actionFor(event), is(NO_ACTION));
-    }
-
-
-    @Test
-    public void shouldTransformProgressionEventHearingResulted() {
-
-        final JsonObject inputPayload = mock(JsonObject.class);
-
-        final JsonObject transformedPayload = mock(JsonObject.class);
-
-        final BailStatusEnum2ObjectTransformer bailStatusTransformer = mock(BailStatusEnum2ObjectTransformer.class);
-
-        target.setBailStatusTransformer(bailStatusTransformer);
-
-        final JsonEnvelope event = buildEnvelope("progression.event.hearing-resulted", inputPayload);
-
-        when(bailStatusTransformer.transform(Mockito.anyObject())).thenReturn(transformedPayload);
-
-        final JsonEnvelope expected = target.apply(event).findFirst().get();
-
-        verify(bailStatusTransformer).transform(Mockito.anyObject());
-
-        assertNotNull(expected);
-
     }
 
     @Test

@@ -6,7 +6,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
 import uk.gov.justice.tools.eventsourcing.transformation.api.EventTransformation;
 import uk.gov.justice.tools.eventsourcing.transformation.api.annotation.Transformation;
-import uk.gov.moj.cpp.coredomain.transform.transforms.BailStatusEnum2ObjectTransformer;
 
 import javax.json.JsonObject;
 
@@ -47,6 +46,10 @@ public class ProgressionEventTransformer implements EventTransformation {
     private static final String PROGRESSION_EVENT_COURT_APPLICATION_CREATED = "progression.event.court-application-created";
     private static final String PROGRESSION_EVENT_COURT_APPLICATION_UPDATED = "progression.event.court-application-updated";
 
+    private static final String PROGRESSION_EVENT_LISTED_COURT_APPLICATION_CHANGED = "progression.event.listed-court-application-changed";
+    private static final String PROGRESSION_EVENT_HEARING_EXTENDED = "progression.event.hearing-extended";
+
+
     protected final static  List<String> eventsToTransform = newArrayList(
             PROGRESSION_EVENT_APPLICATION_REFERRED_TO_COURT,
             PROGRESSION_EVENT_COURT_APPLICATION_ADDED_TO_CASE,
@@ -55,8 +58,10 @@ public class ProgressionEventTransformer implements EventTransformation {
             PROGRESSION_EVENT_COURT_PROCEEDINGS_INITIATED,
             PROGRESSION_EVENTS_DEFENDANT_UPDATED,
             PROGRESSION_EVENT_HEARING_APPLICATION_LINK_CREATED,
+            PROGRESSION_EVENT_HEARING_EXTENDED,
             PROGRESSION_EVENT_HEARING_RESULTED,
             PROGRESSION_HEARING_INITIATE_ENRICHED,
+            PROGRESSION_EVENT_LISTED_COURT_APPLICATION_CHANGED,
             PROGRESSION_EVENT_NOWS_REQUESTED,
             PROGRESSION_EVENT_PROSECUTION_CASE_DEFENDANT_UPDATED,
             PROGRESSION_EVENT_PROSECUTION_CASE_CREATED,

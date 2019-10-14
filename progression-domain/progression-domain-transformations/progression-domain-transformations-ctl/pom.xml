@@ -7,7 +7,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>progression-domain-transformations-for-ctl</artifactId>
+    <artifactId>progression-domain-transformations-ctl</artifactId>
 
     <properties>
         <stream-transformation-tool.version>2.0.0</stream-transformation-tool.version>
@@ -53,7 +53,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>core-domain-transform-model</artifactId>
-            <version>1.0.48</version>
+            <version>${criminal-court-public-model.version}</version>
         </dependency>
     </dependencies>
 
