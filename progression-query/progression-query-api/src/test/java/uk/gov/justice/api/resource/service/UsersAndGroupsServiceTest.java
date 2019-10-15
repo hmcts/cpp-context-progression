@@ -16,8 +16,9 @@ import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,42 +41,32 @@ public class UsersAndGroupsServiceTest {
     private UsersAndGroupsService usersAndGroupsService;
 
     @Test
-    public void shouldReturnOrganisationDetailsGivenValidUserId() {
+    public void shouldReturnOrganisationDetails() {
 
         //given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
-        final JsonEnvelope response = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
+        final JsonObjectBuilder associationBuilder = Json.createObjectBuilder().add("organisationId", organisationId.toString());
+
+        final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, associationBuilder);
+
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         when(requester.request(any())).thenReturn(response);
 
         //when
-        final JsonObject result = usersAndGroupsService.getOrganisationDetailsForUser(query);
+        final JsonObject result = usersAndGroupsService.getOrganisationDetails(query);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
         assertThat(result.getString("organisationId"), is(organisationId.toString()));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void shouldThrowNullPointerExceptionForMissingUserId() {
-
-        final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
-        final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(null);
-        when(requester.request(any())).thenReturn(response);
-
-        usersAndGroupsService .getOrganisationDetailsForUser(query);
-
-    }
-
     private MetadataBuilder getMetadataBuilder(final UUID userId) {
         return JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
-                .withName("usersgroups.get-organisation-details-for-user")
+                .withName("usersgroups.get-organisation-details")
                 .withCausation(randomUUID())
                 .withClientCorrelationId(randomUUID().toString())
                 .withStreamId(randomUUID())

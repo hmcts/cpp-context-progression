@@ -28,6 +28,10 @@ public class UsersAndGroupsStub {
     public static final String GET_ORGANISATION_QUERY = BASE_QUERY + ORGANISATION;
     public static final String GET_ORGANISATION_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-name-for-user+json";
 
+    public static final String ORGANISATION_DETAIL = "/organisations/{0}";
+    public static final String GET_ORGANISATION_DETAIL_QUERY = BASE_QUERY + ORGANISATION_DETAIL;
+    public static final String GET_ORGANISATION_DETAIL_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-details+json";
+
     public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
 
 
@@ -79,8 +83,25 @@ public class UsersAndGroupsStub {
                 "stub-data/usersgroups.get-systemuser-groups-by-user.json");
     }
 
-    public static void stubEndpoint(final String serviceName, final
-    String query,
+    public static void stubGetOrganisationDetails(final String organisationId, final String organisationName) {
+
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
+
+        String body = getPayload("stub-data/usersgroups.get-organisation-details-by-user.json");
+        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
+        body = body.replaceAll("%ORGANISATION_NAME%", organisationName);
+
+        stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, organisationId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+
+        waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, organisationId), GET_ORGANISATION_DETAIL_QUERY_MEDIA_TYPE);
+    }
+
+
+    public static void stubEndpoint(final String serviceName, final String query,
                                     String queryMediaType,
                                     final String userId,
                                     final String responseBodyPath) {

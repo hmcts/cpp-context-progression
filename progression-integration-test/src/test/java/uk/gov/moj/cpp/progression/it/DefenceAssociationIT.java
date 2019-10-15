@@ -7,6 +7,7 @@ import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.invokeA
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedDataPersisted;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForDefenceUsers;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForHMCTSUsers;
@@ -41,6 +42,7 @@ public class DefenceAssociationIT extends BaseIntegrationTest {
         stubGetUsersAndGroupsQueryForDefenceUsers(userId);
         stubEnableAllCapabilities();
         stubGetOrganisationQuery(userId, organisationId, organisationName);
+        stubGetOrganisationDetails(organisationId, organisationName);
 
         try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
             //When
@@ -55,6 +57,38 @@ public class DefenceAssociationIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldReturnedAssociationDetailsWhenQueriedByHmctsUser() throws Exception {
+
+        //Given
+        final String userId = UUID.randomUUID().toString();
+        final String defendantId = UUID.randomUUID().toString();
+        final String organisationId = UUID.randomUUID().toString();
+        final String organisationName = "Smith Associates Ltd.";
+        final String hmctsUserId = UUID.randomUUID().toString();
+
+        stubGetUsersAndGroupsQueryForDefenceUsers(userId);
+        stubEnableAllCapabilities();
+        stubGetOrganisationQuery(userId, organisationId, organisationName);
+        stubGetOrganisationDetails(organisationId, organisationName);
+        stubGetUsersAndGroupsQueryForHMCTSUsers(hmctsUserId);
+        stubGetOrganisationQuery(hmctsUserId, organisationId, organisationName);
+
+        try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
+            //When
+            associateOrganisation(defendantId, userId);
+
+            //Then
+            helper.verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId);
+        }
+
+        //Then
+        //Making sure that the Association can be Queried using a HMCTS User.....
+        verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
+                organisationId,
+                hmctsUserId);
+    }
+
+    @Test
     public void shouldNotPerformAssociation() throws Exception {
 
         //Given
@@ -66,6 +100,7 @@ public class DefenceAssociationIT extends BaseIntegrationTest {
         stubGetUsersAndGroupsQueryForHMCTSUsers(userId);
         stubEnableAllCapabilities();
         stubGetOrganisationQuery(userId, organisationId, organisationName);
+        stubGetOrganisationDetails(organisationId, organisationName);
 
         //When
         final Response response = invokeAssociateOrganisation(defendantId, userId);

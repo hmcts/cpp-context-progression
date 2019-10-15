@@ -3,12 +3,14 @@ package uk.gov.moj.cpp.progression.query.api;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.api.resource.service.UsersAndGroupsService;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -31,10 +33,10 @@ public class DefenceAssociationQueryApiTest {
     private JsonEnvelope response;
     @Mock
     private Requester requester;
-    @InjectMocks
-    private DefenceAssociationQueryApi defenceAssociationQueryApi;
     @Mock
     private UsersAndGroupsService usersAndGroupsService;
+    @InjectMocks
+    private DefenceAssociationQueryApi defenceAssociationQueryApi;
 
     @Test
     public void shouldReturnAssociatedOrganisationDetails() {
@@ -42,14 +44,19 @@ public class DefenceAssociationQueryApiTest {
         //Given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
+        final UUID defendantId = randomUUID();
         final String organisationName = "TEST_ORG";
-        when(requester.request(query))
-                .thenReturn(stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(userId.toString(), organisationId.toString()));
-        when(usersAndGroupsService.getOrganisationDetailsForUser(query))
+
+        final MetadataBuilder metadataBuilder = stubbedMetadataBuilder(userId);
+        final JsonEnvelope requestEnvelopeForApiView = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(defendantId.toString(), "defendantId").build();
+        final JsonEnvelope responseEnvelopeForApiView = JsonEnvelope.envelopeFrom(metadataBuilder, stubbedDefenceAssociationDataToReturnFromPersistedData(organisationId.toString()));
+
+        when(requester.request(requestEnvelopeForApiView)).thenReturn(responseEnvelopeForApiView);
+        when(usersAndGroupsService.getOrganisationDetails(any()))
                 .thenReturn(stubbedDefenceAssociationDataReturnedFromUsersAndGroupService(organisationId.toString(), organisationName));
 
         //When
-        final JsonEnvelope associatedOrganizationResponse = defenceAssociationQueryApi.getAssociatedOrganisation(query);
+        final JsonEnvelope associatedOrganizationResponse = defenceAssociationQueryApi.getAssociatedOrganisation(requestEnvelopeForApiView);
 
         //Then
         final JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
@@ -73,27 +80,6 @@ public class DefenceAssociationQueryApiTest {
         assertThat(association.toString(), equalTo("{}"));
     }
 
-
-    @Test
-    public void shouldReturnEmptyOrganisationDetailsWhenOrganisationIdReceivedFromUsersAndGroupIsDifferent() {
-
-        //Given
-        final UUID userId = randomUUID();
-        final UUID organisationId = randomUUID();
-        final String organisationName = "TEST_ORG";
-        when(requester.request(query))
-                .thenReturn(stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(userId.toString(), organisationId.toString()));
-        when(usersAndGroupsService.getOrganisationDetailsForUser(query))
-                .thenReturn(stubbedDefenceAssociationDataReturnedFromUsersAndGroupService(randomUUID().toString(), organisationName));
-
-        //When
-        final JsonEnvelope associatedOrganizationResponse = defenceAssociationQueryApi.getAssociatedOrganisation(query);
-
-        //Then
-        final JsonObject association = associatedOrganizationResponse.payloadAsJsonObject().getJsonObject("association");
-        assertThat(association.toString(), equalTo("{}"));
-    }
-
     private JsonEnvelope emptyOrganisationDetails(final UUID userId) {
         return JsonEnvelope.envelopeFrom(
                 stubbedMetadataBuilder(userId),
@@ -106,16 +92,10 @@ public class DefenceAssociationQueryApiTest {
         return associationsJsonObject.getString(key);
     }
 
-    private JsonEnvelope stubbedDefenceAssociationDataPersistedAfterOrganisationAssociation(final String userId, final String organisationId) {
-        return JsonEnvelope.envelopeFrom(
-                stubbedMetadataBuilder(UUID.fromString(userId)),
-                stubbedDefenceAssociationDataToReturnFromPersistedData(organisationId));
-    }
-
     private MetadataBuilder stubbedMetadataBuilder(final UUID userId) {
         return JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
-                .withName("usersgroups.get-organisation-details-for-user")
+                .withName("progression.query.associated-organisation")
                 .withCausation(randomUUID())
                 .withClientCorrelationId(randomUUID().toString())
                 .withStreamId(randomUUID())
@@ -128,6 +108,7 @@ public class DefenceAssociationQueryApiTest {
                         .add("organisationId", organisationId)
                         .add("status", "Active Barrister/Solicitor of record")
                         .add("startDate", ZonedDateTime.now().toString())
+                        .add("representationType", "PRO_BONO")
                 )
                 .build();
     }
@@ -143,5 +124,4 @@ public class DefenceAssociationQueryApiTest {
                 .add("email", "moj@email.com")
                 .build();
     }
-
 }

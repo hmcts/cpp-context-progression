@@ -34,6 +34,8 @@ public class DefenceAssociationQueryViewTest {
     private static final UUID USER_ID = randomUUID();
     private static final UUID ORGANISATION_ID = randomUUID();
     private static final String UTC = "UTC";
+    private static final String PRO_BONO = "PRO_BONO";
+
 
     @InjectMocks
     private DefenceAssociationQueryView defenceAssociationQueryView;
@@ -56,6 +58,7 @@ public class DefenceAssociationQueryViewTest {
         assertThat(association, notNullValue());
         assertThat(getValue(association, "organisationId"), equalTo(ORGANISATION_ID.toString()));
         assertThat(getValue(association, "status"), equalTo("Active Barrister/Solicitor of record"));
+        assertThat(getValue(association, "representationType"), equalTo(PRO_BONO));
     }
 
     @Test
@@ -194,6 +197,7 @@ public class DefenceAssociationQueryViewTest {
         defenceAssociation.setOrgId(orgId);
         defenceAssociation.setStartDate(startDate);
         defenceAssociation.setEndDate(endDate);
+        defenceAssociation.setRepresentationType(PRO_BONO);
         return defenceAssociation;
     }
 

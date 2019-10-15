@@ -67,7 +67,7 @@ public class DefenceAssociationHelper implements AutoCloseable {
     }
 
     public static Response invokeAssociateOrganisation(final String defendantId,
-                                                          final String userId) throws IOException {
+                                                       final String userId) throws IOException {
         String body = readFile(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_NAME);
         return invokeCommand(defendantId, userId, body, DEFENCE_ASSOCIATION_MEDIA_TYPE);
     }
@@ -131,6 +131,7 @@ public class DefenceAssociationHelper implements AutoCloseable {
                 .add(withJsonPath("$.association.address.address1", IsEqual.equalTo("Legal House")))
                 .add(withJsonPath("$.association.address.address4", IsEqual.equalTo("London")))
                 .add(withJsonPath("$.association.address.addressPostcode", IsEqual.equalTo("SE14 2AB")))
+                .add(withJsonPath("$.association.representationType", IsEqual.equalTo("REPRESENTATION_ORDER")))
                 .build();
 
         RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),

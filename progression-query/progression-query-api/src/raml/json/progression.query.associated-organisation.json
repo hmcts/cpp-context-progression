@@ -4,6 +4,7 @@
     "organisationName": "orgName",
     "status": "associated",
     "startDate": "2019-09-22T16:27:39.744Z",
+    "representationType" : "REPRESENTATION_ORDER",
     "address": {
       "address1": "address line 1",
       "addressPostcode": "post code xx xx",

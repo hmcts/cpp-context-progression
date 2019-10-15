@@ -258,7 +258,7 @@ rule "Query - Access control for  progression.query.associated-organisation"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.associated-organisation");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Defence Users"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers"))
   then
     $outcome.setSuccess(true);
 end

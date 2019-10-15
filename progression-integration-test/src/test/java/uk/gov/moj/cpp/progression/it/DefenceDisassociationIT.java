@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyD
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationDisassociatedDataPersisted;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForDefenceUsers;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForHMCTSUsers;
@@ -44,6 +45,7 @@ public class DefenceDisassociationIT extends BaseIntegrationTest {
         stubGetUsersAndGroupsQueryForDefenceUsers(userId);
         stubEnableAllCapabilities();
         stubGetOrganisationQuery(userId, organisationId, organisationName);
+        stubGetOrganisationDetails(organisationId, organisationName);
 
         try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
             associateOrganisation(defendantId, userId);
@@ -75,6 +77,7 @@ public class DefenceDisassociationIT extends BaseIntegrationTest {
         stubGetUsersAndGroupsQueryForDefenceUsers(userId);
         stubEnableAllCapabilities();
         stubGetOrganisationQuery(userId, organisationId, organisationName);
+        stubGetOrganisationDetails(organisationId, organisationName);
 
         try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
 
@@ -109,6 +112,7 @@ public class DefenceDisassociationIT extends BaseIntegrationTest {
         stubGetUsersAndGroupsQueryForDefenceUsers(userId);
         stubEnableAllCapabilities();
         stubGetOrganisationQuery(userId, organisationId, organisationName);
+        stubGetOrganisationDetails(organisationId, organisationName);
         associateOrganisation(defendantId, userId);
         verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
                 organisationId,

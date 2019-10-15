@@ -36,8 +36,10 @@ public class DefenceAssociationEventListener {
         final String userId = payload.getString("userId");
         final String defenceOrganisationId = payload.getString("organisationId");
         final String startDate = payload.getString("startDate");
+        final String representationType = payload.getString("representationType");
 
-        final DefenceAssociationDefendant defenceAssociationDefendant = prepareDefenceAssociationEntity(defendantId, userId, defenceOrganisationId, parse(startDate));
+        final DefenceAssociationDefendant defenceAssociationDefendant
+                = prepareDefenceAssociationEntity(defendantId, userId, defenceOrganisationId, parse(startDate),representationType);
         repository.save(defenceAssociationDefendant);
 
     }
@@ -60,7 +62,11 @@ public class DefenceAssociationEventListener {
 
     }
 
-    private DefenceAssociationDefendant prepareDefenceAssociationEntity(final String defendantId, final String requesterUserId, final String defenceOrganisationId, final ZonedDateTime startDate) {
+    private DefenceAssociationDefendant prepareDefenceAssociationEntity(final String defendantId,
+                                                                        final String requesterUserId,
+                                                                        final String defenceOrganisationId,
+                                                                        final ZonedDateTime startDate,
+                                                                        final String representationType) {
 
         final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
         defenceAssociationDefendant.setDefendantId(fromString(defendantId));
@@ -70,6 +76,7 @@ public class DefenceAssociationEventListener {
         defenceAssociation.setUserId(fromString(requesterUserId));
         defenceAssociation.setOrgId(fromString(defenceOrganisationId));
         defenceAssociation.setStartDate(startDate);
+        defenceAssociation.setRepresentationType(representationType);
         defenceAssociation.setDefenceAssociationDefendant(defenceAssociationDefendant);
         defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
         return defenceAssociationDefendant;

@@ -40,6 +40,8 @@ public class DefenceAssociationQueryView {
     private static final String ADDRESS_POSTCODE = "addressPostcode";
     private static final String EMAIL = "email";
     private static final String START_DATE = "startDate";
+    private static final String REPRESENTATION_TYPE = "representationType";
+
     @Inject
     private DefenceAssociationRepository defenceAssociationRepository;
 
@@ -93,15 +95,21 @@ public class DefenceAssociationQueryView {
         String organisationId = EMPTY_VALUE;
         String status = EMPTY_VALUE;
         String startDate = EMPTY_VALUE;
+        String representationType = EMPTY_VALUE;
         if (defenceAssociation.getUserId() != null && defenceAssociation.getStartDate() != null) {
             organisationId = defenceAssociation.getOrgId().toString();
             startDate = ZonedDateTimes.toString(defenceAssociation.getStartDate());
+            representationType = defenceAssociation.getRepresentationType();
             status = ASSOCIATED;
         }
-        return formResponse(organisationId, status, startDate);
+        return formResponse(organisationId, status, startDate, representationType);
     }
 
-    private JsonObject formResponse(final String organisationId, final String status, final String startDate) {
+    private JsonObject formResponse(final String organisationId,
+                                    final String status,
+                                    final String startDate,
+                                    final String representationType) {
+
         return Json.createObjectBuilder()
                 .add(ASSOCIATION, Json.createObjectBuilder()
                         .add(ORGANISATION_ID, organisationId)
@@ -114,6 +122,7 @@ public class DefenceAssociationQueryView {
                                 .add(EMAIL, EMPTY_VALUE)
                         )
                         .add(START_DATE, startDate)
+                        .add(REPRESENTATION_TYPE, representationType)
                 )
                 .build();
     }

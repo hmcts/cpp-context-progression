@@ -30,6 +30,9 @@ public class DefenceAssociationQueryApi {
     public static final String ADDRESS_LINE_4 = "addressLine4";
     public static final String ADDRESS_POSTCODE = "addressPostcode";
     public static final String EMPTY_JSON_OBJECT = "{}";
+    public static final String REPRESENTATION_TYPE = "representationType";
+    public static final String GROUP_ID = "groupId";
+    public static final String GROUP_NAME = "groupName";
 
     @Inject
     private Requester requester;
@@ -39,32 +42,34 @@ public class DefenceAssociationQueryApi {
 
     @Handles("progression.query.associated-organisation")
     public JsonEnvelope getAssociatedOrganisation(final JsonEnvelope query) {
-        final JsonEnvelope jsonEnvelopeResponse = requester.request(query);
-        final JsonObject association = jsonEnvelopeResponse.payloadAsJsonObject().getJsonObject(ASSOCIATION);
-        if (isAssociationExist(association)) {
-            return populateOrganisationDetails(query, association);
+
+        final JsonEnvelope associationEnvelope = requester.request(query);
+        final JsonObject association = associationEnvelope.payloadAsJsonObject().getJsonObject(ASSOCIATION);
+        if (associationExists(association)) {
+            return populateOrganisationDetails(associationEnvelope);
         } else {
             return emptyOrganisationDetails(query);
         }
     }
 
-    private JsonEnvelope populateOrganisationDetails(final JsonEnvelope query, final JsonObject association) {
-        final JsonObject organisationDetailsFromUsersAndGroupsService = usersAndGroupsService.getOrganisationDetailsForUser(query);
-        if (isOrganisationIdEqual(association, organisationDetailsFromUsersAndGroupsService)) {
-            return JsonEnvelope.envelopeFrom(
-                    query.metadata(),
-                    formResponsePayload(association, organisationDetailsFromUsersAndGroupsService));
-        }
-        return emptyOrganisationDetails(query);
+    private JsonEnvelope populateOrganisationDetails(final JsonEnvelope associationEnvelope) {
+        final JsonEnvelope usersAndGroupsRequestEnvelope = buildUsersAndGroupsRequestEnvelope(associationEnvelope);
+        final JsonObject organisationDetailsFromUsersAndGroupsService = usersAndGroupsService.getOrganisationDetails(usersAndGroupsRequestEnvelope);
+        return JsonEnvelope.envelopeFrom(
+                associationEnvelope.metadata(),
+                formResponsePayload(associationEnvelope.payloadAsJsonObject().getJsonObject(ASSOCIATION),
+                        organisationDetailsFromUsersAndGroupsService));
+
     }
 
-    private boolean isAssociationExist(final JsonObject association) {
+    private JsonEnvelope buildUsersAndGroupsRequestEnvelope(final JsonEnvelope associationEnvelope) {
+        return JsonEnvelope.envelopeFrom(associationEnvelope.metadata(), Json.createObjectBuilder()
+                .add(ORGANISATION_ID,
+                        associationEnvelope.payloadAsJsonObject().getJsonObject(ASSOCIATION).getJsonString(ORGANISATION_ID)).build());
+    }
+
+    private boolean associationExists(final JsonObject association) {
         return !association.toString().equals(EMPTY_JSON_OBJECT);
-    }
-
-    private boolean isOrganisationIdEqual(final JsonObject association, final JsonObject organisationDetailsForUserJsonObject) {
-        final String associatedOrganisationId = association.getString(ORGANISATION_ID);
-        return associatedOrganisationId.equals(organisationDetailsForUserJsonObject.getString(ORGANISATION_ID));
     }
 
     private JsonEnvelope emptyOrganisationDetails(final JsonEnvelope query) {
@@ -78,6 +83,7 @@ public class DefenceAssociationQueryApi {
     private JsonObject formResponsePayload(final JsonObject association, final JsonObject organisationDetailsForUserJsonObject) {
         final String status = association.getString(STATUS);
         final String startDate = association.getString(START_DATE);
+        final String representationType = association.getString(REPRESENTATION_TYPE);
         String address2 = "";
         String address3 = "";
         if (organisationDetailsForUserJsonObject.toString().contains(ADDRESS_LINE_2)) {
@@ -99,7 +105,9 @@ public class DefenceAssociationQueryApi {
                         )
                         .add(STATUS, status)
                         .add(START_DATE, startDate)
+                        .add(REPRESENTATION_TYPE, representationType)
                 )
                 .build();
     }
+
 }

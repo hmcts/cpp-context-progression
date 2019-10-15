@@ -14,6 +14,8 @@ import javax.json.JsonObject;
 
 public class UsersAndGroupsService {
 
+    public static final String GROUPS = "groups";
+
     @Inject
     @ServiceComponent(QUERY_API)
     private Requester requester;
@@ -21,12 +23,12 @@ public class UsersAndGroupsService {
     @Inject
     private Enveloper enveloper;
 
-    public JsonObject getOrganisationDetailsForUser(final JsonEnvelope envelope) {
+    public JsonObject getOrganisationDetails(final JsonEnvelope envelope) {
 
-        final String userId = envelope.metadata().userId().orElseThrow(() -> new NullPointerException("User id Not Supplied for the UserGroups look up"));
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
-        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest)
-                .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
+        final JsonObject organisationDetail = Json.createObjectBuilder().add("organisationId",
+                envelope.payloadAsJsonObject().getJsonString("organisationId").getString()).build();
+        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(organisationDetail)
+                .withName("usersgroups.get-organisation-details").withMetadataFrom(envelope);
         final JsonEnvelope response = requester.request(requestEnvelope);
         return response.payloadAsJsonObject();
     }

@@ -42,6 +42,7 @@ public class DefenceAssociationEventListenerTest {
     private static final String DEFENCE_ORGANISATION_DISASSOCIATED_EVENT = "progression.event.defence-organisation-disassociated";
     private static final String END_DATE = "endDate";
     private static final String START_DATE = "startDate";
+    private static final String PRO_BONO = "PRO_BONO";
 
     @Mock
     private DefenceAssociationRepository repository;
@@ -68,6 +69,7 @@ public class DefenceAssociationEventListenerTest {
         assertEquals(ORGANISATION_ID, entity.getDefenceAssociations().stream().findFirst().get().getOrgId());
         assertEquals(USER_ID, entity.getDefenceAssociations().stream().findFirst().get().getUserId());
         assertNull(entity.getDefenceAssociations().stream().findFirst().get().getEndDate());
+        assertEquals(PRO_BONO, entity.getDefenceAssociations().stream().findFirst().get().getRepresentationType());
     }
 
     @Test
@@ -124,6 +126,7 @@ public class DefenceAssociationEventListenerTest {
                 .add("defendantId", defendantId.toString())
                 .add("organisationId", organisationId.toString())
                 .add(dateType, now(UTC_ZONE_ID).toString())
+                .add("representationType", PRO_BONO)
                 .build();
         return JsonEnvelope.envelopeFrom(
                 metadataBuilder, payload);
