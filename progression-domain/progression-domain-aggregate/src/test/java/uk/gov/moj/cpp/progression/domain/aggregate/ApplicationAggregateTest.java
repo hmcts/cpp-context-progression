@@ -11,6 +11,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.*;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +19,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationAggregateTest {
 
@@ -37,7 +40,23 @@ public class ApplicationAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(ApplicationReferredToCourt.class)));
     }
-    
+
+
+    @Test
+    public void shouldReturnBoxWorkApplicationReferred() {
+        final List<Object> eventStream = aggregate.referBoxWorkApplication(HearingListingNeeds.hearingListingNeeds()
+                .withCourtApplications(Arrays.asList(courtApplication()
+                        .withId(UUID.randomUUID())
+                        .build()))
+                .build()).collect(toList());
+        assertThat(eventStream.size(), is(2));
+        Object objectEvent = eventStream.get(1);
+        assertThat(objectEvent.getClass(), is(CoreMatchers.equalTo(BoxworkApplicationReferred.class)));
+        objectEvent = eventStream.get(0);
+        assertThat(objectEvent.getClass(), is(CoreMatchers.equalTo(CourtApplicationUpdated.class)));
+
+    }
+
     @Test
     public void shouldReturnApplicationStatusChanged() {
         final List<Object> eventStream = aggregate.updateApplicationStatus(UUID.randomUUID(), ApplicationStatus.LISTED).collect(toList());
@@ -48,7 +67,7 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldReturnCourtApplicationCreated() {
-        final List<Object> eventStream = aggregate.createCourtApplication(CourtApplication.courtApplication()
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication()
                 .withId(randomUUID())
                 .build())
                 .collect(toList());
@@ -59,7 +78,7 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldReturnAddCourtApplicationCase() {
-        final List<Object> eventStream = aggregate.addApplicationToCase(CourtApplication.courtApplication()
+        final List<Object> eventStream = aggregate.addApplicationToCase(courtApplication()
                 .withId(randomUUID())
                 .build())
                 .collect(toList());
@@ -76,13 +95,13 @@ public class ApplicationAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(HearingApplicationLinkCreated.class)));
     }
-    
+
     @Test
     public void shouldReturnApplicationUpdatedAndListedApplicationChanged() {
         UUID applicationId  = UUID.randomUUID();
         List<Object> eventStream = aggregate.updateApplicationStatus(applicationId, ApplicationStatus.LISTED).collect(toList());
-        
-        eventStream = aggregate.updateCourtApplication(CourtApplication.courtApplication()
+
+        eventStream = aggregate.updateCourtApplication(courtApplication()
                 .withId(applicationId)
                 .build())
                 .collect(toList());

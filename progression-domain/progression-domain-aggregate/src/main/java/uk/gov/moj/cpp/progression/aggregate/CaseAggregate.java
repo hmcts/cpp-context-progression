@@ -20,7 +20,9 @@ import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
@@ -81,7 +83,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 281032067089771387L;
+    private static final long serialVersionUID = 281032067089771390L;
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
     private static final String CROWN_COURT_HEARING_PROPERTY = "crownCourtHearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
@@ -89,10 +91,6 @@ public class CaseAggregate implements Aggregate {
     private static final String SENDING_SHEET_ALREADY_COMPLETED_MSG = "Sending sheet already completed, not allowed to perform add sentence hearing date  for case Id %s ";
     private static final String CASE_STATUS_EJECTED = "EJECTED";
     private final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>();
-
-    private String courtCentreId;
-    private String reference;
-    private int arnCount = 0;
     private final Set<String> policeDefendantIds = new HashSet<>();
     private final Set<UUID> hearingIds = new HashSet<>() ;
     private final Set<Defendant> defendants = new HashSet<>();
@@ -107,6 +105,9 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, LocalDate> custodyTimeLimitForDefendant = new HashMap<>();
     private final Map<UUID, List<uk.gov.justice.core.courts.Offence>> defendantCaseOffences = new HashMap<>();
     private String caseStatus;
+    private String courtCentreId;
+    private String reference;
+    private int arnCount = 0;
 
     @Override
     public Object apply(final Object event) {
@@ -183,6 +184,7 @@ public class CaseAggregate implements Aggregate {
                 when(ProsecutionCaseDefendantUpdated.class).apply(e -> {
                             //do nothing
                         }
+
                 ),
                 when(ProsecutionCaseOffencesUpdated.class).apply(e -> {
                             if (e.getDefendantCaseOffences().getOffences() != null && !e.getDefendantCaseOffences().getOffences().isEmpty()) {
@@ -195,8 +197,12 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(DefendantsAddedToCourtProceedings.class).apply(
                         e ->
-                            e.getDefendants().forEach(
-                                    ed -> this.defendantCaseOffences.put( ed.getId(), ed.getOffences()) )
+                        {
+                            if (!e.getDefendants().isEmpty()) {
+                                e.getDefendants().forEach(
+                                        ed -> this.defendantCaseOffences.put(ed.getId(), ed.getOffences()));
+                            }
+                        }
                 ),
                 when(CaseLinkedToHearing.class).apply(
                         e ->
@@ -472,15 +478,15 @@ public class CaseAggregate implements Aggregate {
         final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
                 addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d->d, (i, d) -> d)).values().stream().collect(toList());
 
-        if(newDefendantsList.isEmpty()) {
-            return apply( Stream.of(DefendantsNotAddedToCourtProceedings.defendantsNotAddedToCourtProceedings()
+        if (newDefendantsList.isEmpty()) {
+            return apply(Stream.of(DefendantsNotAddedToCourtProceedings.defendantsNotAddedToCourtProceedings()
                     .withDefendants(addedDefendants)
                     .withListHearingRequests(listHearingRequests)
                     .build())
             );
         }
 
-        return apply( Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+        return apply(Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
                 .withDefendants(newDefendantsList)
                 .withListHearingRequests(listHearingRequests)
                 .build())
@@ -491,6 +497,12 @@ public class CaseAggregate implements Aggregate {
         LOGGER.debug("Defendant information is being updated.");
         return apply(Stream.of(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(updatedDefendant).build()));
+    }
+
+
+    public Stream<Object> updateCase(final ProsecutionCase prosecutionCase) {
+        LOGGER.debug(" ProsecutionCase is being updated ");
+        return apply(Stream.of(HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase).build()));
     }
 
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId) {
@@ -528,22 +540,22 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> recordNotificationRequestFailure(final UUID caseId,
-                                                    final UUID notificationId,
-                                                    final ZonedDateTime failedTime,
-                                                    final String errorMessage,
-                                                    final Optional<Integer> statusCode) {
+                                                           final UUID notificationId,
+                                                           final ZonedDateTime failedTime,
+                                                           final String errorMessage,
+                                                           final Optional<Integer> statusCode) {
         return apply(Stream.of(new NotificationRequestFailed(caseId, null, notificationId, failedTime, errorMessage, statusCode)));
     }
 
     public Stream<Object> recordNotificationRequestSuccess(final UUID caseId,
-                                                    final UUID notificationId,
-                                                    final ZonedDateTime sentTime) {
+                                                           final UUID notificationId,
+                                                           final ZonedDateTime sentTime) {
         return apply(Stream.of(new NotificationRequestSucceeded(caseId, null, notificationId, sentTime)));
     }
 
     public Stream<Object> recordNotificationRequestAccepted(final UUID caseId,
-                                                     final UUID notificationId,
-                                                     final ZonedDateTime acceptedTime) {
+                                                            final UUID notificationId,
+                                                            final ZonedDateTime acceptedTime) {
         return apply(Stream.of(new NotificationRequestAccepted(caseId, null, notificationId, acceptedTime)));
     }
 

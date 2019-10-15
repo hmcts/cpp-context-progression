@@ -13,13 +13,14 @@ import uk.gov.justice.core.courts.Person;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.core.util.CollectionUtils;
 
-@SuppressWarnings({"squid:S2384","squid:S00107", "squid:BeanMembersShouldSerialize"})
+@SuppressWarnings({"squid:S2384", "pmd:BeanMembersShouldSerialize", "squid:S00107"})
 public class CourtApplicationSummary {
 
     private final String applicationId;
@@ -36,11 +37,13 @@ public class CourtApplicationSummary {
 
     private final Boolean isAppeal;
 
+    private UUID assignedUserId;
+
     private final String removalReason;
 
     private CourtApplicationSummary(final String applicationId, final String applicationTitle, final String applicationReference,
-                                    final String applicationStatus, final String applicantDisplayName, final List<String> respondentDisplayNames,
-                                    final Boolean isAppeal, final String removalReason) {
+                                    final String applicationStatus, final String applicantDisplayName, final List<String> respondentDisplayNames, final Boolean isAppeal,
+                                    final UUID assignedUserId, final String removalReason) {
         this.applicationId = applicationId;
         this.applicationTitle = applicationTitle;
         this.applicationReference = applicationReference;
@@ -48,6 +51,7 @@ public class CourtApplicationSummary {
         this.applicantDisplayName = applicantDisplayName;
         this.respondentDisplayNames = respondentDisplayNames;
         this.isAppeal = isAppeal;
+        this.assignedUserId = assignedUserId;
         this.removalReason = removalReason;
     }
 
@@ -87,6 +91,14 @@ public class CourtApplicationSummary {
         return new CourtApplicationSummary.Builder();
     }
 
+    public UUID getAssignedUserId() {
+        return assignedUserId;
+    }
+
+    public void setAssignedUserId(UUID assignedUserId) {
+        this.assignedUserId = assignedUserId;
+    }
+
     @SuppressWarnings("pmd:BeanMembersShouldSerialize")
     public static class Builder {
 
@@ -104,6 +116,7 @@ public class CourtApplicationSummary {
 
         private Boolean isAppeal;
 
+        private UUID assignedUserId;
         private String removalReason;
 
         public Builder withApplicationId(final String applicationId) {
@@ -130,6 +143,7 @@ public class CourtApplicationSummary {
             this.applicantDisplayName = extractDisplayName(courtApplicationParty);
             return this;
         }
+
         public Builder withRemovalReason(final String removalReason) {
             this.removalReason = removalReason;
             return this;
@@ -149,8 +163,13 @@ public class CourtApplicationSummary {
             return this;
         }
 
+        public Builder withAssignedUserId(final UUID assignedUserId) {
+            this.assignedUserId = assignedUserId;
+            return this;
+        }
+
         public CourtApplicationSummary build() {
-            return new CourtApplicationSummary(applicationId, applicationTitle, applicationReference, applicationStatus, applicantDisplayName, respondentDisplayNames, isAppeal, removalReason);
+            return new CourtApplicationSummary(applicationId, applicationTitle, applicationReference, applicationStatus, applicantDisplayName, respondentDisplayNames, isAppeal, assignedUserId, removalReason);
         }
 
         private String extractDisplayName(final CourtApplicationParty applicationParty) {
@@ -178,6 +197,7 @@ public class CourtApplicationSummary {
             }
             return displayName.orElse(EMPTY);
         }
+
 
         private Optional<String> getPersonName(final Person person) {
             return Optional.ofNullable(Stream.of(person.getFirstName(), person.getMiddleName(), person.getLastName())

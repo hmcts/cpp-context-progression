@@ -360,7 +360,11 @@
                   }
                 ]
               },
-              "bailStatus": "CONDITIONAL",
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+                "code": "C",
+                "description": "Remanded into Custody"
+              },
               "bailConditions": "a",
               "custodyTimeLimit": "0000-01-01",
               "perceivedBirthYear": 0,

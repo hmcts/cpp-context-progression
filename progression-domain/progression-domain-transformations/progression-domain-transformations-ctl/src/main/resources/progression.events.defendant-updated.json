@@ -1,0 +1,10 @@
+{
+    "caseId":"2ddba716-375d-43e9-a7a8-8e06dfa94420",
+    "defendantId":"edcd8c0e-98fe-49b3-b971-1fefd5062c2f",
+    "bailDocument":{
+        "id":"824a865f-fd19-493c-9ed1-8ff9aeca0504",
+        "materialId":"f7896f5a-f45e-4d40-ac21-cf231f9316d6"
+    },
+    "bailStatus":"unconditional",
+    "custodyTimeLimitDate":"2016-11-11"
+}

@@ -65,11 +65,17 @@ subscriptions_descriptor:
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
+        - name: progression.event.hearing-resulted-case-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
+
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
 
         - name: progression.event.application-ejected
           schema_uri: http://justice.gov.uk/core/courts/application-ejected.json
+
+        - name: progression.event.boxwork-assignment-changed
+          schema_uri: http://justice.gov.uk/core/courts/boxwork-assignment-changed.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

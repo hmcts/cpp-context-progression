@@ -1,0 +1,316 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "id": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+      "name": "Wimbledon Magistrates' Court",
+      "roomId": "1414ea28-8b0e-3ba7-8f97-f2bb6d5dd38c",
+      "roomName": "Courtroom 05",
+      "welshName": "Sion",
+      "welshRoomName": "restroom"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "day": "2019-04-27",
+            "isInAttendance": true
+          }
+        ],
+        "defendantId": "bafd9d10-68f5-11e9-8be3-139484cf76de"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 30,
+        "listingSequence": 100,
+        "sittingDay": "2019-04-27T14:07:02.497Z"
+      }
+    ],
+    "id": "bafd9d11-68f5-11e9-8be3-139484cf76de",
+    "judiciary": [
+      {
+        "firstName": "Manuel",
+        "isBenchChairman": false,
+        "isDeputy": false,
+        "judicialId": "bafdc420-68f5-11e9-8be3-139484cf76de",
+        "judicialRoleType": {
+          "judiciaryType": "CIRCUIT_JUDGE"
+        },
+        "lastName": "Hu",
+        "middleName": "Gary",
+        "title": "Mr"
+      },
+      {
+        "firstName": "Harvey",
+        "isBenchChairman": false,
+        "isDeputy": false,
+        "judicialId": "bafdc421-68f5-11e9-8be3-139484cf76de",
+        "judicialRoleType": {
+          "judiciaryType": "CIRCUIT_JUDGE"
+        },
+        "lastName": "Jenkins",
+        "middleName": "Derek",
+        "title": "Mr"
+      }
+    ],
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "InProgress",
+        "defendants": [
+          {
+            "associatedPersons": [
+              {
+                "person": {
+                  "additionalNationalityCode": "GBP",
+                  "additionalNationalityId": "25f26487-6065-4680-9706-9398fa0ea030",
+                  "address": {
+                    "address1": "233",
+                    "address2": "Fuse Road",
+                    "address3": "Croydon",
+                    "address4": "SouthLondon ",
+                    "address5": "London",
+                    "postcode": "U5K 9LX"
+                  },
+                  "contact": {
+                    "fax": "765997700",
+                    "home": "759019681",
+                    "mobile": "1444010616",
+                    "primaryEmail": "zdivwdsblf@gxvm7kqbh4.duzrohmbtt",
+                    "secondaryEmail": "dusl1j0oxw@0rzelb2mln.rvjnuth3ar",
+                    "work": "584591171"
+                  },
+                  "dateOfBirth": "2017-03-26",
+                  "disabilityStatus": "No",
+                  "ethnicityCode": "British",
+                  "ethnicityId": "95be16c7-91c2-4b09-9639-535c54f03a0e",
+                  "firstName": "FirstName",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "No",
+                  "lastName": "LastName",
+                  "middleName": "MiddleName",
+                  "nationalInsuranceNumber": "EZ814857C",
+                  "nationalityCode": "GBP",
+                  "nationalityId": "47688578-d9a6-497b-8a73-340043448df6",
+                  "occupation": "Service",
+                  "occupationCode": "SER",
+                  "specificRequirements": "No",
+                  "title": "MR"
+                },
+                "role": "ABC"
+              }
+            ],
+            "defenceOrganisation": {
+              "address": {
+                "address1": "defenceOrganisation",
+                "address2": "225",
+                "address3": "FuseRoad",
+                "address4": "East Croydon",
+                "address5": "SouthLondon",
+                "postcode": "LN72 9NG"
+              },
+              "contact": {
+                "fax": "765997700",
+                "home": "759019681",
+                "mobile": "1444010616",
+                "primaryEmail": "zdivwdsblf@gxvm7kqbh4.duzrohmbtt",
+                "secondaryEmail": "dusl1j0oxw@0rzelb2mln.rvjnuth3ar",
+                "work": "584591171"
+              },
+              "incorporationNumber": "cegH7rIgdX",
+              "name": "Test",
+              "registeredCharityNumber": "TestCharity"
+            },
+            "id": "bafd9d10-68f5-11e9-8be3-139484cf76de",
+            "legalEntityDefendant": {
+              "organisation": {
+                "address": {
+                  "address1": "legalEntityDefendant",
+                  "address2": "444 Fuse Road",
+                  "address3": "Esst Croydon",
+                  "address4": "South London",
+                  "address5": "London",
+                  "postcode": "N08 9JD"
+                },
+                "contact": {
+                  "fax": "765997700",
+                  "home": "759019681",
+                  "mobile": "1444010616",
+                  "primaryEmail": "zdivwdsblf@gxvm7kqbh4.duzrohmbtt",
+                  "secondaryEmail": "dusl1j0oxw@0rzelb2mln.rvjnuth3ar",
+                  "work": "584591171"
+                },
+                "incorporationNumber": "Jwo9KG3JWW",
+                "name": "TestNameLei",
+                "registeredCharityNumber": "TestCharityLEi"
+              }
+            },
+            "numberOfPreviousConvictionsCited": 1950828793,
+            "offences": [
+              {
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-31",
+                "count": 2,
+                "endDate": "2018-08-30",
+                "id": "bafdc423-68f5-11e9-8be3-139484cf76de",
+                "indicatedPlea": {
+                  "allocationDecision": {
+                    "courtDecision": "CONSENT_SUMMARY_TRIAL",
+                    "defendantRepresentation": "ELECT_TRIAL_ON_INDICTMENT",
+                    "indicationOfSentence": "jSce28pitA",
+                    "prosecutionRepresentation": "ELECT_TRIAL_ON_INDICTMENT"
+                  },
+                  "indicatedPleaDate": "2018-02-14",
+                  "indicatedPleaValue": "INDICATED_GUILTY",
+                  "offenceId": "2f7810cc-7bc4-4015-9469-675a337e9ee5",
+                  "source": "ONLINE"
+                },
+                "modeOfTrial": "modeOfTrial",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2018-06-24",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "2f7810cc-7bc4-4015-9469-675a337e9ee5"
+                },
+                "offenceCode": "OFF123",
+                "offenceDefinitionId": "ec09757a-bf2a-4f30-9887-94e0eee26206",
+                "offenceFacts": {
+                  "alcoholReadingAmount": "100 units",
+                  "alcoholReadingMethod": "pipe",
+                  "vehicleRegistration": "ABC bbc"
+                },
+                "offenceLegislation": "Contrary to section 1(1)    of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i Adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Section 18 - attempt wounding with intent",
+                "offenceTitleWelsh": "Adran 18 - ymgais i glwyfo gan fwriadu",
+                "orderIndex": 634464054,
+                "plea": {
+                  "offenceId": "bafdc423-68f5-11e9-8be3-139484cf76de",
+                  "originatingHearingId": "bafd9d11-68f5-11e9-8be3-139484cf76de",
+                  "pleaDate": "2019-04-27",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "startDate": "2018-11-20",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "OFF123",
+                    "offenceDefinitionId": "ec09757a-bf2a-4f30-9887-94e0eee26206",
+                    "offenceLegislation": "Contrary to section 1(1)    of the Criminal Attempts Act 1981.",
+                    "offenceTitle": "Section 18 - attempt wounding with intent"
+                  },
+                  "offenceId": "bafdc423-68f5-11e9-8be3-139484cf76de",
+                  "originatingHearingId": "bafd9d11-68f5-11e9-8be3-139484cf76de",
+                  "verdictDate": "2019-04-27",
+                  "verdictType": {
+                    "category": "Not Guilty",
+                    "categoryType": "NOT_GUILTY",
+                    "verdictTypeId": "c81e728d-9d4c-3f63-af06-7f89cc14862c"
+                  }
+                },
+                "wording": "Offence wording",
+                "wordingWelsh": "Offence wording in Welsh"
+              }
+            ],
+            "personDefendant": {
+              "bailStatus":"CONDITIONAL",
+              "personDetails": {
+                "additionalNationalityCode": "GBP",
+                "additionalNationalityId": "25f26487-6065-4680-9706-9398fa0ea030",
+                "address": {
+                  "address1": "8888 Fuse Road",
+                  "address2": "East Croydon",
+                  "address3": "South London",
+                  "address4": "London",
+                  "address5": "UK",
+                  "postcode": "U5K 9LX"
+                },
+                "contact": {
+                  "fax": "02012345678",
+                  "home": "02012345678",
+                  "mobile": "1468105168",
+                  "primaryEmail": "iw0e4x5bne@yc1qeldnlc.fgxm31rcjh",
+                  "secondaryEmail": "r1biivekjx@7f8x6b4hks.dv3oqgbmkq",
+                  "work": "592199886"
+                },
+                "dateOfBirth": "2000-03-26",
+                "disabilityStatus": "Na",
+                "ethnicityCode": "British",
+                "ethnicityId": "95be16c7-91c2-4b09-9639-535c54f03a0e",
+                "firstName": "Cynthia",
+                "gender": "FEMALE",
+                "interpreterLanguageNeeds": "NA",
+                "lastName": "Rigacci",
+                "middleName": "",
+                "nationalInsuranceNumber": "EZ814857C",
+                "nationalityCode": "GBP",
+                "nationalityId": "47688578-d9a6-497b-8a73-340043448df6",
+                "occupation": "Serviec",
+                "occupationCode": "Ser",
+                "specificRequirements": "Na",
+                "title": "MR"
+              }
+            },
+            "prosecutionAuthorityReference": "prosecutionAuthorityReference",
+            "prosecutionCaseId": "9d084d07-2fdb-421d-99a0-51fe67c0d35f"
+          }
+        ],
+        "id": "bafdc422-68f5-11e9-8be3-139484cf76de",
+        "initiationCode": "C",
+        "originatingOrganisation": "originatingOrganisation",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "prosecutionAuthorityCode",
+          "prosecutionAuthorityId": "bafdc424-68f5-11e9-8be3-139484cf76de",
+          "caseURN": "28CD172826"
+        }
+      }
+    ],
+    "sharedResultLines": [
+      {
+        "courtClerk": {
+          "firstName": "Robert",
+          "lastName": "Barnes",
+          "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+        },
+        "defendantId": "bafd9d10-68f5-11e9-8be3-139484cf76de",
+        "id": "87d8988c-0194-45a5-a25c-74ff6a38c7d2",
+        "isAvailableForCourtExtract": true,
+        "label": "Fine",
+        "lastSharedDateTime": "2019-04-27",
+        "level": "OFFENCE",
+        "offenceId": "bafdc423-68f5-11e9-8be3-139484cf76de",
+        "orderedDate": "2019-04-27",
+        "prompts": [
+          {
+            "id": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+            "isAvailableForCourtExtract": true,
+            "label": "Amount of fine",
+            "promptSequence": 1,
+            "usergroups": [
+              "Court Clerks",
+              " Probation Admin",
+              "Police Admin",
+              "Victims & Witness Care Admin",
+              "Legal Advisers"
+            ],
+            "value": "25",
+            "welshLabel": "",
+            "welshValue": ""
+          }
+        ],
+        "prosecutionCaseId": "bafdc422-68f5-11e9-8be3-139484cf76de",
+        "rank": 71,
+        "welshLabel": "Dirwy"
+      }
+    ],
+    "type": {
+      "description": "28CD172826",
+      "id": "41fec9c5-fab0-4b22-97a8-6e6c693ff179"
+    }
+  },
+  "sharedTime": "2019-07-05T08:00:00.000Z"
+}

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.application.event.listener;
 
+import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -136,6 +137,16 @@ public class CourtApplicationEventListener {
             repository.save(applicationEntity);
         }
     }
+
+    @Handles("progression.event.boxwork-assignment-changed")
+    public void processBoxworkAssignmentChanged(final JsonEnvelope eventEnvelope) {
+        final BoxworkAssignmentChanged event= jsonObjectConverter.convert(eventEnvelope.payloadAsJsonObject(), BoxworkAssignmentChanged.class);
+        final CourtApplicationEntity courtApplicationEntity = repository.findByApplicationId(event.getApplicationId());
+        courtApplicationEntity.setAssignedUserId(event.getUserId());
+        repository.save(courtApplicationEntity);
+    }
+
+
 
     @Handles("progression.event.court-application-updated")
     public void processCourtApplicationUpdated(final JsonEnvelope event) {

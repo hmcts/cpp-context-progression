@@ -71,6 +71,12 @@ subscriptions_descriptor:
         - name: progression.event.application-ejected
           schema_uri: http://justice.gov.uk/core/courts/application-ejected.json
 
+        - name: progression.event.boxwork-application-referred
+          schema_uri: http://justice.gov.uk/core/courts/boxwork-application-referred.json
+
+        - name: progression.event.boxwork-assignment-changed
+          schema_uri: http://justice.gov.uk/core/courts/boxwork-assignment-changed.json
+
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

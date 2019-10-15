@@ -119,7 +119,7 @@
                 "$ref":"#/definitions/datePattern"
               },
               "bailStatus":{
-                "type":"string"
+                "$ref": "http://justice.gov.uk/core/courts/bailStatus.json"
               },
               "custodyTimeLimitDate":{
                 "$ref":"#/definitions/datePattern"

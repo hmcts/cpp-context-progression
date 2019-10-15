@@ -83,8 +83,12 @@
           "fax": "3425678"
         }
       },
-      "bailStatus": "IN_CUSTODY",
-      "custodyTimeLimit": "2018-01-01",
+      "bailStatus": {
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+        "code": "B",
+        "description": "Conditional Bail"
+      },
+      "custodyTimeLimit": "2018-06-06",
       "perceivedBirthYear": 2015,
       "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
       "observedEthnicityCode": "IC1",

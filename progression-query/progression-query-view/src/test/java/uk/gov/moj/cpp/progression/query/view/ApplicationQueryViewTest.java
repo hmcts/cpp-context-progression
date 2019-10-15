@@ -5,9 +5,12 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -28,6 +31,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
@@ -40,6 +44,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.CourtApplicationSummary;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
@@ -53,13 +58,20 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 
@@ -99,6 +111,14 @@ public class ApplicationQueryViewTest {
     @Mock
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
+    @Spy
+    private JsonObjectToObjectConverter realJsonObjectToObjectConverter;
+
+    @Before
+    public void setup() {
+        setField(this.realJsonObjectToObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+    }
+
     final static private UUID APPLICATION_ID = UUID.randomUUID();
     final static private String APPLICATION_ARN = new StringGenerator().next();
     final static private String APPLICANT_FIRST_NAME = new StringGenerator().next();
@@ -119,6 +139,7 @@ public class ApplicationQueryViewTest {
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload("{}");
+        courtApplicationEntity.setAssignedUserId(UUID.randomUUID());
 
         HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey());
@@ -143,9 +164,17 @@ public class ApplicationQueryViewTest {
 
         final JsonEnvelope response = applicationQueryView.getApplication(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("courtApplication"), notNullValue());
+        assertEquals(response.payloadAsJsonObject().getJsonObject("assignedUser").getString("userId"), courtApplicationEntity.getAssignedUserId().toString());
         assertThat(response.payloadAsJsonObject().get("courtDocuments"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("linkedApplicationsSummary"), notNullValue());
+
+        JsonObject assignedUserJson = response.payloadAsJsonObject().getJsonObject("assignedUser");
+        assertThat(assignedUserJson.getString("userId"), is(courtApplicationEntity.getAssignedUserId().toString()));
+
     }
+
+    @Captor
+    private ArgumentCaptor<Object> summaryToJsonCaptor;
 
     @Test
     public void shouldReturnApplicationSummary() {
@@ -158,14 +187,30 @@ public class ApplicationQueryViewTest {
                 jsonObject);
 
         CourtApplication courtApplication = getCourtApplication();
+        JsonObject summaryJson = Json.createObjectBuilder().build();
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setAssignedUserId(UUID.randomUUID());
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
-        courtApplicationEntity.setPayload("{}");
+        final JsonObject courtApplicationJson = Json.createObjectBuilder().build();
+        courtApplicationEntity.setPayload("xyz");
+
+        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(courtApplicationJson);
+        when(jsonObjectToObjectConverter.convert(courtApplicationJson, CourtApplication.class)).thenReturn(courtApplication);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(summaryJson);
+
 
         when(courtApplicationRepository.findByParentApplicationId(applicationId)).thenReturn(Arrays.asList(courtApplicationEntity));
-        when(jsonObjectToObjectConverter.convert(this.applicationJson, CourtApplication.class)).thenReturn(courtApplication);
+        //when(jsonObjectToObjectConverter.convert(this.applicationJson, CourtApplication.class)).thenReturn(courtApplication);
         final JsonEnvelope response = applicationQueryView.getApplicationSummary(jsonEnvelope);
-        assertThat(response.payloadAsJsonObject().get("courtApplications"), notNullValue());
+
+        Mockito.verify(objectToJsonObjectConverter, times(1)).convert(summaryToJsonCaptor.capture());
+
+        JsonArray courtApplicationsJson = response.payloadAsJsonObject().getJsonArray("courtApplications");
+        assertThat(courtApplicationsJson, notNullValue());
+
+        CourtApplicationSummary summary0 = (CourtApplicationSummary) summaryToJsonCaptor.getValue();
+        Assert.assertEquals(summary0.getAssignedUserId(), courtApplicationEntity.getAssignedUserId());
+
     }
 
     @Test

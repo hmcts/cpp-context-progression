@@ -76,7 +76,11 @@
               "fax": "3425678"
             }
           },
-          "bailStatus": "IN_CUSTODY",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+            "code": "C",
+            "description": "Remanded into Custody"
+          },
           "custodyTimeLimit": "2018-01-01",
           "perceivedBirthYear": 2015,
           "driverNumber": "AACC12345",

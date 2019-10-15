@@ -53,4 +53,5 @@
     <include file="liquibase/rename-print-status-table.xml"/>
     <include file="liquibase/modify-notification-status-table.xml"/>
     <include file="liquibase/alter-search-prosecution-case-add-index.xml"/>
+    <include file="liquibase/add-application-assigned-user-id.xml"/>
 </databaseChangeLog>

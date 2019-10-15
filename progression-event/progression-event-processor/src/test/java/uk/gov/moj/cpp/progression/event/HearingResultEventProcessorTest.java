@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.progression.event;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -10,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
@@ -21,16 +20,20 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +49,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultEventProcessorTest {
@@ -56,6 +61,7 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private Sender sender;
+
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -75,6 +81,9 @@ public class HearingResultEventProcessorTest {
     @Captor
     private ArgumentCaptor<HearingListingStatus> hearingListingStatusArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor;
+
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
@@ -88,6 +97,7 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private ProgressionService progressionService;
+
 
     @Before
     public void initMocks() {
@@ -113,7 +123,7 @@ public class HearingResultEventProcessorTest {
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
-        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, atLeastOnce()).linkApplicationsToHearing(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
         verify(progressionService, atLeastOnce()).updateCourtApplicationStatus(envelopeArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), applicationStatusArgumentCaptor.capture());
 
@@ -126,7 +136,7 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void handleHearingResultWithNoApplications() {
+    public void handleHearingResultWithNoApplications() throws EventStreamException {
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
@@ -140,13 +150,15 @@ public class HearingResultEventProcessorTest {
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
-        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, never()).linkApplicationsToHearing(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName("progression.command.hearing-result"),
-                payloadIsJson(allOf(withJsonPath("$.hearing.id", is(hearingResulted.getHearing().getId().toString()))))));
+        final List<JsonEnvelope> allValues = envelopeArgumentCaptor.getAllValues();
+        assertThat(allValues.size(), is(1));
+        assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-result"));
+
     }
+
 
 
     @Test
@@ -174,7 +186,7 @@ public class HearingResultEventProcessorTest {
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
-        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, atLeastOnce()).linkApplicationsToHearing(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
         verify(progressionService, atLeastOnce()).updateCourtApplicationStatus(envelopeArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), applicationStatusArgumentCaptor.capture());
 
@@ -186,4 +198,81 @@ public class HearingResultEventProcessorTest {
         assertThat(applicationStatusArgumentCaptor.getValue(), equalTo(ApplicationStatus.FINALISED));
     }
 
+
+    @Test
+    public void handleResultWhenProsecutionCaseIsPresentOnHearing() throws Exception {
+
+        final UUID courtApplicationId = UUID.randomUUID();
+
+        final CourtApplicationOutcome courtApplicationOutcome = CourtApplicationOutcome.courtApplicationOutcome()
+                .withApplicationId(courtApplicationId)
+                .build();
+
+        final UUID commonUUID = UUID.randomUUID();
+        Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
+        Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
+        Defendant defendant3 = Defendant.defendant().withId(UUID.randomUUID()).build();
+
+        List<Defendant> defendants = new ArrayList<>();
+        defendants.add(defendant1);
+        defendants.add(defendant2);
+        defendants.add(defendant3);
+
+        List<ProsecutionCase> prosecutionCases = new ArrayList<>();
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
+        prosecutionCases.add(prosecutionCase);
+
+
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withId(UUID.randomUUID())
+                        .withProsecutionCases(prosecutionCases)
+                        .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                                .withApplicationOutcome(courtApplicationOutcome)
+                                .withId(courtApplicationId)
+                                .build()))
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.hearing.resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted));
+
+        this.eventProcessor.handleHearingResultedPublicEvent(event);
+
+        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture());
+        assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(3));
+        assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(commonUUID));
+
+
+    }
+
+    @Test
+    public void handleResultWithEmptyProsecutionCaseOnHearing() throws Exception {
+
+        final UUID courtApplicationId = UUID.randomUUID();
+
+        final CourtApplicationOutcome courtApplicationOutcome = CourtApplicationOutcome.courtApplicationOutcome()
+                .withApplicationId(courtApplicationId)
+                .build();
+
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withId(UUID.randomUUID())
+                        .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                                .withApplicationOutcome(courtApplicationOutcome)
+                                .withId(courtApplicationId)
+                                .build()))
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.hearing.resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted));
+
+        this.eventProcessor.handleHearingResultedPublicEvent(event);
+        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
+        verify(progressionService, never()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture());
+    }
 }

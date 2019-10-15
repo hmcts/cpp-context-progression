@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.moj.cpp.progression.test.ObjectConverters;
 
 /**
  * Class to set up stub.
@@ -52,6 +53,51 @@ public class StubUtil {
                         .withBody(getPayload("stub-data/usersgroups.get-groups-by-user.json"))));
 
     }
+
+    public static class UserDetails {
+        private UUID id;
+        private String firstName;
+        private String lastName;
+
+        public UUID getId() {
+            return id;
+        }
+
+        public void setId(UUID id) {
+            this.id = id;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+    }
+
+    public static void setupUserDetails(final UserDetails userDetails) {
+
+        final String strUserDetails =  ObjectConverters.toJsonString(userDetails);
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usergroups/users/.*"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(strUserDetails)));
+
+    }
+
+
+
 
     public static void setupMaterialStub(String materialId) {
         InternalEndpointMockUtils.stubPingFor("material-service");
