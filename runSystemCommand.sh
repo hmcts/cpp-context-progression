@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.2.1
+FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.2.2
 CONTEXT_NAME="material"
 USER_NAME="admin"
 PASSWORD="admin"
