@@ -1,5 +1,33 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import com.google.common.io.Resources;
+import com.jayway.restassured.builder.RequestSpecBuilder;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.justice.services.test.utils.core.rest.RestClient;
+import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static com.jayway.restassured.RestAssured.given;
@@ -111,7 +139,14 @@ public class RestHelper {
     }
 
     public static String pollForResponse(final String path, final String mediaType) {
-        return pollForResponseWithUserId(path, mediaType, randomUUID().toString());
+        return pollForResponse(path, mediaType, status().is(OK));
+    }
+
+    public static String pollForResponse(final String path, final String mediaType, final Matcher<ResponseData> matchSuccess) {
+        return poll(requestParams(getQueryUri(path), mediaType)
+                .withHeader("CJSCPPUID", randomUUID().toString()).build())
+                .timeout(10, TimeUnit.SECONDS).until(matchSuccess)
+                .getPayload();
     }
 
     public static String pollForResponseWithUserId(final String path, final String mediaType, final String userId) {

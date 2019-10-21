@@ -15,10 +15,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.CompanyRepresentative;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.CourtApplicationOutcomeType;
@@ -38,19 +36,16 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.Position;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCounsel;
 import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.progression.courts.CourtApplications;
-import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -159,9 +154,6 @@ public class GetCaseAtAGlanceServiceTest {
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
         assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
-        assertThat(response.getHearings().get(0).getCompanyRepresentatives().get(0).getFirstName(), is ("John"));
-        assertThat(response.getHearings().get(0).getCompanyRepresentatives().get(0).getLastName(), is ("Williams"));
-        assertThat(response.getHearings().get(0).getCompanyRepresentatives().get(0).getAttendanceDays().size(), is (1));
 
         // Defendant 2
         assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
@@ -455,6 +447,8 @@ public class GetCaseAtAGlanceServiceTest {
         assertThat(hearingResponse1.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
 
         assertThat(hearingResponse1.getDefendants().size(), is(2));
+
+        assertThat(applicationHearing.getIsBoxHearing(), is(true));
 
         // Prosecution Case Identifier assertions
         final ProsecutionCaseIdentifier prosecutionCaseIdentifierResponse = response.getProsecutionCaseIdentifier();
@@ -785,52 +779,6 @@ public class GetCaseAtAGlanceServiceTest {
         assertThat(hearingResponse.getHasResultAmended(), is(true));
     }
 
-    @Test
-    public void caseAtAGlanceHearingWithCaseWithOneHearingWithLegalEntityDefendant() {
-
-        ProsecutionCase prosecutionCase = createProsecutionCaseWithLegalEntityDefendant(CASE_ID, Arrays.asList(DEFENDANT_ID_1));
-        Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
-
-        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
-
-        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
-
-        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
-        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
-        caseDefendantHearingEntity1.setHearing(caseHearingEntity);
-
-        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
-
-        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
-        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
-
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
-
-        // Prosecution Case Id assertion
-        assertThat(response.getId(), is(CASE_ID));
-
-        // Defendant Hearing details
-        assertThat(response.getDefendantHearings().size(), is(1));
-        // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
-        assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("ABC LTD"));
-
-        Defendants defendants = response.getHearings().get(0).getDefendants().get(0);
-        assertThat(defendants.getName(), is("ABC LTD"));
-
-        Address defendantsAddress = defendants.getAddress();
-        assertThat(defendantsAddress.getAddress1(), is("address1"));
-        assertThat(defendantsAddress.getAddress2(), is("address2"));
-        assertThat(defendantsAddress.getAddress3(), is("address3"));
-        assertThat(defendantsAddress.getAddress4(), is("address4"));
-        assertThat(defendantsAddress.getAddress5(), is("address5"));
-        assertThat(defendantsAddress.getPostcode(), is("WW1 4XX"));
-
-    }
-
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
@@ -977,16 +925,16 @@ public class GetCaseAtAGlanceServiceTest {
                         .build())
                 .withReportingRestrictionReason(RandomGenerator.STRING.next())
                 .withHearingDays(Arrays.asList(HearingDay.hearingDay()
-                                .withListedDurationMinutes(20)
-                                .withListingSequence(30)
-                                .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
-                                .build(),
+                        .withListedDurationMinutes(20)
+                        .withListingSequence(30)
+                        .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
+                        .build(),
                         HearingDay.hearingDay()
-                                .withListedDurationMinutes(20)
-                                .withListingSequence(30)
-                                .withSittingDay(ZonedDateTimes.fromString("2019-07-16T00:00:00.000Z"))
-                                .build()
-                ))
+                        .withListedDurationMinutes(20)
+                        .withListingSequence(30)
+                        .withSittingDay(ZonedDateTimes.fromString("2019-07-16T00:00:00.000Z"))
+                        .build()
+                        ))
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())
@@ -1005,7 +953,6 @@ public class GetCaseAtAGlanceServiceTest {
                         .build()))
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withCourtApplications(courtApplication != null ? Arrays.asList(courtApplication) : null)
-                .withCompanyRepresentatives(createCompanyRepresentstives())
                 .build();
     }
 
@@ -1018,16 +965,16 @@ public class GetCaseAtAGlanceServiceTest {
                         .build())
                 .withReportingRestrictionReason(RandomGenerator.STRING.next())
                 .withHearingDays(Arrays.asList(HearingDay.hearingDay()
-                                .withListedDurationMinutes(20)
-                                .withListingSequence(30)
-                                .withSittingDay(ZonedDateTimes.fromString("2019-07-22T00:00:00.000Z"))
-                                .build(),
+                        .withListedDurationMinutes(20)
+                        .withListingSequence(30)
+                        .withSittingDay(ZonedDateTimes.fromString("2019-07-22T00:00:00.000Z"))
+                        .build(),
                         HearingDay.hearingDay()
-                                .withListedDurationMinutes(20)
-                                .withListingSequence(30)
-                                .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
-                                .build()
-                ))
+                        .withListedDurationMinutes(20)
+                        .withListingSequence(30)
+                        .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
+                        .build()
+                        ))
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())
@@ -1047,6 +994,7 @@ public class GetCaseAtAGlanceServiceTest {
                         .withDefendantId(DEFENDANT_ID_1)
                         .build()))
                 .withJurisdictionType(JurisdictionType.CROWN)
+                .withIsBoxHearing(true)
                 .withCourtApplications(courtApplication != null ? Arrays.asList(courtApplication) : null)
                 .build();
     }
@@ -1094,43 +1042,14 @@ public class GetCaseAtAGlanceServiceTest {
                 .build();
     }
 
-    private ProsecutionCase createProsecutionCaseWithLegalEntityDefendant(UUID caseId, List<UUID> defendantIds) {
-        return ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withInitiationCode(InitiationCode.C)
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                        .withProsecutionAuthorityId(randomUUID())
-                        .withProsecutionAuthorityCode("TFL")
-                        .withCaseURN("xxxxx")
-                        .build())
-                .withDefendants(createDefendantsAsLegalEntity(defendantIds))
-                .build();
-    }
-
     private List<Defendant> createDefendants(List<UUID> defendantIds) {
         return defendantIds.stream().map(this::createDefendant).collect(Collectors.toList());
-    }
-
-    private List<Defendant> createDefendantsAsLegalEntity(List<UUID> defendantIds) {
-        return defendantIds.stream().map(this::createDefendantAsLegalEntity).collect(Collectors.toList());
     }
 
     private Defendant createDefendant(UUID defendantId) {
         return Defendant.defendant()
                 .withId(defendantId)
                 .withPersonDefendant(createPersonDefendant())
-                .withOffences(createOffences())
-                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withAmendmentDate(LocalDate.now())
-                        .build()))
-                .build();
-    }
-
-
-    private Defendant createDefendantAsLegalEntity(UUID defendantId) {
-        return Defendant.defendant()
-                .withId(defendantId)
-                .withLegalEntityDefendant(createLegalEntityDefendant())
                 .withOffences(createOffences())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withAmendmentDate(LocalDate.now())
@@ -1167,22 +1086,6 @@ public class GetCaseAtAGlanceServiceTest {
                 .build();
     }
 
-    private LegalEntityDefendant createLegalEntityDefendant() {
-        return LegalEntityDefendant.legalEntityDefendant()
-                .withOrganisation(Organisation.organisation()
-                        .withName("ABC LTD")
-                        .withAddress(Address.address()
-                                .withAddress1("address1")
-                                .withAddress2("address2")
-                                .withAddress3("address3")
-                                .withAddress4("address4")
-                                .withAddress5("address5")
-                                .withPostcode("WW1 4XX")
-                                .build())
-                        .build())
-                .build();
-    }
-
     private List<ApplicantCounsel> createApplicantCounsel() {
         return Arrays.asList(ApplicantCounsel.applicantCounsel()
                 .withId(GENERIC_UUID)
@@ -1208,14 +1111,6 @@ public class GetCaseAtAGlanceServiceTest {
                 .withRespondents(Arrays.asList(DEFENDANT_ID_1))
                 .withAttendanceDays(Arrays.asList(LOCALDATE_NOW)
                 )
-                .build());
-    }
-    private List<CompanyRepresentative> createCompanyRepresentstives() {
-        return Arrays.asList(CompanyRepresentative.companyRepresentative()
-                .withFirstName("John")
-                .withLastName("Williams")
-                .withPosition(Position.DIRECTOR)
-                .withAttendanceDays(Arrays.asList(LocalDate.now()))
                 .build());
     }
 

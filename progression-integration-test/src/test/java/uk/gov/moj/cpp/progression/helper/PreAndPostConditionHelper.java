@@ -337,6 +337,13 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response referBoxWorkApplication(final String applicationId, final String hearingId, final String fileName) throws IOException {
+        return postCommand(getCommandUri("/refertoboxwork"),
+                "application/vnd.progression.refer-box-work-application+json",
+                getReferApplicationToCourtJsonBody(applicationId, hearingId, fileName));
+
+    }
+
     public static Response extendHearing(final String applicationId, final String hearingId, final String fileName) throws IOException {
         return postCommand(getCommandUri("/referapplicationtocourt"),
                 "application/vnd.progression.extend-hearing+json",

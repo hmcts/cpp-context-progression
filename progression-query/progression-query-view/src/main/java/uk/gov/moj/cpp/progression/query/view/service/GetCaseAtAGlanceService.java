@@ -6,7 +6,6 @@ import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
@@ -51,6 +50,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -84,22 +84,26 @@ public class GetCaseAtAGlanceService {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     public GetCaseAtAGlance getCaseAtAGlance(final UUID caseId) {
+
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseId);
-        final List<HearingEntity> hearingEntities = getHearingEntities(caseDefendantHearingEntities);
-        retrieveApplicationHearingEntities(caseId, hearingEntities);
+        List<HearingEntity> hearingEntities = getHearingEntities(caseDefendantHearingEntities);
+        hearingEntities = retrieveApplicationHearingEntities(caseId, hearingEntities);
+
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId);
         final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
         return getQueryResponse(hearingEntities, caseId, prosecutionCase, caseDefendantHearingEntities);
     }
 
-    private void retrieveApplicationHearingEntities(final UUID caseId, final List<HearingEntity> hearingEntities) {
+    private List<HearingEntity> retrieveApplicationHearingEntities(final UUID caseId, final List<HearingEntity> hearingEntities) {
         final List<UUID> hearingIds = hearingEntities.stream().map(HearingEntity::getHearingId).collect(Collectors.toList());
         final List<CourtApplicationEntity> applicationEntities = courtApplicationRepository.findByLinkedCaseId(caseId);
         applicationEntities.forEach(courtApplicationEntity -> {
             final List<HearingApplicationEntity> applicationHearingEntities = hearingApplicationRepository.findByApplicationId(courtApplicationEntity.getApplicationId());
             retrieveUniqueHearings(hearingEntities, hearingIds, applicationHearingEntities);
         });
+        return hearingEntities;
     }
 
     private void retrieveUniqueHearings(final List<HearingEntity> hearingEntities, final List<UUID> hearingIds, final List<HearingApplicationEntity> applicationHearingEntities) {
@@ -118,7 +122,7 @@ public class GetCaseAtAGlanceService {
         final List<UUID> hearingIds = new ArrayList<>();
         for (final CaseDefendantHearingEntity entity : caseDefendantHearingEntities) {
             //should not show unallocated hearing
-            if (!hearingIds.contains(entity.getId().getHearingId()) && !SENT_FOR_LISTING.equals(entity.getHearing().getListingStatus().toString())) {
+            if (!hearingIds.contains(entity.getId().getHearingId()) && !"SENT_FOR_LISTING".equals(entity.getHearing().getListingStatus().toString())) {
                 hearingEntities.add(entity.getHearing());
                 hearingIds.add(entity.getId().getHearingId());
             }
@@ -142,14 +146,16 @@ public class GetCaseAtAGlanceService {
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withHearings(createHearings(hearingEntities, caseId))
                 .withDefendantHearings(defendantHearingsList)
-                .withCourtApplications(new ArrayList<>())
+                .withCourtApplications(new ArrayList<CourtApplication>())
                 .build();
     }
 
     private static List<UUID> getHearingIdsForDefendant(final List<CaseDefendantHearingEntity> caseDefendantHearingEntities, final Defendant defendant) {
-        return caseDefendantHearingEntities.stream()
+        final Set<UUID> hearingIds = caseDefendantHearingEntities.stream()
                 .filter(caseDefendantHearingEntity -> caseDefendantHearingEntity.getId().getDefendantId().equals(defendant.getId()))
-                .map(caseDefendantHearingEntity -> caseDefendantHearingEntity.getId().getHearingId()).distinct().collect(Collectors.toList());
+                .map(caseDefendantHearingEntity -> caseDefendantHearingEntity.getId().getHearingId())
+                .collect(Collectors.toSet());
+        return new ArrayList<>(hearingIds);
     }
 
     private List<Hearings> createHearings(final List<HearingEntity> hearingEntities, final UUID caseId) {
@@ -173,8 +179,8 @@ public class GetCaseAtAGlanceService {
                     .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
                     .withHearingListingStatus(getHearingListingStatus(hearingEntity))
                     .withHasResultAmended(hasResultAmended(hearing))
+                    .withIsBoxHearing(hearing.getIsBoxHearing())
                     .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
-                    .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
                     .build();
             hearingsList.add(hearingsView);
         });
@@ -277,7 +283,6 @@ public class GetCaseAtAGlanceService {
         });
     }
 
-
     private static void addDefendantsToDefendantsView(final List<Defendant> defendants, final Hearing hearing, final List<Defendants> defendantsList, final List<CourtApplication> courtApplications) {
         defendants.forEach(defendant -> {
             final Defendants defendantView = Defendants.defendants()
@@ -285,7 +290,7 @@ public class GetCaseAtAGlanceService {
                     .withName(getDefendantName(defendant))
                     .withAge(getDefendantAge(defendant, hearing.getHearingDays()))
                     .withDateOfBirth(getDefendantDataOfBirth(defendant))
-                    .withAddress(getDefendantAddress(defendant))
+                    .withAddress(nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getPersonDetails().getAddress() : null)
                     .withDefenceOrganisation(getDefenceOrganisation(defendant, hearing))
                     .withOffences(getDefendantOffences(defendant))
                     .withJudicialResults(getJudicialResults(defendant.getJudicialResults()))
@@ -445,7 +450,6 @@ public class GetCaseAtAGlanceService {
                     .withConvictionDate(offence.getConvictionDate())
                     .withNotifiedPlea(offence.getNotifiedPlea())
                     .withIndicatedPlea(offence.getIndicatedPlea())
-                    .withAllocationDecision(offence.getAllocationDecision())
                     .withPleas(getOffencePleas(offence.getPlea()))
                     .withVerdicts(getOffenceVerdicts(offence.getVerdict()))
                     .withJudicialResults(getJudicialResults(offence.getJudicialResults()))
@@ -527,20 +531,7 @@ public class GetCaseAtAGlanceService {
             final PersonDefendant personDefendant = defendant.getPersonDefendant();
             return getPersonName(personDefendant.getPersonDetails());
         }
-        if (nonNull(defendant.getLegalEntityDefendant())) {
-            return defendant.getLegalEntityDefendant().getOrganisation().getName();
-        }
         return EMPTY;
-    }
-
-    private static Address getDefendantAddress(final uk.gov.justice.core.courts.Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant())) {
-            return defendant.getPersonDefendant().getPersonDetails().getAddress();
-        }
-        if (nonNull(defendant.getLegalEntityDefendant())) {
-            return defendant.getLegalEntityDefendant().getOrganisation().getAddress();
-        }
-        return null;
     }
 
     private static String getPersonName(final Person person) {

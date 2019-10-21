@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -44,6 +45,7 @@ public class ApplicationReferredToCourtEventProcessor {
         if (Objects.nonNull(courtApplication)) {
                 final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(applicationReferredToCourt);
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
+                progressionService.updateCourtApplicationStatus(jsonEnvelope, courtApplication.getId(), ApplicationStatus.UN_ALLOCATED);
         }
     }
 }

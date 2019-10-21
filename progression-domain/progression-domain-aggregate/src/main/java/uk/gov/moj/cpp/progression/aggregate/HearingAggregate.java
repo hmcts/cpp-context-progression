@@ -4,6 +4,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
+import uk.gov.justice.core.courts.BoxWorkTaskStatus;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -40,13 +41,24 @@ public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
     private static final long serialVersionUID = 100L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+    private UUID boxWorkAssignedUserId;
+    private String boxWorkTaskId;
+    private BoxWorkTaskStatus boxWorkTaskStatus;
+    private Hearing hearing;
+    private HearingListingStatus hearingListingStatus;
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
-                            //do nothing
+                            this.boxWorkAssignedUserId = e.getBoxWorkAssignedUserId();
+                            this.boxWorkTaskId = e.getBoxWorkTaskId();
+                            this.boxWorkTaskStatus = e.getBoxWorkTaskStatus();
+                            this.hearing = e.getHearing();
+                            this.hearingListingStatus = e.getHearingListingStatus();
                         }
+                ),
+                when(HearingResulted.class).apply(e -> this.hearing = e.getHearing()
                 ),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
@@ -94,7 +106,7 @@ public class HearingAggregate implements Aggregate {
                     .withCourtCentre(hearing.getCourtCentre())
                     .withDefenceCounsels(hearing.getDefenceCounsels())
                     .withDefendantAttendance(hearing.getDefendantAttendance())
-                    .withDefendantReferralReasons(CollectionUtils.isNotEmpty(referralReasons)?referralReasons:null)
+                    .withDefendantReferralReasons(CollectionUtils.isNotEmpty(referralReasons) ? referralReasons : null)
                     .withHasSharedResults(hearing.getHasSharedResults())
                     .withHearingCaseNotes(hearing.getHearingCaseNotes())
                     .withHearingDays(hearing.getHearingDays())
@@ -116,11 +128,48 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> updateDefedantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
         LOGGER.debug("Defedent listing status updated .");
+        final ProsecutionCaseDefendantListingStatusChanged.Builder prosecutionCaseDefendantListingStatusChanged = ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged();
+        if (HearingListingStatus.HEARING_RESULTED != this.hearingListingStatus) {
+            prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(hearingListingStatus);
+        }
+        prosecutionCaseDefendantListingStatusChanged.withHearing(hearing);
+        if (hearing.getIsBoxHearing() != null && hearing.getIsBoxHearing()) {
+            if (HearingListingStatus.HEARING_INITIALISED == hearingListingStatus) {
+                prosecutionCaseDefendantListingStatusChanged.withBoxWorkTaskStatus(BoxWorkTaskStatus.IN_PROGRESS);
+            }
+            if (HearingListingStatus.HEARING_RESULTED == hearingListingStatus) {
+                prosecutionCaseDefendantListingStatusChanged.withBoxWorkTaskStatus(BoxWorkTaskStatus.COMPLETE);
 
-        return apply(Stream.of(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
-                .withHearing(hearing)
-                .withHearingListingStatus(hearingListingStatus)
-                .build()));
+            }
+        }
+
+        return apply(Stream.of(prosecutionCaseDefendantListingStatusChanged.build()));
+    }
+
+    public Stream<Object> assignBoxworkUser(final UUID userId) {
+        LOGGER.debug("assign Boxwork User");
+        if (this.boxWorkTaskStatus != null) {
+            return apply(Stream.of(new ProsecutionCaseDefendantListingStatusChanged(userId,
+                    boxWorkTaskId,
+                    boxWorkTaskStatus,
+                    hearing,
+                    hearingListingStatus)));
+        }
+
+        return apply(Stream.empty());
+    }
+
+    public Stream<Object> boxworkComplete() {
+        LOGGER.debug("Boxwork Complete when hearing resulted");
+
+        if (this.boxWorkTaskStatus != null) {
+            return apply(Stream.of(new ProsecutionCaseDefendantListingStatusChanged(boxWorkAssignedUserId,
+                    boxWorkTaskId,
+                    BoxWorkTaskStatus.COMPLETE,
+                    hearing,
+                    hearingListingStatus)));
+        }
+        return apply(Stream.empty());
     }
 
     public Stream<Object> updateDefedantHearingResult(final UUID hearingId, final List<SharedResultLine> sharedResultLines) {
@@ -140,5 +189,16 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> saveHearingResult(Hearing hearing, ZonedDateTime sharedTime) {
         LOGGER.debug("Hearing Resulted.");
         return apply(Stream.of(HearingResulted.hearingResulted().withHearing(hearing).withSharedTime(sharedTime).build()));
+    }
+
+    public ProsecutionCaseDefendantListingStatusChanged getSavedListingStatusChanged() {
+        if (this.boxWorkTaskStatus != null) {
+            return new ProsecutionCaseDefendantListingStatusChanged(boxWorkAssignedUserId,
+                    boxWorkTaskId,
+                    boxWorkTaskStatus,
+                    hearing,
+                    hearingListingStatus);
+        }
+        return null;
     }
 }

@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.BoxworkApplicationReferred;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
@@ -36,6 +37,7 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,6 +61,8 @@ public class ProgressionService {
 
     private static final String APPLICATION_ID = "applicationId";
     public static final String CASE_ID = "caseId";
+    public static final String PROSECUTION_CASE = "prosecutionCase";
+
     public static final String DEFENDANT_ID = "defendantId";
 
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
@@ -78,6 +82,7 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_COURT_APPLICATION = "progression.query.application";
     private static final String PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_STATUS = "progression.command.update-court-application-status";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE = "progression.command.hearing-resulted-update-case";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -144,7 +149,7 @@ public class ProgressionService {
                         .build();
 
                 prosecutionCasesArrayBuilder.add(prosecutionCaseJson);
-            }            
+            }
         }
 
         return prosecutionCasesArrayBuilder.build();
@@ -344,7 +349,7 @@ public class ProgressionService {
     }
 
     public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope) {
-        
+
         return Hearing.hearing()
                 .withHearingDays(confirmedHearing.getHearingDays())
                 .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
@@ -356,6 +361,24 @@ public class ProgressionService {
                 .withType(confirmedHearing.getType())
                 .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), jsonEnvelope))
                 .withCourtApplications(getCourtApplications(confirmedHearing, jsonEnvelope))
+                .build();
+    }
+
+    public Hearing transformBoxWorkApplication(final BoxworkApplicationReferred boxWorkApplicationReferred) {
+
+        return Hearing.hearing()
+                .withId(boxWorkApplicationReferred.getHearingRequest().getId())
+                .withHearingDays(Arrays.asList(HearingDay.hearingDay()
+                        .withListedDurationMinutes(10)
+                        .withSittingDay(boxWorkApplicationReferred.getHearingRequest().getListedStartDateTime()).build()))
+                .withCourtCentre(boxWorkApplicationReferred.getHearingRequest().getCourtCentre())
+                .withJurisdictionType(boxWorkApplicationReferred.getHearingRequest().getJurisdictionType())
+                .withIsBoxHearing(true)
+                .withJudiciary(boxWorkApplicationReferred.getHearingRequest().getJudiciary())
+                .withReportingRestrictionReason(boxWorkApplicationReferred.getHearingRequest().getReportingRestrictionReason())
+                .withType(boxWorkApplicationReferred.getHearingRequest().getType())
+                .withProsecutionCases(boxWorkApplicationReferred.getHearingRequest().getProsecutionCases())
+                .withCourtApplications(boxWorkApplicationReferred.getHearingRequest().getCourtApplications())
                 .build();
     }
 
@@ -542,4 +565,14 @@ public class ProgressionService {
                             .build()))
         );
     }
+
+    public void updateCase(final JsonEnvelope jsonEnvelope, final  ProsecutionCase prosecutionCase) {
+            final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
+                        .apply(createObjectBuilder()
+                                .add(PROSECUTION_CASE, prosecutionCaseJson)
+                                .build()));
+
+    }
+
 }

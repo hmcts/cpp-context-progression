@@ -13,6 +13,9 @@ import javax.inject.Inject;
 public class CourtDocumentApi {
 
     @Inject
+    private UserDetailsLoader userDetailsLoader;
+
+    @Inject
     private Enveloper enveloper;
 
     @Inject

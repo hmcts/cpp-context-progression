@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
@@ -209,7 +210,7 @@ public class SendingSheetCompleteTransformer {
 
     private PersonDefendant buildPersonDefendant(final Defendant defendant, final JsonEnvelope jsonEnvelope) {
         return PersonDefendant.personDefendant()
-                .withBailStatus(defendant.getBailStatus() == null ? null : BailStatus.valueFor(defendant.getBailStatus().toUpperCase()).get())
+                .withBailStatus(defendant.getBailStatus() == null ? null : bailStatus().withId(randomUUID()).withDescription(defendant.getBailStatus()).build())
                 .withCustodyTimeLimit(sendingSheetAsDate(defendant.getCustodyTimeLimitDate()))
                 .withPersonDetails(buildPerson(defendant, jsonEnvelope))
                 .build();

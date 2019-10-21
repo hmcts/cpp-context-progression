@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingType;
@@ -169,6 +170,28 @@ public class CaseAggregateTest {
 
         assertThat(((CaseAddedToCrownCourt) response).getCaseId(), is(caseId));
         assertThat(((CaseAddedToCrownCourt) response).getCourtCentreId(), is(courtCentreId.toString()));
+    }
+
+    @Test
+    public void shouldDoHearingResultedUpdateCase() {
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final List<uk.gov.justice.core.courts.Defendant> defendants = getDefendants(defendantId1, defendantId2, defendantId3);
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendants).withId(caseId).build();
+        final HearingResultedCaseUpdated prosecutionCaseUpdated = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase).build();
+
+        final Object response = this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getId(), is(caseId));
+        assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getDefendants().get(0).getId().toString(), is(defendantId1.toString()));
+        assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getDefendants().get(1).getId().toString(), is(defendantId2.toString()));
+        assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getDefendants().get(2).getId().toString(), is(defendantId3.toString()));
+
     }
 
     @Test
@@ -497,10 +520,10 @@ public class CaseAggregateTest {
         final UUID offenceId = UUID.randomUUID();
 
         final DefendantsNotAddedToCourtProceedings defendantsNotAddedToCourtProceedings = DefendantsNotAddedToCourtProceedings
-                                                                                            .defendantsNotAddedToCourtProceedings()
-                                                                                            .withDefendants(new ArrayList<>())
-                                                                                            .withListHearingRequests(new ArrayList<>())
-                                                                                            .build();
+                .defendantsNotAddedToCourtProceedings()
+                .withDefendants(new ArrayList<>())
+                .withListHearingRequests(new ArrayList<>())
+                .build();
 
         final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProcessdings(defendantsNotAddedToCourtProceedings.getDefendants(),
                 defendantsNotAddedToCourtProceedings.getListHearingRequests()).collect(toList());
@@ -512,7 +535,7 @@ public class CaseAggregateTest {
         //Assert total defedants are empty
         assertThat(defendantsNotAddedToCourtProceedings.getDefendants().isEmpty(), is(true));
         //Assert total listHearingRequests are empty
-        assertThat( ((DefendantsNotAddedToCourtProceedings)object).getListHearingRequests().isEmpty(), is(true));
+        assertThat(((DefendantsNotAddedToCourtProceedings) object).getListHearingRequests().isEmpty(), is(true));
     }
 
     @Test
@@ -536,7 +559,7 @@ public class CaseAggregateTest {
         //Assert total defedants with count 3 including duplicates
         assertThat(defendantsAddedToCourtProceedings.getDefendants().size(), is(3));
         //Assert total defedants with count 2 excluded duplicates
-        assertThat( ((DefendantsAddedToCourtProceedings)object).getDefendants().size(), is(2));
+        assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(2));
     }
     @Test
     public void shouldReturnCaseEjected() {
@@ -634,4 +657,21 @@ public class CaseAggregateTest {
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseLinkedToHearing.class)));
     }
 
+
+
+    private List<uk.gov.justice.core.courts.Defendant> getDefendants(final UUID defendantId1, final UUID defandantId2, final UUID defendnatId3) {
+
+        final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant().withId(defendantId1).build();
+        final uk.gov.justice.core.courts.Defendant defendant2 = uk.gov.justice.core.courts.Defendant.defendant().withId(defandantId2).build();
+        final uk.gov.justice.core.courts.Defendant defendant3 = uk.gov.justice.core.courts.Defendant.defendant().withId(defendnatId3).build();
+
+        final List<uk.gov.justice.core.courts.Defendant> defsList = new ArrayList<>();
+        defsList.add(defendant1);
+        defsList.add(defendant2);
+        defsList.add(defendant3);
+        return defsList;
+    }
+
 }
+
+

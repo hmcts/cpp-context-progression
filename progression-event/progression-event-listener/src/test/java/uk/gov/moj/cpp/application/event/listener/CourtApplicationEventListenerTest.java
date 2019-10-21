@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
@@ -186,6 +187,27 @@ public class CourtApplicationEventListenerTest {
     }
 
     @Test
+    public void shouldHandleBoxworkAssignmentChangedEvent() {
+
+        final BoxworkAssignmentChanged event = BoxworkAssignmentChanged.boxworkAssignmentChanged()
+                .withApplicationId(UUID.randomUUID())
+                .withUserId(UUID.randomUUID())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        when(jsonObjectToObjectConverter.convert(payload, BoxworkAssignmentChanged.class))
+                .thenReturn(event);
+        when(envelope.metadata()).thenReturn(metadata);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+
+        when(repository.findByApplicationId(event.getApplicationId())).thenReturn(courtApplicationEntity);
+        eventListener.processBoxworkAssignmentChanged(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        Assert.assertEquals(argumentCaptor.getValue().getAssignedUserId(), event.getUserId());
+
+    }
     public void shouldHandleApplicationEjectedEvent() throws IOException {
         final UUID applicationId = fromString("f5decee0-27b5-4dc7-8c42-66dfbc6168d6");
         final UUID hearingId = UUID.randomUUID();

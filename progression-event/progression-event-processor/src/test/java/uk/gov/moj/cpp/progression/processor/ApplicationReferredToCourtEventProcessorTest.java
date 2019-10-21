@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -87,6 +88,7 @@ public class ApplicationReferredToCourtEventProcessorTest {
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         this.eventProcessor.process(jsonEnvelope);
         verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
+        verify(progressionService).updateCourtApplicationStatus(jsonEnvelope, courtApplication.getId(), ApplicationStatus.UN_ALLOCATED);
     }
 
     @Test
@@ -109,6 +111,7 @@ public class ApplicationReferredToCourtEventProcessorTest {
 
         this.eventProcessor.process(jsonEnvelope);
         verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
+        verify(progressionService).updateCourtApplicationStatus(jsonEnvelope, courtApplication.getId(), ApplicationStatus.UN_ALLOCATED);
     }
 
 }

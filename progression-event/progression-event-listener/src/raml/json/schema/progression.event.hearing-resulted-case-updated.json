@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    }
+  },
+  "required": [
+    "prosecutionCase"
+  ],
+  "additionalProperties": false
+}

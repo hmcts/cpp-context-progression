@@ -7,6 +7,9 @@
     "applicationid": {
 		"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
 	},
+    "assignedUserId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
 	"applicationTitle": {
 		"type": "string"
 	},

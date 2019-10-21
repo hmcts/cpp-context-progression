@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +26,7 @@ import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 
@@ -42,6 +44,56 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
+import uk.gov.justice.core.courts.ConfirmedDefendant;
+import uk.gov.justice.core.courts.ConfirmedHearing;
+import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingLanguage;
+import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.HearingUpdated;
+import uk.gov.justice.core.courts.JudicialRole;
+import uk.gov.justice.core.courts.JudicialRoleType;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionServiceTest {
@@ -97,6 +149,7 @@ public class ProgressionServiceTest {
     private static final String JUDICIARY_TYPE_1 = "RECORDER";
     private static final String JUDICIARY_TYPE_2 = "MAGISTRATE";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
 
@@ -190,6 +243,28 @@ public class ProgressionServiceTest {
         );
     }
 
+    @Test
+    public void testUpdateCase() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE);
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(generateDefendantsForCase(randomUUID()))
+                .withId(randomUUID()).build();
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
+                .build();
+
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE)).thenReturn(enveloperFunction);
+
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.updateCase(envelope, prosecutionCase);
+        verify(sender).send(finalEnvelope);
+    }
+
+
+
     private JsonObject generateJudiciariesJson() throws IOException {
         String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
                 .replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString())
@@ -280,6 +355,15 @@ public class ProgressionServiceTest {
         );
     }
 
+    private List<Defendant> generateDefendantsForCase(final UUID defendantId){
+        return Collections.singletonList(
+                Defendant.defendant()
+                        .withId(defendantId)
+                        .withProsecutionCaseId(CASE_ID_1)
+                        .build()
+        );
+    }
+
     private List<HearingDay> generateHearingDays() {
         return Arrays.asList(
                 HearingDay.hearingDay()
@@ -361,4 +445,41 @@ public class ProgressionServiceTest {
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationId, HearingListingStatus.HEARING_INITIALISED);
         verify(sender).send(finalEnvelope);
     }
+
+
+    @Test
+    public void testShouldTransformBoxWorkApplication(){
+
+        final UUID applicationId = UUID.randomUUID();
+        final LocalDate dueDate = LocalDate.now().plusDays(2);
+
+        final Hearing expectedHearing = Hearing.hearing()
+                .withIsBoxHearing(true).withId(UUID.randomUUID())
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withDueDate(dueDate).build()))
+                .withHearingDays(Arrays.asList(HearingDay.hearingDay()
+                        .withListedDurationMinutes(10)
+                        .withSittingDay(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).build()))
+                .build();
+
+
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withDueDate(dueDate).withId(applicationId).build()))
+                .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
+                .build();
+
+        final BoxworkApplicationReferred boxworkApplicationReferred = BoxworkApplicationReferred.boxworkApplicationReferred()
+                 .withHearingRequest(hearingListingNeeds).build();
+
+        final Hearing actualHearing = progressionService.transformBoxWorkApplication(boxworkApplicationReferred);
+
+        assertThat(actualHearing.getCourtApplications().get(0).getId(), CoreMatchers.is(expectedHearing.getCourtApplications().get(0).getId()));
+        assertThat(actualHearing.getHearingDays().get(0).getSittingDay(), CoreMatchers.is(expectedHearing.getHearingDays().get(0).getSittingDay()));
+        assertThat(actualHearing.getHearingDays().get(0).getListedDurationMinutes(), CoreMatchers.is(expectedHearing.getHearingDays().get(0).getListedDurationMinutes()));
+        assertThat(actualHearing.getCourtApplications().get(0).getDueDate(), CoreMatchers.is(expectedHearing.getCourtApplications().get(0).getDueDate()));
+        assertThat(actualHearing.getIsBoxHearing(), CoreMatchers.is(expectedHearing.getIsBoxHearing()));
+
+    }
+
 }
