@@ -169,11 +169,7 @@
               "employerPayrollReference": "payyou1234",
               "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
               "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
-              "pncId": "1234567",
-              "aliases": [
-                "johnny robber",
-                "jack the knife"
-              ]
+              "pncId": "1234567"
             }
           }
         ]

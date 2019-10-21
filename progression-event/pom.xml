@@ -5,11 +5,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>6.0.7-FRAMEWORK-SNAPSHOT</version>
+        <version>6.0.18-SC-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>progression-event-indexer</module>
         <module>progression-event-listener</module>
         <module>progression-event-processor</module>
     </modules>

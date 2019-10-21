@@ -1,0 +1,64 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "defendant": {
+          "prosecutionCaseId": "caseId",
+          "pncId": "parties[0].pncId",
+          "legalEntityDefendant": {
+            "organisation": {
+              "name": "parties[0].organisationName"
+            }
+          },
+          "personDefendant": {
+            "arrestSummonsNumber": "parties[0].arrestSummonsNumber",
+            "personDetails": {
+              "@2": {
+                "id": "parties[0].partyId"
+              },
+              "#defendant": "parties[0]._party_type",
+              "title": "parties[0].title",
+              "firstName": "parties[0].firstName",
+              "middleName": "parties[0].middleName",
+              "lastName": "parties[0].lastName",
+              "dateOfBirth": "parties[0].dateOfBirth",
+              "gender": "parties[0].gender",
+              "address": {
+                "*": "parties[0].addressLines",
+                "postcode": "parties[0].postCode"
+              }
+            }
+          },
+          "aliases": {
+            "*": {
+              "firstName": "parties[0].aliases[&1].firstName",
+              "middleName": "parties[0].aliases[&1].middleName",
+              "lastName": "parties[0].aliases[&1].lastName",
+              "title": "parties[0].aliases[&1].title",
+              "legalEntityName": "parties[0].aliases[&1].organisationName"
+            }
+          }
+        }
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "parties": {
+          "*": {
+            "\\_party_type": "=toUpper",
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        }
+      }
+    },
+    {
+      "operation": "default",
+      "spec": {
+        "_case_type": "PROSECUTION"
+      }
+    }
+  ]
+
+}

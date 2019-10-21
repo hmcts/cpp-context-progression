@@ -1,0 +1,96 @@
+package uk.gov.moj.cpp.progression.ingester;
+
+import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
+import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
+import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
+import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
+
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.jayway.jsonpath.DocumentContext;
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class CourtApplicationCreatedIngesterIT {
+
+    private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
+
+    private String applicationId;
+    private String applicantId;
+    private String applicantDefendantId;
+    private String respondantId;
+    private String respondantDefendantId;
+
+    @BeforeClass
+    public static void beforeClass() {
+        createMockEndpoints();
+    }
+
+    @Before
+    public void setUp() throws IOException {
+
+        applicationId = randomUUID().toString();
+        applicantId = randomUUID().toString();
+        applicantDefendantId = randomUUID().toString();
+        respondantId = randomUUID().toString();
+        respondantDefendantId = randomUUID().toString();
+
+        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        cleanEventStoreTables();
+        cleanViewStoreTables();
+    }
+
+    @Test
+    public void shouldIndexCreateCourtApplicationEvent() throws Exception {
+
+        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+
+        final Matcher[] matchers = {withJsonPath("$.caseId", equalTo(applicationId))};
+
+        final Optional<JsonObject> courApplicationCreatedResponseJsonObject = findBy(matchers);
+
+        assertTrue(courApplicationCreatedResponseJsonObject.isPresent());
+
+        final String payloadStr = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
+                .replaceAll("RANDOM_APPLICATION_ID", applicationId)
+                .replaceAll("RANDOM_APPLICANT_ID", applicantId)
+                .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
+                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+
+
+        final JsonObject inputApplication = jsonFromString(payloadStr);
+
+        final DocumentContext inputCourtApplication = parse(inputApplication);
+
+        verifyStandaloneApplication(applicationId, courApplicationCreatedResponseJsonObject.get());
+        verifyAddCourtApplication(inputCourtApplication, courApplicationCreatedResponseJsonObject.get(), applicationId);
+    }
+}
+
+
+

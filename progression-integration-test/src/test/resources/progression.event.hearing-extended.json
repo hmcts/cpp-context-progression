@@ -243,13 +243,7 @@
                   "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                   "indicatedPleaDate": "0000-01-01",
                   "indicatedPleaValue": "INDICATED_GUILTY",
-                  "source": "ONLINE",
-                  "allocationDecision": {
-                    "courtDecision": "CONSENT_SUMMARY_TRIAL",
-                    "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
-                    "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
-                    "indicationOfSentence": "a"
-                  }
+                  "source": "ONLINE"
                 },
                 "plea": {
                   "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -833,13 +827,7 @@
                       "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                       "indicatedPleaDate": "0000-01-01",
                       "indicatedPleaValue": "INDICATED_GUILTY",
-                      "source": "ONLINE",
-                      "allocationDecision": {
-                        "courtDecision": "CONSENT_SUMMARY_TRIAL",
-                        "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
-                        "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
-                        "indicationOfSentence": "a"
-                      }
+                      "source": "ONLINE"
                     },
                     "plea": {
                       "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",

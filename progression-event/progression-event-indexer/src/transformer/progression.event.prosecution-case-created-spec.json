@@ -1,0 +1,68 @@
+{
+  "operations": [
+    {
+    "operation": "shift",
+    "spec": {
+      "prosecutionCase": {
+        "id": "caseId",
+        "#PROSECUTION": "_case_type",
+        "#active": "caseStatus",
+        "prosecutionCaseIdentifier": {
+          "caseURN": "caseReference",
+          "prosecutionAuthorityReference": "caseReference",
+          "prosecutionAuthorityCode": "prosecutingAuthority"
+        },
+        "defendants": {
+          "*": {
+            "pncId": "parties[&1].pncId",
+            "aliases": {
+              "*": {
+                "firstName": "parties[&1].aliases[&3].firstName",
+                "middleName": "parties[&1].aliases[&3].middleName",
+                "lastName": "parties[&1].aliases[&3].lastName",
+                "title": "parties[&1].aliases[&3].title",
+                "legalEntityName": "parties[&1].aliases[&3].organisationName"
+              }
+            },
+            "id": "parties[&1].partyId",
+            "#DEFENDANT" : "parties[0]._party_type",
+            "legalEntityDefendant": {
+              "organisation": {
+                "name": "parties[&3].organisationName"
+              }
+            },
+            "personDefendant": {
+              "arrestSummonsNumber": "parties[&2].arrestSummonsNumber",
+              "personDetails": {
+                "title": "parties[&3].title",
+                "firstName": "parties[&3].firstName",
+                "middleName": "parties[&3].middleName",
+                "lastName": "parties[&3].lastName",
+                "dateOfBirth": "parties[&3].dateOfBirth",
+                "gender": "parties[&3].gender",
+                "address": {
+                  "*": "parties[&4].addressLines",
+                  "postcode": "parties[&4].postCode"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_case_type": "=toUpper",
+        "caseStatus": "=toUpper",
+        "prosecutingAuthority": "=toUpper",
+        "parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        }
+      }
+    }
+  ]
+}

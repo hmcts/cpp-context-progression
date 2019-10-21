@@ -52,6 +52,7 @@ resource_descriptor:
         - '/progression-command-api'
         - '/progression-command-handler'
         - '/progression-event-listener'
+        - '/progression-event-indexer'
         - '/progression-event-processor'
         - '/progression-query-api'
         - '/progression-query-view'

@@ -1,0 +1,18 @@
+subscriptions_descriptor:
+  spec_version: 1.0.0
+  service: progression
+  service_component: EVENT_INDEXER
+  subscriptions:
+    - name: progession event indexer subscription
+      events:
+        - name: progression.event.prosecution-case-created
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
+        - name: progression.event.prosecutionCase-defendant-listing-status-changed
+          schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed.json
+        - name: progression.event.court-application-created
+          schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
+        - name: progression.event.court-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-application-updated.json
+        - name: progression.event.prosecution-case-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-defendant-updated.json
+      event_source_name: progression

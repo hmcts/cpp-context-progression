@@ -1,0 +1,343 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "arn": "applications[0].applicationReference",
+        "courtApplication": {
+          "linkedCaseId": "linkedCaseIdTemp",
+          "id": [
+            "applications[0].applicationId",
+            "applicationIdTemp"
+          ],
+          "type": {
+            "applicationType": "applications[0].applicationType"
+          },
+          "applicationReceivedDate": "applications[0].receivedDate",
+          "applicationDecisionSoughtByDate": "applications[0].decisionDate",
+          "applicant": {
+            "personDetails": {
+              "title": "applicant_parties[0].title",
+              "firstName": "applicant_parties[0].firstName",
+              "middleName": "applicant_parties[0].middleName",
+              "lastName": "applicant_parties[0].lastName",
+              "dateOfBirth": "applicant_parties[0].dateOfBirth",
+              "gender": "applicant_parties[0].gender",
+              "address": {
+                "*": "applicant_parties[0].addressLines",
+                "postcode": "applicant_parties[0].postCode"
+              }
+            },
+            "defendant": {
+              "id": "applicant_defendant_parties[0].partyId",
+              "pncId": "applicant_defendant_parties[0].pncId",
+              "personDefendant": {
+                "arrestSummonsNumber": "applicant_defendant_parties[0].arrestSummonsNumber",
+                "personDetails": {
+                  "title": "applicant_defendant_parties[0].title",
+                  "firstName": "applicant_defendant_parties[0].firstName",
+                  "middleName": "applicant_defendant_parties[0].middleName",
+                  "lastName": "applicant_defendant_parties[0].lastName",
+                  "dateOfBirth": "applicant_defendant_parties[0].dateOfBirth",
+                  "gender": "applicant_defendant_parties[0].gender",
+                  "address": {
+                    "*": "applicant_defendant_parties[0].addressLines",
+                    "postcode": "applicant_defendant_parties[0].postCode"
+                  }
+                }
+              },
+              "legalEntityDefendant": {
+                "organisation": {
+                  "name": "applicant_defendant_parties[0].organisationName"
+                }
+              },
+              "aliases": {
+                "*": {
+                  "firstName": "applicant_defendant_parties[0].aliases[&1].firstName",
+                  "middleName": "applicant_defendant_parties[0].aliases[&1].middleName",
+                  "lastName": "applicant_defendant_parties[0].aliases[&1].lastName",
+                  "title": "applicant_defendant_parties[0].aliases[&1].title",
+                  "legalEntityName": "applicant_defendant_parties[0].aliases[&1].organisationName"
+                }
+              }
+            },
+            "organisation": {
+              "#true": "useOrganisationDetails",
+              "name": "applicant_org_parties[0].organisationName",
+              "address": {
+                "*": "applicant_org_parties[0].addressLines",
+                "postcode": "applicant_org_parties[0].postCode"
+              }
+            },
+            "id": [
+              "applicant_parties[0].partyId",
+              "applicant_org_parties[0].partyId"
+            ],
+            "organisationPersons": {
+              "0": {
+                "person": {
+                  "firstName": "applicant_parties[&2].firstName",
+                  "middleName": "applicant_parties[&2].middleName",
+                  "lastName": "applicant_parties[&2].lastName",
+                  "title": "applicant_parties[&2].title",
+                  "dateOfBirth": "applicant_parties[&2].dateOfBirth",
+                  "gender": "applicant_parties[&2].gender",
+                  "address": {
+                    "*": "applicant_parties[&3].addressLines",
+                    "postcode": "applicant_parties[&3].postCode"
+                  }
+                }
+              }
+            }
+          },
+          "respondents": {
+            "*": {
+              "partyDetails": {
+                "id": "respondent_parties.[&2].partyId",
+                "organisation": {
+                  "name": "respondent_parties[&3].organisationName"
+                },
+                "personDetails": {
+                  "firstName": "respondent_parties.[&3].firstName",
+                  "lastName": "respondent_parties.[&3].lastName",
+                  "middleName": "respondent_parties[&3].middleName",
+                  "title": "respondent_parties[&3].title",
+                  "dateOfBirth": "respondent_parties[&3].dateOfBirth",
+                  "gender": "respondent_parties[&3].gender",
+                  "address": {
+                    "*": "respondent_parties[&4].addressLines",
+                    "postcode": "respondent_parties[&4].postCode"
+                  }
+                },
+                "defendant": {
+                  "id": "defendant_parties[&3].partyId",
+                  "pncId": "defendant_parties[&3].pncId",
+                  "personDefendant": {
+                    "arrestSummonsNumber": "defendant_parties[&4].arrestSummonsNumber",
+                    "personDetails": {
+                      "title": "defendant_parties[&5].title",
+                      "firstName": "defendant_parties[&5].firstName",
+                      "middleName": "defendant_parties[&5].middleName",
+                      "lastName": "defendant_parties[&5].lastName",
+                      "dateOfBirth": "defendant_parties[&5].dateOfBirth",
+                      "gender": "defendant_parties[&5].gender",
+                      "address": {
+                        "*": "defendant_parties[&6].addressLines",
+                        "postcode": "defendant_parties[&6].postCode"
+                      }
+                    }
+                  },
+                  "legalEntityDefendant": {
+                    "organisation": {
+                      "name": "defendant_parties[&5].organisationName"
+                    }
+                  },
+                  "aliases": {
+                    "*": {
+                      "firstName": "defendant_parties[&5].aliases[&1].firstName",
+                      "middleName": "defendant_parties[&5].aliases[&1].middleName",
+                      "lastName": "defendant_parties[&5].aliases[&1].lastName",
+                      "title": "defendant_parties[&5].aliases[&1].title",
+                      "legalEntityName": "defendant_parties[&5].aliases[&1].organisationName"
+                    }
+                  }
+                },
+                "organisationPersons": {
+                  "0": {
+                    "person": {
+                      "firstName": "respondent_parties[&2].firstName",
+                      "middleName": "respondent_parties[&2].middleName",
+                      "lastName": "respondent_parties[&2].lastName",
+                      "title": "respondent_parties[&2].title",
+                      "dateOfBirth": "respondent_parties[&2].dateOfBirth",
+                      "gender": "respondent_parties[&2].gender",
+                      "address": {
+                        "*": "respondent_parties[&3].addressLines",
+                        "postcode": "respondent_parties[&3].postCode"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "~useOrganisationDetails": "false"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "useOrganisationDetails": "=toBoolean"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "applicant_defendant_parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        },
+        "respondent_parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        },
+        "applicant_parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        },
+        "applicant_org_parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        },
+        "defendant_parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        }
+      }
+    },
+    {
+      "operation": "default",
+      "spec": {
+        "applicant_defendant_parties[]": {
+          "*": {
+            "_party_type": "defendant"
+          }
+        },
+        "applicant_parties[]": {
+          "*": {
+            "_party_type": "applicant"
+          }
+        },
+        "applicant_org_parties[]": {
+          "*": {
+            "_party_type": "applicant"
+          }
+        },
+        "respondent_parties[]": {
+          "*": {
+            "_party_type": "respondent"
+          }
+        },
+        "defendant_parties[]": {
+          "*": {
+            "_party_type": "defendant"
+          }
+        }
+      }
+    },
+    {
+      "operation": "shift",
+      "spec": {
+        "applications": "applications",
+        "linkedCaseIdTemp": "linkedCaseIdTemp",
+        "applicationIdTemp": "applicationIdTemp",
+        "applicant_defendant_parties": {
+          "*": "parties[]"
+        },
+        "useOrganisationDetails": {
+          "true": {
+            "@(2,applicant_org_parties)": {
+              "*": "parties[]"
+            }
+          },
+          "false": {
+            "@(2,applicant_parties)": {
+              "*": "parties[]"
+            }
+          }
+        },
+        "respondent_parties": {
+          "*": "parties[]"
+        },
+        "defendant_parties": {
+          "*": "parties[]"
+        }
+      }
+    },
+    {
+      "operation": "default",
+      "spec": {
+        "refTemp": {
+          "True": true,
+          "False": false
+        },
+        "linkedCaseTemp": false
+      }
+    },
+    {
+      "operation": "shift",
+      "spec": {
+        "linkedCaseTemp": "linkedCaseTemp",
+        "refTemp": "refTemp",
+        "applications": "applications",
+        "parties": "parties",
+        "linkedCaseIdTemp": [
+          "linkedCaseIdTemp",
+          "linkedCaseIdTemp1"
+        ],
+        "applicationIdTemp": "applicationIdTemp"
+      }
+    },
+    {
+      "operation": "shift",
+      "spec": {
+        "linkedCaseTemp": "linkedCaseTemp",
+        "linkedCaseIdTemp1": "linkedCaseIdTemp",
+        "applicationIdTemp": "applicationIdTemp",
+        "applications": "applications",
+        "parties": "parties",
+        "linkedCaseIdTemp": {
+          "*": {
+            "@(3,refTemp.True)": "linkedCaseTemp"
+          }
+        }
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "linkedCaseTemp": "=lastElement(@(1,linkedCaseTemp))"
+      }
+    },
+    {
+      "operation": "shift",
+      "spec": {
+        "applications": "applications",
+        "parties": "parties",
+        "linkedCaseTemp": {
+          "true": {
+            "#PROSECUTION": "_case_type",
+            "@(2,linkedCaseIdTemp)": "caseId"
+          },
+          "false": {
+            "#APPLICATION": "_case_type",
+            "@(2,applicationIdTemp)": "caseId"
+          }
+        }
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_case_type": "=toUpper",
+        "parties": {
+          "*": {
+            "\\_party_type": "=toUpper"
+          }
+        }
+      }
+    }
+  ]
+
+}

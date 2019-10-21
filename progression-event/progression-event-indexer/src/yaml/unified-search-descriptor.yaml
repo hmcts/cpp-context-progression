@@ -1,0 +1,22 @@
+unified_search_descriptor:
+  name: example
+  spec_version: 1.0.0
+  service: progression
+  service_component: EVENT_INDEXER
+  events:
+     - name: progression.event.prosecution-case-created
+       transformer_config: progression.event.prosecution-case-created-spec.json
+       index_name: crime_case_index
+     - name: progression.event.prosecutionCase-defendant-listing-status-changed
+       transformer_config: progression.event.prosecution-case-defendant-listing-status-changed-spec.json
+       index_name: crime_case_index
+     - name: progression.event.court-application-created
+       transformer_config: progression.event.court-application-created-spec.json
+       index_name: crime_case_index
+     - name: progression.event.court-application-updated
+       transformer_config: progression.event.court-application-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.event.prosecution-case-defendant-updated
+       transformer_config: progression.event.prosecution-case-defendant-updated-spec.json
+       index_name: crime_case_index
+...
