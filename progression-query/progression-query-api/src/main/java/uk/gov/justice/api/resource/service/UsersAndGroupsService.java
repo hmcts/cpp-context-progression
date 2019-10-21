@@ -29,7 +29,8 @@ public class UsersAndGroupsService {
                 envelope.payloadAsJsonObject().getJsonString("organisationId").getString()).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(organisationDetail)
                 .withName("usersgroups.get-organisation-details").withMetadataFrom(envelope);
-        final JsonEnvelope response = requester.request(requestEnvelope);
+        final JsonEnvelope usersAndGroupsRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
+        final JsonEnvelope response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
         return response.payloadAsJsonObject();
     }
 }

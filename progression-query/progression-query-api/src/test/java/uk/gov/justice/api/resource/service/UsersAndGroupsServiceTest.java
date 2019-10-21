@@ -53,13 +53,13 @@ public class UsersAndGroupsServiceTest {
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, associationBuilder);
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //when
         final JsonObject result = usersAndGroupsService.getOrganisationDetails(query);
 
         //then
-        verify(requester).request(envelopeArgumentCaptor.capture());
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
         assertThat(result.getString("organisationId"), is(organisationId.toString()));
     }
 
