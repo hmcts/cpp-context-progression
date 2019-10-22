@@ -48,7 +48,8 @@ public class UsersGroupService {
         final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest)
                 .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
-        final JsonEnvelope response = requester.request(requestEnvelope);
+        final JsonEnvelope usersAndGroupsRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
+        final JsonEnvelope response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
         if (notFound(response)
                 || (response.payloadAsJsonObject().getString(ORGANISATION_ID) == null)) {
             LOGGER.debug("Unable to retrieve Organisation for User {}", userId);
@@ -64,7 +65,8 @@ public class UsersGroupService {
         final JsonObject getUserGroupsForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getUserGroupsForUserRequest)
                 .withName("usersgroups.get-logged-in-user-groups").withMetadataFrom(envelope);
-        final JsonEnvelope response = requester.request(requestEnvelope);
+        final JsonEnvelope usersAndGroupsRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
+        final JsonEnvelope response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
         if (notFound(response)
                 || (response.payloadAsJsonObject().getJsonArray(GROUPS) == null)
                 || (response.payloadAsJsonObject().getJsonArray(GROUPS).isEmpty())) {

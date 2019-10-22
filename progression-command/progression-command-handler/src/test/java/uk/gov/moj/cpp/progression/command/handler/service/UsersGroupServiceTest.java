@@ -58,13 +58,13 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final JsonEnvelope response = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //When
         final JsonObject result = usersGroupService.getOrganisationDetailsForUser(query);
 
         //Then
-        verify(requester).request(envelopeArgumentCaptor.capture());
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
         assertThat(result.getString("organisationId"), is(organisationId.toString()));
 
     }
@@ -79,13 +79,13 @@ public class UsersGroupServiceTest {
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getHMCTSGroups();
         final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(),userGroupsResponse);
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //When
         List<UserGroupDetails> userGroupDetails = usersGroupService.getUserGroupsForUser(query);
 
         //Then
-        verify(requester).request(envelopeArgumentCaptor.capture());
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
         assertEquals(userGroupsResponse.getJsonArray("groups").size(),
                 userGroupDetails.size());
         assertEquals(userGroupsResponse.getJsonArray("groups").getJsonObject(0).getJsonString("groupId").getString(),
@@ -104,7 +104,7 @@ public class UsersGroupServiceTest {
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getNoGroups();
         final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(),userGroupsResponse);
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //When
         List<UserGroupDetails> userGroupDetails = usersGroupService.getUserGroupsForUser(query);
@@ -122,7 +122,7 @@ public class UsersGroupServiceTest {
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 metadataBuilder, JsonValue.NULL);
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
         usersGroupService.getOrganisationDetailsForUser(query);
     }
 
@@ -135,7 +135,7 @@ public class UsersGroupServiceTest {
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 metadataBuilder, JsonValue.NULL);
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
         usersGroupService.getUserGroupsForUser(query);
     }
 
@@ -147,7 +147,7 @@ public class UsersGroupServiceTest {
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
 
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
-        when(requester.request(any())).thenReturn(response);
+        when(requester.requestAsAdmin(any())).thenReturn(response);
 
         usersGroupService.getOrganisationDetailsForUser(query);
 
