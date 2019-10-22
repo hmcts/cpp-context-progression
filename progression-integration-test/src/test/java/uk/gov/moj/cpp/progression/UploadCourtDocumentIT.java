@@ -96,7 +96,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        Matcher[] matcher = {
+        final Matcher[] matcher = {
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                 withJsonPath("$.courtDocuments[0].courtDocumentId", equalTo(docId))
         };
@@ -108,12 +108,13 @@ public class UploadCourtDocumentIT extends AbstractIT {
         assertThat(courtDocument.getString("name"), equalTo("SJP Notice"));
         assertThat(courtDocument.getString("documentTypeId"), equalTo("0bb7b276-9dc0-4af2-83b9-f4acef0c7898"));
         assertThat(courtDocument.getString("mimeType"), equalTo("pdf"));
+        assertThat(courtDocument.getBoolean("containsFinancialMeans"), equalTo(true));
         final JsonObject material = courtDocument.getJsonArray("materials").getJsonObject(0);
         assertThat(material.getString("id"), equalTo("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"));
 
         assertNotNull(material.getString("uploadDateTime"));
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(material.getString("uploadDateTime"));
-        assertThat(zonedDateTime.getZone().getId(),equalTo(("Z")));
+        final ZonedDateTime zonedDateTime = ZonedDateTime.parse(material.getString("uploadDateTime"));
+        assertThat(zonedDateTime.getZone().getId(), equalTo(("Z")));
     }
 
     static class UploadRequest {
@@ -132,7 +133,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
     public void uploadApplicationDocument() throws Exception {
         final UUID applicationId = UUID.randomUUID();
         final UUID materialId = UUID.randomUUID();
-        CourtDocument courtDocument = CourtDocument.courtDocument()
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
                 .withCourtDocumentId(UUID.randomUUID())
                 .withDocumentTypeId(UUID.randomUUID())
                 .withDocumentTypeDescription("test document")
@@ -153,7 +154,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         final UploadRequest uploadRequest = new UploadRequest();
         uploadRequest.setCourtDocument(courtDocument);
         final String strJson = Utilities.JsonUtil.toJsonString(uploadRequest);
-        UUID docId = UUID.randomUUID();
+        final UUID docId = UUID.randomUUID();
         final Response writeResponse = postCommand(getCommandUri("/courtdocument/" + docId.toString()),
                 "application/vnd.progression.add-court-document+json",
                 strJson);
@@ -162,7 +163,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         //search for the document by application id
 
         final BeanMatcher<Courtdocuments> preGeneratedResultMatcher = isBean(Courtdocuments.class)
-                .withValue(cds->cds.getDocumentIndices().size(), 1);
+                .withValue(cds -> cds.getDocumentIndices().size(), 1);
 
         System.out.println("applicationId " + applicationId.toString());
 

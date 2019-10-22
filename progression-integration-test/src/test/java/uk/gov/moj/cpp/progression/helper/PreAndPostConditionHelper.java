@@ -1,18 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.json.JSONObject;
-import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
-
-import javax.json.Json;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.time.LocalDate;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
 import static java.util.UUID.randomUUID;
@@ -33,6 +20,22 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
+import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.json.Json;
+
+import com.google.common.io.Resources;
+import com.jayway.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.json.JSONObject;
+
 
 public class PreAndPostConditionHelper {
 
@@ -40,7 +43,7 @@ public class PreAndPostConditionHelper {
 
     public static String addDefendant(final String caseId) {
         String request = null;
-        try (AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
+        try (final AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
             request = addDefendantHelper.addMinimalDefendant();
             addDefendantHelper.verifyInActiveMQ();
             addDefendantHelper.verifyInPublicTopic();
@@ -50,7 +53,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static void addDefendant(final String caseId, final String defendantId) {
-        try (AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
+        try (final AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
             addDefendantHelper.addFullDefendant(defendantId, randomUUID().toString().substring(0, 11));
         }
     }
@@ -223,6 +226,7 @@ public class PreAndPostConditionHelper {
 
     public static void verifyCasesForSearchCriteria(final String searchCriteria, final Matcher[] matchers) {
         poll(requestParams(getQueryUri(join("", "/search?q=", searchCriteria)), "application/vnd.progression.query.search-cases+json").withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -264,7 +268,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static String getApplicationExtractPdf(final String applicationId, final String hearingIds) {
-        String queryParam = "?hearingIds=" + hearingIds;
+        final String queryParam = "?hearingIds=" + hearingIds;
         return pollForResponse(join("", "/applications/", applicationId, "/extract", queryParam), "application/vnd.progression.query.court-extract-application+json");
     }
 
@@ -326,7 +330,7 @@ public class PreAndPostConditionHelper {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                 .replace("APPLICATION_ID", applicationId)
                 .replace("RANDOM_CASE_ID", caseId)
-                .replace("RANDOM_DEFENDANT_ID",defendantId)
+                .replace("RANDOM_DEFENDANT_ID", defendantId)
                 .replace("APPLICANT_ID", applicantId);
     }
 
@@ -351,14 +355,12 @@ public class PreAndPostConditionHelper {
 
     }
 
-    public static String getCourtDocumentFor(final String courtDocumentId) {
-        return pollForResponse(join("", "/courtdocuments/", courtDocumentId), "application/vnd.progression.query.courtdocument+json");
-    }
     public static Response ejectCaseApplication(final String applicationId, final String caseId, final String removalReason, final String fileName) throws IOException {
         return postCommand(getCommandUri("/eject"),
                 "application/vnd.progression.eject-case-or-application+json",
                 getEjectCaseOrApplicationCommandBody(applicationId, caseId, removalReason, fileName));
     }
+
     private static String getEjectCaseOrApplicationCommandBody(final String applicationId, final String caseId,
                                                                final String removalReason, final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
@@ -366,6 +368,17 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REMOVAL_REASON", removalReason);
     }
+
+    public static String getCourtDocumentFor(final String courtDocumentId, final Matcher... matchers) {
+        return poll(requestParams(getQueryUri(join("", "/courtdocuments/", courtDocumentId)), "application/vnd.progression.query.courtdocument+json").withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(40, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                matchers
+                        ))).getPayload();
+    }
+
     private static String getReferApplicationToCourtJsonBody(final String applicationId, final String hearingId, final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                 .replace("RANDOM_APPLICATION_ID", applicationId)
@@ -383,13 +396,14 @@ public class PreAndPostConditionHelper {
     public static void pollForApplicationStatus(final String applicationId, final String status) {
         poll(requestParams(getQueryUri("/applications/" + applicationId),
                 "application/vnd.progression.query.application+json").withHeader(USER_ID, randomUUID()))
-                        .until(status().is(OK),
-                                payload().isJson(allOf(
-                                        withJsonPath("$.courtApplication.id", equalTo(applicationId)),
-                                        withJsonPath("$.courtApplication.applicationStatus", equalTo(status))
-                                )));
+                .until(status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication.id", equalTo(applicationId)),
+                                withJsonPath("$.courtApplication.applicationStatus", equalTo(status))
+                        )));
 
     }
+
     public static String getProsecutioncasesProgressionForMaterials(final String caseId) {
         return poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), "application/vnd.progression.query.prosecutioncase+json").withHeader(USER_ID, UUID.randomUUID()))
                 .until(
@@ -399,6 +413,7 @@ public class PreAndPostConditionHelper {
                                 withJsonPath("$.courtDocuments[0]", notNullValue())
                         ))).getPayload();
     }
+
     public static String getApplicationWithMatchingApplicationStatus(final String applicationId, final String status) {
         return poll(requestParams(getQueryUri("/applications/" + applicationId), "application/vnd.progression.query.application+json").withHeader(USER_ID, UUID.randomUUID()))
                 .until(status().is(OK),
@@ -407,7 +422,5 @@ public class PreAndPostConditionHelper {
                                 withJsonPath("$.courtApplication.applicationStatus", equalTo(status))
                         ))).getPayload();
     }
-
-
 
 }

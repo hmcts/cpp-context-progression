@@ -1,21 +1,21 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.UUID.randomUUID;
+
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.Json;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
+import javax.json.Json;
 
 public class TestHelper {
 
-    private TestHelper(){
+    private TestHelper() {
 
     }
 
@@ -41,6 +41,7 @@ public class TestHelper {
                                 .withUserGroups(Arrays.asList("Listing Officers", "Legal")).build()))
                 .withMimeType("application/pdf")
                 .withName("SampleReferredCourtDocument")
+                .withContainsFinancialMeans(true)
                 .build();
     }
 

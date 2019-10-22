@@ -1,41 +1,15 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.builder.RequestSpecBuilder;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
-import uk.gov.justice.services.test.utils.core.rest.RestClient;
-import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import static com.jayway.restassured.RestAssured.given;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.resetStubs;
@@ -58,15 +32,46 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganis
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
 
+import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.justice.services.test.utils.core.rest.RestClient;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+
+import com.google.common.io.Resources;
+import com.jayway.restassured.builder.RequestSpecBuilder;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RestHelper {
 
+    public static final int TIMEOUT = 40;
+    public static final int POLL_INTERVAL_SECONDS = 1;
     private static final Logger LOGGER = LoggerFactory.getLogger(RestHelper.class.getCanonicalName());
-    public static RequestSpecification reqSpec;
     private static final Properties prop;
     private static final String baseUri;
-    private static String HOST = "localhost";
     private static final int PORT = 8080;
     private static final RestClient restClient = new RestClient();
+    public static RequestSpecification reqSpec;
+    private static String HOST = "localhost";
 
     static {
         prop = new Properties();
@@ -86,19 +91,27 @@ public class RestHelper {
         reqSpec = new RequestSpecBuilder().setBaseUri(baseUri).build();
     }
 
-
-
-    public static javax.ws.rs.core.Response getMaterialContentResponse(final String path, final UUID userId , final String mediaType) {
+    public static javax.ws.rs.core.Response getMaterialContentResponse(final String path, final UUID userId, final String mediaType) {
         final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId);
         map.add(HttpHeaders.ACCEPT, mediaType);
         return restClient.query(getQueryUri(path), mediaType, map);
     }
 
-    public static String pollForResponse(final String url,final String path, final String mediaType) {
-        return poll(requestParams(baseUri + url + path , mediaType)
+    public static String pollForResponse(final String path, final String mediaType, final Matcher[] matchers) {
+        return poll(requestParams(path, mediaType)
                 .withHeader("CJSCPPUID", randomUUID().toString()).build())
-                .timeout(10, TimeUnit.SECONDS).until(status().is(OK))
+                .timeout(TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(matchers)))
+                .getPayload();
+    }
+
+    public static String pollForResponse(final String url, final String path, final String mediaType) {
+        return poll(requestParams(baseUri + url + path, mediaType)
+                .withHeader("CJSCPPUID", randomUUID().toString()).build())
+                .timeout(TIMEOUT, TimeUnit.SECONDS).until(status().is(OK))
                 .getPayload();
     }
 
@@ -109,7 +122,7 @@ public class RestHelper {
     public static String pollForResponse(final String path, final String mediaType, final Matcher<ResponseData> matchSuccess) {
         return poll(requestParams(getQueryUri(path), mediaType)
                 .withHeader("CJSCPPUID", randomUUID().toString()).build())
-                .timeout(10, TimeUnit.SECONDS).until(matchSuccess)
+                .timeout(TIMEOUT, TimeUnit.SECONDS).until(status().is(OK))
                 .getPayload();
     }
 
@@ -119,7 +132,7 @@ public class RestHelper {
 
     public static JsonObject getJsonObject(final String jsonAsString) {
         final JsonObject payload;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
+        try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
             payload = jsonReader.readObject();
         }
         return payload;
@@ -144,7 +157,7 @@ public class RestHelper {
 
     public static void createMockEndpoints() {
         defaultStubs();
-        stubQueryEthinicityData("/restResource/ref-data-ethnicities.json",randomUUID());
+        stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
     }
 
     private static void defaultStubs() {
@@ -157,8 +170,8 @@ public class RestHelper {
         stubReferenceDataOffencesGetOffenceById("/restResource/referencedataoffences.get-offences-by-id.json");
         stubReferenceDataOffencesGetOffenceByOffenceCode("/restResource/referencedataoffences.get-offences-by-offence-code.json");
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
-        stubQueryNationalityData("/restResource/ref-data-nationalities.json",randomUUID());
-        stubQueryHearingTypeData("/restResource/ref-data-hearing-types.json",randomUUID());
+        stubQueryNationalityData("/restResource/ref-data-nationalities.json", randomUUID());
+        stubQueryHearingTypeData("/restResource/ref-data-hearing-types.json", randomUUID());
         stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons.json", randomUUID());
         stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json", randomUUID());
         stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
@@ -172,7 +185,7 @@ public class RestHelper {
 
     public static void createMockEndpointsWithEmpty() {
         defaultStubs();
-        stubQueryEthinicityData("/restResource/ref-data-ethnicities-with-noresults.json",randomUUID());
+        stubQueryEthinicityData("/restResource/ref-data-ethnicities-with-noresults.json", randomUUID());
     }
 
     public static String getPayloadForCreatingRequest(final String ramlPath) {

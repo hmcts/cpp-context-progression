@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.command;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -83,8 +84,7 @@ public class AddCourtDocumenttHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
-        final UploadCourtDocument uploadCourtDocument = UploadCourtDocument.uploadCourtDocument().withMaterialId(randomUUID()).withFileServiceId(randomUUID()).build();
-        final AddCourtDocument addCourtDocument  =  AddCourtDocument.addCourtDocument().withCourtDocument(CourtDocument.courtDocument().build()).build();
+        final AddCourtDocument addCourtDocument = AddCourtDocument.addCourtDocument().withCourtDocument(CourtDocument.courtDocument().withContainsFinancialMeans(true).build()).build();
 
         aggregate.addCourtDocument(addCourtDocument.getCourtDocument());
 
@@ -106,13 +106,14 @@ public class AddCourtDocumenttHandlerTest {
                         metadata()
                                 .withName("progression.event.court-document-added"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.courtDocument", notNullValue ()))
+                                withJsonPath("$.courtDocument", notNullValue()),
+                                withJsonPath("$.courtDocument.containsFinancialMeans", is(true))
+                                )
                         ))
 
                 )
         );
     }
-
 
 
 }

@@ -71,7 +71,7 @@ version: v1
         application/vnd.progression.event.court-application-created+json:
             schema: !include json/schema/progression.event.court-application-created.json
             example: !include json/progression.event.court-application-created.json
-
+            
         application/vnd.progression.event.court-application-status-changed+json:
             schema: !include json/schema/progression.event.court-application-status-changed.json
             example: !include json/progression.event.court-application-status-changed.json
@@ -86,6 +86,10 @@ version: v1
         application/vnd.progression.event.defendants-added-to-court-proceedings+json:
             schema: !include json/schema/progression.event.defendants-added-to-court-proceedings.json
             example: !include json/progression.event.defendants-added-to-court-proceedings.json
+
+        application/vnd.progression.event.financial-means-deleted+json:
+            schema: !include json/schema/progression.event.financial-means-deleted.json
+            example: !include json/progression.event.financial-means-deleted.json
 
         application/vnd.progression.event.hearing-resulted-case-updated+json:
             schema: !include json/schema/progression.event.hearing-resulted-case-updated.json
@@ -165,6 +169,5 @@ version: v1
         application/vnd.progression.event.conviction-date-removed+json:
             schema: !include json/schema/progression.event.conviction-date-removed.json
             example: !include json/progression.event.conviction-date-removed.json
-
 
 # Deprecated API  - End
