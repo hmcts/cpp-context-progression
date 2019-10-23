@@ -36,7 +36,7 @@
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
-        <material.version>2.0.118</material.version>
+        <material.version>6.0.1</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>4.1.8-R2</access.control.version>
         <referencedata.version>2.0.275</referencedata.version>
