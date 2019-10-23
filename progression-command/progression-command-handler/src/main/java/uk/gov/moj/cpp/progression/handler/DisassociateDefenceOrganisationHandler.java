@@ -63,9 +63,10 @@ public class DisassociateDefenceOrganisationHandler {
                                                final UUID userOrganisationId,
                                                final Envelope<DisassociateDefenceOrganisation> envelope) {
 
-        if (!organisationId.equals(userOrganisationId)
-                && !isHMCTSUser(envelope)) {
-            throw new IllegalArgumentException("The given Organisation is not qualified to perform this disassociation");
+        if (isDefenceUser(organisationId, userOrganisationId) || isHMCTSUser(userOrganisationId, envelope)) {
+            //Perform the Disassociation
+        } else {
+            throw new IllegalArgumentException("The given Organisation is not qualified to perform this disassociation " + organisationId);
         }
     }
 
@@ -79,10 +80,18 @@ public class DisassociateDefenceOrganisationHandler {
                         .map(Enveloper.toEnvelopeWithMetadataFrom(jsonEnvelope)));
     }
 
-    private boolean isHMCTSUser(final Envelope<DisassociateDefenceOrganisation> envelope) {
+    private boolean isHMCTSUser(final UUID userOrganisationId, final Envelope<DisassociateDefenceOrganisation> envelope) {
+        if (userOrganisationId != null) {
+            throw new IllegalArgumentException("The given user cannot be a HMCTS user as it has a  valid Organisation Id " + userOrganisationId);
+        }
         final List<UserGroupDetails> retrievedUserGroupDetails = usersGroupService.getUserGroupsForUser(envelope);
         return retrievedUserGroupDetails.stream().anyMatch(userGroupDetails ->
-                allowedGroupsForDisassociation.contains(userGroupDetails.getGroupName())
+                allowedGroupsForDisassociation.contains(userGroupDetails.getGroupName().trim())
         );
+    }
+
+    private boolean isDefenceUser(final UUID organisationId,
+                                  final UUID userOrganisationId) {
+        return userOrganisationId != null && organisationId.equals(userOrganisationId);
     }
 }

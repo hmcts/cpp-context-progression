@@ -61,11 +61,11 @@ public class UsersGroupServiceTest {
         when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //When
-        final JsonObject result = usersGroupService.getOrganisationDetailsForUser(query);
+        final JsonEnvelope result = usersGroupService.getOrganisationDetailsForUser(query);
 
         //Then
         verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
-        assertThat(result.getString("organisationId"), is(organisationId.toString()));
+        assertThat(result.payloadAsJsonObject().getString("organisationId"), is(organisationId.toString()));
 
     }
 
@@ -78,14 +78,14 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getHMCTSGroups();
-        final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(),userGroupsResponse);
-        when(requester.requestAsAdmin(any())).thenReturn(response);
+        final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(), userGroupsResponse);
+        when(requester.request(any())).thenReturn(response);
 
         //When
         List<UserGroupDetails> userGroupDetails = usersGroupService.getUserGroupsForUser(query);
 
         //Then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        verify(requester).request(envelopeArgumentCaptor.capture());
         assertEquals(userGroupsResponse.getJsonArray("groups").size(),
                 userGroupDetails.size());
         assertEquals(userGroupsResponse.getJsonArray("groups").getJsonObject(0).getJsonString("groupId").getString(),
@@ -103,27 +103,14 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getNoGroups();
-        final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(),userGroupsResponse);
-        when(requester.requestAsAdmin(any())).thenReturn(response);
+        final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(), userGroupsResponse);
+        when(requester.request(any())).thenReturn(response);
 
         //When
         List<UserGroupDetails> userGroupDetails = usersGroupService.getUserGroupsForUser(query);
 
         //Then
 
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionForMissingOrganisation() {
-
-        final UUID userId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
-        final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
-        final JsonEnvelope response = JsonEnvelope.envelopeFrom(
-                metadataBuilder, JsonValue.NULL);
-        when(requester.requestAsAdmin(any())).thenReturn(response);
-        usersGroupService.getOrganisationDetailsForUser(query);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -135,7 +122,7 @@ public class UsersGroupServiceTest {
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 metadataBuilder, JsonValue.NULL);
-        when(requester.requestAsAdmin(any())).thenReturn(response);
+        when(requester.request(any())).thenReturn(response);
         usersGroupService.getUserGroupsForUser(query);
     }
 

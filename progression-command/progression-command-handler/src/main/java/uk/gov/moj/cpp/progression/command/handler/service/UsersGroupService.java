@@ -41,7 +41,7 @@ public class UsersGroupService {
     @Inject
     private Enveloper enveloper;
 
-    protected JsonObject getOrganisationDetailsForUser(final Envelope<?> envelope) {
+    protected JsonEnvelope getOrganisationDetailsForUser(final Envelope<?> envelope) {
 
         final String userId = envelope.metadata().userId()
                 .orElseThrow(() -> new NullPointerException("User id Not Supplied for the UserGroups look up"));
@@ -49,13 +49,7 @@ public class UsersGroupService {
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationForUserRequest)
                 .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
         final JsonEnvelope usersAndGroupsRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
-        final JsonEnvelope response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
-        if (notFound(response)
-                || (response.payloadAsJsonObject().getString(ORGANISATION_ID) == null)) {
-            LOGGER.debug("Unable to retrieve Organisation for User {}", userId);
-            throw new IllegalArgumentException(format("Missing Organisation for User %s", userId));
-        }
-        return response.payloadAsJsonObject();
+        return requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
     }
 
     protected JsonObject getUserGroupsDetailsForUser(final Envelope<?> envelope) {
@@ -65,22 +59,28 @@ public class UsersGroupService {
         final JsonObject getUserGroupsForUserRequest = Json.createObjectBuilder().add("userId", userId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getUserGroupsForUserRequest)
                 .withName("usersgroups.get-logged-in-user-groups").withMetadataFrom(envelope);
-        final JsonEnvelope usersAndGroupsRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
-        final JsonEnvelope response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
+        final JsonEnvelope response = requester.request(requestEnvelope);
+        checkGroupExistsForUser(userId, response);
+        return response.payloadAsJsonObject();
+    }
+
+    private void checkGroupExistsForUser(final String userId, final JsonEnvelope response) {
         if (notFound(response)
                 || (response.payloadAsJsonObject().getJsonArray(GROUPS) == null)
                 || (response.payloadAsJsonObject().getJsonArray(GROUPS).isEmpty())) {
             LOGGER.debug("Unable to retrieve User Groups for User {}", userId);
             throw new IllegalArgumentException(format("User %s does not belong to any of the HMCTS groups", userId));
         }
-        return response.payloadAsJsonObject();
     }
 
     public OrganisationDetails getUserOrgDetails(final Envelope<?> envelope) {
-        final JsonObject org = getOrganisationDetailsForUser(envelope);
-        return OrganisationDetails.of(fromString(org.getString(ORGANISATION_ID)),
-                org.getString(ORGANISATION_NAME),
-                org.getString(ORGANISATION_TYPE));
+        final JsonEnvelope orgResponse = getOrganisationDetailsForUser(envelope);
+        if (notFound(orgResponse)) {
+            return OrganisationDetails.newBuilder().build();
+        }
+        return OrganisationDetails.of(fromString(orgResponse.payloadAsJsonObject().getString(ORGANISATION_ID)),
+                orgResponse.payloadAsJsonObject().getString(ORGANISATION_NAME),
+                orgResponse.payloadAsJsonObject().getString(ORGANISATION_TYPE));
     }
 
     public List<UserGroupDetails> getUserGroupsForUser(final Envelope<?> envelope) {

@@ -52,7 +52,6 @@ public class DisassociateDefenceOrganisationHandlerTest {
     private static final String COMMAND_HANDLER_DEFENCE_DISASSOCIATION_NAME = "progression.command.handler.disassociate-defence-organisation";
     private static final String ORGANISATION_NAME = "CompanyZ";
     private static final String LEGAL_ORGANISATION = "LEGAL_ORGANISATION";
-    private static final String HMCTS_ORG = "HMCTS";
     private static final String MAGISTRATES_ORG = "MAGISTRATES";
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
@@ -114,6 +113,14 @@ public class DisassociateDefenceOrganisationHandlerTest {
         disassociateDefenceOrganisationHandler.handle(envelope);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldProcessCommandNegativelyForAHMCTSUserWithAnOrganisationID() throws Exception {
+        //Given
+        final Envelope<DisassociateDefenceOrganisation> envelope = prepareDisassociateCommandAndEnvelopeForTestForHMCTSUserWithAnErrorOrgID();
+        //When
+        disassociateDefenceOrganisationHandler.handle(envelope);
+    }
+
     private Envelope<DisassociateDefenceOrganisation> prepareDisassociateCommandAndEnvelopeForTest() {
 
         final UUID userId = UUID.randomUUID();
@@ -131,7 +138,7 @@ public class DisassociateDefenceOrganisationHandlerTest {
     private Envelope<DisassociateDefenceOrganisation> prepareDisassociateCommandAndEnvelopeForTestWithDifferingOrgIdsOrgTypeHMCTS() {
 
         final UUID userId = UUID.randomUUID();
-        final OrganisationDetails organisationDetails = createOrganisation(UUID.randomUUID(), HMCTS_ORG);
+        final OrganisationDetails organisationDetails = OrganisationDetails.newBuilder().build();
         final DisassociateDefenceOrganisation disassociateDefenceOrganisation
                 = generateDisassociateDefenceOrganisationCommand(UUID.randomUUID());
         final Envelope<DisassociateDefenceOrganisation> envelope
@@ -145,7 +152,21 @@ public class DisassociateDefenceOrganisationHandlerTest {
     private Envelope<DisassociateDefenceOrganisation> prepareDisassociateCommandAndEnvelopeForTestForDifferingOrgIdsOrgTypeNonHMCTS() {
 
         final UUID userId = UUID.randomUUID();
-        final OrganisationDetails organisationDetails = createOrganisation(UUID.randomUUID(), MAGISTRATES_ORG);
+        final OrganisationDetails organisationDetails = OrganisationDetails.newBuilder().build();
+        final DisassociateDefenceOrganisation disassociateDefenceOrganisation
+                = generateDisassociateDefenceOrganisationCommand(UUID.randomUUID());
+        final Envelope<DisassociateDefenceOrganisation> envelope
+                = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
+        final List<UserGroupDetails> systemUserGroupDetails = this.createSystemUserGroupDetails();
+        when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
+        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(systemUserGroupDetails);
+        return envelope;
+    }
+
+    private Envelope<DisassociateDefenceOrganisation> prepareDisassociateCommandAndEnvelopeForTestForHMCTSUserWithAnErrorOrgID() {
+
+        final UUID userId = UUID.randomUUID();
+        final OrganisationDetails organisationDetails = createOrganisation(UUID.randomUUID(), "HMCTS");
         final DisassociateDefenceOrganisation disassociateDefenceOrganisation
                 = generateDisassociateDefenceOrganisationCommand(UUID.randomUUID());
         final Envelope<DisassociateDefenceOrganisation> envelope
