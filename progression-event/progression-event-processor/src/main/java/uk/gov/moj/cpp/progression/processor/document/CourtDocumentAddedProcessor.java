@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor.document;
 
+import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtDocument;
@@ -18,7 +19,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -28,12 +28,14 @@ import javax.json.JsonString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 @SuppressWarnings({"squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtDocumentAddedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAddedProcessor.class.getCanonicalName());
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
+
     @Inject
     private Sender sender;
 
@@ -70,7 +72,7 @@ public class CourtDocumentAddedProcessor {
                 .getId()).withGenerationStatus(commandMaterial.getGenerationStatus())
                 .withName(commandMaterial.getName())
                 .withUploadDateTime(ZonedDateTime.now(ZoneOffset.UTC))
-                .withUserGroups(userGroupsArray.stream().map(ug -> ((JsonString)ug).getString()).collect(Collectors.toList()))
+                .withUserGroups(userGroupsArray.stream().map(o -> ((JsonString) o).getString()).collect(toList()))
                 .build();
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(courtDocument.getCourtDocumentId())
@@ -81,6 +83,7 @@ public class CourtDocumentAddedProcessor {
                 .withIsRemoved(false)
                 .withMimeType(courtDocument.getMimeType())
                 .withMaterials(Collections.singletonList(material))
+                .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
                 .build();
     }
 

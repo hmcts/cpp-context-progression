@@ -24,24 +24,29 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
+
+import java.nio.charset.Charset;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
-import java.nio.charset.Charset;
-import java.util.Optional;
-import java.util.UUID;
+
+import com.google.common.io.Resources;
+import com.jayway.restassured.path.json.JsonPath;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 
 public class HearingResultedIT {
 
@@ -123,8 +128,9 @@ public class HearingResultedIT {
 
         getProsecutioncasesProgressionFor(caseId);
 
-        final ResponseData responseData =  poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
+        final ResponseData responseData = poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -139,7 +145,7 @@ public class HearingResultedIT {
     }
 
 
-    private void verifyPersonDefendantAndOffenceIsUpdatedWithCTL(ResponseData responseData){
+    private void verifyPersonDefendantAndOffenceIsUpdatedWithCTL(final ResponseData responseData) {
 
         JsonPath jsonResponse = new JsonPath(responseData.getPayload());
 

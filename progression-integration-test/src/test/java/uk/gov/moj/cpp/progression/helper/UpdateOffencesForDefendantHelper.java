@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
@@ -43,14 +44,9 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
     private final MessageConsumer publicEventsConsumerForOffencesForDefendantUpdated =
             QueueUtil.publicEvents.createConsumer(
                     "public.progression.events.offences-for-defendant-updated");
-
-
-    private String request;
-
     private final String defendantId;
-
     private final String caseId;
-
+    private String request;
     private String offenceId = UUID.randomUUID().toString();
 
     public UpdateOffencesForDefendantHelper(final String caseId, final String defendantId) {
@@ -120,6 +116,7 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         final JsonPath jsRequest = new JsonPath(request);
 
         poll(getOffencesForDefendantId(caseId, defendantId))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload()
@@ -147,6 +144,7 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         final JsonPath jsRequest = new JsonPath(request);
 
         poll(getOffencesForDefendantId(caseId, defendantId))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload()
@@ -161,6 +159,7 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         final JsonPath jsRequest = new JsonPath(request);
 
         poll(getOffencesForDefendantId(caseId, defendantId))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload()

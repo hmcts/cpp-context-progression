@@ -133,7 +133,6 @@
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-enveloper-provider</artifactId>
-            <version>${cpp.framework.version}</version>
             <scope>test</scope>
         </dependency>
 

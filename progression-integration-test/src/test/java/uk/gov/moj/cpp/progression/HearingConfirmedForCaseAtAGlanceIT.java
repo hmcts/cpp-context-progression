@@ -1,19 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import com.google.common.io.Resources;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import java.nio.charset.Charset;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -36,6 +22,24 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.test.TestUtilities.print;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+
+import java.nio.charset.Charset;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 
 public class HearingConfirmedForCaseAtAGlanceIT {
 
@@ -70,8 +74,6 @@ public class HearingConfirmedForCaseAtAGlanceIT {
         return request;
     }
 
-
-
     @Before
     public void setUp() {
         createMockEndpoints();
@@ -104,6 +106,7 @@ public class HearingConfirmedForCaseAtAGlanceIT {
 
         poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         print(),
                         status().is(OK),

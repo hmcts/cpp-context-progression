@@ -50,7 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3655", "squid:S1612", "squid:S1067","squid:S1166"})
+@SuppressWarnings({"squid:S3655", "squid:S1612", "squid:S1067", "squid:S1166"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProsecutionCaseQuery {
 
@@ -200,6 +200,7 @@ public class ProsecutionCaseQuery {
                     .withMaterials(courtDocument.getMaterials())
                     .withMimeType(courtDocument.getMimeType())
                     .withIsRemoved(courtDocument.getIsRemoved())
+                    .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
                     .build()));
         }
     }
@@ -238,7 +239,7 @@ public class ProsecutionCaseQuery {
     private Boolean isAppealApplication(final CourtApplication courtApplication) {
         return Objects.nonNull(courtApplication.getType()) && Objects.nonNull(courtApplication.getType().getIsAppealApplication())
                 && (courtApplication.getType().getIsAppealApplication() &&
-                        (ApplicationStatus.DRAFT.equals(courtApplication.getApplicationStatus()) ||
-                                ApplicationStatus.LISTED.equals(courtApplication.getApplicationStatus())));
+                (ApplicationStatus.DRAFT.equals(courtApplication.getApplicationStatus()) ||
+                        ApplicationStatus.LISTED.equals(courtApplication.getApplicationStatus())));
     }
 }

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -18,13 +19,14 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEn
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
-import javax.inject.Inject;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-@SuppressWarnings({"squid:S3655","squid:S2789", "squid:S1612"})
+import javax.inject.Inject;
+
+@SuppressWarnings({"squid:S3655", "squid:S2789", "squid:S1612"})
 @ServiceComponent(EVENT_LISTENER)
 public class CourtDocumentEventListener {
 
@@ -61,11 +63,11 @@ public class CourtDocumentEventListener {
         courtDocumentEntity.setIndices(new HashSet<>());
         final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
         final List<UUID> linkedCaseIds = getLinkedCaseIds(documentCategory);
-        if(!linkedCaseIds.isEmpty()) {
+        if (!linkedCaseIds.isEmpty()) {
             linkedCaseIds.forEach(caseId -> addCourtDocumentIndexEntity(courtDocument, courtDocumentEntity, caseId, null));
         }
         if (nonNull(documentCategory.getApplicationDocument())) {
-            if(!linkedCaseIds.isEmpty()) {
+            if (!linkedCaseIds.isEmpty()) {
                 courtDocumentEntity
                         .getIndices()
                         .forEach(index -> index.setApplicationId(documentCategory.getApplicationDocument().getApplicationId()));
@@ -74,6 +76,7 @@ public class CourtDocumentEventListener {
             }
         }
         courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(courtDocument).toString());
+        courtDocumentEntity.setContainsFinancialMeans(courtDocument.getContainsFinancialMeans() != null ? courtDocument.getContainsFinancialMeans() : false);
         return courtDocumentEntity;
     }
 
@@ -89,6 +92,9 @@ public class CourtDocumentEventListener {
             index.setDefendantId(courtDocument.getDocumentCategory().getNowDocument().getDefendantId());
             index.setHearingId(courtDocument.getDocumentCategory().getNowDocument().getOrderHearingId());
         }
+        if (nonNull(courtDocument.getDocumentCategory().getDefendantDocument())) {
+            index.setDefendantId(courtDocument.getDocumentCategory().getDefendantDocument().getDefendants().get(0));
+        }
         index.setDocumentCategory(courtDocumentEntity.getDocumentCategory());
         index.setId(UUID.randomUUID());
         courtDocumentEntity.getIndices().add(index);
@@ -103,7 +109,7 @@ public class CourtDocumentEventListener {
         } else if (nonNull(documentCategory.getDefendantDocument())) {
             return asList(documentCategory.getDefendantDocument().getProsecutionCaseId());
         } else if (nonNull(documentCategory.getApplicationDocument())) {
-            if(null != documentCategory.getApplicationDocument().getProsecutionCaseId()) {
+            if (null != documentCategory.getApplicationDocument().getProsecutionCaseId()) {
                 return asList(documentCategory.getApplicationDocument().getProsecutionCaseId());
             } else {
                 return Collections.emptyList();

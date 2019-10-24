@@ -7,19 +7,19 @@
       "$ref": "#/definitions/courtDocument"
     }
   },
-  "required":[
+  "required": [
     "courtDocument"
   ],
   "additionalProperties": false,
-  "definitions":{
-    "material":{
-      "type":"object",
-      "properties":{
-        "id":{
-          "$ref":"http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+  "definitions": {
+    "material": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
         }
       },
-      "required":[
+      "required": [
         "id"
       ],
       "additionalProperties": false
@@ -125,17 +125,20 @@
           "items": {
             "$ref": "#/definitions/material"
           }
+        },
+        "containsFinancialMeans": {
+          "type": "boolean"
         }
       },
-
       "required": [
         "courtDocumentId",
         "documentCategory",
         "name",
         "documentTypeId",
-        "materials"
+        "materials",
+        "containsFinancialMeans"
       ],
-	  "additionalProperties": false
+      "additionalProperties": false
     }
   }
 }

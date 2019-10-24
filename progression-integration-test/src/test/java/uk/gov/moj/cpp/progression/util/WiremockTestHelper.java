@@ -6,6 +6,9 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -18,24 +21,26 @@ public class WiremockTestHelper {
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final String BASE_URI = "http://" + HOST + ":8080";
 
-    public static void waitForStubToBeReady(String resource, String mediaType) {
+    public static void waitForStubToBeReady(final String resource, final String mediaType) {
         waitForStubToBeReady(resource, mediaType, Status.OK);
     }
 
-    public static void waitForStubToBeReady(String resource, String mediaType, Status expectedStatus, String headerName, String headerValue) {
-        RequestParams requestParams = requestParams(BASE_URI + resource, mediaType)
+    public static void waitForStubToBeReady(final String resource, final String mediaType, final Status expectedStatus, final String headerName, final String headerValue) {
+        final RequestParams requestParams = requestParams(BASE_URI + resource, mediaType)
                 .withHeader(headerName, headerValue)
                 .build();
         poll(requestParams)
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(expectedStatus)
                 );
     }
 
-    public static void waitForStubToBeReady(String resource, String mediaType, Status expectedStatus) {
-        RequestParams requestParams = requestParams(BASE_URI + resource, mediaType).build();
+    public static void waitForStubToBeReady(final String resource, final String mediaType, final Status expectedStatus) {
+        final RequestParams requestParams = requestParams(BASE_URI + resource, mediaType).build();
 
         poll(requestParams)
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(expectedStatus)
                 );

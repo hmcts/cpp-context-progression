@@ -20,9 +20,11 @@ import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.FinancialDataAdded;
+import uk.gov.justice.core.courts.FinancialMeansDeleted;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.ListHearingRequest;
-import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
@@ -62,6 +64,7 @@ import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,7 +86,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 281032067089771390L;
+    private static final long serialVersionUID = 8399183557957742158L;
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
     private static final String CROWN_COURT_HEARING_PROPERTY = "crownCourtHearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
@@ -92,7 +95,7 @@ public class CaseAggregate implements Aggregate {
     private static final String CASE_STATUS_EJECTED = "EJECTED";
     private final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>();
     private final Set<String> policeDefendantIds = new HashSet<>();
-    private final Set<UUID> hearingIds = new HashSet<>() ;
+    private final Set<UUID> hearingIds = new HashSet<>();
     private final Set<Defendant> defendants = new HashSet<>();
     private final Map<UUID, List<OffenceForDefendant>> offenceForDefendants = new HashMap<>();
     private final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
@@ -108,6 +111,9 @@ public class CaseAggregate implements Aggregate {
     private String courtCentreId;
     private String reference;
     private int arnCount = 0;
+    private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
+    private final Map<UUID, List<UUID>> defendantFinancialDocs = new HashMap<>();
+
 
     @Override
     public Object apply(final Object event) {
@@ -166,21 +172,21 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(ProsecutionCaseCreated.class)
                         .apply(e -> {
-                            this.caseStatus = e.getProsecutionCase().getCaseStatus();
-                            final ProsecutionCaseIdentifier prosecutionCaseIdentifier = e.getProsecutionCase().getProsecutionCaseIdentifier();
-                            if (Objects.nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {
-                                reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
-                            }
-                            if (Objects.nonNull(prosecutionCaseIdentifier.getCaseURN())) {
-                                reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getCaseURN();
-                            }
-                            if (Objects.nonNull(e.getProsecutionCase()) && !e.getProsecutionCase().getDefendants().isEmpty()) {
-                                e.getProsecutionCase().getDefendants().forEach(d ->
-                                        this.defendantCaseOffences.put(d.getId(), d.getOffences())
-                                );
-                            }
-                        }
-                ),
+                                    this.caseStatus = e.getProsecutionCase().getCaseStatus();
+                                    final ProsecutionCaseIdentifier prosecutionCaseIdentifier = e.getProsecutionCase().getProsecutionCaseIdentifier();
+                                    if (Objects.nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {
+                                        reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
+                                    }
+                                    if (Objects.nonNull(prosecutionCaseIdentifier.getCaseURN())) {
+                                        reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getCaseURN();
+                                    }
+                                    if (Objects.nonNull(e.getProsecutionCase()) && !e.getProsecutionCase().getDefendants().isEmpty()) {
+                                        e.getProsecutionCase().getDefendants().forEach(d ->
+                                                this.defendantCaseOffences.put(d.getId(), d.getOffences())
+                                        );
+                                    }
+                                }
+                        ),
                 when(ProsecutionCaseDefendantUpdated.class).apply(e -> {
                             //do nothing
                         }
@@ -208,8 +214,31 @@ public class CaseAggregate implements Aggregate {
                         e ->
                                 this.hearingIds.add(e.getHearingId())
                 ),
+                when(FinancialDataAdded.class).apply(this::populateFinancialData),
+                when(FinancialMeansDeleted.class).apply(this::deleteFinancialData),
                 otherwiseDoNothing());
 
+    }
+
+    public Map<UUID, List<UUID>> getApplicationFinancialDocs() {
+        return applicationFinancialDocs;
+    }
+
+    public Map<UUID, List<UUID>> getDefendantFinancialDocs() {
+        return defendantFinancialDocs;
+    }
+
+    private void deleteFinancialData(final FinancialMeansDeleted financialMeansDeleted) {
+        this.defendantFinancialDocs.remove(financialMeansDeleted.getDefendantId());
+    }
+
+    private void populateFinancialData(FinancialDataAdded financialDataAdded) {
+
+        if (financialDataAdded.getApplicationId() != null) {
+            this.applicationFinancialDocs.put(financialDataAdded.getApplicationId(), financialDataAdded.getMaterialIds());
+        } else if (financialDataAdded.getDefendantId() != null) {
+            this.defendantFinancialDocs.put(financialDataAdded.getDefendantId(), financialDataAdded.getMaterialIds());
+        }
     }
 
     public Stream<Object> addCaseToCrownCourt(final JsonEnvelope jsonEnvelope) {
@@ -433,13 +462,14 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> ejectCase(final UUID prosecutionCaseId, final String removalReason) {
-        if(CASE_STATUS_EJECTED.equals(caseStatus)){
+        if (CASE_STATUS_EJECTED.equals(caseStatus)) {
             LOGGER.info("Case with id {} already ejected", prosecutionCaseId);
             return empty();
         }
         return apply(Stream.of(CaseEjected.caseEjected()
                 .withProsecutionCaseId(prosecutionCaseId).withRemovalReason(removalReason).build()));
     }
+
     private void updateDefendantRelatedMaps(final DefendantUpdated e) {
         if (e.getPerson() != null) {
             this.personForDefendant.put(e.getDefendantId(), e.getPerson());
@@ -476,7 +506,7 @@ public class CaseAggregate implements Aggregate {
         LOGGER.debug("Defendants Added To CourtProcessdings");
 
         final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
-                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d->d, (i, d) -> d)).values().stream().collect(toList());
+                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d -> d, (i, d) -> d)).values().stream().collect(toList());
 
         if (newDefendantsList.isEmpty()) {
             return apply(Stream.of(DefendantsNotAddedToCourtProceedings.defendantsNotAddedToCourtProceedings()
@@ -589,8 +619,32 @@ public class CaseAggregate implements Aggregate {
                                 .build()));
     }
 
-    public Stream<Object> linkProsecutionCaseToHearing(final UUID hearingId, final UUID caseId){
+    public Stream<Object> linkProsecutionCaseToHearing(final UUID hearingId, final UUID caseId) {
         return apply(Stream.of(CaseLinkedToHearing.caseLinkedToHearing()
                 .withHearingId(hearingId).withCaseId(caseId).build()));
+    }
+
+    public Stream<Object> addFinancialMeansData(final UUID prosecutionCaseId, final UUID defendantId, final UUID applicationId, final Material material) {
+
+        final List<UUID> materialIds = new ArrayList<>();
+        materialIds.add(material.getId());
+        return apply(Stream.of(FinancialDataAdded.financialDataAdded()
+                .withCaseId(prosecutionCaseId)
+                .withApplicationId(applicationId)
+                .withDefendantId(defendantId)
+                .withMaterialIds(materialIds)
+                .build())
+        );
+    }
+
+    public Stream<Object> deleteFinancialMeansData(UUID defendantId, UUID caseId) {
+        final List<UUID> materialIds = this.defendantFinancialDocs.get(defendantId);
+        return apply(Stream.of(FinancialMeansDeleted.financialMeansDeleted()
+                .withDefendantId(defendantId)
+                .withMaterialIds(materialIds)
+                .withCaseId(caseId)
+                .build())
+        );
+
     }
 }

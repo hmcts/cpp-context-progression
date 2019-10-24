@@ -1,18 +1,15 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.SendingSheetCompleteIT.PUBLIC_SENDING_SHEET_INVALIDATED;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantForDefendantId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
@@ -20,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
@@ -30,7 +28,6 @@ import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 
 public class UpdateDefendantHelper extends AbstractTestHelper {
 
@@ -41,22 +38,16 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
     private static final String TEMPLATE_UPDATE_DEFENDANT_PERSON_PAYLOAD = "raml/json/progression.command.update-defendant.json";
     private static final String TEMPLATE_PDATE_DEFENDANT_BAIL_STATUS_PAYLOAD = "raml/json/progression.command.update-defendant-bail-status.json";
     private static final String TEMPLATE_EMPTY_DEFENDANT_PAYLOAD = "raml/json/progression.command.update-empty-defendant.json";
-
+    private static final MessageConsumer publicEventCompleteSendingSheetInvalidatedConsumer = QueueUtil.publicEvents.createConsumer(
+            "public.progression.events.sending-sheet-previously-completed");
     private final MessageConsumer publicEventsConsumerForDefendantUpdated =
             QueueUtil.publicEvents.createConsumer(
                     "public.progression.events.defendant-updated");
-    private static final MessageConsumer publicEventCompleteSendingSheetInvalidatedConsumer = QueueUtil.publicEvents.createConsumer(
-            "public.progression.events.sending-sheet-previously-completed");
-
-    private String request;
-
     private final String defendantId;
-
     private final String caseId;
-
     private final String personId;
-
     private final String documentId = UUID.randomUUID().toString();
+    private String request;
 
     public UpdateDefendantHelper(final String caseId, final String defendantId, final String personId) {
         this.defendantId = defendantId;
@@ -110,6 +101,7 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
     public void verifyDefendantPersonUpdated() {
 
         poll(getDefendantForDefendantId(caseId, defendantId))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload()
@@ -125,14 +117,15 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
     public void verifyDefendantBailStatusUpdated() {
 
         poll(getDefendantForDefendantId(caseId, defendantId))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload()
                                 .isJson(
                                         allOf(
                                                 withJsonPath("$.defendantId", is(defendantId)),
-                                                                                        withJsonPath("$.bailStatus",
-                                                                                                        is("unconditional"))
+                                                withJsonPath("$.bailStatus",
+                                                        is("unconditional"))
                                         )
                                 ));
 
@@ -149,7 +142,7 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
         final String jsonString = getPayload(TEMPLATE_EMPTY_DEFENDANT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         request = jsonObjectPayload.toString();
-        makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request,Response.Status.BAD_REQUEST.getStatusCode());
+        makePostCall(getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request, Response.Status.BAD_REQUEST.getStatusCode());
     }
 
     public void verifySendingSheetPreviouslyCompletedPublicEvent() {

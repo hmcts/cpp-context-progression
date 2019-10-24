@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
+import static java.util.Objects.isNull;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,6 +34,9 @@ public class CourtDocumentEntity implements Serializable {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "contains_financial_means")
+    private Boolean containsFinancialMeans;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "courtDocument", orphanRemoval = true)
     private Set<CourtDocumentIndexEntity> indices = new HashSet<>();
@@ -66,6 +71,18 @@ public class CourtDocumentEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setContainsFinancialMeans(final Boolean containsFinancialMeans) {
+        if (isNull(containsFinancialMeans)) {
+            this.containsFinancialMeans = false;
+        } else {
+            this.containsFinancialMeans = containsFinancialMeans;
+        }
+    }
+
+    public Boolean getContainsFinancialMeans() {
+        return isNull(containsFinancialMeans) ? false : containsFinancialMeans;
     }
 
     public Set<CourtDocumentIndexEntity> getIndices() {

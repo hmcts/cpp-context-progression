@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static uk.gov.moj.cpp.progression.helper.CourtDocumentHelper.setDefaults;
+
 import uk.gov.justice.core.courts.AddCourtDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -37,14 +39,15 @@ public class AddCourtDocumentHandler {
     private Enveloper enveloper;
 
     @Handles("progression.command.add-court-document")
-    public void handle(final Envelope<AddCourtDocument>  addCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope );
-        final CourtDocument courtDocument = addCourtDocumentEnvelope.payload().getCourtDocument();
+    public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope);
+        final CourtDocument courtDocument = setDefaults(addCourtDocumentEnvelope.payload().getCourtDocument());
         final EventStream eventStream = eventSource.getStreamById(courtDocument.getCourtDocumentId());
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
         final Stream<Object> events = courtDocumentAggregate.addCourtDocument(courtDocument);
         appendEventsToStream(addCourtDocumentEnvelope, eventStream, events);
     }
+
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(

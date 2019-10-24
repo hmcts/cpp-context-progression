@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
@@ -24,8 +26,6 @@ import org.junit.Test;
 
 public class InitiateCourtProceedingsIT {
 
-
-
     private String caseId;
     private String courtDocumentId;
     private String materialIdActive;
@@ -46,19 +46,21 @@ public class InitiateCourtProceedingsIT {
         referralReasonId = UUID.randomUUID().toString();
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
-        defendantDOB =  LocalDate.now().minusYears(15).toString();
+        defendantDOB = LocalDate.now().minusYears(15).toString();
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException{
+    public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
         createMockEndpoints();
         //given
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
 
-        //introduce delay by checking court document present first 
-        getCourtDocumentFor(courtDocumentId);
-        
+        //introduce delay by checking court document present first
+        getCourtDocumentFor(courtDocumentId,
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId))
+        );
+
         final String response = getProsecutioncasesProgressionFor(caseId);
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
         //then
@@ -77,14 +79,14 @@ public class InitiateCourtProceedingsIT {
     @Test
     public void shouldInitiateCourtProceedingsWithDefendantIsNotYouth() throws IOException {
         createMockEndpoints();
-        defendantDOB =  LocalDate.now().minusYears(25).toString();
+        defendantDOB = LocalDate.now().minusYears(25).toString();
         //given
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPostListCourtHearing(caseId, defendantId, false);
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsNoCourtDocuments() throws IOException{
+    public void shouldInitiateCourtProceedingsNoCourtDocuments() throws IOException {
         createMockEndpoints();
         //given
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
@@ -94,7 +96,6 @@ public class InitiateCourtProceedingsIT {
         //then
         assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
     }
-
 
 }
 

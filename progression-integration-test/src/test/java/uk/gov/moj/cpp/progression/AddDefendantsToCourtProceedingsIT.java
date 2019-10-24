@@ -1,44 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import com.google.common.io.Resources;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.ListHearingRequest;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import java.nio.charset.Charset;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
@@ -68,28 +29,93 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
 
+import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
+
+import java.nio.charset.Charset;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
+import com.google.common.io.Resources;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Ignore
 public class AddDefendantsToCourtProceedingsIT {
 
+    static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     // This test is ignored and should be refactored.
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
-
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
-
-    static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
-
-    private static final MessageConsumer messageConsumerClientPublic =  publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+    private static final MessageConsumer messageConsumerClientPublic = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-
-    @Before
-    public void setUp() {
-        createMockEndpoints();
-    }
 
     @AfterClass
     public static void tearDown() throws JMSException {
         messageConsumerClientPublic.close();
         messageProducerClientPublic.close();
+    }
+
+    private static void verifyHearingInitialised(final String caseId, final String hearingId) {
+        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
+                .withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
+                                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
+                        )));
+    }
+
+    private static String getPayloadForCreatingRequest(final String ramlPath) {
+        String request = null;
+        try {
+            request = Resources.toString(
+                    Resources.getResource(ramlPath),
+                    Charset.defaultCharset()
+            );
+        } catch (final Exception e) {
+            fail("Error consuming file from location " + ramlPath);
+        }
+        return request;
+    }
+
+    @Before
+    public void setUp() {
+        createMockEndpoints();
     }
 
     @Test
@@ -103,19 +129,19 @@ public class AddDefendantsToCourtProceedingsIT {
         //Create prosecution case
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        final String response = getProsecutioncasesProgressionFor(caseId);
+        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
         assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
 
         //Create payload for
-        AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
                 true, caseId, defendantId, defendantId2, offenceId);
-        String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
 
         //Post command progression.add-defendants-to-court-proceedings
         postCommand(getCommandUri("/adddefendantstocourtproceedings"),
-                                                            PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
-                                                            addDefendantsToCourtProceedingsJson);
+                PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
+                addDefendantsToCourtProceedingsJson);
 
         //Verify the defendants and check the duplicate is not added
         verifyDefendantsAddedInViewStore(caseId, defendantId2);
@@ -131,14 +157,14 @@ public class AddDefendantsToCourtProceedingsIT {
 
         //Create prosecution case
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        final String response = getProsecutioncasesProgressionFor(caseId);
+        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
         assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
 
         //Create payload for
-        AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
                 false, caseId, defendantId, defendantId2, offenceId);
-        String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
 
         //Post command progression.add-defendants-to-court-proceedings
         postCommand(getCommandUri("/adddefendantstocourtproceedings"),
@@ -178,7 +204,7 @@ public class AddDefendantsToCourtProceedingsIT {
 
         String hearingId = UUID.randomUUID().toString();
 
-        if (defendantHearing.isPresent())  {
+        if (defendantHearing.isPresent()) {
             hearingId = ((JsonObject) defendantHearing.get()).getJsonArray("hearingIds").get(0).toString().replaceAll("\"", "");
             final Metadata hearingConfirmedMetadata = createMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId);
             final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(caseId, hearingId, defendantId, courtCentreId);
@@ -193,9 +219,9 @@ public class AddDefendantsToCourtProceedingsIT {
         verifyHearingInitialised(caseId, hearingId);
 
         //Create payload for
-        AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
                 true, caseId, defendantId, defendantId2, offenceId);
-        String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
 
         //Post command progression.add-defendants-to-court-proceedings
         postCommand(getCommandUri("/adddefendantstocourtproceedings"),
@@ -209,7 +235,7 @@ public class AddDefendantsToCourtProceedingsIT {
         verifyInMessagingQueueForDefendantsAddedToCourtHearings(caseId, defendantId2);
     }
 
-    private void verifyInMessagingQueueForDefendantsAddedToCourtHearings(String caseId, String defendantId) {
+    private void verifyInMessagingQueueForDefendantsAddedToCourtHearings(final String caseId, final String defendantId) {
         final Optional<JsonObject> message =
                 QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublic);
         assertTrue(message.isPresent());
@@ -219,28 +245,17 @@ public class AddDefendantsToCourtProceedingsIT {
                 Matchers.hasToString(Matchers.containsString(defendantId)))));
     }
 
-    private static void verifyHearingInitialised(final String caseId, final String hearingId) {
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
-                .withHeader(USER_ID, UUID.randomUUID()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.caseAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
-                        )));
-    }
-
-    private void verifyDefendantsAddedInViewStore(String caseId, String defendantId) {
+    private void verifyDefendantsAddedInViewStore(final String caseId, final String defendantId) {
 
         LOGGER.info("Vertifying for defendants added to caseId {} and defendant id {}", caseId, defendantId);
 
         Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() -> {
             final String response = getProsecutioncasesProgressionFor(caseId);
-            JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+            final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 
             assertThat(prosecutioncasesJsonObject, notNullValue());
 
-            Optional<JsonValue> defedantJsonObject = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants")
+            final Optional<JsonValue> defedantJsonObject = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants")
                     .stream().filter(def1 -> ((JsonObject) def1).getString("id").equals(defendantId))
                     .findFirst();
 
@@ -252,17 +267,17 @@ public class AddDefendantsToCourtProceedingsIT {
         });
     }
 
-    private void verifyDefendantsNotAddedInViewStore(String caseId, String defendantId) {
+    private void verifyDefendantsNotAddedInViewStore(final String caseId, final String defendantId) {
 
         LOGGER.info("Vertifying for defendants not added to caseId {} and defendant id {}", caseId, defendantId);
 
         Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() -> {
-            String response = getProsecutioncasesProgressionFor(caseId);
-            JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+            final String response = getProsecutioncasesProgressionFor(caseId);
+            final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 
             assertThat(prosecutioncasesJsonObject, notNullValue());
 
-            Optional<JsonValue> defedantJsonObject = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants")
+            final Optional<JsonValue> defedantJsonObject = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants")
                     .stream().filter(def1 -> ((JsonObject) def1).getString("id").equals(defendantId))
                     .findFirst();
 
@@ -271,11 +286,11 @@ public class AddDefendantsToCourtProceedingsIT {
     }
 
     private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
-            boolean forAdded, String caseId, String defendantId, String defendantId2, String offenceId) {
+            final boolean forAdded, final String caseId, final String defendantId, final String defendantId2, final String offenceId) {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
-        Offence offence = Offence.offence()
+        final Offence offence = Offence.offence()
                 .withId(UUID.fromString(offenceId))
                 .withOffenceDefinitionId(UUID.randomUUID())
                 .withOffenceCode("TFL123")
@@ -286,7 +301,7 @@ public class AddDefendantsToCourtProceedingsIT {
                 .build();
 
         //past duplicate defendant
-        Defendant defendant = Defendant.defendant()
+        final Defendant defendant = Defendant.defendant()
                 .withId(UUID.fromString(defendantId))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
@@ -294,35 +309,37 @@ public class AddDefendantsToCourtProceedingsIT {
         defendantsList.add(defendant);
 
         //Add defendant
-        Defendant defendant2 = Defendant.defendant()
+        final Defendant defendant2 = Defendant.defendant()
                 .withId(UUID.fromString(defendantId2))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();
 
-        if(forAdded)
+        if (forAdded) {
             defendantsList.add(defendant2);
+        }
 
         //Duplicate defendant in current payload
-        Defendant defendant3 = Defendant.defendant()
+        final Defendant defendant3 = Defendant.defendant()
                 .withId(UUID.fromString(defendantId2))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();
 
-        if(forAdded)
+        if (forAdded) {
             defendantsList.add(defendant3);
+        }
 
-        ListDefendantRequest listDefendantRequest2 = ListDefendantRequest.listDefendantRequest()
+        final ListDefendantRequest listDefendantRequest2 = ListDefendantRequest.listDefendantRequest()
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withDefendantOffences(Collections.singletonList(UUID.fromString(offenceId)))
                 .withDefendantId(defendant2.getId())
                 .build();
 
-        HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
-        CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
 
-        ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withListDefendantRequests(Arrays.asList(listDefendantRequest2))
@@ -338,7 +355,7 @@ public class AddDefendantsToCourtProceedingsIT {
 
     }
 
-    private Metadata createMetadata(final String eventName, String userId) {
+    private Metadata createMetadata(final String eventName, final String userId) {
         return JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
                 .withName(eventName)
@@ -364,18 +381,5 @@ public class AddDefendantsToCourtProceedingsIT {
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
         );
-    }
-
-    private static String getPayloadForCreatingRequest(final String ramlPath) {
-        String request = null;
-        try {
-            request = Resources.toString(
-                    Resources.getResource(ramlPath),
-                    Charset.defaultCharset()
-            );
-        } catch (final Exception e) {
-            fail("Error consuming file from location " + ramlPath);
-        }
-        return request;
     }
 }
