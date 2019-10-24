@@ -51,6 +51,7 @@ public class ProgressionEventProcessor {
     private static final String PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_PREVIOUSLY_COMPLETED = "public.progression.events.sending-sheet-previously-completed";
     private static final String PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_INVALIDATED = "public.progression.events.sending-sheet-invalidated";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
+    private static final String PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED = "public.progression.prosecution-case-created";
     @Inject
     private Enveloper enveloper;
 
@@ -160,6 +161,11 @@ public class ProgressionEventProcessor {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
         final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_INVALIDATED).apply(payload));
+    }
+
+    @Handles("progression.event.prosecution-case-created")
+    public void publishProsecutionCaseCreatedEvent(final JsonEnvelope event) {
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED).apply(event.payload()));
     }
 
 

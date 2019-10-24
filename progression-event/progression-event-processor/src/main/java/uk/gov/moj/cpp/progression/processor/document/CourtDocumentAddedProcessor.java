@@ -12,7 +12,9 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.ZoneOffset;
@@ -35,6 +37,7 @@ public class CourtDocumentAddedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAddedProcessor.class.getCanonicalName());
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
+    public static final String PUBLIC_COURT_DOCUMENT_ADDED = "public.progression.court-document-added";
 
     @Inject
     private Sender sender;
@@ -62,6 +65,9 @@ public class CourtDocumentAddedProcessor {
                             .convert(buildCourtDocumentWithMaterialUserGroups(courtDocument, data))).build();
             LOGGER.info("court document is being created '{}' ", jsonObject);
             sender.send(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
+
+            final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_ADDED).build();
+            sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
         });
     }
 
@@ -72,7 +78,7 @@ public class CourtDocumentAddedProcessor {
                 .getId()).withGenerationStatus(commandMaterial.getGenerationStatus())
                 .withName(commandMaterial.getName())
                 .withUploadDateTime(ZonedDateTime.now(ZoneOffset.UTC))
-                .withUserGroups(userGroupsArray.stream().map(o -> ((JsonString) o).getString()).collect(toList()))
+                .withUserGroups(userGroupsArray.stream().map(o -> ((JsonString)o).getString()).collect(toList()))
                 .build();
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(courtDocument.getCourtDocumentId())

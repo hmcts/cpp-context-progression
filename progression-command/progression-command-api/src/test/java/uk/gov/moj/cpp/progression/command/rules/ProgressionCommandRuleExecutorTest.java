@@ -58,20 +58,20 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
 
     public enum ProgressionRules {
 
-        AddCaseToCrownCourtTest("progression.command.add-case-to-crown-court", "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers"),
+        AddCaseToCrownCourtTest("progression.command.add-case-to-crown-court", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
         DocumentUploadRuleTest("progression.command.defendant-document", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
         RequestPSRForDefendantsTest("progression.command.request-psr-for-defendants", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
         SendingCommittalHearingInfoTest("progression.command.sending-committal-hearing-information", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
-        SentenceHearingDateTest("progression.command.sentence-hearing-date", "Crown Court Admin","Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
+        SentenceHearingDateTest("progression.command.sentence-hearing-date", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
         SendingSheetCompleteRuleTest("progression.command.complete-sending-sheet", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"),
         ReferCaseToCourtTest("progression.refer-cases-to-court", "Legal Advisers"),
         UpdateDefendentDetails("progression.update-defendant-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         UpdateOffences("progression.update-offences-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
-        UploadCourtDocument("progression.upload-court-document","Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators"),
-        AddCourtDocument("progression.add-court-document","Legal Advisers", "Listing Officers", "Court Clerks","Crown Court Admin", "Court Administrators"),
-        CreateCourtApplication("progression.create-court-application","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
-        InitiateCourtProceedings("progression.initiate-court-proceedings","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
-        AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
+        UploadCourtDocument("progression.upload-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators"),
+        AddCourtDocument("progression.add-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators", "System Users"),
+        CreateCourtApplication("progression.create-court-application", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
+        InitiateCourtProceedings("progression.initiate-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
+        AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
         EjectCaseOrApplication("progression.eject-case-or-application","Eject Case Group");
 
         private final String actionName;

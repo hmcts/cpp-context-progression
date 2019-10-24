@@ -14,14 +14,11 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POS
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
-//import uk.gov.justice.core.courts.CourtDecision;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAlias;
-//import uk.gov.justice.core.courts.DefendantRepresentation;
 import uk.gov.justice.core.courts.DocumentationLanguageNeeds;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
@@ -45,7 +42,6 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-//import uk.gov.justice.core.courts.ProsecutionRepresentation;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.Source;
 import uk.gov.justice.core.courts.Title;
@@ -237,14 +233,6 @@ public class CoreTestTemplates {
                 .withNationalityId((randomUUID()))
                 .withNationalityCode((STRING.next()));
     }
-/*
-    public static AllocationDecision.Builder allocationDecision() {
-        return AllocationDecision.allocationDecision()
-               .withCourtDecision(RandomGenerator.values(CourtDecision.values()).next())
-                .withDefendantRepresentation((RandomGenerator.values(DefendantRepresentation.values()).next()))
-                .withIndicationOfSentence((STRING.next()))
-                .withProsecutionRepresentation((RandomGenerator.values(ProsecutionRepresentation.values()).next()));
-    }*/
 
     public static NotifiedPlea.Builder notifiedPlea(UUID offenceId) {
         return NotifiedPlea.notifiedPlea()
@@ -256,7 +244,6 @@ public class CoreTestTemplates {
     public static IndicatedPlea.Builder indicatedPlea(UUID offenceId) {
         return IndicatedPlea.indicatedPlea()
                 .withOffenceId(offenceId)
-                //.withAllocationDecision(allocationDecision().build())
                 .withIndicatedPleaDate(PAST_LOCAL_DATE.next())
                 .withIndicatedPleaValue(RandomGenerator.values(IndicatedPleaValue.values()).next())
                 .withSource(RandomGenerator.values(Source.values()).next());
