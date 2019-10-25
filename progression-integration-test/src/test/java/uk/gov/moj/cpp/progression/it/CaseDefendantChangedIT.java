@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.it;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseProgressionDetail;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
@@ -31,9 +32,9 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
 
     private static final String COMPLETE_SENDING_SHEET_JSON =
-                    "progression.command.complete-sending-sheet.json";
+            "progression.command.complete-sending-sheet.json";
     private static final String REF_DATA_QUERY_CJSCODE_PAYLOAD =
-                    "/restResource/ref-data-cjscode.json";
+            "/restResource/ref-data-cjscode.json";
     private AddDefendantHelper addDefendantHelper;
     private UpdateDefendantHelper updateDefendantHelper;
     private String caseId;
@@ -102,14 +103,14 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
         givenCaseProgressionDetail(caseId);
 
         final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
-                        "application/vnd.progression.command.complete-sending-sheet+json",
-                        getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
+                "application/vnd.progression.command.complete-sending-sheet+json",
+                getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     private String getJsonBodyStr(final String fileName) throws IOException {
         String fileContent = Resources.toString(Resources.getResource(fileName),
-                        Charset.defaultCharset());
+                Charset.defaultCharset());
         final JSONObject jObj = new JSONObject(request);
         defendantId = jObj.getString("defendantId");
         final JSONObject offence = (JSONObject) jObj.getJSONArray("offences").get(0);
@@ -125,6 +126,6 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
     @After
     public void tearDown() {
-        updateDefendantHelper.close();
+        closeSilently(updateDefendantHelper);
     }
 }
