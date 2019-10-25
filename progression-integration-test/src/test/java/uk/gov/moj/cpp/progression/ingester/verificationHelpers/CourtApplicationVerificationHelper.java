@@ -169,9 +169,6 @@ public class CourtApplicationVerificationHelper {
         } else {
             assertOrganisationDetails(organisation, applicantParty);
         }
-
-        final String addressLines = applicantParty.getString("addressLines");
-        assertAddressDetails(person.getJsonObject("address"), addressLines, applicantParty.getString("postCode"));
     }
 
     private static void verifyRespondent(final JsonObject respondent, final JsonObject respondentParty) {

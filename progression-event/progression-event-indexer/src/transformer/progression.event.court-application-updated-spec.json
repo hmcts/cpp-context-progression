@@ -61,9 +61,17 @@
               }
             },
             "organisation": {
-              "name": "applicant_parties[0].organisationName"
+              "#true": "useOrganisationDetails",
+              "name": "applicant_org_parties[0].organisationName",
+              "address": {
+                "*": "applicant_org_parties[0].addressLines",
+                "postcode": "applicant_org_parties[0].postCode"
+              }
             },
-            "id": "applicant_parties[0].partyId",
+            "id": [
+              "applicant_parties[0].partyId",
+              "applicant_org_parties[0].partyId"
+            ],
             "organisationPersons": {
               "0": {
                 "person": {
@@ -158,6 +166,18 @@
     {
       "operation": "modify-overwrite-beta",
       "spec": {
+        "~useOrganisationDetails": "false"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "useOrganisationDetails": "=toBoolean"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
         "applicant_defendant_parties": {
           "*": {
             "addressLines": "=join(' ',@(1,addressLines))"
@@ -169,6 +189,11 @@
           }
         },
         "applicant_parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        },
+        "applicant_org_parties": {
           "*": {
             "addressLines": "=join(' ',@(1,addressLines))"
           }
@@ -189,6 +214,11 @@
           }
         },
         "applicant_parties[]": {
+          "*": {
+            "_party_type": "applicant"
+          }
+        },
+        "applicant_org_parties[]": {
           "*": {
             "_party_type": "applicant"
           }
@@ -214,8 +244,17 @@
         "applicant_defendant_parties": {
           "*": "parties[]"
         },
-        "applicant_parties": {
-          "*": "parties[]"
+        "useOrganisationDetails": {
+          "true": {
+            "@(2,applicant_org_parties)": {
+              "*": "parties[]"
+            }
+          },
+          "false": {
+            "@(2,applicant_parties)": {
+              "*": "parties[]"
+            }
+          }
         },
         "respondent_parties": {
           "*": "parties[]"

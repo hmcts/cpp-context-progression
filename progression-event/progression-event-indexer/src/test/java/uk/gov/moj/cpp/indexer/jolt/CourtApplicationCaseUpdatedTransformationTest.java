@@ -1,23 +1,24 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
+import static com.jayway.jsonpath.Configuration.defaultConfiguration;
 import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.Option.SUPPRESS_EXCEPTIONS;
 import static junit.framework.TestCase.assertNotNull;
+import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyAddApplicationWhenNoOrganisationApplicant;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyUpdateApplication;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJsonViaPath;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.VerificationUtil.initializeJolt;
-
-import uk.gov.justice.json.jolt.JoltTransformer;
-
-import java.io.IOException;
-
-import javax.json.JsonObject;
-
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import org.junit.Before;
 import org.junit.Test;
+import uk.gov.justice.json.jolt.JoltTransformer;
+
+import javax.json.JsonObject;
+import java.io.IOException;
 
 public class CourtApplicationCaseUpdatedTransformationTest {
 
@@ -31,12 +32,15 @@ public class CourtApplicationCaseUpdatedTransformationTest {
     @Test
     public void shouldTransformStandaloneCourtUpdatedApplication() throws IOException {
 
-        final JsonObject inputJson = readJson("/progression.event.court-application-updated.json");
+        final JsonObject inputJson = readJson("/progression.event.court-application-updated-with-no-applicant-org.json");
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-updated-spec.json");
         final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
-        final DocumentContext inputCourtApplication = parse(inputJson);
+
+        final Configuration suppressPathNotFoundExceptionConfiguration = defaultConfiguration().addOptions(SUPPRESS_EXCEPTIONS);
+        final DocumentContext inputCourtApplication = parse(inputJson, suppressPathNotFoundExceptionConfiguration);
+
         verifyStandaloneApplication(inputCourtApplication, transformedJson);
-        verifyUpdateApplication(inputCourtApplication, transformedJson);
+        verifyAddApplicationWhenNoOrganisationApplicant(inputCourtApplication, transformedJson);
     }
 
 
@@ -50,6 +54,17 @@ public class CourtApplicationCaseUpdatedTransformationTest {
         final DocumentContext inputCourtApplication = parse(inputJson);
         final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
         verifyEmbeddedApplication(inputCourtApplication, transformedJson);
+        verifyUpdateApplication(inputCourtApplication, transformedJson);
+    }
+
+    @Test
+    public void shouldTransformStandaloneCourtUpdatedApplicationWithOrganisation() throws IOException {
+
+        final JsonObject inputJson = readJson("/progression.event.court-application-updated.json");
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-updated-spec.json");
+        final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        final DocumentContext inputCourtApplication = parse(inputJson);
+        verifyStandaloneApplication(inputCourtApplication, transformedJson);
         verifyUpdateApplication(inputCourtApplication, transformedJson);
     }
 }

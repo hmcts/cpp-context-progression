@@ -78,9 +78,12 @@ public class CourtApplicationVerificationHelper {
 
     private static void verifyArn(final DocumentContext courtApplication, final JsonArray outputCourtApplications) {
 
-        final String arn = ((JsonString) courtApplication.read("$.arn")).getString();
-        final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
-        assertEquals(arn, outputApplication.getString("applicationReference"));
+        final Object arnValue = courtApplication.read("$.arn");
+        if (arnValue != null) {
+            final String arn = ((JsonString) arnValue).getString();
+            final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
+            assertEquals(arn, outputApplication.getString("applicationReference"));
+        }
     }
 
     private static void verifyApplication(final DocumentContext courtApplication, final JsonArray outputCourtApplications) {
