@@ -15,6 +15,7 @@ public class BaseDefendantOffences implements Serializable {
     private final UUID caseId;
     private final List<BaseDefendantOffence> offences;
 
+    @SuppressWarnings("squid:S2384")
     public BaseDefendantOffences(final UUID defendantId, final UUID caseId,
                                  final List<BaseDefendantOffence> offences) {
         this.defendantId = defendantId;
@@ -30,6 +31,7 @@ public class BaseDefendantOffences implements Serializable {
         return caseId;
     }
 
+    @SuppressWarnings("squid:S2384")
     public List<BaseDefendantOffence> getOffences() {
         return offences;
     }

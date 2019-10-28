@@ -62,7 +62,8 @@ public class ReferProsecutionCaseToCrownCourtIT {
         final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 
         assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getJsonArray("materials").size(),equalTo(2));
+        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getJsonArray("materials").size(), equalTo(2));
+        assertTrue(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getBoolean("containsFinancialMeans"));
         assertcourtDocuments(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0), caseId, courtDocumentId, materialIdActive);
     }
 
@@ -114,27 +115,26 @@ public class ReferProsecutionCaseToCrownCourtIT {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
         // when
-         String response = getProsecutioncasesProgressionFor(caseId);
+        String response = getProsecutioncasesProgressionFor(caseId);
         // then
         JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 
         assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getJsonArray("materials").size(),equalTo(2));
+        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getJsonArray("materials").size(), equalTo(2));
         assertcourtDocuments(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0), caseId, courtDocumentId, materialIdActive);
         //Remove document
-        addRemoveCourtDocument(courtDocumentId, materialIdActive,true);
+        addRemoveCourtDocument(courtDocumentId, materialIdActive, true);
 
         //read document
         response = getProsecutioncasesProgressionFor(caseId);
         prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(),equalTo(0));
-       //undo remove
-        addRemoveCourtDocument(courtDocumentId, materialIdActive,false);
+        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(0));
+        //undo remove
+        addRemoveCourtDocument(courtDocumentId, materialIdActive, false);
         response = getProsecutioncasesProgressionFor(caseId);
         prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(),equalTo(1));
+        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(1));
     }
-
 
 
     @Test

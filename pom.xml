@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>6.0.20-SC-SNAPSHOT</version>
+    <version>6.0.21-SC-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -41,10 +41,10 @@
         <access.control.version>4.1.8-R2</access.control.version>
         <referencedata.version>2.0.275</referencedata.version>
         <listing.version>1.0.26</listing.version>
-        <hearing.version>2.0.175</hearing.version>
+        <hearing.version>2.0.185</hearing.version>
         <usersgroups.version>2.0.115</usersgroups.version>
         <referencedata.offence.version>1.0.26</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.1-MCC-SNAPSHOT</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.3-MCC-SNAPSHOT</criminal-court-public-model.version>
     </properties>
 
     <build>
@@ -64,4 +64,16 @@
             <url>${mvn.site.url}</url>
         </site>
     </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>uk.gov.justice.services</groupId>
+                <artifactId>test-utils-enveloper-provider</artifactId>
+                <scope>test</scope>
+                <version>${cpp.framework.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>

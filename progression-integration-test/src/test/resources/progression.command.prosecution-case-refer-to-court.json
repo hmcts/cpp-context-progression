@@ -8,11 +8,11 @@
         "judiciary": [
           {
             "judicialName": "Mrs Theresa Mary May",
-            "judicialRoleTypeSJP":"MAGISTRATE"
+            "judicialRoleTypeSJP": "MAGISTRATE"
           },
           {
             "judicialName": "Mr Michel Bernard Barnier",
-            "judicialRoleTypeSJP":"MAGISTRATE"
+            "judicialRoleTypeSJP": "MAGISTRATE"
           }
         ]
       }
@@ -39,8 +39,8 @@
             "witnessStatementWelsh": "he did not do it in Welsh",
             "mitigation": "I was not there",
             "mitigationWelsh": "I was not there in Welsh",
-            "defenceOrganisation":{
-              "name" : "defence Organisation abc"
+            "defenceOrganisation": {
+              "name": "defence Organisation abc"
             },
             "offences": [
               {
@@ -145,7 +145,6 @@
               },
               "custodyTimeLimit": "2018-01-01",
               "perceivedBirthYear": 2015,
-              
               "driverNumber": "AACC12345",
               "arrestSummonsNumber": "arrest123",
               "employerOrganisation": {
@@ -212,7 +211,8 @@
               "Listing Officers"
             ]
           }
-        ]
+        ],
+        "containsFinancialMeans": true
       }
     ],
     "listHearingRequests": [
@@ -224,8 +224,8 @@
         "estimateMinutes": 20,
         "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
         "courtCentre": {
-      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
-      	},
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+        },
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",
         "listDefendantRequests": [
@@ -246,6 +246,5 @@
         ]
       }
     ]
-
   }
 }

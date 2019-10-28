@@ -65,6 +65,9 @@ subscriptions_descriptor:
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
+        - name: progression.event.financial-means-deleted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.financial-means-deleted.json
+
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
 

@@ -26,11 +26,13 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -109,6 +111,7 @@ public class HearingUpdatedIT {
     private static void verifyCourtCentreIdInCaseAtAGlance(final String caseId, final String courtCentreId) {
         poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(

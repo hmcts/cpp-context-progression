@@ -53,6 +53,9 @@ subscriptions_descriptor:
         - name: public.progression.boxwork-assignment-changed
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.boxwork-assignment-changed.json
 
+        - name: public.progression.defendant-financial-means-deleted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.financial-means-deleted.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

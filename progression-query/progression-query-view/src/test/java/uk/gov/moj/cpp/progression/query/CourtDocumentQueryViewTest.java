@@ -91,6 +91,9 @@ public class CourtDocumentQueryViewTest {
     @Mock
     private CourtDocumentRepository courtDocumentRepository;
 
+    @Captor
+    private ArgumentCaptor<CourtDocument> courtDocumentArgumentCaptor;
+
     @Mock
     private NotificationStatusRepository notificationStatusRepository;
 
@@ -117,6 +120,7 @@ public class CourtDocumentQueryViewTest {
                                 .withUserGroups(asList("Court Clerks"))
                                 .build()
                 ))
+                .withContainsFinancialMeans(false)
                 .build();
     }
 
@@ -262,7 +266,7 @@ public class CourtDocumentQueryViewTest {
         final UUID courtDocumentId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add(CourtDocumentQuery.ID_PARAMETER, courtDocumentId.toString()).build();
-        JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
                         .withName(CourtDocumentQuery.COURT_DOCUMENT_SEARCH_NAME).build(),
                 jsonObject);
@@ -272,11 +276,12 @@ public class CourtDocumentQueryViewTest {
         when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(courtDocumentEntity);
 
         final JsonEnvelope jsonEnvelopeOut = target.getCourtDocument(jsonEnvelopeIn);
-        CourtDocument courtDocumentOut = jsonObjectToObjectConverter
+        final CourtDocument courtDocumentOut = jsonObjectToObjectConverter
                 .convert(jsonEnvelopeOut.payloadAsJsonObject()
                         .getJsonObject(CourtDocumentQuery.COURT_DOCUMENT_RESULT_FIELD), CourtDocument.class);
         assertThat(courtDocumentOut.getCourtDocumentId(), is(courtDocument.getCourtDocumentId()));
         assertThat(courtDocumentOut.getDocumentTypeId(), is(courtDocument.getDocumentTypeId()));
+        assertThat(courtDocumentOut.getContainsFinancialMeans(), is(courtDocument.getContainsFinancialMeans()));
     }
 
     @Test
@@ -324,12 +329,14 @@ public class CourtDocumentQueryViewTest {
                     .withDocumentCategory(DocumentCategory.documentCategory().withApplicationDocument(ApplicationDocument.
                             applicationDocument().withApplicationId(applicationId).build()).build())
                     .build())
-                    .withCategory("Applicatiom level");;
+                    .withCategory("Applicatiom level");
+            ;
             when(courtDocumentRepository.findByApplicationId(applicationId)).thenReturn(asList(courtDocumentEntity));
         } else if (defendantId != null) {
             id = defendantId;
             courtDocumentIndexBuilder.withDefendantIds(asList(defendantId))
-                    .withCategory("Defendant level");;
+                    .withCategory("Defendant level");
+            ;
             when(courtDocumentRepository.findByDefendantId(defendantId)).thenReturn(asList(courtDocumentEntity));
         }
 
@@ -337,9 +344,6 @@ public class CourtDocumentQueryViewTest {
         courtDocumentId2Id.put(courtDocument.getCourtDocumentId(), id);
 
     }
-
-    @Captor
-    private ArgumentCaptor<CourtDocument> courtDocumentArgumentCaptor;
 
     private void shouldFindDocuments(final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds) {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
@@ -398,11 +402,11 @@ public class CourtDocumentQueryViewTest {
             id2ExpectedCourtDocumentIndex.forEach(
                     (id, expectedIndexBuilder) -> {
                         CourtDocumentIndex actualIndex = result.getDocumentIndices().stream().filter(
-                                cdi -> cdi.getCaseIds()!=null && cdi.getCaseIds().stream().anyMatch( idin->idin.equals(id))
-                                        || cdi.getDefendantIds()!=null && cdi.getDefendantIds().stream().anyMatch(idIn->idIn.equals(id))
+                                cdi -> cdi.getCaseIds() != null && cdi.getCaseIds().stream().anyMatch(idin -> idin.equals(id))
+                                        || cdi.getDefendantIds() != null && cdi.getDefendantIds().stream().anyMatch(idIn -> idIn.equals(id))
                                         //this mess in necessary because output document index does not have applicatiinId field
-                                        ||  (cdi.getDocument()!=null && cdi.getDocument().getDocumentCategory()!=null
-                                        && cdi.getDocument().getDocumentCategory().getApplicationDocument()!=null
+                                        || (cdi.getDocument() != null && cdi.getDocument().getDocumentCategory() != null
+                                        && cdi.getDocument().getDocumentCategory().getApplicationDocument() != null
                                         && id.equals(cdi.getDocument().getDocumentCategory().getApplicationDocument().getApplicationId()))
 
                         ).findAny().orElse(null);
@@ -428,7 +432,7 @@ public class CourtDocumentQueryViewTest {
                 .add(CourtDocumentQuery.APPLICATION_ID, applicationId.toString())
                 .add(CourtDocumentQuery.APPLICATION_ID, applicationId.toString())
                 .build();
-        JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
                         .withName(CourtDocumentQuery.COURT_DOCUMENTS_SEARCH_NAME).build(),
                 jsonObject);
@@ -445,13 +449,13 @@ public class CourtDocumentQueryViewTest {
 
         when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
 
-        CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
+        final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
-        CourtDocumentsSearchResult result = jsonObjectToObjectConverter
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
                 .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
         if (permitted) {
             assertThat(result.getDocumentIndices().size(), is(1));
-            CourtDocumentIndex courtDocumentIndexOut = result.getDocumentIndices().get(0);
+            final CourtDocumentIndex courtDocumentIndexOut = result.getDocumentIndices().get(0);
             assertThat(courtDocumentIndexOut.getType(), is(expectedIndex.getType()));
             assertThat(courtDocumentIndexOut.getCategory(), is(expectedIndex.getCategory()));
             assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex.getDefendantIds().get(0)));

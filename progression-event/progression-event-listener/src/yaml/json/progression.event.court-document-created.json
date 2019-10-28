@@ -25,6 +25,7 @@
           "courtClerk"
         ]
       }
-    ]
+    ],
+    "containsFinancialMeans": false
   }
 }

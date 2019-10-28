@@ -3,7 +3,7 @@
     <parent>
         <artifactId>progression-domain</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>6.0.20-SC-SNAPSHOT</version>
+        <version>6.0.21-SC-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,6 +17,7 @@
         <module>progression-domain-transformations-for-MOT</module>
         <module>progression-domain-transformations-ctl</module>
         <module>progression-domain-anonymization-events</module>
+        <module>progression-domain-transformation-anonymise</module>
     </modules>
 
 

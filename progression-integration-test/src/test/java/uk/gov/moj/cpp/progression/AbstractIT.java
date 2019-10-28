@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.WireMockStubUtils.setupAsSystemUser;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -52,54 +54,26 @@ import org.slf4j.LoggerFactory;
 
 public class AbstractIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
     protected static final UUID USER_ID_VALUE = randomUUID();
-    protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
-
     public static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
+    protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final Header CPP_UID_HEADER_AS_ADMIN = new Header(USER_ID, USER_ID_VALUE_AS_ADMIN.toString());
-
-    private static final String ENDPOINT_PROPERTIES_FILE = "endpoint.properties";
     protected static final Properties ENDPOINT_PROPERTIES = new Properties();
     protected static final String PUBLIC_EVENT_TOPIC = "public.event";
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
-
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
+    private static final String ENDPOINT_PROPERTIES_FILE = "endpoint.properties";
+    private static final ThreadLocal<UUID> USER_CONTEXT = new ThreadLocal<>();
     protected static RequestSpecification requestSpec;
     protected static String baseUri;
     protected static RestClient restClient = new RestClient();
 
-    private static final ThreadLocal<UUID> USER_CONTEXT = new ThreadLocal<>();
-
-    @Before
-    public void setUp() {
-        readConfig();
-        setRequestSpecification();
-        WireMockStubUtils.setupAsAuthorisedUser(USER_ID_VALUE);
-        setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
-        AuthorisationServiceStub.stubEnableAllCapabilities();
-        mockMaterialUpload();
+    protected static UUID getLoggedInUser() {
+        return USER_CONTEXT.get();
     }
-
-    protected JSONObject getExistingHearing(final String hearingId) {
-        final String queryAPIEndPoint = MessageFormat
-                .format(ENDPOINT_PROPERTIES.getProperty("hearing.get.hearing"), hearingId.toString());
-
-        final String url = getBaseUri() + "/" + queryAPIEndPoint;
-        final String mediaType = "application/vnd.hearing.get.hearing+json";
-
-        final String payload = poll(requestParams(url, mediaType).withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue()).build())
-                .until(status().is(OK)).getPayload();
-        return new JSONObject(payload);
-    }
-
 
     protected static void setLoggedInUser(final UUID userId) {
         USER_CONTEXT.set(userId);
-    }
-
-    protected static UUID getLoggedInUser() {
-        return USER_CONTEXT.get();
     }
 
     protected static MultivaluedMap<String, Object> getLoggedInHeader() {
@@ -107,7 +81,6 @@ public class AbstractIT {
         header.add(USER_ID, getLoggedInUser().toString());
         return header;
     }
-
 
     protected static void readConfig() {
 
@@ -117,7 +90,7 @@ public class AbstractIT {
         } catch (final IOException e) {
             LOGGER.warn("Error reading properties from {}", ENDPOINT_PROPERTIES_FILE, e);
         }
-        final String baseUriProp  = System.getProperty("INTEGRATION_HOST_KEY");
+        final String baseUriProp = System.getProperty("INTEGRATION_HOST_KEY");
         baseUri = isNotEmpty(baseUriProp) ? format("http://%s:8080", baseUriProp) : ENDPOINT_PROPERTIES.getProperty("base-uri");
     }
 
@@ -209,8 +182,31 @@ public class AbstractIT {
         };
     }
 
-
     protected static RequestParams requestParameters(final String url, final String contentType) {
         return requestParams(url, contentType).withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue()).build();
+    }
+
+    @Before
+    public void setUp() {
+        readConfig();
+        setRequestSpecification();
+        WireMockStubUtils.setupAsAuthorisedUser(USER_ID_VALUE);
+        setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
+        AuthorisationServiceStub.stubEnableAllCapabilities();
+        mockMaterialUpload();
+    }
+
+    protected JSONObject getExistingHearing(final String hearingId) {
+        final String queryAPIEndPoint = MessageFormat
+                .format(ENDPOINT_PROPERTIES.getProperty("hearing.get.hearing"), hearingId.toString());
+
+        final String url = getBaseUri() + "/" + queryAPIEndPoint;
+        final String mediaType = "application/vnd.hearing.get.hearing+json";
+
+        final String payload = poll(requestParams(url, mediaType).withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue()).build())
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(status().is(OK))
+                .getPayload();
+        return new JSONObject(payload);
     }
 }

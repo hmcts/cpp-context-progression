@@ -46,7 +46,7 @@
     <include file="liquibase/add-linked-ids-court-application.xml"/>
     <include file="liquibase/add-isStandaloneApplication-search-prosecution-case.xml"/>
     <include file="liquibase/modify-is-standalone-application-search-type.xml"/>
-	<include file="liquibase/modify-is-standalone-application-add-default.xml"/>
+    <include file="liquibase/modify-is-standalone-application-add-default.xml"/>
     <include file="liquibase/alter-court-application-modify-linked-application-id.xml"/>
     <include file="liquibase/update-court_document_index-add-columns.xml"/>
     <include file="liquibase/create-hearing-application.xml"/>
@@ -54,4 +54,6 @@
     <include file="liquibase/modify-notification-status-table.xml"/>
     <include file="liquibase/alter-search-prosecution-case-add-index.xml"/>
     <include file="liquibase/add-application-assigned-user-id.xml"/>
+    <include file="liquibase/add-contains-financial-means.xml"/>
+
 </databaseChangeLog>

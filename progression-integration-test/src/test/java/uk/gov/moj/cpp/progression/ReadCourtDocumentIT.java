@@ -17,17 +17,18 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ReadCourtDocumentIT {
@@ -54,11 +55,12 @@ public class ReadCourtDocumentIT {
     @Test
     public void shouldGetMaterialMetadataAndContent() throws Exception {
         // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(),  UUID.randomUUID().toString());
+        addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString());
 
 
-
-        poll(requestParams(getQueryUri("/search?q="+ materialId.toString()), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON).withHeader(USER_ID, UUID.randomUUID()))
+        poll(requestParams(getQueryUri("/search?q=" + materialId.toString()), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON).withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .pollInterval(RestHelper.POLL_INTERVAL_SECONDS, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
