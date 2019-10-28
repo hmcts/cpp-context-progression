@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
+import java.io.Serializable;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.UUID;
 
 @SuppressWarnings({"squid:S2384"})
 @Entity
@@ -27,13 +28,13 @@ public class CourtDocumentIndexEntity implements Serializable {
     private UUID applicationId;
 
     @ManyToOne
-    @JoinColumn(name = "court_document_id", nullable=false)
+    @JoinColumn(name = "court_document_id", nullable = false)
     private CourtDocumentEntity courtDocument;
 
     @Column(name = "document_category")
     private String documentCategory;
 
-    @Column(name="hearing_id")
+    @Column(name = "hearing_id")
     private UUID hearingId;
 
     public UUID getId() {

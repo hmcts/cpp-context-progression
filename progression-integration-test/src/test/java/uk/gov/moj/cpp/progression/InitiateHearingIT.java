@@ -27,11 +27,13 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -96,6 +98,7 @@ public class InitiateHearingIT {
         getProsecutioncasesProgressionFor(caseId);
 
         poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON).withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -105,8 +108,8 @@ public class InitiateHearingIT {
 
     }
 
-    private JsonObject getHearingJsonObject(String path, String caseId, String hearingId,
-                                            String defendantId, final String courtCentreId) {
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId) {
         return stringToJsonObjectConverter.convert(
                 getPayloadForCreatingRequest(path)
                         .replaceAll("CASE_ID", caseId)
@@ -139,7 +142,6 @@ public class InitiateHearingIT {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }
-
 
 }
 

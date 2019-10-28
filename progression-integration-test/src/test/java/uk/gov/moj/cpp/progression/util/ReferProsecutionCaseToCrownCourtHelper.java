@@ -8,13 +8,13 @@ import javax.json.JsonObject;
 
 public class ReferProsecutionCaseToCrownCourtHelper {
 
-    public static void assertProsecutionCase(final JsonObject prosecutionCase, final String caseId , final String defendantId) {
+    public static void assertProsecutionCase(final JsonObject prosecutionCase, final String caseId, final String defendantId) {
         assertThat(prosecutionCase.getString("id"), equalTo(caseId));
         assertThat(prosecutionCase.getString("originatingOrganisation"), equalTo("G01FT01AB"));
         assertThat(prosecutionCase.getString("initiationCode"), equalTo("J"));
         assertThat(prosecutionCase.getString("statementOfFacts"), equalTo("You did it"));
         assertThat(prosecutionCase.getString("statementOfFactsWelsh"), equalTo("You did it in Welsh"));
-        assertDefendant(prosecutionCase.getJsonArray("defendants").getJsonObject(0), caseId , defendantId);
+        assertDefendant(prosecutionCase.getJsonArray("defendants").getJsonObject(0), caseId, defendantId);
     }
 
     private static void assertDefendant(final JsonObject defendant, final String caseId, final String defendantId) {
@@ -89,12 +89,10 @@ public class ReferProsecutionCaseToCrownCourtHelper {
     public static void assertcourtDocuments(final JsonObject courtDocument, final String caseId, final String courtDocumentId, final String materialIdActive) {
         assertThat(courtDocument.getString("courtDocumentId"), equalTo(courtDocumentId));
         assertThat(courtDocument.getJsonObject("documentCategory").getJsonObject("defendantDocument").getString("prosecutionCaseId"), equalTo(caseId));
-
         assertThat(courtDocument.getString("name"), equalTo("Bank Statement"));
         assertThat(courtDocument.getString("documentTypeId"), equalTo("1b7e6a7a-a571-4ab9-8895-4b1a58424d78"));
-
-        assertThat(courtDocument.getJsonArray("materials").size(),equalTo(2));
-        assertMaterials(courtDocument.getJsonArray("materials").getJsonObject(0),materialIdActive);
+        assertThat(courtDocument.getJsonArray("materials").size(), equalTo(2));
+        assertMaterials(courtDocument.getJsonArray("materials").getJsonObject(0), materialIdActive);
 
 
     }
@@ -142,8 +140,8 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertThat(contact.getString("fax"), equalTo("3425678"));
     }
 
-    public static void assertDefendantRequest(final JsonObject defendantRequest, final String caseId , final String defendantId,
-                                               final String referralReasonId) {
+    public static void assertDefendantRequest(final JsonObject defendantRequest, final String caseId, final String defendantId,
+                                              final String referralReasonId) {
         assertThat(defendantRequest.getString("defendantId"), equalTo(defendantId));
         assertThat(defendantRequest.getString("prosecutionCaseId"), equalTo(caseId));
         assertThat(defendantRequest.getString("referralReasonId"), equalTo(referralReasonId));

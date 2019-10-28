@@ -261,8 +261,8 @@ public class CourtDocumentQuery {
         return createJsonEnvelope(envelope, caseNotificationMap);
     }
 
-    private static JsonObject jsonFromString(String jsonObjectStr) {
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+    private static JsonObject jsonFromString(final String jsonObjectStr) {
+        try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
             return jsonReader.readObject();
         }
     }
@@ -286,6 +286,7 @@ public class CourtDocumentQuery {
                 .withMimeType(courtDocument.getMimeType())
                 .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
                 .withMaterials(filteredMaterials)
+                .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
                 .build();
     }
 

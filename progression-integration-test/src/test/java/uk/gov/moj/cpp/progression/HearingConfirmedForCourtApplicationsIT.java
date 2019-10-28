@@ -28,11 +28,13 @@ import static uk.gov.moj.cpp.progression.test.TestUtilities.print;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
 import java.nio.charset.Charset;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -96,9 +98,9 @@ public class HearingConfirmedForCourtApplicationsIT {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
-        
+
         pollForApplicationStatus(applicationId, "DRAFT");
-        
+
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-applications-only.json",
                         caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
@@ -106,8 +108,9 @@ public class HearingConfirmedForCourtApplicationsIT {
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
                         .build());
-        
+
         pollForApplicationStatus(applicationId, "LISTED");
+
         pollForApplicationAtAGlance("LISTED");
         verifyPostInitiateCourtHearing(hearingId);
         verifyInMessagingQueue();
@@ -122,9 +125,10 @@ public class HearingConfirmedForCourtApplicationsIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private void pollForApplicationAtAGlance(final String status){
+    private void pollForApplicationAtAGlance(final String status) {
         poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         print(),
                         status().is(OK),
