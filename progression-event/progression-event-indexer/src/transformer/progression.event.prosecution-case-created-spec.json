@@ -25,7 +25,7 @@
               }
             },
             "id": "parties[&1].partyId",
-            "#DEFENDANT" : "parties[0]._party_type",
+            "#DEFENDANT" : "parties[&1]._party_type",
             "legalEntityDefendant": {
               "organisation": {
                 "name": "parties[&3].organisationName"

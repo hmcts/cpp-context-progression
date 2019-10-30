@@ -27,14 +27,27 @@ public class ProsecutionCaseCreatedTransformationTest {
     }
 
     @Test
-    public void shouldTransformProvidedInputJson() throws IOException {
+    public void shouldTransformProsecutionCaseCreatedJson() throws IOException {
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.prosecution-case-created-spec.json");
         assertNotNull(specJson);
 
         final JsonObject inputJson = readJson("/progression.event.prosecution-case-created.json");
-        final DocumentContext inputProsectionCase = JsonPath.parse(inputJson);
+        final DocumentContext inputProsecutionCase = JsonPath.parse(inputJson);
 
         final JsonObject outputCase = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
-        verifyCaseCreated(inputProsectionCase, outputCase);
+        verifyCaseCreated(inputProsecutionCase, outputCase, 1, true);
+    }
+
+
+    @Test
+    public void shouldTransformProsecutionCaseCreatedWithMultipleDefendantsJson() throws IOException {
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.prosecution-case-created-spec.json");
+        assertNotNull(specJson);
+
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-created-with-multi-defendants.json");
+        final DocumentContext inputProsecutionCase = JsonPath.parse(inputJson);
+
+        final JsonObject outputCase = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        verifyCaseCreated(inputProsecutionCase, outputCase, 3, false);
     }
 }
