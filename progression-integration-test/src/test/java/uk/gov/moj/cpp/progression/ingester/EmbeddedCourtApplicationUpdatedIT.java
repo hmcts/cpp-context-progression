@@ -6,6 +6,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
@@ -61,6 +62,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
     private String respondantId;
     private String respondantDefendantId;
     private String applicationId;
+    private String applicationReference;
 
     @Before
     public void setUp() throws IOException {
@@ -76,6 +78,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
+        applicationReference =  randomAlphanumeric(10).toUpperCase();
 
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
         final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
@@ -92,7 +95,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
     public void shouldUpdateCourtApplicationAndGetConfirmation() throws Exception {
 
         final String applicationCreatedIndex = setUpCourtApplication();
-        updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
@@ -118,14 +121,14 @@ public class EmbeddedCourtApplicationUpdatedIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         final JsonObject updateJson = jsonFromString(payloadUpdatedStr);
         final DocumentContext updatedInputCourtApplication = parse(updateJson);
 
         final JsonObject outputUpdatedJson = jsonFromString(getJsonArray(courApplicationUpdatesResponseJsonObject.get(), "index").get().getString(0));
 
-        verifyUpdateCourtApplication(updatedInputCourtApplication, outputUpdatedJson, applicationId);
+        verifyUpdateCourtApplication(updatedInputCourtApplication, outputUpdatedJson, applicationId, 0);
     }
 
     private String setUpCourtApplication() throws Exception {
@@ -160,7 +163,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
 
 
         final JsonObject inputApplication = jsonFromString(payloadStr);

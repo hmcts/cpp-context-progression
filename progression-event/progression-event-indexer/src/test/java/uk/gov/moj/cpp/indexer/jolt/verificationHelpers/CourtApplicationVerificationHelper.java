@@ -65,6 +65,16 @@ public class CourtApplicationVerificationHelper {
         final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
         final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");
         verifyApplication(inputCourtApplication, outputCourtApplications, parties, applicant, respondents);
+
+        final String sourceApplicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
+        final JsonObject transformedApplication = transformedJson.getJsonArray("applications").getJsonObject(0);
+        assertNotNull(transformedApplication);
+
+        final JsonString applicationReferenceValue = transformedApplication.getJsonString("applicationReference");
+        assertNotNull(applicationReferenceValue);
+
+        assertEquals(sourceApplicationReference, applicationReferenceValue.getString());
+
     }
 
     public static void verifyExtendHearing(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {

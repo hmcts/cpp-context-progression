@@ -5,6 +5,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.fail;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
@@ -61,6 +62,7 @@ public class MultipleLinkedApplicationWithCaseIT {
     private String respondantDefendantId2;
     private String applicationId1;
     private String applicationId2;
+    private String applicationReference;
 
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
 
@@ -83,6 +85,7 @@ public class MultipleLinkedApplicationWithCaseIT {
         respondantDefendantId2 = randomUUID().toString();
         applicationId1 = randomUUID().toString();
         applicationId2 = randomUUID().toString();
+        applicationReference =  randomAlphanumeric(10).toUpperCase();
 
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
         final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
@@ -105,7 +108,7 @@ public class MultipleLinkedApplicationWithCaseIT {
 
         addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondantId2, respondantDefendantId2, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
                 final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
                 if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject, 9)) {
@@ -125,7 +128,7 @@ public class MultipleLinkedApplicationWithCaseIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId1)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId1)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId1)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication1 = jsonFromString(payloadStr1);
 
         final DocumentContext inputCourtApplication1 = parse(inputApplication1);
@@ -136,12 +139,12 @@ public class MultipleLinkedApplicationWithCaseIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId2)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId2)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId2)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication2 = jsonFromString(payloadStr2);
 
         final DocumentContext inputCourtApplication2 = parse(inputApplication2);
 
-        final JsonObject transformedJson = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
+        final JsonObject transformedJson = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0));
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
 
         verifyCaseCreated(9l, inputProsecutionCase, transformedJson);
@@ -163,7 +166,7 @@ public class MultipleLinkedApplicationWithCaseIT {
 
         addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondantId2, respondantDefendantId2, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondantId1, respondantDefendantId1, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondantId1, respondantDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
@@ -185,7 +188,7 @@ public class MultipleLinkedApplicationWithCaseIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId1)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId1)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId1)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication1 = jsonFromString(payloadStr1);
 
         final DocumentContext inputCourtApplication1 = parse(inputApplication1);
@@ -196,7 +199,7 @@ public class MultipleLinkedApplicationWithCaseIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId2)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId2)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId2)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication2 = jsonFromString(payloadStr2);
         final DocumentContext inputCourtApplication2 = parse(inputApplication2);
 
@@ -209,7 +212,7 @@ public class MultipleLinkedApplicationWithCaseIT {
         verifyEmbeddedApplication(linkedCaseId1, transformedJson);
         verifyEmbeddedApplication(linkedCaseId2, transformedJson);
         verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);
-        verifyUpdateCourtApplication(inputCourtApplication1, transformedJson, applicationId1);
+        verifyUpdateCourtApplication(inputCourtApplication1, transformedJson, applicationId1, 1);
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject, final int partySize) {

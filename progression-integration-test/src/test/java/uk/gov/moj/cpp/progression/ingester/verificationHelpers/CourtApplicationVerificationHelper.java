@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.apache.webbeans.util.Asserts.assertNotNull;
+import static junit.framework.TestCase.assertNotNull;
+//import static org.apache.webbeans.util.Asserts.assertNotNull;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.assertAddressDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertDefendantDetails;
@@ -15,6 +16,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
+import junit.framework.TestCase;
 
 public class CourtApplicationVerificationHelper {
 
@@ -50,7 +52,8 @@ public class CourtApplicationVerificationHelper {
 
     public static void verifyUpdateCourtApplication(final DocumentContext inputCourtApplication,
                                                     final JsonObject transformedJson,
-                                                    final String applicationId) {
+                                                    final String applicationId,
+                                                    final int applicationIndex) {
 
         final JsonArray outputCourtApplications = transformedJson.getJsonArray("applications");
         final JsonObject outputApplication = outputCourtApplications.stream()
@@ -61,14 +64,25 @@ public class CourtApplicationVerificationHelper {
         final String applicationType = ((JsonString) inputCourtApplication.read("$.courtApplication.type.applicationType")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
+        final String sourceApplicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
 
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
+
+        final JsonObject transformedApplication = transformedJson.getJsonArray("applications").getJsonObject(applicationIndex);
+        assertNotNull(transformedApplication);
+        final JsonString applicationReferenceValue = transformedApplication.getJsonString("applicationReference");
+        assertNotNull(applicationReferenceValue);
+        assertEquals(sourceApplicationReference, applicationReferenceValue.getString());
+
         final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
         final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");
         verifyApplicationParties(transformedJson, applicant, respondents);
+
+
+
     }
 
     public static void verifyAddCourtApplication(final DocumentContext inputCourtApplication,

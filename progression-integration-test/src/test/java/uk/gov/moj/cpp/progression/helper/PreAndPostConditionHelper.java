@@ -359,6 +359,7 @@ public class PreAndPostConditionHelper {
                                                               final String applicantDefendantId,
                                                               final String respondantId,
                                                               final String respondantDefendantId,
+                                                              final String applicationReference,
                                                               final String fileName)
             throws IOException {
         final String body = Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
@@ -368,7 +369,7 @@ public class PreAndPostConditionHelper {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         return postCommand(getCommandUri("/application"),
                 "application/vnd.progression.update-court-application+json", body);

@@ -3,10 +3,10 @@ package uk.gov.moj.cpp.progression.ingester;
 import static com.jayway.jsonpath.JsonPath.parse;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
@@ -18,21 +18,17 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
-
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
-
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+
+import javax.json.JsonObject;
+import java.io.IOException;
+import java.util.Optional;
 
 public class CourtApplicationUpdatedIngesterIT {
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
@@ -43,6 +39,7 @@ public class CourtApplicationUpdatedIngesterIT {
     private String applicantDefendantId;
     private String respondantId;
     private String respondantDefendantId;
+    private String applicationReference;
 
     @BeforeClass
     public static void beforeClass() {
@@ -57,6 +54,7 @@ public class CourtApplicationUpdatedIngesterIT {
         applicantDefendantId = randomUUID().toString();
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
+        applicationReference =  randomAlphanumeric(10).toUpperCase();
 
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
@@ -72,7 +70,8 @@ public class CourtApplicationUpdatedIngesterIT {
 
         setUpCourtApplication();
 
-        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
+                                           applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
 
@@ -87,13 +86,13 @@ public class CourtApplicationUpdatedIngesterIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         final JsonObject updateJson = jsonFromString(payloadUpdatedStr);
         final DocumentContext updatedInputCourtApplication = parse(updateJson);
 
         verifyStandaloneApplication(applicationId, courApplicationUpdatesResponseJsonObject.get());
-        verifyUpdateCourtApplication(updatedInputCourtApplication, courApplicationUpdatesResponseJsonObject.get(), applicationId);
+        verifyUpdateCourtApplication(updatedInputCourtApplication, courApplicationUpdatesResponseJsonObject.get(), applicationId, 0);
     }
 
     private void setUpCourtApplication() throws IOException {
@@ -111,7 +110,7 @@ public class CourtApplicationUpdatedIngesterIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
-                .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         final JsonObject inputApplication = jsonFromString(payloadStr);
 
