@@ -92,7 +92,7 @@ public class CourtApplicationUpdatedIngesterIT {
         final DocumentContext updatedInputCourtApplication = parse(updateJson);
 
         verifyStandaloneApplication(applicationId, courApplicationUpdatesResponseJsonObject.get());
-        verifyUpdateCourtApplication(updatedInputCourtApplication, courApplicationUpdatesResponseJsonObject.get(), applicationId, 0);
+        verifyUpdateCourtApplication(updatedInputCourtApplication, courApplicationUpdatesResponseJsonObject.get(), applicationId);
     }
 
     private void setUpCourtApplication() throws IOException {

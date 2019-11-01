@@ -52,8 +52,7 @@ public class CourtApplicationVerificationHelper {
 
     public static void verifyUpdateCourtApplication(final DocumentContext inputCourtApplication,
                                                     final JsonObject transformedJson,
-                                                    final String applicationId,
-                                                    final int applicationIndex) {
+                                                    final String applicationId) {
 
         final JsonArray outputCourtApplications = transformedJson.getJsonArray("applications");
         final JsonObject outputApplication = outputCourtApplications.stream()
@@ -64,18 +63,13 @@ public class CourtApplicationVerificationHelper {
         final String applicationType = ((JsonString) inputCourtApplication.read("$.courtApplication.type.applicationType")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
-        final String sourceApplicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
+        final String applicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
 
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
-
-        final JsonObject transformedApplication = transformedJson.getJsonArray("applications").getJsonObject(applicationIndex);
-        assertNotNull(transformedApplication);
-        final JsonString applicationReferenceValue = transformedApplication.getJsonString("applicationReference");
-        assertNotNull(applicationReferenceValue);
-        assertEquals(sourceApplicationReference, applicationReferenceValue.getString());
+        assertEquals(applicationReference, outputApplication.getString("applicationReference"));
 
         final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
         final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");

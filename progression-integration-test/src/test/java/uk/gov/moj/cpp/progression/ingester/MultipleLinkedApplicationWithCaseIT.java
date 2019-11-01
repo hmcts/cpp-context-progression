@@ -212,7 +212,7 @@ public class MultipleLinkedApplicationWithCaseIT {
         verifyEmbeddedApplication(linkedCaseId1, transformedJson);
         verifyEmbeddedApplication(linkedCaseId2, transformedJson);
         verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);
-        verifyUpdateCourtApplication(inputCourtApplication1, transformedJson, applicationId1, 1);
+        verifyUpdateCourtApplication(inputCourtApplication1, transformedJson, applicationId1);
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject, final int partySize) {

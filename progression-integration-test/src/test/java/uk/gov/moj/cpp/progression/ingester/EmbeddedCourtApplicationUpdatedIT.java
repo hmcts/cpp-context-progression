@@ -128,7 +128,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
 
         final JsonObject outputUpdatedJson = jsonFromString(getJsonArray(courApplicationUpdatesResponseJsonObject.get(), "index").get().getString(0));
 
-        verifyUpdateCourtApplication(updatedInputCourtApplication, outputUpdatedJson, applicationId, 0);
+        verifyUpdateCourtApplication(updatedInputCourtApplication, outputUpdatedJson, applicationId);
     }
 
     private String setUpCourtApplication() throws Exception {
