@@ -78,6 +78,9 @@
     },
     "pncId": {
       "type": "string"
+    },
+    "isYouth":{
+      "type" : "boolean"
     }
   },
   "required": [

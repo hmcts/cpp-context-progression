@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+import uk.gov.moj.cpp.progression.command.UpdateCaseMarkersApiTest;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -72,6 +73,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         CreateCourtApplication("progression.create-court-application", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         InitiateCourtProceedings("progression.initiate-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
         AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
+        UpdateCaseMarkersApiTest("progression.update-case-markers", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         EjectCaseOrApplication("progression.eject-case-or-application","Eject Case Group");
 
         private final String actionName;

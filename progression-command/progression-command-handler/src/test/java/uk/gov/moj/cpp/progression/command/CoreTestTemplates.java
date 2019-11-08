@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
@@ -14,6 +15,7 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POS
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -232,6 +234,17 @@ public class CoreTestTemplates {
                 .withNationalInsuranceNumber((NI_NUMBER.next()))
                 .withNationalityId((randomUUID()))
                 .withNationalityCode((STRING.next()));
+    }
+
+    public static AllocationDecision.Builder allocationDecision(final UUID offenceId) {
+        return AllocationDecision.allocationDecision()
+                .withOffenceId(offenceId)
+                .withMotReasonDescription("Defendant chooses trial by jury")
+                .withOriginatingHearingId(randomUUID())
+                .withAllocationDecisionDate(PAST_LOCAL_DATE.next())
+                .withMotReasonId(fromString("f8eb278a-8bce-373e-b365-b45e939da38a"))
+                .withSequenceNumber(40)
+                .withMotReasonCode("4");
     }
 
     public static NotifiedPlea.Builder notifiedPlea(UUID offenceId) {

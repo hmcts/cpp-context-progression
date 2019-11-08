@@ -450,6 +450,7 @@ public class GetCaseAtAGlanceService {
                     .withConvictionDate(offence.getConvictionDate())
                     .withNotifiedPlea(offence.getNotifiedPlea())
                     .withIndicatedPlea(offence.getIndicatedPlea())
+                    .withAllocationDecision(offence.getAllocationDecision())
                     .withPleas(getOffencePleas(offence.getPlea()))
                     .withVerdicts(getOffenceVerdicts(offence.getVerdict()))
                     .withJudicialResults(getJudicialResults(offence.getJudicialResults()))

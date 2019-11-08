@@ -17,6 +17,16 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         assertDefendant(prosecutionCase.getJsonArray("defendants").getJsonObject(0), caseId, defendantId);
     }
 
+    public static void assertCaseMarkers(final JsonObject prosecutionCase, final String caseMarkerCode, final String caseMarkerDesc) {
+        JsonObject caseMarkerJsonObj = prosecutionCase.getJsonArray("caseMarkers").getJsonObject(0);
+        assertThat(caseMarkerJsonObj.getString("markerTypeCode"), equalTo(caseMarkerCode));
+        assertThat(caseMarkerJsonObj.getString("markerTypeDescription"), equalTo(caseMarkerDesc));
+    }
+
+    public static void assertCaseMarkersIsEmpty(final JsonObject prosecutionCase) {
+        assertThat(prosecutionCase.containsKey("caseMarkers"), equalTo(false));
+    }
+
     private static void assertDefendant(final JsonObject defendant, final String caseId, final String defendantId) {
         assertThat(defendant.getString("id"), equalTo(defendantId));
         assertThat(defendant.getString("prosecutionCaseId"), equalTo(caseId));

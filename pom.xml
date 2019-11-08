@@ -37,12 +37,12 @@
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <material.version>6.0.1</material.version>
         <access.control.version>4.1.8-R2</access.control.version>
-        <referencedata.version>2.0.240</referencedata.version>
-        <listing.version>1.0.26</listing.version>
+        <referencedata.version>2.0.275</referencedata.version>
+        <listing.version>1.0.34</listing.version>
         <hearing.version>2.0.185</hearing.version>
         <usersgroups.version>2.0.115</usersgroups.version>
         <referencedata.offence.version>1.0.26</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.50</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.51</criminal-court-public-model.version>
     </properties>
 
     <build>

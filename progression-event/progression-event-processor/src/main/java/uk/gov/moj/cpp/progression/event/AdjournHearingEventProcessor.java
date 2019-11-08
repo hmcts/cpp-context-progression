@@ -157,6 +157,7 @@ public class AdjournHearingEventProcessor {
                         .withProsecutionCaseId(defendant.getProsecutionCaseId())
                         .withWitnessStatement(defendant.getWitnessStatement())
                         .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                        .withIsYouth(defendant.getIsYouth())
                         .build();
                 updatedDefendants.add(updatedDefendant);
             }
