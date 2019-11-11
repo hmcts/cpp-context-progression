@@ -6,9 +6,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
@@ -24,14 +26,17 @@ import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.courts.progression.query.DocumentCategory;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.moj.cpp.progression.helper.MultipartFileUploadHelper;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.QueryUtil;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -53,6 +58,10 @@ public class UploadCourtDocumentIT extends AbstractIT {
     private String caseId;
     private String docId;
     private String defendantId;
+
+    private MessageConsumer publicEventConsumer = publicEvents
+            .createConsumer("public.progression.court-document-added");
+    ;
 
     @Before
     public void setup() {
@@ -115,6 +124,13 @@ public class UploadCourtDocumentIT extends AbstractIT {
         assertNotNull(material.getString("uploadDateTime"));
         final ZonedDateTime zonedDateTime = ZonedDateTime.parse(material.getString("uploadDateTime"));
         assertThat(zonedDateTime.getZone().getId(), equalTo(("Z")));
+
+        verifyInMessagingQueueForPublicCourtDocumentAdded();
+    }
+
+    private void verifyInMessagingQueueForPublicCourtDocumentAdded() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
+        assertTrue(message.isPresent());
     }
 
     static class UploadRequest {

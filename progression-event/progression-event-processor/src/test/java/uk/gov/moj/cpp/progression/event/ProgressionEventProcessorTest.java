@@ -278,6 +278,24 @@ public class ProgressionEventProcessorTest {
                 payloadIsJson(withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID)))));
     }
 
+    @Test
+    public void publishProsecutionCaseCreatedEvent() {
+        // given
+        final JsonEnvelope event = createEnvelope(
+                "progression.event.prosecution-case-created",
+                createObjectBuilder().add("caseId", CASE_ID).build());
+        // when
+        progressionEventProcessor.publishProsecutionCaseCreatedEvent(event);
+        // then
+        final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor =
+                forClass(JsonEnvelope.class);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName(
+                        "public.progression.prosecution-case-created"),
+                payloadIsJson(withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID)))));
+    }
+
     private static JsonObject getOffence(final String modeoftrial) {
         return Json.createObjectBuilder().add("legislation", "legislation")
                 .add("welshlegislation", LEGISLATION_WELSH)

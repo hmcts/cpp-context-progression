@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.domain.utils;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,4 +44,8 @@ public class LocalDateUtils {
         }
     }
 
+    public static Boolean isYouth(final LocalDate defendantDob, final LocalDate firstHearingDate) {
+        final Period p = Period.between(defendantDob, firstHearingDate);
+        return p.getYears()<18;
+    }
 }

@@ -238,6 +238,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
                 .withPncId(defendant.getPncId())
                 .withAliases(defendant.getAliases())
+                .withIsYouth(defendant.getIsYouth())
                 .build();
     }
 

@@ -172,7 +172,7 @@ public class CourtExtractTransformer {
         courtExtract.withReferralReason(getReferralReason(hearingsList));
     }
 
-    private List<CourtApplications> transformCourtApplications(final List<CourtApplication> courtApplications,  final List<Hearings> hearingsList) {
+    private List<CourtApplications> transformCourtApplications(final List<CourtApplication> courtApplications, final List<Hearings> hearingsList) {
         final List<CourtApplication> applicationsExtractList = new ArrayList<>();
 
         courtApplications.forEach(app -> applicationsExtractList.add(mergeApplicationResults(app, getResultedApplication(app.getId(), hearingsList))));
@@ -276,7 +276,7 @@ public class CourtExtractTransformer {
     private RespondentRepresentation transformRespondantRepresentation(final CourtApplicationParty courtApplicationParty, final String synonym, final List<Hearings> hearingsList) {
         final Organisation representationOrganisation = nonNull(courtApplicationParty) ? courtApplicationParty.getRepresentationOrganisation() : null;
         return RespondentRepresentation.respondentRepresentation()
-                .withAddress(nonNull(representationOrganisation) ? representationOrganisation.getAddress(): null)
+                .withAddress(nonNull(representationOrganisation) ? representationOrganisation.getAddress() : null)
                 .withName(nonNull(representationOrganisation) ? representationOrganisation.getName() : null)
                 .withContact(nonNull(representationOrganisation) ? representationOrganisation.getContact() : null)
                 .withSynonym(synonym)

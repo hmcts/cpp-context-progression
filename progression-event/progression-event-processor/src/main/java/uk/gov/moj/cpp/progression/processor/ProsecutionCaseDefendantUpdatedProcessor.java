@@ -45,12 +45,29 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantUpdated.class);
         final DefendantUpdate defendant = prosecutionCaseDefendantUpdated.getDefendant();
         LOGGER.debug("Received prosecution case defendant updated for caseId: " + defendant.getProsecutionCaseId());
-        if (Objects.nonNull(defendant.getOffences())) {
-            defendant.getOffences().clear();
-        }
+
         final JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add("defendant", objectToJsonObjectConverter.convert(defendant)).build();
+                .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant))).build();
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DEFENDANT_CHANGED).apply(publicEventPayload));
+    }
+
+    private DefendantUpdate updateDefendant(final DefendantUpdate defendant) {
+        return DefendantUpdate.defendantUpdate().withId(defendant.getId())
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
+                .withWitnessStatement(defendant.getWitnessStatement())
+                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                .withMitigation(defendant.getMitigation())
+                .withMitigationWelsh(defendant.getMitigationWelsh())
+                .withAssociatedPersons(defendant.getAssociatedPersons())
+                .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                .withPersonDefendant(defendant.getPersonDefendant())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                .withPncId(defendant.getPncId())
+                .withAliases(defendant.getAliases())
+                .withIsYouth(defendant.getIsYouth())
+                .build();
     }
 
 }

@@ -112,7 +112,8 @@ public class HearingConfirmedForCaseAtAGlanceIT {
                         status().is(OK),
                         payload().isJson(allOf(
                                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId)))
+                                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
+                                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
                         )));
 
     }
