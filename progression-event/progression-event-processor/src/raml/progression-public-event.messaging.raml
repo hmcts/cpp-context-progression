@@ -46,6 +46,12 @@ baseUri: message://event/processor/message/progression
                     application/vnd.public.progression.defendants-added-to-court-proceedings+json:
                         schema: !include json/schema/progression.event.defendants-added-to-court-proceedings.json
                         example: !include json/progression.event.defendants-added-to-court-proceedings.json
+                    application/vnd.public.progression.prosecution-case-created+json:
+                        schema: !include json/schema/public.progression.prosecution-case-created.json
+                        example: !include json/public.progression.prosecution-case-created.json
+                    application/vnd.public.progression.court-document-added+json:
+                        schema: !include json/schema/public.progression.court-document-added.json
+                        example: !include json/public.progression.court-document-added.json
                     application/vnd.public.progression.events.case-or-application-ejected+json:
                         schema: !include json/schema/public.progression.events.case-or-application-ejected.json
                         example: !include json/public.progression.events.case-or-application-ejected.json
@@ -64,6 +70,9 @@ baseUri: message://event/processor/message/progression
                     application/vnd.public.progression.defence-organisation-disassociated+json:
                         schema: !include json/schema/progression.event.defence-organisation-disassociated.json
                         example: !include json/progression.event.defence-organisation-disassociated.json
+                    application/vnd.public.progression.case-markers-updated+json:
+                        schema: !include json/schema/public.progression.case-markers-updated.json
+                        example: !include json/public.progression.case-markers-updated.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

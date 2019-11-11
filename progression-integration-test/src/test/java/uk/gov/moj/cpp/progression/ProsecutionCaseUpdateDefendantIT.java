@@ -52,6 +52,28 @@ public class ProsecutionCaseUpdateDefendantIT {
         JsonObject defendantJson = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0);
         assertThat(defendantJson.getString("pncId"), equalTo("1234567"));
         assertThat(defendantJson.getJsonArray("aliases").size(), equalTo(1));
+        assertThat(defendantJson.containsKey("isYouth"), equalTo(false));
+        helper.verifyInMessagingQueueForDefendentChanged();
+    }
+
+    @Test
+    public void shouldUpdateProsecutionCaseDefendantWithYouthFlagSetToTrue() throws Exception {
+        // given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        String response = getProsecutioncasesProgressionFor(caseId);
+        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
+        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonObject("personDefendant").getJsonObject("personDetails").getString("firstName"), equalTo("Harry"));
+
+        // when
+        helper.updateYouthFlagForDefendant();
+
+        // then
+        helper.verifyInActiveMQ();
+        response = getProsecutioncasesProgressionFor(caseId);
+        prosecutioncasesJsonObject = getJsonObject(response);
+        JsonObject defendantJson = prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0);
+        assertThat(defendantJson.getBoolean("isYouth"), equalTo(true));
         helper.verifyInMessagingQueueForDefendentChanged();
     }
 

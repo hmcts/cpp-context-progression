@@ -549,6 +549,7 @@ public class CourtExtractTransformerTest {
     private List<Offences> createOffence(final UUID defendantId) {
         return Arrays.asList(
                 Offences.offences()
+                        .withId(UUID.randomUUID())
                         .withConvictionDate(CONVICTION_DATE)
                         .withJudicialResults(createResults())
                         .withPleas(createPlea())

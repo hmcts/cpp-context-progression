@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.creat
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
 
+import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -24,6 +25,7 @@ import uk.gov.justice.core.courts.FinancialDataAdded;
 import uk.gov.justice.core.courts.FinancialMeansDeleted;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -86,7 +88,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 8399183557957742158L;
+    private static final long serialVersionUID = 101L;
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
     private static final String CROWN_COURT_HEARING_PROPERTY = "crownCourtHearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
@@ -216,6 +218,10 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(FinancialDataAdded.class).apply(this::populateFinancialData),
                 when(FinancialMeansDeleted.class).apply(this::deleteFinancialData),
+                when(CaseMarkersUpdated.class).apply( e -> {
+                            //do nothing
+                        }
+                ),
                 otherwiseDoNothing());
 
     }
@@ -554,6 +560,18 @@ public class CaseAggregate implements Aggregate {
         }
         return apply(streamBuilder.build());
 
+    }
+
+    public Stream<Object> updateCaseMarkers(final List<Marker> caseMarkers, final UUID prosecutionCaseId, final UUID hearingId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(CaseMarkersUpdated.caseMarkersUpdated()
+                .withCaseMarkers(caseMarkers)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withHearingId(hearingId)
+                .build()
+        );
+
+        return apply(streamBuilder.build());
     }
 
 

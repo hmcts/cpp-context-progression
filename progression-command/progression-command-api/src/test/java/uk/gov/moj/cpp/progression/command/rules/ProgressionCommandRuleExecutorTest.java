@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+import uk.gov.moj.cpp.progression.command.UpdateCaseMarkersApiTest;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -68,10 +69,11 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         UpdateDefendentDetails("progression.update-defendant-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         UpdateOffences("progression.update-offences-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         UploadCourtDocument("progression.upload-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators"),
-        AddCourtDocument("progression.add-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators"),
+        AddCourtDocument("progression.add-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators", "System Users"),
         CreateCourtApplication("progression.create-court-application", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         InitiateCourtProceedings("progression.initiate-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
         AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
+        UpdateCaseMarkersApiTest("progression.update-case-markers", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         EjectCaseOrApplication("progression.eject-case-or-application", "Eject Case Group"),
         AssociateDefenceOrganisation("progression.associate-defence-organisation", "Defence Users"),
         DisassociateDefenceOrganisation("progression.disassociate-defence-organisation", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers");

@@ -102,8 +102,8 @@ public class InitiateHearingIT {
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.id", equalTo(caseId))
-
+                                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
                         )));
 
     }

@@ -31,7 +31,8 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
 
     private static final String TEMPLATE_UPDATE_DEFENDANT_PAYLOAD = "progression.update-defendant-for-prosecution-case.json";
     private static final String TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD = "progression.update-unchanged-defendant-for-prosecution-case.json";
-    
+    private static final String TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD = "progression.update-youth-flag-for-defendant.json";
+
     private final MessageConsumer publicEventsCaseDefendantChanged =
             QueueUtil.publicEvents
                     .createConsumer("public.progression.case-defendant-changed");
@@ -51,6 +52,16 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
 
     public void updateDefendant() {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void updateYouthFlagForDefendant() {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);

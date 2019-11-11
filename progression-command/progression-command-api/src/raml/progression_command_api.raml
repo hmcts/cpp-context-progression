@@ -223,6 +223,31 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           202:
               description: OK
 
+/prosecutioncases/{prosecutionCaseId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: The ID of the case
+      type: string
+  post:
+    description: |
+      Update Case Markers.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-case-markers+json
+          name: progression.update-case-markers
+
+      ...
+    body:
+      application/vnd.progression.update-case-markers+json:
+        example:
+          !include json/progression.update-case-markers.json
+        schema:
+          !include json/schema/progression.update-case-markers.json
+
+    responses:
+          202:
+              description: OK
+
 /application :
   post:
       description: |
