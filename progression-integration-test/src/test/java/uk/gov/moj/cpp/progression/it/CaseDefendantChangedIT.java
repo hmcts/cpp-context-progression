@@ -5,9 +5,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseProgressionDetail;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
@@ -42,7 +43,6 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     private String request;
 
     private static void init() {
-        createMockEndpoints();
         ListingStub.stubListCourtHearing();
         ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
     }
@@ -51,11 +51,17 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
         addDefendantHelper = new AddDefendantHelper(caseId);
+        setupUsersGroupQueryStub();
+        waitForUsersAndGroupsStubToBeReady();
         request = addDefendantHelper.addMinimalDefendant();
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
         addDefendantHelper.verifyMinimalDefendantAdded();
         defendantId = "";
+    }
+
+    private void waitForUsersAndGroupsStubToBeReady() {
+        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/.*", "application/json");
     }
 
     @Test
