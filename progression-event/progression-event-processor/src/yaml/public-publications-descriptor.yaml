@@ -62,6 +62,9 @@ subscriptions_descriptor:
         - name: public.progression.defendant-financial-means-deleted
           schema_uri: http://justice.gov.uk/core/courts/progression.event.financial-means-deleted.json
 
+        - name: public.progression.case-markers-updated
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 
