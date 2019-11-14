@@ -4,12 +4,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.3.5</version>
+        <version>9.4.0</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>6.0.12-FRAMEWORK-SNAPSHOT</version>
+    <version>6.4.0-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
