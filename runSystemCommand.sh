@@ -17,8 +17,8 @@
 #
 ##################################################################################################
 
-FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.4.0
-CONTEXT_NAME="progression"
+FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.2.3
+CONTEXT_NAME="material"
 USER_NAME="admin"
 PASSWORD="admin"
 
