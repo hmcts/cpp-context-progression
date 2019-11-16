@@ -44,6 +44,12 @@ subscriptions_descriptor:
         - name: public.progression.defendants-added-to-court-proceedings
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendants-added-to-court-proceedings.json
 
+        - name: public.progression.prosecution-case-created
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
+
+        - name: public.progression.court-document-added
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-added.json
+
         - name: public.progression.events.case-or-application-ejected
           schema_uri: http://justice.gov.uk/progression/courts/case-or-application-ejected
 
@@ -55,6 +61,9 @@ subscriptions_descriptor:
 
         - name: public.progression.defendant-financial-means-deleted
           schema_uri: http://justice.gov.uk/core/courts/progression.event.financial-means-deleted.json
+
+        - name: public.progression.case-markers-updated
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
 
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****

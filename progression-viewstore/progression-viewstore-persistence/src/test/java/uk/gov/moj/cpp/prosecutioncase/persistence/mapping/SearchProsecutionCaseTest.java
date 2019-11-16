@@ -183,35 +183,35 @@ public class SearchProsecutionCaseTest {
                         .build())
                 .withRespondents(Arrays.asList(
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withPersonDetails(Person.person()
-                                        .withFirstName(RESPONDENTS_1_PERSON_FIRST_NAME)
-                                        .withMiddleName(RESPONDENTS_1_PERSON_MIDDLE_NAME)
-                                        .withLastName(RESPONDENTS_1_PERSON_LAST_NAME)
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withPersonDetails(Person.person()
+                                                .withFirstName(RESPONDENTS_1_PERSON_FIRST_NAME)
+                                                .withMiddleName(RESPONDENTS_1_PERSON_MIDDLE_NAME)
+                                                .withLastName(RESPONDENTS_1_PERSON_LAST_NAME)
+                                                .build())
                                         .build())
-                                .build())
-                        .build(),
+                                .build(),
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_2_ORGANISATION_NAME)
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withOrganisation(Organisation.organisation()
+                                                .withName(RESPONDENTS_2_ORGANISATION_NAME)
+                                                .build())
                                         .build())
-                                .build())
-                        .build(),
+                                .build(),
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withPersonDetails(Person.person()
-                                        .withLastName(RESPONDENTS_3_PERSON_LAST_NAME) //Missing first & middle names.
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withPersonDetails(Person.person()
+                                                .withLastName(RESPONDENTS_3_PERSON_LAST_NAME) //Missing first & middle names.
+                                                .build())
                                         .build())
-                                .build())
-                        .build(),
+                                .build(),
                         CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_4_ORGANISATION_NAME)
+                                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                                        .withOrganisation(Organisation.organisation()
+                                                .withName(RESPONDENTS_4_ORGANISATION_NAME)
+                                                .build())
                                         .build())
-                                .build())
-                        .build()))
+                                .build()))
                 .build();
         //when
         final SearchProsecutionCaseEntity searchProsecutionCaseDetails = jpaMapper.makeApplicationSearchable(courtApplication);

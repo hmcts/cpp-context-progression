@@ -3,13 +3,16 @@ package uk.gov.moj.cpp.progression.processor.document;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
+import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_COURT_DOCUMENT_ADDED;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
@@ -29,11 +32,11 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -61,6 +64,8 @@ public class CourtDocumentAddedProcessorTest {
     @Mock
     private JsonObject courtDocumentAddJson;
 
+    @Mock
+    private JsonEnvelope envelope;
 
     @Mock
     private JsonObject courtDocumentJson;
@@ -91,20 +96,30 @@ public class CourtDocumentAddedProcessorTest {
         when(jsonObjectToObjectConverter.convert(requestMessage.payloadAsJsonObject(), CourtsDocumentAdded.class))
                 .thenReturn(courtsDocumentAdded);
         when(courtsDocumentAdded.getCourtDocument()).thenReturn(courtDocumentPostTransformation);
+        when(envelope.metadata()).thenReturn(metadataWithRandomUUIDAndName().build());
+
         when(refDataService.getDocumentTypeData(courtDocumentPostTransformation.getDocumentTypeId(), requestMessage))
                 .thenReturn(Optional.of(buildDocumentTypeData()));
         when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(courtDocumentPayload);
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
-        verify(sender, times(1)).send(envelopeCaptor.capture());
+        verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        Envelope<JsonObject> command = envelopeCaptor.getValue();
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
         assertThat(commands.get(0).metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
         JsonObject commandCreateCourtDocumentPayload = commands.get(0).payload();
         //This is an Error Payload Structure that is actually returned....
         assertFalse(commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getJsonObject("courtDocument").getBoolean("containsFinancialMeans"));
+
+        verifyPublicEventRaised(courtsDocumentAdded.getCourtDocument().getCourtDocumentId().toString());
+    }
+
+    private void verifyPublicEventRaised(final String courtDocumentId) {
+        verify(sender, Mockito.times(2)).send(envelopeCaptor.capture());
+        final Envelope capturedEnvelope = envelopeCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), is(PUBLIC_COURT_DOCUMENT_ADDED));
     }
 
     private static JsonObject buildDocumentCategoryJsonObject() {

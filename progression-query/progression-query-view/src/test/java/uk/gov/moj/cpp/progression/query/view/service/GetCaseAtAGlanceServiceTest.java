@@ -113,7 +113,7 @@ public class GetCaseAtAGlanceServiceTest {
 
     @Before
     public void setup() {
-        setField(this.jsonObjectToObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
@@ -925,16 +925,16 @@ public class GetCaseAtAGlanceServiceTest {
                         .build())
                 .withReportingRestrictionReason(RandomGenerator.STRING.next())
                 .withHearingDays(Arrays.asList(HearingDay.hearingDay()
-                        .withListedDurationMinutes(20)
-                        .withListingSequence(30)
-                        .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
-                        .build(),
+                                .withListedDurationMinutes(20)
+                                .withListingSequence(30)
+                                .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
+                                .build(),
                         HearingDay.hearingDay()
-                        .withListedDurationMinutes(20)
-                        .withListingSequence(30)
-                        .withSittingDay(ZonedDateTimes.fromString("2019-07-16T00:00:00.000Z"))
-                        .build()
-                        ))
+                                .withListedDurationMinutes(20)
+                                .withListingSequence(30)
+                                .withSittingDay(ZonedDateTimes.fromString("2019-07-16T00:00:00.000Z"))
+                                .build()
+                ))
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())
@@ -965,16 +965,16 @@ public class GetCaseAtAGlanceServiceTest {
                         .build())
                 .withReportingRestrictionReason(RandomGenerator.STRING.next())
                 .withHearingDays(Arrays.asList(HearingDay.hearingDay()
-                        .withListedDurationMinutes(20)
-                        .withListingSequence(30)
-                        .withSittingDay(ZonedDateTimes.fromString("2019-07-22T00:00:00.000Z"))
-                        .build(),
+                                .withListedDurationMinutes(20)
+                                .withListingSequence(30)
+                                .withSittingDay(ZonedDateTimes.fromString("2019-07-22T00:00:00.000Z"))
+                                .build(),
                         HearingDay.hearingDay()
-                        .withListedDurationMinutes(20)
-                        .withListingSequence(30)
-                        .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
-                        .build()
-                        ))
+                                .withListedDurationMinutes(20)
+                                .withListingSequence(30)
+                                .withSittingDay(ZonedDateTimes.fromString("2019-07-20T00:00:00.000Z"))
+                                .build()
+                ))
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())

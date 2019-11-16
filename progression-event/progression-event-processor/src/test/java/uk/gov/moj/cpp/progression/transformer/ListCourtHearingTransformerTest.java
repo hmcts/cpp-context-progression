@@ -53,6 +53,9 @@ public class ListCourtHearingTransformerTest {
     final private ZonedDateTime listedStartDateTime = ZonedDateTime.parse("2019-06-30T18:32:04.238Z");
     final private ZonedDateTime earliestStartDateTime = ZonedDateTime.parse("2019-05-30T18:32:04.238Z");
     private static final String AUTOMATIC_ANONYMITY = "Automatic anonymity";
+    private static final UUID MARKER_TYPE_ID = UUID.randomUUID();
+    private static final String MARKER_TYPE_CODE = "MarkerTypeCode";
+    private static final String MARKER_TYPE_DESCRIPTION = "MarkerTypeDescription";
 
     @Mock
     private Sender sender;
@@ -252,6 +255,11 @@ public class ListCourtHearingTransformerTest {
                                 .withId(offenceId)
                                 .build()))
                         .build()))
+                .withCaseMarkers(Arrays.asList(Marker.marker()
+                        .withMarkerTypeid(MARKER_TYPE_ID)
+                        .withMarkerTypeCode(MARKER_TYPE_CODE)
+                        .withMarkerTypeDescription(MARKER_TYPE_DESCRIPTION)
+                        .build()))
                 .build();
     }
 
@@ -380,6 +388,12 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
                 .getOffences().get(0).getId(), is(offenceId));
         assertThat(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getDefendantId(), is(defendantId));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getCaseMarkers()
+                .get(0).getMarkerTypeCode(), is(MARKER_TYPE_CODE));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getCaseMarkers()
+                .get(0).getMarkerTypeDescription(), is(MARKER_TYPE_DESCRIPTION));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getCaseMarkers()
+                .get(0).getMarkerTypeid(), is(MARKER_TYPE_ID));
         assertFalse(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getIsYouth());
 
     }

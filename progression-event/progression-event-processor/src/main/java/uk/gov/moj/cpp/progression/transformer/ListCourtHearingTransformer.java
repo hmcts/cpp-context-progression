@@ -371,6 +371,7 @@ public class ListCourtHearingTransformer {
                     .withProsecutionCaseIdentifier(matchedProsecutionCase.getProsecutionCaseIdentifier())
                     .withStatementOfFacts(matchedProsecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh())
+                    .withCaseMarkers(matchedProsecutionCase.getCaseMarkers())
                     .build());
 
         });

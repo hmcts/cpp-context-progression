@@ -122,7 +122,7 @@ public class GetCaseAtAGlanceService {
         final List<UUID> hearingIds = new ArrayList<>();
         for (final CaseDefendantHearingEntity entity : caseDefendantHearingEntities) {
             //should not show unallocated hearing
-            if (!hearingIds.contains(entity.getId().getHearingId()) && !"SENT_FOR_LISTING".equals(entity.getHearing().getListingStatus().toString())) {
+            if (!hearingIds.contains(entity.getId().getHearingId()) && !SENT_FOR_LISTING.equals(entity.getHearing().getListingStatus().toString())) {
                 hearingEntities.add(entity.getHearing());
                 hearingIds.add(entity.getId().getHearingId());
             }
@@ -390,11 +390,11 @@ public class GetCaseAtAGlanceService {
     private static List<Respondents> getRespondents(final List<CourtApplicationRespondent> courtApplicationRespondents) {
         final List<Respondents> respondents = new ArrayList<>();
         courtApplicationRespondents.forEach(courtApplicationRespondent ->
-            respondents.add(Respondents.respondents()
-                    .withName(getCourtApplicationPartyName(courtApplicationRespondent.getPartyDetails()))
-                    .withApplicationResponse(getApplicationResponse(courtApplicationRespondent.getApplicationResponse()))
-                    .withResponseDate(getResponseDate(courtApplicationRespondent.getApplicationResponse()))
-                    .build()));
+                respondents.add(Respondents.respondents()
+                        .withName(getCourtApplicationPartyName(courtApplicationRespondent.getPartyDetails()))
+                        .withApplicationResponse(getApplicationResponse(courtApplicationRespondent.getApplicationResponse()))
+                        .withResponseDate(getResponseDate(courtApplicationRespondent.getApplicationResponse()))
+                        .build()));
         return respondents;
     }
 
@@ -450,6 +450,7 @@ public class GetCaseAtAGlanceService {
                     .withConvictionDate(offence.getConvictionDate())
                     .withNotifiedPlea(offence.getNotifiedPlea())
                     .withIndicatedPlea(offence.getIndicatedPlea())
+                    .withAllocationDecision(offence.getAllocationDecision())
                     .withPleas(getOffencePleas(offence.getPlea()))
                     .withVerdicts(getOffenceVerdicts(offence.getVerdict()))
                     .withJudicialResults(getJudicialResults(offence.getJudicialResults()))
@@ -530,6 +531,9 @@ public class GetCaseAtAGlanceService {
         if (nonNull(defendant.getPersonDefendant())) {
             final PersonDefendant personDefendant = defendant.getPersonDefendant();
             return getPersonName(personDefendant.getPersonDetails());
+        }
+        if (nonNull(defendant.getLegalEntityDefendant())) {
+            return defendant.getLegalEntityDefendant().getOrganisation().getName();
         }
         return EMPTY;
     }

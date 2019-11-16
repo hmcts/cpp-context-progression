@@ -109,7 +109,7 @@ public class SummonsServiceTest {
     @Before
     public void initMocks() {
         setField(this.objectToJsonConverter, "mapper", new ObjectMapperProducer().objectMapper());
-        setField(this.jsonToObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test

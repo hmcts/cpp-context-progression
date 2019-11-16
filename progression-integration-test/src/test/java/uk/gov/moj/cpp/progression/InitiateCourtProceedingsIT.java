@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.progression;
 
+import static org.junit.Assert.assertTrue;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
@@ -13,11 +15,14 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertcourtDocuments;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import org.junit.Before;
@@ -35,6 +40,8 @@ public class InitiateCourtProceedingsIT {
     private String listedStartDateTime;
     private String earliestStartDateTime;
     private String defendantDOB;
+    protected MessageConsumer publicEventConsumer = publicEvents
+            .createConsumer("public.progression.prosecution-case-created"); ;
 
     @Before
     public void setUp() throws IOException {
@@ -55,12 +62,11 @@ public class InitiateCourtProceedingsIT {
         //given
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
-
+        verifyInMessagingQueueForProsecutionCaseCreated();
         //introduce delay by checking court document present first
         getCourtDocumentFor(courtDocumentId,
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId))
         );
-
         final String response = getProsecutioncasesProgressionFor(caseId);
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
         //then
@@ -96,6 +102,12 @@ public class InitiateCourtProceedingsIT {
         //then
         assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
     }
+
+    private void verifyInMessagingQueueForProsecutionCaseCreated() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
+        assertTrue(message.isPresent());
+    }
+
 
 }
 

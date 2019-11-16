@@ -8,7 +8,7 @@ rule "Command - add court document"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.add-court-document");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users"));
   then
     $outcome.setSuccess(true);
 end
