@@ -1,56 +1,83 @@
 {
   "operations": [
     {
-    "operation": "shift",
-    "spec": {
-      "prosecutionCase": {
-        "id": "caseId",
-        "#PROSECUTION": "_case_type",
-        "#active": "caseStatus",
-        "prosecutionCaseIdentifier": {
-          "caseURN": "caseReference",
-          "prosecutionAuthorityReference": "caseReference",
-          "prosecutionAuthorityCode": "prosecutingAuthority"
-        },
-        "defendants": {
-          "*": {
-            "pncId": "parties[&1].pncId",
-            "aliases": {
-              "*": {
-                "firstName": "parties[&1].aliases[&3].firstName",
-                "middleName": "parties[&1].aliases[&3].middleName",
-                "lastName": "parties[&1].aliases[&3].lastName",
-                "title": "parties[&1].aliases[&3].title",
-                "legalEntityName": "parties[&1].aliases[&3].organisationName"
-              }
-            },
-            "id": "parties[&1].partyId",
-            "#DEFENDANT" : "parties[&1]._party_type",
-            "legalEntityDefendant": {
-              "organisation": {
-                "name": "parties[&3].organisationName"
-              }
-            },
-            "personDefendant": {
-              "arrestSummonsNumber": "parties[&2].arrestSummonsNumber",
-              "personDetails": {
-                "title": "parties[&3].title",
-                "firstName": "parties[&3].firstName",
-                "middleName": "parties[&3].middleName",
-                "lastName": "parties[&3].lastName",
-                "dateOfBirth": "parties[&3].dateOfBirth",
-                "gender": "parties[&3].gender",
-                "address": {
-                  "*": "parties[&4].addressLines",
-                  "postcode": "parties[&4].postCode"
+      "operation": "shift",
+      "spec": {
+        "prosecutionCase": {
+          "id": "caseId",
+          "#PROSECUTION": "_case_type",
+          "#active": "caseStatus",
+          "prosecutionCaseIdentifier": {
+            "caseURN": "caseReference",
+            "prosecutionAuthorityReference": "caseReference",
+            "prosecutionAuthorityCode": "prosecutingAuthority"
+          },
+          "defendants": {
+            "*": {
+              "pncId": "parties[&1].pncId",
+              "aliases": {
+                "*": {
+                  "firstName": "parties[&1].aliases[&3].firstName",
+                  "middleName": "parties[&1].aliases[&3].middleName",
+                  "lastName": "parties[&1].aliases[&3].lastName",
+                  "title": "parties[&1].aliases[&3].title",
+                  "legalEntityName": "parties[&1].aliases[&3].organisationName"
+                }
+              },
+              "offences": {
+                "*": {
+                  "id": "parties[&3].offences[&1].offenceId",
+                  "offenceCode": "parties[&3].offences[&1].offenceCode",
+                  "offenceTitle": "parties[&3].offences[&1].offenceTitle",
+                  "offenceLegislation": "parties[&3].offences[&1].offenceLegislation",
+                  "proceedingsConcluded": "parties[&3].offences[&1].proceedingsConcluded",
+                  "dateOfInformation": "parties[&3].offences[&1].dateOfInformation",
+                  "startDate": "parties[&3].offences[&1].startDate",
+                  "endDate": "parties[&3].offences[&1].endDate",
+                  "arrestDate": "parties[&3].offences[&1].arrestDate",
+                  "chargeDate": "parties[&3].offences[&1].chargeDate",
+                  "modeOfTrial": "parties[&3].offences[&1].modeOfTrial",
+                  "orderIndex": "parties[&3].offences[&1].orderIndex",
+                  "wording": "parties[&3].offences[&1].wording",
+                  "laaReference": {
+                    "laaApplicationReference": "parties[&4].offences[&2].laaReference.laaApplicationReference",
+                    "statusId": "parties[&4].offences[&2].laaReference.statusId",
+                    "statusCode": "parties[&4].offences[&2].laaReference.statusCode",
+                    "statusDescription": "parties[&4].offences[&2].laaReference.statusDescription",
+                    "effectiveFromDate": "parties[&4].offences[&2].laaReference.effectiveFromDate",
+                    "effectiveToDate": "parties[&4].offences[&2].laaReference.effectiveToDate",
+                    "laaRepresentativeAccountNumber": "parties[&4].offences[&2].laaReference.laaRepresentativeAccountNumber"
+                  }
+                }
+              },
+              "id": "parties[&1].partyId",
+              "#DEFENDANT": "parties[&1]._party_type",
+              "legalEntityDefendant": {
+                "organisation": {
+                  "name": "parties[&3].organisationName"
+                }
+              },
+              "personDefendant": {
+                "arrestSummonsNumber": "parties[&2].arrestSummonsNumber",
+                "personDetails": {
+                  "title": "parties[&3].title",
+                  "firstName": "parties[&3].firstName",
+                  "middleName": "parties[&3].middleName",
+                  "lastName": "parties[&3].lastName",
+                  "dateOfBirth": "parties[&3].dateOfBirth",
+                  "gender": "parties[&3].gender",
+                  "nationalInsuranceNumber": "parties[&3].nationalInsuranceNumber",
+                  "address": {
+                    "*": "parties[&4].addressLines",
+                    "postcode": "parties[&4].postCode"
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  },
+    },
     {
       "operation": "modify-overwrite-beta",
       "spec": {
