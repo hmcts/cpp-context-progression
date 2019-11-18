@@ -44,7 +44,7 @@ public class SummonsDataHelperTest {
     @Before
     public void initMocks() {
         setField(this.objectToJsonObjectConverter, "mapper", objectMapper);
-        setField(this.jsonObjectToObjectConverter, "objectMapper", objectMapper);
+        setField(this.jsonObjectToObjectConverter, "mapper", objectMapper);
     }
 
     @Test

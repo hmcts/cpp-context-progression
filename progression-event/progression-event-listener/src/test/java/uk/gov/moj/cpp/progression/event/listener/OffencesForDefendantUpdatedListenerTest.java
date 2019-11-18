@@ -79,7 +79,7 @@ public class OffencesForDefendantUpdatedListenerTest {
         // Super class because the converter is modified by mockito so it does not have this field
         final Class<?> aClass = jsonObjectToObjectConverter.getClass().getSuperclass();
 
-        final Field objectMapperField = aClass.getDeclaredField("objectMapper");
+        final Field objectMapperField = aClass.getDeclaredField("mapper");
         objectMapperField.setAccessible(true);
         objectMapperField.set(jsonObjectToObjectConverter, objectMapper);
     }

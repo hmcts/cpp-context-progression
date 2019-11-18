@@ -116,7 +116,7 @@ public class ApplicationQueryViewTest {
 
     @Before
     public void setup() {
-        setField(this.realJsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+        setField(this.realJsonObjectToObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
     final static private UUID APPLICATION_ID = UUID.randomUUID();

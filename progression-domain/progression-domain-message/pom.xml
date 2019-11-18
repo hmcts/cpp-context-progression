@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain</artifactId>
-        <version>6.0.13-FRAMEWORK-SNAPSHOT</version>
+        <version>2.0.158-SNAPSHOT</version>
     </parent>
     <artifactId>progression-domain-message</artifactId>
     <properties>
@@ -68,8 +68,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>uk.gov.justice.generators</groupId>
-                <artifactId>pojo-generation-plugin</artifactId>
+                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
                 <executions>
                     <execution>
                         <id>pojo-generation</id>

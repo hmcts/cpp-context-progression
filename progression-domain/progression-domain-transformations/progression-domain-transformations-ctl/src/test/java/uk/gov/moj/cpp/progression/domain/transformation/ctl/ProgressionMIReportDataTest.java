@@ -6,11 +6,8 @@ import uk.gov.moj.cpp.coredomain.transform.TransformReport;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore //This no longer works as the event processor RAML has been converted to the new YAML format for subscriptions.
-// Will be fix by GPE-11673
 public class ProgressionMIReportDataTest {
 
     @Test
@@ -24,13 +21,13 @@ public class ProgressionMIReportDataTest {
         report.printOut();
     }
 
-    public final static String[] EVENT_PACKAGES = new String[]{
+    public final static String[] EVENT_PACKAGES =  new String [] {
             "uk.gov.moj.cpp.progression.domain.event",
             "uk.gov.moj.cpp.progression.domain.event.nows.order",
             "uk.gov.justice.progression.courts"
-    };
+    } ;
 
-    public final static String MASTER_PACKAGE_PREFIX = "progressionmaster";
+    public final static String MASTER_PACKAGE_PREFIX="progressionmaster";
 }
 
 

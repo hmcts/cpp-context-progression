@@ -5,14 +5,25 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUIDAndName;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_COMPANY_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_COMPANY_ADDRESS_POSTCODE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_COMPANY_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_FIRST_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_LAST_NAME;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PERSON_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PERSON_ADDRESS_POSTCODE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_NAME;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithLegalEntity;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithPersonDefendant;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithProsecutionAuthority;
@@ -25,6 +36,7 @@ import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonName;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyProsecutionAuthorityAddress;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyProsecutionAuthorityName;
 
+import org.powermock.reflect.Whitebox;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -40,8 +52,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.progression.domain.PostalAddress;
-import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -63,7 +73,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
+import uk.gov.moj.cpp.progression.domain.PostalAddress;
+import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostalServiceTest {

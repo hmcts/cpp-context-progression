@@ -1,40 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.progression.service.MaterialService.MATERIAL_METADETA_QUERY;
-import static uk.gov.moj.cpp.progression.service.MaterialService.UPLOAD_MATERIAL;
-
-import uk.gov.justice.core.courts.CourtsDocumentUploaded;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +10,42 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectMetadata;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.justice.core.courts.CourtsDocumentUploaded;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.moj.cpp.progression.service.MaterialService.MATERIAL_METADETA_QUERY;
+import static uk.gov.moj.cpp.progression.service.MaterialService.UPLOAD_MATERIAL;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MaterialServiceTest {
@@ -118,10 +119,10 @@ public class MaterialServiceTest {
                 .add("materialAddedDate", "2016-05-03")
                 .build();
         when(requester.requestAsAdmin(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID(MATERIAL_METADETA_QUERY), payload));
+                .thenReturn(JsonEnvelopeBuilder.envelopeFrom(JsonObjectMetadata.metadataWithRandomUUID(MATERIAL_METADETA_QUERY), payload));
 
         //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(MATERIAL_METADETA_QUERY))
+        final JsonEnvelope envelope = envelope().with(JsonObjectMetadata.metadataWithRandomUUID(MATERIAL_METADETA_QUERY))
                 .build();
         final Optional<JsonObject> result = service.getMaterialMetadata(envelope, materialId);
 

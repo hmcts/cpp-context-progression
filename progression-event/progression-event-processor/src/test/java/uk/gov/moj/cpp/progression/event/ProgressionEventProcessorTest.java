@@ -12,14 +12,13 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INCOMPLETE;
+import static uk.gov.moj.cpp.progression.helper.JsonHelper.createJsonEnvelope;
+import static uk.gov.moj.cpp.progression.helper.JsonHelper.createMetadataWithProcessIdAndUserId;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
@@ -190,12 +189,10 @@ public class ProgressionEventProcessorTest {
         final UUID courtCenterId = randomUUID();
 
         // given
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID(PROGRESSION_EVENTS_SENDING_SHEET_COMPLETED)
-                        .withClientCorrelationId(randomUUID().toString())
-                        .withUserId(USER_ID),
+        final JsonEnvelope event = createJsonEnvelope(
+                createMetadataWithProcessIdAndUserId(randomUUID().toString(), PROGRESSION_EVENTS_SENDING_SHEET_COMPLETED, randomUUID().toString(), USER_ID),
                 createObjectBuilder().add("hearing", createObjectBuilder()
-                        .add("caseId", CASE_ID)));
+                        .add("caseId", CASE_ID)).build());
 
 
         final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();

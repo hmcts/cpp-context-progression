@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json",
+  "type": "object",
+  "description": "enrich hearing object before initiate hearing",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    }
+  },
+  "required": [
+    "hearing"
+  ],
+  "additionalProperties": false
+}
