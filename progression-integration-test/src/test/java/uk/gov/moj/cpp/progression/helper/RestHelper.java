@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +54,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.io.Resources;
+import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
@@ -72,6 +75,8 @@ public class RestHelper {
     private static final RestClient restClient = new RestClient();
     public static RequestSpecification reqSpec;
     private static String HOST = "localhost";
+    private static final int MAX_TIMEOUT = 40;
+    private static final int POLL_INTERVAL = 2;
 
     static {
         prop = new Properties();
@@ -126,6 +131,27 @@ public class RestHelper {
                 .getPayload();
     }
 
+    public static String pollForResponseWithUserId(final String path, final String mediaType, final String userId) {
+        return poll(requestParams(getQueryUri(path), mediaType)
+                .withHeader("CJSCPPUID", userId).build())
+                .timeout(10, TimeUnit.SECONDS).until(status().is(OK))
+                .getPayload();
+    }
+
+    public static String pollForResponse(final String path,
+                                         final String mediaType,
+                                         final String userId, List<Matcher<? super ReadContext>> matchers) {
+        return poll(requestParams(getQueryUri(path),
+                mediaType)
+                .withHeader(USER_ID, userId))
+                .pollInterval(POLL_INTERVAL, TimeUnit.SECONDS)
+                .timeout(MAX_TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(matchers))).getPayload();
+
+    }
+
     public static String getQueryUri(final String path) {
         return baseUri + prop.getProperty("base-uri-query") + path;
     }
@@ -142,6 +168,13 @@ public class RestHelper {
                                        final String jsonStringBody) throws IOException {
         return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
                 .header("CJSCPPUID", randomUUID().toString()).when().post(uri).then()
+                .extract().response();
+    }
+
+    public static Response postCommandWithUserId(final String uri, final String mediaType,
+                                                 final String jsonStringBody, final String userId) throws IOException {
+        return given().spec(reqSpec).and().contentType(mediaType).body(jsonStringBody)
+                .header("CJSCPPUID", userId).when().post(uri).then()
                 .extract().response();
     }
 

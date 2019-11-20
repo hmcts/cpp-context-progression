@@ -150,6 +150,17 @@ version: v1
             example: !include json/progression.event.case-markers-updated.json
 
 
+  ############  Association Start ############
+
+        application/vnd.progression.event.defence-organisation-associated+json:
+            schema: !include json/schema/progression.event.defence-organisation-associated.json
+            example: !include json/progression.event.defence-organisation-associated.json
+        application/vnd.progression.event.defence-organisation-disassociated+json:
+            schema: !include json/schema/progression.event.defence-organisation-disassociated.json
+            example: !include json/progression.event.defence-organisation-disassociated.json
+  ############  Association End ############
+
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
         application/vnd.progression.event.cases-referred-to-court+json:

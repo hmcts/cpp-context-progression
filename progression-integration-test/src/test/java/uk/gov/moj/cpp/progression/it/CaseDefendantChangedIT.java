@@ -2,11 +2,13 @@ package uk.gov.moj.cpp.progression.it;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseProgressionDetail;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
@@ -31,9 +33,9 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
 
     private static final String COMPLETE_SENDING_SHEET_JSON =
-                    "progression.command.complete-sending-sheet.json";
+            "progression.command.complete-sending-sheet.json";
     private static final String REF_DATA_QUERY_CJSCODE_PAYLOAD =
-                    "/restResource/ref-data-cjscode.json";
+            "/restResource/ref-data-cjscode.json";
     private AddDefendantHelper addDefendantHelper;
     private UpdateDefendantHelper updateDefendantHelper;
     private String caseId;
@@ -41,7 +43,6 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     private String request;
 
     private static void init() {
-        createMockEndpoints();
         ListingStub.stubListCourtHearing();
         ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
     }
@@ -50,11 +51,17 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     public void setUp() throws IOException {
         caseId = UUID.randomUUID().toString();
         addDefendantHelper = new AddDefendantHelper(caseId);
+        setupUsersGroupQueryStub();
+        waitForUsersAndGroupsStubToBeReady();
         request = addDefendantHelper.addMinimalDefendant();
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
         addDefendantHelper.verifyMinimalDefendantAdded();
         defendantId = "";
+    }
+
+    private void waitForUsersAndGroupsStubToBeReady() {
+        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/.*", "application/json");
     }
 
     @Test
@@ -102,14 +109,14 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
         givenCaseProgressionDetail(caseId);
 
         final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
-                        "application/vnd.progression.command.complete-sending-sheet+json",
-                        getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
+                "application/vnd.progression.command.complete-sending-sheet+json",
+                getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     private String getJsonBodyStr(final String fileName) throws IOException {
         String fileContent = Resources.toString(Resources.getResource(fileName),
-                        Charset.defaultCharset());
+                Charset.defaultCharset());
         final JSONObject jObj = new JSONObject(request);
         defendantId = jObj.getString("defendantId");
         final JSONObject offence = (JSONObject) jObj.getJSONArray("offences").get(0);
@@ -125,6 +132,6 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
     @After
     public void tearDown() {
-        updateDefendantHelper.close();
+        closeSilently(updateDefendantHelper);
     }
 }

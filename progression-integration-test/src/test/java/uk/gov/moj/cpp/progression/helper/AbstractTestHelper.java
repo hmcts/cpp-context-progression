@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 
@@ -142,6 +143,6 @@ public abstract class AbstractTestHelper implements AutoCloseable {
 
     @Override
     public void close() {
-        publicConsumer.close();
+        closeSilently(publicConsumer);
     }
 }

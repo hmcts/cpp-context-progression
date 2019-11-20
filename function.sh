@@ -132,8 +132,8 @@ function deployAndTest {
   runViewStoreLiquibase
   runEventBufferLiquibase
   runFileServiceLiquibase
-  deployWars
   deployWiremock
+  deployWars
   healthCheck
   integrationTests
 }
