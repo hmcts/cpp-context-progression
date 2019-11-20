@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>2.0.161-SNAPSHOT</version>
+        <version>6.0.13-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -11,6 +11,12 @@
     <packaging>war</packaging>
 
     <dependencies>
+
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>jmx-api</artifactId>
+            <version>${cpp.framework.version}</version>
+        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-command-api</artifactId>
@@ -46,6 +52,12 @@
             <artifactId>progression-query-view</artifactId>
             <version>${project.version}</version>
             <classifier>classes</classifier>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-event-sources</artifactId>
+            <version>${project.version}</version>
+            <classifier>yaml</classifier>
         </dependency>
 
         <dependency>

@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.requester.Requester;
@@ -78,7 +79,7 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getHMCTSGroups();
-        final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(), userGroupsResponse);
+        final JsonEnvelope response = envelopeFrom(metadataBuilder.build(), userGroupsResponse);
         when(requester.request(any())).thenReturn(response);
 
         //When
@@ -103,7 +104,7 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getNoGroups();
-        final JsonEnvelope response = JsonEnvelopeBuilder.envelopeFrom(metadataBuilder.build(), userGroupsResponse);
+        final JsonEnvelope response = envelopeFrom(metadataBuilder.build(), userGroupsResponse);
         when(requester.request(any())).thenReturn(response);
 
         //When
@@ -120,7 +121,7 @@ public class UsersGroupServiceTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
-        final JsonEnvelope response = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope response = envelopeFrom(
                 metadataBuilder, JsonValue.NULL);
         when(requester.request(any())).thenReturn(response);
         usersGroupService.getUserGroupsForUser(query);
@@ -133,7 +134,7 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
 
-        final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
+        final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
         when(requester.requestAsAdmin(any())).thenReturn(response);
 
         usersGroupService.getOrganisationDetailsForUser(query);
@@ -147,7 +148,7 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
 
-        final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, JsonValue.NULL);
+        final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
         when(requester.request(any())).thenReturn(response);
 
         usersGroupService.getUserGroupsForUser(query);

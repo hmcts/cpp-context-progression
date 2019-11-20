@@ -72,7 +72,7 @@ public class AdjournHearingEventProcessor {
         hearingAdjourned.getNextHearings().forEach(nextHearing -> {
             final List<CourtApplication> courtApplications =
                     Optional.ofNullable(nextHearing.getNextHearingCourtApplicationId()).map(ids ->
-                            ids.stream().map(id -> progressionService.getCourtApplicationByIdTyped(event, id.toString()).orElseThrow(
+                            ids.stream().map(id -> progressionService.getCourtApplicationByIdTyped(event, id.toString()).<RuntimeException>orElseThrow(
                                     () -> new RuntimeException(String.format("unknown court application: %s ", id))
                                     )
                             ).collect(Collectors.toList())).orElse(Collections.emptyList());

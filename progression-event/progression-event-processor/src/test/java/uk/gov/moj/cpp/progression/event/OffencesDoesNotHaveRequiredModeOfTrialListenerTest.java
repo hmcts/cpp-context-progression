@@ -4,11 +4,18 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.event.OffencesDoesNotHaveRequiredModeOfTrialListener.STRUCTURE_EVENTS_DEFENDANT_OFFENCES_DOES_NOT_HAVE_REQUIRED_MODEOFTRIAL;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
 
@@ -23,15 +30,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 /**
- * 
  * @deprecated This is deprecated for Release 2.4
- *
  */
 @SuppressWarnings("squid:S1133")
 @Deprecated
@@ -56,7 +56,7 @@ public class OffencesDoesNotHaveRequiredModeOfTrialListenerTest {
         final String caseId = randomUUIDStr();
         final String defendantId = randomUUIDStr();
         final JsonEnvelope jsonEnvelope = envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("progression.events.defendant-offences-does-not-have-required-modeoftrial"))
+                .with(metadataWithRandomUUID("progression.events.defendant-offences-does-not-have-required-modeoftrial"))
                 .withPayloadOf(caseId, CASE_ID)
                 .withPayloadOf(defendantId, DEFENDANT_ID)
                 .build();

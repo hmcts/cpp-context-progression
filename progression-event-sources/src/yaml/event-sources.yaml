@@ -1,0 +1,11 @@
+event_sources:
+  - name: progression
+    is_default: true
+    location:
+      jms_uri:  jms:topic:progression.event
+      rest_uri: http://localhost:8080/progression-service/event-source-api/rest
+      data_source: java:/app/progression-service/DS.eventstore
+
+  - name: public.event.source
+    location:
+      jms_uri:  jms:topic:public.event
