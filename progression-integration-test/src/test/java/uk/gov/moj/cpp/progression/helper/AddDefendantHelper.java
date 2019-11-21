@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getCaseByUrn;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantsByCaseId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_ADDED;
@@ -406,8 +407,8 @@ public class AddDefendantHelper extends AbstractTestHelper {
     @Override
     public void close() {
         super.close();
-        privateEventDefendantAdditionFailedConsumer.close();
-        publicConsumer.close();
-        publicEventDefendantAdditionFailedConsumer.close();
+        closeSilently(privateEventDefendantAdditionFailedConsumer);
+        closeSilently(publicConsumer);
+        closeSilently(publicEventDefendantAdditionFailedConsumer);
     }
 }

@@ -11,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
@@ -133,7 +134,7 @@ public class GenerateNowsIT extends AbstractIT {
 
     @After
     public void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
+        closeSilently(messageProducerClientPublic);
     }
 
 }

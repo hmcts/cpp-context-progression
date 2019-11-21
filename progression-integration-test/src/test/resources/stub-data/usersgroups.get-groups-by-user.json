@@ -30,6 +30,10 @@
     {
       "groupId": "dd8dcdcf-58d1-4e45-8450-40b0f569a6a9",
       "groupName": "Eject Case Group"
+    },
+    {
+      "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba1",
+      "groupName": "Defence Users"
     }
   ]
 }

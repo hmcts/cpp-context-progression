@@ -34,7 +34,7 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     );
 
     private static final List<String> ALLOWED_USER_GROUPS_EJECT_CASE = Arrays.asList(
-            "Eject Case Group","System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"
+            "Eject Case Group", "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"
     );
 
     @Mock
@@ -61,12 +61,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetMaterialContent() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetMaterialContent() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers");
     }
 
     @Test
@@ -196,13 +196,18 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetQueryHearing() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.hearing","System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.hearing", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetQueryMaterialContentNows() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-nows-content", "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin","Probation Admin", "Police Admin", "Victims & Witness Care Admin",
- "Youth Offending Service Admin", "Legal Aid Agency Admin");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-nows-content", "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+                "Youth Offending Service Admin", "Legal Aid Agency Admin");
+    }
+
+    @Test
+    public void shouldAllowUserInQueryAssociatedUser() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.associated-organisation", "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers");
     }
 
     @Override

@@ -156,6 +156,25 @@
                     </dependency>
                 </dependencies>
             </plugin>
+
+            <plugin>
+                <groupId>uk.gov.justice.framework-generators</groupId>
+                <artifactId>rest-client-generator-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 </project>
