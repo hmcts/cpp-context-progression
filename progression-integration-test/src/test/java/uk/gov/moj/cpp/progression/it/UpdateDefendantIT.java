@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.it;
 
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
 
@@ -19,10 +22,16 @@ public class UpdateDefendantIT extends BaseIntegrationTest {
     public void setUp() {
         caseId = UUID.randomUUID().toString();
         addDefendantHelper = new AddDefendantHelper(caseId);
+        setupUsersGroupQueryStub();
+        waitForUsersAndGroupsStubToBeReady();
         addDefendantHelper.addMinimalDefendant();
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
         addDefendantHelper.verifyMinimalDefendantAdded();
+    }
+
+    private void waitForUsersAndGroupsStubToBeReady() {
+        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/.*", "application/json");
     }
 
     /**
