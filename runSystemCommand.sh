@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.4.0
+FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.4.1
 CONTEXT_NAME="progression"
 USER_NAME="admin"
 PASSWORD="admin"
