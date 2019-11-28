@@ -18,14 +18,14 @@ Feature: CaseAggregate
     When you updateOffences on a CaseAggregate with a update offences for prosecution case
     Then prosecution case offences updated
 
-  Scenario: Update Defedent listing status updated whenever the hearing confirmed
+  Scenario: Update Defendant listing status updated whenever the hearing confirmed
 
     Given no previous events
-    When you updateDefedantListingStatus on a HearingAggregate with a update defendant listing status
+    When you updateDefendantListingStatus on a HearingAggregate with a update defendant listing status
     Then prosecution case defendant listing status changed
 
-  Scenario: Update Defedent hearing reulsts updated whenever the hearing confirmed
+  Scenario: Update Defendant hearing results updated whenever the hearing confirmed
 
     Given no previous events
-    When you updateDefedantHearingResult on a HearingAggregate with a update defendant hearing result
+    When you updateDefendantHearingResult on a HearingAggregate with a update defendant hearing result
     Then prosecution case defendant hearing result updated
