@@ -1000,6 +1000,38 @@
       "fieldsToBeIgnored": [
         "$.applicationStatus"
       ]
+    },
+
+    {
+      "eventName": "progression.event.hearing-resulted-case-updated",
+      "fieldsToBeIgnored": [
+        "$.prosecutionCase.initiationCode",
+        "$.prosecutionCase.defendants[*].aliases[*].title",
+        "$.prosecutionCase.defendants[*].associatedPersons[*].person.documentationLanguageNeeds",
+        "$.prosecutionCase.defendants[*].associatedPersons[*].person.gender",
+        "$.prosecutionCase.defendants[*].associatedPersons[*].person.title",
+        "$.prosecutionCase.defendants[*].judicialResults[*].category",
+        "$.prosecutionCase.defendants[*].judicialResults[*].nextHearing.hearingLanguage",
+        "$.prosecutionCase.defendants[*].judicialResults[*].nextHearing.jurisdictionType",
+        "$.prosecutionCase.defendants[*].offences[*].judicialResults[*].category",
+        "$.prosecutionCase.defendants[*].offences[*].judicialResults[*].nextHearing.hearingLanguage",
+        "$.prosecutionCase.defendants[*].offences[*].judicialResults[*].nextHearing.jurisdictionType",
+        "$.prosecutionCase.defendants[*].offences[*].notifiedPlea.notifiedPleaValue",
+        "$.prosecutionCase.defendants[*].offences[*].indicatedPlea.indicatedPleaValue",
+        "$.prosecutionCase.defendants[*].offences[*].indicatedPlea.source",
+        "$.prosecutionCase.defendants[*].offences[*].offenceFacts.vehicleCode",
+        "$.prosecutionCase.defendants[*].offences[*].plea.pleaValue",
+        "$.prosecutionCase.defendants[*].offences[*].victims[*].documentationLanguageNeeds",
+        "$.prosecutionCase.defendants[*].offences[*].victims[*].gender",
+        "$.prosecutionCase.defendants[*].offences[*].victims[*].title",
+        "$.prosecutionCase.defendants[*].personDefendant.driverLicenceCode",
+        "$.prosecutionCase.defendants[*].personDefendant.personDetails.documentationLanguageNeeds",
+        "$.prosecutionCase.defendants[*].personDefendant.personDetails.gender",
+        "$.prosecutionCase.defendants[*].personDefendant.personDetails.title",
+        "$.prosecutionCase.policeOfficerInCase.personDetails.documentationLanguageNeeds",
+        "$.prosecutionCase.policeOfficerInCase.personDetails.gender",
+        "$.prosecutionCase.policeOfficerInCase.personDetails.title"
+      ]
     }
   ]
 }

@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 100L;
+    private static final long serialVersionUID = 200L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private UUID boxWorkAssignedUserId;
     private String boxWorkTaskId;
@@ -56,16 +56,17 @@ public class HearingAggregate implements Aggregate {
                             this.boxWorkTaskStatus = e.getBoxWorkTaskStatus();
                             this.hearing = e.getHearing();
                             this.hearingListingStatus = e.getHearingListingStatus();
-                        }
-                ),
-                when(HearingResulted.class).apply(e -> this.hearing = e.getHearing()
-                ),
+                }),
+                when(HearingResulted.class).apply(e -> {
+                            this.hearing = e.getHearing();
+                            this.hearingListingStatus = HearingListingStatus.HEARING_RESULTED;
+                }),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
                         listDefendantRequests.addAll(e.getDefendantRequests());
                     }
-                })
-                , otherwiseDoNothing());
+                }),
+                otherwiseDoNothing());
     }
 
     public Stream<Object> createSummonsData(final CourtCentre courtCentre, final ZonedDateTime hearingDateTime, final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds) {
@@ -126,8 +127,8 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
     }
 
-    public Stream<Object> updateDefedantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
-        LOGGER.debug("Defedent listing status updated .");
+    public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
+        LOGGER.debug("Defendant listing status updated.");
         final ProsecutionCaseDefendantListingStatusChanged.Builder prosecutionCaseDefendantListingStatusChanged = ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged();
         if (HearingListingStatus.HEARING_RESULTED != this.hearingListingStatus) {
             prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(hearingListingStatus);
@@ -172,8 +173,8 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.empty());
     }
 
-    public Stream<Object> updateDefedantHearingResult(final UUID hearingId, final List<SharedResultLine> sharedResultLines) {
-        LOGGER.debug("Defedent hearing reulst updated .");
+    public Stream<Object> updateDefendantHearingResult(final UUID hearingId, final List<SharedResultLine> sharedResultLines) {
+        LOGGER.debug("Defendant hearing result updated.");
 
         return apply(Stream.of(ProsecutionCaseDefendantHearingResultUpdated.prosecutionCaseDefendantHearingResultUpdated()
                 .withHearingId(hearingId)
