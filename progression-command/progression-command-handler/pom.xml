@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
-        <version>6.0.26-SC-SNAPSHOT</version>
+        <version>6.4.4-SC-SNAPSHOT</version>
     </parent>
     <artifactId>progression-command-handler</artifactId>
     <packaging>war</packaging>
@@ -153,6 +153,25 @@
                         <groupId>uk.gov.moj.cpp.core.domain</groupId>
                         <artifactId>criminal-court-public-model</artifactId>
                         <version>${criminal-court-public-model.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>uk.gov.justice.framework-generators</groupId>
+                <artifactId>rest-client-generator-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                 </dependencies>
             </plugin>

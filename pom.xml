@@ -4,12 +4,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.4.2</version>
+        <version>9.4.5</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>6.0.26-SC-SNAPSHOT</version>
+    <version>6.4.4-SC-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -42,9 +42,9 @@
         <referencedata.version>2.0.275</referencedata.version>
         <listing.version>1.0.36</listing.version>
         <hearing.version>2.0.189</hearing.version>
-        <usersgroups.version>2.0.115</usersgroups.version>
+        <usersgroups.version>6.0.4</usersgroups.version>
         <referencedata.offence.version>1.0.26</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.56-SCUS431-SNAPSHOT</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.52-SCUS431-SNAPSHOT</criminal-court-public-model.version>
     </properties>
 
     <build>

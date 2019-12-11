@@ -48,7 +48,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067","squid:S1854","squid:S1135","squid:S1481"})
-public class ReferredProsecutionCaseTransformer {
+public class
+ReferredProsecutionCaseTransformer {
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -104,7 +105,6 @@ public class ReferredProsecutionCaseTransformer {
 
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final
     InitiationCode initiationCode) {
-
         return Defendant.defendant()
                 .withOffences(referredDefendant
                         .getOffences().stream()

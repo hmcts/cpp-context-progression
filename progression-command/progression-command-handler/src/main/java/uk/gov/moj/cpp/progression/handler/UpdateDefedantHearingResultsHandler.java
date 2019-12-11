@@ -40,7 +40,7 @@ public class UpdateDefedantHearingResultsHandler {
         final UpdateDefendantHearingResult updateDefendantHearingResult = updateDefendantHearingResultEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateDefendantHearingResult.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.updateDefedantHearingResult(updateDefendantHearingResult.getHearingId(), updateDefendantHearingResult.getSharedResultLines());
+        final Stream<Object> events = hearingAggregate.updateDefendantHearingResult(updateDefendantHearingResult.getHearingId(), updateDefendantHearingResult.getSharedResultLines());
         appendEventsToStream(updateDefendantHearingResultEnvelope, eventStream, events);
     }
 

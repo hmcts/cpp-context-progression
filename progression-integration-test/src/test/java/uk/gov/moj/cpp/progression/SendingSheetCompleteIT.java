@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgressionFor;
@@ -17,6 +18,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.cpp.progression.helper.Cleaner;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
@@ -238,8 +240,8 @@ public class SendingSheetCompleteIT {
 
     @AfterClass
     public static void close() throws Exception {
-        publicEventSendingSheetCompletedConsumer.close();
-        publicEventSendingSheetPreviouslyCompletedConsumer.close();
-        publicEventCompleteSendingSheetInvalidatedConsumer.close();
+        closeSilently(publicEventSendingSheetCompletedConsumer);
+        closeSilently(publicEventSendingSheetPreviouslyCompletedConsumer);
+        closeSilently(publicEventCompleteSendingSheetInvalidatedConsumer);
     }
 }

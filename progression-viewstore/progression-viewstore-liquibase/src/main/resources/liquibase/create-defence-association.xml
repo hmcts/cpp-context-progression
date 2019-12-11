@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-defence-association" author="cpp.context.progression">
+        <createTable tableName="defence_association">
+            <column name="defendant_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="add-defence_association-key-constraints" author="cpp.context.progression">
+        <addPrimaryKey columnNames="defendant_id" constraintName="defence_association_primary_key"
+                       tableName="defence_association"/>
+    </changeSet>
+</databaseChangeLog>

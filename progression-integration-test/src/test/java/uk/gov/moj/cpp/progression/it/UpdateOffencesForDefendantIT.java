@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.it;
 
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 import uk.gov.moj.cpp.progression.helper.UpdateOffencesForDefendantHelper;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -24,6 +27,8 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
     public void setUp() {
         caseId = UUID.randomUUID().toString();
         addDefendantHelper = new AddDefendantHelper(caseId);
+        setupUsersGroupQueryStub();
+        waitForUsersAndGroupsStubToBeReady();
         addDefendantHelper.addMinimalDefendant();
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
@@ -31,9 +36,13 @@ public class UpdateOffencesForDefendantIT extends BaseIntegrationTest {
         ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
     }
 
+    private void waitForUsersAndGroupsStubToBeReady() {
+        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/.*", "application/json");
+    }
+
     /**
-     * Adds a Defendant to a case and then verifies by reading a case to determine that
-     * the defendant has been added.
+     * Adds a Defendant to a case and then verifies by reading a case to determine that the
+     * defendant has been added.
      */
     @Test
     public void updateOffencesForDefendantAndVerify() {

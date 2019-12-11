@@ -111,6 +111,62 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/defendants/{defendantId}/defenceorganisation :
+  uriParameters:
+      defendantId:
+        description: The id of the defendant
+        type: string
+  post:
+      description: |
+        The defendant's association with a defence organisation
+        ...
+        (mapping):
+            requestType: application/vnd.progression.associate-defence-organisation+json
+            name: progression.associate-defence-organisation
+        (mapping):
+             requestType: application/vnd.progression.disassociate-defence-organisation+json
+             name: progression.disassociate-defence-organisation
+        ...
+      body:
+        application/vnd.progression.associate-defence-organisation+json:
+          example:
+            !include json/progression.associate-defence-organisation.json
+          schema:
+             !include json/schema/progression.associate-defence-organisation.json
+        application/vnd.progression.disassociate-defence-organisation+json:
+          example:
+             !include json/progression.disassociate-defence-organisation.json
+          schema:
+             !include json/schema/progression.disassociate-defence-organisation.json
+
+/defendants/{defendantId}/defenceaccess :
+  uriParameters:
+      defendantId:
+        description: The id of the defendant
+        type: string
+  post:
+      description: |
+        This id would operate on a defendant's case access
+        ...
+        (mapping):
+             requestType: application/vnd.progression.grant-defence-access+json
+             name: progression.grant-defence-access
+        (mapping):
+            requestType: application/vnd.progression.progression.remove-defence-access+json
+            name: progression.progression.remove-defence-access
+        ...
+      body:
+        application/vnd.progression.grant-defence-access+json:
+           example:
+             !include json/progression.grant-defence-access.json
+           schema:
+              !include json/schema/progression.grant-defence-access.json
+        application/vnd.progression.progression.remove-defence-access+json:
+           example:
+             !include json/progression.remove-defence-access.json
+           schema:
+              !include json/schema/progression.remove-defence-access.json
+
 /initiatecourtproceedings :
   post:
       description: |

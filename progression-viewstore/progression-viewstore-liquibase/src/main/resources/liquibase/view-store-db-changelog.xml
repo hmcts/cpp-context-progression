@@ -55,5 +55,9 @@
     <include file="liquibase/alter-search-prosecution-case-add-index.xml"/>
     <include file="liquibase/add-application-assigned-user-id.xml"/>
     <include file="liquibase/add-contains-financial-means.xml"/>
-
+    <include file="liquibase/create-defence-association.xml"/>
+    <include file="liquibase/create-defence-association-access-history.xml"/>
+    <include file="liquibase/alter-defence-association-access-history-date-datatype.xml"/>
+    <include file="liquibase/rename-defence-association.xml"/>
+    <include file="liquibase/rename-and-update-defence-association-access-history.xml"/>
 </databaseChangeLog>

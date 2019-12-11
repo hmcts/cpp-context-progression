@@ -74,7 +74,9 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         InitiateCourtProceedings("progression.initiate-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
         AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users"),
         UpdateCaseMarkersApiTest("progression.update-case-markers", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
-        EjectCaseOrApplication("progression.eject-case-or-application","Eject Case Group");
+        EjectCaseOrApplication("progression.eject-case-or-application", "Eject Case Group"),
+        AssociateDefenceOrganisation("progression.associate-defence-organisation", "Defence Users"),
+        DisassociateDefenceOrganisation("progression.disassociate-defence-organisation", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers");
 
         private final String actionName;
         private final String[] allowedUserGroups;
