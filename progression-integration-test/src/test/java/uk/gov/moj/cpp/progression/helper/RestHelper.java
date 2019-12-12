@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinicityData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryHearingTypeData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryJudiciaries;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryLocalJusticeArea;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryNationalityData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisationUnitsData;
@@ -197,6 +198,7 @@ public class RestHelper {
         resetStubs();
         setupUsersGroupQueryStub();
         stubEnableAllCapabilities();
+        stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
         stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");
         stubListCourtHearing();

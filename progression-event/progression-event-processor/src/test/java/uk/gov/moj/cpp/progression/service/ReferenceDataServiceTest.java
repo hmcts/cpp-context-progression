@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -11,23 +12,28 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_COURTCENTER;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_DOCUMENT_TYPE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_OUCODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_REFERRAL_REASONS;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_QUERY_JUDICIARIES;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
@@ -46,7 +52,6 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 
 import com.google.common.io.Resources;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -69,19 +74,24 @@ public class ReferenceDataServiceTest {
     private static final String JUDICIARY_TITLE_2 = STRING.next();
     private static final String JUDICIARY_FIRST_NAME_2 = STRING.next();
     private static final String JUDICIARY_LAST_NAME_2 = STRING.next();
+    private static final String NATIONAL_COURT_CODE = "3109";
     private static final String ORGANISATION_UNIT = "referencedata.query.organisation-unit.v2";
 
     @Mock
     private Requester requester;
 
     @Spy
-    Enveloper enveloper = EnveloperFactory.createEnveloper();;
+    Enveloper enveloper = EnveloperFactory.createEnveloper();
+    ;
 
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<Envelope<JsonObject>> welshEnvelopeArgumentCaptor;
 
     @Mock
     private Function<Object, JsonEnvelope> objectJsonEnvelopeFunction;
@@ -275,7 +285,7 @@ public class ReferenceDataServiceTest {
         //when
         final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(REFERENCEDATA_GET_DOCUMENT_TYPE))
                 .build();
-        final Optional<JsonObject> result = referenceDataService.getDocumentTypeData(documentTypeId,envelope);
+        final Optional<JsonObject> result = referenceDataService.getDocumentTypeData(documentTypeId, envelope);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -289,7 +299,7 @@ public class ReferenceDataServiceTest {
         ));
         assertThat(result.get().getString("documentCategory"), is("Defendant level"));
         assertThat(result.get().getString("documentType"), is("Magistrate's Sending sheet"));
-        assertThat(((JsonString)result.get().getJsonArray("documentAccess").stream().findFirst().get()).getString() , is("Legal advisors"));
+        assertThat(((JsonString) result.get().getJsonArray("documentAccess").stream().findFirst().get()).getString(), is("Legal advisors"));
         verifyNoMoreInteractions(requester);
     }
 
@@ -311,7 +321,7 @@ public class ReferenceDataServiceTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE).build(),
                 payload);
 
-        final Optional<JsonObject> result = referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(envelope,postCode,prosecutingAuth);
+        final Optional<JsonObject> result = referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(envelope, postCode, prosecutingAuth);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -323,8 +333,25 @@ public class ReferenceDataServiceTest {
                         withJsonPath("$.postcode", equalTo(postCode))
                 ))
         ));
-        assertThat(((JsonObject)result.get().getJsonArray("courts").get(0)).getString("oucodeL3Code"), is("B22KS00"));
+        assertThat(((JsonObject) result.get().getJsonArray("courts").get(0)).getString("oucodeL3Code"), is("B22KS00"));
         verifyNoMoreInteractions(requester);
+    }
+
+    @Test
+    public void shouldGetLocalJusticeAreas() {
+
+        final UUID id = randomUUID();
+        final JsonEnvelope responseEnvelope = generateLocalJusticeResponseEnvelope(id);
+
+        when(requester.request(any()))
+                .thenReturn(responseEnvelope);
+
+        final Optional<JsonObject> result = referenceDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE);
+
+        verify(requester).request(welshEnvelopeArgumentCaptor.capture());
+
+        assertThat(welshEnvelopeArgumentCaptor.getValue().metadata(), metadata().withName(REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS));
+        assertThat(welshEnvelopeArgumentCaptor.getValue().payload(), payload().isJson(withJsonPath("$.nationalCourtCode", equalTo(NATIONAL_COURT_CODE))));
     }
 
     @Test
@@ -338,14 +365,14 @@ public class ReferenceDataServiceTest {
 
         when(requester.request(any()))
                 .thenReturn(JsonEnvelope.envelopeFrom(
-                        JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER).build(),
+                        JsonEnvelope.metadataBuilder().withId(id).withName(REFERENCEDATA_GET_COURTCENTER).build(),
                         payload));
         //when
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER).build(),
                 payload);
 
-        final Optional<JsonObject> result = referenceDataService.getCourtsOrganisationUnitsByOuCode(envelope,oucode);
+        final Optional<JsonObject> result = referenceDataService.getCourtsOrganisationUnitsByOuCode(envelope, oucode);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -357,10 +384,9 @@ public class ReferenceDataServiceTest {
                         withJsonPath("$.oucode", equalTo(oucode))
                 ))
         ));
-        assertThat(((JsonObject)result.get().getJsonArray("organisationunits").get(0)).getString("id"), is(id.toString()));
+        assertThat(((JsonObject) result.get().getJsonArray("organisationunits").get(0)).getString("id"), is(id.toString()));
         verifyNoMoreInteractions(requester);
     }
-
 
 
     @Test
@@ -379,21 +405,22 @@ public class ReferenceDataServiceTest {
         when(enveloper.withMetadataFrom(envelope, REFERENCEDATA_GET_OUCODE)).thenReturn(objectJsonEnvelopeFunction);
         when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelope);
         when(requester.request(envelope))
-                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE,payloadForCourts));
+                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForCourts));
 
         final JsonEnvelope envelopeForCourts = getEnvelope(REFERENCEDATA_GET_COURTCENTER);
 
         when(enveloper.withMetadataFrom(envelope, REFERENCEDATA_GET_COURTCENTER)).thenReturn(objectJsonEnvelopeFunctionForCourts);
         when(objectJsonEnvelopeFunctionForCourts.apply(any(JsonObject.class))).thenReturn(envelopeForCourts);
         when(requester.request(envelopeForCourts))
-                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE,payloadForOrgUnits));
+                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForOrgUnits));
 
-        final CourtCentre result = referenceDataService.getCourtCentre(envelope,postcode,prosecutingAuth);
+        final CourtCentre result = referenceDataService.getCourtCentre(envelope, postcode, prosecutingAuth);
 
         assertThat(result.getId(), is(id));
     }
+
     @Test
-    public void shouldRequestReferralReasons(){
+    public void shouldRequestReferralReasons() {
         JsonObject payload = getReferralReasonsPayload();
 
         when(requester.request(any())).thenReturn(getEnvelope(REFERENCEDATA_GET_REFERRAL_REASONS, payload));
@@ -461,7 +488,7 @@ public class ReferenceDataServiceTest {
                 Json.createObjectBuilder().build());
     }
 
-    private JsonEnvelope getEnvelope(final String name,JsonObject jsonObject) {
+    private JsonEnvelope getEnvelope(final String name, JsonObject jsonObject) {
         return JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
                 jsonObject);
@@ -493,7 +520,7 @@ public class ReferenceDataServiceTest {
                         .add(Json.createObjectBuilder()
                                 .add("id", "7e2f843e-d639-40b3-8611-8015f3a18957")
                                 .add("seqId", 1)
-                                .add("reason",  "Sections 135")
+                                .add("reason", "Sections 135")
                                 .add("welshReason", "Ple amhendant")
                                 .add("hearingCode", "ANP")
                         ))
@@ -503,23 +530,23 @@ public class ReferenceDataServiceTest {
 
     private String getDocumentTypeDataById(final UUID documentTypeId) {
         return "{\n" +
-                " \"uuid\": \"" + documentTypeId + "\",\n"+
-                "\"documentCategory\": \"Defendant level\",\n"+
-                "\"documentType\": \"Magistrate's Sending sheet\",\n"+
-                "\"documentAccess\": [\n"+
-                "\"Legal advisors\"\n"+
+                " \"uuid\": \"" + documentTypeId + "\",\n" +
+                "\"documentCategory\": \"Defendant level\",\n" +
+                "\"documentType\": \"Magistrate's Sending sheet\",\n" +
+                "\"documentAccess\": [\n" +
+                "\"Legal advisors\"\n" +
                 "]}";
     }
 
     private String getCourtCentrePayload(final UUID courtCentreId) {
         return "{\n" +
-               " \"id\": \"" + courtCentreId + "\",\n"+
-               "\"name\": \"Liverpool Crown Court\",\n"+
-               "\"courtRooms\": [\n"+
-               "{\n"+
-               "\"id\": \"47834e9d-0bca-4f26-aa30-270580496e6e\",\n"+
-               "\"name\": \"1\"\n"+
-               "}]}";
+                " \"id\": \"" + courtCentreId + "\",\n" +
+                "\"name\": \"Liverpool Crown Court\",\n" +
+                "\"courtRooms\": [\n" +
+                "{\n" +
+                "\"id\": \"47834e9d-0bca-4f26-aa30-270580496e6e\",\n" +
+                "\"name\": \"1\"\n" +
+                "}]}";
     }
 
     private String getOrganisationPayload(final UUID courtCentreId) {
@@ -559,11 +586,11 @@ public class ReferenceDataServiceTest {
     private String getJudgePayload(final UUID judgeId) {
 
         return "{\n" +
-               " \"id\": \"" + judgeId + "\",\n"+
-               "\"title\": \"HSS\",\n"+
-               "\"firstName\": \"John\",\n"+
-               "\"lastName\": \"SMITH\"" +
-              "}";
+                " \"id\": \"" + judgeId + "\",\n" +
+                "\"title\": \"HSS\",\n" +
+                "\"firstName\": \"John\",\n" +
+                "\"lastName\": \"SMITH\"" +
+                "}";
     }
 
     private String getJsonPayload() {
@@ -601,4 +628,19 @@ public class ReferenceDataServiceTest {
                 "}";
     }
 
+    private JsonEnvelope generateLocalJusticeResponseEnvelope(final UUID userId) {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS)
+                .withUserId(userId.toString());
+        final JsonObject payload = createObjectBuilder()
+                .add("localJusticeAreas",
+                        createArrayBuilder().add(createObjectBuilder()
+                                .add("nationalCourtCode", NATIONAL_COURT_CODE)
+                                .add("name", "Cardiff Magistrates' Court")
+                                .add("welshName", "Caerdydd")))
+                .build();
+        return JsonEnvelope.envelopeFrom(
+                metadataBuilder, payload);
+    }
 }

@@ -5,20 +5,23 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import org.apache.commons.lang3.StringUtils;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.processor.InvalidHearingTimeException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
-@SuppressWarnings({"squid:S1172", "squid:S1192","squid:S1166"})
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.apache.commons.lang3.StringUtils;
+
+@SuppressWarnings({"squid:S1172", "squid:S1192", "squid:S1166"})
 public class SummonsDataHelper {
 
     private static final String DELIMITER = " ";
@@ -110,14 +113,16 @@ public class SummonsDataHelper {
     }
 
     public static JsonArray extractOffences(final JsonObject defendantJson) {
-        JsonArrayBuilder updatedOffencesArray = createArrayBuilder();
-        JsonArray offencesJsonArray = defendantJson.containsKey(OFFENCES) ? defendantJson.getJsonArray(OFFENCES) : EMPTY_JSON_ARRAY;
+        final JsonArrayBuilder updatedOffencesArray = createArrayBuilder();
+        final JsonArray offencesJsonArray = defendantJson.containsKey(OFFENCES) ? defendantJson.getJsonArray(OFFENCES) : EMPTY_JSON_ARRAY;
         offencesJsonArray.getValuesAs(JsonObject.class).forEach(offence ->
                 updatedOffencesArray.add(createObjectBuilder()
                         .add("offenceTitle", extractStringFromOffence(offence, "offenceTitle"))
                         .add("offenceTitleWelsh", extractStringFromOffence(offence, "offenceTitleWelsh"))
                         .add("offenceLegislation", extractStringFromOffence(offence, "offenceLegislation"))
                         .add("offenceLegislationWelsh", extractStringFromOffence(offence, "offenceLegislationWelsh"))
+                        .add("wording", extractStringFromOffence(offence, "wording"))
+                        .add("wordingWelsh", extractStringFromOffence(offence, "wordingWelsh"))
                         .build()));
         return updatedOffencesArray.build();
     }
@@ -162,18 +167,24 @@ public class SummonsDataHelper {
     }
 
     private static JsonObject populateAddress(final JsonObject address) {
-        JsonObject addressJson = null;
-        if (Objects.nonNull(address)) {
-            addressJson = createObjectBuilder()
-                    .add("line1", address.getString("address1", EMPTY))
-                    .add("line2", address.getString("address2", EMPTY))
-                    .add("line3", address.getString("address3", EMPTY))
-                    .add("line4", address.getString("address4", EMPTY))
-                    .add("line5", address.getString("address5", EMPTY))
-                    .add("postCode", address.getString("postcode", EMPTY))
-                    .build();
+        JsonObjectBuilder addressJsonBuilder = null;
+        addressJsonBuilder = createObjectBuilder()
+                .add("line1", address.getString("address1", EMPTY))
+                .add("line2", address.getString("address2", EMPTY))
+                .add("line3", address.getString("address3", EMPTY))
+                .add("line4", address.getString("address4", EMPTY))
+                .add("line5", address.getString("address5", EMPTY))
+                .add("postCode", address.getString("postcode", EMPTY));
+
+        final boolean isWelsh = address.getBoolean("isWelsh", false);
+        if (isWelsh) {
+            addressJsonBuilder.add("line1Welsh", address.getString("welshAddress1", EMPTY))
+                    .add("line2Welsh", address.getString("welshAddress2", EMPTY))
+                    .add("line3Welsh", address.getString("welshAddress3", EMPTY))
+                    .add("line4Welsh", address.getString("welshAddress4", EMPTY))
+                    .add("line5Welsh", address.getString("welshAddress5", EMPTY));
         }
-        return addressJson;
+        return addressJsonBuilder.build();
     }
 
     private static String extractName(final JsonObject defendantJson) {

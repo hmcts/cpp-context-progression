@@ -1,13 +1,16 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
@@ -44,6 +47,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_PROSECUTOR = "referencedata.query.prosecutor";
     public static final String REFERENCEDATA_QUERY_COURT_ROOM = "referencedata.query.courtroom";
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
+    public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -157,6 +161,19 @@ public class ReferenceDataService {
         }
         return Optional.ofNullable(responseForoucode.payloadAsJsonObject());
     }
+
+    public Optional<JsonObject> getLocalJusticeArea(final JsonEnvelope jsonEnvelope, final String ljaCode) {
+        final JsonObject payloadForLjaCode = Json.createObjectBuilder()
+                .add("nationalCourtCode", ljaCode)
+                .build();
+        final Envelope<JsonObject> requestForLocalJusticeArea = envelop(payloadForLjaCode).withName(REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS).withMetadataFrom(jsonEnvelope);
+        final JsonEnvelope responseForLocalJusticeArea = requester.request(requestForLocalJusticeArea);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Get ljaCode '{}' received with payload {} ", REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS, responseForLocalJusticeArea.toObfuscatedDebugString());
+        }
+        return Optional.of(responseForLocalJusticeArea.payloadAsJsonObject());
+    }
+    
 
     public Optional<JsonObject> getCourtsOrganisationUnitsByOuCode(final JsonEnvelope event, final String oucode) {
 
