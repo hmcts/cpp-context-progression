@@ -9,19 +9,19 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-defendant-updated.json
 
         - name: progression.event.court-document-added
-          schema_uri: http://justice.gov.uk/core/courts/court-document-added.json
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-added.json
 
         - name: progression.event.court-document-uploaded
-          schema_uri: http://justice.gov.uk/core/courts/court-document-uploaded.json
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-uploaded.json
 
         - name: progression.event.court-document-removed
-          schema_uri: http://justice.gov.uk/core/courts/court-document-removed.json
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-removed.json
 
         - name: progression.event.defendant-bail-document-created
-          schema_uri: http://justice.gov.uk/core/courts/defendant-bail-document-created.json
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-bail-document-created
 
         - name: progression.events.offences-for-defendant-changed
-          schema_uri: http://justice.gov.uk/core/courts/offences-for-defendant-changed.json
+          schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-changed.json
 
         - name: progression.event.print-requested
           schema_uri: http://justice.gov.uk/core/courts/progression.event.print-requested.json
@@ -39,7 +39,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/nows-material-status-updated.json
 
         - name: progression.hearing-initiate-enriched
-          schema_uri: http://justice.gov.uk/hearing/courts/hearing-initiate-enriched.json
+          schema_uri: http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json
 
         - name: progression.event.court-application-created
           schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
@@ -60,7 +60,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/application-referred-to-court.json
 
         - name: progression.event.hearing-extended
-          schema_uri: http://justice.gov.uk/hearing/courts/hearing-extended.json
+          schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
 
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
@@ -145,7 +145,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/json/schemas/domains/public/material/material-added
 
         - name: public.progression.case-document-added
-          schema_uri: http://justice.gov.uk/json/schemas/domains/public/progression/case-document-added
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-document-added.json
 
         # Listing start
         - name: public.listing.case-sent-for-listing

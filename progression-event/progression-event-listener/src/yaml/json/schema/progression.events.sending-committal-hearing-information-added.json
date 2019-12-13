@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "http://justice.gov.uk/core/courts/sending-committal-hearing-information-added.json",
+  "id": "http://justice.gov.uk/core/courts/sending-committal-hearing-information-added.json",
   "type": "object",
   "properties": {
     "caseId": {

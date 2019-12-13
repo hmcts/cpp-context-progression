@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "http://justice.gov.uk/core/courts/case-to-be-assigned-updated.json",
+  "id": "http://justice.gov.uk/core/courts/case-to-be-assigned-updated.json",
   "type": "object",
   "properties": {
     "caseId": {

@@ -24,7 +24,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-updated.json"
 
         - name: public.hearing-detail-changed
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-hearing-detail-changed.json
+          schema_uri: http://justice.gov.uk/json/schemas/hearing/public.hearing-detail-changed.json
 
         - name: public.progression.court-application-created
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-created.json
@@ -35,14 +35,14 @@ subscriptions_descriptor:
         - name: public.progression.events.hearing-extended
           schema_uri: http://justice.gov.uk/progression/courts/hearing-extended.json
 
-        - name: public.progression.events.court-application-changed
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-changed.json
+        - name: public.progression.court-application-changed
+          schema_uri: http://justice.gov.uk/core/courts/court-application-changed.json
 
         - name: public.progression.court-application-updated
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-document-removed.json
+          schema_uri: http://justice.gov.uk/core/courts/court-application-updated.json
 
         - name: public.progression.defendants-added-to-court-proceedings
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendants-added-to-court-proceedings.json
+          schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json"
 
         - name: public.progression.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json

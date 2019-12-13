@@ -93,7 +93,7 @@
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>messaging-client-generator-plugin</artifactId>
                 <dependencies>
-                        <dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.progression</groupId>
                         <artifactId>progression-command-handler</artifactId>
                         <version>${project.version}</version>

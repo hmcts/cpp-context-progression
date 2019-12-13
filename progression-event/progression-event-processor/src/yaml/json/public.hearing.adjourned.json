@@ -1,0 +1,26 @@
+{
+  "caseId": "0baecac5-222b-402d-9047-84803679edae",
+  "urn": "87GD9945217",
+  "hearings": [
+    {
+      "id": "1d30ba85-b806-4278-ad87-efa9ec75be50",
+      "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f",
+      "type": "PTP",
+      "startDate": "2018-06-01",
+      "estimateMinutes": 7200,
+      "startTime": "10:30",
+      "judgeId": "0baecac5-222b-402d-9047-84803679edae",
+      "courtRoomId": "e8821a38-546d-4b56-9992-ebdd772a561f",
+      "defendants": [
+        {
+          "id": "0baecac5-222b-402d-9047-84803679edac",
+          "offences": [
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edad"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
