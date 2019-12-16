@@ -15,7 +15,7 @@ declare FILE_SERVICE_VERSION=1.17.12
 #fail script on error
 set -e
 
-source function.sh
+source runIntegrationTests.sh
 
 runViewStoreLiquibase
 
