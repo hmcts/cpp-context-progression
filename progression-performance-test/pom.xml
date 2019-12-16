@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>6.4.5-FRAMEWORK-SNAPSHOT</version>
+        <version>6.4.6-FRAMEWORK-SNAPSHOT</version>
 	</parent>
     <modelVersion>4.0.0</modelVersion>
 
