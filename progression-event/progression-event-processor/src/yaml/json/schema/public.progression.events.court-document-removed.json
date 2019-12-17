@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-courts-document-removed.json",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-document-removed.json",
   "type": "object",
   "properties": {
     "courtDocumentId": {

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class DefenceAssociationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationAggregate.class);
-    private static final long serialVersionUID = 7313423272698212459L;
+    private static final long serialVersionUID = 7313423272698212460L;
     private static final String UTC = "UTC";
     private static final ZoneId UTC_ZONE_ID = ZoneId.of(UTC);
     private UUID associatedOrganisationId;

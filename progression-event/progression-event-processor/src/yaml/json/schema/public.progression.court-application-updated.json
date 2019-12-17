@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-updated.json",
+  "id": "http://justice.gov.uk/core/courts/court-application-updated.json",
   "type": "object",
   "additionalProperties": false,
   "properties": {

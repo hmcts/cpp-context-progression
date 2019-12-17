@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "http://justice.gov.uk/core/courts/pre-sentence-report-for-defendants-requested.json",
+  "id": "http://justice.gov.uk/core/courts/pre-sentence-report-for-defendants-requested.json",
   "type": "object",
   "properties": {
     "caseId": {

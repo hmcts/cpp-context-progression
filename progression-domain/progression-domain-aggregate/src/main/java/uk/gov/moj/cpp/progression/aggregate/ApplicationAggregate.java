@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 281032067089771390L;
+    private static final long serialVersionUID = 281032067089771391L;
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
     private CourtApplication courtApplication;
     private UUID boxHearingId;

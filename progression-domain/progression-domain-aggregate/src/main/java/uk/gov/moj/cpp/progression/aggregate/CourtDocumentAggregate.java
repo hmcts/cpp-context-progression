@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 public class CourtDocumentAggregate implements Aggregate {
 
-private static final long serialVersionUID = 100L;
+private static final long serialVersionUID = 101L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAggregate.class);
 
     @Override
