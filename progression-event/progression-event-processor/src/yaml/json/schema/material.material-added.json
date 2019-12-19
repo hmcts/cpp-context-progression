@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/public/material/material-added",
+  "type": "object",
+  "properties": {
+    "materialId": {
+      "type": "string"
+    },
+    "alfrescoAssetId": {
+      "type": "string"
+    },
+    "fileName": {
+      "type": "string"
+    },
+    "materialAddedDate": {
+      "type": "string"
+    }
+  }
+}

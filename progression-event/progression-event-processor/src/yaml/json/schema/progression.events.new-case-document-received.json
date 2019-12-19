@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/new-case-document-received.json",
+  "type": "object",
+  "properties": {
+    "cppCaseId": {
+      "type": "string"
+    },
+    "fileId": {
+      "type": "string"
+    },
+    "fileMimeType": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cppCaseId",
+    "fileId",
+    "fileMimeType"
+  ]
+}

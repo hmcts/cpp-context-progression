@@ -76,7 +76,7 @@ public class MaterialHandlerTest {
 
     @Before
     public void setup() {
-        setField(this.jsonObjectToObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         aggregate = new MaterialAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);

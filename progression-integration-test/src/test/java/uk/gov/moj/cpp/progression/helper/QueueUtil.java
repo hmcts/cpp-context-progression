@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.OptionalPresent.ifPresent;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
