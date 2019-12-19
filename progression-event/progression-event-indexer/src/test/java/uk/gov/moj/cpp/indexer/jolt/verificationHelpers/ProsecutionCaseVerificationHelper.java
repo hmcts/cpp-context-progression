@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
 import static com.jayway.jsonassert.JsonAssert.with;
-import static java.lang.Boolean.parseBoolean;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
@@ -9,13 +8,11 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.addressLines;
+import com.jayway.jsonpath.DocumentContext;
 
 import javax.json.JsonArray;
-import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
-
-import com.jayway.jsonpath.DocumentContext;
 
 public class ProsecutionCaseVerificationHelper {
 
@@ -34,59 +31,37 @@ public class ProsecutionCaseVerificationHelper {
         range(0, count)
                 .forEach(index -> {
 
-                    final String partiesIndexPath = String.format("$.parties[%d]", index);
-                    final String defendantIndexPath = String.format("$.prosecutionCase.defendants[%d]", index);
+            final String partiesIndexPath = String.format("$.parties[%d]", index);
+            final String defendantIndexPath = String.format("$.prosecutionCase.defendants[%d]", index);
 
-                    with(outputCase.toString())
-                            .assertThat("$.parties[*]", hasSize(count))
-                            .assertThat(partiesIndexPath + ".partyId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".id")).getString()))
-                            .assertThat(partiesIndexPath + ".title", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.title")).getString()))
-                            .assertThat(partiesIndexPath + ".firstName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.firstName")).getString()))
-                            .assertThat(partiesIndexPath + ".middleName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.middleName")).getString()))
-                            .assertThat(partiesIndexPath + ".lastName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.lastName")).getString()))
-                            .assertThat(partiesIndexPath + ".dateOfBirth", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.dateOfBirth")).getString()))
-                            .assertThat(partiesIndexPath + ".gender", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.gender")).getString()))
-                            .assertThat(partiesIndexPath + ".postCode", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.address.postcode")).getString()))
-                            .assertThat(partiesIndexPath + ".addressLines", equalTo(addressLines(inputProsecutionCase, defendantIndexPath + ".personDefendant.personDetails.address")))
-                            .assertThat(partiesIndexPath + ".pncId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".pncId")).getString()))
-                            .assertThat(partiesIndexPath + ".arrestSummonsNumber", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.arrestSummonsNumber")).getString()))
-                            .assertThat(partiesIndexPath + "._party_type", equalTo("DEFENDANT"))
+            with(outputCase.toString())
+                    .assertThat("$.parties[*]", hasSize(count))
+                    .assertThat(partiesIndexPath + ".partyId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".id")).getString()))
+                    .assertThat(partiesIndexPath + ".title", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.title")).getString()))
+                    .assertThat(partiesIndexPath + ".firstName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.firstName")).getString()))
+                    .assertThat(partiesIndexPath + ".middleName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.middleName")).getString()))
+                    .assertThat(partiesIndexPath + ".lastName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.lastName")).getString()))
+                    .assertThat(partiesIndexPath + ".dateOfBirth", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.dateOfBirth")).getString()))
+                    .assertThat(partiesIndexPath + ".gender", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.gender")).getString()))
+                    .assertThat(partiesIndexPath + ".postCode", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.address.postcode")).getString()))
+                    .assertThat(partiesIndexPath + ".addressLines", equalTo(addressLines(inputProsecutionCase, defendantIndexPath + ".personDefendant.personDetails.address")))
+                    .assertThat(partiesIndexPath + ".pncId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".pncId")).getString()))
+                    .assertThat(partiesIndexPath + ".arrestSummonsNumber", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.arrestSummonsNumber")).getString()))
+                    .assertThat(partiesIndexPath + "._party_type", equalTo("DEFENDANT"));
+            if (includeAliasAndOrganisation) {
+                with(outputCase.toString())
+                        .assertThat(partiesIndexPath + ".organisationName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".legalEntityDefendant.organisation.name")).getString()))
+                        .assertThat(partiesIndexPath + ".aliases[0].firstName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].firstName")).getString()))
+                        .assertThat(partiesIndexPath + ".aliases[0].middleName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].middleName")).getString()))
+                        .assertThat(partiesIndexPath + ".aliases[0].lastName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].lastName")).getString()))
+                        .assertThat(partiesIndexPath + ".aliases[0].title", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].title")).getString()))
+                        .assertThat(partiesIndexPath + ".aliases[0].organisationName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].legalEntityName")).getString()));
+            }
 
-                            //verification for offence attributes introduced as part of LAA enhancement
-                            .assertThat(partiesIndexPath + ".nationalInsuranceNumber", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.nationalInsuranceNumber")).getString()))
+        });
 
-                            .assertThat(partiesIndexPath + ".offences[0].offenceId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].id")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].offenceCode", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].offenceCode")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].offenceTitle", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].offenceTitle")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].offenceLegislation", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].offenceLegislation")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].proceedingsConcluded", equalTo(parseBoolean((inputProsecutionCase.read(defendantIndexPath + ".offences[0].proceedingsConcluded")).toString())))
-                            .assertThat(partiesIndexPath + ".offences[0].dateOfInformation", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].dateOfInformation")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].startDate", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].startDate")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].endDate", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].endDate")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].arrestDate", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].arrestDate")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].chargeDate", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].chargeDate")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].modeOfTrial", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].modeOfTrial")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].orderIndex", equalTo(((JsonNumber) inputProsecutionCase.read(defendantIndexPath + ".offences[0].orderIndex")).intValue()))
 
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.laaApplicationReference", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.laaApplicationReference")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.statusId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.statusId")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.statusCode", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.statusCode")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.statusDescription", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.statusDescription")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.effectiveFromDate", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.effectiveFromDate")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.effectiveToDate", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.effectiveToDate")).getString()))
-                            .assertThat(partiesIndexPath + ".offences[0].laaReference.laaRepresentativeAccountNumber", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".offences[0].laaReference.laaRepresentativeAccountNumber")).getString()));
 
-                    if (includeAliasAndOrganisation) {
-                        with(outputCase.toString())
-                                .assertThat(partiesIndexPath + ".organisationName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".legalEntityDefendant.organisation.name")).getString()))
-                                .assertThat(partiesIndexPath + ".aliases[0].firstName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].firstName")).getString()))
-                                .assertThat(partiesIndexPath + ".aliases[0].middleName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].middleName")).getString()))
-                                .assertThat(partiesIndexPath + ".aliases[0].lastName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].lastName")).getString()))
-                                .assertThat(partiesIndexPath + ".aliases[0].title", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].title")).getString()))
-                                .assertThat(partiesIndexPath + ".aliases[0].organisationName", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".aliases[0].legalEntityName")).getString()));
-                    }
-
-                });
     }
 
     public static void verifyDefendantsForDefendantUpdated(final DocumentContext inputProsecutionCase, final JsonObject outputCase) {
