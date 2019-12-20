@@ -32,6 +32,16 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$._case_type", equalTo("PROSECUTION"));
     }
 
+    public static void verifyPncOnDefendantLevel(final DocumentContext inputDefendant, final JsonObject party) {
+        with(party.toString())
+                .assertThat("$.pncId", equalTo(((JsonString) inputDefendant.read("$.pncId")).getString()));
+    }
+
+    public static void verifyPncOnPersonDefendantLevel(final DocumentContext inputDefendant, final JsonObject party) {
+        with(party.toString())
+                .assertThat("$.pncId", equalTo(((JsonString) inputDefendant.read("$.personDefendant.pncId")).getString()));
+    }
+
     private static void verifyDefendant(final DocumentContext defendant, final JsonObject party) {
 
         with(party.toString())
@@ -45,28 +55,10 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$.postCode", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.address.postcode")).getString()))
                 .assertThat("$.addressLines", equalTo(addressLines(defendant, "$.personDefendant.personDetails.address")))
                 .assertThat("$.organisationName", equalTo(((JsonString) defendant.read("$.legalEntityDefendant.organisation.name")).getString()))
-                .assertThat("$.pncId", equalTo(((JsonString) defendant.read("$.personDefendant.pncId")).getString()))
                 .assertThat("$.arrestSummonsNumber", equalTo(((JsonString) defendant.read("$.personDefendant.arrestSummonsNumber")).getString()))
                 .assertThat("$._party_type", equalTo(DEFENDANT));
     }
 
-    public static void verifyDefendantUpdate(final DocumentContext defendant, final JsonObject party) {
-
-        with(party.toString())
-                .assertThat("$.partyId", equalTo(((JsonString) defendant.read("$.id")).getString()))
-                .assertThat("$.title", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.title")).getString()))
-                .assertThat("$.firstName", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.firstName")).getString()))
-                .assertThat("$.middleName", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.middleName")).getString()))
-                .assertThat("$.lastName", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.lastName")).getString()))
-                .assertThat("$.dateOfBirth", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.dateOfBirth")).getString()))
-                .assertThat("$.gender", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.gender")).getString()))
-                .assertThat("$.postCode", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.address.postcode")).getString()))
-                .assertThat("$.addressLines", equalTo(addressLines(defendant, "$.personDefendant.personDetails.address")))
-                .assertThat("$.organisationName", equalTo(((JsonString) defendant.read("$.legalEntityDefendant.organisation.name")).getString()))
-                .assertThat("$.pncId", equalTo(((JsonString) defendant.read("$.pncId")).getString()))
-                .assertThat("$.arrestSummonsNumber", equalTo(((JsonString) defendant.read("$.personDefendant.arrestSummonsNumber")).getString()))
-                .assertThat("$._party_type", equalTo(DEFENDANT));
-    }
 
     public static void verifyCaseType(final JsonObject transformedJson) {
         assertEquals("PROSECUTION", transformedJson.getString("_case_type"));
@@ -85,12 +77,15 @@ public class ProsecutionCaseVerificationHelper {
         verifyProsecutionCase(inputProsectionCase, outputCase);
     }
 
-    public static void verifyCaseDefendant(final DocumentContext inputProsectionCase, final JsonObject outputCase) {
+
+    public static void verifyCaseDefendant(final DocumentContext inputProsectionCase,
+                                           final JsonObject outputCase,
+                                           boolean isReferCaseToCourt) {
         final JsonObject inputDefendant = inputProsectionCase.read("$.prosecutionCase.defendants[0]");
-        verifyDefendant(inputDefendant, outputCase);
+        verifyDefendant(inputDefendant, outputCase, isReferCaseToCourt);
     }
 
-    public static void verifyDefendant(final JsonObject inputDefendant, final JsonObject outputCase) {
+    public static void verifyDefendant(final JsonObject inputDefendant, final JsonObject outputCase, boolean isReferCaseToCourt) {
         final JsonString defendantId = inputDefendant.getJsonString("id");
 
         final DocumentContext indexData = parse(outputCase);
@@ -102,6 +97,12 @@ public class ProsecutionCaseVerificationHelper {
         final DocumentContext parsedInputDefendant = parse(inputDefendant);
         verifyDefendant(parsedInputDefendant, outputPartyDefendant.get());
         verifyDefendantAliases(parsedInputDefendant, outputPartyDefendant.get());
+        if (isReferCaseToCourt) {
+            verifyPncOnPersonDefendantLevel(parsedInputDefendant, outputPartyDefendant.get());
+        } else {
+            verifyPncOnDefendantLevel(parsedInputDefendant, outputPartyDefendant.get());
+
+        }
     }
 
     public static void verifyDefendantAliases(final DocumentContext inputPartyDefendant, final JsonObject outputPartyDefendant) {

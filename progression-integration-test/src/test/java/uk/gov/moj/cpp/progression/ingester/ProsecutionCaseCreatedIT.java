@@ -97,7 +97,7 @@ public class ProsecutionCaseCreatedIT {
         final JsonObject outputCase = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
         verifyCaseCreated(1l, inputProsecutionCase, outputCase);
-        verifyCaseDefendant(inputProsecutionCase, outputCase);
+        verifyCaseDefendant(inputProsecutionCase, outputCase,true);
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject) {

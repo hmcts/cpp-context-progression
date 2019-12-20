@@ -15,8 +15,9 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseDefendant;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendant;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantAliases;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantUpdate;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
@@ -108,7 +109,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT {
 
         verifyCaseCreated(1l,inputCaseDocument , outputIndexedJson);
         final JsonObject party = outputIndexedJson.getJsonArray("parties").getJsonObject(0);
-        verifyDefendantUpdate(parse(defendantUpdated.getJsonObject("defendant")), party);
+        verifyDefendant(defendantUpdated, party, false);
 
         final JsonObject defendant = inputCaseDocument.read("$.prosecutionCase.defendants[0]");
         final DocumentContext parsedInputDefendant = parse(defendant);

@@ -17,6 +17,12 @@
             "lastName" : "Jefferies",
             "title" : "MR",
             "legalEntityName" : "Chicken & Curry Best In Town LTD"
+          },{
+            "firstName": "Jim",
+            "middleName": "John",
+            "lastName" : "Jefferies",
+            "title" : "MR",
+            "legalEntityName" : "Chicken & Curry Best In Town LTD"
           }
         ],
         "pncId": "1234567",
