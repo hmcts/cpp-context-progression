@@ -1,28 +1,14 @@
 package uk.gov.moj.cpp.progression.util;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.Metadata;
+
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import java.nio.charset.Charset;
-import java.util.Optional;
-import java.util.UUID;
 
 
 public class ReferApplicationToCourtHelper extends AbstractTestHelper {

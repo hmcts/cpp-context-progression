@@ -1,46 +1,43 @@
 package uk.gov.moj.cpp.progression;
 
 
-import com.google.common.io.Resources;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getPayloadForCreatingRequest;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @Ignore
-public class ApplicationReferredToCourtIT {
+public class ApplicationReferredToCourtIT extends AbstractIT {
 
     //TODO: to unblock build failure in pipeline. This test runs in local Successfully.
     private static final String PROGRESSION_REFER_APPLICATION_TO_COURT_JSON = "application/vnd.progression.refer-application-to-court+json";
@@ -62,7 +59,6 @@ public class ApplicationReferredToCourtIT {
 
     @Before
     public void setUp() {
-        createMockEndpoints();
         HearingStub.stubInitiateHearing();
 
         userId = randomUUID().toString();
@@ -71,10 +67,6 @@ public class ApplicationReferredToCourtIT {
         defendantId = randomUUID().toString();
         courtCentreId = UUID.randomUUID().toString();
         courtApplicationId = UUID.randomUUID().toString();
-
-        System.out.println("CASE_ID: " + caseId);
-        System.out.println("HEARING_ID: " + hearingId);
-        System.out.println("COURT_APPLICATION_ID: " + courtApplicationId);
     }
 
     @AfterClass
@@ -99,7 +91,7 @@ public class ApplicationReferredToCourtIT {
                 PROGRESSION_EVENT_APPLICATION_REFERRED_TO_COURT_FILE);
 
         //progression.refer-application-to-court command triggered
-        postCommand(getCommandUri("/referapplicationtocourt"),
+        postCommand(getWriteUrl("/referapplicationtocourt"),
                 PROGRESSION_REFER_APPLICATION_TO_COURT_JSON,
                 applicationReferredToCourtString);
 
@@ -110,13 +102,7 @@ public class ApplicationReferredToCourtIT {
 
     private void doReferCaseToCourtAndVerify() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
-
-        JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-
-        assertProsecutionCase(getJsonObject(getProsecutioncasesProgressionFor(caseId)).getJsonObject
-                ("prosecutionCase"), caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
     private void doHearingConfirmedAndVerify() {
@@ -128,10 +114,9 @@ public class ApplicationReferredToCourtIT {
                         .withUserId(userId)
                         .build());
 
-        final String hearingIdQueryResult = pollForResponse("/hearingSearch/"+ hearingId, PROGRESSION_QUERY_HEARING_JSON);
-        final JsonObject hearingJsonObject = getJsonObject(hearingIdQueryResult);
-        assertThat(hearingJsonObject, is(notNullValue()));
-        assertThat(hearingJsonObject.getJsonObject("hearing").getString("id"), equalTo(hearingId));
+        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.id", is(hearingId))
+        );
     }
 
     private void doAddCourtApplicationAndVerify() throws Exception {
@@ -141,32 +126,22 @@ public class ApplicationReferredToCourtIT {
     }
 
     private void verifyPostUpdateCourtApplicationStatusCommand(final String id) {
-        final String QueryResult = pollForResponse("/applications/"+ id, PROGRESSION_QUERY_APPLICATION_JSON);
+        Matcher[] matchers = {withJsonPath("$.courtApplication.id", is(id)),
+                withJsonPath("$.courtApplication.applicationStatus", is(ApplicationStatus.LISTED.toString()))
+        };
+        pollForResponse("/applications/" + id, PROGRESSION_QUERY_APPLICATION_JSON, matchers);
 
-        final JsonObject courtApplicationJsonObject = getJsonObject(QueryResult);
-
-        assertThat(courtApplicationJsonObject, is(notNullValue()));
-        assertThat(courtApplicationJsonObject.getJsonObject("courtApplication").getString("id"), equalTo(id));
-        assertThat(courtApplicationJsonObject.getJsonObject("courtApplication").getString("applicationStatus"), equalTo(ApplicationStatus.LISTED.toString()));
     }
 
     private String getApplicationReferredToCourtJsonBody(final String hearingId, final String courtApplicationId, final String fileName) throws IOException {
-        return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
+        return getPayload(fileName)
                 .replace("RANDOM_HEARING_ID", hearingId)
                 .replace("RANDOM_APPLICATION_ID", courtApplicationId);
     }
 
-    private JsonObject getJsonObject(final String jsonAsString) {
-        final JsonObject payload;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
-            payload = jsonReader.readObject();
-        }
-        return payload;
-    }
-
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId) {
-        final String strPayload = getPayloadForCreatingRequest(path)
+        final String strPayload = getPayload(path)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)

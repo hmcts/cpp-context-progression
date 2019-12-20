@@ -1,24 +1,23 @@
 package uk.gov.moj.cpp.progression.util;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matchers;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-
-import javax.jms.MessageConsumer;
-import javax.json.JsonObject;
-import java.util.Optional;
-
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
+import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+
+import java.util.Optional;
+
+import javax.jms.MessageConsumer;
+import javax.json.JsonObject;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {

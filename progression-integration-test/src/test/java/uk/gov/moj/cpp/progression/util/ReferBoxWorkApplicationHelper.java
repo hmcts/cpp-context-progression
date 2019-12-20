@@ -4,6 +4,15 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_COMMAND;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_RESPONSE_TYPE;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -16,24 +25,15 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.google.common.io.Resources;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import org.json.JSONObject;
-
-import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_COMMAND;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_RESPONSE_TYPE;
-
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
+
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.google.common.io.Resources;
+import com.jayway.awaitility.Duration;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
@@ -60,7 +60,7 @@ public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
     public ReferBoxWorkApplicationHelper() {
 
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer("hearing.command.initiate");
-        sendMessage(messageProducerClientPublic,PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED, boxWorkApplicationJson, metadata);
+        sendMessage(messageProducerClientPublic, PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED, boxWorkApplicationJson, metadata);
 
     }
 
@@ -95,24 +95,24 @@ public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
 
 
     public static void verifyPostBoxWorkApplicationReferredHearing(final String applicationId) {
-        try {
-            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
-                    {
-                        final Stream<JSONObject> boxWorkCourtHearingRequestsAsStream = getBoxWorkApplicationReferredToCourtHearingRequestsAsStream();
-                        boxWorkCourtHearingRequestsAsStream
-                                .anyMatch(
-                                        payload -> {
+        waitAtMost(Duration.TEN_SECONDS).until(() ->
+                {
+                    final Stream<JSONObject> boxWorkCourtHearingRequestsAsStream = getBoxWorkApplicationReferredToCourtHearingRequestsAsStream();
+                    boxWorkCourtHearingRequestsAsStream
+                            .anyMatch(
+                                    payload -> {
+                                        try {
                                             JSONObject courtApplication = payload.getJSONArray("hearingRequest").getJSONObject(0).getJSONArray("courtApplications").getJSONObject(0);
                                             return courtApplication.getString("id").equals(applicationId);
+                                        } catch (JSONException e) {
+                                            return false;
                                         }
-                                );
-                    }
+                                    }
+                            );
+                }
 
-            );
+        );
 
-        } catch (Exception e) {
-            throw new AssertionError("Box work verifyPostBoxWorkApplicationReferredHearing failed with: " + e);
-        }
     }
 
     private static Stream<JSONObject> getBoxWorkApplicationReferredToCourtHearingRequestsAsStream() {

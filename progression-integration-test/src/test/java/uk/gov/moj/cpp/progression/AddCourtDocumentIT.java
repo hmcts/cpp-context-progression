@@ -1,17 +1,17 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.UUID;
 
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
@@ -27,19 +27,17 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Before
     public void setup() {
-        super.setUp();
-        caseId = UUID.randomUUID().toString();
-        docId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        createMockEndpoints();
+        caseId = randomUUID().toString();
+        docId = randomUUID().toString();
+        defendantId = randomUUID().toString();
     }
 
     @Test
-    public void shouldAddCourtDocument() throws IOException, InterruptedException {
+    public void shouldAddCourtDocument() throws IOException {
         //Given
         String body = prepareAddCourtDocumentPayload();
         //When
-        final Response writeResponse = postCommand(getCommandUri("/courtdocument/" + docId),
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document+json",
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -52,8 +50,7 @@ public class AddCourtDocumentIT extends AbstractIT {
     }
 
     private String prepareAddCourtDocumentPayload() throws IOException {
-        String body = Resources.toString(Resources.getResource("progression.add-court-document.json"),
-                Charset.defaultCharset());
+        String body = getPayload("progression.add-court-document.json");
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
                 .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
                 .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString());

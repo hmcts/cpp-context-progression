@@ -1,26 +1,24 @@
 package uk.gov.moj.cpp.progression.it;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.givenCaseProgressionDetail;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
-import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.LocalDate;
-import java.util.UUID;
 
-import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
@@ -29,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607"})
-public class CaseDefendantChangedIT extends BaseIntegrationTest {
+public class CaseDefendantChangedIT extends AbstractIT {
 
 
     private static final String COMPLETE_SENDING_SHEET_JSON =
@@ -39,29 +37,16 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     private AddDefendantHelper addDefendantHelper;
     private UpdateDefendantHelper updateDefendantHelper;
     private String caseId;
-    private String defendantId;
     private String request;
 
-    private static void init() {
-        ListingStub.stubListCourtHearing();
-        ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
-    }
-
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
+    public void setUp() {
+        caseId = randomUUID().toString();
         addDefendantHelper = new AddDefendantHelper(caseId);
-        setupUsersGroupQueryStub();
-        waitForUsersAndGroupsStubToBeReady();
         request = addDefendantHelper.addMinimalDefendant();
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
         addDefendantHelper.verifyMinimalDefendantAdded();
-        defendantId = "";
-    }
-
-    private void waitForUsersAndGroupsStubToBeReady() {
-        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/.*", "application/json");
     }
 
     @Test
@@ -106,19 +91,18 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
 
     private void completeSendingSheet() throws IOException {
         addCaseToCrownCourt(caseId);
-        givenCaseProgressionDetail(caseId);
+        pollCaseProgressionFor(caseId);
 
-        final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId),
+        final Response writeResponse = postCommand(getWriteUrl("/cases/" + caseId),
                 "application/vnd.progression.command.complete-sending-sheet+json",
                 getJsonBodyStr(COMPLETE_SENDING_SHEET_JSON));
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    private String getJsonBodyStr(final String fileName) throws IOException {
-        String fileContent = Resources.toString(Resources.getResource(fileName),
-                Charset.defaultCharset());
+    private String getJsonBodyStr(final String fileName) {
+        String fileContent = getPayload(fileName);
         final JSONObject jObj = new JSONObject(request);
-        defendantId = jObj.getString("defendantId");
+        final String defendantId = jObj.getString("defendantId");
         final JSONObject offence = (JSONObject) jObj.getJSONArray("offences").get(0);
         final String offenceId = offence.getString("id");
         fileContent = fileContent.replace("RANDOM_CASE_ID", caseId);
@@ -134,4 +118,10 @@ public class CaseDefendantChangedIT extends BaseIntegrationTest {
     public void tearDown() {
         closeSilently(updateDefendantHelper);
     }
+
+    private static void init() {
+        stubListCourtHearing();
+        ReferenceDataStub.stubQueryOffences(REF_DATA_QUERY_CJSCODE_PAYLOAD);
+    }
+
 }

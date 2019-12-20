@@ -1,47 +1,49 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectCaseApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationWithMatchingApplicationStatus;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
-import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.google.common.io.Resources;
+import com.google.common.collect.Lists;
+import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
-public class EjectCaseApplicationIT {
+public class EjectCaseApplicationIT extends AbstractIT {
     private static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
     private static final String CASE_OR_APPLICATION_EJECTED
             = "public.progression.events.case-or-application-ejected";
@@ -65,8 +67,7 @@ public class EjectCaseApplicationIT {
 
     @Before
     public void setUp() {
-        createMockEndpoints();
-        HearingStub.stubInitiateHearing();
+        stubInitiateHearing();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         hearingId = randomUUID().toString();
@@ -78,6 +79,7 @@ public class EjectCaseApplicationIT {
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
     }
+
     @Test
     public void shouldEjectStandaloneCourtApplicationAndGetConfirmation() throws Exception {
 
@@ -97,18 +99,18 @@ public class EjectCaseApplicationIT {
         pollForApplicationStatus(applicationId, "LISTED");
         ejectCaseApplication(applicationId, caseId, REMOVAL_REASON, "eject/progression.eject-application.json");
 
-        String applicationResponse = getApplicationWithMatchingApplicationStatus(applicationId, STATUS_EJECTED);
-        JsonObject applicationJson = getJsonObject(applicationResponse);
-        JsonObject courtApplication = applicationJson.getJsonObject("courtApplication");
-        assertThat(courtApplication.getString("id"), equalTo(applicationId));
-        assertThat(courtApplication.getString("applicationStatus"), equalTo(STATUS_EJECTED));
-        assertThat(courtApplication.getString("removalReason"), equalTo(REMOVAL_REASON));
+        Matcher[] applicationEjectedMatchers = {
+                withJsonPath("$.courtApplication.id", equalTo(applicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", equalTo(STATUS_EJECTED)),
+                withJsonPath("$.courtApplication.removalReason", equalTo(REMOVAL_REASON))
+        };
+        pollForApplication(applicationId, applicationEjectedMatchers);
+
         verifyInMessagingQueueForCaseOrApplicationEjected();
 
-        final String hearingIdQueryResult = pollForResponse("/hearingSearch/"+ hearingId, PROGRESSION_QUERY_HEARING_JSON);
-        final JsonObject hearingJsonObject = getJsonObject(hearingIdQueryResult);
-        JsonObject courtApplicationInHeaering = hearingJsonObject.getJsonObject("hearing").getJsonArray("courtApplications").getJsonObject(0);
-        assertThat(courtApplicationInHeaering.getString("applicationStatus"), equalTo(STATUS_EJECTED));
+        pollForResponse("/hearingSearch/" + hearingId,
+                PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.courtApplications[0].applicationStatus", is(STATUS_EJECTED)));
     }
 
     @Test
@@ -122,12 +124,13 @@ public class EjectCaseApplicationIT {
         pollForApplicationStatus(applicationId, STATUS_DRAFT);
         ejectCaseApplication(applicationId, caseId, REMOVAL_REASON, "eject/progression.eject-application.json");
 
-        String applicationResponse = getApplicationFor(applicationId);
-        JsonObject applicationJson = getJsonObject(applicationResponse);
-        JsonObject courtApplication = applicationJson.getJsonObject("courtApplication");
-        assertThat(courtApplication.getString("id"), equalTo(applicationId));
-        assertThat(courtApplication.getString("applicationStatus"), equalTo(STATUS_EJECTED));
-        assertThat(courtApplication.getString("removalReason"), equalTo(REMOVAL_REASON));
+        Matcher[] matchers = {
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", is(STATUS_EJECTED)),
+                withJsonPath("$.courtApplication.removalReason", is(REMOVAL_REASON))
+        };
+        pollForApplication(applicationId, matchers);
+
         verifyInMessagingQueueForCaseOrApplicationEjected();
     }
 
@@ -136,9 +139,9 @@ public class EjectCaseApplicationIT {
 
         // when
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
+
+        String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
 
         String reference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
 
@@ -148,12 +151,11 @@ public class EjectCaseApplicationIT {
 
         verifyInMessagingQueueForCourtApplicationCreated(reference + "-1");
         //assert first application
-        String applicationResponse = getApplicationFor(firstApplicationId);
-        assertSingleApplication(applicationResponse, STATUS_DRAFT);
+        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_DRAFT));
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
-                        caseId, hearingId, defendantId, courtCentreId, randomUUID().toString() ), JsonEnvelope.metadataBuilder()
+                        caseId, hearingId, defendantId, courtCentreId, randomUUID().toString()), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -164,73 +166,72 @@ public class EjectCaseApplicationIT {
         addCourtApplication(caseId, secondApplicationId, "progression.command.create-court-application.json");
         verifyInMessagingQueueForCourtApplicationCreated(reference + "-2");
         //assert second application
-        applicationResponse = getApplicationFor(secondApplicationId);
-        assertSingleApplication(applicationResponse, STATUS_DRAFT);
+        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_DRAFT));
 
         //assert linked applications
-        String caseResponse = getProsecutioncasesProgressionFor(caseId);
-        JsonObject prosecutionCaseJson = getJsonObject(caseResponse);
-        assertLinkedApplications(prosecutionCaseJson, STATUS_DRAFT);
+        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_DRAFT));
 
         // Eject case
         ejectCaseApplication(randomUUID().toString(), caseId, REMOVAL_REASON, "eject/progression.eject-case.json");
-        caseResponse = getProsecutioncasesProgressionFor(caseId);
-        prosecutionCaseJson = getJsonObject(caseResponse);
-        // Assert case status ejected
-        assertThat(prosecutionCaseJson.getJsonObject("prosecutionCase").getString("caseStatus"), equalTo(STATUS_EJECTED));
-        assertThat(prosecutionCaseJson.getJsonObject("prosecutionCase").getString("removalReason"), equalTo(REMOVAL_REASON));
-        assertLinkedApplications(prosecutionCaseJson, STATUS_EJECTED);
+
+        final Matcher[] additionalMatchers = {
+                withJsonPath("$.prosecutionCase.caseStatus", is(STATUS_EJECTED)),
+                withJsonPath("$.prosecutionCase.removalReason", is(REMOVAL_REASON))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_EJECTED, additionalMatchers));
 
         // assert applications ejected
-        applicationResponse = getApplicationFor(firstApplicationId);
-        assertSingleApplication(applicationResponse, STATUS_EJECTED);
+        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_EJECTED));
 
-        applicationResponse = getApplicationFor(secondApplicationId);
-        assertSingleApplication(applicationResponse, STATUS_EJECTED);
+        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_EJECTED));
         verifyInMessagingQueueForCaseOrApplicationEjected();
 
-        final String hearingIdQueryResult = pollForResponse("/hearingSearch/"+ hearingId, PROGRESSION_QUERY_HEARING_JSON);
-        final JsonObject hearingJsonObject = getJsonObject(hearingIdQueryResult);
-        final JsonObject prosecutionCaseInHearing = hearingJsonObject.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0);
-        assertThat(prosecutionCaseInHearing.getString("caseStatus"), equalTo(STATUS_EJECTED));
+        pollForResponse("/hearingSearch/" + hearingId,
+                PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(STATUS_EJECTED))
+        );
 
     }
 
-    private void assertSingleApplication(String applicationResponse, final String status) {
-        JsonObject applicationJson = getJsonObject(applicationResponse);
-        JsonObject courtApplication = applicationJson.getJsonObject("courtApplication");
+    private Matcher[] getMatcherForApplication(final String status) {
 
-        assertThat(courtApplication.getString("applicationStatus"), equalTo(status));
+        List<Matcher> matchers = Lists.newArrayList(
+                withJsonPath("$.courtApplication.applicationStatus", is(status))
+        );
+
         if (STATUS_EJECTED.equals(status)) {
-            assertThat(courtApplication.getString("removalReason"), equalTo(REMOVAL_REASON));
+            matchers.add(withJsonPath("$.courtApplication.removalReason", is(REMOVAL_REASON)));
         }
+
+        return matchers.toArray(new Matcher[0]);
+
+
     }
 
-    private void assertLinkedApplications(JsonObject prosecutionCaseJson, final String status) {
-        JsonArray summaries = prosecutionCaseJson.getJsonArray("linkedApplicationsSummary");
+    private Matcher[] getLinkedApplicationsMatcher(final String status, final Matcher... extraneousMatchers) {
 
-        assertThat(summaries.size(), equalTo(2));
+        List<Matcher> matchers = Lists.newArrayList(
+                withJsonPath("$.linkedApplicationsSummary", hasSize(2)),
+                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is(status)),
+                withJsonPath("$.linkedApplicationsSummary[1].applicationStatus", is(status))
+        );
 
-        JsonObject summary = summaries.getJsonObject(0);
-
-        assertThat(summary.getString("applicationStatus"), equalTo(status));
         if (STATUS_EJECTED.equals(status)) {
-            assertThat(summary.getString("removalReason"), equalTo(REMOVAL_REASON));
+            matchers.add(withJsonPath("$.linkedApplicationsSummary[0].removalReason", is(REMOVAL_REASON)));
+            matchers.add(withJsonPath("$.linkedApplicationsSummary[1].removalReason", is(REMOVAL_REASON)));
         }
 
-        summary = summaries.getJsonObject(1);
+        matchers.addAll(Arrays.asList(extraneousMatchers));
 
-        assertThat(summary.getString("applicationStatus"), equalTo(status));
-        if (STATUS_EJECTED.equals(status)) {
-            assertThat(summary.getString("removalReason"), equalTo(REMOVAL_REASON));
-        }
+        return matchers.toArray(new Matcher[0]);
     }
 
 
     private static void verifyInMessagingQueueForCourtApplicationCreated(String arn) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
-        String arnResponse = message.get().getString("arn");
         assertTrue(message.isPresent());
+        String arnResponse = message.get().getString("arn");
         assertThat(arnResponse, equalTo(arn));
     }
 
@@ -241,33 +242,20 @@ public class EjectCaseApplicationIT {
 
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
-        String arnResponse = message.get().getString("arn");
         assertTrue(message.isPresent());
-        assertTrue(arnResponse.length() == 10);
+        String arnResponse = message.get().getString("arn");
+        assertThat(10, is(arnResponse.length()));
     }
 
     public JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                            final String defendantId, final String courtCentreId, String applicationId) {
-        final String strPayload = getPayloadForCreatingRequest(path)
+        final String strPayload = getPayload(path)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("APPLICATION_ID", applicationId);
         return stringToJsonObjectConverter.convert(strPayload);
-    }
-
-    private static String getPayloadForCreatingRequest(final String ramlPath) {
-        String request = null;
-        try {
-            request = Resources.toString(
-                    Resources.getResource(ramlPath),
-                    Charset.defaultCharset()
-            );
-        } catch (final Exception e) {
-            fail("Error consuming file from location " + ramlPath);
-        }
-        return request;
     }
 }
 

@@ -9,8 +9,7 @@ public class CourtApplicationsHelper {
         final public String APPLICANT_FIRSTNAME = new StringGenerator().next();
         final public String APPLICANT_MIDDLENAME = new StringGenerator().next();
         final public String APPLICANT_LASTNAME = new StringGenerator().next();
-        final public String APPLICANT_ORGANISATION_NAME = new StringGenerator().next();
-        
+
         final public String RESPONDENT_FIRSTNAME = new StringGenerator().next();
         final public String RESPONDENT_MIDDLENAME = new StringGenerator().next();
         final public String RESPONDENT_LASTNAME = new StringGenerator().next();

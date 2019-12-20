@@ -11,12 +11,13 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
 import static uk.gov.moj.cpp.progression.test.matchers.ElementAtListMatcher.first;
+import static uk.gov.moj.cpp.progression.util.QueryUtil.waitForQueryMatch;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
@@ -30,7 +31,6 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.test.TestTemplates;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
-import uk.gov.moj.cpp.progression.util.QueryUtil;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -55,10 +55,10 @@ public class GenerateNowsIT extends AbstractIT {
     private static final String ORIGINATOR_VALUE = "court";
     private static final String DOCUMENT_TEXT = STRING.next();
 
-    private static final String PROGRESSION_QUERY_COURTDOCUMENTSSEARCH = "progression.query.courtdocuments";
-    private static final String PROGRESSION_QUERY_COURTDOCUMENTSSEARCHDEFENDANT = "progression.query.courtdocumentsbydefendant";
+    private static final String PROGRESSION_QUERY_COURTDOCUMENTSSEARCH = "/progression-service/query/api/rest/progression/courtdocumentsearch?caseId=%s";
+    private static final String PROGRESSION_QUERY_COURTDOCUMENTSSEARCHDEFENDANT = "/progression-service/query/api/rest/progression/courtdocumentsearch?defendantId=%s";
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
 
     private static final String PUBLIC_NOW_DOCUMENT_REQUEST = "public.hearing.now-document-requested";
 
@@ -69,8 +69,6 @@ public class GenerateNowsIT extends AbstractIT {
 
     @Test
     public void shouldAddUpdateNowsAndUpdateStatus() {
-
-        createMockEndpoints();
 
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
 
@@ -91,21 +89,22 @@ public class GenerateNowsIT extends AbstractIT {
                         .withOptional(courtDocumentIndex -> Optional.of(courtDocumentIndex.getDocument()), isBean(CourtDocument.class)
                                 .withValue(CourtDocument::getName, nowDocumentRequest.getNowContent().getOrderName())))));
 
-        final RequestParams preGeneratedRequestParams = requestParams(getURL(PROGRESSION_QUERY_COURTDOCUMENTSSEARCH, caseId.toString()),
+        final String queryUrl = getReadUrl(String.format(PROGRESSION_QUERY_COURTDOCUMENTSSEARCH, caseId.toString()));
+        final RequestParams preGeneratedRequestParams = requestParams(queryUrl,
                 APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON)
                 .withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue())
                 .build();
 
-        QueryUtil.waitForQueryMatch(preGeneratedRequestParams, 45, preGeneratedResultMatcher, Courtdocuments.class);
+        waitForQueryMatch(preGeneratedRequestParams, 45, preGeneratedResultMatcher, Courtdocuments.class);
 
-        final RequestParams preGeneratedRequestParamsDefendant = requestParams(getURL(PROGRESSION_QUERY_COURTDOCUMENTSSEARCHDEFENDANT,
-                defendantId.toString()),
+        final String courtDocumentSearchByDefendantQueryUrl = getReadUrl(String.format(PROGRESSION_QUERY_COURTDOCUMENTSSEARCHDEFENDANT,
+                defendantId.toString()));
+        final RequestParams preGeneratedRequestParamsDefendant = requestParams(courtDocumentSearchByDefendantQueryUrl,
                 APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON)
                 .withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue())
                 .build();
 
-        QueryUtil.waitForQueryMatch(preGeneratedRequestParamsDefendant, 45, preGeneratedResultMatcher, Courtdocuments.class);
-
+        waitForQueryMatch(preGeneratedRequestParamsDefendant, 45, preGeneratedResultMatcher, Courtdocuments.class);
 
         sendMaterialFileUploadedPublicEvent(materialId, userId);
 
@@ -120,7 +119,7 @@ public class GenerateNowsIT extends AbstractIT {
                 Json.createObjectBuilder().add("alfrescoAssetId", "aGVsbG8=")
                         .add("mimeType", "text/plain").add("fileName", "file.txt"))
                 .add("materialAddedDate", "2016-04-26T13:01:787.345").build();
-        QueueUtil.sendMessage(messageProducerClientPublic, commandName, payload, metadata);
+        sendMessage(messageProducerClientPublic, commandName, payload, metadata);
     }
 
     private Metadata getMetadataFrom(final String userId) {

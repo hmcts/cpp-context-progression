@@ -33,13 +33,11 @@ public class QueueUtil {
 
     private static final String EVENT_SELECTOR_TEMPLATE = "CPPNAME IN ('%s')";
 
-    private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY","localhost");
+    private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
 
-    private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://"+HOST+":61616");
+    private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://" + HOST + ":61616");
 
     private static final long RETRIEVE_TIMEOUT = 90000;
-
-    private final Connection connection;
 
     private final Session session;
 
@@ -53,7 +51,7 @@ public class QueueUtil {
         try {
             LOGGER.info("Artemis URI: {}", QUEUE_URI);
             final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_URI);
-            connection = factory.createConnection();
+            final Connection connection = factory.createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             topic = new ActiveMQTopic(topicName);
@@ -70,6 +68,7 @@ public class QueueUtil {
             throw new RuntimeException(e);
         }
     }
+
     public MessageProducer createProducer() {
         try {
             return session.createProducer(topic);
@@ -77,6 +76,7 @@ public class QueueUtil {
             throw new RuntimeException(e);
         }
     }
+
     public MessageConsumer createConsumerForMultipleSelectors(final String... eventSelectors) {
         final StringBuffer str = new StringBuffer("CPPNAME IN (");
         for (int i = 0; i < eventSelectors.length; i++) {
@@ -84,7 +84,7 @@ public class QueueUtil {
                 str.append(", ");
             }
 
-            str.append("'" + eventSelectors[i] + "'");
+            str.append("'").append(eventSelectors[i]).append("'");
         }
         str.append(")");
 
@@ -102,13 +102,13 @@ public class QueueUtil {
     public static Optional<JsonPath> retrieveMessage(final MessageConsumer consumer, final long customTimeOutInMillis) {
         return ifPresent(retrieveMessageAsString(consumer, customTimeOutInMillis),
                 (x) -> Optional.of(new JsonPath(x))
-        ).orElse(Optional::<JsonPath>empty);
+        ).orElse(Optional::empty);
     }
 
     public static Optional<JsonObject> retrieveMessageAsJsonObject(final MessageConsumer consumer) {
         return ifPresent(retrieveMessageAsString(consumer, RETRIEVE_TIMEOUT),
                 (x) -> Optional.of(Json.createReader(new StringReader(x)).readObject())
-        ).orElse(Optional::<JsonObject>empty);
+        ).orElse(Optional::empty);
     }
 
     public static Optional<String> retrieveMessageAsString(final MessageConsumer consumer, final long customTimeOutInMillis) {
@@ -123,7 +123,8 @@ public class QueueUtil {
             throw new RuntimeException(e);
         }
     }
-    public static void sendMessage(final MessageProducer messageProducer, final String commandName, final JsonObject payload, final Metadata metadata) {
+
+    public static void sendMessage(final MessageProducer messageProducer, final String eventName, final JsonObject payload, final Metadata metadata) {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
         final String json = jsonEnvelope.toDebugStringPrettyPrint();
@@ -132,11 +133,11 @@ public class QueueUtil {
             final TextMessage message = new ActiveMQTextMessage();
 
             message.setText(json);
-            message.setStringProperty("CPPNAME", commandName);
+            message.setStringProperty("CPPNAME", eventName);
 
             messageProducer.send(message);
         } catch (final JMSException e) {
-            throw new RuntimeException("Failed to send message. commandName: '" + commandName + "', json: " + json, e);
+            throw new RuntimeException("Failed to send message. commandName: '" + eventName + "', json: " + json, e);
         }
     }
 

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -12,11 +13,10 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getDefendantForDefendantId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENDANT_UPDATED;
-import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
@@ -46,7 +46,7 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
     private final String defendantId;
     private final String caseId;
     private final String personId;
-    private final String documentId = UUID.randomUUID().toString();
+    private final String documentId = randomUUID().toString();
     private String request;
 
     public UpdateDefendantHelper(final String caseId, final String defendantId, final String personId) {

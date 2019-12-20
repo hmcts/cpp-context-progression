@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -20,14 +21,14 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ListingStub {
 
-    public static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
-    public static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
+    private static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
+    private static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
 
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -45,7 +46,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId) {
         try {
-            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
+            waitAtMost(Duration.TEN_SECONDS).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -64,7 +65,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final boolean isYouth) {
         try {
-            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
+            waitAtMost(Duration.TEN_SECONDS).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -87,65 +88,67 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final String offenceId, String applicationId) {
         try {
-            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
+            waitAtMost(Duration.TEN_SECONDS).until(() ->
                     {
                         final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                         listCourtHearingRequestsAsStream
                                 .anyMatch(
                                         payload -> {
-                                            JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
-                                            boolean courtApplicationExists = payload.getJSONArray("hearings").getJSONObject(0).has("courtApplications");
-                                            boolean courtApplicationPartyListingNeedsExists = payload.getJSONArray("hearings").getJSONObject(0).has("courtApplicationPartyListingNeeds");
-                                            JSONObject courtApplication = null;
-                                            JSONObject courtApplicationPartyListingNeeds = null;
-                                            if (courtApplicationExists) {
-                                                courtApplication = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplications").getJSONObject(0);
-                                                courtApplicationPartyListingNeeds = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplicationPartyListingNeeds").getJSONObject(0);
+                                            try {
+                                                JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                                boolean courtApplicationExists = payload.getJSONArray("hearings").getJSONObject(0).has("courtApplications");
+                                                boolean courtApplicationPartyListingNeedsExists = payload.getJSONArray("hearings").getJSONObject(0).has("courtApplicationPartyListingNeeds");
+                                                JSONObject courtApplication = null;
+                                                JSONObject courtApplicationPartyListingNeeds = null;
+                                                if (courtApplicationExists) {
+                                                    courtApplication = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplications").getJSONObject(0);
+                                                    courtApplicationPartyListingNeeds = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplicationPartyListingNeeds").getJSONObject(0);
+                                                }
+                                                return prosecutionCase.getString("id").equals(caseId) &&
+                                                        prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
+                                                        prosecutionCase.getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).getString("id").equals(offenceId) &&
+                                                        courtApplicationExists &&
+                                                        courtApplication.getString("id").equals(applicationId) &&
+                                                        courtApplication.getJSONObject("type").getString("applicationJurisdictionType").equals("MAGISTRATES") &&
+                                                        courtApplicationPartyListingNeedsExists &&
+                                                        courtApplicationPartyListingNeeds.getString("courtApplicationId").equals(applicationId) &&
+                                                        courtApplicationPartyListingNeeds.getString("courtApplicationPartyId").equals(applicationId) &&
+                                                        courtApplicationPartyListingNeeds.getString("hearingLanguageNeeds").equals("ENGLISH");
+                                            } catch (JSONException e) {
+                                                return false;
                                             }
-                                            if (prosecutionCase.getString("id").equals(caseId) &&
-                                                    prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
-                                                    prosecutionCase.getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).getString("id").equals(offenceId) &&
-                                                    courtApplicationExists &&
-                                                    courtApplication.getString("id").equals(applicationId) &&
-                                                    courtApplication.getJSONObject("type").getString("applicationJurisdictionType").equals("MAGISTRATES") &&
-                                                    courtApplicationPartyListingNeedsExists &&
-                                                    courtApplicationPartyListingNeeds.getString("courtApplicationId").equals(applicationId) &&
-                                                    courtApplicationPartyListingNeeds.getString("courtApplicationPartyId").equals(applicationId) &&
-                                                    courtApplicationPartyListingNeeds.getString("hearingLanguageNeeds").equals("ENGLISH"))
-                                                return true;
-                                            else return false;
-
-
                                         }
                                 );
                     }
 
             );
 
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
         }
+
     }
 
     public static void verifyPostListCourtHearing(final String applicationId) {
-        try {
-            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
-                    {
-                        final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
-                        listCourtHearingRequestsAsStream
-                                .anyMatch(
-                                        payload -> {
+        waitAtMost(Duration.TEN_SECONDS).until(() ->
+                {
+                    final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
+                    listCourtHearingRequestsAsStream
+                            .anyMatch(
+                                    payload -> {
+                                        try {
                                             JSONObject courtApplication = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplications").getJSONObject(0);
                                             return courtApplication.getString("id").equals(applicationId);
+                                        } catch (JSONException e) {
+                                            return false;
                                         }
-                                );
-                    }
+                                    }
+                            );
+                }
 
-            );
+        );
 
-        } catch (Exception e) {
-            throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
-        }
     }
 
     public static String getHearingIdFromListCourtHearingRequest() {

@@ -9,7 +9,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
-import static uk.gov.moj.cpp.progression.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
@@ -22,7 +22,6 @@ public class UsersAndGroupsStub {
 
     public static final String GROUPS = "/users/{0}/groups";
     public static final String GET_GROUPS_QUERY = BASE_QUERY + GROUPS;
-    public static final String GET_GROUPS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.groups+json";
 
     public static final String ORGANISATION = "/users/{0}/organisation";
     public static final String GET_ORGANISATION_QUERY = BASE_QUERY + ORGANISATION;
@@ -49,14 +48,6 @@ public class UsersAndGroupsStub {
                         .withBody(body)));
 
         waitForStubToBeReady(format(GET_ORGANISATION_QUERY, userId), GET_ORGANISATION_QUERY_MEDIA_TYPE);
-    }
-
-    public static void stubGetUsersAndGroupsQuery(final String userId) {
-        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
-                GET_GROUPS_QUERY,
-                GET_ORGANISATION_QUERY_MEDIA_TYPE,
-                userId,
-                "stub-data/usersgroups.get-groups-by-user.json");
     }
 
     public static void stubGetUsersAndGroupsQueryForDefenceUsers(final String userId) {

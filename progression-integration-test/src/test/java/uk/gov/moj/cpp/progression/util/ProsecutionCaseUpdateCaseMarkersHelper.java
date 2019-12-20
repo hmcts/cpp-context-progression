@@ -5,8 +5,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
@@ -34,7 +34,7 @@ public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
             QueueUtil.publicEvents
                     .createConsumer("public.progression.case-markers-updated");
 
-    private String prosecutionCaseId;
+    private final String prosecutionCaseId;
     private String request;
 
     public ProsecutionCaseUpdateCaseMarkersHelper(String prosecutionCaseId) {
@@ -43,14 +43,14 @@ public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
 
     public void updateCaseMarkers() {
         request = getPayload(TEMPLATE_UPDATE_CASE_MARKERS_PAYLOAD);
-        makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId ), WRITE_MEDIA_TYPE, request);
+        makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.case-markers-updated");
 
     }
 
     public void removeCaseMarkers() {
         request = getPayload(TEMPLATE_REMOVE_CASE_MARKERS_PAYLOAD);
-        makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId ), WRITE_MEDIA_TYPE, request);
+        makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.case-markers-updated");
 
     }

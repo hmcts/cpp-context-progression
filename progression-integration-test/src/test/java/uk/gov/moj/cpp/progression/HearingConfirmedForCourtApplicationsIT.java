@@ -6,13 +6,13 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -20,10 +20,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.verifyPostInitiateCourtHearing;
 import static uk.gov.moj.cpp.progression.test.TestUtilities.print;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -32,7 +31,6 @@ import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
-import java.nio.charset.Charset;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -41,13 +39,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.google.common.io.Resources;
 import com.jayway.restassured.path.json.JsonPath;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HearingConfirmedForCourtApplicationsIT {
+public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
@@ -67,22 +64,8 @@ public class HearingConfirmedForCourtApplicationsIT {
         messageProducerClientPublic.close();
     }
 
-    private static String getPayloadForCreatingRequest(final String ramlPath) {
-        String request = null;
-        try {
-            request = Resources.toString(
-                    Resources.getResource(ramlPath),
-                    Charset.defaultCharset()
-            );
-        } catch (final Exception e) {
-            fail("Error consuming file from location " + ramlPath);
-        }
-        return request;
-    }
-
     @Before
     public void setUp() {
-        createMockEndpoints();
         HearingStub.stubInitiateHearing();
         IdMapperStub.setUp();
         userId = randomUUID().toString();
@@ -118,7 +101,7 @@ public class HearingConfirmedForCourtApplicationsIT {
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId) {
-        final String strPayload = getPayloadForCreatingRequest(path)
+        final String strPayload = getPayload(path)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
                 .replaceAll("APPLICATION_ID", applicationId);
@@ -126,7 +109,7 @@ public class HearingConfirmedForCourtApplicationsIT {
     }
 
     private void pollForApplicationAtAGlance(final String status) {
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, UUID.randomUUID()))
                 .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
@@ -140,9 +123,9 @@ public class HearingConfirmedForCourtApplicationsIT {
                         )));
     }
 
-    public static void verifyInMessagingQueue() {
+    private static void verifyInMessagingQueue() {
         final JsonPath message = QueueUtil.retrieveMessage(messageConsumerLink);
-        assertTrue(message != null);
+        assertNotNull(message);
     }
 }
 

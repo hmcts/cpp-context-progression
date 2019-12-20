@@ -25,17 +25,6 @@ public class WiremockTestHelper {
         waitForStubToBeReady(resource, mediaType, Status.OK);
     }
 
-    public static void waitForStubToBeReady(final String resource, final String mediaType, final Status expectedStatus, final String headerName, final String headerValue) {
-        final RequestParams requestParams = requestParams(BASE_URI + resource, mediaType)
-                .withHeader(headerName, headerValue)
-                .build();
-        poll(requestParams)
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(expectedStatus)
-                );
-    }
-
     public static void waitForStubToBeReady(final String resource, final String mediaType, final Status expectedStatus) {
         final RequestParams requestParams = requestParams(BASE_URI + resource, mediaType).build();
 

@@ -1,27 +1,21 @@
 package uk.gov.moj.cpp.progression;
 
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.moj.cpp.progression.util.ExtendHearingHelper;
-
-import java.util.UUID;
-
+import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extendHearing;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 
-public class ExtendHearingIT {
+import org.junit.Before;
+import org.junit.Test;
 
-    ExtendHearingHelper helper;
+public class ExtendHearingIT extends AbstractIT {
+
     private String applicationId;
     private String hearingId;
 
     @Before
     public void setUp() {
-        applicationId = UUID.randomUUID().toString();
-        hearingId = UUID.randomUUID().toString();
-        helper = new ExtendHearingHelper();
-        createMockEndpoints();
+        applicationId = randomUUID().toString();
+        hearingId = randomUUID().toString();
     }
 
     @Test

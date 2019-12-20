@@ -5,8 +5,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
@@ -62,16 +62,6 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
 
     public void updateYouthFlagForDefendant() {
         final String jsonString = getPayload(TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD);
-        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
-        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
-        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
-
-        request = jsonObjectPayload.toString();
-        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
-    }
-
-    public void updateSameDefendant() {
-        final String jsonString = getPayload(TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);

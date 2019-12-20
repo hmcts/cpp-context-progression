@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression;
+package uk.gov.moj.cpp.progression.util;
 
 public class Pair<K, V> {
 

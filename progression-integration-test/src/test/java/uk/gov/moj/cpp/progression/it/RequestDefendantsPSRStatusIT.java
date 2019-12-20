@@ -1,43 +1,36 @@
 package uk.gov.moj.cpp.progression.it;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseProgression;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatResponseIndicatesSuccess;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.io.IOException;
-import java.util.UUID;
-
-import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RequestDefendantsPSRStatusIT {
+public class RequestDefendantsPSRStatusIT extends AbstractIT {
 
+    private static final String PROGRESSION_QUERY_DEFENDANT_MEDIA_TYPE = "application/vnd.progression.query.defendant+json";
     private String caseId;
     private String firstDefendantId;
     private String secondDefendantId;
 
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
-        firstDefendantId = UUID.randomUUID().toString();
-        secondDefendantId = UUID.randomUUID().toString();
-        createMockEndpoints();
-
+    public void setUp() {
+        caseId = randomUUID().toString();
+        firstDefendantId = randomUUID().toString();
+        secondDefendantId = randomUUID().toString();
     }
 
     @Test
@@ -46,44 +39,25 @@ public class RequestDefendantsPSRStatusIT {
         addDefendant(caseId, secondDefendantId);
 
         pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
-                "application/vnd.progression.query.defendant+json");
+                PROGRESSION_QUERY_DEFENDANT_MEDIA_TYPE);
 
-        final Response writeResponse = postCommand(getCommandUri("/cases/" + caseId + "/defendants/requestpsr"),
+        final Response writeResponse = postCommand(getWriteUrl("/cases/" + caseId + "/defendants/requestpsr"),
                 "application/vnd.progression.command.request-psr-for-defendants+json",
                 StubUtil.getJsonBodyStr(
                         "progression.command.request-psr-for-defendants.json", caseId, firstDefendantId, secondDefendantId));
 
         assertThatRequestIsAccepted(writeResponse);
 
-        final String defendantsResponse =
-                pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
-                        "application/vnd.progression.query.defendant+json");
+        pollForResponse(join("", "/cases/", caseId, "/defendants/", firstDefendantId),
+                PROGRESSION_QUERY_DEFENDANT_MEDIA_TYPE,
+                withJsonPath("$.additionalInformation.probation.preSentenceReport.psrIsRequested", is(false))
+        );
 
-        JsonObject defendantsJsonObject = getJsonObject(defendantsResponse);
 
-        assertThatPSRNotRequestedForDefendant(defendantsJsonObject);
-
-        final Response queryResponse = getCaseProgression(
-                getQueryUri("/cases/" + caseId + "/defendants/" + secondDefendantId),
-                "application/vnd.progression.query.defendant+json");
-        assertThatResponseIndicatesSuccess(queryResponse);
-
-        defendantsJsonObject = getJsonObject(queryResponse.getBody().asString());
-
-        assertThatPSRRequestedForDefendant(defendantsJsonObject);
-            }
-
-    private static void assertThatPSRRequestedForDefendant(final JsonObject defendantsJsonObject) {
-        assertThatPSRRequestedIs(Boolean.TRUE, defendantsJsonObject);
+        pollForResponse(join("", "/cases/", caseId, "/defendants/", secondDefendantId),
+                PROGRESSION_QUERY_DEFENDANT_MEDIA_TYPE,
+                withJsonPath("$.additionalInformation.probation.preSentenceReport.psrIsRequested", is(true))
+        );
     }
 
-    private static void assertThatPSRNotRequestedForDefendant(final JsonObject defendantsJsonObject) {
-        assertThatPSRRequestedIs(Boolean.FALSE, defendantsJsonObject);
-    }
-
-    private static void assertThatPSRRequestedIs(final Boolean isRequested, final JsonObject defendantsJsonObject) {
-        assertThat(defendantsJsonObject.getJsonObject("additionalInformation")
-                .getJsonObject("probation").getJsonObject("preSentenceReport")
-                .getBoolean("psrIsRequested"), equalTo(isRequested));
-    }
 }

@@ -1,52 +1,45 @@
 package uk.gov.moj.cpp.progression;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.io.IOException;
-import java.util.UUID;
 
-import javax.json.JsonObject;
-
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
 
-public class ProsecutionCaseUpdateOffencesIT {
-
-    ProsecutionCaseUpdateOffencesHelper helper;
+    private ProsecutionCaseUpdateOffencesHelper helper;
     private String caseId;
     private String defendantId;
-    private String offenceId;
 
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+    public void setUp() {
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
         helper = new ProsecutionCaseUpdateOffencesHelper(caseId, defendantId, offenceId);
-        createMockEndpoints();
     }
 
     @Test
     public void shouldUpdateProsecutionCaseOffences() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getString("offenceCode"), equalTo("TTH105HY"));
 
+        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+        );
+
+        pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
 
         // when
         helper.updateOffences();
@@ -54,32 +47,21 @@ public class ProsecutionCaseUpdateOffencesIT {
         // then
         helper.verifyInActiveMQ();
         helper.verifyInMessagingQueueForOffencesUpdated();
-        response = getProsecutioncasesProgressionFor(caseId);
-        prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getString("offenceCode"), equalTo("TEST"));
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getInt("count"), equalTo(1));
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TEST")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)));
     }
-
 
     @Test
     public void shouldUpdateProsecutionCaseAddDeleteOffences() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getString("offenceCode"), equalTo("TTH105HY"));
 
-        final String newOffenceId = UUID.randomUUID().toString();
+        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+        );
+        pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
+
+        final String newOffenceId = randomUUID().toString();
 
         // when
         helper.updateOffences(newOffenceId);
@@ -87,22 +69,13 @@ public class ProsecutionCaseUpdateOffencesIT {
         // then
         helper.verifyInActiveMQ();
         helper.verifyInMessagingQueueForOffencesUpdated();
-        response = getProsecutioncasesProgressionFor(caseId);
-        prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getString("offenceCode"), equalTo("TEST"));
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getString("id"), equalTo(newOffenceId));
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getInt("count"), equalTo(1));
+
+        final Matcher[] matchers = {
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TEST")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is(newOffenceId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1))
+        };
+        pollProsecutionCasesProgressionFor(caseId, matchers);
     }
-
-
 }
 

@@ -6,6 +6,7 @@ import static com.jayway.jsonpath.Filter.filter;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -32,7 +33,6 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -49,13 +49,11 @@ public class AddDefendantHelper extends AbstractTestHelper {
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.command.add-defendant+json";
 
-    public static final String GET_CASE_DEFENDANTS_MEDIA_TYPE = "application/vnd.progression.query.case-defendants+json";
-
     private final MessageConsumerClient privateEventDefendantAdditionFailedConsumer = new MessageConsumerClient();
     private final MessageConsumerClient publicEventDefendantAdditionFailedConsumer = new MessageConsumerClient();
 
-    private final String VALUE_OFFENCES_ID = UUID.randomUUID().toString();
-    private final String VALUE_DEFENDANT_ID = UUID.randomUUID().toString();
+    private final String VALUE_OFFENCES_ID = randomUUID().toString();
+    private final String VALUE_DEFENDANT_ID = randomUUID().toString();
 
     private static final String VALUE_POLICE_DEFENDANT_ID = "BS2CM01ADEF1";
     private static final String VALUE_POLICE_OFFENCE_ID = "A00PCD7073";
@@ -85,7 +83,6 @@ public class AddDefendantHelper extends AbstractTestHelper {
     private static final String ADDRESS_LINE_3 = "Address Line 3";
     private static final String ADDRESS_LINE_4 = "Address Line 4";
     private static final String POST_CODE = "Post Code";
-    private static final String ADDRESS_ID = UUID.randomUUID().toString();
 
     private final String caseId;
     private final String caseUrn;
@@ -98,8 +95,8 @@ public class AddDefendantHelper extends AbstractTestHelper {
         privateEventDefendantAdditionFailedConsumer.startConsumer(EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, STRUCTURE_EVENT_TOPIC);
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
         publicEventDefendantAdditionFailedConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, PUBLIC_ACTIVE_MQ_TOPIC);
-        personId = UUID.randomUUID().toString();
-        caseUrn = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        personId = randomUUID().toString();
+        caseUrn = randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
 
@@ -311,55 +308,6 @@ public class AddDefendantHelper extends AbstractTestHelper {
                                         .isJson(allOf(
                                                 withJsonPath("$.caseUrn", is(caseUrn)))
                                         ))
-        );
-    }
-
-    public void verifyFullDefendantAdded() {
-        final JsonPath jsRequest = new JsonPath(request);
-
-        final Filter personIdFilter = filter(where("personId").is(jsRequest.get("personId")));
-
-        final RequestParamsBuilder getDefendantsByCaseId = getDefendantsByCaseId(caseId);
-
-        final List<RequestParamsBuilder> endPointsToTest = asList(getDefendantsByCaseId);
-
-        endPointsToTest.forEach(endPoint ->
-                poll(endPoint)
-                        .until(
-                                status().is(OK),
-                                payload()
-                                        .isJson(matchFullDefendant(personIdFilter)))
-        );
-    }
-
-
-    private Matcher<ReadContext> matchFullDefendant(final Filter personIdFilter) {
-        return allOf(
-                withJsonPath(compile("$.defendants[?]", personIdFilter), hasSize(1)),
-                withJsonPath(compile("$.defendants[?].defendantId", personIdFilter), contains(VALUE_DEFENDANT_ID)),
-
-                withJsonPath(compile("$.defendants[?].offences", personIdFilter), hasSize(1)),
-                withJsonPath(compile("$.defendants[?].offences[0].id", personIdFilter), contains(VALUE_OFFENCES_ID)),
-                withJsonPath(compile("$.defendants[?].offences[0].wording", personIdFilter), contains(VALUE_WORDING)),
-                withJsonPath(compile("$.defendants[?].offences[0].policeOffenceId", personIdFilter), contains(VALUE_POLICE_OFFENCE_ID)),
-                withJsonPath(compile("$.defendants[?].offences[0].cprDefendantOffenderYear", personIdFilter), contains(VALUE_YEAR)),
-                withJsonPath(compile("$.defendants[?].offences[0].cprDefendantOffenderOrganisationUnit", personIdFilter), contains(VALUE_ORGANISATION_UNIT)),
-                withJsonPath(compile("$.defendants[?].offences[0].cprDefendantOffenderNumber", personIdFilter), contains(VALUE_NUMBER)),
-                withJsonPath(compile("$.defendants[?].offences[0].cprDefendantOffenderCheckDigit", personIdFilter), contains(VALUE_CHECK_DIGIT)),
-                withJsonPath(compile("$.defendants[?].offences[0].offenceCode", personIdFilter), contains(VALUE_CJS_CODE)),
-                withJsonPath(compile("$.defendants[?].offences[0].cjsCode", personIdFilter), contains(VALUE_CJS_CODE)),
-                withJsonPath(compile("$.defendants[?].offences[0].offenceSequenceNumber", personIdFilter), contains(Integer.parseInt(VALUE_ASN_SEQUENCE_NUMBER))),
-                withJsonPath(compile("$.defendants[?].offences[0].reason", personIdFilter), contains(VALUE_REASON)),
-                withJsonPath(compile("$.defendants[?].offences[0].category", personIdFilter), contains(VALUE_CATEGORY)),
-                withJsonPath(compile("$.defendants[?].offences[0].startDate", personIdFilter), contains(VALUE_START_DATE)),
-
-                withJsonPath(compile("$.defendants[?].policeDefendantId", personIdFilter), contains(VALUE_POLICE_DEFENDANT_ID)),
-                withJsonPath(compile("$.defendants[?].caseId", personIdFilter), contains(caseId)),
-
-                // assert the optional fields
-                withJsonPath(compile("$.defendants[?].offences[0].chargeDate", personIdFilter), contains(VALUE_CHARGE_DATE)),
-                withJsonPath(compile("$.defendants[?].offences[0].arrestDate", personIdFilter), contains(VALUE_ARREST_DATE)),
-                withJsonPath(compile("$.defendants[?].offences[0].endDate", personIdFilter), contains(VALUE_END_DATE))
         );
     }
 

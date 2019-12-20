@@ -1,67 +1,58 @@
 package uk.gov.moj.cpp.progression;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 
-import org.junit.Before;
-import org.junit.Test;
 import uk.gov.moj.cpp.progression.util.ConvictionDateHelper;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import java.io.IOException;
+
 import java.util.UUID;
 
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
 
-public class ConvictionDateIT {
+public class ConvictionDateIT extends AbstractIT {
 
-    ConvictionDateHelper helper;
+    private ConvictionDateHelper helper;
     private String caseId;
     private String defendantId;
-    private String offenceId;
 
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
+    public void setUp() {
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        final String offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
         helper = new ConvictionDateHelper(caseId, offenceId);
-        createMockEndpoints();
     }
 
     @Test
     public void shouldUpdateProsecutionCaseDefendant() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = getProsecutioncasesProgressionFor(caseId);
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonObject("personDefendant").getJsonObject("personDetails").getString("firstName"), equalTo("Harry"));
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
 
         // when
         helper.addConvictionDate();
 
         // then
         helper.verifyInActiveMQForConvictionDateChanged();
-        response = getProsecutioncasesProgressionFor(caseId);
-        prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("chargeDate"), equalTo("2018-01-01"));
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate"), equalTo("2017-02-02"));
+
+        final Matcher[] convictionAddedMatchers = {
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].chargeDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate", is("2017-02-02"))
+        };
+        pollProsecutionCasesProgressionFor(caseId, convictionAddedMatchers);
 
         helper.removeConvictionDate();
 
         helper.verifyInActiveMQForConvictionDateRemoved();
-        response = getProsecutioncasesProgressionFor(caseId);
-        prosecutioncasesJsonObject = getJsonObject(response);
-        assertEquals(JsonValue.NULL, prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0).getOrDefault("convictionDate", JsonValue.NULL));
 
+        pollProsecutionCasesProgressionFor(caseId, withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate"));
     }
 
 }

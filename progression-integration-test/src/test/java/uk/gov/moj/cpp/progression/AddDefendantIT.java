@@ -1,22 +1,14 @@
 package uk.gov.moj.cpp.progression;
 
 import static java.util.UUID.randomUUID;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
-import uk.gov.moj.cpp.progression.it.BaseIntegrationTest;
 
-import java.io.IOException;
 import java.util.UUID;
 
-import org.junit.Before;
 import org.junit.Test;
 
-public class AddDefendantIT extends BaseIntegrationTest {
-    @Before
-    public void setUp() throws IOException {
-        createMockEndpoints();
-    }
+public class AddDefendantIT extends AbstractIT {
 
     @Test
     public void addMinimalPayloadForDefendantAndVerify() {
