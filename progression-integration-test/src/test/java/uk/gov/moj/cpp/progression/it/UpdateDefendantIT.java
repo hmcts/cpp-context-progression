@@ -1,17 +1,15 @@
 package uk.gov.moj.cpp.progression.it;
 
-import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
-import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+import static java.util.UUID.randomUUID;
 
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.AddDefendantHelper;
 import uk.gov.moj.cpp.progression.helper.UpdateDefendantHelper;
-
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class UpdateDefendantIT extends BaseIntegrationTest {
+public class UpdateDefendantIT extends AbstractIT {
     private AddDefendantHelper addDefendantHelper;
     private String caseId;
 
@@ -20,18 +18,12 @@ public class UpdateDefendantIT extends BaseIntegrationTest {
      */
     @Before
     public void setUp() {
-        caseId = UUID.randomUUID().toString();
+        caseId = randomUUID().toString();
         addDefendantHelper = new AddDefendantHelper(caseId);
-        setupUsersGroupQueryStub();
-        waitForUsersAndGroupsStubToBeReady();
         addDefendantHelper.addMinimalDefendant();
         addDefendantHelper.verifyInActiveMQ();
         addDefendantHelper.verifyInPublicTopic();
         addDefendantHelper.verifyMinimalDefendantAdded();
-    }
-
-    private void waitForUsersAndGroupsStubToBeReady() {
-        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/.*", "application/json");
     }
 
     /**

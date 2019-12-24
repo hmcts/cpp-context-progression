@@ -22,9 +22,7 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -40,16 +38,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ProsecutionCaseDefendantListingStatusChangedEventIT {
+public class ProsecutionCaseDefendantListingStatusChangedEventIT extends AbstractIT {
 
     private final static String DEFENDANT_LISTING_STATUS_CHANGED_EVENT = "progression.event.prosecutionCase-defendant-listing-status-changed";
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
 
     private static final MessageConsumer messageConsumer = privateEvents.createConsumer(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
     private static final MessageProducer messageProducer = privateEvents.createProducer();
-
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
 
     private String firstCaseId;
     private String secondCaseId;
@@ -59,18 +54,13 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT {
     private String courtId;
 
     @Before
-    public void setUp() throws IOException {
+    public void setup() throws IOException {
         firstCaseId = randomUUID().toString();
         secondCaseId = randomUUID().toString();
         thirdCaseId = randomUUID().toString();
         courtId = randomUUID().toString();
-
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
-        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
-
         cleanViewStoreTables();
-        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
+        deleteAndCreateIndex();
     }
 
     @AfterClass

@@ -6,45 +6,41 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyAliases;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.outputParty;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseDefendant;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertcourtDocuments;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendant;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCourtDocumentMatchers;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import com.jayway.jsonpath.DocumentContext;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
 
-public class InitiateCourtProceedingsIT {
+public class InitiateCourtProceedingsIT extends AbstractIT {
 
     private String caseId;
     private String courtDocumentId;
@@ -56,11 +52,8 @@ public class InitiateCourtProceedingsIT {
     private String earliestStartDateTime;
     private String defendantDOB;
     private static final String INITIAL_COURT_PROCEEDINGS = "ingestion/progression.command.initiate-court-proceedings.json";
-
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-
     @Before
-    public void setUp() throws IOException {
+    public void setup() {
         caseId = UUID.randomUUID().toString();
         materialIdActive = UUID.randomUUID().toString();
         materialIdDeleted = UUID.randomUUID().toString();
@@ -70,28 +63,25 @@ public class InitiateCourtProceedingsIT {
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         defendantDOB = LocalDate.now().minusYears(15).toString();
-
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
-
+        deleteAndCreateIndex();
     }
 
     @Test
     public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
-        createMockEndpoints();
+
         final String caseUrn = generateUrn();
         //given
         initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         //introduce delay by checking court document present first
-        getCourtDocumentFor(courtDocumentId, withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)));
+        getCourtDocumentFor(courtDocumentId,
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId))
+        );
 
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        //then
-        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertcourtDocuments(prosecutionCasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0), caseId, courtDocumentId, materialIdActive);
+        final List<Matcher> courtDocumentMatchers = getCourtDocumentMatchers(caseId, courtDocumentId, materialIdActive, 0);
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, courtDocumentMatchers);
+
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
 
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
 
@@ -110,7 +100,9 @@ public class InitiateCourtProceedingsIT {
 
         final JsonObject outputCase = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0));
         verifyCaseCreated(1l, inputProsecutionCase, outputCase);
-        verifyCaseDefendant(inputProsecutionCase, outputCase,false);
+        final JsonObject inputDefendant = inputProsecutionCase.read("$.prosecutionCase.defendants[0]");
+        verifyDefendant(inputDefendant, outputCase, false);
+        verifyAliases(0,parse(inputDefendant), outputParty(inputDefendant.getJsonString("id"), outputCase).get());
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject, final int partySize) {

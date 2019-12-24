@@ -9,18 +9,17 @@ import static junit.framework.TestCase.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyAliases;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.outputParty;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseDefendant;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendant;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -33,13 +32,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ProsecutionCaseCreatedIT {
+public class ProsecutionCaseCreatedIT extends AbstractIT {
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
-
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
-
-
     private String caseId;
     private String courtDocumentId;
     private String materialIdActive;
@@ -48,23 +42,14 @@ public class ProsecutionCaseCreatedIT {
     private String referralReasonId;
 
     @Before
-    public void setUp() throws IOException {
-
+    public void setup() throws IOException {
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();
         courtDocumentId = randomUUID().toString();
         defendantId = randomUUID().toString();
         referralReasonId = randomUUID().toString();
-
-
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
-        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
-
-        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-
-        createMockEndpoints();
+        deleteAndCreateIndex();
     }
 
     @AfterClass
@@ -97,7 +82,10 @@ public class ProsecutionCaseCreatedIT {
         final JsonObject outputCase = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
         verifyCaseCreated(1l, inputProsecutionCase, outputCase);
-        verifyCaseDefendant(inputProsecutionCase, outputCase,true);
+        final JsonObject inputDefendant = inputProsecutionCase.read("$.prosecutionCase.defendants[0]");
+        verifyDefendant(inputDefendant, outputCase, true);
+        verifyAliases(0, parse(inputDefendant), outputParty(inputDefendant.getJsonString("id"), outputCase).get());
+
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject) {

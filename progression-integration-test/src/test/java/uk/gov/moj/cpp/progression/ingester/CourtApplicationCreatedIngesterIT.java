@@ -4,9 +4,8 @@ import static com.jayway.jsonpath.JsonPath.parse;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
@@ -15,7 +14,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -30,7 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class CourtApplicationCreatedIngesterIT {
+public class CourtApplicationCreatedIngesterIT extends AbstractIT {
 
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
 
@@ -40,21 +39,14 @@ public class CourtApplicationCreatedIngesterIT {
     private String respondantId;
     private String respondantDefendantId;
 
-    @BeforeClass
-    public static void beforeClass() {
-        createMockEndpoints();
-    }
-
     @Before
-    public void setUp() throws IOException {
-
+    public void setup(){
         applicationId = randomUUID().toString();
         applicantId = randomUUID().toString();
         applicantDefendantId = randomUUID().toString();
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
-
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
+        deleteAndCreateIndex();
     }
 
     @AfterClass

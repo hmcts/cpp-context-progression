@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
@@ -24,13 +23,15 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import javax.json.JsonObject;
 import java.io.IOException;
 import java.util.Optional;
 
-public class CourtApplicationUpdatedIngesterIT {
+public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
     private static final String UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.update-court-application.json";
     private String applicationId;
@@ -41,13 +42,8 @@ public class CourtApplicationUpdatedIngesterIT {
     private String respondantDefendantId;
     private String applicationReference;
 
-    @BeforeClass
-    public static void beforeClass() {
-        createMockEndpoints();
-    }
-
     @Before
-    public void setUp() throws IOException {
+    public void setup() {
         applicationId = randomUUID().toString();
         caseId = randomUUID().toString();
         applicantId = randomUUID().toString();
@@ -55,8 +51,8 @@ public class CourtApplicationUpdatedIngesterIT {
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         applicationReference =  randomAlphanumeric(10).toUpperCase();
+        deleteAndCreateIndex();
 
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
     @AfterClass

@@ -1,212 +1,114 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
-import static java.nio.charset.Charset.defaultCharset;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.WireMockStubUtils.mockMaterialUpload;
-import static uk.gov.moj.cpp.progression.WireMockStubUtils.setupAsSystemUser;
+import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.HOST;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtOURoom;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtsCodeData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinicityData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryHearingTypeData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryJudiciaries;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryLocalJusticeArea;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryNationalityData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisation;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisationUnitsData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.mockMaterialUpload;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
 
-import uk.gov.justice.services.test.utils.core.http.RequestParams;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
-import uk.gov.justice.services.test.utils.core.rest.RestClient;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
-import uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-
-import com.google.common.io.Resources;
-import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.response.Header;
-import com.jayway.restassured.specification.RequestSpecification;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AbstractIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
 
     protected static final UUID USER_ID_VALUE = randomUUID();
     public static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
-    protected static final Header CPP_UID_HEADER_AS_ADMIN = new Header(USER_ID, USER_ID_VALUE_AS_ADMIN.toString());
-    protected static final Properties ENDPOINT_PROPERTIES = new Properties();
-    protected static final String PUBLIC_EVENT_TOPIC = "public.event";
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
-    private static final String ENDPOINT_PROPERTIES_FILE = "endpoint.properties";
-    private static final ThreadLocal<UUID> USER_CONTEXT = new ThreadLocal<>();
-    protected static RequestSpecification requestSpec;
-    protected static String baseUri;
-    protected static RestClient restClient = new RestClient();
+    protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
+    protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
 
-    protected static UUID getLoggedInUser() {
-        return USER_CONTEXT.get();
-    }
 
-    protected static void setLoggedInUser(final UUID userId) {
-        USER_CONTEXT.set(userId);
-    }
+    /**
+     * NOTE: this approach is employed to enabled massive savings in test execution test.
+     * All tests will need to extend AbstractIT thus ensuring the static initialisation block is fired just once before any test runs
+     * Mock reset and stub for all reference data happens once per VM.  If parallel test run is considered, this approach will be tweaked.
+     */
 
-    protected static MultivaluedMap<String, Object> getLoggedInHeader() {
-        final MultivaluedMap<String, Object> header = new MultivaluedHashMap<>();
-        header.add(USER_ID, getLoggedInUser().toString());
-        return header;
-    }
-
-    protected static void readConfig() {
-
-        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        try (final InputStream stream = loader.getResourceAsStream(ENDPOINT_PROPERTIES_FILE)) {
-            ENDPOINT_PROPERTIES.load(stream);
-        } catch (final IOException e) {
-            LOGGER.warn("Error reading properties from {}", ENDPOINT_PROPERTIES_FILE, e);
-        }
-        final String baseUriProp = System.getProperty("INTEGRATION_HOST_KEY");
-        baseUri = isNotEmpty(baseUriProp) ? format("http://%s:8080", baseUriProp) : ENDPOINT_PROPERTIES.getProperty("base-uri");
-    }
-
-    private static void setRequestSpecification() {
-        requestSpec = new RequestSpecBuilder().setBaseUri(baseUri).build();
-    }
-
-    protected static Matcher<String> equalStr(final Object bean, final String name) {
-        return equalTo(getString(bean, name));
-    }
-
-    protected static Matcher<String> equalStr(final Object bean, final char separator, final String... names) {
-        return equalTo(StringUtils.join(Stream.of(names).map(name -> getString(bean, name).trim()).collect(toList()), separator).trim());
-    }
-
-    protected static Matcher<String> equalStr(final Object bean, final String name, final DateTimeFormatter dateTimeFormatter) {
-        return equalTo(getString(bean, name, dateTimeFormatter));
-    }
-
-    protected static Matcher<Integer> equalInt(final Object bean, final String name) {
-        return equalTo(getInteger(bean, name));
-    }
-
-    protected static Matcher<String> equalDate(final Temporal localDate) {
-        return equalTo(ISO_LOCAL_DATE.format(localDate));
-    }
-
-    protected static Matcher<String> equalEnum(final Enum<?> e) {
-        return equalTo(e.name());
-    }
-
-    protected static String getString(final Object bean, final String name, final DateTimeFormatter dateTimeFormatter) {
-        try {
-            final Temporal dateTime = (Temporal) PropertyUtils.getNestedProperty(bean, name);
-            if (dateTime instanceof LocalDate) {
-                return dateTimeFormatter.format(((LocalDate) dateTime).atStartOfDay());
-            }
-            return dateTimeFormatter.format(dateTime);
-        } catch (final Exception e) {
-            LOGGER.error("Cannot get string property: " + name + " from bean " + bean.getClass().getCanonicalName(), e.getMessage(), e);
-            return EMPTY;
-        }
-    }
-
-    protected static UUID getUUID(final Object bean, final String name) {
-        return UUID.fromString(getString(bean, name));
-    }
-
-    protected static String getString(final Object bean, final String name) {
-        try {
-            return EMPTY + PropertyUtils.getNestedProperty(bean, name);
-        } catch (final Exception e) {
-            LOGGER.error("Cannot get string property: " + name + " from bean " + bean.getClass().getCanonicalName(), e.getMessage(), e);
-            return EMPTY;
-        }
-    }
-
-    protected static Integer getInteger(final Object bean, final String name) {
-        try {
-            return Integer.parseInt(getString(bean, name));
-        } catch (final Exception e) {
-            LOGGER.error("Cannot get integer property: " + name + " from bean " + bean.getClass().getCanonicalName(), e.getMessage(), e);
-            return null;
-        }
-    }
-
-    protected static String getStringFromResource(final String path) throws IOException {
-        return Resources.toString(getResource(path), defaultCharset());
-    }
-
-    public static String getURL(final String property, final Object... args) {
-        return getBaseUri() + "/" + MessageFormat.format(ENDPOINT_PROPERTIES.getProperty(property), args);
-    }
-
-    public static Matcher<ResponseData> print() {
-        return new BaseMatcher<ResponseData>() {
-            @Override
-            public boolean matches(final Object o) {
-                if (o instanceof ResponseData) {
-                    final ResponseData responseData = (ResponseData) o;
-                    System.out.println(responseData.getPayload());
-                }
-                return true;
-            }
-
-            @Override
-            public void describeTo(final Description description) {
-            }
-        };
-    }
-
-    protected static RequestParams requestParameters(final String url, final String contentType) {
-        return requestParams(url, contentType).withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue()).build();
+    static {
+        configureFor(HOST, 8080);
+        reset(); // will need to be removed when things are being run in parallel
+        defaultStubs();
+        setUpElasticSearch();
     }
 
     @Before
     public void setUp() {
-        readConfig();
-        setRequestSpecification();
-        WireMockStubUtils.setupAsAuthorisedUser(USER_ID_VALUE);
+        setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
-        AuthorisationServiceStub.stubEnableAllCapabilities();
         mockMaterialUpload();
     }
 
-    protected JSONObject getExistingHearing(final String hearingId) {
-        final String queryAPIEndPoint = MessageFormat
-                .format(ENDPOINT_PROPERTIES.getProperty("hearing.get.hearing"), hearingId.toString());
-
-        final String url = getBaseUri() + "/" + queryAPIEndPoint;
-        final String mediaType = "application/vnd.hearing.get.hearing+json";
-
-        final String payload = poll(requestParams(url, mediaType).withHeader(CPP_UID_HEADER.getName(), CPP_UID_HEADER.getValue()).build())
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(status().is(OK))
-                .getPayload();
-        return new JSONObject(payload);
+    private static void setUpElasticSearch() {
+        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
+        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
+        elasticSearchIndexRemoverUtil  = new ElasticSearchIndexRemoverUtil();
+        deleteAndCreateIndex();
     }
+
+    protected static void deleteAndCreateIndex() {
+        try {
+            elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
+        }catch (final IOException e){
+            LOGGER.error("Error while creating index ", e);
+        }
+    }
+
+    private static void defaultStubs() {
+        setupUsersGroupQueryStub();
+        stubEnableAllCapabilities();
+        stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
+        stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
+        stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");
+        stubListCourtHearing();
+        stubReferenceDataOffencesGetOffenceById("/restResource/referencedataoffences.get-offences-by-id.json");
+        stubReferenceDataOffencesGetOffenceByOffenceCode("/restResource/referencedataoffences.get-offences-by-offence-code.json");
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubQueryNationalityData("/restResource/ref-data-nationalities.json", randomUUID());
+        stubQueryHearingTypeData("/restResource/ref-data-hearing-types.json", randomUUID());
+        stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons.json", randomUUID());
+        stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json", randomUUID());
+        stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
+        stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
+        stubQueryCourtOURoom("/restResource/referencedata.ou-courtroom.json");
+        stubQueryOrganisation("/restResource/ref-data-get-organisation.json");
+        stubNotifications();
+        stubMaterialUploadFile();
+        stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
+    }
+
 }

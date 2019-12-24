@@ -1,37 +1,31 @@
 package uk.gov.moj.cpp.progression.it;
 
-import static java.lang.String.join;
-import static org.junit.Assert.assertTrue;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
+import uk.gov.moj.cpp.progression.AbstractIT;
+
 import java.time.LocalDate;
-import java.util.UUID;
 
-import javax.json.JsonObject;
-
-import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ProgressionIT {
+public class ProgressionIT extends AbstractIT {
 
     private String caseId;
 
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
-        createMockEndpoints();
-
+    public void setUp() {
+        caseId = randomUUID().toString();
     }
 
     @Test
@@ -40,57 +34,35 @@ public class ProgressionIT {
         Response writeResponse = addCaseToCrownCourt(caseId);
         assertThatRequestIsAccepted(writeResponse);
 
-        pollForResponse(join("", "/cases/", caseId),
-                "application/vnd.progression.query.caseprogressiondetail+json");
+        pollCaseProgressionFor(caseId);
 
-        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
+        writeResponse = postCommand(getWriteUrl("/cases/" + caseId),
                 "application/vnd.progression.command.sending-committal-hearing-information+json",
                 getJsonBodyStr("progression.command.sending-committal-hearing-information.json"));
         assertThatRequestIsAccepted(writeResponse);
 
-        final String queryResponse =
-                pollForResponse(join("", "/cases/", caseId),
-                        "application/vnd.progression.query.caseprogressiondetail+json");
 
-        JsonObject defendantsJsonObject = getJsonObject(queryResponse);
-        assertTrue(defendantsJsonObject.getString("sendingCommittalDate")
-                .equals(LocalDate.now().toString()));
+        pollCaseProgressionFor(caseId,
+                withJsonPath("$.sendingCommittalDate", is(LocalDate.now().toString())));
 
-        writeResponse = postCommand(getCommandUri("/cases/" + caseId),
+        writeResponse = postCommand(getWriteUrl("/cases/" + caseId),
                 "application/vnd.progression.command.sentence-hearing-date+json",
                 getJsonBodyStr("progression.command.sentence-hearing-date.json"));
         assertThatRequestIsAccepted(writeResponse);
 
 
-        final String queryDefendantsResponse =
-                pollForResponse(join("", "/cases/", caseId),
-                        "application/vnd.progression.query.caseprogressiondetail+json");
-
-        defendantsJsonObject = getJsonObject(queryDefendantsResponse);
-        assertTrue(defendantsJsonObject.getString("sentenceHearingDate")
-                .equals(LocalDate.now().toString()));
-
-
-
-        final String queryDefendantsReviewResponse =
-                pollForResponse(join("", "/cases/", caseId),
-                        "application/vnd.progression.query.caseprogressiondetail+json");
-
-        defendantsJsonObject = getJsonObject(queryDefendantsReviewResponse);
-
-        assertTrue(defendantsJsonObject.getString("status")
-                .equals("INCOMPLETE"));
-
-
-
+        pollCaseProgressionFor(caseId,
+                withJsonPath("$.sentenceHearingDate", is(LocalDate.now().toString())),
+                withJsonPath("$.status", is("INCOMPLETE"))
+        );
     }
 
 
-    private String getJsonBodyStr(final String fileName) throws IOException {
-        return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
+    private String getJsonBodyStr(final String fileName) {
+        return getPayload(fileName)
                 .replace("RANDOM_CASE_ID", caseId)
-                .replace("DEF_ID_1", UUID.randomUUID().toString())
-                .replace("DEF_ID_2", UUID.randomUUID().toString())
+                .replace("DEF_ID_1", randomUUID().toString())
+                .replace("DEF_ID_2", randomUUID().toString())
                 .replace("TODAY", LocalDate.now().toString());
     }
 }

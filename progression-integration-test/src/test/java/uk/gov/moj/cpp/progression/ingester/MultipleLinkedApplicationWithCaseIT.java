@@ -12,7 +12,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyUpdateCourtApplication;
@@ -23,9 +22,8 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -41,7 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
-public class MultipleLinkedApplicationWithCaseIT {
+public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application-embedded.json";
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.update-court-application-embedded.json";
@@ -64,11 +62,8 @@ public class MultipleLinkedApplicationWithCaseIT {
     private String applicationId2;
     private String applicationReference;
 
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-
     @Before
-    public void setUp() throws IOException {
-        createMockEndpoints();
+    public void setup() {
         caseId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
         materialIdActive = randomUUID().toString();
@@ -86,10 +81,7 @@ public class MultipleLinkedApplicationWithCaseIT {
         applicationId1 = randomUUID().toString();
         applicationId2 = randomUUID().toString();
         applicationReference =  randomAlphanumeric(10).toUpperCase();
-
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
+        deleteAndCreateIndex();
     }
 
     @AfterClass

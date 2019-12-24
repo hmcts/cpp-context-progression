@@ -13,7 +13,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyUpdateCourtApplication;
@@ -24,6 +23,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -43,7 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
-public class EmbeddedCourtApplicationUpdatedIT {
+public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
 
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application-embedded.json";
@@ -56,7 +56,6 @@ public class EmbeddedCourtApplicationUpdatedIT {
     private String materialIdActive;
     private String materialIdDeleted;
     private String referralReasonId;
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     private String applicantId;
     private String applicantDefendantId;
     private String respondantId;
@@ -65,8 +64,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
     private String applicationReference;
 
     @Before
-    public void setUp() throws IOException {
-        createMockEndpoints();
+    public void setup(){
         caseId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
         materialIdActive = randomUUID().toString();
@@ -79,10 +77,7 @@ public class EmbeddedCourtApplicationUpdatedIT {
         respondantDefendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
         applicationReference =  randomAlphanumeric(10).toUpperCase();
-
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
+        deleteAndCreateIndex();
     }
 
     @AfterClass

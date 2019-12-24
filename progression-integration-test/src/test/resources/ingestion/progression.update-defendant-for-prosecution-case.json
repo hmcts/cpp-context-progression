@@ -2,19 +2,11 @@
   "defendant": {
     "aliases": [
       {
-        "firstName": "MR"
-      },
-      {
-        "firstName": "MR"
-      },
-      {
-        "firstName": "MR"
-      },
-      {
-        "firstName": "MR"
-      },
-      {
-        "firstName": "MR"
+        "title":"MR",
+        "firstName": "johnny",
+        "middleName":"middleName",
+        "lastName": "robber",
+        "legalEntityName":"name"
       }
     ],
     "id": "RANDOM_DEFENDANT_ID",

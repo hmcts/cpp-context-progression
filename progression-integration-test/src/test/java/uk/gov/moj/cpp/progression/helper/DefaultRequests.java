@@ -13,8 +13,6 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 public class DefaultRequests {
     public static final String GET_CASE_DEFENDANTS = "application/vnd.progression.query.defendants+json";
     public static final String GET_DEFENDANT_BY_DEFENDANT_ID = "application/vnd.progression.query.defendant+json";
-    public static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.progression.query.case+json";
-    public static final String SEARCH_BY_MATERIAL_ID = "application/vnd.progression.query.cases-search-by-material-id+json";
     public static final String GET_CASE_BY_URN_MEDIA_TYPE = "application/vnd.progression.query.case-by-urn+json";
     public static final String GET_OFFENCES_BY_CASE_ID_MEDIA_TYPE = "application/vnd.progression.query.defendant-offences+json";
     public static final String PROGRESSION_QUERY_PROSECUTION_CASE_JSON = "application/vnd.progression.query.prosecutioncase+json";
@@ -24,15 +22,6 @@ public class DefaultRequests {
         return getCaseByUrn(caseUrn , USER_ID);
     }
 
-    public static RequestParamsBuilder getCaseById(final String caseId) {
-        return getCaseById(caseId, USER_ID);
-    }
-
-    public static RequestParamsBuilder getCaseById(final String caseId, final String userId) {
-        return requestParams(getReadUrl("/cases/" + caseId), GET_CASE_BY_ID_MEDIA_TYPE)
-                .withHeader(HeaderConstants.USER_ID, userId);
-    }
-
     public static RequestParamsBuilder getCaseByUrn(final String caseUrn, final String userId) {
         return requestParams(getReadUrl("/cases?urn="+caseUrn ), GET_CASE_BY_URN_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);
@@ -40,11 +29,6 @@ public class DefaultRequests {
 
     public static RequestParamsBuilder getDefendantsByCaseId(final String caseId) {
         return requestParams(getReadUrl(format("/cases/%s/defendants", caseId)), GET_CASE_DEFENDANTS)
-                .withHeader(HeaderConstants.USER_ID, USER_ID);
-    }
-
-    public static RequestParamsBuilder searchByMaterialId(final String materialId) {
-        return requestParams(getReadUrl("/search?q="+ materialId), SEARCH_BY_MATERIAL_ID)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
     }
 

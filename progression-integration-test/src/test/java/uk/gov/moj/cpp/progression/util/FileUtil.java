@@ -1,16 +1,11 @@
-package uk.gov.moj.cpp.progression;
+package uk.gov.moj.cpp.progression.util;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static javax.json.Json.createReader;
 import static org.junit.Assert.fail;
+
 import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class FileUtil {
 
@@ -27,10 +22,4 @@ public class FileUtil {
         return request;
     }
 
-    public static JsonObject givenPayload(final String filePath) throws IOException {
-        try (final InputStream inputStream = FileUtil.class.getResourceAsStream(filePath)) {
-            final JsonReader jsonReader = createReader(inputStream);
-            return jsonReader.readObject();
-        }
-    }
 }

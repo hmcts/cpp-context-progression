@@ -38,22 +38,6 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath + "?cjsoffencecode", "application/vnd.referencedata.query.offences+json");
     }
 
-    public static void stubQueryJudge(final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject judge = Json.createReader(ReferenceDataStub.class
-                .getResourceAsStream(resourceName))
-                .readObject();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/court/judges/.*";
-        stubFor(get(urlMatching(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(judge.toString())));
-
-        waitForStubToBeReady(urlPath, "application/vnd.referencedata.get.judge+json");
-    }
-
     public static void stubQueryLocalJusticeArea(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject jsonObject = Json.createReader(ReferenceDataStub.class
@@ -84,22 +68,6 @@ public class ReferenceDataStub {
                         .withBody(judge.toString())));
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.organisation-unit.v2+json");
-    }
-
-    public static void stubQueryCourtCentre(final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject courtCentre = Json.createReader(ReferenceDataStub.class
-                .getResourceAsStream(resourceName))
-                .readObject();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/court/centres/.*";
-        stubFor(get(urlMatching(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(courtCentre.toString())));
-
-        waitForStubToBeReady(urlPath, "application/vnd.referencedata.get.court-centre+json");
     }
 
     public static void stubQueryCourtsCodeData(final String resourceName) {

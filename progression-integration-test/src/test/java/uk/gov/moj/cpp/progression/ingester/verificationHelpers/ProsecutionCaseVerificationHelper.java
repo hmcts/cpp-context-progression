@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.JsonPath.parse;
+import static java.lang.String.format;
 import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -42,7 +43,7 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$.pncId", equalTo(((JsonString) inputDefendant.read("$.personDefendant.pncId")).getString()));
     }
 
-    private static void verifyDefendant(final DocumentContext defendant, final JsonObject party) {
+    public static void verifyDefendant(final DocumentContext defendant, final JsonObject party) {
 
         with(party.toString())
                 .assertThat("$.partyId", equalTo(((JsonString) defendant.read("$.id")).getString()))
@@ -78,25 +79,11 @@ public class ProsecutionCaseVerificationHelper {
     }
 
 
-    public static void verifyCaseDefendant(final DocumentContext inputProsectionCase,
-                                           final JsonObject outputCase,
-                                           boolean isReferCaseToCourt) {
-        final JsonObject inputDefendant = inputProsectionCase.read("$.prosecutionCase.defendants[0]");
-        verifyDefendant(inputDefendant, outputCase, isReferCaseToCourt);
-    }
-
     public static void verifyDefendant(final JsonObject inputDefendant, final JsonObject outputCase, boolean isReferCaseToCourt) {
         final JsonString defendantId = inputDefendant.getJsonString("id");
-
-        final DocumentContext indexData = parse(outputCase);
-        final JSONArray outputPartyDefendants = indexData.read("$.parties[*]");
-        final Optional<JsonObject> outputPartyDefendant = outputPartyDefendants.stream()
-                .map(JsonObject.class::cast)
-                .filter(j -> j.getString("partyId").equals(defendantId.getString()))
-                .findFirst();
         final DocumentContext parsedInputDefendant = parse(inputDefendant);
+        final Optional<JsonObject> outputPartyDefendant = outputParty(defendantId, outputCase);
         verifyDefendant(parsedInputDefendant, outputPartyDefendant.get());
-        verifyDefendantAliases(parsedInputDefendant, outputPartyDefendant.get());
         if (isReferCaseToCourt) {
             verifyPncOnPersonDefendantLevel(parsedInputDefendant, outputPartyDefendant.get());
         } else {
@@ -105,13 +92,21 @@ public class ProsecutionCaseVerificationHelper {
         }
     }
 
-    public static void verifyDefendantAliases(final DocumentContext inputPartyDefendant, final JsonObject outputPartyDefendant) {
-        with(outputPartyDefendant.toString())
-                .assertThat("$.aliases[0].firstName", equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].firstName")).getString()))
-                .assertThat("$.aliases[0].middleName", equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].middleName")).getString()))
-                .assertThat("$.aliases[0].lastName", equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].lastName")).getString()))
-                .assertThat("$.aliases[0].title", equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].title")).getString()))
-                .assertThat("$.aliases[0].organisationName", equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].legalEntityName")).getString()));
+    public static Optional<JsonObject> outputParty(JsonString defendantId, final JsonObject outputCase) {
+        final DocumentContext indexData = parse(outputCase);
+        final JSONArray outputPartyDefendants = indexData.read("$.parties[*]");
+        return outputPartyDefendants.stream()
+                    .map(JsonObject.class::cast)
+                    .filter(j -> j.getString("partyId").equals(defendantId.getString()))
+                    .findFirst();
     }
 
+    public static void verifyAliases(final int partyIndex, final DocumentContext inputPartyDefendant, final JsonObject outputPartyDefendant) {
+        with(outputPartyDefendant.toString())
+                .assertThat(format("$.aliases[%d].firstName", partyIndex), equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].firstName")).getString()))
+                .assertThat(format("$.aliases[%d].middleName", partyIndex), equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].middleName")).getString()))
+                .assertThat(format("$.aliases[%d].lastName", partyIndex), equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].lastName")).getString()))
+                .assertThat(format("$.aliases[%d].title", partyIndex), equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].title")).getString()))
+                .assertThat(format("$.aliases[%d].organisationName", partyIndex), equalTo(((JsonString) inputPartyDefendant.read("$.aliases[0].legalEntityName")).getString()));
+    }
 }

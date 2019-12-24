@@ -1,36 +1,38 @@
 package uk.gov.moj.cpp.progression;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithMinimumAttributes;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionForMaterials;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpointsWithEmpty;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertcourtDocuments;
-
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinicityData;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCourtDocumentMatchers;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
-public class ReferProsecutionCaseToCrownCourtIT {
-    static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
+public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
+    private static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
 
     private static final MessageConsumer consumerForReferToCourtRejected = publicEvents.createConsumer(REFER_PROSECUTION_CASES_TO_COURT_REJECTED);
 
@@ -42,34 +44,36 @@ public class ReferProsecutionCaseToCrownCourtIT {
     private String referraReasonId;
 
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
-        materialIdActive = UUID.randomUUID().toString();
-        materialIdDeleted = UUID.randomUUID().toString();
-        courtDocumentId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        referraReasonId = UUID.randomUUID().toString();
+    public void setUp() {
+        caseId = randomUUID().toString();
+        materialIdActive = randomUUID().toString();
+        materialIdDeleted = randomUUID().toString();
+        courtDocumentId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        referraReasonId = randomUUID().toString();
+    }
+
+    @After
+    public void tearDown() {
+        // one off change -- need to fix this properly
+        stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
     }
 
     @Test
     public void shouldGetProsecutionCaseWithDocumentsAndGetConfirmation() throws Exception {
-        createMockEndpoints();
-        // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
-        // when
-        final String response = getProsecutioncasesProgressionForMaterials(caseId);
-        // then
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getJsonArray("materials").size(), equalTo(2));
-        assertTrue(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getBoolean("containsFinancialMeans"));
-        assertcourtDocuments(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0), caseId, courtDocumentId, materialIdActive);
+        List<Matcher> additionalMatchers = newArrayList(
+                withJsonPath("$.courtDocuments[0].materials", hasSize(2)),
+                withJsonPath("$.courtDocuments[0].containsFinancialMeans", is(true))
+        );
+        additionalMatchers.addAll(getCourtDocumentMatchers(caseId, courtDocumentId, materialIdActive, 0));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, additionalMatchers));
     }
 
     @Test
     public void shouldGetProsecutionCaseWithDocumentsAndReferralRejected() throws Exception {
-        createMockEndpointsWithEmpty();
+        stubQueryEthinicityData("/restResource/ref-data-ethnicities-with-noresults.json", randomUUID());
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
         // when
@@ -79,82 +83,55 @@ public class ReferProsecutionCaseToCrownCourtIT {
 
     @Test
     public void shouldGetProsecutionCaseWithoutDocuments() throws Exception {
-        createMockEndpoints();
-        // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // when
-
-
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        // then
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(0));
-
+        final Matcher[] prosecutionCaseMatchersWithNoDocuments = getProsecutionCaseMatchers(caseId, defendantId, singletonList(withJsonPath("$.courtDocuments", empty())));
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchersWithNoDocuments);
     }
 
     @Test
     public void shouldGetProsecutionCaseWithMinimumMandatoryAttributes() throws Exception {
-        createMockEndpoints();
-        // given
         addProsecutionCaseToCrownCourtWithMinimumAttributes(caseId, defendantId);
-        // when
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        // then
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getString("id"), equalTo(caseId));
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase").getString("initiationCode"), equalTo("J"));
-
+        final Matcher[] matchers = {
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.initiationCode", is("J"))
+        };
+        pollProsecutionCasesProgressionFor(caseId, matchers);
     }
 
     @Test
     public void shouldRemoveAndAddDocuments() throws Exception {
-        createMockEndpoints();
-        // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referraReasonId);
-        // when
-        String response = getProsecutioncasesProgressionFor(caseId);
-        // then
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
 
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0).getJsonArray("materials").size(), equalTo(2));
-        assertcourtDocuments(prosecutioncasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0), caseId, courtDocumentId, materialIdActive);
+        List<Matcher> additionalMatchers = newArrayList(
+                withJsonPath("$.courtDocuments[0].materials", hasSize(2))
+        );
+        additionalMatchers.addAll(getCourtDocumentMatchers(caseId, courtDocumentId, materialIdActive, 0));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, additionalMatchers));
+
         //Remove document
         addRemoveCourtDocument(courtDocumentId, materialIdActive, true);
 
         //read document
-        response = getProsecutioncasesProgressionFor(caseId);
-        prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(0));
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.courtDocuments", empty()));
+
         //undo remove
         addRemoveCourtDocument(courtDocumentId, materialIdActive, false);
-        response = getProsecutioncasesProgressionFor(caseId);
-        prosecutioncasesJsonObject = getJsonObject(response);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(1));
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.courtDocuments", hasSize(1)));
     }
 
 
     @Test
     public void shouldGetProsecutionCaseAtAGlance() throws Exception {
-        createMockEndpoints();
-        // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        // when
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        // then
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
-
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonArray("courtDocuments").size(), equalTo(0));
-        assertEquals(caseId, prosecutioncasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
+                withJsonPath("$.courtDocuments", empty()),
+                withJsonPath("$.caseAtAGlance.id", is(caseId))
+        )));
     }
 
 
-    public static void verifyInMessagingQueueForReferToCourtsRejcted() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForReferToCourtRejected);
+    private static void verifyInMessagingQueueForReferToCourtsRejcted() {
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForReferToCourtRejected);
         assertTrue(message.isPresent());
     }
 

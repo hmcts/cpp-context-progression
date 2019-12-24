@@ -1,35 +1,35 @@
 package uk.gov.moj.cpp.progression;
 
-import static org.junit.Assert.assertTrue;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertcourtDocuments;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCourtDocumentMatchers;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
 
-public class InitiateCourtProceedingsIT {
+public class InitiateCourtProceedingsIT extends AbstractIT {
 
     private String caseId;
     private String courtDocumentId;
@@ -40,17 +40,17 @@ public class InitiateCourtProceedingsIT {
     private String listedStartDateTime;
     private String earliestStartDateTime;
     private String defendantDOB;
-    protected MessageConsumer publicEventConsumer = publicEvents
-            .createConsumer("public.progression.prosecution-case-created"); ;
+    private final MessageConsumer publicEventConsumer = publicEvents
+            .createConsumer("public.progression.prosecution-case-created");
 
     @Before
-    public void setUp() throws IOException {
-        caseId = UUID.randomUUID().toString();
-        materialIdActive = UUID.randomUUID().toString();
-        materialIdDeleted = UUID.randomUUID().toString();
-        courtDocumentId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        referralReasonId = UUID.randomUUID().toString();
+    public void setUp() {
+        caseId = randomUUID().toString();
+        materialIdActive = randomUUID().toString();
+        materialIdDeleted = randomUUID().toString();
+        courtDocumentId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        referralReasonId = randomUUID().toString();
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         defendantDOB = LocalDate.now().minusYears(15).toString();
@@ -58,7 +58,6 @@ public class InitiateCourtProceedingsIT {
 
     @Test
     public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
-        createMockEndpoints();
         //given
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
@@ -67,16 +66,15 @@ public class InitiateCourtProceedingsIT {
         getCourtDocumentFor(courtDocumentId,
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId))
         );
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        //then
-        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertcourtDocuments(prosecutionCasesJsonObject.getJsonArray("courtDocuments").getJsonObject(0), caseId, courtDocumentId, materialIdActive);
+
+        final List<Matcher> courtDocumentMatchers = getCourtDocumentMatchers(caseId, courtDocumentId, materialIdActive, 0);
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, courtDocumentMatchers);
+
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
     }
 
     @Test
     public void shouldInitiateCourtProceedingsWithDefendantIsYouth() throws IOException {
-        createMockEndpoints();
         //given
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPostListCourtHearing(caseId, defendantId, true);
@@ -84,7 +82,6 @@ public class InitiateCourtProceedingsIT {
 
     @Test
     public void shouldInitiateCourtProceedingsWithDefendantIsNotYouth() throws IOException {
-        createMockEndpoints();
         defendantDOB = LocalDate.now().minusYears(25).toString();
         //given
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
@@ -93,18 +90,14 @@ public class InitiateCourtProceedingsIT {
 
     @Test
     public void shouldInitiateCourtProceedingsNoCourtDocuments() throws IOException {
-        createMockEndpoints();
         //given
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
-        final String response = getProsecutioncasesProgressionFor(caseId);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        //then
-        assertProsecutionCase(prosecutionCasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
     private void verifyInMessagingQueueForProsecutionCaseCreated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumer);
         assertTrue(message.isPresent());
     }
 

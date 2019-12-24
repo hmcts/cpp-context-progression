@@ -17,6 +17,7 @@ import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
 import uk.gov.justice.services.jmx.system.command.client.connection.JmxParameters;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
@@ -34,7 +35,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InitialIndexerIngestionIT {
+public class InitialIndexerIngestionIT extends AbstractIT{
 
     private static final Logger LOG = LoggerFactory.getLogger(InitialIndexerIngestionIT.class);
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
@@ -46,22 +47,17 @@ public class InitialIndexerIngestionIT {
     private static final String PASSWORD = "admin";
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-    private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     private final TestSystemCommanderClientFactory testSystemCommanderClientFactory = new TestSystemCommanderClientFactory();
-    final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
 
 
     @Before
-    public void before() throws IOException {
-        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
-        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-
+    public void setup() throws IOException {
         databaseCleaner.cleanEventStoreTables(CONTEXT);
         databaseCleaner.cleanSystemTables(CONTEXT);
         databaseCleaner.cleanStreamStatusTable(CONTEXT);
         databaseCleaner.cleanStreamBufferTable(CONTEXT);
         databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event");
+        deleteAndCreateIndex();
     }
 
     @AfterClass

@@ -7,9 +7,10 @@ import static java.text.MessageFormat.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_DISASSOCIATION_FOR_DEFENDANT;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getCommandUri;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -40,8 +41,8 @@ public class DefenceAssociationHelper implements AutoCloseable {
     private static final String DEFENCE_DISASSOCIATION_MEDIA_TYPE = "application/vnd.progression.disassociate-defence-organisation+json";
     private static final String DEFENCE_DISASSOCIATION_REQUEST_TEMPLATE_NAME = "progression.disassociate-defence-organisation.json";
 
-    public static final String DEFENCE_ASSOCIATION_QUERY_ENDPOINT = "/defendants/{0}/associatedOrganisation";
-    public static final String DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE = "application/vnd.progression.query.associated-organisation+json";
+    private static final String DEFENCE_ASSOCIATION_QUERY_ENDPOINT = "/defendants/{0}/associatedOrganisation";
+    private static final String DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE = "application/vnd.progression.query.associated-organisation+json";
 
     private final MessageConsumer publicEventsConsumerForDefenceAssociationForDefendant =
             QueueUtil.publicEvents.createConsumer(EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT);
@@ -86,13 +87,11 @@ public class DefenceAssociationHelper implements AutoCloseable {
                                           final String mediaType) {
 
         final RestClient restClient = new RestClient();
-        final Response response =
-                restClient.postCommand(getCommandUri("/defendants/" + defendantId + "/defenceorganisation"),
-                        mediaType,
-                        body,
-                        createHttpHeaders(userId)
-                );
-        return response;
+        return restClient.postCommand(getWriteUrl("/defendants/" + defendantId + "/defenceorganisation"),
+                mediaType,
+                body,
+                createHttpHeaders(userId)
+        );
     }
 
     public static MultivaluedMap<String, Object> createHttpHeaders(final String userId) {
@@ -134,7 +133,7 @@ public class DefenceAssociationHelper implements AutoCloseable {
                 .add(withJsonPath("$.association.representationType", IsEqual.equalTo("REPRESENTATION_ORDER")))
                 .build();
 
-        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
+        pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
                 DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE,
                 userId,
                 matchers);
@@ -149,7 +148,7 @@ public class DefenceAssociationHelper implements AutoCloseable {
                 .add(withoutJsonPath("$.association.organisationId"))
                 .build();
 
-        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
+        pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
                 DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE,
                 userId,
                 matchers);

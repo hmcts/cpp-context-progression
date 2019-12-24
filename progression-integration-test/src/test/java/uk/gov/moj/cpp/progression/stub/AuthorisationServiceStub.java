@@ -21,11 +21,6 @@ public class AuthorisationServiceStub extends StubUtil {
     private static final String CAPABILITY_ENABLEMENT_QUERY_MEDIA_TYPE = "application/vnd.authorisation.capability+json";
     private static final String AUTHORISATION_SERVICE_SERVER = "authorisation-service-server";
 
-    public static void stubSetStatusForCapability(final String capabilityName, final boolean statusToReturn) {
-        final String url = format(CAPABILITY_ENABLEMENT_QUERY_URL, capabilityName);
-        stubEnableCapabilities(url, statusToReturn);
-    }
-
     public static void stubEnableAllCapabilities() {
         final String url = format(CAPABILITY_ENABLEMENT_QUERY_URL, ".*");
         stubEnableCapabilities(url, true);

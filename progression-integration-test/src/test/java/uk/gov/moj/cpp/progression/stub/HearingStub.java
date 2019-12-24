@@ -1,25 +1,29 @@
 package uk.gov.moj.cpp.progression.stub;
 
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static java.lang.String.format;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.UUID;
-
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import org.json.JSONObject;
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
-import javax.json.JsonObject;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.jayway.awaitility.Duration;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class HearingStub {
 
@@ -47,48 +51,28 @@ public class HearingStub {
         waitForStubToBeReady(HEARING_COMMAND, HEARING_RESPONSE_TYPE);
     }
 
-    public static void  stubSubscriptions(final JsonObject jsonSubscriptions, UUID nowsTypeId) {
-
-        InternalEndpointMockUtils.stubPingFor("hearing-service");
-
-        final String strSubscriptions = jsonSubscriptions.toString();
-
-        String referenceDate = LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-
-        //because the framework changes the parameter order (WTF ?!!?!?!?!?!)
-        final String[] urlPaths = {format(HEARING_SUBSCRIPTION_QUERY_URL, referenceDate, nowsTypeId.toString()),
-                format(HEARING_SUBSCRIPTION_QUERY_URL2,  nowsTypeId, referenceDate) };
- // TODO https://stackoverflow.com/questions/49549523/how-to-match-request-paramters-in-wire-mock-url
-        for (String urlPath : urlPaths) {
-            stubFor(get(urlPathEqualTo(urlPath))
-                    .willReturn(aResponse().withStatus(SC_OK)
-                            .withHeader("CPPID", UUID.randomUUID().toString())
-                            .withHeader("Content-Type", HEARING_SUBSCRIPTIONS_MEDIA_TYPE)
-                            .withBody(strSubscriptions)));
-
-            waitForStubToBeReady(urlPath, HEARING_SUBSCRIPTIONS_MEDIA_TYPE);
-            System.out.println("stubbed " + urlPath);
-        }
-
-    }
-
     public static void verifyPostInitiateCourtHearing(final String hearingId) {
-        try {
-            Awaitility.waitAtMost(Duration.TEN_SECONDS).until(() ->
-                    getListCourtHearingRequestsAsStream().get()
-                            .getJSONObject("hearing").get("id").toString().equalsIgnoreCase(hearingId)
-            );
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+                    final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
+                    return listCourtHearingRequestsAsStream.anyMatch(
+                            payload -> {
+                                try {
+                                    return payload.getJSONObject("hearing").get("id").toString().equalsIgnoreCase(hearingId);
+                                } catch (JSONException e) {
+                                    return false;
+                                }
+                            }
+                    );
+                }
+        );
 
-        } catch (Exception e) {
-            throw new AssertionError("HearingStub.verifyPostCourtHearing failed with: " + e);
-        }
     }
 
-    private static Optional<JSONObject> getListCourtHearingRequestsAsStream() {
+    private static Stream<JSONObject> getListCourtHearingRequestsAsStream() {
         return findAll(postRequestedFor(urlPathEqualTo(HEARING_COMMAND))
                 .withHeader(CONTENT_TYPE, equalTo(HEARING_RESPONSE_TYPE)))
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
-                .map(JSONObject::new).findFirst();
+                .map(JSONObject::new);
     }
 }

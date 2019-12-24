@@ -1,51 +1,38 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutioncasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.createMockEndpoints;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getQueryUri;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.assertProsecutionCase;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
-import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.google.common.io.Resources;
+import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class InitiateHearingIT {
+public class InitiateHearingIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
 
@@ -55,7 +42,6 @@ public class InitiateHearingIT {
 
     @Before
     public void setUp() {
-        createMockEndpoints();
         HearingStub.stubInitiateHearing();
     }
 
@@ -71,18 +57,11 @@ public class InitiateHearingIT {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         // when
-        final String response = getProsecutioncasesProgressionFor(caseId);
 
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))));
 
-        assertProsecutionCase(prosecutioncasesJsonObject.getJsonObject("prosecutionCase"), caseId, defendantId);
-        assertThat(prosecutioncasesJsonObject.getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getString("offenceCode"), equalTo("TTH105HY"));
-
-
-        final Metadata metadata = JsonEnvelope.metadataBuilder()
+        final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
                 .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                 .withUserId(userId)
@@ -95,23 +74,17 @@ public class InitiateHearingIT {
 
         verifyInMessagingQueueForCasesReferredToCourts();
 
-        getProsecutioncasesProgressionFor(caseId);
-
-        poll(requestParams(getQueryUri("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON).withHeader(USER_ID, UUID.randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
-                        )));
+        pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
+        });
 
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId) {
         return stringToJsonObjectConverter.convert(
-                getPayloadForCreatingRequest(path)
+                getPayload(path)
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
@@ -125,20 +98,7 @@ public class InitiateHearingIT {
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
     }
 
-    private static String getPayloadForCreatingRequest(final String ramlPath) {
-        String request = null;
-        try {
-            request = Resources.toString(
-                    Resources.getResource(ramlPath),
-                    Charset.defaultCharset()
-            );
-        } catch (final Exception e) {
-            fail("Error consuming file from location " + ramlPath);
-        }
-        return request;
-    }
-
-    public static void verifyInMessagingQueueForCasesReferredToCourts() {
+    private static void verifyInMessagingQueueForCasesReferredToCourts() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }
