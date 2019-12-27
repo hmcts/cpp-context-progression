@@ -37,8 +37,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import com.jayway.restassured.response.Header;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,12 +64,6 @@ public class AbstractIT {
         setUpElasticSearch();
     }
 
-    @Before
-    public void setUp() {
-        setupAsAuthorisedUser(USER_ID_VALUE);
-        setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
-        mockMaterialUpload();
-    }
 
     private static void setUpElasticSearch() {
         final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
@@ -88,7 +80,11 @@ public class AbstractIT {
         }
     }
 
+
     private static void defaultStubs() {
+        setupAsAuthorisedUser(USER_ID_VALUE);
+        setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
+        mockMaterialUpload();
         setupUsersGroupQueryStub();
         stubEnableAllCapabilities();
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");

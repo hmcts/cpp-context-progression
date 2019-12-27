@@ -64,7 +64,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
             .createConsumer("public.progression.court-document-added");
 
     @Before
-    public void setup() throws IOException{
+    public void setup() {
         helper = new MultipartFileUploadHelper();
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
