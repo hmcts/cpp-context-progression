@@ -31,7 +31,6 @@ public class DeleteFinancialMeansIT extends AbstractIT {
 
     @Before
     public void setup() {
-        super.setUp();
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();

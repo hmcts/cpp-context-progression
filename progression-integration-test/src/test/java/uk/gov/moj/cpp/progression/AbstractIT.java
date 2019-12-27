@@ -32,7 +32,6 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUse
 import java.util.UUID;
 
 import com.jayway.restassured.response.Header;
-import org.junit.Before;
 
 public class AbstractIT {
 
@@ -54,14 +53,11 @@ public class AbstractIT {
         defaultStubs();
     }
 
-    @Before
-    public void setUp() {
+    private static void defaultStubs() {
         setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         mockMaterialUpload();
-    }
 
-    private static void defaultStubs() {
         setupUsersGroupQueryStub();
         stubEnableAllCapabilities();
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");

@@ -65,7 +65,6 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
     @Before
     public void setup() {
-        super.setUp();
         helper = new MultipartFileUploadHelper();
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
