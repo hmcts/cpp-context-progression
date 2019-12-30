@@ -89,7 +89,11 @@ function healthCheck {
 function integrationTests {
   echo
   echo "Running Integration Tests"
-  mvn verify -pl ${CONTEXT_NAME}-integration-test -P${CONTEXT_NAME}-integration-test -DINTEGRATION_HOST_KEY=localhost
+  # To run against embedded ElasticSearch, do the following:
+  # 2) run $VAGRANT_DIR/utils/useStandaloneElasticSearch off"
+  # 3) remove the "-with-standalone-elasticsearch" in the integration test profile below
+  # 4) run the ./runIntegrationTests.sh
+  mvn verify -pl ${CONTEXT_NAME}-integration-test -P${CONTEXT_NAME}-integration-test-with-standalone-elasticsearch -DINTEGRATION_HOST_KEY=localhost
   echo "Finished running Integration Tests"
 }
 
