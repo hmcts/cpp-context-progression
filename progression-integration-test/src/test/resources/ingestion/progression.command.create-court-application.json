@@ -17,6 +17,7 @@
     "applicationReceivedDate": "2019-01-01",
     "applicationReference": "RANDOM_REFERENCE",
     "applicationDecisionSoughtByDate": "2000-01-01",
+    "dueDate": "2000-01-01",
     "applicant": {
       "id": "RANDOM_APPLICANT_ID",
       "organisation": {

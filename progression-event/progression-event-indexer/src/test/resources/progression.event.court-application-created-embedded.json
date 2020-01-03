@@ -21,6 +21,7 @@
     },
     "applicationReceivedDate": "0000-01-01",
     "applicationDecisionSoughtByDate": "0000-01-01",
+    "dueDate": "2000-01-01",
     "applicationReference": "a",
     "applicant": {
       "defendant": {

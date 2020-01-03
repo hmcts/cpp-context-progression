@@ -1294,6 +1294,7 @@
       "paymentReference": "a"
     },
     "applicationDecisionSoughtByDate": "0000-01-01",
+    "dueDate":"2010-01-01",
     "applicationStatus": "DRAFT",
     "outOfTimeReasons": "a",
     "judicialResults": [

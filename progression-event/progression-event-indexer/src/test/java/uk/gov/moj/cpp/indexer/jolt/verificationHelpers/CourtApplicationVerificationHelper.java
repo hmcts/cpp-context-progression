@@ -102,11 +102,13 @@ public class CourtApplicationVerificationHelper {
         final String applicationType = ((JsonString) courtApplication.read("$.courtApplication.type.applicationType")).getString();
         final String applicationReceivedDate = ((JsonString) courtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) courtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
+        final String dueDate = ((JsonString) courtApplication.read("$.courtApplication.dueDate")).getString();
         final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
+        assertEquals(dueDate, outputApplication.getString("dueDate"));
     }
 
     private static void verifyApplicantTransformationWhenNoOrganisation(final JsonObject applicant, final JsonArray parties) {
@@ -125,8 +127,6 @@ public class CourtApplicationVerificationHelper {
         assertThat(defendantCount, is(2l));
 
         verifyDefendant(applicantDefendant, parties);
-
-
     }
 
 

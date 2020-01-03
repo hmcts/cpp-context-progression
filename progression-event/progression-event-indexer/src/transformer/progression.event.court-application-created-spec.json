@@ -15,6 +15,7 @@
           },
           "applicationReceivedDate": "applications[0].receivedDate",
           "applicationDecisionSoughtByDate": "applications[0].decisionDate",
+          "dueDate":"applications[0].dueDate",
           "applicant": {
             "personDetails": {
               "title": "applicant_parties[0].title",

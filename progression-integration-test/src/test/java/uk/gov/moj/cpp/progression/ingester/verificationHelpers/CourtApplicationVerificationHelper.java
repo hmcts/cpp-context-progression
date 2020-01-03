@@ -38,7 +38,6 @@ public class CourtApplicationVerificationHelper {
         final String applicationType = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].type.applicationType")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].applicationDecisionSoughtByDate")).getString();
-
         final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
@@ -64,12 +63,14 @@ public class CourtApplicationVerificationHelper {
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
         final String applicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
+        final String dueDate = ((JsonString) inputCourtApplication.read("$.courtApplication.dueDate")).getString();
 
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
         assertEquals(applicationReference, outputApplication.getString("applicationReference"));
+        assertEquals(dueDate, outputApplication.getString("dueDate"));
 
         final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
         final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");
