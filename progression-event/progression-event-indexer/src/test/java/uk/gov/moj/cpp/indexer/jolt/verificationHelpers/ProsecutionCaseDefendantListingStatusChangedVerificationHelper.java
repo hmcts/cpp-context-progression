@@ -25,10 +25,17 @@ public class ProsecutionCaseDefendantListingStatusChangedVerificationHelper {
             outputHearings.stream().forEach(hearingOutputDetail -> {
                 final DocumentContext application1 = JsonPath.parse(applicationOrCase);
 
+
                 final DocumentContext hearingOutputDocument = JsonPath.parse(hearingOutputDetail);
                 if (application1.read("$.id").equals(hearingOutputDocument.read("$.caseId"))) {
                     final JsonString caseType = hearingOutputDocument.read("$._case_type");
                     assertThat(caseType.getString(), is(applicationOrCaseType));
+
+                    if("APPLICATION".equals(caseType.getString())){
+                        final JsonString dueDateOutput = application1.read("dueDate");
+                        final JsonString dueDateInput = hearingOutputDocument.read("$.dueDate");
+                        assertThat(dueDateOutput, is(dueDateInput));
+                    }
 
                     final JsonValue isCrown = hearingOutputDocument.read("$._is_crown");
                     assertThat(isCrown.toString(), is("true"));

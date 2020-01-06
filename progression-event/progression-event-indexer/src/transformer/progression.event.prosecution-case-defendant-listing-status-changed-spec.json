@@ -36,6 +36,7 @@
             "*": {
               "#APPLICATION": "applications[&1]._case_type",
               "id": "applications[&1].caseId",
+              "dueDate":"applications[&1].dueDate",
               "@(3,boxWorkAssignedUserId)": "applications[&1].hearings[0].boxWorkAssignedUserId",
               "@(3,boxWorkTaskStatus)": "applications[&1].hearings[0].boxWorkTaskStatus",
               "@(2,id)": "applications[&1].hearings[0].hearingId",
