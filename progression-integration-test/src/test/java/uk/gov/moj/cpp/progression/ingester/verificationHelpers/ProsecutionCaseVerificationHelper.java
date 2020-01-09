@@ -25,12 +25,12 @@ public class ProsecutionCaseVerificationHelper {
 
     public static void verifyProsecutionCase(final DocumentContext inputProsecutionCase, final JsonObject outputCase) {
 
-        with(outputCase.toString())
-                .assertThat("$.caseId", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.id")).getString()))
-                .assertThat("$.caseReference", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityReference")).getString()))
-                .assertThat("$.prosecutingAuthority", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString()))
-                .assertThat("$.caseStatus", equalTo("ACTIVE"))
-                .assertThat("$._case_type", equalTo("PROSECUTION"));
+        assertThat(outputCase.getString("caseId"), equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.id")).getString()));
+        assertThat(outputCase.getString("caseReference"), equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityReference")).getString()));
+        assertThat(outputCase.getString("prosecutingAuthority"), equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString()));
+        assertThat(outputCase.getString("caseStatus"), equalTo("ACTIVE"));
+        assertThat(outputCase.getString("_case_type"), equalTo("PROSECUTION"));
+        assertThat(outputCase.getBoolean("_is_crown"), equalTo(true));
     }
 
     public static void verifyPncOnDefendantLevel(final DocumentContext inputDefendant, final JsonObject party) {

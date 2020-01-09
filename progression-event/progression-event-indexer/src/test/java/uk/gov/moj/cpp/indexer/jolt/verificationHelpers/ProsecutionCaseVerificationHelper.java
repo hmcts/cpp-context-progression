@@ -8,11 +8,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.addressLines;
-import com.jayway.jsonpath.DocumentContext;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
+
+import com.jayway.jsonpath.DocumentContext;
 
 public class ProsecutionCaseVerificationHelper {
 
@@ -23,7 +24,8 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$.caseReference", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityReference")).getString()))
                 .assertThat("$.prosecutingAuthority", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString()))
                 .assertThat("$.caseStatus", equalTo("ACTIVE"))
-                .assertThat("$._case_type", equalTo("PROSECUTION"));
+                .assertThat("$._case_type", equalTo("PROSECUTION"))
+                .assertThat("$._is_crown", equalTo(true));
     }
 
     public static void verifyDefendants(final DocumentContext inputProsecutionCase, final JsonObject outputCase, final int count, final boolean includeAliasAndOrganisation) {

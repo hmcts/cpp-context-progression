@@ -18,11 +18,12 @@
         },
         "applicationReceivedDate": "2019-06-23",
         "dueDate": "2019-06-24",
-
+        "applicationDecisionSoughtByDate": "2019-06-25",
         "applicant": {
           "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
         },
-        "applicationStatus": "LISTED"
+        "applicationStatus": "LISTED",
+        "applicationReference": "REF 1"
       },
       {
         "id": "864696dc-d5aa-4437-86a9-dd3eff3b3257",
@@ -38,7 +39,9 @@
           "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
         },
         "applicationStatus": "LISTED",
-        "dueDate": "2019-06-25"
+        "dueDate": "2019-06-25",
+        "applicationDecisionSoughtByDate": "2019-06-27",
+        "applicationReference": "REF 2"
       }
     ],
     "courtCentre": {

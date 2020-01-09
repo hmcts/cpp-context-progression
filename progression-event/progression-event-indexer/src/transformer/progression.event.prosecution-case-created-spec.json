@@ -75,6 +75,10 @@
         "\\_case_type": "=toUpper",
         "caseStatus": "=toUpper",
         "prosecutingAuthority": "=toUpper",
+        "\\_is_crown": [
+          "=toBoolean",
+          true
+        ],
         "parties": {
           "*": {
             "addressLines": "=join(' ',@(1,addressLines))"

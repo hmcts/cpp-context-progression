@@ -35,8 +35,17 @@
           "courtApplications": {
             "*": {
               "#APPLICATION": "applications[&1]._case_type",
-              "id": "applications[&1].caseId",
-              "dueDate":"applications[&1].dueDate",
+              "id": [
+                "applications[&1].caseId",
+                "applications[&1].applicationId"
+              ],
+              "dueDate": "applications[&1].dueDate",
+              "applicationReference": "applications[&1].applicationReference",
+              "applicationReceivedDate": "applications[&1].receivedDate",
+              "applicationDecisionSoughtByDate": "applications[&1].decisionDate",
+              "type": {
+                "applicationType": "applications[&2].applicationType"
+              },
               "@(3,boxWorkAssignedUserId)": "applications[&1].hearings[0].boxWorkAssignedUserId",
               "@(3,boxWorkTaskStatus)": "applications[&1].hearings[0].boxWorkTaskStatus",
               "@(2,id)": "applications[&1].hearings[0].hearingId",
@@ -109,6 +118,41 @@
             "\\_is_magistrates": "=toBoolean"
           }
         }
+      }
+    },
+    {
+      "operation": "shift",
+      "spec": {
+        "caseDocuments": {
+          "*": {
+            "caseId": "caseDocuments[&1].caseId",
+            "caseReference": "caseDocuments[&1].caseReference",
+            "prosecutingAuthority": "caseDocuments[&1].prosecutingAuthority",
+            "caseStatus": "caseDocuments[&1].caseStatus",
+            "_case_type": "caseDocuments[&1]._case_type",
+            "_is_sjp": "caseDocuments[&1]._is_sjp",
+            "_is_magistrates": "caseDocuments[&1]._is_magistrates",
+            "_is_crown": "caseDocuments[&1]._is_crown",
+            "_is_charging": "caseDocuments[&1]._is_charging",
+            "sjpNoticeServed": "caseDocuments[&1].sjpNoticeServed",
+
+            "hearings": "caseDocuments[&1].hearings",
+            "parties": "caseDocuments[&1].parties",
+
+            "applicationId": "caseDocuments[&1].applications[&1].applicationId",
+            "applicationReference": "caseDocuments[&1].applications[&1].applicationReference",
+            "dueDate": "caseDocuments[&1].applications[&1].dueDate",
+            "receivedDate": "caseDocuments[&1].applications[&1].receivedDate",
+            "decisionDate": "caseDocuments[&1].applications[&1].decisionDate",
+            "applicationType": "caseDocuments[&1].applications[&1].applicationType"
+          }
+        }
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "*": "=recursivelySquashNulls"
       }
     }
   ]

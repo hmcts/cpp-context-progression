@@ -5,6 +5,8 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
@@ -32,6 +34,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.junit.AfterClass;
@@ -45,6 +48,10 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
 
     private static final MessageConsumer messageConsumer = privateEvents.createConsumer(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
     private static final MessageProducer messageProducer = privateEvents.createProducer();
+    private static final String COURT_APPLICATIONS = "courtApplications";
+    private static final String APPLICATIONS = "applications";
+    public static final String APPLICATIN_REFERENCE = "applicationReference";
+    public static final String DUE_DATE = "dueDate";
 
     private String firstCaseId;
     private String secondCaseId;
@@ -108,7 +115,36 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
             final JsonArray inputJudiciaryTypesArray = inputHearing.getJsonArray("judiciary");
 
             assertJudiciaryTypes(outputJudiciaryTypesArray, inputJudiciaryTypesArray);
+
+            if (outputCase.containsKey(APPLICATIONS)) {
+                final JsonArray outputApplications = outputCase.getJsonArray(APPLICATIONS);
+                final JsonArray inputCourtApplications = inputHearing.getJsonArray(COURT_APPLICATIONS);
+                assertCourtApplications(outputApplications, inputCourtApplications);
+            }
         }
+    }
+
+    private void assertCourtApplications(final JsonArray outputApplications, final JsonArray inputCourtApplications) {
+        for (final JsonValue outputApplication : outputApplications) {
+            final JsonObject outputApplicationJsonObject = (JsonObject) outputApplication;
+            final String applicationId = outputApplicationJsonObject.getString("applicationId");
+            final Optional<JsonObject> inputCourtApplication = inputCourtApplications.stream().map(p -> (JsonObject) p).filter(p -> p.getString("id").equals(applicationId)).findFirst();
+            if (!inputCourtApplication.isPresent()) {
+                fail("Could not find input application for application " + applicationId);
+            }
+
+            assertApplication(outputApplicationJsonObject, inputCourtApplication.get());
+        }
+    }
+
+    private void assertApplication(final JsonObject outputApplicationJsonObject, final JsonObject inputApplicationJsonObject) {
+        assertThat(outputApplicationJsonObject.getString("applicationId"), is(inputApplicationJsonObject.getString("id")));
+        assertThat(outputApplicationJsonObject.getString(APPLICATIN_REFERENCE), is(inputApplicationJsonObject.getString(APPLICATIN_REFERENCE)));
+        assertThat(outputApplicationJsonObject.getString("applicationType"), is(inputApplicationJsonObject.getJsonObject("type").getString("applicationType")));
+        assertThat(outputApplicationJsonObject.getString(DUE_DATE), is(inputApplicationJsonObject.getString(DUE_DATE)));
+        assertThat(outputApplicationJsonObject.getString("decisionDate"), is(inputApplicationJsonObject.getString("applicationDecisionSoughtByDate")));
+        assertThat(outputApplicationJsonObject.getString("receivedDate"), is(inputApplicationJsonObject.getString("applicationReceivedDate")));
+
     }
 
     private JsonObject getProsecutionCaseDefendantListingStatusChangedPayload(final String fileName) {

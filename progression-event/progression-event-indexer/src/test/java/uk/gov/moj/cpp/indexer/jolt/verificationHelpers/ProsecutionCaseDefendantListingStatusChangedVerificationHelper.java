@@ -23,18 +23,16 @@ public class ProsecutionCaseDefendantListingStatusChangedVerificationHelper {
                                                                         final String applicationOrCaseType) {
         applicationsOrCases.stream().forEach(applicationOrCase -> {
             outputHearings.stream().forEach(hearingOutputDetail -> {
-                final DocumentContext application1 = JsonPath.parse(applicationOrCase);
+                final DocumentContext inputApplication = JsonPath.parse(applicationOrCase);
 
 
                 final DocumentContext hearingOutputDocument = JsonPath.parse(hearingOutputDetail);
-                if (application1.read("$.id").equals(hearingOutputDocument.read("$.caseId"))) {
+                if (inputApplication.read("$.id").equals(hearingOutputDocument.read("$.caseId"))) {
                     final JsonString caseType = hearingOutputDocument.read("$._case_type");
                     assertThat(caseType.getString(), is(applicationOrCaseType));
 
                     if("APPLICATION".equals(caseType.getString())){
-                        final JsonString dueDateOutput = application1.read("dueDate");
-                        final JsonString dueDateInput = hearingOutputDocument.read("$.dueDate");
-                        assertThat(dueDateOutput, is(dueDateInput));
+                        assertApplication(inputApplication, hearingOutputDocument);
                     }
 
                     final JsonValue isCrown = hearingOutputDocument.read("$._is_crown");
@@ -89,6 +87,23 @@ public class ProsecutionCaseDefendantListingStatusChangedVerificationHelper {
                 }
             });
         });
+    }
+
+    private static void assertApplication(final DocumentContext inputApplicationEventPayload, final DocumentContext hearingOutputDocument) {
+
+        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "dueDate", "$.applications[0].dueDate");
+
+        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "applicationReceivedDate", "$.applications[0].receivedDate");
+
+        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "applicationReference", "$.applications[0].applicationReference");
+
+        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "type.applicationType", "$.applications[0].applicationType");
+    }
+
+    private static void assertApplicationProperty(final DocumentContext inputApplicationEventPayload, final DocumentContext transformedOutputDocument, final String inputPath, final String outputPath) {
+        final JsonString expected = inputApplicationEventPayload.read(inputPath);
+        final JsonString actual = transformedOutputDocument.read(outputPath);
+        assertThat(actual, is(expected));
     }
 
     private static void assertHearingDates(JsonArray hearingDatesArrayOutput, JsonArray hearingDatesArrayInput) {
