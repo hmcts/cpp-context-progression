@@ -13,6 +13,7 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.util.Optional;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
@@ -52,6 +53,10 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
 
     public void updateDefendant() {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
+        updateDefendant(jsonString);
+    }
+
+    public void updateDefendant(String jsonString) {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
@@ -62,12 +67,12 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
 
     public void updateYouthFlagForDefendant() {
         final String jsonString = getPayload(TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD);
-        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
-        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
-        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+        updateDefendant(jsonString);
+    }
 
-        request = jsonObjectPayload.toString();
-        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    public void updateSameDefendant() {
+        final String jsonString = getPayload(TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD);
+        updateDefendant(jsonString);
     }
 
     /**
@@ -89,5 +94,9 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.defendant.prosecutionCaseId",
                 Matchers.hasToString(Matchers.containsString(caseId)))));
+    }
+
+    public void closePrivateEventConsumer() throws JMSException {
+        privateEventsConsumer.close();
     }
 }

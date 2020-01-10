@@ -1,0 +1,257 @@
+{
+  "courtReferral": {
+    "courtDocuments": [
+      {
+        "courtDocumentId": "27608f49-9cf4-4dc7-a716-81851b366a2a",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "e1d32d9d-29ec-4934-a932-22a50f223966"
+            ],
+            "prosecutionCaseId": "beeaab8f-ee35-45a1-b419-1e4edbb48eed"
+          }
+        },
+        "documentTypeId": "1b7e6a7a-a571-4ab9-8895-4b1a58424d78",
+        "materials": [
+          {
+            "id": "338f5570-3f1e-4d36-aa7e-e73eb6c024c0",
+            "isRemoved": false,
+            "mimeType": "pdf",
+            "name": "BankStatment.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "defence",
+              "prosecution",
+              "courtClerk",
+              "Listing Officers"
+            ]
+          },
+          {
+            "id": "31d02b10-4a1f-49f3-9835-d5fa00584719",
+            "isRemoved": true,
+            "mimeType": "pdf",
+            "name": "Fine.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "defence",
+              "prosecution",
+              "Legal Advisers",
+              "Listing Officers"
+            ]
+          }
+        ],
+        "name": "Bank Statement"
+      }
+    ],
+    "listHearingRequests": [
+      {
+        "estimateMinutes": 20,
+        "hearingType": {
+          "description": "hearingTypeDesc",
+          "id": "5d980a3f-4eb5-4b5d-ac0d-5cf76c7bf5eb"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "courtCentre": {
+      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+      	},
+        "listDefendantRequests": [
+          {
+            "datesToAvoid": "thursdays",
+            "defendantOffences": [
+              "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+            ],
+            "hearingLanguageNeeds": "WELSH",
+            "prosecutionCaseId": "beeaab8f-ee35-45a1-b419-1e4edbb48eed",
+            "referralReason": {
+              "defendantId": "d5f94fd0-e87e-42a9-9395-5fc353bb0f2d",
+              "description": "forTrial",
+              "id": "04e0915a-5759-4bd3-a3c2-35c5206d4e3b"
+            },
+            "summonsRequired": "SJP_REFERRAL"
+          }
+        ],
+        "listingDirections": "tricky defendant",
+        "prosecutorDatesToAvoid": "wednesdays",
+        "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992"
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "associatedPersons": [
+              {
+                "person": {
+                  "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+                  "address": {
+                    "address1": "22",
+                    "address2": "Acacia Avenue",
+                    "address3": "Acacia Town",
+                    "address4": "Acacia City",
+                    "address5": "Acacia Country",
+                    "postcode": "GIR 0AA"
+                  },
+                  "contact": {
+                    "fax": "3425678",
+                    "home": "123456",
+                    "mobile": "45678910",
+                    "primaryEmail": "harry.kane@spurs.co.uk",
+                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "work": "7891011"
+                  },
+                  "dateOfBirth": "1995-01-01",
+                  "disabilityStatus": "a",
+                  "documentationLanguageNeeds": "WELSH",
+                  "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+                  "firstName": "Harry",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "Hindi",
+                  "lastName": "Kane",
+                  "middleName": "Jack",
+                  "nationalInsuranceNumber": "NH222222B",
+                  "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+                  "occupation": "Footballer",
+                  "occupationCode": "F",
+                  "title": "MR"
+                },
+                "role": "parent"
+              }
+            ],
+            "id": "d5f94fd0-e87e-42a9-9395-5fc353bb0f2d",
+            "mitigation": "I was not there",
+            "mitigationWelsh": "I was not there in Welsh",
+            "numberOfPreviousConvictionsCited": 5,
+            "offences": [
+              {
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "count": 0,
+                "endDate": "2018-01-01",
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+                },
+                "offenceCode": "TTH105HY",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceFacts": {
+                  "alcoholReadingAmount": 111,
+                  "alcoholReadingMethodCode": "2222",
+                  "vehicleRegistration": "AA12345"
+                },
+                "orderIndex": 1,
+                "startDate": "2018-01-01",
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh"
+              }
+            ],
+            "personDefendant": {
+              "aliases": [
+                "johnny robber",
+                "jack the knife"
+              ],
+              "arrestSummonsNumber": "arrest123",
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+                "code": "C",
+                "description": "Remanded into Custody"
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "driverNumber": "AACC12345",
+              "employerOrganisation": {
+                "address": {
+                  "address1": "Disney Road",
+                  "address2": "Disney Town",
+                  "address3": "Disney District",
+                  "address4": "Paris",
+                  "address5": "France",
+                  "postcode": "DI5 9EY"
+                },
+                "contact": {
+                  "fax": "a",
+                  "primaryEmail": "person@hotmail.com",
+                  "secondaryEmail": "associate@hotmail.com",
+                  "work": "0207 654 3246 extn 1234"
+                },
+                "id": "8625b50c-afc4-4d63-add2-68b9bf01b1fd",
+                "incorporationNumber": "Mickeymouse1",
+                "name": "Disneyland Paris"
+              },
+              "employerPayrollReference": "payyou1234",
+              "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "perceivedBirthYear": 2015,
+              "personDetails": {
+                "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "GIR 0AA"
+                },
+                "contact": {
+                  "fax": "3425678",
+                  "home": "123456",
+                  "mobile": "45678910",
+                  "primaryEmail": "harry.kanejunior@spurs.co.uk",
+                  "secondaryEmail": "harry.kanejunior@hotmail.com",
+                  "work": "7891011"
+                },
+                "dateOfBirth": "2010-01-01",
+                "disabilityStatus": "a",
+                "documentationLanguageNeeds": "WELSH",
+                "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+                "firstName": "Harry",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Welsh",
+                "lastName": "Kane Junior",
+                "middleName": "Jack",
+                "nationalInsuranceNumber": "NH323232B",
+                "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+                "occupation": "Kid",
+                "occupationCode": "F",
+                "specificRequirements": "Screen",
+                "title": "MR"
+              },
+              "pncId": "1234567",
+              "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c"
+            },
+            "prosecutionAuthorityReference": "TFL12345-ABC",
+            "prosecutionCaseId": "beeaab8f-ee35-45a1-b419-1e4edbb48eed",
+            "witnessStatement": "he did not do it",
+            "witnessStatementWelsh": "he did not do it in Welsh"
+          }
+        ],
+        "id": "beeaab8f-ee35-45a1-b419-1e4edbb48eed",
+        "initiationCode": "J",
+        "originatingOrganisation": "G01FT01AB",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityReference": "TFL12345"
+        },
+        "statementOfFacts": "You did it",
+        "statementOfFactsWelsh": "You did it in Welsh"
+      }
+    ],
+    "sjpReferral": {
+      "noticeDate": "2018-01-01",
+      "referralDate": "2018-02-15",
+      "referringJudicialDecision": {
+        "judiciary": [
+          {
+            "judicialName": "Mrs Theresa Mary May",
+            "judicialRoleType": "MAGISTRATE"
+          },
+          {
+            "judicialName": "Mr Michel Bernard Barnier",
+            "judicialRoleType": "MAGISTRATE"
+          }
+        ],
+        "location": "Lavender Hill Magistrates' Court"
+      }
+    }
+  }
+}

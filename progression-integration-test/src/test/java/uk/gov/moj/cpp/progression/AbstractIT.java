@@ -29,16 +29,26 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.mockMaterialUplo
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
 
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+
+import java.io.IOException;
 import java.util.UUID;
 
 import com.jayway.restassured.response.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbstractIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
 
     protected static final UUID USER_ID_VALUE = randomUUID();
     public static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
+    protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
+    protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
 
 
     /**
@@ -51,13 +61,30 @@ public class AbstractIT {
         configureFor(HOST, 8080);
         reset(); // will need to be removed when things are being run in parallel
         defaultStubs();
+        setUpElasticSearch();
     }
+
+
+    private static void setUpElasticSearch() {
+        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
+        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
+        elasticSearchIndexRemoverUtil  = new ElasticSearchIndexRemoverUtil();
+        deleteAndCreateIndex();
+    }
+
+    protected static void deleteAndCreateIndex() {
+        try {
+            elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
+        }catch (final IOException e){
+            LOGGER.error("Error while creating index ", e);
+        }
+    }
+
 
     private static void defaultStubs() {
         setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         mockMaterialUpload();
-
         setupUsersGroupQueryStub();
         stubEnableAllCapabilities();
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");

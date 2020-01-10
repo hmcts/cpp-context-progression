@@ -19,7 +19,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.SHORT_NAME
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantAlias;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.Offence;
@@ -41,8 +40,6 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -51,7 +48,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067","squid:S1854","squid:S1135","squid:S1481"})
-public class ReferredProsecutionCaseTransformer {
+public class
+ReferredProsecutionCaseTransformer {
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -107,19 +105,6 @@ public class ReferredProsecutionCaseTransformer {
 
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final
     InitiationCode initiationCode) {
-        List<DefendantAlias> defendantAliases = null;
-        String pncId = null;
-        
-        if(nonNull(referredDefendant.getPersonDefendant())) {
-            pncId = referredDefendant.getPersonDefendant().getPncId();
-            
-            final List<String> aliases = referredDefendant.getPersonDefendant().getAliases();
-            if(nonNull(aliases)) {
-                defendantAliases = new ArrayList<>();
-                defendantAliases = aliases.stream().map(alias -> DefendantAlias.defendantAlias().withFirstName(alias).build()).collect(Collectors.toList());
-            }
-        }
-        
         return Defendant.defendant()
                 .withOffences(referredDefendant
                         .getOffences().stream()
@@ -141,8 +126,8 @@ public class ReferredProsecutionCaseTransformer {
                         .getAssociatedPersons().stream()
                         .map(referredAssociatedPerson -> transform(referredAssociatedPerson, jsonEnvelope))
                         .collect(Collectors.toList()) : null)
-                .withAliases(defendantAliases)
-                .withPncId(pncId)
+                .withAliases(referredDefendant.getAliases())
+                .withPncId(nonNull(referredDefendant.getPersonDefendant()) ? referredDefendant.getPersonDefendant().getPncId() : null)
                 .build();
     }
 

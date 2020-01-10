@@ -8,7 +8,7 @@ ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=progression
 FRAMEWORK_VERSION=6.4.0
-EVENT_STORE_VERSION=2.4.3
+EVENT_STORE_VERSION=2.4.5
 FILE_SERVICE_VERSION=1.17.12
 
 #fail script on error
@@ -89,7 +89,11 @@ function healthCheck {
 function integrationTests {
   echo
   echo "Running Integration Tests"
-  mvn verify -pl ${CONTEXT_NAME}-integration-test -P${CONTEXT_NAME}-integration-test -DINTEGRATION_HOST_KEY=localhost
+  # To run against embedded ElasticSearch, do the following:
+  # 2) run $VAGRANT_DIR/utils/useStandaloneElasticSearch off"
+  # 3) remove the "-with-standalone-elasticsearch" in the integration test profile below
+  # 4) run the ./runIntegrationTests.sh
+  mvn verify -pl ${CONTEXT_NAME}-integration-test -P${CONTEXT_NAME}-integration-test-with-standalone-elasticsearch -DINTEGRATION_HOST_KEY=localhost
   echo "Finished running Integration Tests"
 }
 

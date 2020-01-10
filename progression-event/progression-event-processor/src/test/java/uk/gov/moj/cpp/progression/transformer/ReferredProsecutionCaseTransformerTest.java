@@ -11,6 +11,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantAlias;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.InitiationCode;
@@ -38,6 +39,7 @@ import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static java.util.Optional.empty;
@@ -45,6 +47,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -280,16 +283,22 @@ public class ReferredProsecutionCaseTransformerTest {
     @Test
     public void testTransformReferredDefendant() {
         // Setup
-        
+
+        DefendantAlias defendantAlias1 = new DefendantAlias("firstName", "lastName", null, "middleName", Title.MR);
+        DefendantAlias defendantAlias2 = new DefendantAlias("null", null, "legalEntityName",  null, null);
+        List<DefendantAlias> defendantAliasList = new ArrayList<>();
+        defendantAliasList.add(defendantAlias1);
+        defendantAliasList.add(defendantAlias2);
+
         final ReferredDefendant referredDefendant = factory.populatePojo(ReferredDefendant.referredDefendant()
                 .withId(randomUUID())
+                .withAliases(defendantAliasList)
                 .withOffences(
                         new ArrayList<>(Arrays.asList(ReferredOffence.referredOffence().withId(randomUUID()).build())))
                 .withAssociatedPersons(new ArrayList<>(Arrays.asList(ReferredAssociatedPerson.referredAssociatedPerson()
                         .withPerson(ReferredPerson.referredPerson().build()).withRole("role").build())))
                 .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
-                        .withPersonDetails(ReferredPerson.referredPerson().withNationalityId(randomUUID()).build())
-                        .withAliases(new ArrayList<String>(Arrays.asList("alias1", "alias2"))).build())
+                        .withPersonDetails(ReferredPerson.referredPerson().withNationalityId(randomUUID()).build()).build())
                 .build());
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
@@ -306,8 +315,12 @@ public class ReferredProsecutionCaseTransformerTest {
 
         //Verify the results
         assertThat("Indictable", is(result.getOffences().get(0).getModeOfTrial()));
-        assertEquals("alias1", result.getAliases().get(0).getFirstName());
-        assertEquals("alias2", result.getAliases().get(1).getFirstName());
+        assertEquals("firstName", result.getAliases().get(0).getFirstName());
+        assertEquals("lastName", result.getAliases().get(0).getLastName());
+        assertEquals("middleName", result.getAliases().get(0).getMiddleName());
+        assertEquals("MR", result.getAliases().get(0).getTitle().name());
+        assertNull(result.getAliases().get(0).getLegalEntityName());
+        assertEquals("legalEntityName", result.getAliases().get(1).getLegalEntityName());
     }
 
     @Test

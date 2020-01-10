@@ -38,11 +38,23 @@
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>test-utils-persistence</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jboss-logging</artifactId>
+                    <groupId>org.jboss.logging</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jboss-logging</artifactId>
+                    <groupId>org.jboss.logging</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -90,8 +102,60 @@
             <artifactId>criminal-court-public-model</artifactId>
             <version>${criminal-court-public-model.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
+            <artifactId>unifiedsearch-test-utils</artifactId>
+            <version>${unified.search-library.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.json</groupId>
+            <artifactId>json-transformer-jolt</artifactId>
+            <version>${json-transformer.version}</version>
+        </dependency>
 
+        <!-- added for framework 6-->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-client-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-framework-persistence</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- need this specific version to get the test working -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>${jboss-logging.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>event-domain</artifactId>
+            <version>${event-store.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>event-store-management-commands</artifactId>
+            <version>${event-store.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-jmx</artifactId>
+            <version>${cpp.framework.version}</version>
+        </dependency>
+        <!-- added for framework 6-->
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -187,7 +251,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.19.1</version>
                         <executions>
                             <execution>
                                 <id>integration-test</id>
@@ -204,12 +267,86 @@
                         </executions>
                         <configuration>
                             <skipITs>false</skipITs>
-                            <systemProperties>
-                                <property>
-                                    <name>INTEGRATION_HOST_KEY</name>
-                                    <value>${INTEGRATION_HOST_KEY}</value>
-                                </property>
-                            </systemProperties>
+                            <runOrder>alphabetical</runOrder>
+                            <systemPropertyVariables>
+                                <INTEGRATION_HOST_KEY>${INTEGRATION_HOST_KEY}</INTEGRATION_HOST_KEY>
+                                <ELASTICSEARCH_URI>http://127.0.0.1:9500</ELASTICSEARCH_URI>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                    <!-- Running with embedded elasticsearch by default -->
+                    <plugin>
+                        <groupId>com.github.alexcojocaru</groupId>
+                        <artifactId>elasticsearch-maven-plugin</artifactId>
+                        <version>${elasticsearch-maven-plugin.version}</version>
+                        <configuration>
+                            <skip>false</skip>
+                            <version>${elasticsearch.embedded.version}</version>
+                            <flavour>default</flavour>
+                            <clusterName>test</clusterName>
+                            <httpPort>9500</httpPort>
+                            <transportPort>9600</transportPort>
+                            <!-- How long to wait for ES to start-->
+                            <timeout>60</timeout>
+                            <instanceSettings>
+                                <properties>
+                                    <discovery.type>single-node</discovery.type>
+                                </properties>
+                            </instanceSettings>
+                            <!-- TODO: xpack security not implemented:
+                            https://github.com/alexcojocaru/elasticsearch-maven-plugin/issues/42
+                            -->
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>start-elasticsearch</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>runforked</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop-elasticsearch</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>progression-integration-test-with-standalone-elasticsearch</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>integration-test</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skipITs>false</skipITs>
+                            <runOrder>alphabetical</runOrder>
+                            <systemPropertyVariables>
+                                <INTEGRATION_HOST_KEY>${INTEGRATION_HOST_KEY}</INTEGRATION_HOST_KEY>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
