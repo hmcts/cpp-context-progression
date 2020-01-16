@@ -30,7 +30,7 @@ public class ProsecutionCaseVerificationHelper {
         assertThat(outputCase.getString("prosecutingAuthority"), equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString()));
         assertThat(outputCase.getString("caseStatus"), equalTo("ACTIVE"));
         assertThat(outputCase.getString("_case_type"), equalTo("PROSECUTION"));
-        assertThat(outputCase.getBoolean("_is_crown"), equalTo(true));
+        assertThat(outputCase.getBoolean("_is_crown"), equalTo(false));
     }
 
     public static void verifyPncOnDefendantLevel(final DocumentContext inputDefendant, final JsonObject party) {

@@ -77,7 +77,7 @@
         "prosecutingAuthority": "=toUpper",
         "\\_is_crown": [
           "=toBoolean",
-          true
+          false
         ],
         "parties": {
           "*": {

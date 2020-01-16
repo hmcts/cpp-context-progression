@@ -25,7 +25,7 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$.prosecutingAuthority", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString()))
                 .assertThat("$.caseStatus", equalTo("ACTIVE"))
                 .assertThat("$._case_type", equalTo("PROSECUTION"))
-                .assertThat("$._is_crown", equalTo(true));
+                .assertThat("$._is_crown", equalTo(false));
     }
 
     public static void verifyDefendants(final DocumentContext inputProsecutionCase, final JsonObject outputCase, final int count, final boolean includeAliasAndOrganisation) {
