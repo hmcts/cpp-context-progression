@@ -4,8 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doNothing;
@@ -69,6 +68,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.progression.value.object.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationServiceTest {
@@ -86,7 +86,7 @@ public class NotificationServiceTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
-    @Spy
+    @Mock
     private SystemIdMapperService systemIdMapperService;
 
     @Mock
@@ -571,5 +571,47 @@ public class NotificationServiceTest {
         CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
         Optional<Address> personAddress  = Whitebox.invokeMethod(notificationService, "getApplicantAddress", courtApplicationPartyMock1);
         verifyPersonAddress(personAddress.get());
+    }
+
+    @Test
+    public void sendCPSNotificationTest() throws Exception {
+        when(applicationParameters.getDefenceDisassociationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        HearingVO hearingVO = HearingVO.builder().courtCenterId(randomUUID()).courtName("CourtName").hearingDate("22-12-2019").build();
+        Optional<CaseVO> caseVO = Optional.of(CaseVO.builder().caseId(caseId).caseURN("caseURN").build());
+        Optional<DefenceOrganisationVO> defenceOraganisationVO = Optional.of(DefenceOrganisationVO.builder()
+                                                                .addressLine1("1 pickwick close")
+                                                                .addressLine2("Hounslow Heath")
+                                                                .addressLine3("Hounslow")
+                                                                .addressLine4("Middlesex")
+                                                                .postcode("TW45ED")
+                                                                .email("anas.khatri@Gmail.com").phoneNumber("07950564893").name("OrganisationName_MOD").build());
+
+        Optional<DefendantVO> defendantVO = Optional.of(DefendantVO.builder().firstName("firstName").lastName("lastname").legalEntityName("legalEntityName").middleName("S").build());
+
+        CPSNotificationVO cpsNotification = CPSNotificationVO.builder()
+                                            .cpsEmailAddress("mohammed.khatri@hmcts.net")
+                                            .templateType(EmailTemplateType.DISASSOCIATION)
+                                            .defenceOrganisationVO(defenceOraganisationVO)
+
+                                            .defendantVO(defendantVO)
+                                            .caseVO(caseVO)
+                                            .hearingVO(hearingVO).build();
+
+        notificationService.sendCPSNotification(envelope, cpsNotification);
+
+        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(0), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("mohammed.khatri@hmcts.net")),
+                withJsonPath("$.notifications[0].personalisation.URN", equalTo("caseURN")),
+                withJsonPath("$.notifications[0].personalisation.venue_name", equalTo("CourtName")),
+                withJsonPath("$.notifications[0].personalisation.hearing_date", equalTo("22-12-2019")),
+                withJsonPath("$.notifications[0].personalisation.phone", equalTo("07950564893")),
+                withJsonPath("$.notifications[0].personalisation.surname", equalTo("legalEntityName")),
+                withJsonPath("$.notifications[0].personalisation.address_line_1", equalTo("1 pickwick close")),
+                withJsonPath("$.notifications[0].personalisation.postcode", equalTo("TW45ED")),
+                withJsonPath("$.notifications[0].personalisation.address_line_2", equalTo("Hounslow Heath")),
+                withJsonPath("$.notifications[0].personalisation.address_line_3", equalTo("Hounslow")),
+                withJsonPath("$.notifications[0].personalisation.organisation_name", equalTo("OrganisationName_MOD"))
+        ))));
     }
 }

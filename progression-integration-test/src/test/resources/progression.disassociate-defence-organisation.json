@@ -1,3 +1,4 @@
 {
-  "organisationId": "%ORGANISATION_ID%"
+  "organisationId": "%ORGANISATION_ID%",
+  "caseId": "%CASE_ID%"
 }

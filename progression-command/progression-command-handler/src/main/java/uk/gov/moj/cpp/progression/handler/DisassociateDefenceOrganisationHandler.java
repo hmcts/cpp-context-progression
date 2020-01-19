@@ -43,19 +43,16 @@ public class DisassociateDefenceOrganisationHandler {
     @Handles("progression.command.handler.disassociate-defence-organisation")
     public void handle(final Envelope<DisassociateDefenceOrganisation> envelope) throws EventStreamException {
         final DisassociateDefenceOrganisation disassociateDefenceOrganisation = envelope.payload();
-
         final String userId = envelope.metadata().userId()
                 .orElseThrow(() -> new IllegalArgumentException("No UserId Supplied"));
-
         final OrganisationDetails userOrgDetails = usersGroupService.getUserOrgDetails(envelope);
         validateDisassociationCommand(disassociateDefenceOrganisation.getOrganisationId(),
                 userOrgDetails.getId(), envelope);
-
         final EventStream eventStream = eventSource.getStreamById(disassociateDefenceOrganisation.getDefendantId());
         final DefenceAssociationAggregate defenceAssociationAggregate = aggregateService.get(eventStream, DefenceAssociationAggregate.class);
         final Stream<Object> events =
                 defenceAssociationAggregate.disassociateOrganisation(disassociateDefenceOrganisation.getDefendantId(),
-                        disassociateDefenceOrganisation.getOrganisationId(), fromString(userId));
+                        disassociateDefenceOrganisation.getOrganisationId(), disassociateDefenceOrganisation.getCaseId(), fromString(userId));
         appendEventsToStream(envelope, eventStream, events);
     }
 

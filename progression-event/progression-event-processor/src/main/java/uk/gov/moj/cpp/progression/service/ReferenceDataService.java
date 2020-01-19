@@ -122,7 +122,7 @@ public class ReferenceDataService {
     public Optional<JsonObject> getOrganisationUnitById(final UUID courtCentreId, final JsonEnvelope event) {
         final JsonObject payload = createObjectBuilder().add(ID, courtCentreId.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(event, REFERENCEDATA_GET_ORGANISATION).apply(payload);
-        final JsonEnvelope jsonEnvelop = requester.request(request);
+        final JsonEnvelope jsonEnvelop = requester.requestAsAdmin(request);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("'referencedata.query.organisation-unit.v2' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
         }

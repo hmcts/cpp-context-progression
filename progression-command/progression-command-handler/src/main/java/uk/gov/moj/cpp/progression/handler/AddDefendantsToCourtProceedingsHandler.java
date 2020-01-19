@@ -42,7 +42,7 @@ public class AddDefendantsToCourtProceedingsHandler {
         final EventStream eventStream = eventSource.getStreamById(
                 addDefendantsToCourtProceedings.getDefendants().get(0).getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.defendantsAddedToCourtProcessdings(
+        final Stream<Object> events = caseAggregate.defendantsAddedToCourtProceedings(
                 addDefendantsToCourtProceedings.getDefendants(),
                 addDefendantsToCourtProceedings.getListHearingRequests());
 

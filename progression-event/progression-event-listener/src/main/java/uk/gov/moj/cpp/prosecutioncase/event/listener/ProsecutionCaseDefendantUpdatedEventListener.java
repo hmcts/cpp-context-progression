@@ -226,7 +226,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
         return Defendant.defendant().withOffences(originDefendant.getOffences())
                 .withPersonDefendant(defendant.getPersonDefendant())
-                .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                 .withAssociatedPersons(defendant.getAssociatedPersons())
                 .withId(defendant.getId())
                 .withMitigation(originDefendant.getMitigation())

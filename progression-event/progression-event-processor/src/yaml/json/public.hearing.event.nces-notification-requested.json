@@ -1,0 +1,66 @@
+{
+  "applicationId": "bd7a0967-376a-4f86-a073-f298a852e046",
+  "caseId": "74e48408-a2fb-4d36-9a6f-1eed7d33df9a",
+  "defendantId": "d77e3d63-9340-4bd2-a17d-7528d2939f86",
+  "materialId": "c77a6195-ea72-45d8-8357-d560aecb619a",
+  "hearingId": "f15854e3-8368-4b67-903d-96a3528b01fa",
+  "documentContent": {
+    "courtCentreName": "Swansea Crown Court",
+    "gobAccountNumber": "19145765F",
+    "divisionCode": "045",
+    "oldGobAccountNumber": "19134585C",
+    "oldDivisionCode": "077",
+    "urn": "TFL2146989",
+    "amendmentType": "Stat Dec Granted",
+    "amendmentDate": "2019-08-05",
+    "adjustmentDetails": "where applicable, Remit £100 on Offence 1",
+    "defendant": {
+      "name": "John Gallimore",
+      "dateOfBirth": "1985-12-7"
+    },
+    "defendantCaseOffences": [
+      {
+        "wording": "Public service vehicle - passenger failing to pay fare",
+        "startDate": "2019-11-05",
+        "results": [
+          {
+            "label": "Fine",
+            "prompts": [
+              {
+                "label": "Amount of fine",
+                "value": "3000"
+              }
+            ]
+          },
+          {
+            "label": "Victom Surcharge",
+            "prompts": [
+              {
+                "label": "Amount of surcharge",
+                "value": "5000"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "wording": "Public service vehicle - passenger failing to pay fare",
+        "startDate": "2019-11-07",
+        "results": [
+          {
+            "label": "Withdrawn"
+          }
+        ]
+      }
+    ]
+  },
+  "emailNotifications": {
+    "personalisation": {
+      "subject": "application withdrawn",
+      "linkToAttachement": "http://alfresco/material_id"
+    },
+    "replyToAddress": "Sample of Reply to Address",
+    "sendToAddress": "Sample of the send to address",
+    "templateId": "4650e16e-3fb7-474a-a7eb-e0d084f31386"
+  }
+}

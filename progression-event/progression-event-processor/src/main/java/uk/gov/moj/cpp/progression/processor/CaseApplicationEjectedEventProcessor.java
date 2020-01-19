@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.progression.processor;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -10,7 +12,10 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -21,6 +26,7 @@ import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 @ServiceComponent(EVENT_PROCESSOR)
 @SuppressWarnings("squid:CallToDeprecatedMethod")
@@ -45,6 +51,8 @@ public class CaseApplicationEjectedEventProcessor {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
+    @Inject
+    private AzureFunctionService azureFunctionService;
 
     @Handles("progression.event.case-ejected")
     public void processCaseEjected(final JsonEnvelope event) {
@@ -55,6 +63,7 @@ public class CaseApplicationEjectedEventProcessor {
         final JsonObject payload = event.payloadAsJsonObject();
         final String removalReason = payload.getString(REMOVAL_REASON);
         sendPublicMessage(event, hearingIds, payload.getString(PROSECUTION_CASE_ID), PROSECUTION_CASE_ID, removalReason);
+        setCaseEjectedStorage(event, payload.getString(PROSECUTION_CASE_ID));
     }
 
     @Handles("progression.event.application-ejected")
@@ -85,9 +94,34 @@ public class CaseApplicationEjectedEventProcessor {
     }
 
     private void addHearingIds(JsonArray hearingIds, JsonObjectBuilder payloadBuilder) {
-         if (isNotEmpty(hearingIds)) {
+        if (isNotEmpty(hearingIds)) {
             payloadBuilder.add("hearingIds", hearingIds);
         }
+    }
+
+    private void setCaseEjectedStorage(final JsonEnvelope event, final String prosecutionCaseId) {
+        progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId).ifPresent(prosecutionCaseJsonObject -> {
+            final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.
+                    convert(prosecutionCaseJsonObject.getJsonObject("prosecutionCase"),
+                            ProsecutionCase.class);
+
+            if (prosecutionCase != null && prosecutionCase.getProsecutionCaseIdentifier() != null) {
+                final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+                final ProsecutionCaseIdentifier caseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+
+                payloadBuilder.add("CaseId", prosecutionCaseId);
+                payloadBuilder.add("ProsecutorCode", caseIdentifier.getProsecutionAuthorityCode());
+                payloadBuilder.add("InitiationCode", prosecutionCase.getInitiationCode().toString());
+                payloadBuilder.add("CaseReference", caseIdentifier.getProsecutionAuthorityReference() != null ? caseIdentifier.getProsecutionAuthorityReference() : caseIdentifier.getCaseURN());
+
+                try {
+                    final Integer statusCode = azureFunctionService.makeFunctionCall(payloadBuilder.build().toString());
+                    LOGGER.info(String.format("Azure function status code %s", statusCode));
+                } catch (IOException ex) {
+                    LOGGER.error(String.format("Failed to call Azure function %s", ex));
+                }
+            }
+        });
     }
 
     private JsonArray getHearingIdsForAllApplications(final JsonEnvelope event, final String applicationId) {

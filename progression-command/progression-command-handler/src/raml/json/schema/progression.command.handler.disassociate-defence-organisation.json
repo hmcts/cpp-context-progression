@@ -8,10 +8,14 @@
     },
     "organisationId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     }
   },
   "required": [
     "defendantId",
-    "organisationId"
+    "organisationId",
+	"caseId"
   ]
 }

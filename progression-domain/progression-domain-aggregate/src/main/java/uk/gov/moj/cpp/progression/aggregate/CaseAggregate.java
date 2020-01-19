@@ -503,13 +503,13 @@ public class CaseAggregate implements Aggregate {
      */
 
     public Stream<Object> createProsecutionCase(final ProsecutionCase prosecutionCase) {
-        LOGGER.debug("Prosecution case is being refered To Court .");
+        LOGGER.debug("Prosecution case is being referred To Court .");
         return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
     }
 
-    public Stream<Object> defendantsAddedToCourtProcessdings(final List<uk.gov.justice.core.courts.Defendant> addedDefendants,
-                                                             final List<ListHearingRequest> listHearingRequests) {
-        LOGGER.debug("Defendants Added To CourtProcessdings");
+    public Stream<Object> defendantsAddedToCourtProceedings(final List<uk.gov.justice.core.courts.Defendant> addedDefendants,
+                                                            final List<ListHearingRequest> listHearingRequests) {
+        LOGGER.debug("Defendants Added To CourtProceedings");
 
         final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
                 addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d -> d, (i, d) -> d)).values().stream().collect(toList());

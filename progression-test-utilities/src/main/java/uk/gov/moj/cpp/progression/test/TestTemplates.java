@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
@@ -9,6 +10,9 @@ import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Personalisation;
+import uk.gov.justice.core.courts.nces.Defendant;
+import uk.gov.justice.core.courts.nces.DocumentContent;
+import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.DefendantCaseOffence;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
@@ -24,6 +28,7 @@ import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.core.courts.nowdocument.Result;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -206,4 +211,34 @@ public class TestTemplates {
                 .withValue("Test_value_" + value)
                 .build();
     }
+
+    public static NcesNotificationRequested generateNcesNotificationRequested(){
+        return  NcesNotificationRequested.ncesNotificationRequested()
+                        .withCaseId(randomUUID())
+                        .withDefendantId(randomUUID())
+                        .withHearingId(randomUUID())
+                        .withMaterialId(randomUUID())
+                        .withDocumentContent(
+                                DocumentContent.documentContent()
+                                        .withUrn("232CASE34")
+                                        .withDefendant(Defendant.defendant().build())
+                                        .withGobAccountNumber("gobnumber")
+                                        .withAmendmentType("Granted refused")
+                                        .withDivisionCode("203")
+                                        .withDefendantCaseOffences(
+                                                Arrays.asList(defendantCaseOffenceTemplate(12)))
+
+                                        .build())
+                        .withEmailNotifications(asList(
+                                EmailChannel.emailChannel()
+                                        .withReplyToAddress("Sample of Reply to Address")
+                                        .withSendToAddress("Sample of the send to address")
+                                        .withTemplateId(UUID.randomUUID())
+                                        .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
+                                        .build()
+                        ))
+                        .build();
+    }
+
+
 }

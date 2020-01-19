@@ -239,7 +239,7 @@ public class ReferenceDataServiceTest {
                 new ByteArrayInputStream(getOrganisationPayload(courtCentreId).getBytes()))
                 .readObject();
 
-        when(requester.request(any()))
+        when(requester.requestAsAdmin(any()))
                 .thenReturn(envelopeFrom(metadataWithRandomUUID(ORGANISATION_UNIT), payload));
 
 
@@ -249,7 +249,7 @@ public class ReferenceDataServiceTest {
         final Optional<JsonObject> result = referenceDataService.getOrganisationUnitById(courtCentreId, envelope);
 
         //then
-        verify(requester).request(envelopeArgumentCaptor.capture());
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope)

@@ -12,6 +12,9 @@
     "organisationId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
     "endDate": {
       "type": "string",
       "format": "date-time"
@@ -21,6 +24,7 @@
     "userId",
     "defendantId",
     "organisationId",
+    "caseId",
     "endDate"
   ]
 }

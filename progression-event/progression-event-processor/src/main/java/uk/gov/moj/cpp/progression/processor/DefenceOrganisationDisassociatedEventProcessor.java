@@ -12,7 +12,7 @@ import javax.inject.Inject;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class DefenceOrganisationDisassociatedEventProcessor {
-    
+
     @Inject
     private Sender sender;
 

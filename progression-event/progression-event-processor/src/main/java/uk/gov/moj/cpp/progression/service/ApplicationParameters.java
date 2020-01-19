@@ -10,7 +10,31 @@ public class ApplicationParameters {
     @Value(key = "applicationTemplateId")
     private String applicationTemplateId;
 
+    @Inject
+    @Value(key = "defenceInstructionTemplateId")
+    private String defenceInstructionTemplateId;
+
+    @Inject
+    @Value(key = "defenceDisassociationTemplateId")
+    private String defenceDisassociationTemplateId;
+
+    @Inject
+    @Value(key = "ncesEmailTemplateId")
+    private String ncesEmailTemplateId;
+
+    public String getNcesEmailTemplateId() {
+        return ncesEmailTemplateId;
+    }
+
     public String getApplicationTemplateId() {
         return applicationTemplateId;
+    }
+
+    public String getDefenceInstructionTemplateId() {
+        return defenceInstructionTemplateId;
+    }
+
+    public String getDefenceDisassociationTemplateId() {
+        return defenceDisassociationTemplateId;
     }
 }

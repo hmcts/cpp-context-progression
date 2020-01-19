@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -43,7 +42,7 @@ public class NowsMaterialStatusEventProcessor {
 
         ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                 .ifPresent(materialDetails ->
-                        notificationService.sendEmail(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), materialDetails.getEmailNotifications()));
+                        notificationService.sendEmail(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), materialDetails.getEmailNotifications(),null ));
 
         ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                 .filter(MaterialDetails::getIsRemotePrintingRequired)

@@ -69,10 +69,11 @@ public class DefenceAssociationAggregate implements Aggregate {
                 .build()));
     }
 
-    public Stream<Object> disassociateOrganisation(final UUID defendantId, final UUID organisationId, final UUID userId) {
+    public Stream<Object> disassociateOrganisation(final UUID defendantId, final UUID organisationId, final UUID caseId, final UUID userId) {
         LOGGER.debug("A defence organisation is disassociated to defendant");
         return apply(Stream.of(DefenceOrganisationDisassociated.defenceOrganisationDisassociated()
                 .withOrganisationId(organisationId)
+                .withCaseId(caseId)
                 .withDefendantId(defendantId)
                 .withUserId(userId)
                 .withEndDate(ZonedDateTime.now(UTC_ZONE_ID))

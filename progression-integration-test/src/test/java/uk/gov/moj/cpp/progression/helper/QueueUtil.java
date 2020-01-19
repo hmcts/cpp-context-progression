@@ -128,7 +128,7 @@ public class QueueUtil {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
         final String json = jsonEnvelope.toDebugStringPrettyPrint();
-
+//        LOGGER.info(json);
         try {
             final TextMessage message = new ActiveMQTextMessage();
 

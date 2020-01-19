@@ -2,9 +2,11 @@ package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -16,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -30,9 +33,14 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatch
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.HearingResultHandler;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.json.JsonObject;
+
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +63,8 @@ public class HearingResultHandlerTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            HearingResulted.class);
+            HearingResulted.class,
+            ProsecutionCaseDefendantListingStatusChanged.class);
 
     @InjectMocks
     private HearingResultHandler hearingResultHandler;
@@ -101,16 +110,18 @@ public class HearingResultHandlerTest {
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.hearing-resulted"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearing", notNullValue ()))
-                        ))
 
-                )
-        );
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+
+        MatcherAssert.assertThat(((JsonEnvelope) envelopes.get(0)).payloadAsJsonObject().getJsonObject("hearing")
+                , notNullValue());
+        MatcherAssert.assertThat(envelopes.get(0).metadata().name(), is("progression.event.hearing-resulted"));
+
+        MatcherAssert.assertThat(envelopes.get(1).metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed"));
+        MatcherAssert.assertThat(((JsonEnvelope) envelopes.get(1)).payloadAsJsonObject().getJsonObject("hearing")
+                , notNullValue());
+
     }
 
 

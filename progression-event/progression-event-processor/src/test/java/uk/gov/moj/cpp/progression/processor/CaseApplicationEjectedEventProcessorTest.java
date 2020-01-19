@@ -4,24 +4,32 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
+import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,10 +75,19 @@ public class CaseApplicationEjectedEventProcessorTest {
     private GetCaseAtAGlance caseAtAGlance;
 
     @Mock
+    private ProsecutionCase prosecutionCase;
+
+    @Mock
+    private ProsecutionCaseIdentifier prosecutionCaseIdentifier;
+
+    @Mock
     private JsonEnvelope finalEnvelope;
 
     @Mock
     private Function<Object, JsonEnvelope> enveloperFunction;
+
+    @Mock
+    private AzureFunctionService azureFunctionService;
 
     @Before
     public void initMocks() {
@@ -78,9 +95,13 @@ public class CaseApplicationEjectedEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleCaseEjectedEventEventMessage() {
+    public void shouldHandleCaseEjectedEventEventMessage() throws IOException {
         final String prosecutionCaseId = randomUUID().toString();
         final UUID hearingId = randomUUID();
+        final String prosecutionCaseURN = randomUUID().toString();
+        final String prosecutionCaseAuthorityCode = randomUUID().toString();
+        final InitiationCode initiationCode = InitiationCode.Q;
+
         //Given
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getString("prosecutionCaseId")).thenReturn(prosecutionCaseId);
@@ -90,14 +111,25 @@ public class CaseApplicationEjectedEventProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(envelope,
                 prosecutionCaseId)).thenReturn(of(prosecutionCaseJsonObject));
         when(prosecutionCaseJsonObject.getJsonObject("caseAtAGlance")).thenReturn(payload);
+        when(prosecutionCaseJsonObject.getJsonObject("prosecutionCase")).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, GetCaseAtAGlance.class)).thenReturn(caseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCase.class)).thenReturn(prosecutionCase);
         when(caseAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
+        when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
+        when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
+        when(prosecutionCaseIdentifier.getProsecutionAuthorityCode()).thenReturn(prosecutionCaseAuthorityCode);
+        when(prosecutionCase.getInitiationCode()).thenReturn(initiationCode);
+        when(azureFunctionService.makeFunctionCall(payload.toString())).thenReturn(HttpStatus.SC_ACCEPTED);
+
         //When
         caseApplicationEjectedEventProcessor.processCaseEjected(envelope);
 
+
         //Then
         verify(sender).send(finalEnvelope);
-        verify(progressionService).getProsecutionCaseDetailById(envelope, prosecutionCaseId);
+        verify(progressionService, times(2)).getProsecutionCaseDetailById(envelope, prosecutionCaseId);
+        verify(azureFunctionService).makeFunctionCall(anyString());
+
     }
 
     @Test

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 
+import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -43,6 +44,8 @@ public class DocumentGeneratorService {
     private static final String FAILED = "failed";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String ERROR_MESSAGE = "Error while uploading document generation or upload ";
+    public static final String NCES_DOCUMENT_TEMPLATE_NAME = "NCESNotification";
+    public static final String NCES_DOCUMENT_ORDER = "NCESDocumentOrder";
 
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
@@ -89,6 +92,26 @@ public class DocumentGeneratorService {
         }
     }
 
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public void generateNcesDocument(final Sender sender, final JsonEnvelope originatingEnvelope,
+                            final UUID userId, final NcesNotificationRequested ncesNotificationRequested) {
+        try {
+            final String orderName = NCES_DOCUMENT_ORDER;
+            final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
+            final JsonObject nowsDocumentOrderJson = objectToJsonObjectConverter.convert(ncesNotificationRequested.getDocumentContent());
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, getSystemUserUuid());
+            addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
+                    new ByteArrayInputStream(resultOrderAsByteArray), userId, ncesNotificationRequested.getHearingId().toString(), ncesNotificationRequested.getMaterialId(),
+                    ncesNotificationRequested.getCaseId(),
+                    null,
+                    false,
+                    null);
+
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error(ERROR_MESSAGE, e);
+        }
+    }
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public UUID generateDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final Sender sender, final UUID prosecutionCaseId, final UUID applicationId) {
 

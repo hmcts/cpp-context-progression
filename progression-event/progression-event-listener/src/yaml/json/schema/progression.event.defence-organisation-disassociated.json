@@ -3,24 +3,28 @@
   "id": "http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json",
   "type": "object",
   "properties": {
-    "userId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-    },
-    "defendantId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-    },
-    "organisationId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-    },
-    "endDate": {
-      "type": "string",
-      "format": "date-time"
-    }
+	"userId": {
+	  "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+	},
+	"defendantId": {
+	  "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+	},
+	"organisationId": {
+	  "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+	},
+	"caseId": {
+	  "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+	},
+	"endDate": {
+	  "type": "string",
+	  "format": "date-time"
+	}
   },
   "required": [
-    "userId",
-    "defendantId",
-    "organisationId",
-    "endDate"
+	"userId",
+	"defendantId",
+	"organisationId",
+	"caseId",
+	"endDate"
   ]
 }

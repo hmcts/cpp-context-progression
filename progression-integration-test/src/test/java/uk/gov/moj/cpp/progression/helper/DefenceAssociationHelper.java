@@ -58,15 +58,6 @@ public class DefenceAssociationHelper implements AutoCloseable {
         assertThat(response.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    public static void disassociateOrganisation(final String defendantId,
-                                                final String userId,
-                                                final String organisationId) throws IOException {
-        String body = readFile(DEFENCE_DISASSOCIATION_REQUEST_TEMPLATE_NAME);
-        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
-        final Response response = invokeCommand(defendantId, userId, body, DEFENCE_DISASSOCIATION_MEDIA_TYPE);
-        assertThat(response.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
-    }
-
     public static Response invokeAssociateOrganisation(final String defendantId,
                                                        final String userId) throws IOException {
         String body = readFile(DEFENCE_ASSOCIATION_REQUEST_TEMPLATE_NAME);
@@ -75,9 +66,9 @@ public class DefenceAssociationHelper implements AutoCloseable {
 
     public static Response invokeDisassociateOrganisation(final String defendantId,
                                                           final String userId,
-                                                          final String organisationId) throws IOException {
+                                                          final String organisationId, final String caseId) throws IOException {
         String body = readFile(DEFENCE_DISASSOCIATION_REQUEST_TEMPLATE_NAME);
-        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
+        body = body.replaceAll("%ORGANISATION_ID%", organisationId).replaceAll("%CASE_ID%", caseId);
         return invokeCommand(defendantId, userId, body, DEFENCE_DISASSOCIATION_MEDIA_TYPE);
     }
 

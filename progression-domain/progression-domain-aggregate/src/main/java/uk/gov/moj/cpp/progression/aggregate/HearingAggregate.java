@@ -189,7 +189,14 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> saveHearingResult(Hearing hearing, ZonedDateTime sharedTime) {
         LOGGER.debug("Hearing Resulted.");
-        return apply(Stream.of(HearingResulted.hearingResulted().withHearing(hearing).withSharedTime(sharedTime).build()));
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(HearingResulted.hearingResulted().withHearing(hearing).withSharedTime(sharedTime).build());
+        streamBuilder.add(new ProsecutionCaseDefendantListingStatusChanged(boxWorkAssignedUserId,
+                boxWorkTaskId,
+                boxWorkTaskStatus,
+                hearing,
+                HearingListingStatus.HEARING_RESULTED));
+        return apply(streamBuilder.build());
     }
 
     public ProsecutionCaseDefendantListingStatusChanged getSavedListingStatusChanged() {

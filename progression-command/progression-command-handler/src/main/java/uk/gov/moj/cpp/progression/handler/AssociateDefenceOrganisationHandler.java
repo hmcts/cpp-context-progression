@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import javax.inject.Inject;
+import javax.json.JsonValue;
+import java.util.stream.Stream;
+
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -14,11 +18,6 @@ import uk.gov.moj.cpp.progression.aggregate.DefenceAssociationAggregate;
 import uk.gov.moj.cpp.progression.command.AssociateDefenceOrganisation;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
-
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.json.JsonValue;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AssociateDefenceOrganisationHandler {

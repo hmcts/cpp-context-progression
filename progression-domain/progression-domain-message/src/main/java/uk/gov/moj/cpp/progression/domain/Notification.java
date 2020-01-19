@@ -13,14 +13,18 @@ public class Notification {
 
     private String replyToAddress;
 
+    private String materialUrl;
+
+
     private Map<String, String> personalisation;
 
-    public Notification(final UUID notificationId, final UUID templateId, final String sendToAddress, final String replyToAddress, final Map<String, String> personalisation) {
+    public Notification(final UUID notificationId, final UUID templateId, final String sendToAddress, final String replyToAddress, final Map<String, String> personalisation, String materialUrl) {
         this.notificationId = notificationId;
         this.templateId = templateId;
         this.sendToAddress = sendToAddress;
         this.replyToAddress = replyToAddress;
         this.personalisation = personalisation;
+        this.materialUrl=materialUrl;
     }
 
     public UUID getNotificationId() {
@@ -41,5 +45,9 @@ public class Notification {
 
     public Map<String, String> getPersonalisation() {
         return personalisation;
+    }
+
+    public String getMaterialUrl() {
+        return materialUrl;
     }
 }

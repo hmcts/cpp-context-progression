@@ -4,8 +4,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.NCES_DOCUMENT_TEMPLATE_NAME;
 
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
@@ -79,6 +81,38 @@ public class DocumentGeneratorServiceTest {
     @Test
     public void testGenerateNowRemote() throws Exception {
         test(true);
+    }
+
+    @Test
+    public void testGenerateNces() throws Exception {
+        final NcesNotificationRequested ncesNotificationRequested = TestTemplates.generateNcesNotificationRequested();
+
+        final UUID systemUserId = UUID.randomUUID();
+        final byte[] documentData = {34, 56, 78, 90};
+        final JsonObject ncesDocumentOrderJson = mock(JsonObject.class);
+
+        when(objectToJsonObjectConverter.convert(ncesNotificationRequested.getDocumentContent())).thenReturn(ncesDocumentOrderJson);
+        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId))
+                .thenReturn(documentData);
+
+        final UUID userId = UUID.randomUUID();
+
+        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId)).thenReturn(documentData);
+
+        documentGeneratorService.generateNcesDocument(sender, originatingEnvelope, userId, ncesNotificationRequested);
+
+        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
+
+        byte datasent[] = new byte[documentData.length];
+        fileStorerInputStreamCaptor.getValue().read(datasent, 0, documentData.length);
+        Assert.assertArrayEquals(documentData, datasent);
+
+        verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
+        UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
+        Assert.assertEquals(uploadMaterialContext.getMaterialId(), ncesNotificationRequested.getMaterialId());
+        Assert.assertEquals(uploadMaterialContext.getCaseId(), ncesNotificationRequested.getCaseId());
     }
 
     private void test(final boolean isRemotePrintingRequired) throws Exception {

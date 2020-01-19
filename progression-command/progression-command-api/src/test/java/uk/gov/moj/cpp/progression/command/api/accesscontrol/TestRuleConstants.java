@@ -45,6 +45,7 @@ public final class TestRuleConstants {
     private static final String GROUP_COURT_CLERKS = "Court Clerks";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
+    private static final String GROUP_NPS = "Probation Admin";
 
     private TestRuleConstants() {
         throw new IllegalAccessError("Utility class");
@@ -71,11 +72,11 @@ public final class TestRuleConstants {
     }
 
     public static List<String> getUpdateOffencesForDefendantActionGroups() {
-        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS,GROUP_COURT_CLERKS,GROUP_LEGAL_ADVISERS,GROUP_COURT_ADMINISTRATORS);
+        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS,GROUP_COURT_CLERKS,GROUP_LEGAL_ADVISERS,GROUP_COURT_ADMINISTRATORS, GROUP_NPS);
     }
 
     public static List<String> getUpdateDefendantActionGroups() {
-        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS,GROUP_COURT_CLERKS,GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS,GROUP_COURT_CLERKS,GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_NPS);
     }
 
 }

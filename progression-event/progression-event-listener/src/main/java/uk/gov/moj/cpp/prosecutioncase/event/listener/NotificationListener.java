@@ -128,7 +128,6 @@ public class NotificationListener {
             }
 
             notificationStatusRepository.save(notificationStatus);
-
         }
     }
 

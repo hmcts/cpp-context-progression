@@ -525,7 +525,7 @@ public class CaseAggregateTest {
                 .withListHearingRequests(new ArrayList<>())
                 .build();
 
-        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProcessdings(defendantsNotAddedToCourtProceedings.getDefendants(),
+        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProceedings(defendantsNotAddedToCourtProceedings.getDefendants(),
                 defendantsNotAddedToCourtProceedings.getListHearingRequests()).collect(toList());
 
         assertThat(eventStream.size(), is(1));
@@ -549,7 +549,7 @@ public class CaseAggregateTest {
         final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
                 caseId, defendantId, defendantId2, offenceId);
 
-        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProcessdings(defendantsAddedToCourtProceedings.getDefendants(),
+        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
                 defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
 
         assertThat(eventStream.size(), is(1));

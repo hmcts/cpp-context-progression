@@ -39,12 +39,12 @@
         <material.version>6.0.1</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>4.1.8-R2</access.control.version>
-        <referencedata.version>2.0.275</referencedata.version>
-        <listing.version>1.0.36</listing.version>
-        <hearing.version>2.0.189</hearing.version>
-        <usersgroups.version>6.0.4</usersgroups.version>
-        <referencedata.offence.version>1.0.26</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.57</criminal-court-public-model.version>
+        <referencedata.version>2.0.278</referencedata.version>
+        <listing.version>1.0.38</listing.version>
+        <hearing.version>6.4.3</hearing.version>
+        <usersgroups.version>6.4.3</usersgroups.version>
+        <referencedata.offence.version>1.0.27</referencedata.offence.version>
+        <criminal-court-public-model.version>1.0.58</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
     </properties>

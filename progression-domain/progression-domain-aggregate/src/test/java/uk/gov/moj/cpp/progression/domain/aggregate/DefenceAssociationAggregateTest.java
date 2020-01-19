@@ -42,7 +42,7 @@ public class DefenceAssociationAggregateTest {
     @Test
     public void shouldReturnDefenceOrganisationDisassociated() {
         final List<Object> eventStream = aggregate.disassociateOrganisation(randomUUID(),
-                randomUUID(), randomUUID()).collect(toList());
+                randomUUID(), randomUUID(), randomUUID()).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(DefenceOrganisationDisassociated.class)));

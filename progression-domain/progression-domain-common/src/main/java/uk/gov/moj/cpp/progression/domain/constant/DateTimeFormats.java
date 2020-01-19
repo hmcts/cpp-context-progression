@@ -5,7 +5,8 @@ public enum DateTimeFormats {
     SLASHED_DAY_DDMM("EEE dd/MM"),
     STANDARD("yyyy-MM-dd"),
     HYP_DAY_TIME_YYYY_MM_DD("yyyy-MM-dd HH:mm:ss"),
-    TIME_HMMA("h:mm a");
+    TIME_HMMA("h:mm a"),
+    DATE_SLASHED_DD_MM_YYYY("dd/MM/YYYY");
 
     private String dateFormat;
 
@@ -19,7 +20,7 @@ public enum DateTimeFormats {
 
     public static String[] getPatterns() {
         return new String[] { DateTimeFormats.STANDARD.getValue(), DateTimeFormats.SLASHED_DDMM.getValue(),
-                DateTimeFormats.HYP_DAY_TIME_YYYY_MM_DD.getValue() };
+                DateTimeFormats.HYP_DAY_TIME_YYYY_MM_DD.getValue(), DateTimeFormats.DATE_SLASHED_DD_MM_YYYY.getValue() };
     }
 
 }

@@ -173,11 +173,21 @@ subscriptions_descriptor:
         - name: public.hearing.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/nowdocument/now-document-requested.json
 
+        - name: public.hearing.event.nces-notification-requested
+          schema_uri: http://justice.gov.uk/core/courts/nces-notification-requested.json
+
         # Notification notify
         - name: public.notificationnotify.events.notification-failed
           schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-failed.json
 
         - name: public.notificationnotify.events.notification-sent
           schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-sent.json
+
+        # Notification for Instruction and Disassociated
+        - name: public.defence.event.record-instruction-details
+          schema_uri: http://moj.gov.uk/cpp/defence/event/processor/events/public.defence.event.record-instruction-details.json
+
+        - name: public.progression.defence-organisation-disassociated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
 
       event_source_name: public.event.source
