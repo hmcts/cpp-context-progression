@@ -29,7 +29,6 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.Title;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
@@ -74,7 +73,7 @@ public class SearchProsecutionCaseTest {
         setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
 
         Person personDetails = Person.person()
-                .withTitle(Title.MR).withFirstName("John")
+                .withTitle("DR").withFirstName("John")
                 .withMiddleName("S").withLastName("Smith")
                 .withDateOfBirth(LocalDate.of(1977, 01, 01))
                 .build();

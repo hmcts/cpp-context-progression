@@ -1,47 +1,5 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantAlias;
-import uk.gov.justice.core.courts.Ethnicity;
-import uk.gov.justice.core.courts.Gender;
-import uk.gov.justice.core.courts.InitiationCode;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ReferredAssociatedPerson;
-import uk.gov.justice.core.courts.ReferredDefendant;
-import uk.gov.justice.core.courts.ReferredOffence;
-import uk.gov.justice.core.courts.ReferredPerson;
-import uk.gov.justice.core.courts.ReferredPersonDefendant;
-import uk.gov.justice.core.courts.ReferredProsecutionCase;
-import uk.gov.justice.core.courts.Title;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.exception.DataValidationException;
-import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
-import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -64,6 +22,49 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ETHNICITY_
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.PROSECUTOR;
+
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantAlias;
+import uk.gov.justice.core.courts.Ethnicity;
+import uk.gov.justice.core.courts.Gender;
+import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ReferredAssociatedPerson;
+import uk.gov.justice.core.courts.ReferredDefendant;
+import uk.gov.justice.core.courts.ReferredOffence;
+import uk.gov.justice.core.courts.ReferredPerson;
+import uk.gov.justice.core.courts.ReferredPersonDefendant;
+import uk.gov.justice.core.courts.ReferredProsecutionCase;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.exception.DataValidationException;
+import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
+import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.co.jemos.podam.api.PodamFactory;
+import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1607"})
@@ -89,7 +90,7 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withAdditionalNationalityId(nationalityId)
                 .withNationalityId(nationalityId)
                 .withAddress(Address.address().withPostcode("CR1256DF").build())
-                .withTitle(Title.MR)
+                .withTitle("DR")
                 .build());
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
@@ -99,7 +100,7 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withObservedEthnicityCode("E12")
                 .withSelfDefinedEthnicityCode("E13")
                 .build();
-        
+
         // Run the test
         final Person result = referredProsecutionCaseTransformer.transform(referredPerson, ethnicity, jsonEnvelope);
 
@@ -123,13 +124,13 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withEthnicityId(ethnicityId)
                 .withNationalityId(nationalityId)
                 .withAddress(Address.address().withPostcode("CR1256DF").build())
-                .withTitle(Title.MR)
+                .withTitle("DR")
                 .build());
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
         when(referenceDataService.getNationality(jsonEnvelope, nationalityId)).thenThrow(new ReferenceDataNotFoundException("Country Nationality", nationalityId.toString()));
-        
+
         // Run the test
         final Person result = referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
 
@@ -149,7 +150,7 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withEthnicityId(ethnicityId)
                 .withNationalityId(nationalityId)
                 .withAddress(Address.address().build())
-                .withTitle(Title.MR)
+                .withTitle("DR")
                 .build());
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
@@ -267,7 +268,6 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withOrderIndex(0)
                 .build());
 
-        
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
         when(referenceDataOffenceService.getOffenceById(any(), any()))
@@ -284,7 +284,7 @@ public class ReferredProsecutionCaseTransformerTest {
     public void testTransformReferredDefendant() {
         // Setup
 
-        DefendantAlias defendantAlias1 = new DefendantAlias("firstName", "lastName", null, "middleName", Title.MR);
+        DefendantAlias defendantAlias1 = new DefendantAlias("firstName", "lastName", null, "middleName", "MR");
         DefendantAlias defendantAlias2 = new DefendantAlias("null", null, "legalEntityName",  null, null);
         List<DefendantAlias> defendantAliasList = new ArrayList<>();
         defendantAliasList.add(defendantAlias1);
@@ -318,7 +318,7 @@ public class ReferredProsecutionCaseTransformerTest {
         assertEquals("firstName", result.getAliases().get(0).getFirstName());
         assertEquals("lastName", result.getAliases().get(0).getLastName());
         assertEquals("middleName", result.getAliases().get(0).getMiddleName());
-        assertEquals("MR", result.getAliases().get(0).getTitle().name());
+        assertEquals("MR", result.getAliases().get(0).getTitle());
         assertNull(result.getAliases().get(0).getLegalEntityName());
         assertEquals("legalEntityName", result.getAliases().get(1).getLegalEntityName());
     }
@@ -343,8 +343,6 @@ public class ReferredProsecutionCaseTransformerTest {
                                                                         .build())))
                                                                 .build());
 
-        
-        
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
         when(referenceDataService.getEthinicity(any(), any())).thenReturn(of(getEthnicityObject()));
@@ -460,6 +458,5 @@ public class ReferredProsecutionCaseTransformerTest {
     private static JsonObject getEthnicityObject() {
         return Json.createObjectBuilder().add(ETHNICITY_CODE, "E12").add(ETHNICITY, "British").build();
     }
-    
 
 }

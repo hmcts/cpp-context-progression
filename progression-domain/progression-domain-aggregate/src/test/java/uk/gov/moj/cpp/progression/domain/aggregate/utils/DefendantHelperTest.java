@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.DocumentationLanguageNeeds;
 import uk.gov.justice.core.courts.Ethnicity;
@@ -15,7 +14,6 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.Title;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -43,7 +41,7 @@ public class DefendantHelperTest {
         organisation = Organisation.organisation().withName("HMCTS").withIncorporationNumber("INC-45875").withAddress(contactAddress).withContact(contactDetails).build();
         final UUID observedEthnicityId = randomUUID();
         final UUID selfDefEthnicityId = randomUUID();
-        personDetails = Person.person().withTitle(Title.MR).withFirstName("John").withMiddleName("S").withLastName("Smith")
+        personDetails = Person.person().withTitle("DR").withFirstName("John").withMiddleName("S").withLastName("Smith")
                 .withDateOfBirth(LocalDate.of(2000, 01, 01)).withNationalityId(randomUUID()).withAdditionalNationalityId(randomUUID())
                 .withEthnicity(Ethnicity.ethnicity().withSelfDefinedEthnicityId(selfDefEthnicityId).build())
                 .withGender(Gender.MALE)

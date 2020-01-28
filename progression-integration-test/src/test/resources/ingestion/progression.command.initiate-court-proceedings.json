@@ -75,7 +75,7 @@
             "associatedPersons": [
               {
                 "person": {
-                  "title": "MR",
+                  "title": "DR",
                   "firstName": "Harry",
                   "middleName": "Jack",
                   "lastName": "Kane",
@@ -138,7 +138,7 @@
             },
             "personDefendant": {
               "personDetails": {
-                "title": "MR",
+                "title": "DR",
                 "firstName": "Harry",
                 "middleName": "Jack",
                 "lastName": "Kane Junior",

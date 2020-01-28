@@ -67,7 +67,7 @@
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
           "synonym": "a",
           "personDetails": {
-            "title": "MR",
+            "title": "DR",
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
@@ -135,7 +135,7 @@
           "organisationPersons": [
             {
               "person": {
-                "title": "MR",
+                "title": "DR",
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
@@ -290,7 +290,7 @@
                 "aquittalDate": "0000-01-01",
                 "victims": [
                   {
-                    "title": "MR",
+                    "title": "DR",
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",
@@ -391,7 +391,7 @@
             "associatedPersons": [
               {
                 "person": {
-                  "title": "MR",
+                  "title": "DR",
                   "firstName": "a",
                   "middleName": "a",
                   "lastName": "a",
@@ -461,7 +461,7 @@
             },
             "personDefendant": {
               "personDetails": {
-                "title": "MR",
+                "title": "DR",
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
@@ -562,7 +562,7 @@
             },
             "aliases": [
               {
-                "title": "MR",
+                "title": "DR",
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
@@ -651,7 +651,7 @@
               "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
               "synonym": "a",
               "personDetails": {
-                "title": "MR",
+                "title": "DR",
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
@@ -719,7 +719,7 @@
               "organisationPersons": [
                 {
                   "person": {
-                    "title": "MR",
+                    "title": "DR",
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",
@@ -874,7 +874,7 @@
                     "aquittalDate": "0000-01-01",
                     "victims": [
                       {
-                        "title": "MR",
+                        "title": "DR",
                         "firstName": "a",
                         "middleName": "a",
                         "lastName": "a",
@@ -975,7 +975,7 @@
                 "associatedPersons": [
                   {
                     "person": {
-                      "title": "MR",
+                      "title": "DR",
                       "firstName": "a",
                       "middleName": "a",
                       "lastName": "a",
@@ -1045,7 +1045,7 @@
                 },
                 "personDefendant": {
                   "personDetails": {
-                    "title": "MR",
+                    "title": "DR",
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",
@@ -1146,7 +1146,7 @@
                 },
                 "aliases": [
                   {
-                    "title": "MR",
+                    "title": "DR",
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",

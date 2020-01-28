@@ -46,7 +46,7 @@
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
           "synonym": "a",
           "personDetails": {
-            "title": "MR",
+            "title": "DR",
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
@@ -139,7 +139,7 @@
       "applicationOutcomeType": {
 	      "id": "89abc992-c78d-4b3a-93b5-eac694c47db2",
 	      "sequence": 0,
-	      "description": "OUTCOME"          
+	      "description": "OUTCOME"
       }
     },
     "courtApplicationPayment": {

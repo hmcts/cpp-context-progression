@@ -64,7 +64,7 @@
               "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
               "occupation": "Footballer",
               "occupationCode": "F",
-              "title": "MR"
+              "title": "DR"
             },
             "role": "parent"
           }
@@ -178,7 +178,7 @@
             "occupation": "Kid",
             "occupationCode": "F",
             "specificRequirements": "Screen",
-            "title": "MR"
+            "title": "DR"
           }
         },
         "pncId": "1234567",

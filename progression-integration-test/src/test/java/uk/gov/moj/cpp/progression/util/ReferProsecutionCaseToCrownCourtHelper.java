@@ -55,7 +55,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].notifiedPlea.notifiedPleaValue", is("NOTIFIED_GUILTY")),
 
                 // assert person
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.title", is("MR")),
+                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.title", is("DR")),
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.firstName", is("Harry")),
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.middleName", is("Jack")),
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.lastName", is("Kane")),
@@ -87,7 +87,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.fax", is("3425678")),
 
                 // person defendant details
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.title", is("MR")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.title", is("DR")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.middleName", is("Jack")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.lastName", is("Kane Junior")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.ethnicity.observedEthnicityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),

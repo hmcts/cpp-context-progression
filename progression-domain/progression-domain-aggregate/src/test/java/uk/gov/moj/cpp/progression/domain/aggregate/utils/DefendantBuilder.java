@@ -91,7 +91,7 @@ public class DefendantBuilder {
                         CJS_CODE, REASON, DESCRIPTION, WORDING, CATEGORY, ARREST_DATE, START_DATE,
                         END_DATE, CHARGE_DATE);
 
-        return new AddDefendant(CASE_ID, DEFENDANT_ID, VERSION, new Person(randomUUID(), "Mr", "John", "Humpries", LocalDate.now(),
+        return new AddDefendant(CASE_ID, DEFENDANT_ID, VERSION, new Person(randomUUID(), "Dr", "John", "Humpries", LocalDate.now(),
                                         "British", "Male", homePhone, workPhone, mobile, fax, email,
                         new Address(
                                         "14", "Brunswick Road", "River Avenue", "London", "E16")),

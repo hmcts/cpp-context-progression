@@ -46,7 +46,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.Source;
-import uk.gov.justice.core.courts.Title;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.progression.test.Pair;
 
@@ -205,13 +204,13 @@ public class CoreTestTemplates {
 
         if (args.isMinimumPerson()) {
             return Person.person()
-                    .withTitle((RandomGenerator.values(Title.values()).next()))
+                    .withTitle("DR")
                     .withLastName(STRING.next())
                     .withGender(RandomGenerator.values(Gender.values()).next());
         }
 
         return Person.person()
-                .withTitle((RandomGenerator.values(Title.values()).next()))
+                .withTitle("DR")
                 .withContact((contactNumber().build()))
                 .withAdditionalNationalityCode((STRING.next()))
                 .withAdditionalNationalityId((randomUUID()))

@@ -49,7 +49,6 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.RespondentCounsel;
-import uk.gov.justice.core.courts.Title;
 import uk.gov.justice.progression.courts.exract.Applicant;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
 import uk.gov.justice.progression.courts.exract.ApplicationCourtExtractRequested;
@@ -469,7 +468,7 @@ public class ApplicationExtractTransformerTest {
                 .withFirstName(FIRST_NAME)
                 .withLastName(LAST_NAME)
                 .withAddress(createAddress())
-                .withTitle(Title.MR)
+                .withTitle("DR")
                 .build();
     }
 

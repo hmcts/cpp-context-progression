@@ -72,7 +72,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
     private static final String VALUE_END_DATE = "2010-08-21";
     private static final String VALUE_ARREST_DATE = "2010-08-21";
     private static final String VALUE_CHARGE_DATE = "2011-08-01";
-    private static final String PERSON_TITLE = "Mr";
+    private static final String PERSON_TITLE = "Baron";
     private static final String PERSON_FIRST_NAME = "John";
     private static final String PERSON_LAST_NAME = "Doe";
     private static final String PERSON_DATE_OF_BIRTH = "1971-12-21";

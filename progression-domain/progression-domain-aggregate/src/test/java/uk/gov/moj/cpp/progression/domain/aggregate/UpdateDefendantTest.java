@@ -96,7 +96,7 @@ public class UpdateDefendantTest {
     public void shouldReturnDefendantUpdatedUpdateConfirmedPersonBailStatusUpdated() {
         final Address address =
                         new Address("3", "Cambridge Street", "Warwick Avenue", "London", "NW10");
-        final Person person = new Person(UUID.randomUUID(), "Mr", "John", "Humpries",
+        final Person person = new Person(UUID.randomUUID(), "Dr", "John", "Humpries",
                         LocalDate.now(), "British", "Male", null, null, null, null, null, address);
         final String bailStatus = "Bailed";
         final String homePhone = "123Home";

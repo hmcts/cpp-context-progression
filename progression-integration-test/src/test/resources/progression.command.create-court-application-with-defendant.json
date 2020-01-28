@@ -51,7 +51,7 @@
         "mitigationWelsh": "a",
         "personDefendant": {
           "personDetails": {
-            "title": "MR",
+            "title": "DR",
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
@@ -196,7 +196,7 @@
         },
         "aliases": [
           {
-            "title": "MR",
+            "title": "DR",
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
@@ -213,7 +213,7 @@
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
           "synonym": "a",
           "personDetails": {
-            "title": "MR",
+            "title": "DR",
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",

@@ -37,7 +37,7 @@
             "associatedPersons": [
               {
                 "person": {
-                  "title": "MR",
+                  "title": "DR",
                   "lastName": "Kane",
                   "gender": "MALE"
                 },
@@ -47,7 +47,7 @@
 
             "personDefendant": {
               "personDetails": {
-                "title": "MR",
+                "title": "DR",
                 "lastName": "Kane Junior",
                 "gender": "MALE",
                 "address": {

@@ -45,7 +45,6 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCounsel;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.RespondentCounsel;
-import uk.gov.justice.core.courts.Title;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.VerdictType;
 import uk.gov.justice.progression.courts.CourtApplications;
@@ -749,7 +748,7 @@ public class CourtExtractTransformerTest {
                 .withFirstName(FIRST_NAME)
                 .withLastName(LAST_NAME)
                 .withAddress(createAddress())
-                .withTitle(Title.MR)
+                .withTitle("MR")
                 .build();
     }
 
