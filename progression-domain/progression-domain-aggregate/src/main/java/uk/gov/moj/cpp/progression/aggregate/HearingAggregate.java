@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 201L;
+    private static final long serialVersionUID = 202L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private UUID boxWorkAssignedUserId;
     private String boxWorkTaskId;
@@ -57,10 +57,9 @@ public class HearingAggregate implements Aggregate {
                             this.hearing = e.getHearing();
                             this.hearingListingStatus = e.getHearingListingStatus();
                 }),
-                when(HearingResulted.class).apply(e -> {
-                            this.hearing = e.getHearing();
-                            this.hearingListingStatus = HearingListingStatus.HEARING_RESULTED;
-                }),
+                when(HearingResulted.class).apply(e ->
+                            this.hearing = e.getHearing()
+                ),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
                         listDefendantRequests.addAll(e.getDefendantRequests());
@@ -128,9 +127,11 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
-        LOGGER.debug("Defendant listing status updated.");
+        LOGGER.debug("Hearing with id {} and the status: {} ", hearing.getId(), hearingListingStatus);
         final ProsecutionCaseDefendantListingStatusChanged.Builder prosecutionCaseDefendantListingStatusChanged = ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged();
-        if (HearingListingStatus.HEARING_RESULTED != this.hearingListingStatus) {
+        if (HearingListingStatus.HEARING_RESULTED == this.hearingListingStatus) {
+            prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(HearingListingStatus.HEARING_RESULTED);
+        } else {
             prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(hearingListingStatus);
         }
         prosecutionCaseDefendantListingStatusChanged.withHearing(hearing);
