@@ -29,3 +29,16 @@ Feature: CaseAggregate
     Given no previous events
     When you updateDefendantHearingResult on a HearingAggregate with a update defendant hearing result
     Then prosecution case defendant hearing result updated
+
+  Scenario: Update Hearing Listing Status to Hearing Resulted whenever hearing is resulted already
+
+    Given hearing is resulted
+    When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
+    Then hearing listing status with status resulted updated
+
+  Scenario: Update Hearing Listing Status to Hearing Initialised whenever hearing is not resulted already
+
+    Given no previous events
+    When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
+    Then hearing listing status with status initialised updated
+
