@@ -1,0 +1,9 @@
+{
+  "bindings": [
+    {
+      "name": "unfilteredJson",
+      "type": "activityTrigger",
+      "direction": "in"
+    }
+  ]
+}

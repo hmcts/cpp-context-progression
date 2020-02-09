@@ -11,14 +11,17 @@ import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVe
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJsonViaPath;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.VerificationUtil.initializeJolt;
+
+import uk.gov.justice.json.jolt.JoltTransformer;
+
+import java.io.IOException;
+
+import javax.json.JsonObject;
+
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import org.junit.Before;
 import org.junit.Test;
-import uk.gov.justice.json.jolt.JoltTransformer;
-
-import javax.json.JsonObject;
-import java.io.IOException;
 
 public class CourtApplicationCaseUpdatedTransformationTest {
 

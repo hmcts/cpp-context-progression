@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
 
 import uk.gov.justice.core.courts.BoxWorkTaskStatus;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
@@ -22,6 +24,7 @@ import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -51,11 +54,11 @@ public class HearingAggregate implements Aggregate {
     public Object apply(final Object event) {
         return match(event).with(
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
-                            this.boxWorkAssignedUserId = e.getBoxWorkAssignedUserId();
-                            this.boxWorkTaskId = e.getBoxWorkTaskId();
-                            this.boxWorkTaskStatus = e.getBoxWorkTaskStatus();
-                            this.hearing = e.getHearing();
-                            this.hearingListingStatus = e.getHearingListingStatus();
+                    this.boxWorkAssignedUserId = e.getBoxWorkAssignedUserId();
+                    this.boxWorkTaskId = e.getBoxWorkTaskId();
+                    this.boxWorkTaskStatus = e.getBoxWorkTaskStatus();
+                    this.hearing = e.getHearing();
+                    this.hearingListingStatus = e.getHearingListingStatus();
                 }),
                 when(HearingResulted.class).apply(e ->
                             this.hearing = e.getHearing()
@@ -191,14 +194,71 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> saveHearingResult(Hearing hearing, ZonedDateTime sharedTime) {
         LOGGER.debug("Hearing Resulted.");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(HearingResulted.hearingResulted().withHearing(hearing).withSharedTime(sharedTime).build());
+        final Hearing.Builder updatedHearingBuilder = Hearing.hearing();
+        if (hasProsecutionCases(hearing)) {
+            final List<ProsecutionCase> updatedProsecutionCases = hearing.getProsecutionCases().stream().map(prosecutionCase -> {
+                final List<Defendant> updatedDefendants = new ArrayList<>();
+
+                final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
+                final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
+                        .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
+                        .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
+                        .withId(prosecutionCase.getId())
+                        .withDefendants(updatedDefendants)
+                        .withInitiationCode(prosecutionCase.getInitiationCode())
+                        .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                        .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
+                        .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
+                        .withCaseMarkers(prosecutionCase.getCaseMarkers())
+                        .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
+                        .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
+                        .withRemovalReason(prosecutionCase.getRemovalReason())
+                        .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.CLOSED.getDescription() : prosecutionCase.getCaseStatus())
+                        .build();
+                return updatedProsecutionCase;
+            }).collect(toList());
+            updatedHearingBuilder.withProsecutionCases(updatedProsecutionCases);
+        }
+
+        updatedHearingBuilder
+                .withIsBoxHearing(hearing.getIsBoxHearing())
+                .withId(hearing.getId())
+                .withHearingDays(hearing.getHearingDays())
+                .withCourtCentre(hearing.getCourtCentre())
+                .withJurisdictionType(hearing.getJurisdictionType())
+                .withType(hearing.getType())
+                .withHearingLanguage(hearing.getHearingLanguage())
+                .withCourtApplications(hearing.getCourtApplications())
+                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
+                .withJudiciary(hearing.getJudiciary())
+                .withDefendantAttendance(hearing.getDefendantAttendance())
+                .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
+                .withHasSharedResults(hearing.getHasSharedResults())
+                .withDefenceCounsels(hearing.getDefenceCounsels())
+                .withProsecutionCounsels(hearing.getProsecutionCounsels())
+                .withRespondentCounsels(hearing.getRespondentCounsels())
+                .withApplicationPartyCounsels(hearing.getApplicationPartyCounsels())
+                .withCrackedIneffectiveTrial(hearing.getCrackedIneffectiveTrial())
+                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
+                .withHearingCaseNotes(hearing.getHearingCaseNotes())
+                .withCourtApplicationPartyAttendance(hearing.getCourtApplicationPartyAttendance())
+                .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
+                .withIntermediaries(hearing.getIntermediaries())
+                .withIsEffectiveTrial(hearing.getIsEffectiveTrial());
+        streamBuilder.add(HearingResulted.hearingResulted().withHearing(updatedHearingBuilder.build()).withSharedTime(sharedTime).build());
         streamBuilder.add(new ProsecutionCaseDefendantListingStatusChanged(boxWorkAssignedUserId,
                 boxWorkTaskId,
                 boxWorkTaskStatus,
                 hearing,
                 HearingListingStatus.HEARING_RESULTED));
+
         return apply(streamBuilder.build());
     }
+
+    private boolean hasProsecutionCases(final Hearing hearing) {
+        return Objects.nonNull(hearing.getProsecutionCases()) && !hearing.getProsecutionCases().isEmpty();
+    }
+
 
     public ProsecutionCaseDefendantListingStatusChanged getSavedListingStatusChanged() {
         if (this.boxWorkTaskStatus != null) {

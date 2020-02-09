@@ -24,9 +24,6 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
 import java.util.Optional;

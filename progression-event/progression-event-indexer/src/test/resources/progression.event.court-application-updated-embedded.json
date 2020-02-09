@@ -169,7 +169,7 @@
             "judicialResults": [
               {
                 "orderedHearingId": "00000000-0000-0000-0000-000000000000",
-                "isAvailableForCourtExtract":true,
+                "isAvailableForCourtExtract": true,
                 "label": "a",
                 "welshLabel": "a",
                 "isAdjournmentResult": true,
@@ -208,7 +208,7 @@
                     "value": "a",
                     "promptSequence": 0.1,
                     "promptReference": "a",
-                    "isAvailableForCourtExtract":true
+                    "isAvailableForCourtExtract": true
                   }
                 ]
               }
@@ -418,7 +418,7 @@
         ],
         "judicialResults": [
           {
-            "isAvailableForCourtExtract":true,
+            "isAvailableForCourtExtract": true,
             "orderedHearingId": "00000000-0000-0000-0000-000000000000",
             "label": "a",
             "welshLabel": "a",
@@ -458,7 +458,7 @@
                 "value": "a",
                 "promptSequence": 0.1,
                 "promptReference": "a",
-                "isAvailableForCourtExtract":true
+                "isAvailableForCourtExtract": true
               }
             ]
           }

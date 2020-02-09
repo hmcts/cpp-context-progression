@@ -24,9 +24,9 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.MessageService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import uk.gov.moj.cpp.progression.transformer.ReferredCourtDocumentTransformer;
 import uk.gov.moj.cpp.progression.transformer.ReferredProsecutionCaseTransformer;
-import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,11 +45,12 @@ import org.slf4j.LoggerFactory;
 
 
 @ServiceComponent(EVENT_PROCESSOR)
-@SuppressWarnings({"squid:CommentedOutCodeLine","squid:S2789","squid:S1135"})
+@SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:S1135"})
 public class CasesReferredToCourtProcessor {
 
     static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
     static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
+    static final String REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED = "public.progression.refer-prosecution-cases-to-court-accepted";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
 
@@ -94,21 +96,24 @@ public class CasesReferredToCourtProcessor {
      * 4) Reference data service - enrich listHearingRequests.hearingType.description based on
      * listHearingRequests.hearingType.Id
      * <p>
-     * 5) Determine that the offence mode of trial is correct for the initiation code.
-     * If the initiation code is J or Z, the mode of trial cannot be Indictable or EitherWay.
-     * When this occurs raise the public event progression.events.referProsecutionCasesToCourtRejected
-     * with the relevant offenceId item that is not cannot be Indictable or EitherWay.
+     * 5) Determine that the offence mode of trial is correct for the initiation code. If the
+     * initiation code is J or Z, the mode of trial cannot be Indictable or EitherWay. When this
+     * occurs raise the public event progression.events.referProsecutionCasesToCourtRejected with
+     * the relevant offenceId item that is not cannot be Indictable or EitherWay.
      * <p>
-     * 6) When a case is received from SJP referral, a check must be performed to avoid the duplicate.
+     * 6) When a case is received from SJP referral, a check must be performed to avoid the
+     * duplicate.
      * <p>
      * 7) In case of SJP referrals, Post code is mandatory.
      * <p>
-     * 8) private command progression.command.create-hearing-defendant-request is created to support summons generation.
-     * This command contains List<ListDefendantRequest> which is the source for Summons and this details to whom the
-     * summons will be generated and what type of Summons required to be generated.
-     * This event information will be used to  generate Summons when Hearing is confirmed from Listing context.
-     *
-     * Once enrichment is complete, the event processor call a private command handler to sync it to view store
+     * 8) private command progression.command.create-hearing-defendant-request is created to support
+     * summons generation. This command contains List<ListDefendantRequest> which is the source for
+     * Summons and this details to whom the summons will be generated and what type of Summons
+     * required to be generated. This event information will be used to  generate Summons when
+     * Hearing is confirmed from Listing context.
+     * <p>
+     * Once enrichment is complete, the event processor call a private command handler to sync it to
+     * view store
      */
     @Handles("progression.event.cases-referred-to-court")
     public void process(final JsonEnvelope jsonEnvelope) {
@@ -140,17 +145,16 @@ public class CasesReferredToCourtProcessor {
                     .withRejectedReason(e.getMessage())
                     .build();
             messageService.sendMessage(jsonEnvelope, objectToJsonObjectConverter.convert(referProsecutionCasesToCourtRejected), REFER_PROSECUTION_CASES_TO_COURT_REJECTED);
-            
+
             return;
         }
 
 
-
         final List<ListDefendantRequest> listDefendantRequests = sjpCourtReferral.getListHearingRequests().stream().map(ReferredListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
         final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
-                                                                                                                        .withHearingId(hearingId)
-                                                                                                                        .withDefendantRequests(listDefendantRequests)
-                                                                                                                        .build());
+                .withHearingId(hearingId)
+                .withDefendantRequests(listDefendantRequests)
+                .build());
         // Look at point 8 in the documentation about the usage of this command.
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
 
@@ -160,6 +164,14 @@ public class CasesReferredToCourtProcessor {
 
         listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+
+        //This is a temporary fix to update PCF that SJP case is referred to CC until ATCM has permanent fix. Referral reason has taken from first defendant as SJP deals with only one defendant.
+        final JsonObject caseReferredForCourtAcceptedJson = Json.createObjectBuilder()
+                .add("caseId", listDefendantRequests.get(0).getProsecutionCaseId().toString())
+                .add("referralReasonId", listDefendantRequests.get(0).getReferralReason().getId().toString())
+                .build();
+
+        messageService.sendMessage(jsonEnvelope, caseReferredForCourtAcceptedJson, REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED);
     }
 
     private void searchForDuplicateCases(final JsonEnvelope jsonEnvelope, final String reference) {
@@ -173,7 +185,7 @@ public class CasesReferredToCourtProcessor {
 
     private ListCourtHearing prepareListCourtHearing(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral, final List<ProsecutionCase> prosecutionCases, final UUID hearingId) {
         return listCourtHearingTransformer
-                .transform(jsonEnvelope, prosecutionCases, sjpCourtReferral.getSjpReferral(),sjpCourtReferral.getListHearingRequests(),hearingId);
+                .transform(jsonEnvelope, prosecutionCases, sjpCourtReferral.getSjpReferral(), sjpCourtReferral.getListHearingRequests(), hearingId);
     }
 
     private List<CourtDocument> convertToCourtDocument(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral) {

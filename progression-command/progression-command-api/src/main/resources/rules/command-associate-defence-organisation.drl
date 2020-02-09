@@ -8,7 +8,7 @@ rule "Command - associate defence organisation"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.associate-defence-organisation");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Users"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Users", "System Users"));
   then
     $outcome.setSuccess(true);
 end

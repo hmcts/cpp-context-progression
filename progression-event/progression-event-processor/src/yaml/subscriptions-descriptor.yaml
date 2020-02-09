@@ -95,7 +95,26 @@ subscriptions_descriptor:
 
         - name: progression.event.defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
+
+        - name : progression.event.defendant-defence-organisation-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-associated.json
+
+        - name : progression.event.defendant-defence-organisation-disassociated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-disassociated.json
+
+        - name : progression.event.defendant-defence-association-locked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
+
           ############  Association End ############
+
+        - name: progression.event.defendant-legalaid-status-updated
+          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json
+
+        - name: progression.event.hearing-resulted-case-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
+
+        - name: progression.event.defendant-defence-organisation-changed
+          schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
@@ -189,5 +208,13 @@ subscriptions_descriptor:
 
         - name: public.progression.defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
+
+          # User Groups Events
+        - name: public.usersgroups.organisation-created
+          schema_uri: http://cpp.moj.gov.uk/usersgroups/json/schemas/public.usersgroups.organisation-created.json
+
+        - name: public.usersgroups.organisation-updated
+          schema_uri: http://cpp.moj.gov.uk/usersgroups/json/schemas/public.usersgroups.organisation-updated.json
+
 
       event_source_name: public.event.source

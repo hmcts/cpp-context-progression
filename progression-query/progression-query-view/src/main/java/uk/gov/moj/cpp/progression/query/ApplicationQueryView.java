@@ -2,9 +2,9 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Optional.ofNullable;
 
-import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;

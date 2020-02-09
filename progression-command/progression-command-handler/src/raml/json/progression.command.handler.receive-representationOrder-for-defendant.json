@@ -1,0 +1,34 @@
+{
+  "prosecutionCaseId": "ab746921-d838-4867-bcf9-b41db8ebc852",
+  "defendantId": "ab746921-d838-4864-bcf9-b41db8ebc852",
+  "offenceId": "b746921-d833-4867-bcf9-b41dc8ebc852",
+  "statusCode" :"G2",
+  "applicationReference" :"LAA234238",
+  "statusDate" : "2019-07-15",
+  "effectiveStartDate": "2019-09-12",
+  "effectiveEndDate": "2019-12-12",
+  "defenceOrganisation": {
+    "name": "a",
+    "incorporationNumber": "a",
+    "registeredCharityNumber": "a",
+    "laaContractNumber": "LAA3482374WER",
+    "address": {
+      "address1": "a",
+      "address2": "a",
+      "address3": "a",
+      "address4": "a",
+      "address5": "a",
+      "postcode": "GIR0AA"
+    },
+    "contact": {
+      "home": " ",
+      "work": "a",
+      "mobile": " ",
+      "primaryEmail": "!.!@00.00",
+      "secondaryEmail": "!.!@00.00",
+      "fax": "a"
+    }
+  }
+
+
+}

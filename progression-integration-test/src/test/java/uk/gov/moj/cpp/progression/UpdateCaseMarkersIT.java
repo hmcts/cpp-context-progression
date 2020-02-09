@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class UpdateCaseMarkersIT extends AbstractIT {
+    private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
 
     private String caseId;
     private String courtDocumentId;
@@ -50,7 +51,7 @@ public class UpdateCaseMarkersIT extends AbstractIT {
         // given
 
         //given
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         pollProsecutionCasesProgressionFor(caseId, getCaseMarkersMatchers("WP", "Prohibited Weapons"));
 
@@ -66,7 +67,7 @@ public class UpdateCaseMarkersIT extends AbstractIT {
     @Test
     public void shouldRemoveProsecutionCaseMarkers() throws Exception {
         //given
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         pollProsecutionCasesProgressionFor(caseId, getCaseMarkersMatchers("WP", "Prohibited Weapons"));
 

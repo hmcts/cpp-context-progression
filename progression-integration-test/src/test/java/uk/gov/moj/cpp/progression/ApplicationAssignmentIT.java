@@ -22,7 +22,8 @@ import static uk.gov.moj.cpp.progression.util.Utilities.makeCommand;
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.courts.progression.query.Application;
+
+import uk.gov.justice.core.courts.Application;
 import uk.gov.justice.progression.courts.ChangeBoxworkAssignment;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;

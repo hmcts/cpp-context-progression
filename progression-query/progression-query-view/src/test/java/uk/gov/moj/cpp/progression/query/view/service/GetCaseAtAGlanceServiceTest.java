@@ -1,12 +1,5 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -36,6 +28,7 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -65,14 +58,21 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-import javax.json.JsonObject;
 
+import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GetCaseAtAGlanceServiceTest {
@@ -86,6 +86,7 @@ public class GetCaseAtAGlanceServiceTest {
     private static final UUID APPLICATION_HEARING_ID = randomUUID();
     private static final LocalDate LOCALDATE_NOW = LocalDate.now();
     private static final UUID GENERIC_UUID = randomUUID();
+    private final UUID LAA_STATUS_ID = randomUUID();
 
     @Mock
     private ProsecutionCaseRepository prosecutionCaseRepository;
@@ -150,16 +151,16 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
         assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(1));
@@ -240,14 +241,17 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(2));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
+        assertThat(response.getHearings().get(0).getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getStatusId(), is(LAA_STATUS_ID));
+        assertThat(response.getHearings().get(0).getDefendants().get(0).getLegalAidStatus(), is("Granted"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(2));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
+        assertThat(response.getHearings().get(0).getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getStatusId(), is(LAA_STATUS_ID));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(2));
@@ -329,16 +333,16 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(1));
@@ -425,16 +429,16 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(2));
@@ -550,16 +554,16 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(1));
@@ -641,16 +645,16 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(1));
@@ -732,16 +736,16 @@ public class GetCaseAtAGlanceServiceTest {
         // Defendant Hearing details
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
-        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is (DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
-        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is (DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
 
         // Hearing level assertions
         assertThat(response.getHearings().size(), is(1));
@@ -1051,6 +1055,7 @@ public class GetCaseAtAGlanceServiceTest {
                 .withId(defendantId)
                 .withPersonDefendant(createPersonDefendant())
                 .withOffences(createOffences())
+                .withLegalAidStatus("Granted")
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withAmendmentDate(LocalDate.now())
                         .build()))
@@ -1069,9 +1074,16 @@ public class GetCaseAtAGlanceServiceTest {
                 .withWording("Wording")
                 .withWordingWelsh("Wording Welsh")
                 .withStartDate(LocalDate.of(2018, 01, 01))
-                .withEndDate(LocalDate.of(2018,01, 05))
+                .withEndDate(LocalDate.of(2018, 01, 05))
                 .withCount(5)
                 .withConvictionDate(LocalDate.of(2018, 02, 02))
+                .withLaaApplnReference(LaaReference.laaReference()
+                        .withStatusCode(RandomGenerator.STRING.next())
+                        .withStatusId(LAA_STATUS_ID)
+                        .withStatusDescription(RandomGenerator.STRING.next())
+                        .withStatusDate(LocalDate.now())
+                        .withApplicationReference(RandomGenerator.STRING.next())
+                        .build())
                 .build();
         return Arrays.asList(offence);
     }

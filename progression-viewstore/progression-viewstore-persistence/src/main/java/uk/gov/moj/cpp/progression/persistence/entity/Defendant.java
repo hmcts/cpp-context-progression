@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -73,15 +74,18 @@ public class Defendant implements Serializable  {
     private LocalDate custodyTimeLimitDate;
 
     @Column(name = "sentence_hearing_review_decision", nullable = false)
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean sentenceHearingReviewDecision;
 
     @Column(name = "sentence_hearing_review_decision_date_time")
     private ZonedDateTime sentenceHearingReviewDecisionDateTime;
 
     @Column(name = "drug_assessment")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean drugAssessment;
 
     @Column(name = "dangerousness_assessment")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean dangerousnessAssessment;
 
     @Column(name = "statement_of_means")
@@ -100,15 +104,19 @@ public class Defendant implements Serializable  {
     private String prosecutionOthers;
 
     @Column(name = "is_psr_requested")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean isPSRRequested;
 
     @Column(name = "is_statement_off_means")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean isStatementOffMeans;
 
     @Column(name = "is_medical_documentation")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean isMedicalDocumentation;
 
     @Column(name = "is_ancillary_orders")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean isAncillaryOrders;
 
     @Column(name = "provide_guidance")
@@ -116,6 +124,7 @@ public class Defendant implements Serializable  {
 
 
     @Column(name = "is_no_more_information_required")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean isNoMoreInformationRequired;
 
 

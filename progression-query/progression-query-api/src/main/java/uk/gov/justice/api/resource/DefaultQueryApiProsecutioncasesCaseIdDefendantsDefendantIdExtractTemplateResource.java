@@ -10,6 +10,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
+import uk.gov.justice.api.resource.utils.payload.PleaValueDescriptionBuilder;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
@@ -96,7 +97,6 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     @Inject
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
-
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
@@ -105,6 +105,8 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     @Inject
     CourtExtractTransformer courtExtractTransformer;
+
+    private PleaValueDescriptionBuilder pleaValueDescriptionBuilder = new PleaValueDescriptionBuilder();
 
     private UUID userId;
 
@@ -150,7 +152,6 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             return responseBuilder
                     .header(CONTENT_TYPE, pdfMimeType)
                     .build();
-
         }
     }
 
@@ -161,7 +162,8 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             LOGGER.info("transform court extract payload : {}", document.payloadAsJsonObject());
             final JsonObject payload = transformToTemplateConvert(document.payloadAsJsonObject(), defendantId, extractType, hearingIdList);
             LOGGER.info("create court extract with payload : {}", payload);
-            resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(payload, COURT_EXTRACT, systemUser);
+            final JsonObject newPayload = pleaValueDescriptionBuilder.rebuildWithPleaValueDescription(payload);
+            resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, COURT_EXTRACT, systemUser);
             documentInputStream = new ByteArrayInputStream(resultOrderAsByteArray);
         } catch (IOException e) {
             LOGGER.error("Court extract generate Pdf document failed ", e);
@@ -176,5 +178,4 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(caseAtAGlance, defendantId, extractType, hearingIdList, userId, prosecutionCase);
         return objectToJsonObjectConverter.convert(courtExtractRequested);
     }
-
 }

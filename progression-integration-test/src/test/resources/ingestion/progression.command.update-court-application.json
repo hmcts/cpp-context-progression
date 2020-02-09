@@ -41,61 +41,64 @@
           "fax": "a"
         }
       },
-      "organisationPersons": [{
-        "person": {
-          "title": "MR",
-          "firstName": "updatedA",
-          "middleName": "updatedmiddleNameA",
-          "lastName": "updatedLastNameA",
-          "dateOfBirth": "2000-01-21",
-          "nationalityId": "00000000-0000-0000-0000-000000000000",
-          "nationalityCode": "a",
-          "nationalityDescription": "a",
-          "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
-          "additionalNationalityCode": "a",
-          "additionalNationalityDescription": "a",
-          "disabilityStatus": "a",
-          "ethnicity": {
-            "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
-            "observedEthnicityCode": "a",
-            "observedEthnicityDescription": "a",
-            "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
-            "selfDefinedEthnicityCode": "a",
-            "selfDefinedEthnicityDescription": "a"
+      "organisationPersons": [
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "updatedA",
+            "middleName": "updatedmiddleNameA",
+            "lastName": "updatedLastNameA",
+            "dateOfBirth": "2000-01-21",
+            "nationalityId": "00000000-0000-0000-0000-000000000000",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
           },
-          "gender": "MALE",
-          "interpreterLanguageNeeds": "a",
-          "documentationLanguageNeeds": "ENGLISH",
-          "nationalInsuranceNumber": "NH111111B",
-          "occupation": "a",
-          "occupationCode": "a",
-          "specificRequirements": "a",
-          "address": {
-            "address1": "a",
-            "address2": "a",
-            "address3": "a",
-            "address4": "a",
-            "address5": "a",
-            "postcode": "GIR0AA"
-          },
-          "contact": {
-            "home": " ",
-            "work": "a",
-            "mobile": " ",
-            "primaryEmail": "!.!@00.00",
-            "secondaryEmail": "!.!@00.00",
-            "fax": "a"
-          },
-          "personMarkers": [{
-            "id": "00000000-0000-0000-0000-000000000000",
-            "markerTypeid": "00000000-0000-0000-0000-000000000000",
-            "markerTypeCode": "a",
-            "markerTypeDescription": "a"
-          }]
-        },
-        "role": "a"
-      }],
-
+          "role": "a"
+        }
+      ],
       "defendant": {
         "id": "RANDOM_APPLICANT_DEFENDANT_ID",
         "prosecutionCaseId": "RANDOM_CASE_ID",
@@ -238,7 +241,7 @@
             "judicialResults": [
               {
                 "orderedHearingId": "00000000-0000-0000-0000-000000000000",
-                "isAvailableForCourtExtract":true,
+                "isAvailableForCourtExtract": true,
                 "label": "a",
                 "welshLabel": "a",
                 "isAdjournmentResult": true,
@@ -277,7 +280,7 @@
                     "value": "a",
                     "promptSequence": 0.1,
                     "promptReference": "a",
-                    "isAvailableForCourtExtract":true
+                    "isAvailableForCourtExtract": true
                   }
                 ]
               }
@@ -487,7 +490,7 @@
         ],
         "judicialResults": [
           {
-            "isAvailableForCourtExtract":true,
+            "isAvailableForCourtExtract": true,
             "orderedHearingId": "00000000-0000-0000-0000-000000000000",
             "label": "a",
             "welshLabel": "a",
@@ -527,7 +530,7 @@
                 "value": "a",
                 "promptSequence": 0.1,
                 "promptReference": "a",
-                "isAvailableForCourtExtract":true
+                "isAvailableForCourtExtract": true
               }
             ]
           }
@@ -538,7 +541,6 @@
     },
     "respondents": [
       {
-
         "partyDetails": {
           "defendant": {
             "id": "RANDOM_RESPONDANT_DEFENDANT_ID",
@@ -682,7 +684,7 @@
                 "judicialResults": [
                   {
                     "orderedHearingId": "00000000-0000-0000-0000-000000000000",
-                    "isAvailableForCourtExtract":true,
+                    "isAvailableForCourtExtract": true,
                     "label": "a",
                     "welshLabel": "a",
                     "isAdjournmentResult": true,
@@ -721,7 +723,7 @@
                         "value": "a",
                         "promptSequence": 0.1,
                         "promptReference": "a",
-                        "isAvailableForCourtExtract":true
+                        "isAvailableForCourtExtract": true
                       }
                     ]
                   }
@@ -931,7 +933,7 @@
             ],
             "judicialResults": [
               {
-                "isAvailableForCourtExtract":true,
+                "isAvailableForCourtExtract": true,
                 "orderedHearingId": "00000000-0000-0000-0000-000000000000",
                 "label": "a",
                 "welshLabel": "a",
@@ -971,7 +973,7 @@
                     "value": "a",
                     "promptSequence": 0.1,
                     "promptReference": "a",
-                    "isAvailableForCourtExtract":true
+                    "isAvailableForCourtExtract": true
                   }
                 ]
               }
@@ -1087,7 +1089,7 @@
     "outOfTimeReasons": "a",
     "judicialResults": [
       {
-        "isAvailableForCourtExtract":true,
+        "isAvailableForCourtExtract": true,
         "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
         "label": "a",
         "welshLabel": "a",
@@ -1127,7 +1129,7 @@
             "value": "a",
             "promptSequence": 0.1,
             "promptReference": "a",
-            "isAvailableForCourtExtract" : true
+            "isAvailableForCourtExtract": true
           }
         ]
       }

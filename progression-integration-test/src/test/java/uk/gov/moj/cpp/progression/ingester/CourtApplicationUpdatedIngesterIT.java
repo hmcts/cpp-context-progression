@@ -17,6 +17,14 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
+
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+
+import java.io.IOException;
+import java.util.Optional;
+
+import javax.json.JsonObject;
+
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
@@ -67,11 +75,11 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         setUpCourtApplication();
 
         updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
-                                           applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+                applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
 
-         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
+        final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
 
         assertTrue(courApplicationUpdatesResponseJsonObject.isPresent());
 

@@ -7,6 +7,7 @@ import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.associa
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.invokeDisassociateOrganisation;
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedDataPersisted;
 import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationDisassociatedDataPersisted;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForDefenceUsers;
@@ -37,6 +38,8 @@ public class DefenceDisassociationIT extends AbstractIT {
         stubGetUsersAndGroupsQueryForDefenceUsers(userId);
         stubGetOrganisationQuery(userId, organisationId, organisationName);
         stubGetOrganisationDetails(organisationId, organisationName);
+        stubGetGroupsForLoggedInQuery(userId);
+
 
         try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
             associateOrganisation(defendantId, userId);
@@ -67,6 +70,7 @@ public class DefenceDisassociationIT extends AbstractIT {
         stubGetUsersAndGroupsQueryForDefenceUsers(userId);
         stubGetOrganisationQuery(userId, organisationId, organisationName);
         stubGetOrganisationDetails(organisationId, organisationName);
+        stubGetGroupsForLoggedInQuery(userId);
 
         try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
 
@@ -90,7 +94,7 @@ public class DefenceDisassociationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotPerformDisassociationForASystemUser() throws Exception {
+    public void shouldPerformDisassociationForASystemUser() throws Exception {
 
         //Given
         final String userId = randomUUID().toString();
@@ -103,6 +107,7 @@ public class DefenceDisassociationIT extends AbstractIT {
         stubGetOrganisationQuery(userId, organisationId, organisationName);
         stubGetOrganisationDetails(organisationId, organisationName);
         associateOrganisation(defendantId, userId);
+        stubGetGroupsForLoggedInQuery(userId);
         verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
                 organisationId,
                 userId);
@@ -114,6 +119,6 @@ public class DefenceDisassociationIT extends AbstractIT {
         //When
         final Response response = invokeDisassociateOrganisation(defendantId, systemUserId, organisationId, caseId);
         //Then - The Actual Association will check for a HTTP Forbidden status and stop processing smoothly
-        assertThat(response.getStatus(), equalTo(HttpStatus.SC_FORBIDDEN));
+        assertThat(response.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 }

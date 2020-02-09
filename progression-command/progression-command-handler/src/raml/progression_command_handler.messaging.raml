@@ -127,6 +127,15 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-case-markers+json:
             example: !include json/progression.command.update-case-markers.json
             schema: !include json/schema/progression.command.update-case-markers.json
+        application/vnd.progression.command.handler.record-laareference-for-offence+json:
+            example: !include json/progression.command.handler.record-laareference-for-offence.json
+            schema: !include json/schema/progression.command.handler.record-laareference-for-offence.json
+        application/vnd.progression.command.handler.receive-representationOrder-for-defendant+json:
+            example: !include json/progression.command.handler.receive-representationOrder-for-defendant.json
+            schema: !include json/schema/progression.command.handler.receive-representationOrder-for-defendant.json
+        application/vnd.progression.command.handler.associate-defence-organisation-for-laa+json:
+          example:  !include json/progression.command.handler.associate-defence-organisation-for-laa.json
+          schema: !include json/schema/progression.command.handler.associate-defence-organisation-for-laa.json
 
         application/vnd.progression.command.handler.associate-defence-organisation+json:
           example:  !include json/progression.command.handler.associate-defence-organisation.json
@@ -134,6 +143,15 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.handler.disassociate-defence-organisation+json:
           example:  !include json/progression.command.handler.disassociate-defence-organisation.json
           schema: !include json/schema/progression.command.handler.disassociate-defence-organisation.json
+
+        application/vnd.progression.command.handler.associate-orphaned-case+json:
+            example:  !include json/progression.command.handler.associate-orphaned-case.json
+            schema: !include json/schema/progression.command.handler.associate-orphaned-case.json
+
+        application/vnd.progression.command.handler.lock-defence-association-for-laa+json:
+            example:  !include json/progression.command.handler.lock-defence-association-for-laa.json
+            schema: !include json/schema/progression.command.handler.lock-defence-association-for-laa.json
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
         application/vnd.progression.command.handler.add-case-to-crown-court+json:
@@ -169,6 +187,7 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.complete-sending-sheet+json:
             example: !include json/progression.command.complete-sending-sheet.json
             schema:  !include json/schema/progression.command.complete-sending-sheet.json
+
 # Conviction Date
 
 # Deprecated API  - End

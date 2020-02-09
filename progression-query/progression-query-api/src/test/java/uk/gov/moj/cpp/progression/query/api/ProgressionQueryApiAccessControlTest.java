@@ -51,12 +51,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary","Court Associate","Deputies", "DJMC", "Judge");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users","Probation Admin", "Judiciary","Court Associate","Deputies", "DJMC", "Judge");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users","Probation Admin", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge");
     }
 
     @Test
@@ -208,6 +208,11 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     @Test
     public void shouldAllowUserInQueryAssociatedUser() {
         assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.associated-organisation", "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge");
+    }
+
+    @Test
+    public void shouldAllowUserInQueryDefendantsByLAAContractNumber() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.defendants-by-laacontractnumber", "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers");
     }
 
     @Override

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
+import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
+
 import static java.util.Objects.isNull;
 
 import java.io.Serializable;
@@ -9,6 +11,7 @@ import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -36,6 +39,7 @@ public class CourtDocumentEntity implements Serializable {
     private String name;
 
     @Column(name = "contains_financial_means")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean containsFinancialMeans;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "courtDocument", orphanRemoval = true)

@@ -81,6 +81,14 @@
     },
     "isYouth":{
       "type" : "boolean"
+    },
+    "associatedDefenceOrganisation": {
+      "description": "The associated defence representation details",
+      "$ref": "http://justice.gov.uk/core/courts/associatedDefenceOrganisation.json"
+    },
+    "proceedingsConcluded": {
+      "description": "Indicates that proceedings for the defendant have been concluded i.e. all offences have been disposed with final results or have been withdrawn by the prosecuting authority",
+      "type": "boolean"
     }
   },
   "required": [

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-defendant-laa-association" author="cpp.context.progression">
+
+        <createTable tableName="defendant_laa_association">
+            <column name="defendant_id" type="UUID"/>
+            <column name="laa_contract_number" type="TEXT"/>
+            <column name="is_associated_by_laa" type="boolean"/>
+        </createTable>
+
+        <addPrimaryKey  columnNames="defendant_id,laa_contract_number"
+                        constraintName="composite_pk_defendant_laa_associate"
+                       tableName="defendant_laa_association"/>
+
+
+    </changeSet>
+
+</databaseChangeLog>

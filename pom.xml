@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.4.15</version>
+        <version>9.4.22</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -24,6 +24,7 @@
         <module>progression-integration-test</module>
         <module>progression-performance-test</module>
         <module>progression-service</module>
+        <module>progression-azure</module>
         <module>progression-test-utilities</module>
         <module>progression-event-sources</module>
     </modules>
@@ -40,11 +41,11 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>4.1.8-R2</access.control.version>
         <referencedata.version>2.0.278</referencedata.version>
-        <listing.version>1.0.38</listing.version>
-        <hearing.version>6.4.6</hearing.version>
-        <usersgroups.version>6.4.3</usersgroups.version>
+        <listing.version>6.4.3</listing.version>
+        <hearing.version>6.4.7</hearing.version>
+        <usersgroups.version>6.4.5</usersgroups.version>
         <referencedata.offence.version>1.0.27</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.59</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.61</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
     </properties>

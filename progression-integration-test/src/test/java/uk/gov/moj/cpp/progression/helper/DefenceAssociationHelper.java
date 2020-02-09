@@ -5,7 +5,9 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.text.MessageFormat.format;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_DEFENCE_ASSOCIATION_FOR_DEFENDANT;
@@ -125,6 +127,21 @@ public class DefenceAssociationHelper implements AutoCloseable {
                 .build();
 
         pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
+                DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE,
+                userId,
+                matchers);
+    }
+
+    public static void verifyDefenceOrganisationDisassociatedDataPersistedForRepOrder(final String defendantId,
+                                                                           final String organisationId,
+                                                                           final String userId) {
+
+        List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
+                .add(withJsonPath("$.association"))
+                .add(withJsonPath("$.association.organisationId"), not(organisationId))
+                .build();
+
+        RestHelper.pollForResponse(format(DEFENCE_ASSOCIATION_QUERY_ENDPOINT, defendantId),
                 DEFENCE_ASSOCIATION_QUERY_MEDIA_TYPE,
                 userId,
                 matchers);

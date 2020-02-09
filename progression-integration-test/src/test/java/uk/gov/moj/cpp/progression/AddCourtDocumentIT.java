@@ -11,9 +11,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.Before;

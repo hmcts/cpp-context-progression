@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/courts/progression/query/progression.query.courtdocument",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.courtdocument.json",
   "type": "object",
   "properties": {
     "courtDocument":{

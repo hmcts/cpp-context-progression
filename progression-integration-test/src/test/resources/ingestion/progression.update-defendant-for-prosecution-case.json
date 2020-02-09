@@ -14,6 +14,59 @@
     "numberOfPreviousConvictionsCited": 5,
     "prosecutionAuthorityReference": "RANDOM_REFERENCE",
     "pncId": "1234567",
+    "proceedingsConcluded": true,
+    "offences": [
+      {
+        "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+        "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+        "offenceCode": "OFFENCE CODE 1",
+        "offenceTitle": "OFFENCE TITLE 1",
+        "offenceLegislation": "OFFENCE LEGISLATION 1",
+        "dateOfInformation": "2019-09-02",
+        "wording": "No Travel Card",
+        "proceedingsConcluded": false,
+        "wordingWelsh": "No Travel Card In Welsh",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-01",
+        "arrestDate": "2018-01-01",
+        "chargeDate": "2018-01-01",
+        "modeOfTrial": "CROWN",
+        "orderIndex": 1,
+        "count": 0,
+        "laaApplnReference": {
+          "applicationReference": "LAA REF OFF 1",
+          "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+          "statusCode": "LAA STATUS CODE OFF 1",
+          "statusDescription": "LAA STATUS DESC OFF 1",
+          "statusDate": "2018-01-01"
+        }
+      },
+      {
+        "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+        "offenceDefinitionId": "590dce00-8591-49af-b2d0-1e161e7d0c36",
+        "offenceCode": "OFFENCE CODE 2",
+        "offenceTitle": "OFFENCE TITLE 2",
+        "offenceLegislation": "OFFENCE LEGISLATION 2",
+        "dateOfInformation": "2019-09-02",
+        "wording": "No Travel Card",
+        "proceedingsConcluded": true,
+        "wordingWelsh": "No Travel Card In Welsh",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-01",
+        "arrestDate": "2018-01-01",
+        "chargeDate": "2018-01-01",
+        "modeOfTrial": "CROWN",
+        "orderIndex": 1,
+        "count": 0,
+        "laaApplnReference": {
+          "applicationReference": "LAA REF OFF 1",
+          "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+          "statusCode": "LAA STATUS CODE OFF 1",
+          "statusDescription": "LAA STATUS DESC OFF 1",
+          "statusDate": "2018-01-01"
+        }
+      }
+    ],
     "associatedPersons": [
       {
         "person": {
@@ -142,6 +195,18 @@
         }
       },
       "employerPayrollReference": "payyou1234"
+    },
+    "associatedDefenceOrganisation": {
+      "applicationReference": "a",
+      "associationStartDate": "2018-01-01",
+      "associationEndDate": "2018-12-01",
+      "fundingType": "REPRESENTATION_ORDER",
+      "defenceOrganisation": {
+        "organisation": {
+          "name": "L J Barr ltd"
+        },
+        "laaContractNumber": "AL23467892"
+      }
     }
   }
 }

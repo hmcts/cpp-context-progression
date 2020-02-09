@@ -264,4 +264,20 @@ public class ReferenceDataStub {
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.enforcement-area+json");
     }
+
+    public static void stubLegalStatus(final String resourceName,  final String statusCode) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/legal-statuses";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(legalStatuses.toString().replace("STATUS_CODE", statusCode))));
+
+        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
+    }
 }

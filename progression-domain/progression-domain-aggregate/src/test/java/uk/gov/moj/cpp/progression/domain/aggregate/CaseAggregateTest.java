@@ -1,31 +1,40 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
@@ -112,7 +121,8 @@ public class CaseAggregateTest {
     private static final String INDICATED_PLEA_ID = randomUUID().toString();
     private static final String INDICATED_PLEA_VALUE = "NO_INDICATION";
     private static final String ALLOCATION_DECISION = "COURT_DECLINED";
-    private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant().withId(randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build()).build();
+    private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant().withId(randomUUID())
+            .withPersonDefendant(PersonDefendant.personDefendant().build()).build();
     static final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<uk.gov.justice.core.courts.Defendant>() {{
         add(defendant);
     }};
@@ -132,6 +142,7 @@ public class CaseAggregateTest {
     @Mock
     JsonEnvelope envelope;
     @Mock
+
     JsonObject jsonObj;
     @InjectMocks
     private CaseAggregate caseAggregate;
@@ -561,6 +572,7 @@ public class CaseAggregateTest {
         //Assert total defedants with count 2 excluded duplicates
         assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(2));
     }
+
     @Test
     public void shouldReturnCaseEjected() {
         final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
@@ -569,12 +581,188 @@ public class CaseAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseEjected.class)));
     }
+
     @Test
     public void shouldNotReturnCaseEjected() {
         Whitebox.setInternalState(this.caseAggregate, "caseStatus", "EJECTED");
         final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
 
         assertThat(eventStream.size(), is(0));
+    }
+
+    @Test
+    public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsGranted_expectGrantedInDefendantLevelLegalAidStatus() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final UUID defendantId2 = randomUUID();
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+
+        caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+        final LaaReference laaReference = generateRecordLAAReferenceForOffence("G2", GRANTED.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
+        assertThat(eventStream.size(), is(3));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().size(), is(1));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveStartDate()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
+                is(LegalAidStatusEnum.GRANTED.getDescription()));
+
+        final Object object2 = eventStream.get(1);
+        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().size(), is(1));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
+
+    }
+
+    @Test
+    public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsRefused_expectRefusedInDefendantLevelLegalAidStatus() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final UUID defendantId2 = randomUUID();
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+
+        caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+        final LaaReference laaReference = generateRecordLAAReferenceForOffence("FM", REFUSED.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
+        assertThat(eventStream.size(), is(3));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().size(), is(1));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveStartDate()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
+                is(LegalAidStatusEnum.REFUSED.getDescription()));
+
+        final Object object2 = eventStream.get(1);
+        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().size(), is(1));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
+
+    }
+
+    @Test
+    public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsWithDrawn_expectWithDrawnInDefendantLevelLegalAidStatus() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final UUID defendantId2 = randomUUID();
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+
+        caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+        final LaaReference laaReference = generateRecordLAAReferenceForOffence("WD", WITHDRAWN.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
+        assertThat(eventStream.size(), is(3));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().size(), is(1));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveStartDate()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
+                is(LegalAidStatusEnum.NO_VALUE.getDescription()));
+
+        final Object object2 = eventStream.get(1);
+        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().size(), is(1));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
+
+    }
+
+    @Test
+    public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsRefusedAndOtherOneIsGranted_expectGrantedInDefendantLevelLegalAidStatus() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId1 = fromString(OFFENCE_ID);
+        final UUID offenceId2 = randomUUID();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withCaseStatus("caseStatus")
+                .withId(randomUUID())
+                .withOriginatingOrganisation("originatingOrganisation")
+                .withDefendants(Arrays.asList(uk.gov.justice.core.courts.Defendant.defendant().
+                        withId(defendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withOffences(Arrays.asList(uk.gov.justice.core.courts.Offence.offence().withId(offenceId1).build()
+                                , uk.gov.justice.core.courts.Offence.offence().withId(offenceId2).build()))
+                        .build()))
+                .withInitiationCode(InitiationCode.C)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("reference")
+                        .withProsecutionAuthorityCode("code")
+                        .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .build();
+        caseAggregate.createProsecutionCase(prosecutionCase);
+
+        final LaaReference laaReference1 = generateRecordLAAReferenceForOffence("FM", REFUSED.getDescription());
+        caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId1, laaReference1);
+
+        final LaaReference laaReference2 = generateRecordLAAReferenceForOffence("G2", GRANTED.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId2, laaReference2).collect(toList());
+        assertThat(eventStream.size(), is(3));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
+                is(LegalAidStatusEnum.GRANTED.getDescription()));
+        final Object object2 = eventStream.get(1);
+        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
+
+
+    }
+
+    @Test
+    public void shouldNotLAAReferenceUpdatedForOffence() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final LaaReference laaReference = generateRecordLAAReferenceForOffence("G2", GRANTED.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
+        assertThat(eventStream.size(), is(0));
+
     }
 
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
@@ -648,6 +836,21 @@ public class CaseAggregateTest {
                 .build();
 
     }
+
+    private static LaaReference generateRecordLAAReferenceForOffence(final String statusCode, final String defendantLevelStatus) {
+        return LaaReference.laaReference()
+                .withApplicationReference("AB746921")
+                .withStatusDate(LocalDate.now())
+                .withStatusId(randomUUID())
+                .withStatusCode(statusCode)
+                .withStatusDescription("statusDescription")
+                .withEffectiveStartDate(LocalDate.now())
+                .withEffectiveEndDate(LocalDate.now())
+                .withOffenceLevelStatus(defendantLevelStatus)
+                .build();
+
+    }
+
     @Test
     public void shouldLinkCaseToHearing() {
         final List<Object> eventStream = caseAggregate.linkProsecutionCaseToHearing(randomUUID(), randomUUID()).collect(toList());
@@ -656,7 +859,6 @@ public class CaseAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseLinkedToHearing.class)));
     }
-
 
 
     private List<uk.gov.justice.core.courts.Defendant> getDefendants(final UUID defendantId1, final UUID defandantId2, final UUID defendnatId3) {

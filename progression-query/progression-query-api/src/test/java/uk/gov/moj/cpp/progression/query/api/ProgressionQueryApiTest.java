@@ -85,5 +85,10 @@ public class ProgressionQueryApiTest {
         assertThat(progressionHearingsQueryApi.getHearing(query), equalTo(response));
     }
 
+    @Test
+    public void shouldGetDefendantsByLAAContractNumber(){
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getDefendantsByLAAContractNumber(query), equalTo(response));
+    }
 
 }

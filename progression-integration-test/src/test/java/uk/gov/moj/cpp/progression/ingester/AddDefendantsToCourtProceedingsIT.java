@@ -1,0 +1,317 @@
+package uk.gov.moj.cpp.progression.ingester;
+
+import static com.jayway.jsonpath.JsonPath.parse;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.core.courts.Organisation.organisation;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseDefendant;
+
+import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LaaReference;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
+import uk.gov.moj.cpp.progression.ingester.verificationHelpers.BaseVerificationHelper;
+import uk.gov.moj.cpp.progression.util.Utilities;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import com.jayway.jsonpath.DocumentContext;
+import junit.framework.TestCase;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class AddDefendantsToCourtProceedingsIT {
+    private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
+    private static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
+    private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
+    private static final MessageConsumer messageConsumerClientPublic = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private String caseId;
+    private String courtDocumentId;
+    private String materialIdActive;
+    private String materialIdDeleted;
+    private String defendantId;
+    private String referralReasonId;
+    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
+    private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
+    private final BaseVerificationHelper verificationHelper = new BaseVerificationHelper();
+
+    @AfterClass
+    public static void tearDown() throws JMSException {
+        messageConsumerClientPublic.close();
+        messageProducerClientPublic.close();
+    }
+
+    @Before
+    public void setUp() throws IOException {
+        caseId = randomUUID().toString();
+        materialIdActive = randomUUID().toString();
+        materialIdDeleted = randomUUID().toString();
+        courtDocumentId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        referralReasonId = randomUUID().toString();
+        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
+        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
+        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
+        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
+    }
+
+    @Test
+    public void shouldInvokeDefentantsAddedToCaseAndListHearingRequestEvents() throws Exception {
+
+        //Create prosecution case
+        final String caseUrn = PreAndPostConditionHelper.generateUrn();
+        addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
+
+        final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+            try {
+                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject, 1)) {
+                    return of(jsonObject);
+                }
+            } catch (final IOException e) {
+                TestCase.fail();
+            }
+
+            return empty();
+        });
+
+        TestCase.assertTrue(prosecussionCaseResponseJsonObject.isPresent());
+
+        final JsonObject outputCase = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
+        final JsonObject prosecutionCase = documentContextProsecutionCase(caseUrn);
+        final JsonObject prosecutionCase1 = prosecutionCase.getJsonObject("prosecutionCase");
+
+        final DocumentContext inputProsecutionCase = parse(prosecutionCase);
+        verifyCaseCreated(1l, inputProsecutionCase, outputCase);
+        verifyCaseDefendant(inputProsecutionCase, outputCase, true);
+
+        final String offenceId = UUID.randomUUID().toString();
+        final String defendantId2 = UUID.randomUUID().toString();
+
+        //Create payload for
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
+                true, caseId, defendantId, defendantId2, offenceId);
+        final String addDefendantsToCourtProceedingsString = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"), PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON, addDefendantsToCourtProceedingsString);
+
+        final DocumentContext updatedInputDC = documentContextForDefendantAddedEvent(addDefendantsToCourtProceedingsString);
+
+        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+
+            try {
+                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject, 2)) {
+                    return of(jsonObject);
+                }
+            } catch (final IOException e) {
+                TestCase.fail();
+            }
+            return empty();
+        });
+
+        assertTrue(prosecutionCaseResponseJsonObject.isPresent());
+        final JsonObject output = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0));
+
+        final int indexSize = prosecutionCaseResponseJsonObject.get().getJsonArray("index").size();
+        assertThat(indexSize, is(1));
+
+        final DocumentContext inputProsecutionCaseForDefendant1 = parse(documentContextProsecutionCase(caseUrn));
+        verifyCaseDefendant(inputProsecutionCaseForDefendant1, output, true);
+
+        final int verifyProsecutionCaseIdForDefendantAtIndex = 0;
+        verificationHelper.verifyProsecutionCase(updatedInputDC, output, verifyProsecutionCaseIdForDefendantAtIndex);
+
+        final int expectedPartyCount = 2;
+        verificationHelper.verifyCasePartyCount(output, expectedPartyCount);
+
+        int outputPartyIndex = 0;
+        int inputDefendantIndex = 0;
+        boolean referredOffence = true;
+
+        verificationHelper.verifyDefendant(parse(prosecutionCase1), output, outputPartyIndex, inputDefendantIndex, referredOffence);
+
+        outputPartyIndex = 1;
+        inputDefendantIndex = 1;
+        referredOffence = false;
+        verificationHelper.verifyDefendant(updatedInputDC, output, outputPartyIndex, inputDefendantIndex, referredOffence);
+
+        outputPartyIndex = 0;
+        inputDefendantIndex = 0;
+        int outputPartyAliasIndex = 0;
+        int inputDefendantAliasIndex = 0;
+        verificationHelper.validateAliases(parse(prosecutionCase1), output, outputPartyIndex, inputDefendantIndex, outputPartyAliasIndex, inputDefendantAliasIndex);
+
+        final int expectedCaseCount = 1;
+        final int expectedPersonDefendantCount = 1;
+        final int expectedLegalEntityDefendantCount = 2;
+        final int expectedAliasesCaseCount = 1;
+        final int expectedOffencesCaseCount = 2;
+        final int expectedExceptionsCount = 1;
+
+        verificationHelper.verifyCounts(expectedCaseCount, expectedPartyCount, expectedPersonDefendantCount, expectedLegalEntityDefendantCount, expectedAliasesCaseCount, expectedOffencesCaseCount, expectedExceptionsCount);
+    }
+
+
+    private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
+            final boolean forAdded, final String caseId, final String defendantId, final String defendantId2, final String offenceId) {
+
+        final List<Defendant> defendantsList = new ArrayList<>();
+
+
+        final LaaReference laaReference = LaaReference.laaReference()
+                .withApplicationReference("LaaReference")
+                .withStatusId(UUID.randomUUID())
+                .withStatusCode("withStatusCode")
+                .withStatusDate(LocalDate.of(2019, 5, 1))
+                .withStatusDescription("withStatusDescription").build();
+
+        final Offence offence = Offence.offence()
+                .withId(UUID.fromString(offenceId))
+                .withOffenceDefinitionId(UUID.randomUUID())
+                .withOffenceCode("TFL123")
+                .withOffenceTitle("TFL Ticket Dodger")
+                .withWording("TFL ticket dodged")
+                .withStartDate(LocalDate.of(2019, 5, 1))
+                .withEndDate(LocalDate.of(2020, 5, 1))
+                .withArrestDate(LocalDate.of(2023, 5, 1))
+                .withChargeDate(LocalDate.of(2023, 6, 1))
+                .withOffenceLegislation("withOffenceLegislation")
+                .withDateOfInformation(LocalDate.of(2022, 5, 1))
+                .withModeOfTrial("withModeOfTrial")
+                .withOrderIndex(0)
+                .withProceedingsConcluded(true)
+                .withLaaApplnReference(laaReference)
+                .build();
+
+        //past duplicate defendant
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.fromString(defendantId))
+                .withProsecutionCaseId(UUID.fromString(caseId))
+                .withOffences(Collections.singletonList(offence))
+                .build();
+        defendantsList.add(defendant);
+
+        final LocalDate dateOfBirth = LocalDate.now().minusYears(20);
+        final Address address = Address.address()
+                .withAddress1("address Line1")
+                .withAddress2("address Line2")
+                .withAddress3("address Line3")
+                .withAddress4("address Line4")
+                .withAddress5("address Line5")
+                .withPostcode("CR0 5NN").build();
+
+        final ContactNumber work = ContactNumber.contactNumber().withPrimaryEmail("test@man.com").withWork("work").build();
+        final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
+                .withOrganisation(organisation()
+                        .withName("Man and co")
+                        .withAddress(address)
+                        .withIncorporationNumber("1234567")
+                        .withRegisteredCharityNumber("232323")
+                        .withContact(work)
+                        .build()).build();
+        //Add defendant
+        final Defendant defendant2 = Defendant.defendant()
+                .withLegalEntityDefendant(legalEntityDefendant)
+                .withId(UUID.fromString(defendantId2))
+                .withPncId("pncId")
+                .withProsecutionCaseId(UUID.fromString(caseId))
+                .withOffences(Collections.singletonList(offence))
+                .build();
+
+
+
+        if (forAdded) {
+            defendantsList.add(defendant2);
+        }
+
+
+        final ListDefendantRequest listDefendantRequest2 = ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(UUID.fromString(caseId))
+                .withDefendantOffences(Collections.singletonList(UUID.fromString(offenceId)))
+                .withDefendantId(defendant2.getId())
+                .build();
+
+        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withCourtCentre(courtCentre).withHearingType(hearingType)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(Arrays.asList(listDefendantRequest2))
+                .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
+                .withEstimateMinutes(new Integer(20))
+                .build();
+
+        return AddDefendantsToCourtProceedings
+                .addDefendantsToCourtProceedings()
+                .withDefendants(defendantsList)
+                .withListHearingRequests(Collections.singletonList(listHearingRequest))
+                .build();
+    }
+
+    private boolean isPartiesPopulated(final JsonObject jsonObject, final int partySize) {
+        final JsonObject indexData = jsonFromString(getJsonArray(jsonObject, "index").get().getString(0));
+        return indexData.containsKey("parties") && (indexData.getJsonArray("parties").size() == partySize);
+    }
+
+    private JsonObject documentContextProsecutionCase(final String caseUrn) throws IOException {
+
+        final String commandJson = getReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
+                courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
+        final JsonObject commandJsonInputJson = jsonFromString(commandJson);
+        final DocumentContext prosecutionCase = parse(commandJsonInputJson);
+        final JsonObject prosecutionCaseJO = prosecutionCase.read("$.courtReferral.prosecutionCases[0]");
+        final JsonObject prosecutionCaseEvent = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
+        return prosecutionCaseEvent;
+    }
+
+    private DocumentContext documentContextForDefendantAddedEvent(final String jsonDefendantAddedCommandString) throws IOException {
+        final JsonObject commandJsonInputJson = jsonFromString(jsonDefendantAddedCommandString);
+        return parse(commandJsonInputJson);
+    }
+}

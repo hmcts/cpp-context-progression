@@ -1,0 +1,40 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "updatedOffences": {
+          "*": {
+            "prosecutionCaseId": "caseId",
+            "#PROSECUTION": "_case_type",
+            "defendantId": "parties[&1].partyId",
+            "#DEFENDANT": "parties[&1]._party_type",
+            "offences": {
+              "*": {
+                "id": "parties[&3].offences[&1].offenceId",
+                "offenceCode": "parties[&3].offences[&1].offenceCode",
+                "offenceTitle": "parties[&3].offences[&1].offenceTitle",
+                "offenceLegislation": "parties[&3].offences[&1].offenceLegislation",
+                "dateOfInformation": "parties[&3].offences[&1].dateOfInformation",
+                "startDate": "parties[&3].offences[&1].startDate",
+                "endDate": "parties[&3].offences[&1].endDate",
+                "arrestDate": "parties[&3].offences[&1].arrestDate",
+                "chargeDate": "parties[&3].offences[&1].chargeDate",
+                "modeOfTrial": "parties[&3].offences[&1].modeOfTrial",
+                "orderIndex": "parties[&3].offences[&1].orderIndex",
+                "wording": "parties[&3].offences[&1].wording",
+                "proceedingsConcluded": "parties[&3].offences[&1].proceedingsConcluded",
+                "laaApplnReference": {
+                  "applicationReference": "parties[&4].offences[&2].laaReference.applicationReference",
+                  "statusId": "parties[&4].offences[&2].laaReference.statusId",
+                  "statusCode": "parties[&4].offences[&2].laaReference.statusCode",
+                  "statusDescription": "parties[&4].offences[&2].laaReference.statusDescription"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

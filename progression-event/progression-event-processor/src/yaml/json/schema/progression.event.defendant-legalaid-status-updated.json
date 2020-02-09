@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "legalAidStatus": {
+          "type": "string"
+    }
+  },
+  "required": [
+    "defendantId",
+    "caseId",
+    "legalAidStatus"
+  ],
+  "additionalProperties": false
+}

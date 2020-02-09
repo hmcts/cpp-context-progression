@@ -1,7 +1,11 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
@@ -10,14 +14,17 @@ import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.DocumentationLanguageNeeds;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -62,7 +69,7 @@ public class DefendantHelperTest {
                 .withEmployerOrganisation(organisation).build();
 
         updatedPersonDefendant = PersonDefendant.personDefendant()
-                .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build()).withCustodyTimeLimit(LocalDate.of(2018,12,01))
+                .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build()).withCustodyTimeLimit(LocalDate.of(2018, 12, 01))
                 .withPersonDetails(Person.person()
                         .withEthnicity(Ethnicity.ethnicity()
                                 .withSelfDefinedEthnicityId(selfDefEthnicityId)
@@ -70,9 +77,9 @@ public class DefendantHelperTest {
                                 .build())
                         .build())
 
-               .withArrestSummonsNumber("arrest123")
-               .withPersonDetails(personDetails)
-               .withEmployerOrganisation(organisation).build();
+                .withArrestSummonsNumber("arrest123")
+                .withPersonDetails(personDetails)
+                .withEmployerOrganisation(organisation).build();
     }
 
 
@@ -139,7 +146,55 @@ public class DefendantHelperTest {
 
     }
 
+    @Test
+    public void shouldGetOffencesForDefencesUpdated() {
+        UUID offenceId = randomUUID();
+        Offence first = createOffence(offenceId, "first");
+        Offence.Builder updatedOffenceBuilder = createOffenceWithDefaults(offenceId, "first");
+        Offence.Builder updatedOffence = updatedOffenceBuilder.withLaaApplnReference(LaaReference.laaReference().withApplicationReference("applicationReference").build());
+        final List<Offence> offences = singletonList(updatedOffence.build());
+        final List<Offence> existingOffences = singletonList(first);
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(offences, existingOffences, uuid, defendantId);
+        assertTrue(offencesForDefendantUpdated.isPresent());
+        assertThat(offencesForDefendantUpdated.get().getAddedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getDeletedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getUpdatedOffences().size(), is(1));
+    }
+
+    @Test
+    public void shouldNotGetOffencesForDefencesUpdatedWhenThereIsNoMatchingOffence() {
+        UUID offenceId = randomUUID();
+        Offence first = createOffence(randomUUID(), "first");
+        Offence.Builder updatedOffenceBuilder = createOffenceWithDefaults(offenceId, "second");
+        Offence.Builder updatedOffence = updatedOffenceBuilder.withLaaApplnReference(LaaReference.laaReference().withApplicationReference("applicationReference").build());
+        final List<Offence> offences = singletonList(updatedOffence.build());
+        final List<Offence> existingOffences = singletonList(first);
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(offences, existingOffences, uuid, defendantId);
+        assertFalse(offencesForDefendantUpdated.isPresent());
+    }
+
     private static Offence createOffence(final UUID offenceId, final String offenceCode) {
         return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).build();
+    }
+
+    private static Offence.Builder createOffenceWithDefaults(final UUID offenceId, final String offenceCode) {
+        return Offence.offence().
+                withId(offenceId)
+                .withOffenceCode(offenceCode)
+                .withStartDate(LocalDate.now())
+                .withArrestDate(LocalDate.now())
+                .withChargeDate(LocalDate.now())
+                .withConvictionDate(LocalDate.now())
+                .withEndDate(LocalDate.now())
+                .withOffenceTitle("title")
+                .withOffenceTitleWelsh("welsh title")
+                .withWording("wording")
+                .withOffenceLegislation("legisltation")
+                .withOffenceLegislationWelsh("welsh legisltation")
+                .withCount(1);
     }
 }

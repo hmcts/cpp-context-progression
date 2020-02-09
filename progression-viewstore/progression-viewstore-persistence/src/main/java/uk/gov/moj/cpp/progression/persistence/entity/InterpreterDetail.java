@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 /**
  * @deprecated
@@ -16,6 +17,7 @@ public class InterpreterDetail implements Serializable{
     private static final long serialVersionUID = 1L;
 
     @Column(name="interpreter_needed")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean needed;
     
     @Column(name="interpreter_language")

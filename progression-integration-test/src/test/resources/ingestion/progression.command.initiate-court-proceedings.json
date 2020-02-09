@@ -28,6 +28,7 @@
             "witnessStatementWelsh": "he did not do it in Welsh",
             "mitigation": "I was not there",
             "mitigationWelsh": "I was not there in Welsh",
+            "proceedingsConcluded": true,
             "aliases": [
               {
                 "firstName": "Jim",
@@ -45,7 +46,7 @@
 
               }
             ],
-            "pncId": "1234567",
+
             "offences": [
               {
                 "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
@@ -136,6 +137,7 @@
                 "registeredCharityNumber": "WTV7hUH2nz"
               }
             },
+            "pncId": "1234567",
             "personDefendant": {
               "personDetails": {
                 "title": "DR",

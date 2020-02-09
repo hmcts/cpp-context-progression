@@ -17,12 +17,6 @@
             "lastName" : "Jefferies",
             "title" : "MR",
             "legalEntityName" : "Chicken & Curry Best In Town LTD"
-          },{
-            "firstName": "Jim",
-            "middleName": "John",
-            "lastName" : "Jefferies",
-            "title" : "MR",
-            "legalEntityName" : "Chicken & Curry Best In Town LTD"
           }
         ],
         "pncId": "1234567",
@@ -34,6 +28,11 @@
           {
             "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
             "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+            "offenceCode": "OFFENCE CODE 1",
+            "offenceTitle": "OFFENCE TITLE 1",
+            "offenceLegislation": "OFFENCE LEGISLATION 1",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
             "wording": "No Travel Card",
             "wordingWelsh": "No Travel Card In Welsh",
             "statementOfFacts": "You did it",
@@ -42,6 +41,7 @@
             "endDate": "2018-01-01",
             "arrestDate": "2018-01-01",
             "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
             "orderIndex": 1,
             "count": 0,
             "notifiedPlea": {

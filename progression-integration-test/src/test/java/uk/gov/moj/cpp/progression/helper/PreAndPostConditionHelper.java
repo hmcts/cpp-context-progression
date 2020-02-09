@@ -15,10 +15,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.createHttpHeaders;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
+import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
 
 import java.io.IOException;
@@ -84,6 +86,23 @@ public class PreAndPostConditionHelper {
         return postCommand(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
                 Json.createObjectBuilder().add("isRemoved", isRemoved).build().toString());
+    }
+
+    public static Response recordLAAReference(final String caseId, final String defendantId, final String offenceId,  final String statusCode) throws IOException {
+        return postCommand(getWriteUrl(String.format("/laaReference/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
+                "application/vnd.progression.command.record-laareference-for-offence+json",
+                getLAAReferenceForOffenceJsonBody(statusCode));
+    }
+
+    public static javax.ws.rs.core.Response receiveRepresentationOrder(final String caseId, final String defendantId, final String offenceId,  final String statusCode, final String laaContractNumber, final String userId) throws IOException {
+        final RestClient restClient = new RestClient();
+        final javax.ws.rs.core.Response response =
+                restClient.postCommand(getWriteUrl(String.format("/representationOrder/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
+                        "application/vnd.progression.command.receive-representationorder-for-defendant+json",
+                        getReceiveRepresentationOrderJsonBody(statusCode, laaContractNumber),
+                        createHttpHeaders(userId));
+        return response;
+
     }
 
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws IOException {
@@ -186,7 +205,18 @@ public class PreAndPostConditionHelper {
     private static String getReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
                                                                       final String materialIdTwo, final String courtDocumentId, final String referralId, final String caseUrn) throws IOException {
         return getReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
-        materialIdTwo, courtDocumentId,referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+                materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+    }
+
+    private static String getLAAReferenceForOffenceJsonBody(final String statusCode) throws IOException {
+        return Resources.toString(Resources.getResource("progression.command-record-laareference.json"), Charset.defaultCharset())
+                .replace("RANDOM_STATUS_CODE", statusCode);
+    }
+
+    private static String getReceiveRepresentationOrderJsonBody(final String statusCode, final String laaContractNumber) throws IOException {
+        return Resources.toString(Resources.getResource("progression.command-receive-representationorder.json"), Charset.defaultCharset())
+                .replace("RANDOM_STATUS_CODE", statusCode)
+                .replace("RANDOM_LAA_CONTRACT_NUMBER", laaContractNumber);
     }
 
     private static String getInitiateCourtProceedingsJsonBody(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
@@ -258,6 +288,20 @@ public class PreAndPostConditionHelper {
     public static String getProsecutioncasesProgressionFor(final String caseId) {
         return getProsecutioncasesProgressionFor(caseId, new Matcher[]{withJsonPath("$.prosecutionCase.id", equalTo(caseId))});
 
+    }
+
+
+    public static String getHearingForDefendant(final String hearingId) {
+        return getHearingForDefendant(hearingId, new Matcher[]{withJsonPath("$.hearing.id", equalTo(hearingId))});
+    }
+
+    public static String getHearingForDefendant(final String hearingId, final Matcher[] matchers) {
+        return poll(requestParams(getReadUrl("/hearingSearch/" + hearingId), "application/vnd.progression.query.hearing+json").withHeader(USER_ID, UUID.randomUUID()))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                matchers
+                        ))).getPayload();
     }
 
     public static String getProsecutioncasesProgressionFor(final String caseId, final Matcher[] matchers) {

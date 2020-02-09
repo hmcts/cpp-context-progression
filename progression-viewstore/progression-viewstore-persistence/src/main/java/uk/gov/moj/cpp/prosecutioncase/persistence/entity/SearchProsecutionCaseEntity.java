@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
+import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
+
 import java.io.Serializable;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -46,6 +49,7 @@ public class SearchProsecutionCaseEntity implements Serializable {
     private String searchTarget;
 
     @Column(name = "is_standalone_application", nullable = false)
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean isStandaloneApplication;
 
     public UUID getDefendantId() {

@@ -6,7 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static uk.gov.moj.cpp.progression.events.RepresentationType.REPRESENTATION_ORDER;
+import static uk.gov.justice.core.courts.FundingType.REPRESENTATION_ORDER;
 
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociation;
 import uk.gov.moj.cpp.defence.association.persistence.entity.DefenceAssociationDefendant;

@@ -1,4 +1,3 @@
-
 package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
 import static java.nio.file.Files.readAllBytes;
@@ -33,4 +32,6 @@ public class JsonHelper {
             throw new UncheckedIOException(e);
         }
     }
+
+
 }

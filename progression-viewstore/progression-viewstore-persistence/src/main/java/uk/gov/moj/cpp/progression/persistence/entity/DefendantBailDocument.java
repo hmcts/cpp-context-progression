@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -31,6 +32,7 @@ public class DefendantBailDocument implements Serializable {
     private UUID documentId;
 
     @Column(name = "active")
+    @Convert(converter = BooleanTFConverter.class)
     private Boolean active = Boolean.FALSE;
 
     @ManyToOne

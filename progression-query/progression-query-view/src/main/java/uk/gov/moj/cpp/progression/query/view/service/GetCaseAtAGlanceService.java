@@ -295,6 +295,8 @@ public class GetCaseAtAGlanceService {
                     .withOffences(getDefendantOffences(defendant))
                     .withJudicialResults(getJudicialResults(defendant.getJudicialResults()))
                     .withCourtApplications(getCourtApplicationsForDefendant(courtApplications, defendant.getId()))
+                    .withLegalAidStatus(defendant.getLegalAidStatus())
+                    .withProceedingsConcluded(defendant.getProceedingsConcluded())
                     .build();
             defendantsList.add(defendantView);
         });
@@ -315,6 +317,8 @@ public class GetCaseAtAGlanceService {
                         .withOffences(getDefendantOffences(defendant))
                         .withJudicialResults(getJudicialResults(defendant.getJudicialResults()))
                         .withCourtApplications(getCourtApplicationsForDefendant(courtApplications, defendant.getId()))
+                        .withLegalAidStatus(defendant.getLegalAidStatus())
+                        .withProceedingsConcluded(defendant.getProceedingsConcluded())
                         .build();
                 defendantsList.add(defendantView);
             }
@@ -455,6 +459,8 @@ public class GetCaseAtAGlanceService {
                     .withVerdicts(getOffenceVerdicts(offence.getVerdict()))
                     .withJudicialResults(getJudicialResults(offence.getJudicialResults()))
                     .withAcquittalDate(offence.getAquittalDate())
+                    .withLaaApplnReference(offence.getLaaApplnReference())
+                    .withProceedingsConcluded(offence.getProceedingsConcluded())
                     .build();
             offencesList.add(offences);
         });

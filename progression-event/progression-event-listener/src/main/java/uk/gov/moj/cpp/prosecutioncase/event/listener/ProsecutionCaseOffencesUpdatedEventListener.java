@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
@@ -10,7 +11,11 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import javax.inject.Inject;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @SuppressWarnings("squid:S3655")
@@ -37,33 +43,84 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
     @Inject
     private ProsecutionCaseRepository repository;
 
+    @Inject
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    @Inject
+    private HearingRepository hearingRepository;
+
     @Handles("progression.event.prosecution-case-offences-updated")
     public void processProsecutionCaseOffencesUpdated(final JsonEnvelope event) {
         final ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseOffencesUpdated.class);
         final DefendantCaseOffences defendantCaseOffences = prosecutionCaseOffencesUpdated.getDefendantCaseOffences();
         if (defendantCaseOffences != null) {
-
             final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendantCaseOffences.getProsecutionCaseId());
             final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-            final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream()
-                    .filter(d -> d.getId().equals(defendantCaseOffences.getDefendantId()))
-                    .findFirst();
-            if (defendant.isPresent() && !defendantCaseOffences.getOffences().isEmpty()) {
-                final List<Offence> persistedOffences = defendant.get().getOffences().stream().collect(Collectors.toList());
-
-                //Delete
-                final List<Offence> offenceDetailListDel = getDeletedOffences(defendantCaseOffences.getOffences(), defendant.get().getOffences());
-                defendant.get().getOffences().removeAll(offenceDetailListDel);
-
-                //amend
-                mergeOffence(persistedOffences, defendantCaseOffences.getOffences(), defendant.get().getOffences());
-
-                //Add
-                final List<Offence> offenceDetailListAdd = getAddedOffences(defendantCaseOffences.getOffences(), defendant.get().getOffences());
-                defendant.get().getOffences().addAll(offenceDetailListAdd);
-            }
+            updateOffenceForDefendant(defendantCaseOffences, prosecutionCase);
             repository.save(getProsecutionCaseEntity(prosecutionCase));
+            final List<CaseDefendantHearingEntity>  caseDefendantHearingEntities = caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId());
+            caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity ->  {
+                final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
+                final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
+                final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
+                hearing.getProsecutionCases().stream().forEach(hearingProsecutionCase ->
+                    updateOffenceForDefendant(defendantCaseOffences, hearingProsecutionCase)
+                );
+                hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+                hearingRepository.save(hearingEntity);
+            });
+        }
+    }
+
+    private void updateOffenceForDefendant(DefendantCaseOffences defendantCaseOffences, final ProsecutionCase prosecutionCase) {
+
+        final Optional<Defendant> optionalDefendant = prosecutionCase.getDefendants().stream()
+                .filter(d -> d.getId().equals(defendantCaseOffences.getDefendantId()))
+                .findFirst();
+        if (optionalDefendant.isPresent() && !defendantCaseOffences.getOffences().isEmpty()) {
+            final Defendant defendant = optionalDefendant.get();
+
+            final List<Offence> persistedOffences = optionalDefendant.get().getOffences().stream().collect(Collectors.toList());
+
+            //Delete
+            final List<Offence> offenceDetailListDel = getDeletedOffences(defendantCaseOffences.getOffences(), defendant.getOffences());
+            defendant.getOffences().removeAll(offenceDetailListDel);
+
+            //amend
+            mergeOffence(persistedOffences, defendantCaseOffences.getOffences(), defendant.getOffences());
+
+            //Add
+            final List<Offence> offenceDetailListAdd = getAddedOffences(defendantCaseOffences.getOffences(), defendant.getOffences());
+            optionalDefendant.get().getOffences().addAll(offenceDetailListAdd);
+
+            //Add Legal Aid Status and proceeding concluded
+            final Defendant updatedDefendant = Defendant.defendant()
+                    .withId(defendant.getId())
+                    .withAliases(defendant.getAliases())
+                    .withAssociatedPersons(defendant.getAssociatedPersons())
+                    .withCroNumber(defendant.getCroNumber())
+                    .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                    .withJudicialResults(defendant.getJudicialResults())
+                    .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                    .withMitigation(defendant.getMitigation())
+                    .withMitigationWelsh(defendant.getMitigationWelsh())
+                    .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                    .withOffences(defendant.getOffences())
+                    .withPersonDefendant(defendant.getPersonDefendant())
+                    .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
+                    .withWitnessStatement(defendant.getWitnessStatement())
+                    .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                    .withPncId(defendant.getPncId())
+                    .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                    .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                    .withLegalAidStatus(defendantCaseOffences.getLegalAidStatus())
+                    .withProceedingsConcluded(defendant.getProceedingsConcluded())
+                    .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
+                    .withAssociationLockedByRepOrder(defendant.getAssociationLockedByRepOrder())
+                    .build();
+            prosecutionCase.getDefendants().remove(defendant);
+            prosecutionCase.getDefendants().add(updatedDefendant);
         }
     }
 
@@ -112,7 +169,13 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withOffenceDefinitionId(persistedOffence.getOffenceDefinitionId())
                 .withNotifiedPlea(persistedOffence.getNotifiedPlea())
                 .withModeOfTrial(persistedOffence.getModeOfTrial())
-                .withCount(updatedOffence.getCount()).build();
+                .withCount(updatedOffence.getCount())
+                .withLaaApplnReference(nonNull(updatedOffence.getLaaApplnReference())
+                        ? updatedOffence.getLaaApplnReference(): persistedOffence.getLaaApplnReference())
+                .withProceedingsConcluded(persistedOffence.getProceedingsConcluded())
+                .withIsIntroduceAfterInitialProceedings(persistedOffence.getIsIntroduceAfterInitialProceedings())
+                .withIsDiscontinued(persistedOffence.getIsDiscontinued())
+                .build();
     }
 
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {

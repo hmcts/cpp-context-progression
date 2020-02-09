@@ -1,0 +1,32 @@
+{
+  "prosecutionCaseId": "ab746921-d838-4867-bcf9-b41db8ebc852",
+  "defendantId": "ab746921-d838-4864-bcf9-b41db8ebc852",
+  "associatedDefenceOrganisation" : {
+    "defenceOrganisation": {
+      "address": {
+        "address1": "defenceOrganisation",
+        "address2": "225",
+        "address3": "FuseRoad",
+        "address4": "East Croydon",
+        "address5": "SouthLondon",
+        "postcode": "LN72 9NG"
+      },
+      "contact": {
+        "fax": "765997700",
+        "home": "759019681",
+        "mobile": "1444010616",
+        "primaryEmail": "zdivwdsblf@gxvm7kqbh4.duzrohmbtt",
+        "secondaryEmail": "dusl1j0oxw@0rzelb2mln.rvjnuth3ar",
+        "work": "584591171"
+      },
+      "incorporationNumber": "cegH7rIgdX",
+      "name": "Test",
+      "registeredCharityNumber": "TestCharity"
+    },
+    "associationStartDate": "2019-09-12",
+    "associationEndDate": "2019-12-12",
+    "fundingType": "REPRESENTATION_ORDER",
+    "isAssociatedByLAA": true
+  }
+
+}

@@ -30,6 +30,7 @@ import org.junit.Test;
 
 
 public class InitiateCourtProceedingsIT extends AbstractIT {
+    private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
 
     private String caseId;
     private String courtDocumentId;
@@ -59,7 +60,7 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     @Test
     public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
         //given
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
         verifyInMessagingQueueForProsecutionCaseCreated();
         //introduce delay by checking court document present first
@@ -76,7 +77,7 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     @Test
     public void shouldInitiateCourtProceedingsWithDefendantIsYouth() throws IOException {
         //given
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPostListCourtHearing(caseId, defendantId, true);
     }
 
@@ -84,7 +85,7 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithDefendantIsNotYouth() throws IOException {
         defendantDOB = LocalDate.now().minusYears(25).toString();
         //given
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPostListCourtHearing(caseId, defendantId, false);
     }
 

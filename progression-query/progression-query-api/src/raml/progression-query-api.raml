@@ -363,6 +363,23 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.associated-organisation+json:
             example:  !include json/progression.query.associated-organisation.json
             schema:  !include json/schema/progression.query.associated-organisation.json
+
+/defendants/{laaContractNumber}:
+  description: get defendants matching with LAA Contract Number
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.defendants-by-laacontractnumber+json
+          name: progression.query.defendants-by-laacontractnumber
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.defendants-by-laacontractnumber+json:
+            example:  !include json/progression.query.defendants-by-laacontractnumber.json
+            schema:  !include json/schema/progression.query.defendants-by-laacontractnumber.json
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 

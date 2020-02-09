@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentRemoved;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -14,9 +12,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
-import java.util.Optional;
-
 import javax.inject.Inject;
+
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)

@@ -12,9 +12,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyAliases;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendant;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantAliases;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantUpdate;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -22,7 +22,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -97,15 +96,10 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT  extends AbstractIT {
         verifyCaseCreated(1l,inputCaseDocument , outputIndexedJson);
 
         final JsonObject party = outputIndexedJson.getJsonArray("parties").getJsonObject(0);
-
-        final JsonObject defendant = defendantUpdated.getJsonObject("defendant");
-        verifyDefendant(defendant, outputIndexedJson, false);
-
-        final JsonObject jsonObject = jsonFromString(commandJson);
-        final DocumentContext prosecutionCase = parse(jsonObject);
-        final JsonObject originalCaseJson = prosecutionCase.read("$.courtReferral.prosecutionCases[0].defendants[0]");
-        verifyAliases(0, parse(originalCaseJson), party);
-        verifyAliases(1, parse(defendant), party);
+        verifyDefendantUpdate(parse(defendantUpdated.getJsonObject("defendant")), party);
+        final JsonObject defendant = inputCaseDocument.read("$.prosecutionCase.defendants[0]");
+        final DocumentContext parsedInputDefendant = parse(defendant);
+        verifyDefendantAliases(parsedInputDefendant, party);
 
     }
 

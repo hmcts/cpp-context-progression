@@ -22,12 +22,7 @@ public class HearingResultLineEntity implements Serializable {
     @Column(name = "id", unique = true, nullable = false)
     private UUID Id;
 
-
-
-
     @Column(name = "payload")
-
-
     private String payload;
 
     @ManyToOne

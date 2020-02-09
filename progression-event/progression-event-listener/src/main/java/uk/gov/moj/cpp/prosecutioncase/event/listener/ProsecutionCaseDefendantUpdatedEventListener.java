@@ -33,11 +33,6 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import java.io.StringReader;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -113,13 +108,58 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 final Optional<Defendant> defendantFromRespository = prosecutionCaseInRepository.getDefendants().stream().filter(def -> def.getId().equals(defendant.getId())).findFirst();
 
                 if (defendantFromRespository.isPresent()) {
+                    final Defendant originalDefendant = defendantFromRespository.get();
                     prosecutionCaseInRepository.getDefendants().remove(defendantFromRespository.get());
-                    prosecutionCaseInRepository.getDefendants().add(defendant);
+                    // GPE-12381 . This has been done explicitly  not to loose  progression flag associationLockedByRepOrder when we receive result from hearing
+                    final Defendant updatedDefendant = getUpdatedDefendant(originalDefendant, defendant);
+                    prosecutionCaseInRepository.getDefendants().add(updatedDefendant);
                 }
             }
-            repository.save(getProsecutionCaseEntity(prosecutionCaseInRepository));
-            updateSearchable(prosecutionCaseInRepository);
+            final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
+                    .withPoliceOfficerInCase(prosecutionCaseInRepository.getPoliceOfficerInCase())
+                    .withProsecutionCaseIdentifier(prosecutionCaseInRepository.getProsecutionCaseIdentifier())
+                    .withId(prosecutionCaseInRepository.getId())
+                    .withDefendants(prosecutionCaseInRepository.getDefendants())
+                    .withInitiationCode(prosecutionCaseInRepository.getInitiationCode())
+                    .withOriginatingOrganisation(prosecutionCaseInRepository.getOriginatingOrganisation())
+                    .withStatementOfFacts(prosecutionCaseInRepository.getStatementOfFacts())
+                    .withStatementOfFactsWelsh(prosecutionCaseInRepository.getStatementOfFactsWelsh())
+                    .withCaseMarkers(prosecutionCaseInRepository.getCaseMarkers())
+                    .withAppealProceedingsPending(prosecutionCaseInRepository.getAppealProceedingsPending())
+                    .withBreachProceedingsPending(prosecutionCaseInRepository.getBreachProceedingsPending())
+                    .withRemovalReason(prosecutionCaseInRepository.getRemovalReason())
+                    .withCaseStatus(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus())
+                    .build();
+            repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+            updateSearchable(updatedProsecutionCase);
         }
+    }
+
+    private Defendant getUpdatedDefendant(final Defendant originalDefendant, final Defendant defendant) {
+        return Defendant.defendant()
+                .withId(defendant.getId())
+                .withOffences(defendant.getOffences())
+                .withPersonDefendant(defendant.getPersonDefendant())
+                .withLegalAidStatus(defendant.getLegalAidStatus())
+                .withProceedingsConcluded(defendant.getProceedingsConcluded())
+                .withJudicialResults(defendant.getJudicialResults())
+                .withWitnessStatement(defendant.getWitnessStatement())
+                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                .withLegalEntityDefendant(originalDefendant.getLegalEntityDefendant())
+                .withAssociatedPersons(originalDefendant.getAssociatedPersons())
+                .withMitigation(originalDefendant.getMitigation())
+                .withMitigationWelsh(originalDefendant.getMitigationWelsh())
+                .withNumberOfPreviousConvictionsCited(originalDefendant.getNumberOfPreviousConvictionsCited())
+                .withProsecutionAuthorityReference(originalDefendant.getProsecutionAuthorityReference())
+                .withProsecutionCaseId(originalDefendant.getProsecutionCaseId())
+                .withDefenceOrganisation(originalDefendant.getDefenceOrganisation())
+                .withPncId(originalDefendant.getPncId())
+                .withAliases(originalDefendant.getAliases())
+                .withIsYouth(originalDefendant.getIsYouth())
+                .withAssociatedDefenceOrganisation(originalDefendant.getAssociatedDefenceOrganisation())
+                .withCroNumber(originalDefendant.getCroNumber())
+                .withAssociationLockedByRepOrder(originalDefendant.getAssociationLockedByRepOrder())
+                .build();
     }
 
     private void updateSearchable(final ProsecutionCase prosecutionCase) {
@@ -224,22 +264,31 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     private Defendant updateDefendant(final Defendant originDefendant, final DefendantUpdate defendant) {
 
-        return Defendant.defendant().withOffences(originDefendant.getOffences())
-                .withPersonDefendant(defendant.getPersonDefendant())
-                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                .withAssociatedPersons(defendant.getAssociatedPersons())
-                .withId(defendant.getId())
-                .withMitigation(originDefendant.getMitigation())
-                .withMitigationWelsh(originDefendant.getMitigationWelsh())
-                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
-                .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                .withWitnessStatement(originDefendant.getWitnessStatement())
-                .withDefenceOrganisation(defendant.getDefenceOrganisation())
-                .withPncId(defendant.getPncId())
-                .withAliases(defendant.getAliases())
-                .withIsYouth(defendant.getIsYouth())
-                .build();
+            return Defendant.defendant()
+                    .withOffences(originDefendant.getOffences())
+                    .withPersonDefendant(defendant.getPersonDefendant())
+                    .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
+                    .withAssociatedPersons(defendant.getAssociatedPersons())
+                    .withId(defendant.getId())
+                    .withMitigation(originDefendant.getMitigation())
+                    .withMitigationWelsh(originDefendant.getMitigationWelsh())
+                    .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                    .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
+                    .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                    .withWitnessStatement(originDefendant.getWitnessStatement())
+                    .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
+                    .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                    .withPncId(defendant.getPncId())
+                    .withJudicialResults(originDefendant.getJudicialResults())
+                    .withAliases(defendant.getAliases())
+                    .withIsYouth(defendant.getIsYouth())
+                    .withCroNumber(originDefendant.getCroNumber())
+                    .withLegalAidStatus(originDefendant.getLegalAidStatus())
+                    .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
+                    .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
+                    .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
+                    .build();
+
     }
 
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {

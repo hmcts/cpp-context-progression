@@ -1,6 +1,6 @@
 {
-  "boxWorkTaskStatus": "status",
-  "boxWorkAssignedUserId": "assignedUserId",
+  "boxWorkTaskStatus": "COMPLETE",
+  "boxWorkAssignedUserId": "207f6f5e-7a47-4a78-83aa-871182501be6",
   "hearing": {
     "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
     "jurisdictionType": "CROWN",
@@ -85,10 +85,10 @@
         "defendants": [
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
-            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb"
           }
         ],
-        "id": "00dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
+        "id": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
         "initiationCode": "S",
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityCode": "4ZKOPhuyh5",
@@ -99,11 +99,11 @@
       {
         "defendants": [
           {
-            "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
-            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+            "id": "3bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "prosecutionCaseId": "fb91fe87-8a88-4286-8063-693a0cc7cb3b"
           }
         ],
-        "id": "11dfb3d1b-3d55-4953-bee0-a7a4f30cae2f",
+        "id": "fb91fe87-8a88-4286-8063-693a0cc7cb3b",
         "initiationCode": "S",
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityCode": "4ZKOPhuyh5",

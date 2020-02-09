@@ -66,6 +66,7 @@ public class CaseReferredToCourtEventProcessorTest {
     private final UUID prosecutionCaseId = UUID.randomUUID();
     private final UUID offenceId = UUID.randomUUID();
     private final UUID defendantId = UUID.randomUUID();
+    private final UUID referralReasonId = UUID.randomUUID();
     
     @InjectMocks
     private CasesReferredToCourtProcessor eventProcessor;
@@ -245,6 +246,7 @@ public class CaseReferredToCourtEventProcessorTest {
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantOffences(Arrays.asList(offenceId))
                         .withReferralReason(ReferralReason.referralReason().withDefendantId(defendantId)
+                                .withId(referralReasonId)
                                 .withDescription("not guilty for pcnr").build())
                         .build()))
                 .build();

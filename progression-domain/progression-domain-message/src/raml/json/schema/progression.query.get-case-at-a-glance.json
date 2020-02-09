@@ -59,6 +59,13 @@
 				"address": {
 					"$ref": "http://justice.gov.uk/core/courts/address.json#"
 				},
+				"legalAidStatus": {
+					"type": "string"
+				},
+				"proceedingsConcluded": {
+					"description": "Indicates that proceedings for the defendant have been concluded i.e. all offences have been disposed with final results or have been withdrawn by the prosecuting authority",
+					"type": "boolean"
+				},
 				"defenceOrganisation": {
 					"$ref": "#/definitions/defendantDefenceOrganisation"
 				},
@@ -296,7 +303,15 @@
 				},
 				"acquittalDate": {
 					"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+				},
+				"laaApplnReference": {
+					"$ref": "http://justice.gov.uk/core/courts/laaReference.json"
+				},
+				"proceedingsConcluded": {
+					"description": "Indicates that proceedings for the defendant have been concluded i.e. all offences have been disposed with final results or have been withdrawn by the prosecuting authority",
+					"type": "boolean"
 				}
+
 			},
 			"required": [
 				"id",

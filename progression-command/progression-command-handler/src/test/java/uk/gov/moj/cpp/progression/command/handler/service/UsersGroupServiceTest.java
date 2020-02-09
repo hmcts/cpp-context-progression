@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -16,6 +17,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
 
 import java.util.List;
@@ -154,6 +156,29 @@ public class UsersGroupServiceTest {
         usersGroupService.getUserGroupsForUser(query);
 
     }
+
+    @Test
+    public void  shouldReturnEmptyOrganisationWhenGotEmptyPayloadFromGetOrgarnisationByLAAContractNumberAPI() {
+        //Given
+        final UUID userId = randomUUID();
+        final UUID organisationId = randomUUID();
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
+        final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
+        final String laaContractNumber = "LAA1234";
+        final JsonEnvelope response =  envelopeFrom(metadataBuilder, Json.createObjectBuilder().build());
+        when(requester.requestAsAdmin(any())).thenReturn(response);
+
+        //When
+        final OrganisationDetails result = usersGroupService.getOrganisationDetailsForLAAContractNumber(query, laaContractNumber);
+
+        //Then
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        assertEquals(null, result.getId());
+        assertEquals(null, result.getName());
+        assertEquals(null, result.getType());
+    }
+
 
     private MetadataBuilder getMetadataBuilder(final UUID userId) {
         return JsonEnvelope.metadataBuilder()

@@ -11,10 +11,8 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyAliases;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.outputParty;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendant;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseDefendant;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
@@ -83,9 +81,7 @@ public class ProsecutionCaseCreatedIT extends AbstractIT {
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
         verifyCaseCreated(1l, inputProsecutionCase, outputCase);
         final JsonObject inputDefendant = inputProsecutionCase.read("$.prosecutionCase.defendants[0]");
-        verifyDefendant(inputDefendant, outputCase, true);
-        verifyAliases(0, parse(inputDefendant), outputParty(inputDefendant.getJsonString("id"), outputCase).get());
-
+        verifyCaseDefendant(inputProsecutionCase, outputCase, true);
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject) {

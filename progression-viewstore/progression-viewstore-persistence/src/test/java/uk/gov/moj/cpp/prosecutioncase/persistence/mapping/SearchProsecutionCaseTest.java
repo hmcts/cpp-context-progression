@@ -175,7 +175,7 @@ public class SearchProsecutionCaseTest {
 
         assertEquals("1977-01-01", searchProsecutionCaseDetails.getDefendantDob());
         assertEquals("TFL", searchProsecutionCaseDetails.getProsecutor());
-        assertEquals("SJP_REFERRAL", searchProsecutionCaseDetails.getStatus());
+        assertEquals("SJP Referral", searchProsecutionCaseDetails.getStatus());
     }
 
     @Test

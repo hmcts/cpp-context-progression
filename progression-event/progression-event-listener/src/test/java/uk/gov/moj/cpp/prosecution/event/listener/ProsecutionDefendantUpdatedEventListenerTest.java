@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,7 +14,9 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -22,6 +26,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpdatedEventListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
@@ -29,12 +34,15 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRep
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -237,7 +245,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                                 .build())
                         .build()).build();
 
-        final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase().withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId)).build();
+        final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId))
+                .withCaseStatus(CaseStatusEnum.CLOSED.getDescription())
+                .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
         when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
@@ -251,21 +262,45 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         eventListener.processProsecutionCaseUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
+        final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert
+                (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
+        assertThat(prosecutionCase.getDefendants().get(0).getProceedingsConcluded(), equalTo(true));
+        assertThat(prosecutionCase.getDefendants().get(0).getAssociationLockedByRepOrder(), equalTo(true));
+
+        assertThat(prosecutionCase.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), equalTo(true));
+
+        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.CLOSED.getDescription()));
+
 
     }
 
     private List<Defendant> getDefendants(final UUID defandantId1, final UUID defandantId2, final UUID defandantId3, final UUID prosecutionCaseId) {
 
-        final UUID commonUUID = randomUUID();
-        final Defendant defendant1 = Defendant.defendant().withId(defandantId1).withProsecutionCaseId(prosecutionCaseId).build();
+        final Offence offence1 = Offence.offence().withProceedingsConcluded(true).build();
+        final Defendant defendant1 = Defendant.defendant().withId(defandantId1).withProceedingsConcluded(true)
+                .withOffences(Collections.singletonList(offence1))
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withAssociationLockedByRepOrder(true)
+                .build();
         final Defendant defendant2 = Defendant.defendant().withId(defandantId2).withProsecutionCaseId(prosecutionCaseId).build();
         final Defendant defendant3 = Defendant.defendant().withId(defandantId3).withProsecutionCaseId(prosecutionCaseId).build();
+
 
         final List<Defendant> defsList = new ArrayList<>();
         defsList.add(defendant1);
         defsList.add(defendant2);
         defsList.add(defendant3);
         return defsList;
+    }
+
+    private JsonObject jsonFromString(final String jsonObjectStr) {
+
+        JsonObject object;
+        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+            object = jsonReader.readObject();
+        }
+
+        return object;
     }
 
 

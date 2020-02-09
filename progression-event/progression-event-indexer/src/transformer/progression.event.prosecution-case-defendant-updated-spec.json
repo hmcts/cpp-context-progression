@@ -5,6 +5,7 @@
       "spec": {
         "defendant": {
           "prosecutionCaseId": "caseId",
+          "proceedingsConcluded": "parties[0].proceedingsConcluded",
           "pncId": "parties[0].pncId",
           "legalEntityDefendant": {
             "organisation": {
@@ -24,6 +25,7 @@
               "lastName": "parties[0].lastName",
               "dateOfBirth": "parties[0].dateOfBirth",
               "gender": "parties[0].gender",
+              "nationalInsuranceNumber": "parties[0].nationalInsuranceNumber",
               "address": {
                 "*": "parties[0].addressLines",
                 "postcode": "parties[0].postCode"
@@ -37,6 +39,37 @@
               "lastName": "parties[0].aliases[&1].lastName",
               "title": "parties[0].aliases[&1].title",
               "legalEntityName": "parties[0].aliases[&1].organisationName"
+            }
+          },
+          "offences": {
+            "*": {
+              "id": "parties[0].offences[&1].offenceId",
+              "offenceCode": "parties[0].offences[&1].offenceCode",
+              "offenceTitle": "parties[0].offences[&1].offenceTitle",
+              "offenceLegislation": "parties[0].offences[&1].offenceLegislation",
+              "proceedingsConcluded": "parties[0].offences[&1].proceedingsConcluded",
+              "dateOfInformation": "parties[0].offences[&1].dateOfInformation",
+              "startDate": "parties[0].offences[&1].startDate",
+              "endDate": "parties[0].offences[&1].endDate",
+              "arrestDate": "parties[0].offences[&1].arrestDate",
+              "chargeDate": "parties[0].offences[&1].chargeDate",
+              "modeOfTrial": "parties[0].offences[&1].modeOfTrial",
+              "orderIndex": "parties[0].offences[&1].orderIndex",
+              "wording": "parties[0].offences[&1].wording",
+              "laaApplnReference": {
+                "applicationReference": "parties[0].offences[&2].laaReference.applicationReference",
+                "statusId": "parties[0].offences[&2].laaReference.statusId",
+                "statusCode": "parties[0].offences[&2].laaReference.statusCode",
+                "statusDescription": "parties[0].offences[&2].laaReference.statusDescription"
+              }
+            }
+          },
+          "associatedDefenceOrganisation": {
+            "applicationReference": "parties[0].representationOrder.applicationReference",
+            "associationStartDate": "parties[0].representationOrder.effectiveFromDate",
+            "associationEndDate": "parties[0].representationOrder.effectiveToDate",
+            "defenceOrganisation": {
+              "laaContractNumber": "parties[0].representationOrder.laaContractNumber"
             }
           }
         }
@@ -60,5 +93,4 @@
       }
     }
   ]
-
 }

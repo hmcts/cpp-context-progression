@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
-import javax.json.JsonValue;
 
 import com.jayway.jsonpath.DocumentContext;
 
@@ -177,15 +176,14 @@ public class CourtApplicationVerificationHelper {
                         final JsonString applicantLastName = applicantParty.getJsonString("lastName");
                         if (applicantLastName != null) {
                             assertApplicantDetails(person, applicantParty, organisationName);
-                        }
-                        else {
+                        } else {
                             assertOrganisationDetails(person, applicantParty);
                         }
                     }
 
                     final String addressLines = applicantParty.getString("addressLines");
                     assertAddressDetails(person.getJsonObject("address"), addressLines, applicantParty.getString("postCode"));
-            });
+                });
 
     }
 
@@ -224,7 +222,7 @@ public class CourtApplicationVerificationHelper {
                                 .count();
                         assertThat(defendantCount, is(2l));
                         verifyDefendant(defendant, parties);
-            });
+                    });
         });
 
     }
@@ -272,10 +270,10 @@ public class CourtApplicationVerificationHelper {
     }
 
     private static void verifyApplicationWithNoApplicantOrganisation(final DocumentContext inputCourtApplication,
-                                          final JsonArray outputCourtApplications,
-                                          final JsonArray parties,
-                                          final JsonObject applicant,
-                                          final JsonArray respondents) {
+                                                                     final JsonArray outputCourtApplications,
+                                                                     final JsonArray parties,
+                                                                     final JsonObject applicant,
+                                                                     final JsonArray respondents) {
         assertNotNull(inputCourtApplication);
         assertEquals(4, parties.size());
 

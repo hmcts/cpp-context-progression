@@ -53,7 +53,7 @@ public class SearchProsecutionCase {
             final String dob = safeUnbox(builder.getDefendantDob(), searchEntity.getDefendantDob());
             searchEntity.setDefendantDob(StringUtils.isNotEmpty(dob) ? DOB_FORMATER.format(LocalDate.parse(dob)) : StringUtils.EMPTY);
             searchEntity.setProsecutor(safeUnbox(builder.getProsecutor(), searchEntity.getProsecutor()));
-            searchEntity.setStatus(builder.getStatus());
+            searchEntity.setStatus(prosecutionCase.getCaseStatus());
             searchEntity.setStandaloneApplication(false);
             searchEntity.setSearchTarget(SearchCaseBuilder.searchCaseBuilder()
                     .withSearchCaseEntity(searchEntity)

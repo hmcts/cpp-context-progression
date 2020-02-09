@@ -1,0 +1,30 @@
+{
+  "applicationReference":"AB746921",
+  "statusCode":"RANDOM_STATUS_CODE",
+  "statusDate" : "2019-07-15",
+  "effectiveStartDate": "2019-09-12",
+  "defenceOrganisation": {
+    "laaContractNumber": "RANDOM_LAA_CONTRACT_NUMBER",
+    "organisation" : {
+      "name": "a",
+      "incorporationNumber": "a",
+      "registeredCharityNumber": "a",
+      "address": {
+        "address1": "a",
+        "address2": "a",
+        "address3": "a",
+        "address4": "a",
+        "address5": "a",
+        "postcode": "GIR0AA"
+      },
+      "contact": {
+        "home": " ",
+        "work": "a",
+        "mobile": " ",
+        "primaryEmail": "!.!@00.00",
+        "secondaryEmail": "!.!@00.00",
+        "fax": "a"
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.verify;
@@ -11,6 +12,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -62,8 +64,8 @@ public class ConvictionDateEventListenerTest {
     @Test
     public void addConvictionDate() throws Exception {
 
-        final UUID prosecutionCaseId = UUID.randomUUID();
-        final UUID offenceId = UUID.randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID offenceId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
 
         final ConvictionDateAdded convictionDateAdded = ConvictionDateAdded.convictionDateAdded()
@@ -77,6 +79,13 @@ public class ConvictionDateEventListenerTest {
                 .withDefendants(Arrays.asList(Defendant.defendant()
                         .withOffences(Arrays.asList(Offence.offence()
                                 .withId(offenceId)
+                                .withLaaApplnReference(LaaReference
+                                        .laaReference()
+                                        .withApplicationReference("ABC123")
+                                        .withStatusCode("statusCode")
+                                        .withStatusId(randomUUID())
+                                        .withStatusDescription("description")
+                                .build())
                                 .build()))
                         .build()))
                 .build();
@@ -99,13 +108,17 @@ public class ConvictionDateEventListenerTest {
         assertThat(prosecutionCaseArgumentCaptor.getValue().getCaseId(), is(prosecutionCaseId));
         assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
         assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getConvictionDate(), is(convictionDate));
+        assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is("ABC123"));
+        assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getStatusCode(), is("statusCode"));
+        assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is("description"));
+
     }
 
     @Test
     public void removeConvictionDate() throws Exception {
 
-        final UUID prosecutionCaseId = UUID.randomUUID();
-        final UUID offenceId = UUID.randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID offenceId = randomUUID();
 
         final ConvictionDateRemoved convictionDateRemoved = ConvictionDateRemoved.convictionDateRemoved()
                 .withCaseId(prosecutionCaseId)

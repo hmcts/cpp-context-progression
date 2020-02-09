@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/courts/record-laaReference-for-offence.json",
+  "type": "object",
+  "description": "updating offence with LAA reference ",
+  "properties": {
+    "applicationReference": {
+      "description": "The human readable reference to the application supplied by legal aid agency",
+      "type": "string"
+    },
+    "statusCode": {
+      "description": "The status code from reference data",
+      "type": "string"
+    },
+    "statusDate": {
+      "description": "The date that the status was recorded",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "applicationReference",
+    "statusCode",
+    "statusDate"
+  ],
+  "additionalProperties": false
+}

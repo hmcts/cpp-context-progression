@@ -11,6 +11,7 @@ import uk.gov.moj.cpp.progression.events.DefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -37,6 +38,27 @@ public class DefenceAssociationAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(DefenceOrganisationAssociated.class)));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenOrgAlreadyAssociated() {
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        aggregate.associateOrganisation(defendantId,
+                organisationId,
+                ORGANISATION_NAME,
+                RepresentationType.REPRESENTATION_ORDER.toString(),
+                "1234567890",
+                randomUUID().toString());
+        final List<Object> eventStream = aggregate.associateOrganisation(defendantId,
+                organisationId,
+                ORGANISATION_NAME,
+                RepresentationType.REPRESENTATION_ORDER.toString(),
+                "1234567890",
+                randomUUID().toString()).collect(toList());
+
+        assertThat(eventStream.size(), is(0));
+
     }
 
     @Test

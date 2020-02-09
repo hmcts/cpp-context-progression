@@ -21,7 +21,11 @@ public class UsersAndGroupsStub {
     public static final String BASE_QUERY = "/usersgroups-service/query/api/rest/usersgroups";
 
     public static final String GROUPS = "/users/{0}/groups";
+    public static final String GROUPS_BY_LOGGEDIN_USER = "/users/logged-in-user/groups";
     public static final String GET_GROUPS_QUERY = BASE_QUERY + GROUPS;
+    public static final String GET_GROUPS_BY_LOGGEDIN_USER_QUERY = BASE_QUERY + GROUPS_BY_LOGGEDIN_USER;
+
+    public static final String GET_GROUPS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.groups+json";
 
     public static final String ORGANISATION = "/users/{0}/organisation";
     public static final String GET_ORGANISATION_QUERY = BASE_QUERY + ORGANISATION;
@@ -30,6 +34,10 @@ public class UsersAndGroupsStub {
     public static final String ORGANISATION_DETAIL = "/organisations/{0}";
     public static final String GET_ORGANISATION_DETAIL_QUERY = BASE_QUERY + ORGANISATION_DETAIL;
     public static final String GET_ORGANISATION_DETAIL_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-details+json";
+    public static final String GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-details-by-laaContractNumber+json";
+    private static final String GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE =
+            "application/vnd.usersgroups.get-logged-in-user-groups+json";
+
 
     public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
 
@@ -49,6 +57,22 @@ public class UsersAndGroupsStub {
 
         waitForStubToBeReady(format(GET_ORGANISATION_QUERY, userId), GET_ORGANISATION_QUERY_MEDIA_TYPE);
     }
+
+    public static void stubGetGroupsForLoggedInQuery(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_BY_LOGGEDIN_USER_QUERY,
+                GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE,
+                userId,
+                "stub-data/usersGroups.get-Groups-by-loggedIn-user.json");
+    }
+    public static void stubGetUsersAndGroupsQuery(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_QUERY,
+                GET_ORGANISATION_QUERY_MEDIA_TYPE,
+                userId,
+                "stub-data/usersgroups.get-groups-by-user.json");
+    }
+
 
     public static void stubGetUsersAndGroupsQueryForDefenceUsers(final String userId) {
         stubEndpoint(USERS_GROUPS_SERVICE_NAME,
@@ -89,6 +113,37 @@ public class UsersAndGroupsStub {
                         .withBody(body)));
 
         waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, organisationId), GET_ORGANISATION_DETAIL_QUERY_MEDIA_TYPE);
+    }
+
+    public static void stubGetOrganisationDetailForLAAContractNumber(final String laaContractNumber, final String organisationId, final String organisationName) {
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
+        String body = getPayload("stub-data/usersGroups.get-organisation-details-by-laaContractNumber.json");
+        body = body.replaceAll("%LAA_CONTRACT_NUMBER%", laaContractNumber);
+        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
+        body = body.replaceAll("%ORGANISATION_NAME%", organisationName);
+
+        stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+        waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber), GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE);
+
+
+    }
+
+    public static void stubGetEmptyOrganisationDetailForLAAContractNumber(final String laaContractNumber) {
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
+        String body = getPayload("stub-data/usersGroups.empty-organisation-details-by-laaContractNumber.json");
+
+        stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+        waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber), GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE);
+
+
     }
 
 

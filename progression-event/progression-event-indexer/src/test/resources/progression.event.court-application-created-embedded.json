@@ -1,8 +1,8 @@
 {
   "arn": "arn value",
-  "count":1,
+  "count": 1,
   "courtApplication": {
-    "linkedCaseId":"87510582-f141-42a3-8b1c-e58a58125b34",
+    "linkedCaseId": "87510582-f141-42a3-8b1c-e58a58125b34",
     "id": "1f0795d5-f1c0-4621-b675-1208469f86c5",
     "type": {
       "id": "00000000-0000-0000-0000-000000000000",

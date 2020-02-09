@@ -173,6 +173,30 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.referencedata</groupId>
+                        <artifactId>referencedata-query-api</artifactId>
+                        <version>${referencedata.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.progression</groupId>
+                        <artifactId>progression-query-api</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>

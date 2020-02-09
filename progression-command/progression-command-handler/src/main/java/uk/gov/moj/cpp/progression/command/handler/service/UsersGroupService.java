@@ -64,6 +64,15 @@ public class UsersGroupService {
         return response.payloadAsJsonObject();
     }
 
+    protected JsonEnvelope getOrganisationForLaaContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
+
+        final JsonObject getOrganisationRequest = Json.createObjectBuilder().add("laaContractNumber", laaContractNumber).build();
+        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationRequest)
+                .withName("usersgroups.get-organisation-details-by-laaContractNumber").withMetadataFrom(envelope);
+        final JsonEnvelope organisationRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
+        return requester.requestAsAdmin(organisationRequestEnvelope);
+    }
+
     private void checkGroupExistsForUser(final String userId, final JsonEnvelope response) {
         if (notFound(response)
                 || (response.payloadAsJsonObject().getJsonArray(GROUPS) == null)
@@ -83,6 +92,17 @@ public class UsersGroupService {
                 orgResponse.payloadAsJsonObject().getString(ORGANISATION_TYPE));
     }
 
+    public OrganisationDetails getOrganisationDetailsForLAAContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
+        final JsonEnvelope orgResponse = getOrganisationForLaaContractNumber(envelope, laaContractNumber);
+        if (emptyPayload(orgResponse)) {
+            return OrganisationDetails.newBuilder().build();
+        }
+        return OrganisationDetails.of(fromString(orgResponse.payloadAsJsonObject().getString(ORGANISATION_ID)),
+                orgResponse.payloadAsJsonObject().getString(ORGANISATION_NAME),
+                orgResponse.payloadAsJsonObject().getString(ORGANISATION_TYPE));
+
+    }
+
     public List<UserGroupDetails> getUserGroupsForUser(final Envelope<?> envelope) {
         final JsonObject userGroups = getUserGroupsDetailsForUser(envelope);
         return userGroups.getJsonArray(GROUPS)
@@ -94,7 +114,14 @@ public class UsersGroupService {
 
     private static boolean notFound(JsonEnvelope response) {
         final JsonValue payload = response.payload();
+
         return payload == null
-                || payload.equals(JsonValue.NULL);
+                || payload.equals(JsonValue.NULL) ;
+    }
+
+    private static boolean emptyPayload(JsonEnvelope response) {
+        final JsonObject payload = response.payloadAsJsonObject();
+
+        return payload.isEmpty();
     }
 }

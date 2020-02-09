@@ -105,6 +105,17 @@ public class DisassociateDefenceOrganisationHandlerTest {
         assertHandlerResults();
     }
 
+    @Test
+    public void shouldProcessCommandSuccessiveleyForTheSystemUser() throws Exception {
+        //Given
+        final Envelope<DisassociateDefenceOrganisation> envelope = prepareDisassociateCommandAndEnvelopeForTestWithDifferingOrgIdsOrgTypeHMCTS();
+        //When
+        disassociateDefenceOrganisationHandler.handle(envelope);
+        //Then
+        assertHandlerResults();
+    }
+
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldProcessCommandNegativelyForTheOrgTypeNonHMCTS() throws Exception {
         //Given
@@ -145,7 +156,7 @@ public class DisassociateDefenceOrganisationHandlerTest {
                 = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
         final List<UserGroupDetails> hmctsUserGroupDetails = this.createHMCTSUserGroupDetails();
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
-        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(hmctsUserGroupDetails);
+        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(createSystemUserGroupDetails());
         return envelope;
     }
 
@@ -159,7 +170,6 @@ public class DisassociateDefenceOrganisationHandlerTest {
                 = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
         final List<UserGroupDetails> systemUserGroupDetails = this.createSystemUserGroupDetails();
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
-        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(systemUserGroupDetails);
         return envelope;
     }
 
@@ -173,7 +183,6 @@ public class DisassociateDefenceOrganisationHandlerTest {
                 = createDefenceDisassociationEnvelope(userId, disassociateDefenceOrganisation);
         final List<UserGroupDetails> systemUserGroupDetails = this.createSystemUserGroupDetails();
         when(usersGroupService.getUserOrgDetails(any())).thenReturn(organisationDetails);
-        when(usersGroupService.getUserGroupsForUser(any())).thenReturn(systemUserGroupDetails);
         return envelope;
     }
 

@@ -3,17 +3,23 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.CLOSED;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -33,9 +39,13 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE = "public.hearing.resulted-multiple-prosecution-cases";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
+    private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED= "public.progression.hearing-resulted-case-updated";
+
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+    private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
+            .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -52,6 +62,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
+        messageConsumerClientPublicForHearingResultedCaseUpdated.close();
     }
 
     @Before
@@ -82,16 +93,24 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         .build());
 
         pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
+        verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
 
     @Test
     public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresent() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String caseId2 = randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId2, defendantId);
+
+        final String queryResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final JsonObject caseAtAGlance =getJsonObject(queryResponse).getJsonObject
+                ("caseAtAGlance");
+        hearingId =caseAtAGlance.getJsonArray("defendantHearings").getJsonObject(0).getJsonArray("hearingIds").getString(0);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithMultipleCasesJsonObject(PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE + ".json", caseId, randomUUID().toString(),
+                PUBLIC_HEARING_RESULTED, getHearingWithMultipleCasesJsonObject(PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE + ".json", caseId, caseId2,
                         hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED)
@@ -106,7 +125,11 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.code", equalTo(bailStatusCode)),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", equalTo(bailStatusDescription)),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", equalTo(bailStatusId))
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", equalTo(bailStatusId)),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo(CLOSED.getDescription())),
+                withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(true)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(true))
+
         };
     }
 
@@ -140,6 +163,15 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
         );
+    }
+
+    private static void verifyInMessagingQueueForHearingResultedCaseUpdated() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResultedCaseUpdated);
+        assertTrue(message.isPresent());
+        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("CLOSED"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
+
+
     }
 }
 

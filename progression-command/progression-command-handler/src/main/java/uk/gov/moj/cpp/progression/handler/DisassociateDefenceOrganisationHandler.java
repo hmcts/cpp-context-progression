@@ -30,6 +30,7 @@ import javax.json.JsonValue;
 public class DisassociateDefenceOrganisationHandler {
 
     private static final List<String> allowedGroupsForDisassociation = Arrays.asList("Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers");
+    private static final String SYSTEM_USER_GROUP =  "System Users";
 
     @Inject
     private EventSource eventSource;
@@ -60,7 +61,7 @@ public class DisassociateDefenceOrganisationHandler {
                                                final UUID userOrganisationId,
                                                final Envelope<DisassociateDefenceOrganisation> envelope) {
 
-        if (isDefenceUser(organisationId, userOrganisationId) || isHMCTSUser(userOrganisationId, envelope)) {
+        if ( isDefenceUser(organisationId, userOrganisationId) || isSystemUser(envelope) || isHMCTSUser(userOrganisationId, envelope)) {
             //Perform the Disassociation
         } else {
             throw new IllegalArgumentException("The given Organisation is not qualified to perform this disassociation " + organisationId);
@@ -85,6 +86,14 @@ public class DisassociateDefenceOrganisationHandler {
         return retrievedUserGroupDetails.stream().anyMatch(userGroupDetails ->
                 allowedGroupsForDisassociation.contains(userGroupDetails.getGroupName().trim())
         );
+    }
+
+    private boolean isSystemUser(final Envelope<DisassociateDefenceOrganisation> envelope) {
+        final List<UserGroupDetails> retrievedUserGroupDetails = usersGroupService.getUserGroupsForUser(envelope);
+        return retrievedUserGroupDetails.stream().anyMatch(userGroupDetails ->
+                SYSTEM_USER_GROUP.equals(userGroupDetails.getGroupName().trim())
+        );
+
     }
 
     private boolean isDefenceUser(final UUID organisationId,

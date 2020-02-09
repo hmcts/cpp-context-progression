@@ -1,6 +1,6 @@
 {
   "arn": "arn value",
-  "count":1,
+  "count": 1,
   "courtApplication": {
     "id": "1f0795d5-f1c0-4621-b675-1208469f86c5",
     "type": {
@@ -549,7 +549,6 @@
           },
           "role": "a"
         },
-
         {
           "person": {
             "title": "MR",

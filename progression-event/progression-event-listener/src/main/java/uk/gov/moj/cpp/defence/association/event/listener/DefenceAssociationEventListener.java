@@ -6,6 +6,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -15,14 +17,18 @@ import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociat
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.persistence.NoResultException;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefenceAssociationEventListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefenceAssociationEventListener.class);
 
     @Inject
     private DefenceAssociationRepository repository;
@@ -37,9 +43,10 @@ public class DefenceAssociationEventListener {
         final String defenceOrganisationId = payload.getString("organisationId");
         final String startDate = payload.getString("startDate");
         final String representationType = payload.getString("representationType");
+        final String laaContractNumber = payload.getString("laaContractNumber" , null);
 
         final DefenceAssociationDefendant defenceAssociationDefendant
-                = prepareDefenceAssociationEntity(defendantId, userId, defenceOrganisationId, parse(startDate),representationType);
+                = prepareDefenceAssociationEntity(defendantId, userId, defenceOrganisationId, parse(startDate),representationType, laaContractNumber);
         repository.save(defenceAssociationDefendant);
 
     }
@@ -66,11 +73,14 @@ public class DefenceAssociationEventListener {
                                                                         final String requesterUserId,
                                                                         final String defenceOrganisationId,
                                                                         final ZonedDateTime startDate,
-                                                                        final String representationType) {
-
-        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
-        defenceAssociationDefendant.setDefendantId(fromString(defendantId));
-
+                                                                        final String representationType,
+                                                                        final String laaContractNumber) {
+        final UUID defendantUUID = fromString(defendantId);
+        DefenceAssociationDefendant defenceAssociationDefendant = findDefenceAssociationByDefendantId(defendantUUID);
+        if(defenceAssociationDefendant == null) {
+            defenceAssociationDefendant = new DefenceAssociationDefendant();
+            defenceAssociationDefendant.setDefendantId(defendantUUID);
+        }
         final DefenceAssociation defenceAssociation = new DefenceAssociation();
         defenceAssociation.setId(randomUUID());
         defenceAssociation.setUserId(fromString(requesterUserId));
@@ -78,8 +88,18 @@ public class DefenceAssociationEventListener {
         defenceAssociation.setStartDate(startDate);
         defenceAssociation.setRepresentationType(representationType);
         defenceAssociation.setDefenceAssociationDefendant(defenceAssociationDefendant);
+        defenceAssociation.setLaaContractNumber(laaContractNumber);
         defenceAssociationDefendant.getDefenceAssociations().add(defenceAssociation);
         return defenceAssociationDefendant;
+    }
+
+    private DefenceAssociationDefendant findDefenceAssociationByDefendantId(final UUID defendantId) {
+        try {
+            return repository.findByDefendantId(defendantId);
+        } catch (final NoResultException e) {
+            LOGGER.info("No DefenceAssociation found with defendantId='{}'", defendantId, e);
+        }
+        return null;
     }
 
     private DefenceAssociationDefendant disassociateOrganisation(final DefenceAssociationDefendant defenceAssociationDefendant, final UUID organisationId, final ZonedDateTime endDate) {
@@ -101,17 +121,15 @@ public class DefenceAssociationEventListener {
                 .filter(d -> d.getEndDate() == null)
                 .collect(toList());
 
-        if (currentDefenceAssociations.isEmpty() || currentDefenceAssociations.size() > 1) {
-            throw new IllegalStateException("No association found or More than one current association");
-        }
+        final Optional<DefenceAssociation> optionalCurrentDefenceAssociation = currentDefenceAssociations.stream()
+                .filter(cda-> cda.getOrgId().equals(organisationId))
+                .findAny();
 
-        final DefenceAssociation currentDefenceAssociation = currentDefenceAssociations.get(0);
-
-        if (!currentDefenceAssociation.getOrgId().toString().equals(organisationId.toString())) {
+        if (!optionalCurrentDefenceAssociation.isPresent()) {
             throw new IllegalArgumentException("Mismatched Organisation Ids");
         }
 
-        return currentDefenceAssociation;
+        return optionalCurrentDefenceAssociation.get();
     }
 
 }

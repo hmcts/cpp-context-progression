@@ -1267,9 +1267,9 @@
           "applicationId": "00000000-0000-0000-0000-000000000000",
           "applicationResponseDate": "0000-01-01",
           "applicationResponseType": {
-  			"id": "6c6dfbfa-c90a-4ef7-ac47-2e12e0026f21",
-  			"sequence": 0,
-  			"description": "Admitted"
+            "id": "6c6dfbfa-c90a-4ef7-ac47-2e12e0026f21",
+            "sequence": 0,
+            "description": "Admitted"
           }
         }
       }
@@ -1279,9 +1279,9 @@
       "applicationId": "00000000-0000-0000-0000-000000000000",
       "applicationOutcomeDate": "0000-01-01",
       "applicationOutcomeType": {
-	      "id": "89abc992-c78d-4b3a-93b5-eac694c47db2",
-	      "sequence": 0,
-	      "description": "OUTCOME"          
+        "id": "89abc992-c78d-4b3a-93b5-eac694c47db2",
+        "sequence": 0,
+        "description": "OUTCOME"
       }
     },
     "linkedCaseId": "00000000-0000-0000-0000-000000000000",

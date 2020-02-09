@@ -144,7 +144,54 @@
                 "offenceFacts": {
                   "vehicleRegistration": "a",
                   "alcoholReadingAmount": 123
-                }
+                },
+                "judicialResults": [
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "isAvailableForCourtExtract": true,
+                    "amendmentDate": "0000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "0000-01-01",
+                    "lastSharedDateTime": "a",
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "0000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "judicialResultPrompts": [
+                      {
+                        "label": "a",
+                        "welshLabel": "a",
+                        "isAvailableForCourtExtract": true,
+                        "value": "a",
+                        "promptSequence": 0.1,
+                        "promptReference": "a"
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "associatedPersons": [

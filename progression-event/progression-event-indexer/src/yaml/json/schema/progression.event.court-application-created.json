@@ -9,7 +9,7 @@
     "count": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
     },
-    "arn" : {
+    "arn": {
       "type": "string"
     }
   }

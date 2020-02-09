@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/usersgroups/json/schemas/usersgroups.organisation-updated.json",
+  "type": "object",
+  "additionalProperties": true
+}

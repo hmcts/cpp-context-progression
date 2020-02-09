@@ -1,5 +1,5 @@
 {
-  "operations":    [
+  "operations": [
     {
       "operation": "shift",
       "spec": {
@@ -340,5 +340,4 @@
       }
     }
   ]
-
 }

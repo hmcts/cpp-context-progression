@@ -488,7 +488,7 @@ public class ReferenceDataServiceTest {
                 Json.createObjectBuilder().build());
     }
 
-    private JsonEnvelope getEnvelope(final String name, JsonObject jsonObject) {
+    private JsonEnvelope getEnvelope(final String name,JsonObject jsonObject) {
         return envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
                 jsonObject);

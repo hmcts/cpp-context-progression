@@ -421,6 +421,7 @@ public class ProgressionService {
                 .withJudiciary(enrichJudiciaries(confirmedHearing.getJudiciary(), jsonEnvelope))
                 .withReportingRestrictionReason(confirmedHearing.getReportingRestrictionReason())
                 .withType(confirmedHearing.getType())
+                .withHasSharedResults(false)
                 .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), jsonEnvelope, earliestHearingDate))
                 .withCourtApplications(getCourtApplications(confirmedHearing, jsonEnvelope))
                 .build();

@@ -14,6 +14,9 @@ subscriptions_descriptor:
         - name: public.progression.prosecution-cases-referred-to-court
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.prosecution-cases-referred-to-court.json
 
+        - name: public.progression.refer-prosecution-cases-to-court-accepted
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.refer-prosecution-cases-to-court-accepted.json
+
         - name: public.progression.refer-prosecution-cases-to-court-rejected
           schema_uri: http://justice.gov.uk/core/courts/public.progression.refer-prosecution-cases-to-court-rejected.json"
 
@@ -109,5 +112,11 @@ subscriptions_descriptor:
 
         - name: public.progression.events.sending-sheet-invalidated
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-sending-sheet-invalidated.json
+
+        - name: public.progression.defendant-legalaid-status-updated
+          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json
+
+        - name: public.progression.hearing-resulted-case-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
 
       event_source_name: public.event.source

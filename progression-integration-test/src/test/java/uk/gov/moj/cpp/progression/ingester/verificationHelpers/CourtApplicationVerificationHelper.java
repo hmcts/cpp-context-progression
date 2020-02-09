@@ -2,8 +2,6 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-//import static org.apache.webbeans.util.Asserts.assertNotNull;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.assertAddressDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertDefendantDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertOrganisationDetails;
@@ -16,7 +14,8 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
-import junit.framework.TestCase;
+
+//import static org.apache.webbeans.util.Asserts.assertNotNull;
 
 public class CourtApplicationVerificationHelper {
 
@@ -75,7 +74,6 @@ public class CourtApplicationVerificationHelper {
         final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
         final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");
         verifyApplicationParties(transformedJson, applicant, respondents);
-
 
 
     }

@@ -15,7 +15,7 @@
 			"applicationJurisdictionType": "MAGISTRATES"
 		},
 		"parentApplicationId": "RANDOM_PARENT_APPLICATION_ID",
-		"applicationReceivedDate": "2019-01-01",
+      "applicationReceivedDate": "2019-01-01",
 		"applicationReference": "RANDOM_REFERENCE",
 		"applicant": {
 			"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",

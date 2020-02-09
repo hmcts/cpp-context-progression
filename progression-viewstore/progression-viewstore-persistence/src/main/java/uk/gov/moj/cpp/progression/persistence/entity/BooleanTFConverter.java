@@ -8,7 +8,7 @@ import javax.persistence.Converter;
  */
 @SuppressWarnings("squid:S1133")
 @Deprecated
-@Converter(autoApply = true)
+@Converter
 public class BooleanTFConverter implements AttributeConverter<Boolean, String> {
     @Override
     public String convertToDatabaseColumn(final Boolean value) {
