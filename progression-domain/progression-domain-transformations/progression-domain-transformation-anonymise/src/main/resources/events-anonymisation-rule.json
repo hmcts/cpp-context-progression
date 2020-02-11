@@ -30,13 +30,17 @@
     {
       "eventName": "progression.event.court-document-added",
       "fieldsToBeIgnored": [
-        "$.courtDocument.mimeType"
+        "$.courtDocument.mimeType",
+        "$.courtDocument.documentTypeId",
+        "$.courtDocument.documentTypeDescription"
       ]
     },
     {
       "eventName": "progression.event.court-document-created",
       "fieldsToBeIgnored": [
-        "$.courtDocument.mimeType"
+        "$.courtDocument.mimeType",
+        "$.courtDocument.documentTypeId",
+        "$.courtDocument.documentTypeDescription"
       ]
     },
 
@@ -263,8 +267,8 @@
         "$.defendant.personDefendant.personDetails.documentationLanguageNeeds",
         "$.defendant.personDefendant.personDetails.gender",
         "$.defendant.personDefendant.personDetails.title"
-        ]
-      },
+      ]
+    },
     {
       "eventName": "progression.event.prosecution-case-offences-updated",
       "fieldsToBeIgnored": [
