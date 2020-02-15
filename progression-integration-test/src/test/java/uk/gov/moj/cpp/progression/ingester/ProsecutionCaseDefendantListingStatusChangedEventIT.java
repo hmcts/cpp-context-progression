@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.ingester;
 
 import static com.jayway.jsonpath.JsonPath.parse;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -27,6 +28,9 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingVerificationHelper;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexIngestorUtil;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.document.CaseDocument;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.mothers.CaseDocumentMother;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -109,7 +113,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final int indexSize = prosecutionCaseResponseJsonObject.get().getJsonArray("index").size();
 
         for (int i = 0; i < indexSize; i++) {
-            final JsonObject outputCase = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(i));
+            final JsonObject outputCase = getCaseAt(prosecutionCaseResponseJsonObject, i);
             final JsonObject outputHearing = outputCase.getJsonArray("hearings").getJsonObject(0);
             final JsonObject inputHearing = prosecutionCaseDefendantListingStatusChangedEvent.getJsonObject("hearing");
 
@@ -138,7 +142,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final JsonArray cases = hearing.getJsonArray("prosecutionCases");
 
         for (int i = 0; i < indexSize; i++) {
-            final JsonObject outputCase = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(i));
+            final JsonObject outputCase = getCaseAt(prosecutionCaseResponseJsonObject, i);
             caseAndApplicationsOutputMap.putIfAbsent(outputCase.getString("caseId"), outputCase);
         }
 
@@ -169,6 +173,58 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         verificationHelper.verifyCounts(3,3,0);
     }
 
+    @Test
+    public void shouldPreserveSjpFlags() throws IOException {
+
+        indexSjpCase(firstCaseId);
+
+        final Metadata metadata = createMetadata(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
+
+        final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(EVENT_LOCATION);
+
+        sendMessage(messageProducer, DEFENDANT_LISTING_STATUS_CHANGED_EVENT, prosecutionCaseDefendantListingStatusChangedEvent, metadata);
+
+        verifyInMessagingQueue();
+
+        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+
+            try {
+                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                if (jsonObject.getInt("totalResults") == 3) {
+                    return of(jsonObject);
+                }
+            } catch (final IOException e) {
+                fail();
+            }
+            return empty();
+        });
+
+        assertTrue(prosecutionCaseResponseJsonObject.isPresent());
+
+        final JsonObject firstCase = getCaseAt(Optional.of(elasticSearchIndexFinderUtil.findByCaseIds("crime_case_index", firstCaseId)), 0);
+
+        assertThat(firstCase.getBoolean("_is_charging"), is(false));
+        assertThat(firstCase.getBoolean("_is_crown"), is(true));
+        assertThat(firstCase.getBoolean("_is_magistrates"), is(false));
+        assertThat(firstCase.getBoolean("_is_sjp"), is(true));
+    }
+
+    private void indexSjpCase(final String caseId) throws IOException {
+        final CaseDocument jspCase = CaseDocumentMother.defaultCaseAsBuilder()
+                .with_is_sjp(true)
+                .with_is_charging(false)
+                .with_is_crown(false)
+                .with_is_magistrates(false)
+                .withCaseId(caseId)
+                .with_case_type("PROSECUTION").build();
+
+        new ElasticSearchIndexIngestorUtil().ingestCaseData(singletonList(jspCase));
+    }
+
+    private JsonObject getCaseAt(final Optional<JsonObject> prosecutionCaseResponseJsonObject, final int i) {
+        return jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(i));
+    }
+
     private void assertCourtApplications(final JsonArray outputApplications, final JsonArray inputCourtApplications) {
         for (final JsonValue outputApplication : outputApplications) {
             final JsonObject outputApplicationJsonObject = (JsonObject) outputApplication;
@@ -189,7 +245,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         assertThat(outputApplicationJsonObject.getString(DUE_DATE), is(inputApplicationJsonObject.getString(DUE_DATE)));
         assertThat(outputApplicationJsonObject.getString("decisionDate"), is(inputApplicationJsonObject.getString("applicationDecisionSoughtByDate")));
         assertThat(outputApplicationJsonObject.getString("receivedDate"), is(inputApplicationJsonObject.getString("applicationReceivedDate")));
-
     }
 
     private JsonObject getProsecutionCaseDefendantListingStatusChangedPayload(final String fileName) {

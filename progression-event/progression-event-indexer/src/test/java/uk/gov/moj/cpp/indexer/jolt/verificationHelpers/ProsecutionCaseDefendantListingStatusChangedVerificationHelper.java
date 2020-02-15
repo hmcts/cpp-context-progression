@@ -43,6 +43,10 @@ public class ProsecutionCaseDefendantListingStatusChangedVerificationHelper {
                     final JsonValue isCrown = hearingOutputDocument.read("$._is_crown");
                     assertThat(isCrown.toString(), is("true"));
 
+                    //We should not introduce  _is_sjp or _is_charging as those are set by SJP context only
+                    assertThat(((JsonObject) hearingOutputDocument.json()).containsKey("_is_sjp"), is(false));
+                    assertThat(((JsonObject) hearingOutputDocument.json()).containsKey("_is_charging"), is(false));
+
                     final JsonObject hearingOutput = hearingOutputDocument.read("$.hearings[0]");
 
                     final String boxWorkAssignedUserIdOutput = hearingOutput.getString("boxWorkAssignedUserId");
