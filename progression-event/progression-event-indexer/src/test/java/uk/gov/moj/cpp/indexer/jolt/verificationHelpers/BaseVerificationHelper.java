@@ -41,10 +41,22 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
                                       final String inputDefendantPath) {
         try {
             final String outputCaseDocumentsPath = format(OUTPUT_CASE_JSON_PATH, caseIndex);
+
+            String caseUrn = null;
+            final JsonObject prosecutionCaseIdentifier = inputProsecutionCase.read(inputDefendantPath + ".prosecutionCaseIdentifier");
+            if (prosecutionCaseIdentifier.get("caseURN") == null) {
+                caseUrn = prosecutionCaseIdentifier.getString("prosecutionAuthorityReference");
+            } else {
+                caseUrn = prosecutionCaseIdentifier.getString("caseURN");
+            }
+            final String prosecutingAuthority = ((JsonString) inputProsecutionCase.read(inputDefendantPath + ".prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString();
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".id")).getString()))
                     .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
-                    .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
+                    .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"))
+                    .assertThat(outputCaseDocumentsPath + ".caseReference", equalTo(caseUrn))
+                    .assertThat(outputCaseDocumentsPath + ".prosecutingAuthority", equalTo(prosecutingAuthority));
+
             incrementCaseDocumentsCount();
         } catch (final Exception e) {
             incrementExceptionCount();

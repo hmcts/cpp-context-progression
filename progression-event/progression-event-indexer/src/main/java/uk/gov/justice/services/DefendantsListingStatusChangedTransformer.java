@@ -7,6 +7,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.unifiedsearch.client.domain.Application;
 import uk.gov.justice.services.unifiedsearch.client.domain.CaseDetails;
@@ -63,9 +64,23 @@ public class DefendantsListingStatusChangedTransformer implements Transform {
                     CaseDetails caseDetailsExisting = caseDocumentsMap.get(prosecutionCaseId);
                     caseDetailsExisting = caseDetails("PROSECUTION", hearing, prosecutionCaseId, caseDetailsExisting);
                     caseDetailsExisting.setHearings(hearings(listingStatusChanged, defendantIds));
+                    populateProsecutingAuthorityDetails(prosecutionCase, caseDetailsExisting);
                     caseDocumentsMap.put(prosecutionCaseId, caseDetailsExisting);
                 }
             }
+        }
+    }
+
+    private void populateProsecutingAuthorityDetails(final ProsecutionCase prosecutionCase, final CaseDetails caseDetails) {
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        if (prosecutionCaseIdentifier != null) {
+            if (prosecutionCaseIdentifier.getCaseURN() != null) {
+                caseDetails.setCaseReference(prosecutionCaseIdentifier.getCaseURN());
+            }
+            if (prosecutionCaseIdentifier.getProsecutionAuthorityReference() != null) {
+                caseDetails.setCaseReference(prosecutionCaseIdentifier.getProsecutionAuthorityReference());
+            }
+            caseDetails.setProsecutingAuthority(prosecutionCaseIdentifier.getProsecutionAuthorityCode());
         }
     }
 

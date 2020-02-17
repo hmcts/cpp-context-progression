@@ -93,7 +93,7 @@
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityCode": "4ZKOPhuyh5",
           "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
-          "caseURN": "qriGUBZKR5"
+          "caseURN": "caseURN"
         }
       },
       {
@@ -108,7 +108,7 @@
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityCode": "4ZKOPhuyh5",
           "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
-          "caseURN": "qriGUBZKR5"
+          "prosecutionAuthorityReference": "prosecutionAuthorityReference"
         }
       }
     ],
