@@ -57,23 +57,8 @@ public class UsersGroupServiceTest {
 
     @Test
     public void getDefenceOrganisationDetails() {
-        final List<UUID> causation =  new ArrayList<>();
-        causation.add(UUID.randomUUID());
-        final MetadataBuilder metadataBuilder = Envelope.metadataBuilder().withId(UUID.randomUUID())
-                .withName("abc")
-                .createdAt(ZonedDateTime.now())
-                .withCausation(causation.get(0));
-
-        when(requester.requestAsAdmin(any())).thenReturn(jsonEnvelope);
-
         jsonObject = buildJsonObject();
-        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
-        Optional<DefenceOrganisationVO> defenceOrganisationVOResults = usersGroupService.getDefenceOrganisationDetails(ORGANISATION_ID, metadataBuilder.build());
-        verify(requester).requestAsAdmin(jsonEnvelopeArgumentCaptor.capture());
-
-        Assert.assertTrue("Defence Organisation VO is null", defenceOrganisationVOResults.isPresent());
-
-        final DefenceOrganisationVO defenceOrganisationVO = defenceOrganisationVOResults.get();
+        final DefenceOrganisationVO defenceOrganisationVO = getDefenceOrganisationVO();
 
         Assert.assertEquals("User groups argument mismatch", USER_GROUPS_ORGANISATION_DETAILS, jsonEnvelopeArgumentCaptor.getValue().metadata().name());
         Assert.assertEquals("Organisation name is not matched", ORGANISATION_NAME, defenceOrganisationVO.getName());
@@ -86,7 +71,41 @@ public class UsersGroupServiceTest {
         Assert.assertEquals("Address line4 is not matched", ADDRESS_LINE4, defenceOrganisationVO.getAddressLine4());
     }
 
+    @Test
+    public void getDefenceOrganisationDetailsWithNullAddressLinesAndNullPhoneNumber() {
+        jsonObject = buildJsonObjectWithNullAddressAndNullPhoneNumber();
+        final DefenceOrganisationVO defenceOrganisationVO = getDefenceOrganisationVO();
 
+        Assert.assertEquals("User groups argument mismatch", USER_GROUPS_ORGANISATION_DETAILS, jsonEnvelopeArgumentCaptor.getValue().metadata().name());
+        Assert.assertEquals("Organisation name is not matched", ORGANISATION_NAME, defenceOrganisationVO.getName());
+        Assert.assertEquals("Email is not matched", EMAIL, defenceOrganisationVO.getEmail());
+        Assert.assertEquals("Postcode is not matched", POSTCODE, defenceOrganisationVO.getPostcode());
+        Assert.assertNull("Phone is not null", defenceOrganisationVO.getPhoneNumber());
+        Assert.assertNull("Address line1 is not null", defenceOrganisationVO.getAddressLine1());
+        Assert.assertNull("Address line2 is not null", defenceOrganisationVO.getAddressLine2());
+        Assert.assertNull("Address line3 is not null", defenceOrganisationVO.getAddressLine3());
+        Assert.assertNull("Address line4 is not null", defenceOrganisationVO.getAddressLine4());
+    }
+
+    private DefenceOrganisationVO getDefenceOrganisationVO() {
+        final List<UUID> causation = new ArrayList<>();
+        causation.add(UUID.randomUUID());
+        final MetadataBuilder metadataBuilder = Envelope.metadataBuilder().withId(UUID.randomUUID())
+                .withName("abc")
+                .createdAt(ZonedDateTime.now())
+                .withCausation(causation.get(0));
+
+        when(requester.requestAsAdmin(any())).thenReturn(jsonEnvelope);
+
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        Optional<DefenceOrganisationVO> defenceOrganisationVOResults = usersGroupService.getDefenceOrganisationDetails(ORGANISATION_ID, metadataBuilder.build());
+        verify(requester).requestAsAdmin(jsonEnvelopeArgumentCaptor.capture());
+
+        Assert.assertTrue("Defence Organisation VO is null", defenceOrganisationVOResults.isPresent());
+
+        return defenceOrganisationVOResults.get();
+    }
 
     private JsonObject buildJsonObject() {
     return createObjectBuilder().add("addressPostcode", POSTCODE)
@@ -96,6 +115,13 @@ public class UsersGroupServiceTest {
                 .add("addressLine4", ADDRESS_LINE4)
                 .add("organisationName", ORGANISATION_NAME)
                 .add("phoneNumber", PHONE_NUMBER)
+                .add("email", EMAIL)
+                .build();
+    }
+
+    private JsonObject buildJsonObjectWithNullAddressAndNullPhoneNumber() {
+        return createObjectBuilder().add("addressPostcode", POSTCODE)
+                .add("organisationName", ORGANISATION_NAME)
                 .add("email", EMAIL)
                 .build();
     }

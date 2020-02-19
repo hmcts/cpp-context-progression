@@ -36,14 +36,14 @@ public class UsersGroupService {
         log.info("Response organisation details returned : {}" + response.toObfuscatedDebugString());
 
         return Optional.of(DefenceOrganisationVO.builder()
-                .name(jsonObject.getString("organisationName"))
-                .email(jsonObject.getString("email"))
-                .phoneNumber(jsonObject.getString("phoneNumber"))
-                .addressLine1(jsonObject.getString("addressLine1"))
-                .addressLine2(jsonObject.getString("addressLine2"))
-                .addressLine3(jsonObject.getString("addressLine3"))
-                .addressLine4(jsonObject.getString("addressLine4"))
-                .postcode(jsonObject.getString("addressPostcode"))
+                .name(jsonObject.getString("organisationName", null))
+                .email(jsonObject.getString("email",null))
+                .phoneNumber(jsonObject.getString("phoneNumber",null))
+                .addressLine1(jsonObject.getString("addressLine1", null))
+                .addressLine2(jsonObject.getString("addressLine2", null))
+                .addressLine3(jsonObject.getString("addressLine3", null))
+                .addressLine4(jsonObject.getString("addressLine4", null))
+                .postcode(jsonObject.getString("addressPostcode", null))
                 .build());
   }
 }

@@ -42,3 +42,50 @@ Feature: CaseAggregate
     When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
     Then hearing listing status with status initialised updated
 
+  Scenario: Update Boxwork Task Status to In Progress whenever the Hearing Listing Status is Initialised
+
+    Given no previous events
+    When you updateDefendantListingStatus on a HearingAggregate with a update boxwork task status initialised
+    Then boxwork task status in progress updated
+
+  Scenario: Update Boxwork Task Status to Complete whenever the Hearing Listing Status is Resulted
+
+    Given no previous events
+    When you updateDefendantListingStatus on a HearingAggregate with a update boxwork task status finalised
+    Then boxwork task status complete updated
+
+  Scenario: Create Hearing Defendant Request
+
+    Given no previous events
+    When you createHearingDefendantRequest on a HearingAggregate with a create hearing defendant request
+    Then hearing-defendant-request-created
+
+  Scenario: Complete Boxwork
+
+    Given boxwork prosecution case defendant listing status changed
+    When you boxworkComplete on a HearingAggregate
+    Then boxwork completed
+
+  Scenario: Assign Boxwork User
+
+    Given boxwork prosecution case defendant listing status changed
+    When you assignBoxworkUser on a HearingAggregate with a assign boxwork user
+    Then boxwork user assigned
+
+  Scenario: Create Summons Data for a defendant
+
+    Given hearing defendant request created
+    When you createSummonsData on a HearingAggregate with a create summons data
+    Then summons data created
+
+  Scenario: Enrich Initiate Hearing whenever there is no defendant request
+
+    Given no previous events
+    When you enrichInitiateHearing on a HearingAggregate with a enrich initiate hearing
+    Then initiate hearing enriched
+
+  Scenario: Enrich Initiate Hearing whenever there is defendant request
+
+    Given hearing defendant request created
+    When you enrichInitiateHearing on a HearingAggregate with a enrich initiate hearing
+    Then initiate hearing with defendant referral reason enriched

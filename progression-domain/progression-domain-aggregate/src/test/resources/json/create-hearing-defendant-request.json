@@ -1,0 +1,18 @@
+{
+  "listDefendantRequests": [
+    {
+      "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+      "referralReason": {
+        "id": "04e0915a-5759-4bd3-a3c2-35c5206d4e3b",
+        "description": "forTrial",
+        "defendantId": "e1d32d9d-29ec-4934-a932-22a50f223966"
+      },
+      "datesToAvoid": "thursdays",
+      "summonsRequired": "SJP_REFERRAL",
+      "hearingLanguageNeeds": "WELSH",
+      "defendantOffences": [
+        "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+      ]
+    }
+  ]
+}

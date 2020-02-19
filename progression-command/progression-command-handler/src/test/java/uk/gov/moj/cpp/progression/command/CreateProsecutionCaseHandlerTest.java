@@ -28,12 +28,12 @@ import uk.gov.moj.cpp.progression.handler.CreateProsecutionCaseHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -97,6 +97,7 @@ public class CreateProsecutionCaseHandlerTest {
                                 .withProsecutionAuthorityCode("code")
                                 .withProsecutionAuthorityReference("reference")
                                 .build())
+                        .withClassOfCase("Class 1")
                         .build())
                 .build();
         aggregate.apply(createProsecutionCase.getProsecutionCase());
@@ -119,7 +120,8 @@ public class CreateProsecutionCaseHandlerTest {
                         metadata()
                                 .withName("progression.event.prosecution-case-created"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase", notNullValue ()))
+                                withJsonPath("$.prosecutionCase", notNullValue ()),
+                                withJsonPath("$.prosecutionCase.classOfCase", is("Class 1")))
                         ))
 
                 )
