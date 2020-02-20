@@ -37,7 +37,7 @@ public class HearingMapper {
                                         final Hearing hearing,
                                         final uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearingIndex) {
         hearingIndex.setDefendantIds(defendantIds);
-        hearingIndex.setIsIsBoxHearing(hearing.getIsBoxHearing());
+        hearingIndex.setIsIsBoxHearing(hearing.getIsBoxHearing() == null ? false : hearing.getIsBoxHearing());
         hearingIndex.setHearingDays(hearingDaysMapper.extractHearingDays(hearing));
         hearingIndex.setHearingDates(hearingDatesMapper.extractHearingDates(hearing));
         hearingIndex.setJudiciaryTypes(judiciaryTypes(hearing));
