@@ -37,6 +37,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -105,6 +107,9 @@ public class ProgressionService {
     private ReferenceDataService referenceDataService;
 
     @Inject
+    private AzureFunctionService azureFunctionService;
+
+    @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
 
@@ -121,7 +126,21 @@ public class ProgressionService {
             final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build();
             LOGGER.info("prosecution case is being created '{}' ", jsonObject);
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE).apply(jsonObject));
+            relayCaseToCourtStore(prosecutionCase);
         });
+    }
+
+    private void relayCaseToCourtStore(ProsecutionCase prosecutionCase) {
+
+        if (prosecutionCase != null && prosecutionCase.getProsecutionCaseIdentifier() != null && prosecutionCase.getProsecutionCaseIdentifier().getCaseURN() != null) {
+            final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+            payloadBuilder.add("CaseReference", prosecutionCase.getProsecutionCaseIdentifier().getCaseURN());
+            try {
+                this.azureFunctionService.relayCaseOnCPP(payloadBuilder.build().toString());
+            } catch (IOException ex) {
+                LOGGER.error(String.format("Failed to call Azure function %s", ex));
+            }
+        }
     }
 
 

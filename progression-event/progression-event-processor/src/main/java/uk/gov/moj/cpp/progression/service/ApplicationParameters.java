@@ -22,19 +22,56 @@ public class ApplicationParameters {
     @Value(key = "ncesEmailTemplateId")
     private String ncesEmailTemplateId;
 
+    @Inject
+    @Value(key = "AZURE_FUNCTION_HOST_NAME")
+    private String azureFunctionHostName;
+
+    @Inject
+    @Value(key = "azureScanManagerContainerName")
+    private String azureScanManagerContainerName;
+
+    @Inject
+    @Value(key = "SET_CASE_EJECTED_FUNCTION_PATH")
+    private String setCaseEjectedFunctionPath;
+
+    @Inject
+    @Value(key = "RELAY_CASE_ON_CPP_FUNCTION_PATH")
+    private String relayCaseOnCppFunctionPath;
+
+
     public String getNcesEmailTemplateId() {
+
         return ncesEmailTemplateId;
     }
 
     public String getApplicationTemplateId() {
+
         return applicationTemplateId;
     }
 
     public String getDefenceInstructionTemplateId() {
+
         return defenceInstructionTemplateId;
     }
 
     public String getDefenceDisassociationTemplateId() {
+
         return defenceDisassociationTemplateId;
+    }
+
+    public String getAzureFunctionHostName() {
+        return azureFunctionHostName;
+    }
+
+    public String getAzureScanManagerContainerName() {
+        return azureScanManagerContainerName;
+    }
+
+    public String getSetCaseEjectedFunctionPath() {
+        return setCaseEjectedFunctionPath;
+    }
+
+    public String getRelayCaseOnCppFunctionPath() {
+        return relayCaseOnCppFunctionPath;
     }
 }
