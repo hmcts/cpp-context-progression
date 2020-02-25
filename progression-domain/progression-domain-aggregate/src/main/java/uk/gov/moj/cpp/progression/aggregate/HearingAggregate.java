@@ -6,38 +6,22 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoN
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
 
-import uk.gov.justice.core.courts.BoxWorkTaskStatus;
-import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
-import uk.gov.justice.core.courts.HearingInitiateEnriched;
-import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
-import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.SharedResultLine;
-import uk.gov.justice.core.courts.SummonsData;
-import uk.gov.justice.core.courts.SummonsDataPrepared;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Stream.empty;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.*;
 
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
@@ -61,7 +45,7 @@ public class HearingAggregate implements Aggregate {
                     this.hearingListingStatus = e.getHearingListingStatus();
                 }),
                 when(HearingResulted.class).apply(e ->
-                            this.hearing = e.getHearing()
+                        this.hearing = e.getHearing()
                 ),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
@@ -161,7 +145,7 @@ public class HearingAggregate implements Aggregate {
                     hearingListingStatus)));
         }
 
-        return apply(Stream.empty());
+        return apply(empty());
     }
 
     public Stream<Object> boxworkComplete() {
@@ -174,7 +158,7 @@ public class HearingAggregate implements Aggregate {
                     hearing,
                     hearingListingStatus)));
         }
-        return apply(Stream.empty());
+        return apply(empty());
     }
 
     public Stream<Object> updateDefendantHearingResult(final UUID hearingId, final List<SharedResultLine> sharedResultLines) {

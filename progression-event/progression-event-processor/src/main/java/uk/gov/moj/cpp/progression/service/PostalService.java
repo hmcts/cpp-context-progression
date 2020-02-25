@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Objects.nonNull;
-
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getDocumentTypeData;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDocument;
@@ -19,6 +19,7 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
@@ -48,6 +49,8 @@ public class PostalService {
 
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
 
+    public static final UUID APPLICATIONS_DOCUMENT_TYPE_ID = UUID.fromString("460fa7ce-c002-11e8-a355-529269fb1459");
+
     private static final String POSTAL_NOTIFICATION = "PostalNotification";
 
     private static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
@@ -63,6 +66,10 @@ public class PostalService {
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
+
+    @Inject
+    @ServiceComponent(EVENT_PROCESSOR)
+    private Requester requester;
 
     @Inject
     private Enveloper enveloper;
@@ -85,19 +92,20 @@ public class PostalService {
                                                 final String applicationType,
                                                 final String legislation,
                                                 final CourtCentre courtCentre,
-                                                final CourtApplicationParty courtApplicationParty) {
+                                                final CourtApplicationParty courtApplicationParty,
+                                                final UUID linkedCaseId) {
 
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
         JsonObject localJusticeArea = Json.createObjectBuilder().build();
 
-        if(orderingCourtOptional.isPresent()) {
+        if (orderingCourtOptional.isPresent()) {
 
-            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(courtCentre.getId(), envelope);
+            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(courtCentre.getId(), envelope, requester);
 
             final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(IllegalArgumentException::new);
 
-            final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(envelope, courtCentreJson.getString(LJA));
+            final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(envelope, courtCentreJson.getString(LJA), requester);
 
             localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
         }
@@ -111,11 +119,11 @@ public class PostalService {
                 localJusticeArea,
                 courtApplicationParty);
 
-        sendPostalNotification(sender, envelope, applicationId, postalNotification);
+        sendPostalNotification(sender, envelope, applicationId, postalNotification, linkedCaseId);
 
     }
 
-    private void sendPostalNotification(final Sender sender, final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification) {
+    private void sendPostalNotification(final Sender sender, final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId) {
 
         final JsonObject postalNotificationPayload = objectToJsonObjectConverter.convert(postalNotification);
 
@@ -123,7 +131,7 @@ public class PostalService {
 
         final UUID materialId = documentGeneratorService.generateDocument(envelope, postalNotificationPayload, POSTAL_NOTIFICATION, sender, null, applicationId);
 
-        final CourtDocument courtDocument = courtDocument(applicationId, materialId);
+        final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
         final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
@@ -164,8 +172,7 @@ public class PostalService {
 
         builder.withAddressee(postalAddressee);
 
-        @SuppressWarnings({"squid:S2259"})
-        final PostalAddress postalAddress = getPostalAddress(ofNullable(courtCentre).map(CourtCentre::getAddress).orElse(null));
+        @SuppressWarnings({"squid:S2259"}) final PostalAddress postalAddress = getPostalAddress(ofNullable(courtCentre).map(CourtCentre::getAddress).orElse(null));
 
         final PostalHearingCourtDetails.Builder hearingCourtDetailsBuilder = PostalHearingCourtDetails.builder()
                 .withCourtName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
@@ -187,21 +194,21 @@ public class PostalService {
                 .build();
     }
 
-    private String getDefendantName(Defendant defendant){
-        if(nonNull(defendant.getPersonDefendant())){
+    private String getDefendantName(final Defendant defendant) {
+        if (nonNull(defendant.getPersonDefendant())) {
             return defendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + defendant.getPersonDefendant().getPersonDetails().getLastName();
         }
-        if(nonNull(defendant.getLegalEntityDefendant())){
+        if (nonNull(defendant.getLegalEntityDefendant())) {
             return defendant.getLegalEntityDefendant().getOrganisation().getName();
         }
         return EMPTY;
     }
 
-    private PostalAddress getDefendantPostalAddress(Defendant defendant){
-        if(nonNull(defendant.getPersonDefendant())){
+    private PostalAddress getDefendantPostalAddress(final Defendant defendant) {
+        if (nonNull(defendant.getPersonDefendant())) {
             return getPostalAddress(defendant.getPersonDefendant().getPersonDetails().getAddress());
         }
-        if(nonNull(defendant.getLegalEntityDefendant())){
+        if (nonNull(defendant.getLegalEntityDefendant())) {
             return getPostalAddress(defendant.getLegalEntityDefendant().getOrganisation().getAddress());
         }
         return null;
@@ -238,7 +245,7 @@ public class PostalService {
             return personOptional.map(person -> {
                 final String firstName = ofNullable(person.getFirstName()).orElse(EMPTY);
                 final String lastName = ofNullable(person.getLastName()).orElse(EMPTY);
-                return firstName + " " +lastName;
+                return firstName + " " + lastName;
             }).orElse(EMPTY);
         }
 
@@ -246,11 +253,11 @@ public class PostalService {
             return organisationOptional.map(Organisation::getName).orElse(EMPTY);
         }
 
-        if(prosecutingAuthorityOptional.isPresent()){
+        if (prosecutingAuthorityOptional.isPresent()) {
             return prosecutingAuthorityOptional.get().getName();
         }
 
-        if(defendantOptional.isPresent()){
+        if (defendantOptional.isPresent()) {
             return getDefendantName(defendantOptional.get());
         }
 
@@ -275,16 +282,17 @@ public class PostalService {
             return getPostalAddress(organisationOptional.get().getAddress());
         }
 
-        if(defendantOptional.isPresent()){
+        if (defendantOptional.isPresent()) {
             return getDefendantPostalAddress(defendantOptional.get());
         }
 
         return prosecutingAuthorityOptional.map(prosecutingAuthority -> getPostalAddress(prosecutingAuthority.getAddress())).orElse(null);
     }
 
-    private CourtDocument courtDocument(final UUID applicationId, final UUID materialId) {
+    private CourtDocument courtDocument(final UUID applicationId, final UUID materialId, final JsonEnvelope envelope, final UUID linkedCaseId) {
         final ApplicationDocument applicationDocument = ApplicationDocument.applicationDocument()
                 .withApplicationId(applicationId)
+                .withProsecutionCaseId(linkedCaseId)
                 .build();
 
         final DocumentCategory documentCategory = DocumentCategory.documentCategory()
@@ -293,8 +301,8 @@ public class PostalService {
 
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(UUID.randomUUID())
-                .withDocumentTypeId(UUID.randomUUID())
-                .withDocumentTypeDescription(POSTAL_NOTIFICATION)
+                .withDocumentTypeId(APPLICATIONS_DOCUMENT_TYPE_ID)
+                .withDocumentTypeDescription(getDocumentTypeData(APPLICATIONS_DOCUMENT_TYPE_ID, referenceDataService, envelope, requester).getString("section"))
                 .withMaterials(Collections.singletonList(Material.material()
                                 .withId(materialId)
                                 .withGenerationStatus(null)
@@ -305,6 +313,7 @@ public class PostalService {
                 )
                 .withDocumentCategory(documentCategory)
                 .withName(POSTAL_NOTIFICATION)
+                .withMimeType("application/pdf")
                 .build();
     }
 }

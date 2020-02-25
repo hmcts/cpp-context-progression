@@ -91,7 +91,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE, HeaderConstants.ID, randomUUID()));
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
-        when(materialClient.getMaterialAsPdf(materialId.toString(), systemUserId.toString())).thenReturn(documentContentResponse);
+        when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(InputStream.class)).thenReturn(documentStream);
         when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
@@ -125,7 +125,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
-        when(materialClient.getMaterialAsPdf(materialId.toString(), systemUserId.toString())).thenReturn(documentContentResponse);
+        when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.getHeaders()).thenReturn(new MultivaluedHashMap());
         when(documentContentResponse.getStatus()).thenReturn(SC_NOT_FOUND);
 

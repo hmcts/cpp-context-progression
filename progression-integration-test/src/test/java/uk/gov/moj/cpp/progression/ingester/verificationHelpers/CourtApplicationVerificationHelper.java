@@ -15,8 +15,6 @@ import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 
-//import static org.apache.webbeans.util.Asserts.assertNotNull;
-
 public class CourtApplicationVerificationHelper {
 
     public static void verifyStandaloneApplication(final String applicationid, final JsonObject transformedJson) {

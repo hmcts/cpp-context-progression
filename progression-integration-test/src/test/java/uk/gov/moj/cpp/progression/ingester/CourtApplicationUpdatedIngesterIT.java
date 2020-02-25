@@ -75,11 +75,11 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         setUpCourtApplication();
 
         updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
-                applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+                                           applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
 
-        final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
+         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
 
         assertTrue(courApplicationUpdatesResponseJsonObject.isPresent());
 

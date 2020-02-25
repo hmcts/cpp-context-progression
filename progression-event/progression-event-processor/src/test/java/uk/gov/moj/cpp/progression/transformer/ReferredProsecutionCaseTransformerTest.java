@@ -40,6 +40,7 @@ import uk.gov.justice.core.courts.ReferredOffence;
 import uk.gov.justice.core.courts.ReferredPerson;
 import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
@@ -78,303 +79,8 @@ public class ReferredProsecutionCaseTransformerTest {
     private ReferenceDataService referenceDataService;
     @InjectMocks
     private ReferredProsecutionCaseTransformer referredProsecutionCaseTransformer;
-
-
-    @Test
-    public void testTransformPerson() {
-        // Setup
-        final UUID lastName = randomUUID();
-        final UUID nationalityId = randomUUID();
-        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
-                .withLastName(lastName.toString())
-                .withAdditionalNationalityId(nationalityId)
-                .withNationalityId(nationalityId)
-                .withAddress(Address.address().withPostcode("CR1256DF").build())
-                .withTitle("DR")
-                .build());
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getNationality(jsonEnvelope, nationalityId)).thenReturn(of(getNationalityObject()));
-
-        Ethnicity ethnicity = Ethnicity.ethnicity()
-                .withObservedEthnicityCode("E12")
-                .withSelfDefinedEthnicityCode("E13")
-                .build();
-
-        // Run the test
-        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, ethnicity, jsonEnvelope);
-
-        //Verify the results
-        assertThat(lastName.toString(), is(result.getLastName()));
-        assertThat("N12", is(result.getAdditionalNationalityCode()));
-        assertThat("E12", is(result.getEthnicity().getObservedEthnicityCode()));
-        assertThat("E13", is(result.getEthnicity().getSelfDefinedEthnicityCode()));
-    }
-
-    @Test
-    public void shouldThrowExceptionForReferenceData() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
-        final UUID lastName = randomUUID();
-        final UUID nationalityId = randomUUID();
-        final UUID ethnicityId = randomUUID();
-
-        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
-                .withLastName(lastName.toString())
-                .withAdditionalNationalityId(nationalityId)
-                .withEthnicityId(ethnicityId)
-                .withNationalityId(nationalityId)
-                .withAddress(Address.address().withPostcode("CR1256DF").build())
-                .withTitle("DR")
-                .build());
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getNationality(jsonEnvelope, nationalityId)).thenThrow(new ReferenceDataNotFoundException("Country Nationality", nationalityId.toString()));
-
-        // Run the test
-        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
-
-        verifyNoMoreInteractions(referenceDataService);
-    }
-
-    @Test
-    public void shouldThrowExceptionForMissingRequiredFieldExceptionForPostcodeMissing() {
-        expectedException.expect(MissingRequiredFieldException.class);
-        final UUID lastName = randomUUID();
-        final UUID nationalityId = randomUUID();
-        final UUID ethnicityId = randomUUID();
-
-        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
-                .withLastName(lastName.toString())
-                .withAdditionalNationalityId(nationalityId)
-                .withEthnicityId(ethnicityId)
-                .withNationalityId(nationalityId)
-                .withAddress(Address.address().build())
-                .withTitle("DR")
-                .build());
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getNationality(jsonEnvelope, nationalityId))
-                .thenReturn(of(getNationalityObject()));
-
-        // Run the test
-        referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
-
-        verifyNoMoreInteractions(referenceDataService);
-    }
-
-    //Offence
-
-    @Test
-    public void testTransformPersonDefendant() {
-        // Setup
-
-        final ReferredPersonDefendant referredPersonDefendant = factory
-                .manufacturePojoWithFullData(ReferredPersonDefendant.class);
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getEthinicity(any(), any())).thenReturn(of(getEthnicityObject()));
-        when(referenceDataService.getNationality(any(), any())).thenReturn(of(getNationalityObject()));
-
-        // Run the test
-        final PersonDefendant result = referredProsecutionCaseTransformer.transform(referredPersonDefendant,
-                jsonEnvelope);
-
-        // Verify the results
-        assertThat("E12", is(result.getPersonDetails().getEthnicity().getObservedEthnicityCode()));
-    }
-
-    @Test
-    public void shouldThrowExceptionForPersonDefendantReferenceData() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
-
-        final ReferredPersonDefendant referredPersonDefendant = factory.manufacturePojoWithFullData
-                (ReferredPersonDefendant.class);
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getEthinicity(any(), any())).thenThrow(new ReferenceDataNotFoundException
-                ("Ethnicity", "E12"));
-
-        // Run the test
-        referredProsecutionCaseTransformer.transform
-                (referredPersonDefendant, jsonEnvelope);
-
-        verifyNoMoreInteractions(referenceDataService);
-    }
-
-    @Test
-    public void testTransformOffence() {
-        // Setup
-        final UUID offenceDefinitionId = randomUUID();
-        final UUID id = randomUUID();
-
-        final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
-                .withId(id)
-                .withOffenceDefinitionId(offenceDefinitionId)
-                .withOrderIndex(0)
-                .build());
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataOffenceService.getOffenceById(offenceDefinitionId, jsonEnvelope))
-                .thenReturn(of(getOffence("Indictable")));
-
-        // Run the test
-        final Offence result = referredProsecutionCaseTransformer.transform
-                (referredOffence, jsonEnvelope, InitiationCode.C);
-
-        //Verify the results
-        assertThat(id, is(result.getId()));
-        assertThat("Indictable", is(result.getModeOfTrial()));
-    }
-
-    @Test
-    public void testTransformOffenceDataValidationException() {
-        // Setup
-        expectedException.expect(DataValidationException.class);
-        final UUID offenceDefinitionId = randomUUID();
-        final UUID id = randomUUID();
-
-        final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
-                .withId(id)
-                .withOffenceDefinitionId(offenceDefinitionId)
-                .withOrderIndex(0)
-                .build());
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        final JsonObject jsonObject = getOffence("Indictable");
-
-        when(referenceDataOffenceService.getOffenceById(offenceDefinitionId, jsonEnvelope))
-                .thenReturn(of(jsonObject));
-
-        // Run the test
-        referredProsecutionCaseTransformer.transform
-                (referredOffence, jsonEnvelope, InitiationCode.J);
-
-        //Verify the results
-        verifyNoMoreInteractions(referenceDataService);
-    }
-
-    @Test
-    public void shouldThrowExceptionForOffenceReferenceData() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
-
-        final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
-                .withId(randomUUID())
-                .withOffenceDefinitionId(randomUUID())
-                .withOrderIndex(0)
-                .build());
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataOffenceService.getOffenceById(any(), any()))
-                .thenThrow(new ReferenceDataNotFoundException("Offence", "id"));
-
-        // Run the test
-        referredProsecutionCaseTransformer.transform(referredOffence, jsonEnvelope, InitiationCode.C);
-
-        // Verify the results
-        verifyNoMoreInteractions(referenceDataService);
-    }
-
-    @Test
-    public void testTransformReferredDefendant() {
-        // Setup
-
-        DefendantAlias defendantAlias1 = new DefendantAlias("firstName", "lastName", null, "middleName", "MR");
-        DefendantAlias defendantAlias2 = new DefendantAlias("null", null, "legalEntityName",  null, null);
-        List<DefendantAlias> defendantAliasList = new ArrayList<>();
-        defendantAliasList.add(defendantAlias1);
-        defendantAliasList.add(defendantAlias2);
-
-        final ReferredDefendant referredDefendant = factory.populatePojo(ReferredDefendant.referredDefendant()
-                .withId(randomUUID())
-                .withAliases(defendantAliasList)
-                .withOffences(
-                        new ArrayList<>(Arrays.asList(ReferredOffence.referredOffence().withId(randomUUID()).build())))
-                .withAssociatedPersons(new ArrayList<>(Arrays.asList(ReferredAssociatedPerson.referredAssociatedPerson()
-                        .withPerson(ReferredPerson.referredPerson().build()).withRole("role").build())))
-                .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
-                        .withPersonDetails(ReferredPerson.referredPerson().withNationalityId(randomUUID()).build()).build())
-                .build());
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        final JsonObject jsonObject = getOffence("Indictable");
-
-        when(referenceDataService.getEthinicity(any(), any())).thenReturn(of(getEthnicityObject()));
-        when(referenceDataService.getNationality(any(), any())).thenReturn(of(getNationalityObject()));
-        when(referenceDataOffenceService.getOffenceById(any(), any())).thenReturn(of(jsonObject));
-
-        // Run the test
-        final Defendant result = referredProsecutionCaseTransformer.transform
-                (referredDefendant, jsonEnvelope, InitiationCode.C);
-
-        //Verify the results
-        assertThat("Indictable", is(result.getOffences().get(0).getModeOfTrial()));
-        assertEquals("firstName", result.getAliases().get(0).getFirstName());
-        assertEquals("lastName", result.getAliases().get(0).getLastName());
-        assertEquals("middleName", result.getAliases().get(0).getMiddleName());
-        assertEquals("MR", result.getAliases().get(0).getTitle());
-        assertNull(result.getAliases().get(0).getLegalEntityName());
-        assertEquals("legalEntityName", result.getAliases().get(1).getLegalEntityName());
-    }
-
-    @Test
-    public void testTransform() {
-        // Setup
-
-        final ReferredProsecutionCase referredProsecutionCase = factory.populatePojo(
-                                                                ReferredProsecutionCase.referredProsecutionCase()
-                                                                .withId(randomUUID())
-                                                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                                                                        .withProsecutionAuthorityId(randomUUID()).build())
-                                                                .withDefendants(new ArrayList<>(Arrays.asList(ReferredDefendant.referredDefendant()
-                                                                        .withId(randomUUID())
-                                                                        .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
-                                                                                .withSelfDefinedEthnicityId(randomUUID())
-                                                                                .withPersonDetails(ReferredPerson.referredPerson().build())
-                                                                                .build())
-                                                                        .withOffences(new ArrayList<ReferredOffence>(Arrays.asList(ReferredOffence.referredOffence()
-                                                                                .withId(randomUUID()).build())))
-                                                                        .build())))
-                                                                .build());
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getEthinicity(any(), any())).thenReturn(of(getEthnicityObject()));
-        when(referenceDataService.getNationality(any(), any())).thenReturn(of(getNationalityObject()));
-        when(referenceDataService.getProsecutor(any(), any())).thenReturn(of(getProsecutor()));
-        when(referenceDataOffenceService.getOffenceById(any(), any())).thenReturn(of(getOffence("None")));
-
-        // Run the test
-        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, jsonEnvelope);
-
-        //Verify the results
-        assertThat("E12", is(result.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getSelfDefinedEthnicityCode()));
-    }
-
-    @Test
-    public void testTransformWithMinimalData() {
-        final ReferredProsecutionCase referredProsecutionCase = getReferredProsecutionCaseWithMinimalPayload();
-
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataOffenceService.getOffenceById(any(), any())).thenReturn(of(getOffence("Indictable")));
-        when(referenceDataService.getProsecutor(any(), any())).thenReturn(of(getProsecutor()));
-
-        // Run the test
-        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, jsonEnvelope);
-
-        //Verify the results
-        assertThat(Gender.FEMALE, is(result.getDefendants().get(0).getAssociatedPersons().get(0).getPerson()
-                .getGender()));
-    }
+    @Mock
+    private Requester requester;
 
     private static ReferredProsecutionCase getReferredProsecutionCaseWithMinimalPayload() {
         return ReferredProsecutionCase.referredProsecutionCase()
@@ -414,33 +120,12 @@ public class ReferredProsecutionCaseTransformerTest {
                 .build();
     }
 
-    @Test
-    public void shouldThrowExceptionWhenProsecutorNotFound() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
-        final ReferredProsecutionCase referredProsecutionCase = ReferredProsecutionCase.referredProsecutionCase()
-                .withId(randomUUID())
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                        .withProsecutionAuthorityReference("TFL")
-                        .withProsecutionAuthorityCode("TFL")
-                        .withCaseURN("PAR123")
-                        .withProsecutionAuthorityId(randomUUID())
-                        .build())
-                .build();
-
-        when(referenceDataService.getProsecutor(any(), any())).thenReturn(empty());
-
-        // Run the test
-        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, buildJsonEnvelope());
-
-       verifyNoMoreInteractions(referenceDataService);
-    }
-
-
+    //Offence
 
     private static JsonObject getNationalityObject() {
         return Json.createObjectBuilder().add(NATIONALITY_CODE, "N12").add(NATIONALITY, "UK").build();
     }
+
     private static JsonObject getProsecutor() {
         return Json.createObjectBuilder().add(PROSECUTOR, "TFL").build();
     }
@@ -454,9 +139,325 @@ public class ReferredProsecutionCaseTransformerTest {
                 .add(CJS_OFFENCE_CODE, "British").build();
     }
 
-
     private static JsonObject getEthnicityObject() {
         return Json.createObjectBuilder().add(ETHNICITY_CODE, "E12").add(ETHNICITY, "British").build();
     }
+
+    @Test
+    public void testTransformPerson() {
+        // Setup
+        final UUID lastName = randomUUID();
+        final UUID nationalityId = randomUUID();
+        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
+                .withLastName(lastName.toString())
+                .withAdditionalNationalityId(nationalityId)
+                .withNationalityId(nationalityId)
+                .withAddress(Address.address().withPostcode("CR1256DF").build())
+                .withTitle("DR")
+                .build());
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataService.getNationality(jsonEnvelope, nationalityId, requester)).thenReturn(of(getNationalityObject()));
+
+        final Ethnicity ethnicity = Ethnicity.ethnicity()
+                .withObservedEthnicityCode("E12")
+                .withSelfDefinedEthnicityCode("E13")
+                .build();
+
+        // Run the test
+        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, ethnicity, jsonEnvelope);
+
+        //Verify the results
+        assertThat(lastName.toString(), is(result.getLastName()));
+        assertThat("N12", is(result.getAdditionalNationalityCode()));
+        assertThat("E12", is(result.getEthnicity().getObservedEthnicityCode()));
+        assertThat("E13", is(result.getEthnicity().getSelfDefinedEthnicityCode()));
+    }
+
+    @Test
+    public void shouldThrowExceptionForReferenceData() {
+        expectedException.expect(ReferenceDataNotFoundException.class);
+        final UUID lastName = randomUUID();
+        final UUID nationalityId = randomUUID();
+        final UUID ethnicityId = randomUUID();
+
+        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
+                .withLastName(lastName.toString())
+                .withAdditionalNationalityId(nationalityId)
+                .withEthnicityId(ethnicityId)
+                .withNationalityId(nationalityId)
+                .withAddress(Address.address().withPostcode("CR1256DF").build())
+                .withTitle("DR")
+                .build());
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataService.getNationality(jsonEnvelope, nationalityId, requester)).thenThrow(new ReferenceDataNotFoundException("Country Nationality", nationalityId.toString()));
+
+        // Run the test
+        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
+
+        verifyNoMoreInteractions(referenceDataService);
+    }
+
+    @Test
+    public void shouldThrowExceptionForMissingRequiredFieldExceptionForPostcodeMissing() {
+        expectedException.expect(MissingRequiredFieldException.class);
+        final UUID lastName = randomUUID();
+        final UUID nationalityId = randomUUID();
+        final UUID ethnicityId = randomUUID();
+
+        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
+                .withLastName(lastName.toString())
+                .withAdditionalNationalityId(nationalityId)
+                .withEthnicityId(ethnicityId)
+                .withNationalityId(nationalityId)
+                .withAddress(Address.address().build())
+                .withTitle("DR")
+                .build());
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataService.getNationality(jsonEnvelope, nationalityId, requester))
+                .thenReturn(of(getNationalityObject()));
+
+        // Run the test
+        referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
+
+        verifyNoMoreInteractions(referenceDataService);
+    }
+
+    @Test
+    public void testTransformPersonDefendant() {
+        // Setup
+
+        final ReferredPersonDefendant referredPersonDefendant = factory
+                .manufacturePojoWithFullData(ReferredPersonDefendant.class);
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataService.getEthinicity(any(), any(), any())).thenReturn(of(getEthnicityObject()));
+        when(referenceDataService.getNationality(any(), any(), any())).thenReturn(of(getNationalityObject()));
+
+        // Run the test
+        final PersonDefendant result = referredProsecutionCaseTransformer.transform(referredPersonDefendant,
+                jsonEnvelope);
+
+        // Verify the results
+        assertThat("E12", is(result.getPersonDetails().getEthnicity().getObservedEthnicityCode()));
+    }
+
+    @Test
+    public void shouldThrowExceptionForPersonDefendantReferenceData() {
+        expectedException.expect(ReferenceDataNotFoundException.class);
+
+        final ReferredPersonDefendant referredPersonDefendant = factory.manufacturePojoWithFullData
+                (ReferredPersonDefendant.class);
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataService.getEthinicity(any(), any(), any())).thenThrow(new ReferenceDataNotFoundException
+                ("Ethnicity", "E12"));
+
+        // Run the test
+        referredProsecutionCaseTransformer.transform
+                (referredPersonDefendant, jsonEnvelope);
+
+        verifyNoMoreInteractions(referenceDataService);
+    }
+
+    @Test
+    public void testTransformOffence() {
+        // Setup
+        final UUID offenceDefinitionId = randomUUID();
+        final UUID id = randomUUID();
+
+        final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
+                .withId(id)
+                .withOffenceDefinitionId(offenceDefinitionId)
+                .withOrderIndex(0)
+                .build());
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataOffenceService.getOffenceById(offenceDefinitionId, jsonEnvelope, requester))
+                .thenReturn(of(getOffence("Indictable")));
+
+        // Run the test
+        final Offence result = referredProsecutionCaseTransformer.transform
+                (referredOffence, jsonEnvelope, InitiationCode.C);
+
+        //Verify the results
+        assertThat(id, is(result.getId()));
+        assertThat("Indictable", is(result.getModeOfTrial()));
+    }
+
+    @Test
+    public void testTransformOffenceDataValidationException() {
+        // Setup
+        expectedException.expect(DataValidationException.class);
+        final UUID offenceDefinitionId = randomUUID();
+        final UUID id = randomUUID();
+
+        final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
+                .withId(id)
+                .withOffenceDefinitionId(offenceDefinitionId)
+                .withOrderIndex(0)
+                .build());
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        final JsonObject jsonObject = getOffence("Indictable");
+
+        when(referenceDataOffenceService.getOffenceById(offenceDefinitionId, jsonEnvelope, requester))
+                .thenReturn(of(jsonObject));
+
+        // Run the test
+        referredProsecutionCaseTransformer.transform
+                (referredOffence, jsonEnvelope, InitiationCode.J);
+
+        //Verify the results
+        verifyNoMoreInteractions(referenceDataService);
+    }
+
+    @Test
+    public void shouldThrowExceptionForOffenceReferenceData() {
+        expectedException.expect(ReferenceDataNotFoundException.class);
+
+        final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
+                .withId(randomUUID())
+                .withOffenceDefinitionId(randomUUID())
+                .withOrderIndex(0)
+                .build());
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any()))
+                .thenThrow(new ReferenceDataNotFoundException("Offence", "id"));
+
+        // Run the test
+        referredProsecutionCaseTransformer.transform(referredOffence, jsonEnvelope, InitiationCode.C);
+
+        // Verify the results
+        verifyNoMoreInteractions(referenceDataService);
+    }
+
+    @Test
+    public void testTransformReferredDefendant() {
+        // Setup
+
+        DefendantAlias defendantAlias1 = new DefendantAlias("firstName", "lastName", null, "middleName", "MR");
+        DefendantAlias defendantAlias2 = new DefendantAlias("null", null, "legalEntityName", null, null);
+        List<DefendantAlias> defendantAliasList = new ArrayList<>();
+        defendantAliasList.add(defendantAlias1);
+        defendantAliasList.add(defendantAlias2);
+
+        final ReferredDefendant referredDefendant = factory.populatePojo(ReferredDefendant.referredDefendant()
+                .withId(randomUUID())
+                .withAliases(defendantAliasList)
+                .withOffences(
+                        new ArrayList<>(Arrays.asList(ReferredOffence.referredOffence().withId(randomUUID()).build())))
+                .withAssociatedPersons(new ArrayList<>(Arrays.asList(ReferredAssociatedPerson.referredAssociatedPerson()
+                        .withPerson(ReferredPerson.referredPerson().build()).withRole("role").build())))
+                .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
+                        .withPersonDetails(ReferredPerson.referredPerson().withNationalityId(randomUUID()).build()).build())
+                .build());
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        final JsonObject jsonObject = getOffence("Indictable");
+
+        when(referenceDataService.getEthinicity(any(), any(), any())).thenReturn(of(getEthnicityObject()));
+        when(referenceDataService.getNationality(any(), any(), any())).thenReturn(of(getNationalityObject()));
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(jsonObject));
+
+        // Run the test
+        final Defendant result = referredProsecutionCaseTransformer.transform
+                (referredDefendant, jsonEnvelope, InitiationCode.C);
+
+        //Verify the results
+        assertThat("Indictable", is(result.getOffences().get(0).getModeOfTrial()));
+        assertEquals("firstName", result.getAliases().get(0).getFirstName());
+        assertEquals("lastName", result.getAliases().get(0).getLastName());
+        assertEquals("middleName", result.getAliases().get(0).getMiddleName());
+        assertEquals("MR", result.getAliases().get(0).getTitle());
+        assertNull(result.getAliases().get(0).getLegalEntityName());
+        assertEquals("legalEntityName", result.getAliases().get(1).getLegalEntityName());
+    }
+
+    @Test
+    public void testTransform() {
+        // Setup
+
+        final ReferredProsecutionCase referredProsecutionCase = factory.populatePojo(
+                ReferredProsecutionCase.referredProsecutionCase()
+                        .withId(randomUUID())
+                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityId(randomUUID()).build())
+                        .withDefendants(new ArrayList<>(Arrays.asList(ReferredDefendant.referredDefendant()
+                                .withId(randomUUID())
+                                .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
+                                        .withSelfDefinedEthnicityId(randomUUID())
+                                        .withPersonDetails(ReferredPerson.referredPerson().build())
+                                        .build())
+                                .withOffences(new ArrayList<>(Arrays.asList(ReferredOffence.referredOffence()
+                                        .withId(randomUUID()).build())))
+                                .build())))
+                        .build());
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataService.getEthinicity(any(), any(), any())).thenReturn(of(getEthnicityObject()));
+        when(referenceDataService.getNationality(any(), any(), any())).thenReturn(of(getNationalityObject()));
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(of(getProsecutor()));
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("None")));
+
+        // Run the test
+        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
+                (referredProsecutionCase, jsonEnvelope);
+
+        //Verify the results
+        assertThat("E12", is(result.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getSelfDefinedEthnicityCode()));
+    }
+
+    @Test
+    public void testTransformWithMinimalData() {
+        final ReferredProsecutionCase referredProsecutionCase = getReferredProsecutionCaseWithMinimalPayload();
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("Indictable")));
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(of(getProsecutor()));
+
+        // Run the test
+        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
+                (referredProsecutionCase, jsonEnvelope);
+
+        //Verify the results
+        assertThat(Gender.FEMALE, is(result.getDefendants().get(0).getAssociatedPersons().get(0).getPerson()
+                .getGender()));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenProsecutorNotFound() {
+        expectedException.expect(ReferenceDataNotFoundException.class);
+        final ReferredProsecutionCase referredProsecutionCase = ReferredProsecutionCase.referredProsecutionCase()
+                .withId(randomUUID())
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("TFL")
+                        .withProsecutionAuthorityCode("TFL")
+                        .withCaseURN("PAR123")
+                        .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .build();
+
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(empty());
+
+        // Run the test
+        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
+                (referredProsecutionCase, buildJsonEnvelope());
+
+        verifyNoMoreInteractions(referenceDataService);
+    }
+
 
 }

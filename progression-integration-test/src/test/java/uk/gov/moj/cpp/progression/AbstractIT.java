@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.reset;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
@@ -28,6 +29,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferra
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.mockMaterialUpload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
 
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
@@ -47,6 +49,9 @@ public class AbstractIT {
     public static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
+    protected static final String HEARING_ID_TYPE_TRIAL = randomUUID().toString();
+    protected static final String HEARING_ID_TYPE_TRIAL_OF_ISSUE = randomUUID().toString();
+    protected static final String HEARING_ID_TYPE_NON_TRIAL = randomUUID().toString();
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
 
@@ -105,6 +110,9 @@ public class AbstractIT {
         stubNotifications();
         stubMaterialUploadFile();
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
+        setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL), "stub-data/hearing.get-hearing-of-type-trial.json");
+        setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL_OF_ISSUE),"stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
+        setupHearingQueryStub(fromString(HEARING_ID_TYPE_NON_TRIAL),"stub-data/hearing.get-hearing-of-type-non-trial.json");
     }
 
 }

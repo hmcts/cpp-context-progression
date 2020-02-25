@@ -19,6 +19,26 @@
       "defaultDurationMin": 20,
       "validFrom": null,
       "validTo": null
+    },
+    {
+      "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced",
+      "seqId": 3,
+      "hearingCode": "TIS",
+      "hearingDescription": "Trial",
+      "welshHearingDescription": "Diffynnydd i fynychu i",
+      "defaultDurationMin": 20,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "9cc41e45-b594-4ba6-906e-1a4626b08fed",
+      "seqId": 4,
+      "hearingCode": "TRL",
+      "hearingDescription": "Trial of Issue",
+      "welshHearingDescription": "Diffynnydd i fynychu 2",
+      "defaultDurationMin": 20,
+      "validFrom": null,
+      "validTo": null
     }
   ]
 }

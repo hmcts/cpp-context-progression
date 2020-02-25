@@ -18,4 +18,5 @@ public interface HearingApplicationRepository extends EntityRepository<HearingAp
 
     @Query("from HearingApplicationEntity entity where entity.id.hearingId in (:hearingId)")
     public abstract List<HearingApplicationEntity> findByHearingId(@QueryParam("hearingId") UUID hearingId);
+
 }

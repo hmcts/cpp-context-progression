@@ -14,9 +14,8 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALIT
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_ID;
 
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant;
@@ -26,32 +25,25 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Interpreter
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
-
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 @RunWith(MockitoJUnitRunner.class)
 public class SendingSheetCompleteTransformerTest {
-
-    @Mock
-    private ReferenceDataOffenceService referenceDataOffenceService;
-
-    @Mock
-    private ReferenceDataService referenceDataService;
-
-    @InjectMocks
-    private SendingSheetCompleteTransformer sendingSheetCompleteTransformer;
 
     private static final UUID CASE_ID = randomUUID();
     private static final UUID DEFENDANT_ID = randomUUID();
@@ -81,27 +73,55 @@ public class SendingSheetCompleteTransformerTest {
     private static final String OFFENCE_TITLE = "offence title";
     private static final String LEGISLATION = "O_LEGISLATION";
     private static final int ORDER_INDEX = 2;
+    @Mock
+    private ReferenceDataOffenceService referenceDataOffenceService;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
+    private Requester requester;
+    @InjectMocks
+    private SendingSheetCompleteTransformer sendingSheetCompleteTransformer;
+
+    private static JsonObject getOffence(final String modeoftrial) {
+        return Json.createObjectBuilder().add("legislation", LEGISLATION)
+                .add("welshlegislation", LEGISLATION_WELSH)
+                .add("title", OFFENCE_TITLE)
+                .add("welshoffencetitle", WELSH_OFFENCE_TITLE)
+                .add("modeOfTrial", modeoftrial)
+                .add("offenceId", randomUUID().toString())
+                .add(CJS_OFFENCE_CODE, OFFENCE_CODE).build();
+
+    }
+
+    private static JsonObject getNationalityObject() {
+        return Json.createObjectBuilder()
+                .add(NATIONALITY_CODE, "N12")
+                .add(NATIONALITY, "UK")
+                .add(ID, randomUUID().toString())
+                .build();
+    }
 
     @Test
-    public void testSendingSheetTransformer(){
+    public void testSendingSheetTransformer() {
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
-        when(referenceDataOffenceService.getOffenceByCjsCode(OFFENCE_CODE, jsonEnvelope))
+        when(referenceDataOffenceService.getOffenceByCjsCode(OFFENCE_CODE, jsonEnvelope, requester))
                 .thenReturn(of(getOffence("Indictable")));
-        when(referenceDataService.getNationalityByNationality(jsonEnvelope, NATIONALITY))
+        when(referenceDataService.getNationalityByNationality(jsonEnvelope, NATIONALITY, requester))
                 .thenReturn(of(getNationalityObject()));
 
         final ProsecutionCase pCase = sendingSheetCompleteTransformer.transformToProsecutionCase(createSendingSheetCompleted(), jsonEnvelope);
         assertProsecutionCaseValues(pCase);
     }
 
-    private SendingSheetCompleted createSendingSheetCompleted(){
+    private SendingSheetCompleted createSendingSheetCompleted() {
         final SendingSheetCompleted ssc = new SendingSheetCompleted();
         ssc.setHearing(createHearing());
         return ssc;
     }
-    private Hearing createHearing(){
+
+    private Hearing createHearing() {
         final Hearing hearing = new Hearing();
         hearing.setCaseId(CASE_ID);
         hearing.setCaseUrn(CASE_URN);
@@ -110,7 +130,7 @@ public class SendingSheetCompleteTransformerTest {
         return hearing;
     }
 
-    private List<Defendant> createDefendants(){
+    private List<Defendant> createDefendants() {
         final List<Defendant> defendants = new ArrayList<>();
         final Defendant defendant = new Defendant();
         defendant.setId(DEFENDANT_ID);
@@ -134,7 +154,7 @@ public class SendingSheetCompleteTransformerTest {
         return defendants;
     }
 
-    private List<Offence> createOffences(){
+    private List<Offence> createOffences() {
         final List<Offence> offences = new ArrayList<>();
         final Offence offence = new Offence();
         offence.setId(OFFENCE_ID);
@@ -144,73 +164,55 @@ public class SendingSheetCompleteTransformerTest {
         offence.setStartDate(OFFENCE_START_DATE.toString());
         offence.setEndDate(OFFENCE_END_DATE.toString());
         offence.setConvictionDate(CONVICTION_DATE);
-        offence.setPlea(new Plea(randomUUID(),PLEA_GUILTY,PLEA_DATE));
-        offence.setIndicatedPlea(new IndicatedPlea(randomUUID(),INDICATED_PLEA,ALLOCATION_DECISION));
+        offence.setPlea(new Plea(randomUUID(), PLEA_GUILTY, PLEA_DATE));
+        offence.setIndicatedPlea(new IndicatedPlea(randomUUID(), INDICATED_PLEA, ALLOCATION_DECISION));
         offence.setTitle(OFFENCE_TITLE);
         offence.setLegislation(LEGISLATION);
         offence.setOrderIndex(ORDER_INDEX);
         offences.add(offence);
         return offences;
     }
-    private void assertProsecutionCaseValues(final ProsecutionCase pCase){
-        assertThat(pCase.getId(),equalTo(CASE_ID));
-        assertThat(pCase.getInitiationCode().toString(),equalTo("C"));
-        assertThat(pCase.getProsecutionCaseIdentifier().getCaseURN(),equalTo(CASE_URN));
-        assertThat(pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode(),equalTo(PROSECUTION_AUTHORITY_CODE));
-        assertThat(pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId(),equalTo(PROSECUTION_AUTHORITY_ID));
+
+    private void assertProsecutionCaseValues(final ProsecutionCase pCase) {
+        assertThat(pCase.getId(), equalTo(CASE_ID));
+        assertThat(pCase.getInitiationCode().toString(), equalTo("C"));
+        assertThat(pCase.getProsecutionCaseIdentifier().getCaseURN(), equalTo(CASE_URN));
+        assertThat(pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), equalTo(PROSECUTION_AUTHORITY_CODE));
+        assertThat(pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId(), equalTo(PROSECUTION_AUTHORITY_ID));
         assertDefendant(pCase.getDefendants().get(0));
 
     }
 
     private void assertDefendant(final uk.gov.justice.core.courts.Defendant defendant) {
-        assertThat(defendant.getId(),equalTo(DEFENDANT_ID));
-        assertThat(defendant.getPersonDefendant().getCustodyTimeLimit(),equalTo(CUSTODY_TIME_LIMIT_DATE));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getAddress().getAddress1(),equalTo(ADDRESS_1));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getAddress().getPostcode(),equalTo(POST_CODE));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(),equalTo(DATE_OF_BIRTH));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getFirstName(),equalTo(FIRST_NAME));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getLastName(),equalTo(LAST_NAME));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getGender().toString() ,equalTo(GENDER));
-        assertThat(defendant.getPersonDefendant().getPersonDetails().getInterpreterLanguageNeeds(),equalTo(INTERPRETER_LANGUAGE));
+        assertThat(defendant.getId(), equalTo(DEFENDANT_ID));
+        assertThat(defendant.getPersonDefendant().getCustodyTimeLimit(), equalTo(CUSTODY_TIME_LIMIT_DATE));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getAddress().getAddress1(), equalTo(ADDRESS_1));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getAddress().getPostcode(), equalTo(POST_CODE));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), equalTo(DATE_OF_BIRTH));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getFirstName(), equalTo(FIRST_NAME));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getLastName(), equalTo(LAST_NAME));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getGender().toString(), equalTo(GENDER));
+        assertThat(defendant.getPersonDefendant().getPersonDetails().getInterpreterLanguageNeeds(), equalTo(INTERPRETER_LANGUAGE));
         assertOffence(defendant.getOffences().get(0));
     }
 
     private void assertOffence(final uk.gov.justice.core.courts.Offence offence) {
-        assertThat(offence.getId(),equalTo(OFFENCE_ID));
-        assertThat(offence.getConvictionDate(),equalTo(CONVICTION_DATE));
-        assertThat(offence.getEndDate(),equalTo(OFFENCE_END_DATE));
-        assertThat(offence.getStartDate(),equalTo(OFFENCE_START_DATE));
-        assertThat(offence.getWording(),equalTo(OFFENCE_WORDING));
-        assertThat(offence.getOffenceCode(),equalTo(OFFENCE_CODE));
-        assertThat(offence.getOffenceTitle(),equalTo(OFFENCE_TITLE));
-        assertThat(offence.getOffenceLegislation(),equalTo(LEGISLATION));
-        assertThat(offence.getOrderIndex(),equalTo(ORDER_INDEX));
-        assertThat(offence.getPlea().getPleaDate(),equalTo(PLEA_DATE));
-        assertThat(offence.getPlea().getPleaValue().toString(),equalTo(PLEA_GUILTY));
-        assertThat(offence.getIndicatedPlea().getIndicatedPleaDate() ,equalTo(CONVICTION_DATE));
-        assertThat(offence.getIndicatedPlea().getIndicatedPleaValue().toString() ,equalTo(INDICATED_PLEA));
-        assertThat(offence.getAllocationDecision().getMotReasonCode() ,equalTo("4"));
-        assertThat(offence.getAllocationDecision().getMotReasonDescription() ,equalTo("Defendant chooses trial by jury"));
-        assertThat(offence.getAllocationDecision().getOffenceId() ,equalTo(OFFENCE_ID));
-    }
-
-    private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add("legislation", LEGISLATION)
-                .add("welshlegislation", LEGISLATION_WELSH)
-                .add("title", OFFENCE_TITLE)
-                .add("welshoffencetitle", WELSH_OFFENCE_TITLE)
-                .add("modeOfTrial", modeoftrial)
-                .add("offenceId", randomUUID().toString())
-                .add(CJS_OFFENCE_CODE, OFFENCE_CODE).build();
-
-    }
-
-    private static JsonObject getNationalityObject() {
-        return Json.createObjectBuilder()
-                .add(NATIONALITY_CODE, "N12")
-                .add(NATIONALITY, "UK")
-                .add(ID, randomUUID().toString())
-                .build();
+        assertThat(offence.getId(), equalTo(OFFENCE_ID));
+        assertThat(offence.getConvictionDate(), equalTo(CONVICTION_DATE));
+        assertThat(offence.getEndDate(), equalTo(OFFENCE_END_DATE));
+        assertThat(offence.getStartDate(), equalTo(OFFENCE_START_DATE));
+        assertThat(offence.getWording(), equalTo(OFFENCE_WORDING));
+        assertThat(offence.getOffenceCode(), equalTo(OFFENCE_CODE));
+        assertThat(offence.getOffenceTitle(), equalTo(OFFENCE_TITLE));
+        assertThat(offence.getOffenceLegislation(), equalTo(LEGISLATION));
+        assertThat(offence.getOrderIndex(), equalTo(ORDER_INDEX));
+        assertThat(offence.getPlea().getPleaDate(), equalTo(PLEA_DATE));
+        assertThat(offence.getPlea().getPleaValue().toString(), equalTo(PLEA_GUILTY));
+        assertThat(offence.getIndicatedPlea().getIndicatedPleaDate(), equalTo(CONVICTION_DATE));
+        assertThat(offence.getIndicatedPlea().getIndicatedPleaValue().toString(), equalTo(INDICATED_PLEA));
+        assertThat(offence.getAllocationDecision().getMotReasonCode(), equalTo("4"));
+        assertThat(offence.getAllocationDecision().getMotReasonDescription(), equalTo("Defendant chooses trial by jury"));
+        assertThat(offence.getAllocationDecision().getOffenceId(), equalTo(OFFENCE_ID));
     }
 
 

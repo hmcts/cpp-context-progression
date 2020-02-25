@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -52,6 +54,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -72,85 +75,68 @@ public class NowsRequestedEventProcessorTest {
     public static final String USER_ID = UUID.randomUUID().toString();
 
     public static final UUID fileId = UUID.randomUUID();
-
-    private String referenceDataUsergroup = "Test Group";
-
-    private NowsRequestedEventProcessor nowsRequestedEventProcessor;
-
-    @Mock
-    private Sender sender;
-
-    @Mock
-    private Requester requester;
-
-    @Mock
-    private JsonEnvelope responseEnvelope;
-
-    @Mock
-    private UploadMaterialService uploadMaterialService;
-
-    @Mock
-    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
-
-    @Mock
-    private DocumentGeneratorClient documentGeneratorClient;
-
-    @Mock
-    private FileStorer fileStorer;
-
-    @Mock
-    private ReferenceDataService refDataService;
-
-    @Mock
-    private SystemUserProvider systemUserProvider;
-
     @Spy
     private final Enveloper enveloper = createEnveloper();
-
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<InputStream> inputStreamArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<UUID> caseIdCaptor;
-
-    @Captor
-    private ArgumentCaptor<UUID> uuidArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<Sender> senderCaptor;
-
-    @Captor
-    private ArgumentCaptor<NowDocumentRequest> nowDocumentRequestCaptor;
-
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> originatingEnvelopeCaptor;
-
-    @Captor
-    private ArgumentCaptor<UUID> fileIdCaptor;
-
-    @Captor
-    private ArgumentCaptor<UUID> userIdCaptor;
-
-
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
     @Spy
     @InjectMocks
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
-
     @Spy
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final String referenceDataUsergroup = "Test Group";
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+    private NowsRequestedEventProcessor nowsRequestedEventProcessor;
+    @Mock
+    private Sender sender;
+    @Mock
+    private Requester requester;
+    @Mock
+    private JsonEnvelope responseEnvelope;
+    @Mock
+    private UploadMaterialService uploadMaterialService;
+    @Mock
+    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
+    @Mock
+    private DocumentGeneratorClient documentGeneratorClient;
+    @Mock
+    private FileStorer fileStorer;
+    @Mock
+    private ReferenceDataService refDataService;
+    @Mock
+    private SystemUserProvider systemUserProvider;
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<InputStream> inputStreamArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> caseIdCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> uuidArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Sender> senderCaptor;
+    @Captor
+    private ArgumentCaptor<NowDocumentRequest> nowDocumentRequestCaptor;
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> originatingEnvelopeCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> fileIdCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> userIdCaptor;
+
+    public static NowDocumentRequest nowsRequestedTemplate() {
+        return generateNowDocumentRequestTemplate(UUID.randomUUID());
+    }
+
+    private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
+        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+    }
 
     @Before
     public void initMocks() {
@@ -164,10 +150,6 @@ public class NowsRequestedEventProcessorTest {
         );
 
     }
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
 
     @Test
     public void shouldGenerateNowAndStoreInFileStore() throws IOException, FileServiceException {
@@ -194,10 +176,12 @@ public class NowsRequestedEventProcessorTest {
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        JsonEnvelope jsonEnvelope = this.envelopeArgumentCaptor.getValue();
+        final JsonEnvelope jsonEnvelope = this.envelopeArgumentCaptor.getValue();
         System.out.println(jsonEnvelope.payloadAsJsonObject());
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
         Assert.assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(referenceDataUsergroup));
+        assertThat(courtDocument.getMimeType(), is("application/pdf"));
+        assertThat(courtDocument.getDocumentTypeDescription(), is("Court Final orders"));
         System.out.println("" + courtDocument);
 
     }
@@ -228,6 +212,9 @@ public class NowsRequestedEventProcessorTest {
         assertThat(allMessagesSent.get(0), jsonEnvelope(
                 metadata().withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT),
                 payloadIsJson(allOf(
+                        withJsonPath("$.courtDocument.materials[0].id", is(nowDocumentRequest.getMaterialId().toString())),
+                        withJsonPath("$.courtDocument.mimeType", is("application/pdf")),
+                        withJsonPath("$.courtDocument.documentTypeDescription", is("Court Final orders")),
                         withJsonPath("$.courtDocument.materials[0].id", is(nowDocumentRequest.getMaterialId().toString()))
                 ))));
 
@@ -263,7 +250,7 @@ public class NowsRequestedEventProcessorTest {
 
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        UUID systemUserId = UUID.randomUUID();
+        final UUID systemUserId = UUID.randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
         doThrow(new FileUploadException()).when(fileStorer).store(any(), any());
@@ -285,14 +272,10 @@ public class NowsRequestedEventProcessorTest {
         assertThat(allMessagesSent.get(0), jsonEnvelope(
                 metadata().withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT),
                 payloadIsJson(allOf(
-                        withJsonPath("$.courtDocument.materials[0].id", is(nowDocumentRequest.getMaterialId().toString()))
+                        withJsonPath("$.courtDocument.materials[0].id", is(nowDocumentRequest.getMaterialId().toString())),
+                        withJsonPath("$.courtDocument.mimeType", is("application/pdf")),
+                        withJsonPath("$.courtDocument.documentTypeDescription", is("Court Final orders"))
                 ))));
-
-//        assertThat(allMessagesSent.get(1), jsonEnvelope(
-//                metadata().withName(PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS),
-//                payloadIsJson(allOf(withJsonPath("$.hearing_id", is(nowDocumentRequest.getHearingId())),
-//                        withJsonPath("$.material_id",
-//                                is(nowDocumentRequest.getMaterialId().toString()))))));
 
         assertThat(allMessagesSent.get(2), jsonEnvelope(
                 metadata().withName(RESULTS_UPDATE_NOWS_MATERIAL_STATUS),
@@ -305,36 +288,34 @@ public class NowsRequestedEventProcessorTest {
     /**
      * GPE-6752 implement nowMaterial status updated
      *
-     * @Test public void shouldRaiseAnPublicEventNowsMaterialStatusWasUpdated() {
-     * <p>
-     * final NowsMaterialStatusUpdated nowsMaterialStatusUpdated = new
-     * NowsMaterialStatusUpdated(UUID.randomUUID(), UUID.randomUUID(), "GENERATED_STATUS_VALUE");
-     * <p>
-     * final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("hearing.events.nows-material-status-updated").withUserId(USER_ID),
-     * objectToJsonObjectConverter.convert(nowsMaterialStatusUpdated));
-     * <p>
-     * this.nowsRequestedEventProcessor.propagateNowsMaterialStatusUpdated(event);
-     * <p>
-     * final ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
-     * <p>
-     * verify(sender).send(jsonEnvelopeCaptor.capture());
-     * <p>
-     * assertThat(jsonEnvelopeCaptor.getValue().metadata().name(), is("public.hearing.events.nows-material-status-updated"));
-     * assertThat(jsonEnvelopeCaptor.getValue().payloadAsJsonObject().getString("materialId"),
-     * is(nowsMaterialStatusUpdated.getMaterialId().toString()));
-     * <p>
-     * }
+     * @Test public void shouldRaiseAnPublicEventNowsMaterialStatusWasUpdated() { <p> final
+     * NowsMaterialStatusUpdated nowsMaterialStatusUpdated = new NowsMaterialStatusUpdated(UUID.randomUUID(),
+     * UUID.randomUUID(), "GENERATED_STATUS_VALUE"); <p> final JsonEnvelope event =
+     * envelopeFrom(metadataWithRandomUUID("hearing.events.nows-material-status-updated").withUserId(USER_ID),
+     * objectToJsonObjectConverter.convert(nowsMaterialStatusUpdated)); <p>
+     * this.nowsRequestedEventProcessor.propagateNowsMaterialStatusUpdated(event); <p> final
+     * ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+     * <p> verify(sender).send(jsonEnvelopeCaptor.capture()); <p> assertThat(jsonEnvelopeCaptor.getValue().metadata().name(),
+     * is("public.hearing.events.nows-material-status-updated")); assertThat(jsonEnvelopeCaptor.getValue().payloadAsJsonObject().getString("materialId"),
+     * is(nowsMaterialStatusUpdated.getMaterialId().toString())); <p> }
      **/
-    private String normalizeName(String name) {
+    private String normalizeName(final String name) {
         return name.replaceAll(" ", "").toLowerCase();
     }
 
     private void initReferenceDate(final JsonEnvelope eventEnvelope) {
-        JsonObject docTypeData = Json.createObjectBuilder().add("documentAccess", Json.createArrayBuilder().add(referenceDataUsergroup).build()).build();
-        when(refDataService.getDocumentTypeData(NowsRequestedEventProcessor.NOW_DOCUMENT_TYPE_ID, eventEnvelope)).thenReturn(Optional.of(docTypeData));
-    }
 
-    public static NowDocumentRequest nowsRequestedTemplate() {
-        return generateNowDocumentRequestTemplate(UUID.randomUUID());
+        final JsonObject docTypeData = Json.createObjectBuilder()
+                .add("section", "Court Final orders")
+                .add("courtDocumentTypeRBAC",
+                Json.createObjectBuilder()
+                        .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup(referenceDataUsergroup).build()).build())
+                        .add("readUserGroups", createArrayBuilder().add(buildUserGroup(referenceDataUsergroup)).add(buildUserGroup("Magistrates")).build())
+                        .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup(referenceDataUsergroup)).add(buildUserGroup("Magistrates")).build()).build())
+                .build();
+
+        //final JsonObject docTypeData = Json.createObjectBuilder().add("courtDocumentTypeRBAC", Json.createArrayBuilder().add(referenceDataUsergroup).build()).build();
+        when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(docTypeData));
+
     }
 }

@@ -6,12 +6,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.moj.cpp.progression.util.AdjournHearingHelper;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -30,6 +30,7 @@ public class AdjournHearingIT extends AbstractIT {
 
     @Before
     public void setUp() {
+        setupUsersGroupQueryStub();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();

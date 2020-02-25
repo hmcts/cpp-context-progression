@@ -47,6 +47,7 @@ public class NowsRequestedEventListener {
                 .withGenerationStatus(status)
                 .withId(material.getId())
                 .withUploadDateTime(material.getUploadDateTime())
+                .withReceivedDateTime(material.getReceivedDateTime())
                 .withName(material.getName())
                 .withUserGroups(material.getUserGroups())
                 .build();
@@ -57,12 +58,14 @@ public class NowsRequestedEventListener {
                 .withMaterials(materials)
                 .withCourtDocumentId(courtDocument.getCourtDocumentId())
                 .withDocumentCategory(courtDocument.getDocumentCategory())
-                .withDocumentTypeId(courtDocument.getCourtDocumentId())
-                .withCourtDocumentId(courtDocument.getCourtDocumentId())
-                .withIsRemoved(courtDocument.getIsRemoved())
+                .withDocumentTypeId(courtDocument.getDocumentTypeId())
                 .withName(courtDocument.getName())
                 .withMimeType(courtDocument.getMimeType())
                 .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
+                .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
+                .withAmendmentDate(courtDocument.getAmendmentDate())
+                .withSeqNum(courtDocument.getSeqNum())
+                .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
                 .build();
     }
 

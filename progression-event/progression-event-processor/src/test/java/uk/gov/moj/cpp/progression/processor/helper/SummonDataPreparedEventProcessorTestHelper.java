@@ -79,6 +79,13 @@ public class SummonDataPreparedEventProcessorTestHelper {
                 .build();
     }
 
+    public static JsonObject generateDocumentTypeAccess(UUID id) {
+        return createObjectBuilder()
+                                .add("id", id.toString())
+                                .add("section", "Charges")
+                .build();
+    }
+
     public static JsonArray generateDefendantArray(String caseId, String defendantId) {
         return createArrayBuilder()
                 .add(

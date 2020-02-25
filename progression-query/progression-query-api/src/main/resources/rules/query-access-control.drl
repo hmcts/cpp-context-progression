@@ -6,12 +6,24 @@ import java.util.ArrayList;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 global uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider progressionProvider;
+global uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider rbacProvider;
+global uk.gov.justice.api.resource.service.CourtDocumentProvider courtDocumentProvider;
+
+
+rule "Query - Access control for progression.query.shared-court-documents"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.shared-court-documents");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Magistrates"))
+  then
+    $outcome.setSuccess(true);
+end
 
 rule "Query - Access control for  progression.query.courtdocument"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.courtdocument");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin"))
+    eval(rbacProvider.isLoggedInUserAllowedToReadDocument(courtDocumentProvider.getDocumentTypeId($action)))
   then
     $outcome.setSuccess(true);
 end
@@ -21,7 +33,7 @@ rule "Query - Access control for  progression.query.courtdocuments"
     $outcome: Outcome();
     $action: Action(name == "progression.query.courtdocuments");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers",
-     "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge"))
+     "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Defence Users", "Court Associate", "Defence Advocate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support"))
   then
     $outcome.setSuccess(true);
 end
@@ -30,7 +42,7 @@ rule "Query - Access control for  progression.query.prosecutioncase"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Defence Advocate", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support"))
   then
     $outcome.setSuccess(true);
 end
@@ -158,7 +170,7 @@ rule "progression - Query - API - material-content"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.material-content");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "Probation Admin"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "District Judge", "Court Associate", "Defence Users", "Probation Admin", "Youth Offending Service Admin", "Magistrates","Court Administrators", "Probation Admin", "Second Line Support"   ))
   then
     $outcome.setSuccess(true);
 end

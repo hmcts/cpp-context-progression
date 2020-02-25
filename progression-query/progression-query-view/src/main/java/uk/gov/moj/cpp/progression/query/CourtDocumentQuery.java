@@ -3,13 +3,14 @@ package uk.gov.moj.cpp.progression.query;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,16 +18,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -91,10 +94,7 @@ public class CourtDocumentQuery {
     private NotificationStatusRepository notificationStatusRepository;
 
     @Inject
-    private ProsecutionCaseRepository prosecutionCaseRepository;
-
-    @Inject
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    private RbacProvider rbacProvider;
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
@@ -102,16 +102,16 @@ public class CourtDocumentQuery {
         CourtDocumentEntity courtDocumentEntity = null;
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
+         JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
+
         if (id.isPresent()) {
             courtDocumentEntity = courtDocumentRepository.findBy(id.get());
-            if (nonNull(courtDocumentEntity)) {
-                jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, jsonFromString(courtDocumentEntity.getPayload()));
-            } else {
-                jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, Json.createObjectBuilder().build());
+            if (nonNull(courtDocumentEntity) && !courtDocumentEntity.isRemoved()) {
+                jsonEnvelope = envelopeFrom(envelope.metadata(),jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, jsonFromString(courtDocumentEntity.getPayload())).build());
             }
         }
 
-        return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
+        return jsonEnvelope;
     }
 
     private List<UUID> commaSeparatedUuidParam2UUIDs(final String strUuids) {
@@ -151,7 +151,9 @@ public class CourtDocumentQuery {
         final CourtDocumentsSearchResult result = new CourtDocumentsSearchResult();
         final Map<UUID, CourtDocument> id2CourtDocument = new HashMap<>();
         courtDocumentEntities.stream()
+                .filter(entity -> !entity.isRemoved())
                 .map(entity -> courtDocument(entity))
+                .filter(cd -> canCourtDocumentBeAccessed(cd, envelope))
                 .forEach(courtDocument -> id2CourtDocument.put(courtDocument.getCourtDocumentId(), courtDocument));
 
         final Set<String> usergroupsInDocuments = id2CourtDocument.values().stream()
@@ -180,23 +182,22 @@ public class CourtDocumentQuery {
                 .filter(courtDocument2 -> CollectionUtils.isNotEmpty(courtDocument2.getMaterials()))
                 .collect(Collectors.toList());
 
-        final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments.stream()
-                .map(courtDocumentFiltered -> courtDocumentTransform.transform(courtDocumentFiltered).build()).sorted((o1, o2) -> {
-                    if (CollectionUtils.isNotEmpty(o1.getDocument().getMaterials()) &&
-                            CollectionUtils.isNotEmpty(o2.getDocument().getMaterials()) &&
-                            nonNull(o2.getDocument().getMaterials().get(0).getUploadDateTime()) &&
-                            nonNull(o1.getDocument().getMaterials().get(0).getUploadDateTime())) {
-                        return o2.getDocument().getMaterials().get(0).getUploadDateTime().compareTo(o1.getDocument().getMaterials().get(0).getUploadDateTime());
-                    }
-                    return -1;
-                }).collect(Collectors.toList());
+        final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments.stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
+                .map(courtDocumentFiltered->courtDocumentTransform.transform(courtDocumentFiltered).build()).collect(Collectors.toList());
 
         result.setDocumentIndices(courtDocumentIndices);
 
         final JsonObject resultJson = objectToJsonObjectConverter.convert(result);
 
-        return JsonEnvelope.envelopeFrom(envelope.metadata(), resultJson);
+        return envelopeFrom(envelope.metadata(), resultJson);
     }
+
+    private boolean canCourtDocumentBeAccessed(final CourtDocument courtDocument, final JsonEnvelope envelope) {
+        final Action action = new Action(envelopeFrom(envelope.metadata(), createObjectBuilder().add(COURT_DOCUMENT_RESULT_FIELD,
+                objectToJsonObjectConverter.convert(courtDocument)).build()));
+        return rbacProvider.isLoggedInUserAllowedToReadDocument(action) ;
+    }
+
 
     @Handles(COURT_DOCUMENTS_NOW_SEARCH_NAME)
     public JsonEnvelope searchCourtDocumentsByHearingId(final JsonEnvelope envelope) {
@@ -214,6 +215,7 @@ public class CourtDocumentQuery {
         caseIds.stream()
                 .map(hearingId -> courtDocumentRepository.findCourtDocumentForNow(hearingId, documentCategory, UUID.fromString(defendantId)))
                 .flatMap(List::stream)
+                .filter(cd -> !cd.isRemoved())
                 .map(entity -> courtDocument(entity))
                 .forEach(courtDocument -> id2CourtDocument.put(courtDocument.getCourtDocumentId(), courtDocument));
 
@@ -244,7 +246,7 @@ public class CourtDocumentQuery {
 
         final JsonObject resultJson = objectToJsonObjectConverter.convert(result);
 
-        return JsonEnvelope.envelopeFrom(envelope.metadata(), resultJson);
+        return envelopeFrom(envelope.metadata(), resultJson);
     }
 
     @Handles(PROSECUTION_NOTIFICATION_STATUS)
@@ -268,7 +270,20 @@ public class CourtDocumentQuery {
     }
 
     private CourtDocument courtDocument(final CourtDocumentEntity courtDocumentEntity) {
-        return jsonObjectToObjectConverter.convert(jsonFromString(courtDocumentEntity.getPayload()), CourtDocument.class);
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonFromString(courtDocumentEntity.getPayload()), CourtDocument.class);
+
+        return CourtDocument.courtDocument()
+                .withName(courtDocument.getName())
+                .withDocumentCategory(courtDocument.getDocumentCategory())
+                .withCourtDocumentId(courtDocument.getCourtDocumentId())
+                .withDocumentTypeId(courtDocument.getDocumentTypeId())
+                .withMimeType(courtDocument.getMimeType())
+                .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
+                .withMaterials(courtDocument.getMaterials())
+                .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
+                .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
+                .withSeqNum(courtDocumentEntity.getSeqNum())
+                .build();
     }
 
     private CourtDocument filterPermittedMaterial(final CourtDocument courtDocument, final Set<String> permittedGroups) {
@@ -282,11 +297,12 @@ public class CourtDocumentQuery {
                 .withDocumentCategory(courtDocument.getDocumentCategory())
                 .withCourtDocumentId(courtDocument.getCourtDocumentId())
                 .withDocumentTypeId(courtDocument.getDocumentTypeId())
-                .withIsRemoved(courtDocument.getIsRemoved())
                 .withMimeType(courtDocument.getMimeType())
                 .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
                 .withMaterials(filteredMaterials)
                 .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
+                .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
+                .withSeqNum(courtDocument.getSeqNum())
                 .build();
     }
 
@@ -300,7 +316,7 @@ public class CourtDocumentQuery {
 
         jsonObjectBuilder.add(NOTIFICATION_STATUS, jsonArrayBuilder.build());
 
-        return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
+        return envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
     private void prepareResponse(final NotificationStatusEntity notificationStatusEntity, final JsonArrayBuilder jsonArrayBuilder) {

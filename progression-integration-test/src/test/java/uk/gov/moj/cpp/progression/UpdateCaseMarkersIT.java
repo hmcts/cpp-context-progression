@@ -20,7 +20,6 @@ public class UpdateCaseMarkersIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
 
     private String caseId;
-    private String courtDocumentId;
     private String materialIdActive;
     private String materialIdDeleted;
     private String defendantId;
@@ -36,7 +35,6 @@ public class UpdateCaseMarkersIT extends AbstractIT {
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();
-        courtDocumentId = randomUUID().toString();
         defendantId = randomUUID().toString();
         referralReasonId = randomUUID().toString();
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
@@ -51,7 +49,7 @@ public class UpdateCaseMarkersIT extends AbstractIT {
         // given
 
         //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         pollProsecutionCasesProgressionFor(caseId, getCaseMarkersMatchers("WP", "Prohibited Weapons"));
 
@@ -67,7 +65,7 @@ public class UpdateCaseMarkersIT extends AbstractIT {
     @Test
     public void shouldRemoveProsecutionCaseMarkers() throws Exception {
         //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         pollProsecutionCasesProgressionFor(caseId, getCaseMarkersMatchers("WP", "Prohibited Weapons"));
 

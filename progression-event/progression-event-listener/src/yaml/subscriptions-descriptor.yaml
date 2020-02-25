@@ -14,6 +14,9 @@ subscriptions_descriptor:
         - name: progression.event.court-document-created
           schema_uri: http://justice.gov.uk/core/courts/courts-document-created.json
 
+        - name: progression.event.court-document-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-document-updated.json
+
         - name: progression.event.defendant-request-created
           schema_uri: http://justice.gov.uk/core/courts/defendant-request-created.json
 
@@ -100,6 +103,14 @@ subscriptions_descriptor:
         - name : progression.event.defendant-defence-association-locked-for-laa
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked-for-laa.json
 
+        - name: progression.event.court-document-shared
+          schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
+
+        - name: progression.event.case-markers-updated.json
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
+
+        - name: progression.event.court-document-updated.json
+          schema_uri: http://justice.gov.uk/core/courts/court-document-updated.json
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

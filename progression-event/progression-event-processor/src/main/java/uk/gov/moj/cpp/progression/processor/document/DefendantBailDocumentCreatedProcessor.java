@@ -1,8 +1,7 @@
 package uk.gov.moj.cpp.progression.processor.document;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -12,15 +11,13 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.DefendantBailDocumentCreated;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -29,12 +26,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings({"squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantBailDocumentCreatedProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantBailDocumentCreatedProcessor.class.getCanonicalName());
     protected static final String PROGRESSION_COMMAND_ADD_COURT_DOCUMENT = "progression.command.add-court-document";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantBailDocumentCreatedProcessor.class.getCanonicalName());
     @Inject
     private Sender sender;
 
@@ -43,6 +47,9 @@ public class DefendantBailDocumentCreatedProcessor {
 
     @Inject
     private MaterialService materialService;
+
+    @Inject
+    private Requester requester;
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -57,7 +64,7 @@ public class DefendantBailDocumentCreatedProcessor {
     public void handleDefendantBailDocumentCreatedEvent(final JsonEnvelope envelope) {
         final DefendantBailDocumentCreated defendantBailDocumentCreated = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantBailDocumentCreated.class);
 
-        final Optional<JsonObject> documentsMetadata = referenceDataService.getAllDocumentsTypes(envelope, LocalDate.now());
+        final Optional<JsonObject> documentsMetadata = referenceDataService.getAllDocumentsTypes(envelope, LocalDate.now(), requester);
         if (documentsMetadata.isPresent()) {
             final JsonObject bailDocument = documentsMetadata.get().getJsonArray("documentsMetadata").getValuesAs(JsonObject.class).stream()
                     .filter(jsonObject -> "Bail and Custody".equals(jsonObject.getString("documentType"))).findFirst().get();
@@ -95,7 +102,6 @@ public class DefendantBailDocumentCreatedProcessor {
                 .withCourtDocumentId(defendantBailDocumentCreated.getBailDocumentId())
                 .withDocumentCategory(documentCategory)
                 .withDocumentTypeId(UUID.fromString(bailDocumentTypeId))
-                .withIsRemoved(false)
                 .withMimeType(materialMetadata.getString("mimeType"))
                 .withName(materialMetadata.getString("fileName"))
                 .withMaterials(Collections.singletonList(material))

@@ -61,4 +61,10 @@
     <include file="liquibase/rename-defence-association.xml"/>
     <include file="liquibase/rename-and-update-defence-association-access-history.xml"/>
     <include file="liquibase/created-defendant-laa-association.xml"/>
+    <include file="liquibase/create-court-document-type-rbac.xml"/>
+    <include file="liquibase/create-shared-court-document.xml"/>
+    <include file="liquibase/modify-shared-court-document.xml"/>
+    <include file="liquibase/alter-table-court-document-add-column-seq-num.xml"/>
+    <include file="liquibase/alter-table-shared-court-document-add-column-seq-num.xml"/>
+    <include file="liquibase/alter-table-court-document-add-column-is-removed.xml"/>
 </databaseChangeLog>

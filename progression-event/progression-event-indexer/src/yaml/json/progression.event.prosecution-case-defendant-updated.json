@@ -169,6 +169,7 @@
       "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
       "selfDefinedEthnicityCode": "IC1",
       "driverNumber": "AACC12345",
+      "pncId": "1234567",
       "arrestSummonsNumber": "arrest123",
       "aliases": [
         "johnny robber",

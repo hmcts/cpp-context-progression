@@ -1,5 +1,6 @@
 package uk.gov.justice.api.resource;
 
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -110,7 +111,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
 
             final String materialId = document.payloadAsJsonObject().getString("materialId");
 
-            final Response documentContentResponse = materialClient.getMaterialAsPdf(materialId, systemUser.toString());
+            final Response documentContentResponse = materialClient.getMaterial(fromString(materialId), systemUser);
             return Response.fromResponse(documentContentResponse).entity(documentContentResponse.readEntity(InputStream.class)).build();
         }
     }

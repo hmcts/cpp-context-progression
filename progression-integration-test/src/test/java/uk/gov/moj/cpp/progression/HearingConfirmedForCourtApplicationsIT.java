@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.verifyPostInitiateCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.test.TestUtilities.print;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -79,6 +80,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     @Test
     public void shouldUpdateCaseLinkedApplicationStatus() throws Exception {
 
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
 

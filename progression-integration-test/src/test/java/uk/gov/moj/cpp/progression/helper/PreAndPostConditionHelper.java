@@ -4,10 +4,12 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
@@ -19,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.createH
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
@@ -26,6 +29,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicatio
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -82,10 +86,10 @@ public class PreAndPostConditionHelper {
                 getReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, generateUrn()));
     }
 
-    public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved) throws IOException {
-        return postCommand(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
+    public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) throws IOException {
+        return postCommandWithUserId(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
-                Json.createObjectBuilder().add("isRemoved", isRemoved).build().toString());
+                Json.createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
     }
 
     public static Response recordLAAReference(final String caseId, final String defendantId, final String offenceId,  final String statusCode) throws IOException {
@@ -116,39 +120,36 @@ public class PreAndPostConditionHelper {
 
     public static Response initiateCourtProceedings(final String caseId, final String defendantId, final String materialIdOne,
                                                     final String materialIdTwo,
-                                                    final String courtDocumentId, final String referralId,
+                                                    final String referralId,
                                                     final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json",
-                getInitiateCourtProceedingsJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
+                getInitiateCourtProceedingsJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
 
     }
     public static Response initiateCourtProceedings(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
-                                                    final String materialIdTwo,
-                                                    final String courtDocumentId, final String referralId,
+                                                    final String materialIdTwo, final String referralId,
                                                     final String caseUrn,
                                                     final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json",
-                getInitiateCourtProceedingsJsonBody(resourceLocation, caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob));
+                getInitiateCourtProceedingsJsonFromResource(resourceLocation, caseId, defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob));
 
     }
 
     public static Response initiateCourtProceedings(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
-                                                    final String materialIdTwo,
-                                                    final String courtDocumentId, final String referralId,
+                                                    final String materialIdTwo, final String referralId,
                                                     final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
 
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json",
-                getInitiateCourtProceedingsJsonBody(resourceLocation, caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
+                getInitiateCourtProceedingsJsonFromResource(resourceLocation, caseId, defendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
 
     }
 
     public static Response initiateCourtProceedingsWithoutCourtDocument(final String caseId, final String defendantId,
                                                                         final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
-        final JSONObject jsonPayload = new JSONObject(getInitiateCourtProceedingsJsonBody(caseId, defendantId, randomUUID().toString(),
-                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
+        final JSONObject jsonPayload = new JSONObject(getInitiateCourtProceedingsJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
         jsonPayload.getJSONObject("initiateCourtProceedings").remove("courtDocuments");
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json", jsonPayload.toString());
@@ -205,7 +206,7 @@ public class PreAndPostConditionHelper {
     private static String getReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
                                                                       final String materialIdTwo, final String courtDocumentId, final String referralId, final String caseUrn) throws IOException {
         return getReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
-                materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+                materialIdTwo, courtDocumentId,referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
     }
 
     private static String getLAAReferenceForOffenceJsonBody(final String statusCode) throws IOException {
@@ -219,16 +220,15 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_LAA_CONTRACT_NUMBER", laaContractNumber);
     }
 
-    private static String getInitiateCourtProceedingsJsonBody(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
-                                                              final String materialIdTwo, final String courtDocumentId,
-                                                              final String referralId, final String caseUrn,
-                                                              final String listedStartDateTime, final String earliestStartDateTime,
-                                                              final String dob) throws IOException {
+    private static String getInitiateCourtProceedingsJsonFromResource(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
+                                                                      final String materialIdTwo,
+                                                                      final String referralId, final String caseUrn,
+                                                                      final String listedStartDateTime, final String earliestStartDateTime,
+                                                                      final String dob) throws IOException {
         return Resources.toString(Resources.getResource(resourceLocation), Charset.defaultCharset())
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
                 .replace("RANDOM_DEFENDANT_ID", defendantId)
-                .replace("RANDOM_DOC_ID", courtDocumentId)
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId)
@@ -239,12 +239,12 @@ public class PreAndPostConditionHelper {
     }
 
     private static String getInitiateCourtProceedingsJsonBody(final String caseId, final String defendantId, final String materialIdOne,
-                                                              final String materialIdTwo, final String courtDocumentId,
+                                                              final String materialIdTwo,
                                                               final String referralId, final String caseUrn,
                                                               final String listedStartDateTime, final String earliestStartDateTime,
                                                               final String dob) throws IOException {
-        return getInitiateCourtProceedingsJsonBody("progression.command.initiate-court-proceedings.json", caseId,
-                defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob);
+        return getInitiateCourtProceedingsJsonFromResource("progression.command.initiate-court-proceedings.json", caseId,
+                defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob);
 
     }
 
@@ -332,10 +332,39 @@ public class PreAndPostConditionHelper {
                         ))).getPayload();
     }
 
+
+
+
+
+    public static String getCourtDocuments(final String userId, final String... args) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}&hearingId={2}", args), "application/vnd.progression.query.courtdocuments+json", userId);
+    }
+
+    public static String getCourtDocumentsByCase(final String userId, final String caseId) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", new String[]{caseId}), "application/vnd.progression.query.courtdocuments+json", userId);
+    }
+
+    public static String getCourtDocumentsByCaseWithMatchers(final String userId, final String caseDocumentId, final String caseId) {
+        Matcher[] hearingMatchers = {
+                withJsonPath("$.documentIndices[0].document.courtDocumentId", is(caseDocumentId))
+        };
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", new String[]{caseId}), "application/vnd.progression.query.courtdocuments+json", userId, hearingMatchers);
+    }
+
+
+    public static String getCourtDocumentsByDefendant(final String userId, final String defendantId) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?defendantId={0}", new String[]{defendantId}), "application/vnd.progression.query.courtdocuments+json", userId);
+    }
+
+    public static String getCourtDocumentsByCaseAndDefendant(final String userId, final String caseId, final String defendantId) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", new String[]{caseId, defendantId}), "application/vnd.progression.query.courtdocuments+json", userId );
+    }
+
     public static javax.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId) {
         return getMaterialContentResponse("/material/" + materialId.toString() + "/content", userId, "application/vnd.progression.query.material-content+json");
 
     }
+
 
     public static String generateUrn() {
         return randomUUID().toString().replace("-", "").substring(0, 8);
@@ -362,6 +391,12 @@ public class PreAndPostConditionHelper {
         return postCommand(getWriteUrl("/application"),
                 "application/vnd.progression.create-court-application+json",
                 getCourtApplicationJsonBody(caseId, applicationId, generateUrn(), fileName));
+    }
+
+    public static Response shareCourtDocument(final String courtDocumentId, final String hearingId, final String userGroup, final String fileName) throws IOException {
+        return postCommand(getWriteUrl("/sharecourtdocument"),
+                "application/vnd.progression.share-court-document+json",
+                getShareCourtDocumentJsonBody(courtDocumentId, hearingId, userGroup, fileName));
     }
 
     public static Response addCourtApplicationWithDefendant(final String caseId, final String applicationId, final String defendantId, final String fileName) throws IOException {
@@ -427,7 +462,7 @@ public class PreAndPostConditionHelper {
                 getStandaloneCourtApplicationJsonBody(applicationId, parentApplicationId, generateUrn(), randomValues, fileName));
     }
 
-    private static String getStandaloneCourtApplicationJsonBody(final String applicationId, final String parentApplicationId, final String applicationReference, CourtApplicationRandomValues randomValues, final String fileName) throws IOException {
+    private static String getStandaloneCourtApplicationJsonBody(final String applicationId, final String parentApplicationId, final String applicationReference, final CourtApplicationRandomValues randomValues, final String fileName) throws IOException {
 
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                 .replace("RANDOM_APPLICATION_ID", applicationId)
@@ -447,6 +482,13 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_APPLICATION_ID", applicationId)
                 .replace("RANDOM_REFERENCE", applicationReference);
+    }
+
+    private static String getShareCourtDocumentJsonBody(final String courtDocumentId, final String hearingId, final String userGroup, final String fileName) throws IOException {
+        return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
+                .replace("COURT_DOCUMENT_ID", courtDocumentId)
+                .replace("HEARING_ID", hearingId)
+                .replace("USER_GROUP", userGroup);
     }
 
     private static String getCourtApplicationWithDefendantJsonBody(final String caseId, final String applicationId, final String defendantId, final String applicationReference, final String fileName) throws IOException {
@@ -513,6 +555,17 @@ public class PreAndPostConditionHelper {
                         ))).getPayload();
     }
 
+    public static String verifyQueryResultsForbidden(final String courtDocumentId, final String userId, final Matcher... matchers) {
+
+
+        return poll(requestParams(getReadUrl(join("", "/courtdocuments/", courtDocumentId)), "application/vnd.progression.query.courtdocument+json")
+                .withHeader(USER_ID, userId))
+                .timeout(40, TimeUnit.SECONDS)
+                .until(
+                        status().is(FORBIDDEN), payload().isJson(allOf(
+                                matchers))).getPayload();
+    }
+
     private static String getReferApplicationToCourtJsonBody(final String applicationId, final String hearingId, final String fileName) throws IOException {
         return Resources.toString(Resources.getResource(fileName), Charset.defaultCharset())
                 .replace("RANDOM_APPLICATION_ID", applicationId)
@@ -543,5 +596,7 @@ public class PreAndPostConditionHelper {
                         ));
 
     }
+
+
 
 }

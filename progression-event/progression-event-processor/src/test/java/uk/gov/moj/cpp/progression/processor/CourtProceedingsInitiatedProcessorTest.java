@@ -103,7 +103,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
                 .build();
-        final CourtDocument courtDocument = CourtDocument.courtDocument().build();
         final ListHearingRequest listHearingRequest = populateListHearingRequest();
         final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
         //Given
@@ -113,7 +112,6 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .thenReturn(courtReferral);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(hearingDefendantRequestJson);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
-        when(courtReferral.getCourtDocuments()).thenReturn(singletonList(courtDocument));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
         when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class),
                 any(List.class), any(UUID.class))).thenReturn(listCourtHearing);
@@ -124,7 +122,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         this.eventProcessor.handle(jsonEnvelope);
         //then
         verify(progressionService).createProsecutionCases(jsonEnvelope, singletonList(prosecutionCase));
-        verify(progressionService).createCourtDocument(jsonEnvelope, singletonList(courtDocument));
         verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
     }
 

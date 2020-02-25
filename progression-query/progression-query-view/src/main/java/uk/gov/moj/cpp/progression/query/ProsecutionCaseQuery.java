@@ -1,12 +1,9 @@
 package uk.gov.moj.cpp.progression.query;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -18,7 +15,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.service.GetCaseAtAGlanceService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
@@ -30,13 +26,11 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -45,7 +39,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,26 +88,6 @@ public class ProsecutionCaseQuery {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
             final JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
             jsonObjectBuilder.add("prosecutionCase", prosecutionCase);
-            final List<CourtDocumentEntity> courtDocuments = courtDocumentRepository.findByProsecutionCaseId(caseId
-                    .get());
-
-            final List<CourtDocument> courtDocumentList = courtDocuments.stream().map(courtDocumentEntity ->
-                    jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(courtDocumentEntity.getPayload()), CourtDocument.class)
-            ).sorted((o1, o2) -> {
-                if (CollectionUtils.isNotEmpty(o1.getMaterials()) &&
-                        CollectionUtils.isNotEmpty(o2.getMaterials()) &&
-                        nonNull(o2.getMaterials().get(0).getUploadDateTime()) &&
-                        nonNull(o1.getMaterials().get(0).getUploadDateTime())) {
-                    return o2.getMaterials().get(0).getUploadDateTime().compareTo(o1.getMaterials().get(0).getUploadDateTime());
-                }
-                return -1;
-            }).collect(Collectors.toList());
-
-            final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-            courtDocumentList.forEach(courtDocument ->
-                    prepareResponse(courtDocument, jsonArrayBuilder, courtDocuments.size())
-            );
-            jsonObjectBuilder.add("courtDocuments", jsonArrayBuilder.build());
 
             final GetCaseAtAGlance getCaseAtAGlance = getCaseAtAGlanceService.getCaseAtAGlance(caseId.get());
             final List<CourtApplicationEntity> courtApplicationEntities = courtApplicationRepository.findByLinkedCaseId(caseId.get());
@@ -186,38 +159,6 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
-    }
-
-    private void prepareResponse(final CourtDocument courtDocument, final JsonArrayBuilder jsonArrayBuilder, final int numberOfDocuments) {
-        if (Objects.isNull(courtDocument.getIsRemoved()) || !courtDocument.getIsRemoved()) {
-
-            jsonArrayBuilder.add(objectToJsonObjectConverter.convert(CourtDocument.courtDocument()
-                    .withCourtDocumentId(courtDocument.getCourtDocumentId())
-                    .withDocumentCategory(courtDocument.getDocumentCategory())
-                    .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
-                    .withDocumentTypeId(courtDocument.getDocumentTypeId())
-                    .withName(numberOfDocuments > 1 ? getNameWithUserGroup(courtDocument) : getName(courtDocument))
-                    .withMaterials(courtDocument.getMaterials())
-                    .withMimeType(courtDocument.getMimeType())
-                    .withIsRemoved(courtDocument.getIsRemoved())
-                    .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
-                    .build()));
-        }
-    }
-
-    private String getName(final CourtDocument courtDocument) {
-        return Stream.of(ofNullable(courtDocument).filter(document -> nonNull(courtDocument.getDocumentCategory())).map(CourtDocument::getName).orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining());
-    }
-
-    private String getNameWithUserGroup(final CourtDocument courtDocument) {
-        final String commaDelimiter = ", ";
-        final String hyphenDelimiter = " - ";
-        return Stream.of(ofNullable(courtDocument).filter(document -> nonNull(courtDocument.getDocumentCategory())).map(CourtDocument::getName).orElse(null),
-                ofNullable(courtDocument).map(CourtDocument::getMaterials).orElse(new ArrayList<>()).stream().filter(material -> nonNull(material.getUserGroups())).flatMap(material -> material.getUserGroups().stream()).collect(Collectors.joining(commaDelimiter)))
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(hyphenDelimiter));
     }
 
     private void buildApplicationSummary(final String applicationPayload, final JsonArrayBuilder jsonApplicationBuilder) {

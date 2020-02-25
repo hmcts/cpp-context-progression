@@ -17,9 +17,6 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
 /**
  * Class to set up stub.
  */
@@ -54,7 +51,7 @@ public class StubUtil {
 
         stubFor(get(urlPathEqualTo(MATERIAL_QUERY_URL + "/material/" + materialId))
                 .withQueryParam("stream", equalTo("true"))
-                .withQueryParam("requestPdf", equalTo("true"))
+                .withQueryParam("requestPdf", equalTo("false"))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(HeaderConstants.ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, mimeType)
@@ -71,5 +68,4 @@ public class StubUtil {
                 .replace("DEF_PRG_ID", defendantId)
                 .replace("TODAY", LocalDate.now().toString());
     }
-
 }

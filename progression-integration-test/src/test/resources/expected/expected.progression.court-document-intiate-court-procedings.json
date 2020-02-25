@@ -1,0 +1,70 @@
+{
+  "documentIndices": [
+    {
+      "caseIds": [
+        "CASE-ID"
+      ],
+      "category": "Defendant level",
+      "defendantIds": [
+        "e1d32d9d-29ec-4934-a932-22a50f223966"
+      ],
+      "document": {
+        "containsFinancialMeans": false,
+        "courtDocumentId": "COURT-DOCUMENT-ID1",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "e1d32d9d-29ec-4934-a932-22a50f223966"
+            ],
+            "prosecutionCaseId": "CASE-ID"
+          }
+        },
+        "documentTypeId": "1b7e6a7a-a571-4ab9-8895-4b1a58424d78",
+        "documentTypeRBAC": {
+          "canCreateUserGroups": [
+            "Listing Officers",
+            "Legal advisors"
+          ],
+          "canDownloadUserGroups": [
+            "Listing Officers",
+            "Legal advisors",
+            "Magistrates"
+          ],
+          "canReadUserGroups": [
+            "Listing Officers",
+            "Legal advisors",
+            "Magistrates"
+          ]
+        },
+        "materials": [
+          {
+            "id": "4b293d22-7c49-4c27-bf16-168445524d31",
+            "name": "BankStatment.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "defence",
+              "prosecution",
+              "courtClerk",
+              "Listing Officers"
+            ]
+          },
+          {
+            "id": "d51790e5-21d4-4814-86dd-bf59147e8d44",
+            "name": "Fine.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "defence",
+              "prosecution",
+              "Legal Advisers",
+              "Listing Officers"
+            ]
+          }
+        ],
+        "mimeType": "pdf",
+        "name": "Bank Statement"
+      },
+      "hearingIds": [],
+      "type": "unknown document type"
+    }
+  ]
+}

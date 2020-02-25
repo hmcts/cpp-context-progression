@@ -1,0 +1,43 @@
+package uk.gov.moj.cpp.progression.processor.document;
+
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+
+import javax.inject.Inject;
+
+
+@SuppressWarnings({"squid:S4144"})
+@ServiceComponent(EVENT_PROCESSOR)
+public class CourtDocumentSharedProcessor {
+
+    public static final String PUBLIC_COURT_DOCUMENT_SHARE_FAILED = "public.progression.event.court-document-share-failed";
+    public static final String PUBLIC_COURT_DOCUMENT_SHARED = "public.progression.event.court-document-shared";
+
+    @Inject
+    private Sender sender;
+
+    @Handles("progression.event.court-document-shared")
+    public void handleCourtDocumentSharedEvent(final JsonEnvelope envelope) {
+        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARED).build();
+        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
+    }
+
+    @Handles("progression.event.court-document-share-failed")
+    public void handleCourtDocumentShareFailedEvent(final JsonEnvelope envelope) {
+        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARE_FAILED).build();
+        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
+    }
+
+    @Handles("progression.event.duplicate-share-court-document-request-received")
+    public void handleDuplicateShareCourtDocumentRequestReceivedEvent(final JsonEnvelope envelope) {
+        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARED).build();
+        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
+    }
+
+}

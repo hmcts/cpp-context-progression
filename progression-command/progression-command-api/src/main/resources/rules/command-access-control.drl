@@ -53,7 +53,7 @@ rule "Command - Access control for progression.command.upload-case-documents"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.upload-case-documents");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Defence Users", "District Judge", "Court Associate"));
   then
     $outcome.setSuccess(true);
 end

@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
+import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseWithMatchers;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -15,12 +15,15 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class DeleteFinancialMeansIT extends AbstractIT {
 
@@ -61,31 +64,17 @@ public class DeleteFinancialMeansIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         addCourtDocumentToProsecutionCase();
-        assertCourtDocumentAdded();
+        assertCourtDocumentByCase();
     }
 
-
-    private void assertCourtDocumentAdded() {
-        final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.courtDocuments[0].courtDocumentId", is(docId)),
-                withJsonPath("$.courtDocuments[0].documentCategory.defendantDocument.prosecutionCaseId", is(caseId)),
-                withJsonPath("$.courtDocuments[0].name", is("SJP Notice")),
-                withJsonPath("$.courtDocuments[0].documentTypeId", is("0bb7b276-9dc0-4af2-83b9-f4acef0c7898")),
-                withJsonPath("$.courtDocuments[0].mimeType", is("pdf")),
-                withJsonPath("$.courtDocuments[0].containsFinancialMeans", is(true)),
-                withJsonPath("$.courtDocuments[0].materials[0].id", is("5e1cc18c-76dc-47dd-99c1-d6f87385edf1")),
-        };
-
-        pollProsecutionCasesProgressionFor(caseId, matchers);
-    }
 
     private void assertCourtDocumentRemoved() {
-        final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.courtDocuments", empty())
-        };
-        pollProsecutionCasesProgressionFor(caseId, matchers);
+        final String actualPayload = getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId);
+
+        final String expectedPayload = "{\"documentIndices\":[]}";
+
+        assertThat(expectedPayload, equalTo(actualPayload));
+
     }
 
     private void addCourtDocumentToProsecutionCase() throws IOException {
@@ -97,5 +86,28 @@ public class DeleteFinancialMeansIT extends AbstractIT {
                 "application/vnd.progression.add-court-document+json",
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+    }
+
+    private CustomComparator getCustomComparator() {
+        return new CustomComparator(STRICT,
+                new Customization("documentIndices[0].document.materials[0].uploadDateTime", (o1, o2) -> true),
+                new Customization("documentIndices[1].document.materials[0].uploadDateTime", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.documentTypeRBAC", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.documentTypeRBAC", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.materials[0].id", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.materials[1].id", (o1, o2) -> true)
+        );
+    }
+
+    private void assertCourtDocumentByCase() {
+
+        final String courtDocumentsByCaseStatus = getCourtDocumentsByCaseWithMatchers(UUID.randomUUID().toString(), docId, caseId);
+        final String expectedPayload = getPayload("expected/expected.progression.court-document-delete-financial-means.json")
+                .replace("COURT-DOCUMENT-ID1", docId)
+                .replace("CASE-ID", caseId)
+                .replace("DEFENDENT-ID", defendantId);
+
+
+        JSONAssert.assertEquals(expectedPayload, courtDocumentsByCaseStatus, getCustomComparator());
     }
 }

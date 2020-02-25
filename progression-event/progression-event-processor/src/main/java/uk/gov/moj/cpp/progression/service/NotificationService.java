@@ -403,7 +403,8 @@ public class NotificationService {
                         courtApplication.getType().getApplicationType(),
                         courtApplication.getType().getApplicationLegislation(),
                         courtCentre,
-                        courtApplicationParty);
+                        courtApplicationParty,
+                        courtApplication.getLinkedCaseId());
             }
         });
     }

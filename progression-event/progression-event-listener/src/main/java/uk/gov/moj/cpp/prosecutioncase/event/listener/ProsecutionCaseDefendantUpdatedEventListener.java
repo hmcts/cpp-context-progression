@@ -8,9 +8,9 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
-import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -267,7 +267,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             return Defendant.defendant()
                     .withOffences(originDefendant.getOffences())
                     .withPersonDefendant(defendant.getPersonDefendant())
-                    .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                     .withAssociatedPersons(defendant.getAssociatedPersons())
                     .withId(defendant.getId())
                     .withMitigation(originDefendant.getMitigation())

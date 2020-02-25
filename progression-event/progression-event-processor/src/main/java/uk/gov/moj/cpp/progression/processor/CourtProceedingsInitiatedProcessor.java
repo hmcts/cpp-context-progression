@@ -81,11 +81,6 @@ public class CourtProceedingsInitiatedProcessor {
 
         progressionService.createProsecutionCases(
                 jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
-        if (nonNull(courtReferral.getCourtDocuments())) {
-            progressionService.createCourtDocument(
-                    jsonEnvelope,
-                    courtReferral.getCourtDocuments());
-        }
         listingService.listCourtHearing(jsonEnvelope,
                 listCourtHearingTransformer.transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId));
     }

@@ -3,14 +3,14 @@ title: Progression Query view
 baseUri: http://localhost:8080/progression-query-view/query/view/rest/progression
 protocols: [ HTTP, HTTPS ]
 
-/material/{materialId}/metadata:
+/material/{materialId}/metadata1:
   description: get  material metadata
   get:
     description: |
       ...
       (mapping):
           responseType: application/vnd.progression.query.material-metadata+json
-          name: progression.query.material-metadata
+          name: progression.query.material-metadata1
       ...
     responses:
       200:
@@ -258,6 +258,35 @@ protocols: [ HTTP, HTTPS ]
             example:  !include json/progression.query.associated-organisation-details.json
             schema:  !include json/schema/progression.query.associated-organisation-details.json
 
+/shareddocuments/{hearingId}:
+  description: Return court documents shared for given hearing id
+  uriParameters:
+    hearingId:
+      description: ID of hearing
+      type: string
+
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.shared-court-documents+json
+          name: progression.query.shared-court-documents
+      ...
+
+    queryParameters:
+      userGroupId:
+        type: string
+        required: false
+      caseId:
+        type: string
+        required: false
+      defendantId:
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.shared-court-documents+json:
 /defendants/{laaContractNumber}:
    uriParameters:
      laaContractNumber:

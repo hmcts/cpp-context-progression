@@ -1,13 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnCourtAddress;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnDefendant;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnDefendantAddress;
@@ -17,6 +22,7 @@ import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEven
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnSummonsData;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateCourtCentreJson;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateCourtCentreJsonInWelsh;
+import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateDocumentTypeAccess;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateLjaDetails;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateLjaDetailsWithWelsh;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateProsecutionCaseJson;
@@ -31,6 +37,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -38,14 +45,18 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -63,11 +74,14 @@ public class SummonsDataPreparedEventProcessorTest {
     private static final UUID REFERRAL_ID = UUID.randomUUID();
     private static final UUID DEFENDANT_ID = UUID.randomUUID();
     private static final UUID COURT_CENTRE_ID = UUID.fromString("89b10041-b44d-43c8-9b1e-d1b9fee15c93");
+    public static final UUID SUMMONS_DOCUMENT_TYPE_ID = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
     private static final String ADDRESS = "address";
     public static final String OFFENCES = "offences";
     public static final String ADDRESSEE = "addressee";
     public static final String HEARING_COURT_DETAILS = "hearingCourtDetails";
     public static final String COURT_ADDRESS = "courtAddress";
+    public static final String USER_ID = UUID.randomUUID().toString();
+
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -81,6 +95,9 @@ public class SummonsDataPreparedEventProcessorTest {
 
     @Mock
     private ReferenceDataService referenceDataService;
+
+    @Mock
+    private Requester requester;
 
     @Mock
     private SummonsDataPrepared summonsDataPrepared;
@@ -125,6 +142,9 @@ public class SummonsDataPreparedEventProcessorTest {
     private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
 
     @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptorForCourtDocument;
+
+    @Captor
     private ArgumentCaptor<Sender> senderArgumentCaptor;
 
     @Captor
@@ -154,7 +174,9 @@ public class SummonsDataPreparedEventProcessorTest {
                 caseIdArgumentCaptor.capture(),
                 applicationIdArgumentCaptor.capture());
 
+
         //Then
+        verifyCourtDocument(1);
         final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
         assertOnCaseIdAndEnvelope();
 
@@ -197,6 +219,7 @@ public class SummonsDataPreparedEventProcessorTest {
         summonsDataPreparedEventProcessor.requestSummons(envelope);
 
         //Then
+        verifyCourtDocument(1);
         verify(documentGeneratorService).generateDocument(envelopeArgumentCaptor.capture(),
                 jsonObjectArgumentCaptor.capture(),
                 templateArgumentCaptor.capture(),
@@ -253,6 +276,7 @@ public class SummonsDataPreparedEventProcessorTest {
                 senderArgumentCaptor.capture(),
                 caseIdArgumentCaptor.capture(),
                 applicationIdArgumentCaptor.capture());
+        verifyCourtDocument(1);
 
         final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
         assertOnCaseIdAndEnvelope();
@@ -302,6 +326,7 @@ public class SummonsDataPreparedEventProcessorTest {
                 applicationIdArgumentCaptor.capture());
 
         //Then
+        verifyCourtDocument(2);
         assertOnCaseIdAndEnvelope();
         final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
         assertOnSummonsData(summonsDataJson, SummonsRequired.YOUTH, false);
@@ -342,23 +367,40 @@ public class SummonsDataPreparedEventProcessorTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(UUID.randomUUID()));
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, SummonsDataPrepared.class)).thenReturn(summonsDataPrepared);
+        when(envelope.metadata()).thenReturn(metadataWithRandomUUID("progression.event.summons-data-prepared").withUserId(USER_ID).build());
 
         final SummonsData summonsData = generateSummonsData(summonsRequired, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID);
         when(summonsDataPrepared.getSummonsData()).thenReturn(summonsData);
 
         when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(Optional.of(generateProsecutionCaseJson(CASE_ID.toString(), DEFENDANT_ID.toString())));
-        when(referenceDataService.getReferralReasons(envelope)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
-        when(referenceDataService.getOrganisationUnitById(COURT_CENTRE_ID, envelope)).thenReturn(Optional.of(jsonObject));
-        when(referenceDataService.getEnforcementAreaByLjaCode(envelope, "1810")).thenReturn(generateLjaDetails());
-        when(referenceDataService.getLocalJusticeArea(envelope, "2577")).thenReturn(Optional.of(generateLjaDetailsWithWelsh(welshRequiredFlag)));
-        when(enveloper.withMetadataFrom(envelope, "progression.command.create-court-document")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(referenceDataService.getReferralReasons(envelope, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
+        when(referenceDataService.getOrganisationUnitById(COURT_CENTRE_ID, envelope, requester)).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getEnforcementAreaByLjaCode(envelope, "1810", requester)).thenReturn(generateLjaDetails());
+        when(referenceDataService.getLocalJusticeArea(envelope, "2577", requester)).thenReturn(Optional.of(generateLjaDetailsWithWelsh(welshRequiredFlag)));
+
+        when(referenceDataService.getDocumentTypeAccessData(SUMMONS_DOCUMENT_TYPE_ID, envelope, requester)).thenReturn(Optional.of(generateDocumentTypeAccess(SUMMONS_DOCUMENT_TYPE_ID)));
     }
 
 
     private void assertOnCaseIdAndEnvelope() {
         assertThat(caseIdArgumentCaptor.getValue(), is(CASE_ID));
         assertThat(envelopeArgumentCaptor.getValue(), is(envelope));
+    }
+
+    private void verifyCourtDocument(int times) {
+        verify(this.sender, times(times)).send(this.envelopeArgumentCaptorForCourtDocument.capture());
+        final List<JsonEnvelope> jsonEnvelope = this.envelopeArgumentCaptorForCourtDocument.getAllValues();
+        IntStream.range(0, times).forEach( index -> {
+
+            MatcherAssert.assertThat(jsonEnvelope.get(index), jsonEnvelope(
+                    metadata().withName("progression.command.create-court-document"),
+                    payloadIsJson(allOf(
+                            withJsonPath("$.courtDocument.mimeType", Matchers.is("application/pdf")),
+                            withJsonPath("$.courtDocument.documentTypeDescription", Matchers.is("Charges"))
+                    ))));
+                }
+        );
+
     }
 
 }

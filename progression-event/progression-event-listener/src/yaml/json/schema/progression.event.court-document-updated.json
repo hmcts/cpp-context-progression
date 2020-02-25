@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-document-updated.json",
+  "type": "object",
+  "properties": {
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    }
+  },
+  "required": [
+    "courtDocument"
+  ],
+  "additionalProperties": false
+}

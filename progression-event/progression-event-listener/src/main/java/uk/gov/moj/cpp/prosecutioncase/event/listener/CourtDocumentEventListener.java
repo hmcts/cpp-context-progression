@@ -2,11 +2,14 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.BooleanUtils.toBooleanDefaultIfNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -16,6 +19,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
@@ -46,6 +50,7 @@ public class CourtDocumentEventListener {
     public void processCourtDocumentCreated(final JsonEnvelope event) {
         final CourtsDocumentCreated courtsDocumentCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtsDocumentCreated.class);
         final CourtDocument courtDocument = courtsDocumentCreated.getCourtDocument();
+
         repository.save(getCourtDocumentEntity(courtDocument));
 
         final List<Material> materials = courtDocument.getMaterials();
@@ -55,6 +60,17 @@ public class CourtDocumentEventListener {
                             .save(getCourtDocumentMaterialEntity(material, courtDocument.getCourtDocumentId()))
             );
         }
+    }
+
+
+
+
+    @Handles("progression.event.court-document-updated")
+    public void processCourtDocumentUpdated(final JsonEnvelope event) {
+
+        final CourtDocumentUpdated courtDocumentUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtDocumentUpdated.class);
+
+        repository.save(getCourtDocumentEntity(courtDocumentUpdated.getCourtDocument()));
     }
 
     private CourtDocumentEntity getCourtDocumentEntity(final CourtDocument courtDocument) {
@@ -76,7 +92,13 @@ public class CourtDocumentEventListener {
             }
         }
         courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(courtDocument).toString());
-        courtDocumentEntity.setContainsFinancialMeans(courtDocument.getContainsFinancialMeans() != null ? courtDocument.getContainsFinancialMeans() : false);
+        courtDocumentEntity.setContainsFinancialMeans(toBooleanDefaultIfNull(courtDocument.getContainsFinancialMeans(), false));
+        final DocumentTypeRBAC documentTypeRBAC = courtDocument.getDocumentTypeRBAC();
+        if (documentTypeRBAC != null) {
+            courtDocumentEntity.setCourtDocumentTypeRBAC(getCourtDocumentRBACEntity(documentTypeRBAC));
+        }
+        courtDocumentEntity.setSeqNum(courtDocument.getSeqNum());
+        courtDocumentEntity.setIsRemoved(false);
         return courtDocumentEntity;
     }
 
@@ -121,10 +143,19 @@ public class CourtDocumentEventListener {
 
 
     private CourtDocumentMaterialEntity getCourtDocumentMaterialEntity(final Material material, final UUID courtDocumentId) {
-        CourtDocumentMaterialEntity courtDocumentMaterialEntity = new CourtDocumentMaterialEntity();
+        final CourtDocumentMaterialEntity courtDocumentMaterialEntity = new CourtDocumentMaterialEntity();
         courtDocumentMaterialEntity.setCourtDocumentId(courtDocumentId);
         courtDocumentMaterialEntity.setMaterialId(material.getId());
         courtDocumentMaterialEntity.setUserGroups(material.getUserGroups());
         return courtDocumentMaterialEntity;
+    }
+
+
+    private CourtDocumentTypeRBAC getCourtDocumentRBACEntity(final DocumentTypeRBAC documentTypeRBAC) {
+        final CourtDocumentTypeRBAC courtDocumentTypeRBAC = new CourtDocumentTypeRBAC();
+        courtDocumentTypeRBAC.setCreateUserGroups(documentTypeRBAC.getUploadUserGroups());
+        courtDocumentTypeRBAC.setReadUserGroups(documentTypeRBAC.getReadUserGroups());
+        courtDocumentTypeRBAC.setDownloadUserGroups(documentTypeRBAC.getDownloadUserGroups());
+        return courtDocumentTypeRBAC;
     }
 }

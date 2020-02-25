@@ -73,6 +73,27 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       500:
         description: Internal Server Error
 
+/courtdocument :
+  post:
+    description: |
+      Update a court document for a case
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-court-document+json
+          name: progression.update-court-document
+      ...
+    body:
+      application/vnd.progression.update-court-document+json:
+        example:
+          !include json/progression.command.update-court-document.json
+        schema:
+          !include json/schema/progression.command.update-court-document.json
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
 /refertocourt :
   post:
       description: |
@@ -449,6 +470,24 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/sharecourtdocument:
+  post:
+      description: |
+        Makes a court document for a given hearing accessible for a given user group
+        ...
+        (mapping):
+            requestType: application/vnd.progression.share-court-document+json
+            name: progression.share-court-document
+        ...
+      body:
+        application/vnd.progression.share-court-document+json:
+            example:
+             !include json/progression.share-court-document.json
+            schema:
+             !include json/schema/progression.share-court-document.json
+      responses:
+            202:
+                description: OK
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 /cases/{caseId} :
@@ -565,8 +604,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 
 
-                
-               
+
+
 /cases/{caseId}/defendants/requestpsr:
   post:
       description:  |
@@ -584,6 +623,32 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             schema: 
              !include json/schema/progression.command.request-psr-for-defendants.json
               
+      responses:
+            202:
+                description: OK
+
+/courtdocuments/{courtDocumentId}/materials/{materialId}/audit:
+  uriParameters:
+    courtDocumentId:
+      description: CourtDocumentId of the document of which a meterial being audit
+      type: string
+    materialId:
+      description: materialId of material being audit
+      type: string
+  post:
+      description: |
+        Court document is being audit.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.audit-court-document+json
+            name: progression.audit-court-document
+        ...
+      body:
+        application/vnd.progression.audit-court-document+json:
+            example:
+             !include json/progression.audit-court-document.json
+            schema:
+             !include json/schema/progression.audit-court-document.json
       responses:
             202:
                 description: OK

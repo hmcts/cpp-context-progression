@@ -25,12 +25,12 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.progression.courts.DefendantHearings;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
-import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.progression.courts.DefendantHearings;
+import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -88,7 +88,7 @@ public class ProsecutionCaseQueryViewTest {
     private JsonObject jsonObject;
 
     @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverter ;
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -116,7 +116,7 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
-        final ProsecutionCaseEntity prosecutionCaseEntity=new ProsecutionCaseEntity();
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setPayload("{}");
 
         final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
@@ -125,16 +125,12 @@ public class ProsecutionCaseQueryViewTest {
                 .withId(randomUUID())
                 .build();
 
-        final CourtDocumentEntity courtDocumentEntity=new CourtDocumentEntity();
-        final Material material = Material.material().withId(randomUUID()).build();
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
-        when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.jsonObject);
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(CourtApplication.courtApplication().build());
+        when(objectToJsonObjectConverter.convert(Mockito.any(CourtApplication.class))).thenReturn(this.jsonObject);
         when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
-        assertThat(response.payloadAsJsonObject().getJsonArray("courtDocuments").size(), is(1));
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("caseAtAGlance"), notNullValue());
     }
@@ -150,11 +146,11 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
-        final ProsecutionCaseEntity prosecutionCaseEntity=new ProsecutionCaseEntity();
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setPayload("{}");
 
-        List <CourtApplication> courtApplications = new ArrayList<>();
-        CourtApplication courtApplication = getCourtApplication();
+        final List<CourtApplication> courtApplications = new ArrayList<>();
+        final CourtApplication courtApplication = getCourtApplication();
         courtApplications.add(courtApplication);
         final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
                 .withHearings(Arrays.asList(Hearings.hearings().build()))
@@ -163,12 +159,12 @@ public class ProsecutionCaseQueryViewTest {
                 .withCourtApplications(courtApplications)
                 .build();
 
-        final CourtDocumentEntity courtDocumentEntity=new CourtDocumentEntity();
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         final Material material = Material.material().withId(randomUUID()).build();
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
         when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.jsonObject);
         when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
@@ -192,11 +188,11 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
-        final ProsecutionCaseEntity prosecutionCaseEntity=new ProsecutionCaseEntity();
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setPayload("{}");
 
-        List <CourtApplication> courtApplications = new ArrayList<>();
-        CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
+        final List<CourtApplication> courtApplications = new ArrayList<>();
+        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
         courtApplications.add(courtApplication);
         final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
                 .withHearings(Arrays.asList(Hearings.hearings().build()))
@@ -205,12 +201,12 @@ public class ProsecutionCaseQueryViewTest {
                 .withCourtApplications(courtApplications)
                 .build();
 
-        final CourtDocumentEntity courtDocumentEntity=new CourtDocumentEntity();
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         final Material material = Material.material().withId(randomUUID()).build();
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
         when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.jsonObject);
         when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
@@ -327,7 +323,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     private CourtApplication getCourtApplicationWithLegalEntityDefendant() {
-        Defendant defendant = Defendant.defendant().
+        final Defendant defendant = Defendant.defendant().
                 withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation()
                                 .withName("ABC LTD").build()).build()).build();

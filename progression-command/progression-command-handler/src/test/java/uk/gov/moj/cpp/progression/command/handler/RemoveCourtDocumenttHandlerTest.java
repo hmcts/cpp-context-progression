@@ -16,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentRemoved;
 import uk.gov.justice.core.courts.RemoveCourtDocument;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -66,6 +67,7 @@ public class RemoveCourtDocumenttHandlerTest {
     @Before
     public void setup() {
         aggregate = new CourtDocumentAggregate();
+        aggregate.apply(aggregate.addCourtDocument(CourtDocument.courtDocument().build()));
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(aggregate);
     }

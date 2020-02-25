@@ -26,6 +26,7 @@
         <module>progression-service</module>
         <module>progression-azure</module>
         <module>progression-test-utilities</module>
+        <module>progression-refdata-service</module>
         <module>progression-event-sources</module>
     </modules>
 
@@ -37,17 +38,18 @@
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
-        <material.version>6.0.1</material.version>
+        <material.version>6.4.3</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
-        <access.control.version>4.1.8-R2</access.control.version>
-        <referencedata.version>2.0.278</referencedata.version>
-        <listing.version>6.4.4</listing.version>
+        <access.control.version>6.4.1</access.control.version>
+        <referencedata.version>6.4.5</referencedata.version>
+        <listing.version>6.4.6</listing.version>
         <hearing.version>6.4.9</hearing.version>
-        <usersgroups.version>6.4.5</usersgroups.version>
-        <referencedata.offence.version>1.0.28</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.64</criminal-court-public-model.version>
+        <usersgroups.version>6.4.6</usersgroups.version>
+        <referencedata.offence.version>6.4.0</referencedata.offence.version>
+        <criminal-court-public-model.version>1.0.66</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
+        <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
     </properties>
 
     <build>

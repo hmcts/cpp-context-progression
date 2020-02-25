@@ -31,6 +31,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
@@ -73,42 +74,32 @@ public class ProgressionEventProcessorTest {
     private static final String USER_ID = "userId";
 
     final ArgumentCaptor<HashMap> captor = forClass(HashMap.class);
-
-    @Mock
-    private Sender sender;
-
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
-
-    @Mock
-    private JsonEnvelope messageToPublish;
-
-    @Mock
-    private ListingService listingService;
-
-    @Spy
-    @InjectMocks
-    private SendingSheetCompleteTransformer sendingSheetCompleteTransformer;
-
-    @Mock
-    private ReferenceDataOffenceService referenceDataOffenceService;
-
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-
     @Spy
     @InjectMocks
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
-
     @Spy
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
-
     @Spy
     @InjectMocks
     private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
-
+    @Mock
+    private Sender sender;
+    @Mock
+    private JsonEnvelope messageToPublish;
+    @Mock
+    private ListingService listingService;
+    @Mock
+    private Requester requester;
+    @Spy
+    @InjectMocks
+    private SendingSheetCompleteTransformer sendingSheetCompleteTransformer;
+    @Mock
+    private ReferenceDataOffenceService referenceDataOffenceService;
     @Mock
     private ProsecutionCase prosecutionCase;
 
@@ -117,6 +108,29 @@ public class ProgressionEventProcessorTest {
 
     @InjectMocks
     private ProgressionEventProcessor progressionEventProcessor;
+
+    private static JsonObject getOffence(final String modeoftrial) {
+        return Json.createObjectBuilder().add("legislation", "legislation")
+                .add("welshlegislation", LEGISLATION_WELSH)
+                .add("title", "title")
+                .add("welshoffencetitle", WELSH_OFFENCE_TITLE)
+                .add("modeoftrial", modeoftrial)
+                .add(CJS_OFFENCE_CODE, CJS_OFFENCE_CODE).build();
+
+    }
+
+    private static Defendant getDefendant() {
+        final Defendant defendant = new Defendant();
+        defendant.setFirstName("FN");
+        defendant.setLastName("LN");
+        defendant.setNationality("US");
+        defendant.setGender("Male");
+        defendant.setDateOfBirth(LocalDate.now().toString());
+        final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address address = new uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address();
+        address.setAddress1("line1");
+        defendant.setAddress(address);
+        return defendant;
+    }
 
     @Before
     public void initMocks() {
@@ -222,7 +236,7 @@ public class ProgressionEventProcessorTest {
         // when
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendingSheetCompleted.class)).thenReturn(sendingSheetCompleted);
 
-        when(referenceDataOffenceService.getOffenceByCjsCode(CJS_OFFENCE_CODE, event)).thenReturn(of(getOffence("Indictable")));
+        when(referenceDataOffenceService.getOffenceByCjsCode(CJS_OFFENCE_CODE, event, requester)).thenReturn(of(getOffence("Indictable")));
         progressionEventProcessor.publishSendingSheetCompletedEvent(event);
         // then
         final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor =
@@ -294,30 +308,6 @@ public class ProgressionEventProcessorTest {
                 metadata().withName(
                         "public.progression.prosecution-case-created"),
                 payloadIsJson(withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID)))));
-    }
-
-    private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add("legislation", "legislation")
-                .add("welshlegislation", LEGISLATION_WELSH)
-                .add("title", "title")
-                .add("welshoffencetitle", WELSH_OFFENCE_TITLE)
-                .add("modeoftrial", modeoftrial)
-                .add(CJS_OFFENCE_CODE, CJS_OFFENCE_CODE).build();
-
-    }
-
-
-    private static Defendant getDefendant() {
-        final Defendant defendant = new Defendant();
-        defendant.setFirstName("FN");
-        defendant.setLastName("LN");
-        defendant.setNationality("US");
-        defendant.setGender("Male");
-        defendant.setDateOfBirth(LocalDate.now().toString());
-        final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address address = new uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address();
-        address.setAddress1("line1");
-        defendant.setAddress(address);
-        return defendant;
     }
 
 

@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALIT
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
-import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
@@ -29,6 +28,9 @@ import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.Source;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority;
@@ -39,14 +41,14 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import com.google.common.base.Strings;
 
@@ -54,9 +56,18 @@ import com.google.common.base.Strings;
 @SuppressWarnings({"squid:S3655", "squid:S1213", "squid:S00116", "squid:CallToDeprecatedMethod", "pmd:NullAssignment"})
 public class SendingSheetCompleteTransformer {
 
+    //Constants for CPS cases
+    protected static final String PROSECUTION_AUTHORITY_CODE = ProsecutingAuthority.CPS.getDescription();
+    // id from ref-data for POLICE
+    protected static final UUID PROSECUTION_AUTHORITY_ID = UUID.fromString("52b27284-0686-4894-b1c7-7d4b634cacdb");
+    // SendingSheetComplete does not have hearingId as hearing is only created after public message is sent
+    // to hearing context. So this is being set with a random hearingId. Approved by tech Arch.
+    private final UUID ORIGINATING_HEARING_ID = randomUUID();
+    @Inject
+    @ServiceComponent(Component.EVENT_PROCESSOR)
+    private Requester requester;
     @Inject
     private ReferenceDataOffenceService referenceDataOffenceService;
-
     @Inject
     private ReferenceDataService referenceDataService;
 
@@ -64,15 +75,9 @@ public class SendingSheetCompleteTransformer {
 
     }
 
-    //Constants for CPS cases
-    protected static final String PROSECUTION_AUTHORITY_CODE = ProsecutingAuthority.CPS.getDescription();
-
-    // id from ref-data for POLICE
-    protected static final UUID PROSECUTION_AUTHORITY_ID = UUID.fromString("52b27284-0686-4894-b1c7-7d4b634cacdb");
-    // SendingSheetComplete does not have hearingId as hearing is only created after public message is sent
-    // to hearing context. So this is being set with a random hearingId. Approved by tech Arch.
-    private final UUID ORIGINATING_HEARING_ID = randomUUID();
-
+    private static String fetchValueFromKey(final JsonObject jsonObject, final String key) {
+        return jsonObject.getString(key, null);
+    }
 
     public ProsecutionCase transformToProsecutionCase(final SendingSheetCompleted sendingSheetCompleted, final JsonEnvelope jsonEnvelope) {
         final Hearing hearing = sendingSheetCompleted.getHearing();
@@ -102,14 +107,14 @@ public class SendingSheetCompleteTransformer {
         return offences.stream().map(o -> transformOffence(o, sendingCommitalDate, jsonEnvelope)).collect(Collectors.toList());
     }
 
-    private LocalDate sendingSheetAsDate(String str) {
-        return Strings.isNullOrEmpty(str)?null:LocalDate.parse(str);
+    private LocalDate sendingSheetAsDate(final String str) {
+        return Strings.isNullOrEmpty(str) ? null : LocalDate.parse(str);
     }
 
     private Offence transformOffence(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence, final String sendingCommitalDate, final JsonEnvelope
             jsonEnvelope) {
         final JsonObject offenceJson = referenceDataOffenceService.getOffenceByCjsCode(offence
-                .getOffenceCode(), jsonEnvelope)
+                .getOffenceCode(), jsonEnvelope, requester)
                 .orElseThrow(() -> new ReferenceDataNotFoundException("Offence", offence.getId().toString()));
 
         return Offence.offence()
@@ -138,10 +143,6 @@ public class SendingSheetCompleteTransformer {
             throw new ReferenceDataNotFoundException(key, offenceId.toString());
         }
         return jsonObject.getString(key);
-    }
-
-    private static String fetchValueFromKey(final JsonObject jsonObject, final String key) {
-        return jsonObject.getString(key, null);
     }
 
     private IndicatedPlea getIndicatedPlea(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence, final String sendingCommitalDate) {
@@ -244,7 +245,7 @@ public class SendingSheetCompleteTransformer {
     private JsonObject getNationalityJson(final String nationality, final JsonEnvelope jsonEnvelope) {
         if (nonNull(nationality)) {
             return referenceDataService
-                    .getNationalityByNationality(jsonEnvelope, nationality)
+                    .getNationalityByNationality(jsonEnvelope, nationality, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Country Nationality", nationality));
         }
         return Json.createObjectBuilder().build();

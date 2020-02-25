@@ -37,6 +37,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
@@ -71,19 +72,19 @@ public class PostalServiceTest {
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     private final ZonedDateTime hearingDateTime = ZonedDateTime.now(ZoneId.of("UTC"));
-
-    private UUID applicationId;
+    public static final UUID APPLICATION_DOCUMENT_TYPE_ID = UUID.fromString("460fa7ce-c002-11e8-a355-529269fb1459");
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
-
     @Spy
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
-
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloper();
+    private UUID applicationId;
+    private UUID caseId;
+    @Mock
+    private Requester requester;
     @Mock
     private ReferenceDataService referenceDataService;
 
@@ -99,6 +100,7 @@ public class PostalServiceTest {
     @Before
     public void setUp() {
         this.applicationId = randomUUID();
+        this.caseId = randomUUID();
     }
 
     @Test
@@ -106,6 +108,9 @@ public class PostalServiceTest {
 
         when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(UUID.randomUUID());
+
+        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
@@ -134,14 +139,19 @@ public class PostalServiceTest {
                 courtApplication.getType().getApplicationType(),
                 courtApplication.getType().getApplicationLegislation(),
                 courtApplication.getOrderingCourt(),
-                courtApplication.getApplicant());
+                courtApplication.getApplicant(),
+                caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification"))
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.prosecutionCaseId", equalTo(caseId.toString())),
+                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification")),
+                                withJsonPath("$.courtDocument.documentTypeId", equalTo(APPLICATION_DOCUMENT_TYPE_ID.toString())),
+                                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
+                                withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
                         )))));
     }
 
@@ -160,7 +170,7 @@ public class PostalServiceTest {
         when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(UUID.randomUUID());
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -169,7 +179,10 @@ public class PostalServiceTest {
                         .build())
                 .build();
 
-        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+
+        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
@@ -221,80 +234,92 @@ public class PostalServiceTest {
                                 .withPostcode("EA22 5TF")
                                 .build())
                         .build(),
-                courtApplication.getApplicant());
+                courtApplication.getApplicant(),
+                caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification"))
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.prosecutionCaseId", equalTo(caseId.toString())),
+                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification")),
+                                withJsonPath("$.courtDocument.documentTypeId", equalTo(APPLICATION_DOCUMENT_TYPE_ID.toString())),
+                                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
+                                withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
                         )))));
     }
 
     @Test
     public void getDefendantNameWithPersonDefendantTest() throws Exception {
-        Defendant personDefendantMock = buildDefendantWithPersonDefendant();
-        String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", personDefendantMock);
+        final Defendant personDefendantMock = buildDefendantWithPersonDefendant();
+        final String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", personDefendantMock);
         verifyPersonName(resultName);
     }
 
     @Test
     public void getDefendantNameWithLegalEntityDefendantTest() throws Exception {
-        Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
-        String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", legalEntityDefendantMock);
+        final Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        final String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", legalEntityDefendantMock);
         verifyCompanyName(resultName);
     }
 
     @Test
     public void getDefendantPostalAddressWithPersonDefendantTest() throws Exception {
-        Defendant personDefendantMock = buildDefendantWithPersonDefendant();
-        PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", personDefendantMock);
+        final Defendant personDefendantMock = buildDefendantWithPersonDefendant();
+        final PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", personDefendantMock);
         verifyPersonAddress(resultAddress);
     }
 
     @Test
     public void getDefendantPostalAddressWithLegalEntityDefendantTest() throws Exception {
-        Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
-        PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", legalEntityDefendantMock);
+        final Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        final PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", legalEntityDefendantMock);
         verifyCompanyAddress(resultAddress);
     }
 
     @Test
     public void buildDefendantWithLegalEntityTest() throws Exception {
-        Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
-        PostalDefendant resultPostalDefendant = Whitebox.invokeMethod(postalService, "buildDefendant", legalEntityDefendantMock);
+        final Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        final PostalDefendant resultPostalDefendant = Whitebox.invokeMethod(postalService, "buildDefendant", legalEntityDefendantMock);
         verifyCompanyAddress(resultPostalDefendant.getAddress());
         verifyCompanyName(resultPostalDefendant.getName());
     }
 
     @Test
     public void getNameTest() throws Exception {
-        CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
-        String companyName  = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock);
+        final CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
+        final String companyName = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock);
         verifyCompanyName(companyName);
 
-        CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
-        String personName  = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock1);
+        final CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
+        final String personName = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock1);
         verifyPersonName(personName);
 
-        CourtApplicationParty courtApplicationPartyMock2 = buildCourtApplicationPartyWithProsecutionAuthority();
-        String prosecutionAuthorityName = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock2);
+        final CourtApplicationParty courtApplicationPartyMock2 = buildCourtApplicationPartyWithProsecutionAuthority();
+        final String prosecutionAuthorityName = Whitebox.invokeMethod(postalService, "getName", courtApplicationPartyMock2);
         verifyProsecutionAuthorityName(prosecutionAuthorityName);
     }
 
     @Test
     public void getAddressTest() throws Exception {
-        CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
-        PostalAddress companyAddress  = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock);
+        final CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
+        final PostalAddress companyAddress = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock);
         verifyCompanyAddress(companyAddress);
 
-        CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
-        PostalAddress personAddress  = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock1);
+        final CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
+        final PostalAddress personAddress = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock1);
         verifyPersonAddress(personAddress);
 
-        CourtApplicationParty courtApplicationPartyMock2 = buildCourtApplicationPartyWithProsecutionAuthority();
-        PostalAddress prosecutionAuthorityAddress = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock2);
+        final CourtApplicationParty courtApplicationPartyMock2 = buildCourtApplicationPartyWithProsecutionAuthority();
+        final PostalAddress prosecutionAuthorityAddress = Whitebox.invokeMethod(postalService, "getAddress", courtApplicationPartyMock2);
         verifyProsecutionAuthorityAddress(prosecutionAuthorityAddress);
+    }
+
+    private static JsonObject generateDocumentTypeAccessForApplication(UUID id) {
+        return createObjectBuilder()
+                .add("id", id.toString())
+                .add("section", "Applications")
+                .build();
     }
 }

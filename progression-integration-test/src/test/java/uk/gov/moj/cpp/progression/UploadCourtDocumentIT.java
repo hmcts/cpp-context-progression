@@ -5,18 +5,20 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
+import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.QueryUtil.waitForQueryMatch;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -33,7 +35,6 @@ import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +48,8 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 // Temporarily ignoring to unblock hearing pipeline
 @Ignore
@@ -102,39 +105,36 @@ public class UploadCourtDocumentIT extends AbstractIT {
                 withJsonPath("$.courtDocuments[0].courtDocumentId", equalTo(docId))
         };
 
-        final JsonObject courtDocument = getJsonObject(pollProsecutionCasesProgressionFor(caseId, matcher)).getJsonArray("courtDocuments").getJsonObject(0);
-        assertThat(courtDocument.getString("courtDocumentId"), equalTo(docId));
-        assertThat(courtDocument.getJsonObject("documentCategory").getJsonObject("defendantDocument").getString("prosecutionCaseId"), equalTo(caseId));
-
-        assertThat(courtDocument.getString("name"), equalTo("SJP Notice"));
-        assertThat(courtDocument.getString("documentTypeId"), equalTo("0bb7b276-9dc0-4af2-83b9-f4acef0c7898"));
-        assertThat(courtDocument.getString("mimeType"), equalTo("pdf"));
-        assertThat(courtDocument.getBoolean("containsFinancialMeans"), equalTo(true));
-        final JsonObject material = courtDocument.getJsonArray("materials").getJsonObject(0);
-        assertThat(material.getString("id"), equalTo("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"));
-
-        assertNotNull(material.getString("uploadDateTime"));
-        final ZonedDateTime zonedDateTime = ZonedDateTime.parse(material.getString("uploadDateTime"));
-        assertThat(zonedDateTime.getZone().getId(), equalTo(("Z")));
+        assertCourtDocumentByCase();
 
         verifyInMessagingQueueForPublicCourtDocumentAdded();
+    }
+
+    private void assertCourtDocumentByCase() {
+        final String courtDocumentsByCaseStatus = getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId);
+        final String expectedPayload = getPayload("expected/expected.progression.upload.court-document.json")
+                .replace("COURT-DOCUMENT-ID1", docId)
+                .replace("CASE-ID", caseId)
+                .replace("DEFENDENT-ID", defendantId);
+
+
+        assertEquals(expectedPayload, courtDocumentsByCaseStatus, getCustomComparator());
+    }
+
+    private CustomComparator getCustomComparator() {
+        return new CustomComparator(STRICT,
+                new Customization("documentIndices[0].document.materials[0].uploadDateTime", (o1, o2) -> true),
+                new Customization("documentIndices[1].document.materials[0].uploadDateTime", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.documentTypeRBAC", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.documentTypeRBAC", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.materials[0].id", (o1, o2) -> true),
+                new Customization("documentIndices[0].document.materials[1].id", (o1, o2) -> true)
+        );
     }
 
     private void verifyInMessagingQueueForPublicCourtDocumentAdded() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
         assertTrue(message.isPresent());
-    }
-
-    static class UploadRequest {
-        private CourtDocument courtDocument;
-
-        public CourtDocument getCourtDocument() {
-            return courtDocument;
-        }
-
-        public void setCourtDocument(CourtDocument courtDocument) {
-            this.courtDocument = courtDocument;
-        }
     }
 
     @Test
@@ -181,6 +181,18 @@ public class UploadCourtDocumentIT extends AbstractIT {
         waitForQueryMatch(preGeneratedRequestParams, 45, preGeneratedResultMatcher, Courtdocuments.class);
 
 
+    }
+
+    static class UploadRequest {
+        private CourtDocument courtDocument;
+
+        public CourtDocument getCourtDocument() {
+            return courtDocument;
+        }
+
+        public void setCourtDocument(final CourtDocument courtDocument) {
+            this.courtDocument = courtDocument;
+        }
     }
 
 }

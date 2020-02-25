@@ -23,6 +23,7 @@ import uk.gov.justice.core.courts.ReferredListHearingRequest;
 import uk.gov.justice.core.courts.SjpReferral;
 import uk.gov.justice.core.courts.SummonsRequired;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
@@ -60,161 +61,11 @@ public class ListCourtHearingTransformer {
     private Sender sender;
 
     @Inject
+    @ServiceComponent(EVENT_PROCESSOR)
+    private Requester requester;
+
+    @Inject
     private ReferenceDataService referenceDataService;
-
-    /**
-     * Transform a CourtReferral to ListCourtHearing
-     *
-     * @return ListCourtHearing
-     */
-    public ListCourtHearing transform(final JsonEnvelope jsonEnvelope,
-                                      final List<ProsecutionCase> prosecutionCases,
-                                      final SjpReferral sjpReferral,
-                                      final List<ReferredListHearingRequest> referredListHearingRequests,
-                                      final UUID hearingId) {
-        LOGGER.info("Preparing send case for listing ");
-        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
-        referredListHearingRequests.stream()
-                .forEach(referredListHearingRequest -> {
-
-                    final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCases(prosecutionCases, referredListHearingRequest.getListDefendantRequests());
-
-                    final JsonObject jsonObject = referenceDataService
-                            .getHearingType(jsonEnvelope, referredListHearingRequest.getHearingType().getId())
-                            .orElseThrow(() -> new ReferenceDataNotFoundException("Hearing Type", referredListHearingRequest.getHearingType().getId().toString()));
-                    final HearingType hearingType = HearingType.hearingType()
-                            .withId(referredListHearingRequest.getHearingType().getId())
-                            .withDescription(jsonObject.getString("hearingDescription"))
-                            .build();
-                    final HearingListingNeeds hearings = HearingListingNeeds.hearingListingNeeds()
-                            .withEarliestStartDateTime(calculateEarliestHearingDate(getNoticeDate(sjpReferral), getReferralDate(sjpReferral)).atStartOfDay(ZoneId.systemDefault()))
-                            .withEstimatedMinutes(getRequiredField(referredListHearingRequest.getEstimateMinutes(), "EstimatedMinutes minutes"))
-                            .withId(hearingId)
-                            .withJurisdictionType(referredListHearingRequest.getJurisdictionType())
-                            .withProsecutionCases(listOfProsecutionCase)
-                            .withProsecutorDatesToAvoid(referredListHearingRequest.getProsecutorDatesToAvoid())
-                            .withType(hearingType)
-                            .withListingDirections(referredListHearingRequest.getListingDirections())
-                            .withReportingRestrictionReason(referredListHearingRequest.getReportingRestrictionReason())
-                            .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequest.getListDefendantRequests()))
-                            .withCourtCentre(referenceDataService.getCourtCentre(jsonEnvelope, getDefendantPostcode(listOfProsecutionCase), getProsecutionAuthorityCode(prosecutionCases)))
-                            .build();
-                    hearingsList.add(hearings);
-                });
-
-        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
-    }
-
-    public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
-                                      final List<ListHearingRequest> listHearingRequests, final UUID hearingId) {
-        LOGGER.info("Transforming SPI cases to ListCourtHearing");
-        List<HearingListingNeeds> hearingsList = new ArrayList<>();
-
-        listHearingRequests.stream().forEach(listHearingRequest -> {
-            final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCasesFromSpi(prosecutionCases, listHearingRequest.getListDefendantRequests());
-            final ZonedDateTime expectedListingStartDateTime = nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime(); 
-            final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, listHearingRequest.getListDefendantRequests());
-            HearingListingNeeds hearing = HearingListingNeeds.hearingListingNeeds()
-                    .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
-                    .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
-                    .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
-                    .withId(hearingId)
-                    .withJurisdictionType(listHearingRequest.getJurisdictionType())
-                    .withProsecutionCases(listOfProsecutionCase)
-                    .withProsecutorDatesToAvoid(listHearingRequest.getProsecutorDatesToAvoid())
-                    .withType(listHearingRequest.getHearingType())
-                    .withListingDirections(listHearingRequest.getListingDirections())
-                    .withReportingRestrictionReason(listHearingRequest.getReportingRestrictionReason())
-                    .withCourtCentre(listHearingRequest.getCourtCentre())
-                    .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
-                    .build();
-            hearingsList.add(hearing);
-        });
-        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
-    }
-
-    private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {
-
-        return listDefendantRequests.stream().map(listDefendantRequest ->
-                ListDefendantRequest.listDefendantRequest()
-                        .withDatesToAvoid(listDefendantRequest.getDatesToAvoid())
-                        // SPI cases will not have referral reason
-                        .withDefendantId(listDefendantRequest.getDefendantId())
-                        .withHearingLanguageNeeds(listDefendantRequest.getHearingLanguageNeeds())
-                        .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
-                        .withReferralReason(listDefendantRequest.getReferralReason())
-                        .withDefendantOffences(listDefendantRequest.getDefendantOffences())
-                        .withSummonsRequired(isDefendantYouth(expectedListingStartDateTime, listDefendantRequest.getDefendantId(), listOfProsecutionCase) ? SummonsRequired.YOUTH : listDefendantRequest.getSummonsRequired())
-                        .build()
-        ).collect(Collectors.toList());
-    }
-
-    private boolean isDefendantYouth(final ZonedDateTime expectedListingStartDateTime, final UUID defendantId, final List<ProsecutionCase> listOfProsecutionCase) {
-        boolean isYouth = false;
-        final Optional<Defendant> defendant = listOfProsecutionCase.stream()
-                .flatMap(pc -> pc.getDefendants().stream())
-                .filter(d -> d.getId().equals(defendantId))
-                .findFirst();
-
-        if (defendant.isPresent()) {
-            Optional<LocalDate> birthDate = getDateOfBirth(defendant.get());
-            if (birthDate.isPresent() && calculateIsYouth(birthDate.get(), expectedListingStartDateTime)) {
-                isYouth = true;
-            }
-        }
-
-        return isYouth;
-    }
-
-    private Optional<LocalDate> getDateOfBirth(final uk.gov.justice.core.courts.Defendant defendant) {
-        return Optional.ofNullable(defendant)
-                .map(uk.gov.justice.core.courts.Defendant::getPersonDefendant)
-                .map(PersonDefendant::getPersonDetails)
-                .map(Person::getDateOfBirth);
-    }
-
-    private boolean calculateIsYouth(final LocalDate birthDate, final ZonedDateTime earliestHearingDate) {
-        final ZonedDateTime dateOfBirth = ZonedDateTime.of(birthDate.atTime(0, 0), ZoneId.systemDefault());
-        return earliestHearingDate.minus(18, ChronoUnit.YEARS).isBefore(dateOfBirth);
-    }
-
-
-    public ListCourtHearing transform(final ApplicationReferredToCourt applicationReferredToCourt) {
-
-        LOGGER.info("Preparing application for list court hearing");
-
-        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
-        final HearingListingNeeds hearingRequest = applicationReferredToCourt.getHearingRequest();
-
-        final HearingListingNeeds.Builder hearingsBuilder = HearingListingNeeds.hearingListingNeeds()
-                .withId(hearingRequest.getId())
-                .withCourtCentre(hearingRequest.getCourtCentre())
-                .withJudiciary(hearingRequest.getJudiciary())
-                .withProsecutionCases(hearingRequest.getProsecutionCases())
-                .withType(hearingRequest.getType())
-                .withJurisdictionType(hearingRequest.getJurisdictionType())
-                .withEarliestStartDateTime(hearingRequest.getEarliestStartDateTime())
-                .withEstimatedMinutes(hearingRequest.getEstimatedMinutes())
-                .withReportingRestrictionReason(hearingRequest.getReportingRestrictionReason())
-                .withListingDirections(hearingRequest.getListingDirections())
-                .withDefendantListingNeeds(hearingRequest.getDefendantListingNeeds());
-
-        final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsList = hearingRequest.getCourtApplicationPartyListingNeeds();
-
-        if(CollectionUtils.isNotEmpty(courtApplicationPartyListingNeedsList)) {
-            hearingsBuilder.withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsList);
-        }
-
-        final List<CourtApplication> courtApplications = hearingRequest.getCourtApplications();
-
-        if(CollectionUtils.isNotEmpty(courtApplications)) {
-            hearingsBuilder.withCourtApplications(hearingRequest.getCourtApplications());
-        }
-
-        hearingsList.add(hearingsBuilder.build());
-
-        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
-    }
 
     /**
      * earliestDate = add 28 days to the notice date earliest lead date = add 14 days to the
@@ -230,32 +81,6 @@ public class ListCourtHearingTransformer {
             return earliestDate;
         }
         return earliestLeadDate;
-    }
-
-    private String getReferralReasonDescription(final JsonEnvelope jsonEnvelope, final UUID referralId) {
-        final JsonObject jsonObject = referenceDataService.getReferralReasonById(jsonEnvelope, referralId)
-                .orElseThrow(() -> new ReferenceDataNotFoundException("ReferralReason", referralId.toString()));
-        return jsonObject.getString("reason");
-    }
-
-    /**
-     * Take list of ListDefendantRequest (progresssion) Returns list of ListDefendantRequests
-     * (listing)
-     */
-    private List<DefendantListingNeeds> getListDefendantRequests(final JsonEnvelope jsonEnvelope, final List<ListDefendantRequest> collectionOfListDefendantRequest) {
-        return collectionOfListDefendantRequest.stream().map(listDefendantRequest ->
-                DefendantListingNeeds.defendantListingNeeds()
-                        .withDatesToAvoid(listDefendantRequest.getDatesToAvoid())
-                        // SPI cases will not have referral reason
-                        .withDefendantId(isNull(listDefendantRequest.getDefendantId()) ?
-                                listDefendantRequest.getReferralReason().getDefendantId() : listDefendantRequest.getDefendantId())
-                        .withHearingLanguageNeeds(listDefendantRequest.getHearingLanguageNeeds())
-                        .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
-                        .withListingReason(isNull(listDefendantRequest.getReferralReason()) ? null
-                                : (getReferralReasonDescription(jsonEnvelope, listDefendantRequest.getReferralReason().getId())))
-                        .withIsYouth(listDefendantRequest.getSummonsRequired() != null && SummonsRequired.YOUTH.equals(listDefendantRequest.getSummonsRequired()))
-                        .build()
-        ).collect(Collectors.toList());
     }
 
     @SuppressWarnings("squid:S1188")
@@ -390,7 +215,7 @@ public class ListCourtHearingTransformer {
         return prosecutionCases.get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
     }
 
-    private static String getDefendantPostcode(List<ProsecutionCase> prosecutionCases) {
+    private static String getDefendantPostcode(final List<ProsecutionCase> prosecutionCases) {
         final Optional<Defendant> defendant = Optional.ofNullable(prosecutionCases.get(0).getDefendants().get(0));
         final Optional<PersonDefendant> personDefendant;
         final Optional<LegalEntityDefendant> legalEntityDefendant;
@@ -414,5 +239,184 @@ public class ListCourtHearingTransformer {
             throw new MissingRequiredFieldException(message);
         }
         return field;
+    }
+
+    /**
+     * Transform a CourtReferral to ListCourtHearing
+     *
+     * @return ListCourtHearing
+     */
+    public ListCourtHearing transform(final JsonEnvelope jsonEnvelope,
+                                      final List<ProsecutionCase> prosecutionCases,
+                                      final SjpReferral sjpReferral,
+                                      final List<ReferredListHearingRequest> referredListHearingRequests,
+                                      final UUID hearingId) {
+        LOGGER.info("Preparing send case for listing ");
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+        referredListHearingRequests.stream()
+                .forEach(referredListHearingRequest -> {
+
+                    final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCases(prosecutionCases, referredListHearingRequest.getListDefendantRequests());
+
+                    final JsonObject jsonObject = referenceDataService
+                            .getHearingType(jsonEnvelope, referredListHearingRequest.getHearingType().getId(), requester)
+                            .orElseThrow(() -> new ReferenceDataNotFoundException("Hearing Type", referredListHearingRequest.getHearingType().getId().toString()));
+                    final HearingType hearingType = HearingType.hearingType()
+                            .withId(referredListHearingRequest.getHearingType().getId())
+                            .withDescription(jsonObject.getString("hearingDescription"))
+                            .build();
+                    final HearingListingNeeds hearings = HearingListingNeeds.hearingListingNeeds()
+                            .withEarliestStartDateTime(calculateEarliestHearingDate(getNoticeDate(sjpReferral), getReferralDate(sjpReferral)).atStartOfDay(ZoneId.systemDefault()))
+                            .withEstimatedMinutes(getRequiredField(referredListHearingRequest.getEstimateMinutes(), "EstimatedMinutes minutes"))
+                            .withId(hearingId)
+                            .withJurisdictionType(referredListHearingRequest.getJurisdictionType())
+                            .withProsecutionCases(listOfProsecutionCase)
+                            .withProsecutorDatesToAvoid(referredListHearingRequest.getProsecutorDatesToAvoid())
+                            .withType(hearingType)
+                            .withListingDirections(referredListHearingRequest.getListingDirections())
+                            .withReportingRestrictionReason(referredListHearingRequest.getReportingRestrictionReason())
+                            .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequest.getListDefendantRequests()))
+                            .withCourtCentre(referenceDataService.getCourtCentre(jsonEnvelope, getDefendantPostcode(listOfProsecutionCase), getProsecutionAuthorityCode(prosecutionCases), requester))
+                            .build();
+                    hearingsList.add(hearings);
+                });
+
+        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
+    }
+
+    public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
+                                      final List<ListHearingRequest> listHearingRequests, final UUID hearingId) {
+        LOGGER.info("Transforming SPI cases to ListCourtHearing");
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+
+        listHearingRequests.stream().forEach(listHearingRequest -> {
+            final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCasesFromSpi(prosecutionCases, listHearingRequest.getListDefendantRequests());
+            final ZonedDateTime expectedListingStartDateTime = nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
+            final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, listHearingRequest.getListDefendantRequests());
+            final HearingListingNeeds hearing = HearingListingNeeds.hearingListingNeeds()
+                    .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
+                    .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
+                    .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
+                    .withId(hearingId)
+                    .withJurisdictionType(listHearingRequest.getJurisdictionType())
+                    .withProsecutionCases(listOfProsecutionCase)
+                    .withProsecutorDatesToAvoid(listHearingRequest.getProsecutorDatesToAvoid())
+                    .withType(listHearingRequest.getHearingType())
+                    .withListingDirections(listHearingRequest.getListingDirections())
+                    .withReportingRestrictionReason(listHearingRequest.getReportingRestrictionReason())
+                    .withCourtCentre(listHearingRequest.getCourtCentre())
+                    .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
+                    .build();
+            hearingsList.add(hearing);
+        });
+        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
+    }
+
+    private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {
+
+        return listDefendantRequests.stream().map(listDefendantRequest ->
+                ListDefendantRequest.listDefendantRequest()
+                        .withDatesToAvoid(listDefendantRequest.getDatesToAvoid())
+                        // SPI cases will not have referral reason
+                        .withDefendantId(listDefendantRequest.getDefendantId())
+                        .withHearingLanguageNeeds(listDefendantRequest.getHearingLanguageNeeds())
+                        .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
+                        .withReferralReason(listDefendantRequest.getReferralReason())
+                        .withDefendantOffences(listDefendantRequest.getDefendantOffences())
+                        .withSummonsRequired(isDefendantYouth(expectedListingStartDateTime, listDefendantRequest.getDefendantId(), listOfProsecutionCase) ? SummonsRequired.YOUTH : listDefendantRequest.getSummonsRequired())
+                        .build()
+        ).collect(Collectors.toList());
+    }
+
+    private boolean isDefendantYouth(final ZonedDateTime expectedListingStartDateTime, final UUID defendantId, final List<ProsecutionCase> listOfProsecutionCase) {
+        boolean isYouth = false;
+        final Optional<Defendant> defendant = listOfProsecutionCase.stream()
+                .flatMap(pc -> pc.getDefendants().stream())
+                .filter(d -> d.getId().equals(defendantId))
+                .findFirst();
+
+        if (defendant.isPresent()) {
+            final Optional<LocalDate> birthDate = getDateOfBirth(defendant.get());
+            if (birthDate.isPresent() && calculateIsYouth(birthDate.get(), expectedListingStartDateTime)) {
+                isYouth = true;
+            }
+        }
+
+        return isYouth;
+    }
+
+    private Optional<LocalDate> getDateOfBirth(final uk.gov.justice.core.courts.Defendant defendant) {
+        return Optional.ofNullable(defendant)
+                .map(uk.gov.justice.core.courts.Defendant::getPersonDefendant)
+                .map(PersonDefendant::getPersonDetails)
+                .map(Person::getDateOfBirth);
+    }
+
+    private boolean calculateIsYouth(final LocalDate birthDate, final ZonedDateTime earliestHearingDate) {
+        final ZonedDateTime dateOfBirth = ZonedDateTime.of(birthDate.atTime(0, 0), ZoneId.systemDefault());
+        return earliestHearingDate.minus(18, ChronoUnit.YEARS).isBefore(dateOfBirth);
+    }
+
+    public ListCourtHearing transform(final ApplicationReferredToCourt applicationReferredToCourt) {
+
+        LOGGER.info("Preparing application for list court hearing");
+
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+        final HearingListingNeeds hearingRequest = applicationReferredToCourt.getHearingRequest();
+
+        final HearingListingNeeds.Builder hearingsBuilder = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingRequest.getId())
+                .withCourtCentre(hearingRequest.getCourtCentre())
+                .withJudiciary(hearingRequest.getJudiciary())
+                .withProsecutionCases(hearingRequest.getProsecutionCases())
+                .withType(hearingRequest.getType())
+                .withJurisdictionType(hearingRequest.getJurisdictionType())
+                .withEarliestStartDateTime(hearingRequest.getEarliestStartDateTime())
+                .withEstimatedMinutes(hearingRequest.getEstimatedMinutes())
+                .withReportingRestrictionReason(hearingRequest.getReportingRestrictionReason())
+                .withListingDirections(hearingRequest.getListingDirections())
+                .withDefendantListingNeeds(hearingRequest.getDefendantListingNeeds());
+
+        final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsList = hearingRequest.getCourtApplicationPartyListingNeeds();
+
+        if (CollectionUtils.isNotEmpty(courtApplicationPartyListingNeedsList)) {
+            hearingsBuilder.withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsList);
+        }
+
+        final List<CourtApplication> courtApplications = hearingRequest.getCourtApplications();
+
+        if (CollectionUtils.isNotEmpty(courtApplications)) {
+            hearingsBuilder.withCourtApplications(hearingRequest.getCourtApplications());
+        }
+
+        hearingsList.add(hearingsBuilder.build());
+
+        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
+    }
+
+    private String getReferralReasonDescription(final JsonEnvelope jsonEnvelope, final UUID referralId) {
+        final JsonObject jsonObject = referenceDataService.getReferralReasonById(jsonEnvelope, referralId, requester)
+                .orElseThrow(() -> new ReferenceDataNotFoundException("ReferralReason", referralId.toString()));
+        return jsonObject.getString("reason");
+    }
+
+    /**
+     * Take list of ListDefendantRequest (progresssion) Returns list of ListDefendantRequests
+     * (listing)
+     */
+    private List<DefendantListingNeeds> getListDefendantRequests(final JsonEnvelope jsonEnvelope, final List<ListDefendantRequest> collectionOfListDefendantRequest) {
+        return collectionOfListDefendantRequest.stream().map(listDefendantRequest ->
+                DefendantListingNeeds.defendantListingNeeds()
+                        .withDatesToAvoid(listDefendantRequest.getDatesToAvoid())
+                        // SPI cases will not have referral reason
+                        .withDefendantId(isNull(listDefendantRequest.getDefendantId()) ?
+                                listDefendantRequest.getReferralReason().getDefendantId() : listDefendantRequest.getDefendantId())
+                        .withHearingLanguageNeeds(listDefendantRequest.getHearingLanguageNeeds())
+                        .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
+                        .withListingReason(isNull(listDefendantRequest.getReferralReason()) ? null
+                                : (getReferralReasonDescription(jsonEnvelope, listDefendantRequest.getReferralReason().getId())))
+                        .withIsYouth(listDefendantRequest.getSummonsRequired() != null && SummonsRequired.YOUTH.equals(listDefendantRequest.getSummonsRequired()))
+                        .build()
+        ).collect(Collectors.toList());
     }
 }

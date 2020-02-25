@@ -177,46 +177,6 @@
         ]
       }
     ],
-    "courtDocuments": [
-      {
-        "courtDocumentId": "RANDOM_DOC_ID",
-        "documentCategory": {
-          "defendantDocument": {
-            "prosecutionCaseId": "RANDOM_CASE_ID",
-            "defendants": [
-              "e1d32d9d-29ec-4934-a932-22a50f223966"
-            ]
-          }
-        },
-        "name": "Bank Statement",
-        "documentTypeId": "1b7e6a7a-a571-4ab9-8895-4b1a58424d78",
-        "mimeType": "pdf",
-        "materials": [
-          {
-            "id": "RANDOM_MATERIAL_ID_ONE",
-            "name": "BankStatment.pdf",
-            "uploadDateTime": "2018-03-20T16:14:29.000Z",
-            "userGroups": [
-              "defence",
-              "prosecution",
-              "courtClerk",
-              "Listing Officers"
-            ]
-          },
-          {
-            "id": "RANDOM_MATERIAL_ID_TWO",
-            "name": "Fine.pdf",
-            "uploadDateTime": "2018-03-20T16:14:29.000Z",
-            "userGroups": [
-              "defence",
-              "prosecution",
-              "Legal Advisers",
-              "Listing Officers"
-            ]
-          }
-        ]
-      }
-    ],
     "listHearingRequests": [
       {
         "hearingType": {

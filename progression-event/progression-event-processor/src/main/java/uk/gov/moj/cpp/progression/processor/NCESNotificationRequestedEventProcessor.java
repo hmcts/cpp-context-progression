@@ -64,7 +64,7 @@ public class NCESNotificationRequestedEventProcessor {
             LOGGER.info("Nces notification requested payload - {}", requestJson);
         }
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(ncesNotificationRequested.getMaterialId());
-        List<EmailChannel> emailChannelList = ncesNotificationRequested.getEmailNotifications().stream()
+        final List<EmailChannel> emailChannelList = ncesNotificationRequested.getEmailNotifications().stream()
                                                       .map(s -> EmailChannel.emailChannel()
                                                                         .withTemplateId(UUID.fromString(applicationParameters.getNcesEmailTemplateId()))
                                                                         .withSendToAddress(s.getSendToAddress())

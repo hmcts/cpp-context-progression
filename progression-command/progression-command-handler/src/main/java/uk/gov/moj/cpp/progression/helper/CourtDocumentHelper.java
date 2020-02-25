@@ -1,35 +1,37 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static java.util.Objects.isNull;
-
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+
 public class CourtDocumentHelper {
 
     private CourtDocumentHelper() {
     }
 
-    public static CourtDocument setDefaults(CourtDocument courtDocument) {
+    public static CourtDocument setDefaults(final CourtDocument courtDocument) {
         return newBuilderWithDefaults(courtDocument).build();
     }
 
     private static Builder newBuilderWithDefaults(final CourtDocument copy) {
-        Builder builder = new Builder();
+        final Builder builder = new Builder();
         builder.amendmentDate = copy.getAmendmentDate();
         builder.courtDocumentId = copy.getCourtDocumentId();
         builder.documentCategory = copy.getDocumentCategory();
         builder.documentTypeDescription = copy.getDocumentTypeDescription();
         builder.documentTypeId = copy.getDocumentTypeId();
-        builder.isRemoved = copy.getIsRemoved();
         builder.materials = copy.getMaterials();
         builder.mimeType = copy.getMimeType();
         builder.name = copy.getName();
+        builder.documentTypeRBAC = copy.getDocumentTypeRBAC();
+        builder.seqNum = copy.getSeqNum();
         //optional fields with defaults
         builder.containsFinancialMeans = defaultToFalse(copy.getContainsFinancialMeans());
         return builder;
@@ -54,10 +56,11 @@ public class CourtDocumentHelper {
         private DocumentCategory documentCategory;
         private String documentTypeDescription;
         private UUID documentTypeId;
-        private Boolean isRemoved;
+        private DocumentTypeRBAC documentTypeRBAC;
         private List<Material> materials;
         private String mimeType;
         private String name;
+        private Integer seqNum;
 
 
         public Builder withAmendmentDate(final LocalDate val) {
@@ -90,11 +93,6 @@ public class CourtDocumentHelper {
             return this;
         }
 
-        public Builder withIsRemoved(final Boolean val) {
-            isRemoved = val;
-            return this;
-        }
-
         @SuppressWarnings("squid:S2384")
         public Builder withMaterials(final List<Material> val) {
             materials = val;
@@ -111,8 +109,33 @@ public class CourtDocumentHelper {
             return this;
         }
 
+        public Builder withDocumentTypeRBAC(final DocumentTypeRBAC val) {
+            documentTypeRBAC = val;
+            return this;
+        }
+
+        public Builder withSeqNum(final Integer val) {
+            seqNum = val;
+            return this;
+        }
+
+
         public uk.gov.justice.core.courts.CourtDocument build() {
-            return new uk.gov.justice.core.courts.CourtDocument(amendmentDate, containsFinancialMeans, courtDocumentId, documentCategory, documentTypeDescription, documentTypeId, isRemoved, materials, mimeType, name);
+
+            return uk.gov.justice.core.courts.CourtDocument.courtDocument()
+                    .withAmendmentDate(amendmentDate)
+                    .withContainsFinancialMeans(containsFinancialMeans)
+                    .withCourtDocumentId(courtDocumentId)
+                    .withDocumentCategory(documentCategory)
+                    .withDocumentTypeDescription(documentTypeDescription)
+                    .withDocumentTypeId(documentTypeId)
+                    .withMaterials(materials)
+                    .withMimeType(mimeType)
+                    .withName(name)
+                    .withDocumentTypeRBAC(documentTypeRBAC)
+                    .withSeqNum(seqNum)
+                    .build();
+
         }
     }
 }

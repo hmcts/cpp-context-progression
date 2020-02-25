@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="court_document_type_rbac" author="cpp.context.progression">
+
+        <createTable tableName="document_rbac_read_usergroup">
+            <column name="court_document_id" type="UUID"/>
+            <column name="read_usergroup" type="TEXT"/>
+        </createTable>
+
+        <createTable tableName="document_rbac_create_usergroup">
+            <column name="court_document_id" type="UUID"/>
+            <column name="create_usergroup" type="TEXT"/>
+        </createTable>
+
+        <createTable tableName="document_rbac_download_usergroup">
+            <column name="court_document_id" type="UUID"/>
+            <column name="download_usergroup" type="TEXT"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="court_document_id"
+                baseTableName="document_rbac_read_usergroup"
+                constraintName="fk_court_document_id1" deferrable="false"
+                initiallyDeferred="false"
+                onDelete="CASCADE" onUpdate="NO ACTION"
+                referencedColumnNames="id"
+                referencedTableName="court_document"/>
+
+        <addForeignKeyConstraint baseColumnNames="court_document_id"
+                baseTableName="document_rbac_create_usergroup"
+                constraintName="fk_court_document_id2" deferrable="false"
+                initiallyDeferred="false"
+                onDelete="CASCADE" onUpdate="NO ACTION"
+                referencedColumnNames="id"
+                referencedTableName="court_document"/>
+
+
+        <addForeignKeyConstraint baseColumnNames="court_document_id"
+                baseTableName="document_rbac_download_usergroup"
+                constraintName="fk_court_document_id3" deferrable="false"
+                initiallyDeferred="false"
+                onDelete="CASCADE" onUpdate="NO ACTION"
+                referencedColumnNames="id"
+                referencedTableName="court_document"/>
+
+    </changeSet>
+
+</databaseChangeLog>

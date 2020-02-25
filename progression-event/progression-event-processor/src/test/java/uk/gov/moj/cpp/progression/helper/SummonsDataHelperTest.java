@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Address;
@@ -22,11 +26,16 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,6 +49,15 @@ public class SummonsDataHelperTest {
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @Mock
+    private JsonEnvelope jsonEnvelope;
+
+    @Mock
+    private Requester requester;
 
     @Before
     public void initMocks() {
@@ -172,6 +190,24 @@ public class SummonsDataHelperTest {
         assertThat(referenceData.getString("postcode"), is(referralReason.getString("postCode")));
     }
 
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowExceptionDocumentAccessDataWithFileReference() {
+        UUID documentAccessId = randomUUID();
+        when(referenceDataService.getDocumentTypeAccessData(documentAccessId, jsonEnvelope, requester)).thenReturn(Optional.empty());
+        SummonsDataHelper.getDocumentTypeData(documentAccessId, referenceDataService, jsonEnvelope, requester);
+    }
+
+    @Test
+    public void shouldReturnDocumentAccessDataWithFileReference() {
+        UUID documentAccessId = randomUUID();
+        final JsonObject returnValue = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("section", "Charges")
+                .build();
+        when(referenceDataService.getDocumentTypeAccessData(documentAccessId, jsonEnvelope, requester)).thenReturn(Optional.of(returnValue));
+        final JsonObject documentTypeDataForSummons = SummonsDataHelper.getDocumentTypeData(documentAccessId, referenceDataService, jsonEnvelope, requester);
+        assertThat(documentTypeDataForSummons, is(returnValue));
+    }
     private JsonObject createCourtCentreAddress() {
         return createObjectBuilder()
                 .add("address1", "Liverpool Crown Court")
@@ -185,7 +221,7 @@ public class SummonsDataHelperTest {
 
     private JsonObject createReferralReferenceData() {
         return createObjectBuilder()
-                .add("id", UUID.randomUUID().toString())
+                .add("id", randomUUID().toString())
                 .add("reason", "ref reason")
                 .add("welshReason", "ref wel reason")
                 .add("subReason", "sub reason")
@@ -196,7 +232,7 @@ public class SummonsDataHelperTest {
 
     private Defendant createPersonDefendant() {
         return Defendant.defendant()
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .withPersonDefendant(PersonDefendant.personDefendant()
                         .withPersonDetails(Person.person()
                                 .withFirstName("Tim")
@@ -239,7 +275,7 @@ public class SummonsDataHelperTest {
 
     private Defendant createLegalEntityDefendant() {
         return Defendant.defendant()
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation()
                                 .withName("ABC Ltd")

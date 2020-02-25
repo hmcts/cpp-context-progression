@@ -9,22 +9,55 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
-import uk.gov.justice.core.courts.*;
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ApplicationReferredToCourt;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialRole;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Marker;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.core.courts.ReferredDefendant;
+import uk.gov.justice.core.courts.ReferredHearingType;
+import uk.gov.justice.core.courts.ReferredListHearingRequest;
+import uk.gov.justice.core.courts.ReferredOffence;
+import uk.gov.justice.core.courts.ReferredPerson;
+import uk.gov.justice.core.courts.ReferredPersonDefendant;
+import uk.gov.justice.core.courts.ReferredProsecutionCase;
+import uk.gov.justice.core.courts.SjpCourtReferral;
+import uk.gov.justice.core.courts.SjpReferral;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import java.time.ZonedDateTime;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -59,6 +92,10 @@ public class ListCourtHearingTransformerTest {
 
     @Mock
     private Sender sender;
+
+    @Mock
+    private Requester requester;
+
     @InjectMocks
     private ListCourtHearingTransformer listCourtHearingTransformer;
     @Mock
@@ -90,11 +127,11 @@ public class ListCourtHearingTransformerTest {
 
         final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
 
-        when(referenceDataService.getHearingType(any(), any())).thenReturn(Optional.of(jsonObject));
-        when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth))
+        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
                 .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
-        when(referenceDataService.getReferralReasonById(any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason","reason for referral").build()));
+        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, Arrays.asList(getProsecutionCase()), courtReferral.getSjpReferral(), courtReferral.getListHearingRequests(), UUID.randomUUID());
@@ -126,11 +163,11 @@ public class ListCourtHearingTransformerTest {
 
         final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
 
-        when(referenceDataService.getHearingType(any(), any())).thenReturn(Optional.of(jsonObject));
-        when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth))
+        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
                 .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
-        when(referenceDataService.getReferralReasonById(any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason","reason for referral").build()));
+        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, Arrays.asList(getProsecutionCaseWithLegalDefendantEntity()), courtReferral.getSjpReferral(), courtReferral.getListHearingRequests(), UUID.randomUUID());
@@ -181,7 +218,7 @@ public class ListCourtHearingTransformerTest {
     }
 
     private List<CourtApplication> createCourtApplications() {
-        List<CourtApplication> courtApplications = new ArrayList<>();
+        final List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
                 .withId(UUID.randomUUID())
                 .withLinkedCaseId(UUID.randomUUID())
@@ -239,7 +276,7 @@ public class ListCourtHearingTransformerTest {
         return getProsecutionCase(null);
     }
 
-    private ProsecutionCase getProsecutionCase(LocalDate birthDate) {
+    private ProsecutionCase getProsecutionCase(final LocalDate birthDate) {
         return ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
@@ -368,8 +405,8 @@ public class ListCourtHearingTransformerTest {
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
 
-        when(referenceDataService.getReferralReasonById(any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason","reason for referral").build()));
+        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, Arrays.asList(getProsecutionCase()), listHearingRequest, UUID.randomUUID());
@@ -407,8 +444,8 @@ public class ListCourtHearingTransformerTest {
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
 
-        when(referenceDataService.getReferralReasonById(any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason","reason for referral").build()));
+        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, Arrays.asList(getProsecutionCase(LocalDate.now().minusYears(15))), listHearingRequest, UUID.randomUUID());
@@ -435,7 +472,7 @@ public class ListCourtHearingTransformerTest {
         //Either EarliestStartDateTime or ListedStartDateTime can be present. Not both.
         return Arrays.asList(ListHearingRequest.listHearingRequest()
                 .withCourtCentre(createCourtCenter())
-                .withEarliestStartDateTime(!isListedStartDateTimePresent?earliestStartDateTime:null)
+                .withEarliestStartDateTime(!isListedStartDateTimePresent ? earliestStartDateTime : null)
                 .withEstimateMinutes(Integer.valueOf(15))
                 .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).build())
                 .withJurisdictionType(JurisdictionType.CROWN)
@@ -444,7 +481,7 @@ public class ListCourtHearingTransformerTest {
                         .withDefendantOffences(Arrays.asList(offenceId))
                         .withDefendantId(defendantId)
                         .build()))
-                .withListedStartDateTime(isListedStartDateTimePresent?listedStartDateTime:null)
+                .withListedStartDateTime(isListedStartDateTimePresent ? listedStartDateTime : null)
                 .withListingDirections("wheelchair access required")
                 .withProsecutorDatesToAvoid("Thursdays")
                 .withReportingRestrictionReason(AUTOMATIC_ANONYMITY)

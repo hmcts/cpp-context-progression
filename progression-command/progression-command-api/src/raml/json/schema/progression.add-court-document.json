@@ -17,6 +17,9 @@
       "properties": {
         "id": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "receivedDateTime":{
+          "type":"string"
         }
       },
       "required": [

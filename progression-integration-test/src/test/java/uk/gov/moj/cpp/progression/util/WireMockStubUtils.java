@@ -31,11 +31,33 @@ public class WireMockStubUtils {
     public static final String MATERIAL_UPLOAD_COMMAND =
             "/material-service/command/api/rest/material/material";
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
-    private static final String CONTENT_TYPE_QUERY_GROUPS = "application/vnd.usersgroups.groups+json";
     public static final String BASE_URI = "http://" + HOST + ":8080";
+    private static final String CONTENT_TYPE_QUERY_GROUPS = "application/vnd.usersgroups.groups+json";
+    private static final String CONTENT_TYPE_QUERY_HEARING = "application/vnd.hearing.get.hearing+json";
 
     static {
         configureFor(HOST, 8080);
+    }
+
+    public static void setupHearingQueryStub(final UUID hearingId, String resource) {
+        stubPingFor("hearing-service");
+
+        stubFor(get(urlPathEqualTo(format("/hearing-service/query/api/rest/hearing/hearings/{0}", hearingId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resource))));
+
+        waitForStubToBeReady(format("/hearing-service/query/api/rest/hearing/hearings/{0}", hearingId), CONTENT_TYPE_QUERY_HEARING);
+    }
+
+
+    public static void setupAsAuthorisedUser(final UUID userId, final String responsePayLoad) {
+        stubFor(get(urlMatching(format("/usersgroups-service/query/api/rest/usersgroups/users/{0}/groups", userId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload(responsePayLoad))));
     }
 
     public static void setupAsAuthorisedUser(final UUID userId) {

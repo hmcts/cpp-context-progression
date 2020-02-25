@@ -1,6 +1,6 @@
 {
   "courtApplication": {
-    "linkedCaseId": "RANDOM_CASE_ID",
+    "linkedCaseId":"RANDOM_CASE_ID",
     "id": "RANDOM_APPLICATION_ID",
     "type": {
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -96,8 +96,8 @@
                 "markerTypeDescription": "a"
               }
             ]
-          },
-          "role": "a"
+        },
+        "role": "a"
         }
       ],
       "defendant": {
@@ -491,7 +491,7 @@
         ],
         "judicialResults": [
           {
-            "isAvailableForCourtExtract": true,
+            "isAvailableForCourtExtract":true,
             "orderedHearingId": "00000000-0000-0000-0000-000000000000",
             "label": "a",
             "welshLabel": "a",
@@ -531,7 +531,7 @@
                 "value": "a",
                 "promptSequence": 0.1,
                 "promptReference": "a",
-                "isAvailableForCourtExtract": true
+                "isAvailableForCourtExtract":true
               }
             ]
           }
@@ -685,7 +685,7 @@
                 "judicialResults": [
                   {
                     "orderedHearingId": "00000000-0000-0000-0000-000000000000",
-                    "isAvailableForCourtExtract": true,
+                    "isAvailableForCourtExtract":true,
                     "label": "a",
                     "welshLabel": "a",
                     "isAdjournmentResult": true,
@@ -724,7 +724,7 @@
                         "value": "a",
                         "promptSequence": 0.1,
                         "promptReference": "a",
-                        "isAvailableForCourtExtract": true
+                        "isAvailableForCourtExtract":true
                       }
                     ]
                   }

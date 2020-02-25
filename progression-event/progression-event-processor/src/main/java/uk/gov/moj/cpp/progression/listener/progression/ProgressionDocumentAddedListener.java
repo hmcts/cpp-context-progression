@@ -52,7 +52,7 @@ public class ProgressionDocumentAddedListener {
 
         final AddMaterialCommand command = new AddMaterialCommand(fileId, new Document(fileId, mimeType), fileName);
 
-        sender.send(enveloper.withMetadataFrom(envelope, MATERIAL_COMMAND_ADD_MATERIAL).apply(command));
+        sender.sendAsAdmin(enveloper.withMetadataFrom(envelope, MATERIAL_COMMAND_ADD_MATERIAL).apply(command));
 
         LOG.info("Material command to upload a document complete {}", envelope);
 

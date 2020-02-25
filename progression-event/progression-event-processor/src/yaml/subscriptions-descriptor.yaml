@@ -155,6 +155,18 @@ subscriptions_descriptor:
         - name: progression.events.sending-sheet-invalidated
           schema_uri: http://justice.gov.uk/core/courts/sending-sheet-invalidated.json
 
+        - name: progression.event.court-document-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-document-updated.json
+
+        - name: progression.event.court-document-share-failed
+          schema_uri: http://justice.gov.uk/core/courts/court-document-share-failed.json
+
+        - name: progression.event.court-document-shared
+          schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
+
+        - name: progression.event.duplicate-share-court-document-request-received
+          schema_uri: http://justice.gov.uk/core/courts/duplicate-share-court-document-request-received.json
+
           # Deprecated API  - End
       event_source_name: progression
 

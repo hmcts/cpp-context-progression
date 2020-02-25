@@ -88,7 +88,7 @@ public class ProgressionDocumentAddedListenerTest {
 
         // then
         verify(enveloper).withMetadataFrom(eq(envelope), eq(MATERIAL_COMMAND_ADD_MATERIAL));
-        verify(sender).send(envelopeCaptor.capture());
+        verify(sender).sendAsAdmin(envelopeCaptor.capture());
 
         final JsonEnvelope publicEventPayload = envelopeCaptor.getValue();
         assertThat(publicEventPayload.metadata(), withMetadataEnvelopedFrom(envelope).withName(MATERIAL_COMMAND_ADD_MATERIAL));

@@ -1,21 +1,18 @@
 package uk.gov.moj.cpp.progression.ingester;
 
 import static com.jayway.jsonpath.JsonPath.parse;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static junit.framework.TestCase.fail;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseDefendant;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCourtDocumentMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -24,7 +21,6 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,15 +65,10 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
 
         final String caseUrn = generateUrn();
         //given
-        initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
-        //introduce delay by checking court document present first
-        getCourtDocumentFor(courtDocumentId,
-                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId))
-        );
 
-        final List<Matcher> courtDocumentMatchers = getCourtDocumentMatchers(caseId, courtDocumentId, materialIdActive, 0);
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, courtDocumentMatchers);
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
 
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
 

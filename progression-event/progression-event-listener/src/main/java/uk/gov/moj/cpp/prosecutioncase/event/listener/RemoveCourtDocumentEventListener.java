@@ -39,6 +39,7 @@ public class RemoveCourtDocumentEventListener {
     public void processCourtDocumentRemoved(final JsonEnvelope event) {
         final CourtsDocumentRemoved courtsDocumentRemoved = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtsDocumentRemoved.class);
         final CourtDocumentEntity courtDocumentEntity = repository.findBy(courtsDocumentRemoved.getCourtDocumentId());
+
         final CourtDocument courtDocument = jsonObjectConverter.convert(stringToJsonObjectConverter.convert(courtDocumentEntity.getPayload()), CourtDocument.class);
 
         final CourtDocument courtDocumentUpdated = CourtDocument.courtDocument()
@@ -49,9 +50,9 @@ public class RemoveCourtDocumentEventListener {
                 .withCourtDocumentId(courtDocument.getCourtDocumentId())
                 .withMaterials(courtDocument.getMaterials())
                 .withMimeType(courtDocument.getMimeType())
-                .withIsRemoved(courtsDocumentRemoved.getIsRemoved())
                 .build();
         courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(courtDocumentUpdated).toString());
+        courtDocumentEntity.setIsRemoved(true);
 
     }
 

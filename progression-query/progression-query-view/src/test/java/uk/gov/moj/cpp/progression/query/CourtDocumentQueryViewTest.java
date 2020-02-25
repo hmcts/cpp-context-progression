@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -51,6 +53,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
 import org.junit.Before;
@@ -97,6 +100,9 @@ public class CourtDocumentQueryViewTest {
     @Mock
     private NotificationStatusRepository notificationStatusRepository;
 
+    @Mock
+    private RbacProvider rbacProvider;
+
     @Before
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -120,6 +126,22 @@ public class CourtDocumentQueryViewTest {
                                 .withUserGroups(asList("Court Clerks"))
                                 .build()
                 ))
+                .withSeqNum(10)
+                .withContainsFinancialMeans(false)
+                .build();
+    }
+
+    private CourtDocument removedCourtDocument(final UUID id) {
+        return CourtDocument.courtDocument()
+                .withCourtDocumentId(id)
+                .withDocumentTypeId(UUID.randomUUID())
+                .withMaterials(asList(
+                        Material.material()
+                                .withId(UUID.randomUUID())
+                                .withUserGroups(asList("Court Clerks"))
+                                .build()
+                ))
+                .withSeqNum(10)
                 .withContainsFinancialMeans(false)
                 .build();
     }
@@ -132,7 +154,7 @@ public class CourtDocumentQueryViewTest {
                 .build();
     }
 
-    private CourtDocument courtDocumentApplicationType(final UUID id) {
+    private CourtDocument courtDocumentApplicationType(final UUID id,Integer seqNum) {
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(id)
                 .withDocumentCategory(documentCategoryApplicationTemplate())
@@ -143,6 +165,7 @@ public class CourtDocumentQueryViewTest {
                                 .withUserGroups(asList("Court Clerks"))
                                 .build()
                 ))
+                .withSeqNum(seqNum)
                 .build();
     }
 
@@ -176,7 +199,18 @@ public class CourtDocumentQueryViewTest {
     private CourtDocumentEntity courtDocumentEntity(final UUID id, CourtDocument courtDocument) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(id);
+        courtDocumentEntity.setIsRemoved(false);
         courtDocumentEntity.setPayload(objectToString(courtDocument));
+        courtDocumentEntity.setSeqNum(courtDocument.getSeqNum());
+        return courtDocumentEntity;
+    }
+
+    private CourtDocumentEntity removedCourtDocumentEntity(final UUID id, CourtDocument courtDocument) {
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(id);
+        courtDocumentEntity.setIsRemoved(true);
+        courtDocumentEntity.setPayload(objectToString(courtDocument));
+        courtDocumentEntity.setSeqNum(courtDocument.getSeqNum());
         return courtDocumentEntity;
     }
 
@@ -285,24 +319,50 @@ public class CourtDocumentQueryViewTest {
     }
 
     @Test
+    public void shouldNotFindDocumentWhenIsRemoveIsTrue() throws Exception {
+        final UUID courtDocumentId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(CourtDocumentQuery.ID_PARAMETER, courtDocumentId.toString()).build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(CourtDocumentQuery.COURT_DOCUMENT_SEARCH_NAME).build(),
+                jsonObject);
+        final CourtDocument remCourtDocument = removedCourtDocument(courtDocumentId);
+
+        final CourtDocumentEntity courtDocumentEntity = removedCourtDocumentEntity(courtDocumentId, remCourtDocument);
+
+        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(courtDocumentEntity);
+
+        final JsonEnvelope jsonEnvelopeOut = target.getCourtDocument(jsonEnvelopeIn);
+
+        assertThat(jsonEnvelopeOut.payload(),is(JsonValue.NULL));
+
+    }
+
+    @Test
     public void shouldFindDocumentsByCaseIdPermitted() {
-        shouldFindDocuments(true, asList(UUID.randomUUID()), null, null);
+        shouldFindDocuments(true, true, asList(UUID.randomUUID()), null, null);
     }
 
     @Test
     public void shouldFindDocumentsByCaseIdsAndApplicationIdPermitted() {
-        shouldFindDocuments(true, asList(UUID.randomUUID(), UUID.randomUUID()), null, asList(UUID.randomUUID(), UUID.randomUUID()));
+        shouldFindDocuments(true,true, asList(UUID.randomUUID(), UUID.randomUUID()), null, asList(UUID.randomUUID(), UUID.randomUUID()));
     }
 
 
     @Test
     public void shouldFindDocumentsByDefendantIdPermitted() {
-        shouldFindDocuments(true, null, UUID.randomUUID(), null);
+        shouldFindDocuments(true,true, null, UUID.randomUUID(), null);
     }
 
     @Test
     public void shouldFindDocumentsByCaseIdNotPermitted() {
-        shouldFindDocuments(false, asList(UUID.randomUUID()), null, null);
+        shouldFindDocuments(true,false, asList(UUID.randomUUID()), null, null);
+    }
+
+    @Test
+    public void shouldNotFindDocumentsByDefendantIdPermitted() {
+        shouldFindDocuments(false,true, null, UUID.randomUUID(), null);
     }
 
     private void addId(UUID caseId, UUID defendantId, UUID applicationId, Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex,
@@ -345,7 +405,7 @@ public class CourtDocumentQueryViewTest {
 
     }
 
-    private void shouldFindDocuments(final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds) {
+    private void shouldFindDocuments(final boolean rbackReadPermitted, final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds) {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
@@ -378,6 +438,7 @@ public class CourtDocumentQueryViewTest {
                 jsonObject);
 
         when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups((Action) Mockito.any(), (List<String>) Mockito.any())).thenReturn(permitted);
+        when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) Mockito.any())).thenReturn(rbackReadPermitted);
 
         Answer<?> transformResult = new Answer<Object>() {
             @Override
@@ -394,7 +455,7 @@ public class CourtDocumentQueryViewTest {
         CourtDocumentsSearchResult result = jsonObjectToObjectConverter
                 .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
 
-        if (!permitted) {
+        if (!permitted || !rbackReadPermitted) {
             assertThat(result.getDocumentIndices().size(), is(0));
         } else {
             assertThat(result.getDocumentIndices().size(), is(id2ExpectedCourtDocumentIndex.size()));
@@ -436,7 +497,7 @@ public class CourtDocumentQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
                         .withName(CourtDocumentQuery.COURT_DOCUMENTS_SEARCH_NAME).build(),
                 jsonObject);
-        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId);
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId,10);
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
         when(courtDocumentRepository.findByApplicationId(applicationId)).thenReturn(asList(courtDocumentEntity));
         when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups((Action) Mockito.any(), (List<String>) Mockito.any())).thenReturn(permitted);
@@ -448,6 +509,8 @@ public class CourtDocumentQueryViewTest {
                 .withType("Defendant profile notes");
 
         when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+
+        when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) Mockito.any())).thenReturn(true);
 
         final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
@@ -470,6 +533,123 @@ public class CourtDocumentQueryViewTest {
         } else {
             assertThat(result.getDocumentIndices().size(), is(0));
         }
+    }
+
+
+    @Test
+    public void shouldNotFindDocumentsWhenIsRemovedisTrue() {
+        boolean permitted = true;
+        final UUID applicationId = UUID.randomUUID();
+        final UUID courtDocumentId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(CourtDocumentQuery.APPLICATION_ID, applicationId.toString())
+                .add(CourtDocumentQuery.APPLICATION_ID, applicationId.toString())
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(CourtDocumentQuery.COURT_DOCUMENTS_SEARCH_NAME).build(),
+                jsonObject);
+        final CourtDocument courtDocument = removedCourtDocument(courtDocumentId);
+        final CourtDocumentEntity courtDocumentEntity = removedCourtDocumentEntity(courtDocumentId, courtDocument);
+        when(courtDocumentRepository.findByApplicationId(applicationId)).thenReturn(asList(courtDocumentEntity));
+        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups((Action) Mockito.any(), (List<String>) Mockito.any())).thenReturn(permitted);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(asList(applicationId))
+                .withCategory("Defendant level")
+                .withDefendantIds(asList(UUID.randomUUID()))
+                .withHearingIds(asList(UUID.randomUUID()))
+                .withType("Defendant profile notes");
+
+        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+
+        when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) Mockito.any())).thenReturn(true);
+
+        final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+        assertTrue(jsonEnvelopeOut.payloadAsJsonObject().getJsonArray("documentIndices").isEmpty());
+    }
+
+    @Test
+    public void shouldNotListDocumentsWithNoReadOnlyAccessAndListAllOther() {
+        boolean permitted = true;
+        final UUID applicationId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(CourtDocumentQuery.APPLICATION_ID, applicationId.toString())
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(CourtDocumentQuery.COURT_DOCUMENTS_SEARCH_NAME).build(),
+                jsonObject);
+
+        final UUID nowCourtDocumentId = UUID.randomUUID();
+        final CourtDocument courtDocument1 = courtDocumentApplicationType(nowCourtDocumentId,20);
+        final CourtDocumentEntity courtDocumentEntity1 = courtDocumentEntity(nowCourtDocumentId, courtDocument1);
+
+
+        final UUID secondNowCourtDocumentId = UUID.randomUUID();
+        final CourtDocument courtDocument2 = courtDocumentApplicationType(secondNowCourtDocumentId,10);
+        final CourtDocumentEntity courtDocumentEntity2 = courtDocumentEntity(secondNowCourtDocumentId, courtDocument2);
+
+
+        final UUID courtDocumentId = UUID.randomUUID();
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId,30);
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+
+        when(courtDocumentRepository.findByApplicationId(applicationId)).thenReturn(asList(courtDocumentEntity1, courtDocumentEntity2, courtDocumentEntity));
+        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups((Action) Mockito.any(), (List<String>) Mockito.any())).thenReturn(permitted);
+
+
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder1 = createCourtDocumentIndex(courtDocument1, applicationId);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder2 = createCourtDocumentIndex(courtDocument2, applicationId);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = createCourtDocumentIndex(courtDocument1, applicationId);
+
+        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder1)
+        .thenReturn(courtDocumentIndexBuilder2)
+        .thenReturn(courtDocumentIndexBuilder);
+
+        when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) Mockito.any()))
+                .thenReturn(true)
+                .thenReturn(false)
+                .thenReturn(true);
+
+        final CourtDocumentIndex expectedIndex1 = courtDocumentIndexBuilder1.build();
+        final CourtDocumentIndex expectedIndex2 = courtDocumentIndexBuilder2.build();
+        final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
+                .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(2));
+
+        CourtDocumentIndex courtDocumentIndexOut = result.getDocumentIndices().get(0);
+        assertThat(courtDocumentIndexOut.getType(), is(expectedIndex1.getType()));
+        assertThat(courtDocumentIndexOut.getCategory(), is(expectedIndex1.getCategory()));
+        assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex1.getDefendantIds().get(0)));
+        assertThat(courtDocumentIndexOut.getCaseIds().get(0), is(expectedIndex1.getCaseIds().get(0)));
+        assertThat(courtDocumentIndexOut.getHearingIds().get(0), is(expectedIndex1.getHearingIds().get(0)));
+
+        CourtDocumentIndex courtDocumentIndexOut1 = result.getDocumentIndices().get(1);
+        assertThat(courtDocumentIndexOut1.getType(), is(expectedIndex2.getType()));
+        assertThat(courtDocumentIndexOut1.getCategory(), is(expectedIndex2.getCategory()));
+        assertThat(courtDocumentIndexOut1.getDefendantIds().get(0), is(expectedIndex2.getDefendantIds().get(0)));
+        assertThat(courtDocumentIndexOut1.getCaseIds().get(0), is(expectedIndex2.getCaseIds().get(0)));
+        assertThat(courtDocumentIndexOut1.getHearingIds().get(0), is(expectedIndex2.getHearingIds().get(0)));
+
+        verify(courtDocumentTransform, times(2)).transform(courtDocumentArgumentCaptor.capture());
+
+        final CourtDocument courtDocumentTransformed = courtDocumentArgumentCaptor.getValue();
+        final int materialCount = courtDocumentTransformed.getMaterials().size();
+        assertThat(materialCount, is(1));
+    }
+
+    private CourtDocumentIndex.Builder  createCourtDocumentIndex(CourtDocument courtDocument, UUID applicationId) {
+        return CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(asList(applicationId))
+                .withCategory("Defendant level")
+                .withDefendantIds(asList(UUID.randomUUID()))
+                .withHearingIds(asList(UUID.randomUUID()))
+                .withDocument(courtDocument)
+                .withType("Defendant profile notes");
     }
 
     @Test

@@ -52,8 +52,8 @@ public class PersonVerificationHelper {
         assertEquals(applicantDateOfBirth, party.getString("dateOfBirth"));
         assertEquals(applicantGender, party.getString("gender"));
         assertAddressDetails(personDetails.getJsonObject("address"),
-                party.getString("addressLines"),
-                party.getString("postCode"));
+                             party.getString("addressLines"),
+                             party.getString("postCode"));
     }
 
     public static void assertOrganisationDetails(final JsonObject personDetails, final JsonObject party) {

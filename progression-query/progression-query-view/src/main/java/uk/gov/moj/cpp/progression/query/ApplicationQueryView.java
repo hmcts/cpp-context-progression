@@ -164,7 +164,7 @@ public class ApplicationQueryView {
 
     private JsonArray buildCourtDocuments(final List<CourtDocumentEntity> courtDocuments) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        courtDocuments.forEach(courtDocumentEntity -> buildCourtDocument(courtDocumentEntity.getPayload(), jsonArrayBuilder));
+        courtDocuments.forEach(courtDocumentEntity -> buildCourtDocument(courtDocumentEntity, jsonArrayBuilder));
         return jsonArrayBuilder.build();
     }
 
@@ -248,10 +248,11 @@ public class ApplicationQueryView {
         }
     }
 
-    private void buildCourtDocument(final String courtDocumentPayload, final JsonArrayBuilder jsonArrayBuilder) {
+    private void buildCourtDocument(final CourtDocumentEntity courtDocumentEntity, final JsonArrayBuilder jsonArrayBuilder) {
+        final String courtDocumentPayload = courtDocumentEntity.getPayload();
         JsonObject courtDocumentJson = stringToJsonObjectConverter.convert(courtDocumentPayload);
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(courtDocumentJson, CourtDocument.class);
-        if (Objects.isNull(courtDocument.getIsRemoved()) || !courtDocument.getIsRemoved()) {
+        if (Objects.isNull(courtDocumentEntity.isRemoved()) || !courtDocumentEntity.isRemoved()) {
             jsonArrayBuilder.add(objectToJsonObjectConverter.convert(CourtDocument.courtDocument()
                     .withCourtDocumentId(courtDocument.getCourtDocumentId())
                     .withDocumentCategory(courtDocument.getDocumentCategory())
@@ -260,7 +261,6 @@ public class ApplicationQueryView {
                     .withName(courtDocument.getName())
                     .withMaterials(courtDocument.getMaterials())
                     .withMimeType(courtDocument.getMimeType())
-                    .withIsRemoved(courtDocument.getIsRemoved())
                     .build()));
         }
     }

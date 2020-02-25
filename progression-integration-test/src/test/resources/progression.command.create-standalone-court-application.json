@@ -1,53 +1,54 @@
 {
 	"application": {
-		"id": "RANDOM_APPLICATION_ID",
-		"type": {
-			"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-			"applicationCode": "a",
-			"applicationType": "a",
-			"applicationTypeWelsh": "a",
-			"applicationLegislation": "a",
-			"applicationLegislationWelsh": "a",
-			"applicationCategory": "a",
-			"linkType": "STANDALONE",
-			"applicantSynonym": "a",
-			"respondentSynonym": "a",
-			"applicationJurisdictionType": "MAGISTRATES"
-		},
-		"parentApplicationId": "RANDOM_PARENT_APPLICATION_ID",
-      "applicationReceivedDate": "2019-01-01",
-		"applicationReference": "RANDOM_REFERENCE",
-		"applicant": {
-			"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+	"id": "RANDOM_APPLICATION_ID",
+	"type": {
+		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+		"applicationCode": "a",
+		"applicationType": "a",
+		"applicationTypeWelsh": "a",
+		"applicationLegislation": "a",
+		"applicationLegislationWelsh": "a",
+		"applicationCategory": "a",
+		"linkType": "STANDALONE",
+		"applicantSynonym": "a",
+		"respondentSynonym": "a",
+		"applicationJurisdictionType": "MAGISTRATES"
+	},
+	"parentApplicationId": "RANDOM_PARENT_APPLICATION_ID",
+	"applicationReceivedDate": "2019-01-01",
+	"applicationReference": "RANDOM_REFERENCE",
+	"applicant":
+		{
+		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+		"personDetails": {
+			"firstName": "RANDOM_APPLICANT_FIRSTNAME",
+			"middleName": "RANDOM_APPLICANT_MIDDLENAME",
+			"lastName": "RANDOM_APPLICANT_LASTNAME",
+			"gender": "NOT_SPECIFIED"
+		}
+	},
+	"respondents": [
+		{
+		"partyDetails": {
+			"id": "18cdf36e-93e4-41b0-8277-17d9dba7f06f",
 			"personDetails": {
-				"firstName": "RANDOM_APPLICANT_FIRSTNAME",
-				"middleName": "RANDOM_APPLICANT_MIDDLENAME",
-				"lastName": "RANDOM_APPLICANT_LASTNAME",
+				"firstName": "RANDOM_RESPONDENT_FIRSTNAME",
+				"middleName": "RANDOM_RESPONDENT_MIDDLENAME",
+				"lastName": "RANDOM_RESPONDENT_LASTNAME",
 				"gender": "NOT_SPECIFIED"
+				}
 			}
 		},
-		"respondents": [
-			{
-				"partyDetails": {
-					"id": "18cdf36e-93e4-41b0-8277-17d9dba7f06f",
-					"personDetails": {
-						"firstName": "RANDOM_RESPONDENT_FIRSTNAME",
-						"middleName": "RANDOM_RESPONDENT_MIDDLENAME",
-						"lastName": "RANDOM_RESPONDENT_LASTNAME",
-						"gender": "NOT_SPECIFIED"
-					}
-				}
-			},
-			{
-				"partyDetails": {
-					"id": "28cdf36e-93e4-41b0-8277-17d9dba7f06f",
-					"organisation": {
-						"name": "RANDOM_RESPONDENT_ORGANISATION_NAME"
-					}
+		{
+		"partyDetails": {
+			"id": "28cdf36e-93e4-41b0-8277-17d9dba7f06f",
+			"organisation": {
+				"name": "RANDOM_RESPONDENT_ORGANISATION_NAME"
 				}
 			}
-		],
-		"applicationStatus": "DRAFT",
-		"outOfTimeReasons": "a"
+		}
+	],
+	"applicationStatus": "DRAFT",
+	"outOfTimeReasons": "a"
 	}
 }

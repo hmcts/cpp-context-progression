@@ -110,7 +110,7 @@ public class RestHelper {
         return postCommandWithUserId(uri, mediaType, jsonStringBody, randomUUID().toString());
     }
 
-    private static Response postCommandWithUserId(final String uri, final String mediaType,
+    public static Response postCommandWithUserId(final String uri, final String mediaType,
                                                   final String jsonStringBody, final String userId) throws IOException {
         return given().spec(REQUEST_SPECIFICATION).and().contentType(mediaType).body(jsonStringBody)
                 .header(USER_ID, userId).when().post(uri).then()

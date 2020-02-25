@@ -36,6 +36,8 @@ import java.util.UUID;
 public class TestTemplates {
 
     private final static String additional_property = "Additional_Property";
+    public static final String SAMPLE_OF_REPLY_TO_ADDRESS = "Sample of Reply to Address";
+    public static final String SAMPLE_OF_THE_SEND_TO_ADDRESS = "Sample of the send to address";
 
     private TestTemplates() {
     }
@@ -154,14 +156,14 @@ public class TestTemplates {
 
     public static List<EmailChannel> emailChannelTemplate() {
         return asList(EmailChannel.emailChannel()
-                        .withReplyToAddress("Sample of Reply to Address")
-                        .withSendToAddress("Sample of the send to address")
+                        .withReplyToAddress(SAMPLE_OF_REPLY_TO_ADDRESS)
+                        .withSendToAddress(SAMPLE_OF_THE_SEND_TO_ADDRESS)
                         .withTemplateId(UUID.randomUUID())
                         .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
                         .build(),
                 EmailChannel.emailChannel()
-                        .withReplyToAddress("Sample of Reply to Address")
-                        .withSendToAddress("Sample of the send to address")
+                        .withReplyToAddress(SAMPLE_OF_REPLY_TO_ADDRESS)
+                        .withSendToAddress(SAMPLE_OF_THE_SEND_TO_ADDRESS)
                         .withTemplateId(UUID.randomUUID())
                         .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
                         .build()
@@ -212,32 +214,32 @@ public class TestTemplates {
                 .build();
     }
 
-    public static NcesNotificationRequested generateNcesNotificationRequested(){
-        return  NcesNotificationRequested.ncesNotificationRequested()
-                        .withCaseId(randomUUID())
-                        .withDefendantId(randomUUID())
-                        .withHearingId(randomUUID())
-                        .withMaterialId(randomUUID())
-                        .withDocumentContent(
-                                DocumentContent.documentContent()
-                                        .withUrn("232CASE34")
-                                        .withDefendant(Defendant.defendant().build())
-                                        .withGobAccountNumber("gobnumber")
-                                        .withAmendmentType("Granted refused")
-                                        .withDivisionCode("203")
-                                        .withDefendantCaseOffences(
-                                                Arrays.asList(defendantCaseOffenceTemplate(12)))
+    public static NcesNotificationRequested generateNcesNotificationRequested() {
+        return NcesNotificationRequested.ncesNotificationRequested()
+                .withCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .withHearingId(randomUUID())
+                .withMaterialId(randomUUID())
+                .withDocumentContent(
+                        DocumentContent.documentContent()
+                                .withUrn("232CASE34")
+                                .withDefendant(Defendant.defendant().build())
+                                .withGobAccountNumber("gobnumber")
+                                .withAmendmentType("Granted refused")
+                                .withDivisionCode("203")
+                                .withDefendantCaseOffences(
+                                        Arrays.asList(defendantCaseOffenceTemplate(12)))
 
-                                        .build())
-                        .withEmailNotifications(asList(
-                                EmailChannel.emailChannel()
-                                        .withReplyToAddress("Sample of Reply to Address")
-                                        .withSendToAddress("Sample of the send to address")
-                                        .withTemplateId(UUID.randomUUID())
-                                        .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
-                                        .build()
-                        ))
-                        .build();
+                                .build())
+                .withEmailNotifications(asList(
+                        EmailChannel.emailChannel()
+                                .withReplyToAddress(SAMPLE_OF_REPLY_TO_ADDRESS)
+                                .withSendToAddress(SAMPLE_OF_THE_SEND_TO_ADDRESS)
+                                .withTemplateId(UUID.randomUUID())
+                                .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
+                                .build()
+                ))
+                .build();
     }
 
 

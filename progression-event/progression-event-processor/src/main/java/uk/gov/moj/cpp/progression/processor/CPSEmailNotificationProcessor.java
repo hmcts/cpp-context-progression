@@ -13,6 +13,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.service.NotificationService;
@@ -57,6 +58,9 @@ public class CPSEmailNotificationProcessor {
 
     @Inject
     private UsersGroupService usersGroupService;
+
+    @Inject
+    private Requester requester;
 
     @Handles("public.progression.defence-organisation-disassociated")
     public void processDisassociatedEmailNotification(final JsonEnvelope jsonEnvelope) {
@@ -167,7 +171,7 @@ public class CPSEmailNotificationProcessor {
             final JsonObject caseAtAGlanceJsonObject = prosecutionCaseOptional.get().getJsonObject("caseAtAGlance");
             final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.convert(caseAtAGlanceJsonObject, GetCaseAtAGlance.class);
 
-            List<Hearings> futureHearings = getFutureHearings(caseAtAGlance);
+            final List<Hearings> futureHearings = getFutureHearings(caseAtAGlance);
 
             final Optional<Entry<UUID, ZonedDateTime>> resultMap = getEarliestHearing(futureHearings);
 
@@ -203,9 +207,9 @@ public class CPSEmailNotificationProcessor {
     }
 
     private Optional<Entry<UUID, ZonedDateTime>> getEarliestHearing(List<Hearings> futureHearings) {
-        Map<UUID, ZonedDateTime> hearingDaysMap =  new HashMap<>();
+       final Map<UUID, ZonedDateTime> hearingDaysMap =  new HashMap<>();
 
-        for (Hearings hearings: futureHearings) {
+        for (final Hearings hearings: futureHearings) {
 
             final List<HearingDay> futureHearingDays = hearings.getHearingDays().stream()
                     .filter(hd -> hd.getSittingDay().toLocalDate().isAfter(LocalDate.now()))
@@ -225,7 +229,7 @@ public class CPSEmailNotificationProcessor {
         Optional<String> cpsEmail = Optional.empty();
 
         final Optional<JsonObject> organisationUnitJsonOptional = referenceDataService
-                    .getOrganisationUnitById(courtCenterId, jsonEnvelope);
+                    .getOrganisationUnitById(courtCenterId, jsonEnvelope, requester);
 
             if (organisationUnitJsonOptional.isPresent()) {
                 cpsEmail = Optional.ofNullable(organisationUnitJsonOptional.get().getString("cpsEmailAddress"));

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -14,21 +15,26 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.SummonsDataHelper;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -39,7 +45,8 @@ import org.slf4j.LoggerFactory;
 public class NowsRequestedEventProcessor {
 
     public static final UUID NOW_DOCUMENT_TYPE_ID = UUID.fromString("460fbc00-c002-11e8-a355-529269fb1459");
-
+    public static final String READ_USER_GROUPS = "readUserGroups";
+    public static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final Logger LOGGER = LoggerFactory.getLogger(NowsRequestedEventProcessor.class);
     private final Enveloper enveloper;
@@ -47,10 +54,11 @@ public class NowsRequestedEventProcessor {
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter;
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    private DocumentGeneratorService documentGeneratorService;
-
+    private final DocumentGeneratorService documentGeneratorService;
     @Inject
     private ReferenceDataService refDataService;
+    @Inject
+    private Requester requester;
 
     @Inject
     public NowsRequestedEventProcessor(final Enveloper enveloper, final Sender sender,
@@ -89,24 +97,41 @@ public class NowsRequestedEventProcessor {
 
         final String orderName = nowDocumentRequest.getNowContent().getOrderName();
 
-        final Optional<JsonObject> documentTypeData = refDataService.getDocumentTypeData(NOW_DOCUMENT_TYPE_ID, incomingEvent);
-        if (!documentTypeData.isPresent()) {
-            throw new RuntimeException("failed to look up nows document type " + NOW_DOCUMENT_TYPE_ID);
+        final Optional<JsonObject> documentTypeData = refDataService.getDocumentTypeAccessData(NOW_DOCUMENT_TYPE_ID, incomingEvent, requester);
+
+
+        final JsonObject documentTypeDataJsonObject = documentTypeData.orElseThrow(() -> new RuntimeException("failed to look up nows document type " + NOW_DOCUMENT_TYPE_ID));
+
+
+        if (!documentTypeDataJsonObject.containsKey(COURT_DOCUMENT_TYPE_RBAC) && !documentTypeDataJsonObject.getJsonObject(COURT_DOCUMENT_TYPE_RBAC).containsKey(READ_USER_GROUPS)) {
+            throw new RuntimeException("no courtDocumentTypeRBAC specified for  nows document type " + NOW_DOCUMENT_TYPE_ID);
         }
-        if (!documentTypeData.get().containsKey("documentAccess")) {
-            throw new RuntimeException("no document access specified for  nows document type " + NOW_DOCUMENT_TYPE_ID);
-        }
-        final List<String> permittedGroups = Stream.concat(documentTypeData.get().getJsonArray("documentAccess").stream()
-                .map(el -> el.toString().replace("\"", "")), nowDocumentRequest.getUsergroups().stream())
+
+        final JsonObject documentTypeRBACData = documentTypeDataJsonObject.getJsonObject(COURT_DOCUMENT_TYPE_RBAC);
+
+        final List<String> rbacUserGroups = getRBACUserGroups(documentTypeRBACData, READ_USER_GROUPS);
+
+        final List<String> permittedGroups = Stream.concat(rbacUserGroups.stream()
+                .map(el -> el.replace("\"", "")), nowDocumentRequest.getUsergroups().stream())
                 .collect(Collectors.toList());
 
         final CourtDocument courtDocument =
-                courtDocument(nowDocumentRequest, prosecutionIds, orderName, permittedGroups);
+                courtDocument(nowDocumentRequest, prosecutionIds, orderName, permittedGroups, incomingEvent);
 
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter
                         .convert(courtDocument)).build();
         sender.send(enveloper.withMetadataFrom(incomingEvent, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
+    }
+
+    private List<String> getRBACUserGroups(final JsonObject documentTypeRBACData, final String accessLevel) {
+
+        if (!documentTypeRBACData.containsKey(accessLevel)) {
+            return new ArrayList<>();
+        }
+        final JsonArray documentTypeRBACJsonArray = documentTypeRBACData.getJsonArray(accessLevel);
+
+        return IntStream.range(0, (documentTypeRBACJsonArray).size()).mapToObj(i -> documentTypeRBACJsonArray.getJsonObject(i).getJsonObject("cppGroup").getString("groupName")).collect(toList());
     }
 
     @Handles("hearing.events.nows-material-status-updated")
@@ -127,12 +152,12 @@ public class NowsRequestedEventProcessor {
     }
 
     private CourtDocument courtDocument(final NowDocumentRequest nowDocumentRequest, final List<UUID> prosecutionCaseIds, final String orderName,
-                                        List<String> permittedGroups) {
+                                        final List<String> permittedGroups, final JsonEnvelope incomingEvent) {
         final NowDocument nowDocument = nowDocument(nowDocumentRequest.getDefendantId(), prosecutionCaseIds, nowDocumentRequest.getHearingId());
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(UUID.randomUUID())
-                .withDocumentTypeId(UUID.randomUUID())
-                .withDocumentTypeDescription("Court Final orders")
+                .withDocumentTypeId(NOW_DOCUMENT_TYPE_ID)
+                .withDocumentTypeDescription(SummonsDataHelper.getDocumentTypeData(NOW_DOCUMENT_TYPE_ID, refDataService, incomingEvent, requester).getString("section"))
                 .withMaterials(Arrays.asList(Material.material()
                         .withId(nowDocumentRequest.getMaterialId())
                         .withGenerationStatus(null)
@@ -147,6 +172,7 @@ public class NowsRequestedEventProcessor {
                                 .build()
                 )
                 .withName(orderName)
+                .withMimeType("application/pdf")
                 .build();
     }
 }

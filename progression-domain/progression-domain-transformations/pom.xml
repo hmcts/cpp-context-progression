@@ -18,6 +18,7 @@
         <module>progression-domain-transformations-ctl</module>
         <module>progression-domain-anonymization-events</module>
         <module>progression-domain-transformation-anonymise</module>
+        <module>progression-domain-transformations-for-CDES</module>
     </modules>
 
 

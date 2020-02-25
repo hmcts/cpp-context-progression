@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.JsonPath.parse;
+import static java.lang.String.format;
 import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;

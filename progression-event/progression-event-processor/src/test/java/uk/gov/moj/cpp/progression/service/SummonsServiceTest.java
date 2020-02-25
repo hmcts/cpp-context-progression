@@ -1,14 +1,21 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.apache.activemq.artemis.utils.JsonLoader.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateDocumentTypeAccess;
 
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -18,7 +25,6 @@ import uk.gov.justice.core.courts.summons.SummonsAddress;
 import uk.gov.justice.core.courts.summons.SummonsDefendant;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -39,7 +45,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,57 +59,44 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SummonsServiceTest {
 
-    @InjectMocks
-    private SummonsService summonsService;
-
-    @Mock
-    private Sender sender;
-
-    @Mock
-    private Requester requester;
-
-    @Mock
-    private ReferenceDataService referenceDataService;
-
-    @Mock
-    private ProgressionService progressionService;
-
-    @Mock
-    private DocumentGeneratorService documentGeneratorService;
-
-    @Spy
-    private final Enveloper enveloper = createEnveloper();
-
-    @Spy
-    private ObjectToJsonObjectConverter objectToJsonConverter;
-
-    @Spy
-    private JsonObjectToObjectConverter jsonToObjectConverter;
-
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<String> templateArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<Sender> senderArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<UUID> applicationIdArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<UUID> prosecutionIdArgumentCaptor;
-
     private static final UUID APPLICATION_ID = UUID.randomUUID();
     private static final UUID COURT_CENTRE_ID = UUID.randomUUID();
     private static final String HEARING_DATE_1 = "2018-06-01T10:00:00.000Z";
     private static final String HEARING_DATE_2 = "2018-06-04T10:00:00.000Z";
     private static final String HEARING_DATE_3 = "2018-07-01T10:00:00.000Z";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
+    public static final UUID SUMMONS_DOCUMENT_TYPE_ID = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
+
+    @Spy
+    private final Enveloper enveloper = createEnveloper();
+    @InjectMocks
+    private SummonsService summonsService;
+    @Mock
+    private Sender sender;
+    @Mock
+    private Requester requester;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
+    private ProgressionService progressionService;
+    @Mock
+    private DocumentGeneratorService documentGeneratorService;
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonConverter;
+    @Spy
+    private JsonObjectToObjectConverter jsonToObjectConverter;
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<String> templateArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Sender> senderArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> applicationIdArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> prosecutionIdArgumentCaptor;
 
     @Before
     public void initMocks() {
@@ -115,9 +107,9 @@ public class SummonsServiceTest {
     @Test
     public void shouldGenerateGenericSummonsForPersonDefendant() throws Exception {
 
-        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application-for-person-defendant.json");
-        SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
-        SummonsAddress address = defendant.getAddress();
+        final SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application-for-person-defendant.json");
+        final SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
+        final SummonsAddress address = defendant.getAddress();
 
         assertThat(generatedSummonsPayload.getSubTemplateName(), is("APPLICATION"));
         assertThat(defendant.getName(), is("Robin Maxwell Stuart"));
@@ -133,9 +125,9 @@ public class SummonsServiceTest {
     @Test
     public void shouldGenerateGenericSummonsForLegalEntityDefendant() throws Exception {
 
-        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application-for-legal-entity-defendant.json");
-        SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
-        SummonsAddress address = defendant.getAddress();
+        final SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.generic-application-for-legal-entity-defendant.json");
+        final SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
+        final SummonsAddress address = defendant.getAddress();
 
         assertThat(generatedSummonsPayload.getSubTemplateName(), is("APPLICATION"));
         assertThat(defendant.getName(), is("ABC Ltd"));
@@ -149,12 +141,12 @@ public class SummonsServiceTest {
 
     @Test
     public void shouldGenerateBreachSummons() throws Exception {
-        SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.breach-application.json");
+        final SummonsDocumentContent generatedSummonsPayload = prepareAndRunTest("progression.query.breach-application.json");
 
         assertThat(generatedSummonsPayload.getSubTemplateName(), is("BREACH"));
 
-        SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
-        SummonsAddress address = defendant.getAddress();
+        final SummonsDefendant defendant = generatedSummonsPayload.getDefendant();
+        final SummonsAddress address = defendant.getAddress();
 
         assertThat(defendant.getName(), is("Robin Maxwell Stuart"));
         assertThat(address.getLine1(), is("22 Acacia Avenue"));
@@ -164,32 +156,45 @@ public class SummonsServiceTest {
         assertThat(address.getLine5(), is("Acacia County"));
         assertThat(address.getPostCode(), is("AC1 4AC"));
 
-        BreachSummonsDocumentContent breachSummonsDocumentContent = generatedSummonsPayload.getBreachContent();
+        final BreachSummonsDocumentContent breachSummonsDocumentContent = generatedSummonsPayload.getBreachContent();
         assertThat(breachSummonsDocumentContent.getBreachedOrder(), is("Community Order"));
         assertThat(breachSummonsDocumentContent.getBreachedOrderDate(), is("2019-01-12"));
         assertThat(breachSummonsDocumentContent.getOrderingCourt(), is("Liverpool Crown Court"));
     }
 
-    @Test (expected = java.lang.IllegalArgumentException.class)
+    @Test(expected = java.lang.IllegalArgumentException.class)
     public void shouldNotGenerateGenericApplicationSummons() throws Exception {
         prepareAndRunTest("unsupported-summons-template-type.json");
     }
 
-    private SummonsDocumentContent prepareAndRunTest(String resource) throws Exception {
+    private SummonsDocumentContent prepareAndRunTest(final String resource) throws Exception {
         final ConfirmedHearing confirmedHearing = generateConfirmedHearing();
         final JsonEnvelope prepareSummonsEnvelope = getEnvelope(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA);
         final JsonObject courtCentreJson = createCourtCentre();
 
-        when(referenceDataService.getOrganisationUnitById(confirmedHearing.getCourtCentre().getId(), prepareSummonsEnvelope))
+        when(referenceDataService.getOrganisationUnitById(confirmedHearing.getCourtCentre().getId(), prepareSummonsEnvelope, requester))
                 .thenReturn(Optional.of(courtCentreJson));
         when(progressionService.getCourtApplicationById(prepareSummonsEnvelope, confirmedHearing.getCourtApplicationIds().get(0).toString()))
                 .thenReturn(Optional.of(createCourtApplication(resource)));
-        when(referenceDataService.getEnforcementAreaByLjaCode(prepareSummonsEnvelope, courtCentreJson.getString("lja"))).thenReturn(createLocalJusticeArea());
+        when(referenceDataService.getEnforcementAreaByLjaCode(prepareSummonsEnvelope, courtCentreJson.getString("lja"), requester)).thenReturn(createLocalJusticeArea());
+
+        when(referenceDataService.getDocumentTypeAccessData(SUMMONS_DOCUMENT_TYPE_ID, prepareSummonsEnvelope, requester)).thenReturn(Optional.of(generateDocumentTypeAccess(SUMMONS_DOCUMENT_TYPE_ID)));
 
         summonsService.generateSummonsPayload(prepareSummonsEnvelope, confirmedHearing);
 
         verify(documentGeneratorService).generateDocument(envelopeArgumentCaptor.capture(), jsonObjectArgumentCaptor.capture(), templateArgumentCaptor.capture(),
                 senderArgumentCaptor.capture(), prosecutionIdArgumentCaptor.capture(), applicationIdArgumentCaptor.capture());
+        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
+
+        final List<JsonEnvelope> allMessagesSent = envelopeArgumentCaptor.getAllValues();
+
+        assertThat(allMessagesSent.get(1), jsonEnvelope(
+                metadata().withName("progression.command.create-court-document"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.courtDocument.mimeType", is("application/pdf")),
+                        withJsonPath("$.courtDocument.documentTypeId", is(SUMMONS_DOCUMENT_TYPE_ID.toString())),
+                        withJsonPath("$.courtDocument.documentTypeDescription", is("Charges"))
+                ))));
         final JsonObject generatedSummonsJsonPayload = jsonObjectArgumentCaptor.getValue();
         return jsonToObjectConverter.convert(generatedSummonsJsonPayload, SummonsDocumentContent.class);
     }
@@ -202,15 +207,15 @@ public class SummonsServiceTest {
     }
 
     private JsonObject createCourtCentre() throws IOException {
-        String jsonString = Resources.toString(Resources.getResource("referencedata.query.organisationunits.json"), Charset.defaultCharset())
+        final String jsonString = Resources.toString(Resources.getResource("referencedata.query.organisationunits.json"), Charset.defaultCharset())
                 .replace("COURT_CENTRE_ID", COURT_CENTRE_ID.toString())
                 .replace("COURT_CENTRE_NAME", "Liverpool Crown Court");
 
         return returnAsJson(jsonString);
     }
 
-    private JsonObject createCourtApplication(String name) throws IOException {
-        String jsonString = Resources.toString(Resources.getResource(name), Charset.defaultCharset());
+    private JsonObject createCourtApplication(final String name) throws IOException {
+        final String jsonString = Resources.toString(Resources.getResource(name), Charset.defaultCharset());
         return returnAsJson(jsonString);
     }
 
@@ -229,7 +234,7 @@ public class SummonsServiceTest {
                 .build();
     }
 
-    private List<UUID> generateCourtApplicationId(UUID applicationId) {
+    private List<UUID> generateCourtApplicationId(final UUID applicationId) {
         return Arrays.asList(applicationId);
     }
 

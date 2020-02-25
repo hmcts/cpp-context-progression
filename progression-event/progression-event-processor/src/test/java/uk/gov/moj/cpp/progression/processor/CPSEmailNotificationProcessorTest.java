@@ -19,6 +19,7 @@ import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -31,6 +32,7 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
@@ -92,6 +94,9 @@ public class CPSEmailNotificationProcessorTest {
 
     @Mock
     private CPSNotificationVO cpsNotificationVO;
+
+    @Mock
+    private Requester requester;
 
 
 
@@ -181,7 +186,7 @@ public class CPSEmailNotificationProcessorTest {
          final String testCPSEmail = "abc@xyz.com";
          final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress",testCPSEmail).build();
 
-         when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope)).thenReturn(Optional.of(sampleJsonObject));
+         when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
          Optional<String> cpsEmailOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getCPSEmail", jsonEnvelope, courtCenterId);
          Assert.assertEquals("CPSEmail is mismatched", testCPSEmail, cpsEmailOptional.get());
    }
@@ -233,14 +238,14 @@ public class CPSEmailNotificationProcessorTest {
         final UUID uuid = UUID.randomUUID();
         hearingVOMock = HearingVO.builder().hearingDate(ZonedDateTime.now().toString()).courtCenterId(uuid).courtName("testName").build();
 
-        when(referenceDataService.getOrganisationUnitById(uuid, jsonEnvelope)).thenReturn(Optional.of(sampleJsonObject));
+        when(referenceDataService.getOrganisationUnitById(uuid, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
         when(usersGroupService.getDefenceOrganisationDetails(uuid, jsonEnvelope.metadata())).thenReturn(buildDefenceOrganisationVO());
         doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
 
         Whitebox.invokeMethod(cpsEmailNotificationProcessor, "populateCPSNotificationAndSendEmail",
                 jsonEnvelope, defendantId.toString(), uuid, prosecutionCaseJsonOptional, hearingVOMock, EmailTemplateType.INSTRUCTION);
 
-        verify(referenceDataService,times(1)).getOrganisationUnitById(uuid, jsonEnvelope);
+        verify(referenceDataService,times(1)).getOrganisationUnitById(uuid, jsonEnvelope, requester);
         verify(usersGroupService,times(1)).getDefenceOrganisationDetails(uuid, jsonEnvelope.metadata());
     }
 
@@ -277,7 +282,7 @@ public class CPSEmailNotificationProcessorTest {
                 .add("organisationId", randomUUID.toString()).build();
 
         when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, randomUUID.toString())).thenReturn(prosecutionCaseJsonOptional);
-        when(referenceDataService.getOrganisationUnitById(randomUUID, jsonEnvelope)).thenReturn(Optional.of(sampleJsonObject));
+        when(referenceDataService.getOrganisationUnitById(randomUUID, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
         when(usersGroupService.getDefenceOrganisationDetails(randomUUID, jsonEnvelope.metadata())).thenReturn(buildDefenceOrganisationVO());
         doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
         when(jsonObjectToObjectConverterMock.convert(payload, GetCaseAtAGlance.class)).thenReturn(getCaseAtAGlanceMock);

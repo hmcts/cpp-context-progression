@@ -1,24 +1,20 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCourtDocumentMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import javax.jms.MessageConsumer;
@@ -30,10 +26,10 @@ import org.junit.Test;
 
 
 public class InitiateCourtProceedingsIT extends AbstractIT {
-    private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
 
+    protected MessageConsumer publicEventConsumer = publicEvents
+            .createConsumer("public.progression.prosecution-case-created");
     private String caseId;
-    private String courtDocumentId;
     private String materialIdActive;
     private String materialIdDeleted;
     private String defendantId;
@@ -41,15 +37,12 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     private String listedStartDateTime;
     private String earliestStartDateTime;
     private String defendantDOB;
-    private final MessageConsumer publicEventConsumer = publicEvents
-            .createConsumer("public.progression.prosecution-case-created");
 
     @Before
     public void setUp() {
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();
-        courtDocumentId = randomUUID().toString();
         defendantId = randomUUID().toString();
         referralReasonId = randomUUID().toString();
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
@@ -58,18 +51,13 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
+    public void shouldInitiateCourtProceedings() throws IOException {
         //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
         verifyInMessagingQueueForProsecutionCaseCreated();
-        //introduce delay by checking court document present first
-        getCourtDocumentFor(courtDocumentId,
-                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId))
-        );
 
-        final List<Matcher> courtDocumentMatchers = getCourtDocumentMatchers(caseId, courtDocumentId, materialIdActive, 0);
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, courtDocumentMatchers);
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
 
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
     }
@@ -77,7 +65,7 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     @Test
     public void shouldInitiateCourtProceedingsWithDefendantIsYouth() throws IOException {
         //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPostListCourtHearing(caseId, defendantId, true);
     }
 
@@ -85,7 +73,7 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithDefendantIsNotYouth() throws IOException {
         defendantDOB = LocalDate.now().minusYears(25).toString();
         //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPostListCourtHearing(caseId, defendantId, false);
     }
 

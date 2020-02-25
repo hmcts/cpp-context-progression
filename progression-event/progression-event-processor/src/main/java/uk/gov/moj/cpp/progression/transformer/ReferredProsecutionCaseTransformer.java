@@ -32,6 +32,9 @@ import uk.gov.justice.core.courts.ReferredOffence;
 import uk.gov.justice.core.courts.ReferredPerson;
 import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
@@ -51,6 +54,11 @@ import javax.json.JsonObject;
 public class
 ReferredProsecutionCaseTransformer {
 
+
+    @Inject
+    @ServiceComponent(Component.EVENT_PROCESSOR)
+    private Requester requester;
+
     @Inject
     private ReferenceDataService referenceDataService;
 
@@ -60,8 +68,9 @@ ReferredProsecutionCaseTransformer {
     private static String fetchValueFromKey(final JsonObject jsonObject, final String key) {
         return jsonObject.getString(key, null);
     }
+
     private String fetchValueFromKey(final JsonObject jsonObject, final String key, final UUID offenceId) {
-        if(!jsonObject.containsKey(key)){
+        if (!jsonObject.containsKey(key)) {
             throw new ReferenceDataNotFoundException(key, offenceId.toString());
         }
         return jsonObject.getString(key);
@@ -90,7 +99,7 @@ ReferredProsecutionCaseTransformer {
     private ProsecutionCaseIdentifier transform(final JsonEnvelope jsonEnvelope, final ProsecutionCaseIdentifier
             prosecutionCaseIdentifier) {
         final JsonObject prosecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutionCaseIdentifier
-                .getProsecutionAuthorityId()).orElseThrow(() ->
+                .getProsecutionAuthorityId(), requester).orElseThrow(() ->
                 new ReferenceDataNotFoundException("ProsecutionAuthorityCode", prosecutionCaseIdentifier
                         .getProsecutionAuthorityId().toString()));
 
@@ -105,6 +114,10 @@ ReferredProsecutionCaseTransformer {
 
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final
     InitiationCode initiationCode) {
+        String pnCid = null;
+        if(nonNull(referredDefendant.getPersonDefendant())) {
+            pnCid =  referredDefendant.getPersonDefendant().getPncId();
+        }
         return Defendant.defendant()
                 .withOffences(referredDefendant
                         .getOffences().stream()
@@ -127,7 +140,7 @@ ReferredProsecutionCaseTransformer {
                         .map(referredAssociatedPerson -> transform(referredAssociatedPerson, jsonEnvelope))
                         .collect(Collectors.toList()) : null)
                 .withAliases(referredDefendant.getAliases())
-                .withPncId(nonNull(referredDefendant.getPersonDefendant()) ? referredDefendant.getPersonDefendant().getPncId() : null)
+                .withPncId(pnCid)
                 .build();
     }
 
@@ -138,7 +151,7 @@ ReferredProsecutionCaseTransformer {
                     jsonEnvelope);
             final JsonObject observedEthnicityJson = getEthnicityJson(personDefendant.getObservedEthnicityId(),
                     jsonEnvelope);
-            
+
             final Ethnicity ethnicity = Ethnicity.ethnicity()
             .withObservedEthnicityCode(fetchValueFromKey(observedEthnicityJson, ETHNICITY_CODE))
             .withObservedEthnicityDescription(fetchValueFromKey(observedEthnicityJson, ETHNICITY))
@@ -147,7 +160,7 @@ ReferredProsecutionCaseTransformer {
             .withSelfDefinedEthnicityDescription(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY))
             .withSelfDefinedEthnicityId(personDefendant.getSelfDefinedEthnicityId())
             .build();
-            
+
             return PersonDefendant.personDefendant()
                     .withPersonDetails(transform(personDefendant.getPersonDetails(), ethnicity, jsonEnvelope))
                     .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
@@ -173,7 +186,7 @@ ReferredProsecutionCaseTransformer {
     public Offence transform(final ReferredOffence referredOffence, final JsonEnvelope jsonEnvelope, final
     InitiationCode initiationCode) {
         final JsonObject offenceJson = referenceDataOffenceService.getOffenceById(referredOffence
-                .getOffenceDefinitionId(), jsonEnvelope)
+                .getOffenceDefinitionId(), jsonEnvelope, requester)
                 .orElseThrow(() -> new ReferenceDataNotFoundException("Offence", referredOffence.getId().toString()));
 
         final Offence offence = Offence.offence()
@@ -182,7 +195,7 @@ ReferredProsecutionCaseTransformer {
                 .withArrestDate(referredOffence.getArrestDate())
                 .withChargeDate(referredOffence.getChargeDate())
                 .withConvictionDate(referredOffence.getConvictionDate())
-                .withCount(nonNull(referredOffence.getCount())? referredOffence.getCount() : 0)
+                .withCount(nonNull(referredOffence.getCount()) ? referredOffence.getCount() : 0)
                 .withEndDate(referredOffence.getEndDate())
                 .withOffenceDefinitionId(referredOffence.getOffenceDefinitionId())
                 .withOffenceFacts(referredOffence.getOffenceFacts())
@@ -207,7 +220,7 @@ ReferredProsecutionCaseTransformer {
         return offence;
     }
 
-    public Person transform(final ReferredPerson referredPerson, Ethnicity ethnicity, final JsonEnvelope jsonEnvelope) {
+    public Person transform(final ReferredPerson referredPerson, final Ethnicity ethnicity, final JsonEnvelope jsonEnvelope) {
         final JsonObject nationalityJson = getNationalityJson(referredPerson.getNationalityId(), jsonEnvelope);
         final JsonObject additionalNationalityJson = getNationalityJson(referredPerson.getAdditionalNationalityId(),
                 jsonEnvelope);
@@ -252,7 +265,7 @@ ReferredProsecutionCaseTransformer {
     private JsonObject getEthnicityJson(final UUID id, final JsonEnvelope jsonEnvelope) {
         if (nonNull(id)) {
             return referenceDataService
-                    .getEthinicity(jsonEnvelope, id)
+                    .getEthinicity(jsonEnvelope, id, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Ethnicity", id.toString()));
         }
         return Json.createObjectBuilder().build();
@@ -261,7 +274,7 @@ ReferredProsecutionCaseTransformer {
     private JsonObject getNationalityJson(final UUID id, final JsonEnvelope jsonEnvelope) {
         if (nonNull(id)) {
             return referenceDataService
-                    .getNationality(jsonEnvelope, id)
+                    .getNationality(jsonEnvelope, id, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Country Nationality", id.toString()));
         }
         return Json.createObjectBuilder().build();

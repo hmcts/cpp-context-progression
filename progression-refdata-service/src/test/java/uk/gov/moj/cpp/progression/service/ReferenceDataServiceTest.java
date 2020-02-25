@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -23,7 +24,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_COURTCENTER;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_DOCUMENT_TYPE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_DOCUMENT_ACCESS;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_OUCODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_REFERRAL_REASONS;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_QUERY_JUDICIARIES;
@@ -32,9 +33,12 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCED
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.io.ByteArrayInputStream;
@@ -50,8 +54,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import javax.json.JsonValue;
 
 import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -76,19 +84,15 @@ public class ReferenceDataServiceTest {
     private static final String JUDICIARY_LAST_NAME_2 = STRING.next();
     private static final String NATIONAL_COURT_CODE = "3109";
     private static final String ORGANISATION_UNIT = "referencedata.query.organisation-unit.v2";
-
-    @Mock
-    private Requester requester;
-
     @Spy
     Enveloper enveloper = EnveloperFactory.createEnveloper();
-    ;
-
+    @Mock
+    private Requester requester;
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    private ArgumentCaptor<DefaultEnvelope> envelopeArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> welshEnvelopeArgumentCaptor;
@@ -107,26 +111,27 @@ public class ReferenceDataServiceTest {
                 new ByteArrayInputStream(getJsonPayload().getBytes()))
                 .readObject();
 
-        when(requester.requestAsAdmin(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.query.offences"), payload));
-
-
+        final JsonEnvelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"),
+                payload);
         //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("referencedata.query.offences"))
-                .build();
+        when(requester.request(any())).thenReturn(inputEnvelope);
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"), JsonValue.NULL);
+
         final Optional<JsonObject> result = referenceDataService.getOffenceByCjsCode(
-                envelope, PS_90010);
+                envelope, PS_90010, requester);
 
         //then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        verify(requester).request(envelopeArgumentCaptor.capture());
+        final DefaultJsonObjectEnvelopeConverter defaultJsonObjectEnvelopeConverter = new DefaultJsonObjectEnvelopeConverter();
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName("referencedata.query.offences"),
-                payloadIsJson(
-                        withJsonPath("$.cjsoffencecode", equalTo(PS_90010))
-                ))
-        ));
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is("referencedata.query.offences"));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.cjsoffencecode", CoreMatchers.is(PS_90010));
+
         assertThat(result.get().getString("cjsoffencecode"), is(PS_90010));
         assertThat(result.get().getString("title"), is("Public service vehicle - passenger use altered / defaced ticket"));
         assertThat(result.get().getString("legislation"), is("Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981."));
@@ -136,29 +141,29 @@ public class ReferenceDataServiceTest {
     @Test
     public void shouldReturnEmptyJsonObjectWhenCjsOffenceCodeIsNotFound() {
         //given
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("referencedata.query.offences"))
-                .build();
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"),
+                JsonValue.NULL);
         final JsonObject payload = Json.createReader(
                 new ByteArrayInputStream("{\"offences\":[]}".getBytes()))
                 .readObject();
 
-        when(requester.requestAsAdmin(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.query.offences"), payload));
+        when(requester.request(any()))
+                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"), payload));
 
 
         //when
-        final Optional<JsonObject> result = referenceDataService.getOffenceByCjsCode(envelope, PS_90010);
+        final Optional<JsonObject> result = referenceDataService.getOffenceByCjsCode(envelope, PS_90010, requester);
 
         //then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName("referencedata.query.offences"),
-                payloadIsJson(
-                        withJsonPath("$.cjsoffencecode", equalTo(PS_90010))
-                ))
-        ));
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is("referencedata.query.offences"));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.cjsoffencecode", CoreMatchers.is(PS_90010));
         assertThat(result.isPresent(), is(false));
         verifyNoMoreInteractions(requester);
     }
@@ -173,24 +178,22 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.request(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.get.judge"), payload));
+                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.judge"), payload));
 
-
-        //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("referencedata.get.judge"))
-                .build();
-        final Optional<JsonObject> result = referenceDataService.getJudgeById(judgeId, envelope);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.judge"), JsonValue.NULL);
+        final Optional<JsonObject> result = referenceDataService.getJudgeById(judgeId, envelope, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName("referencedata.get.judge"),
-                payloadIsJson(
-                        withJsonPath("$.id", equalTo(judgeId.toString()))
-                ))
-        ));
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is("referencedata.get.judge"));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.id", CoreMatchers.is(judgeId.toString()));
+
         assertThat(result.get().getString("id"), is(judgeId.toString()));
         assertThat(result.get().getString("title"), is("HSS"));
         assertThat(result.get().getString("firstName"), is("John"));
@@ -208,24 +211,26 @@ public class ReferenceDataServiceTest {
                 .readObject();
 
         when(requester.request(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID("referencedata.get.court-centre"), payload));
-
+                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.court-centre"), payload));
 
         //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("referencedata.get.court-centre"))
-                .build();
-        final Optional<JsonObject> result = referenceDataService.getCourtCentreById(courtCentreId, envelope);
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.court-centre"), JsonValue.NULL);
+
+
+        final Optional<JsonObject> result = referenceDataService.getCourtCentreById(courtCentreId, envelope, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName("referencedata.get.court-centre"),
-                payloadIsJson(
-                        withJsonPath("$.id", equalTo(courtCentreId.toString()))
-                ))
-        ));
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is("referencedata.get.court-centre"));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.id", CoreMatchers.is(courtCentreId.toString()));
+
         assertThat(result.get().getString("id"), is(courtCentreId.toString()));
         assertThat(result.get().getString("name"), is("Liverpool Crown Court"));
         verifyNoMoreInteractions(requester);
@@ -238,26 +243,27 @@ public class ReferenceDataServiceTest {
         final JsonObject payload = Json.createReader(
                 new ByteArrayInputStream(getOrganisationPayload(courtCentreId).getBytes()))
                 .readObject();
-
-        when(requester.requestAsAdmin(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID(ORGANISATION_UNIT), payload));
+        when(requester.request(any()))
+                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(ORGANISATION_UNIT), payload));
 
 
         //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(ORGANISATION_UNIT))
-                .build();
-        final Optional<JsonObject> result = referenceDataService.getOrganisationUnitById(courtCentreId, envelope);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(ORGANISATION_UNIT), JsonValue.NULL);
+
+
+        final Optional<JsonObject> result = referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester);
 
         //then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName(ORGANISATION_UNIT),
-                payloadIsJson(
-                        withJsonPath("$.id", equalTo(courtCentreId.toString()))
-                ))
-        ));
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is(ORGANISATION_UNIT));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.id", CoreMatchers.is(courtCentreId.toString()));
+
         assertThat(result.get().getString("id"), is(courtCentreId.toString()));
         assertThat(result.get().getString("oucodeL1Name"), is("Magistrates' Courts"));
         assertThat(result.get().getString("oucodeL3WelshName"), is("welshName_Test"));
@@ -271,35 +277,34 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void shouldRequestDocumentTypeDataById() {
+    public void shouldRequestDocumentTypeAccessDataById() {
         //given
 
         final UUID documentTypeId = randomUUID();
         final JsonObject payload = Json.createReader(
                 new ByteArrayInputStream(getDocumentTypeDataById(documentTypeId).getBytes()))
                 .readObject();
-        when(requester.request(any()))
-                .thenReturn(envelopeFrom(metadataWithRandomUUID(REFERENCEDATA_GET_DOCUMENT_TYPE), payload));
+        when(requester.request(any())).thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_DOCUMENT_ACCESS), payload));
 
 
         //when
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(REFERENCEDATA_GET_DOCUMENT_TYPE))
-                .build();
-        final Optional<JsonObject> result = referenceDataService.getDocumentTypeData(documentTypeId, envelope);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_DOCUMENT_ACCESS), JsonValue.NULL);
+        final Optional<JsonObject> result = referenceDataService.getDocumentTypeAccessData(documentTypeId, envelope, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName(REFERENCEDATA_GET_DOCUMENT_TYPE),
-                payloadIsJson(
-                        withJsonPath("$.id", equalTo(documentTypeId.toString()))
-                ))
-        ));
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is(REFERENCEDATA_GET_DOCUMENT_ACCESS));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.id", CoreMatchers.is(documentTypeId.toString()));
+
         assertThat(result.get().getString("documentCategory"), is("Defendant level"));
         assertThat(result.get().getString("documentType"), is("Magistrate's Sending sheet"));
-        assertThat(((JsonString) result.get().getJsonArray("documentAccess").stream().findFirst().get()).getString(), is("Legal advisors"));
+        assertThat(((JsonString) result.get().getJsonArray("readUserGroups").stream().findFirst().get()).getString(), is("Legal advisors"));
         verifyNoMoreInteractions(requester);
     }
 
@@ -313,26 +318,25 @@ public class ReferenceDataServiceTest {
         final JsonObject payload = getPayloadForCourts();
 
         when(requester.request(any()))
-                .thenReturn(envelopeFrom(
-                        JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE).build(),
-                        payload));
+                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE), payload));
         //when
         final JsonEnvelope envelope = envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE).build(),
                 payload);
 
-        final Optional<JsonObject> result = referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(envelope, postCode, prosecutingAuth);
+        final Optional<JsonObject> result = referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(envelope, postCode, prosecutingAuth, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName(REFERENCEDATA_GET_OUCODE),
-                payloadIsJson(
-                        withJsonPath("$.postcode", equalTo(postCode))
-                ))
-        ));
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is(REFERENCEDATA_GET_OUCODE));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.postcode", CoreMatchers.is(postCode));
+
+
         assertThat(((JsonObject) result.get().getJsonArray("courts").get(0)).getString("oucodeL3Code"), is("B22KS00"));
         verifyNoMoreInteractions(requester);
     }
@@ -346,7 +350,7 @@ public class ReferenceDataServiceTest {
         when(requester.request(any()))
                 .thenReturn(responseEnvelope);
 
-        final Optional<JsonObject> result = referenceDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE);
+        final Optional<JsonObject> result = referenceDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE,requester);
 
         verify(requester).request(welshEnvelopeArgumentCaptor.capture());
 
@@ -363,27 +367,24 @@ public class ReferenceDataServiceTest {
 
         final JsonObject payload = getPayloadForOrgUnits(id.toString());
 
-        when(requester.request(any()))
-                .thenReturn(envelopeFrom(
-                        JsonEnvelope.metadataBuilder().withId(id).withName(REFERENCEDATA_GET_COURTCENTER).build(),
-                        payload));
+        when(requester.request(any())).thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER), payload));
         //when
         final JsonEnvelope envelope = envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER).build(),
                 payload);
 
-        final Optional<JsonObject> result = referenceDataService.getCourtsOrganisationUnitsByOuCode(envelope, oucode);
+        final Optional<JsonObject> result = referenceDataService.getCourtsOrganisationUnitsByOuCode(envelope, oucode, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), is(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope)
-                        .withName(REFERENCEDATA_GET_COURTCENTER),
-                payloadIsJson(
-                        withJsonPath("$.oucode", equalTo(oucode))
-                ))
-        ));
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is(REFERENCEDATA_GET_COURTCENTER));
+
+        with(envelopeArgumentCaptor.getValue().payload().toString())
+                .assertThat("$.oucode", CoreMatchers.is(oucode));
+
         assertThat(((JsonObject) result.get().getJsonArray("organisationunits").get(0)).getString("id"), is(id.toString()));
         verifyNoMoreInteractions(requester);
     }
@@ -402,34 +403,26 @@ public class ReferenceDataServiceTest {
         //when
         final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_GET_OUCODE);
 
-        when(enveloper.withMetadataFrom(envelope, REFERENCEDATA_GET_OUCODE)).thenReturn(objectJsonEnvelopeFunction);
-        when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelope);
-        when(requester.request(envelope))
-                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForCourts));
+        when(requester.request(any()))
+                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForCourts), getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForOrgUnits));
 
-        final JsonEnvelope envelopeForCourts = getEnvelope(REFERENCEDATA_GET_COURTCENTER);
 
-        when(enveloper.withMetadataFrom(envelope, REFERENCEDATA_GET_COURTCENTER)).thenReturn(objectJsonEnvelopeFunctionForCourts);
-        when(objectJsonEnvelopeFunctionForCourts.apply(any(JsonObject.class))).thenReturn(envelopeForCourts);
-        when(requester.request(envelopeForCourts))
-                .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForOrgUnits));
-
-        final CourtCentre result = referenceDataService.getCourtCentre(envelope, postcode, prosecutingAuth);
+        final CourtCentre result = referenceDataService.getCourtCentre(envelope, postcode, prosecutingAuth, requester);
 
         assertThat(result.getId(), is(id));
     }
 
     @Test
     public void shouldRequestReferralReasons() {
-        JsonObject payload = getReferralReasonsPayload();
+        final JsonObject payload = getReferralReasonsPayload();
 
         when(requester.request(any())).thenReturn(getEnvelope(REFERENCEDATA_GET_REFERRAL_REASONS, payload));
 
         final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_GET_REFERRAL_REASONS);
-        final Optional<JsonObject> result = referenceDataService.getReferralReasons(envelope);
+        final Optional<JsonObject> result = referenceDataService.getReferralReasons(envelope, requester);
 
-        JsonObject referralReasonsJson = result.get().getJsonArray("referralReasons").getJsonObject(0);
-        JsonObject payloadReferralReasonJson = payload.getJsonArray("referralReasons").getJsonObject(0);
+        final JsonObject referralReasonsJson = result.get().getJsonArray("referralReasons").getJsonObject(0);
+        final JsonObject payloadReferralReasonJson = payload.getJsonArray("referralReasons").getJsonObject(0);
         assertThat(referralReasonsJson.getString("id"), is(payloadReferralReasonJson.getString("id")));
         assertThat(referralReasonsJson.getInt("seqId"), is(payloadReferralReasonJson.getInt("seqId")));
         assertThat(referralReasonsJson.getString("reason"), is(payloadReferralReasonJson.getString("reason")));
@@ -440,20 +433,20 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldGetJudiciariesByJudiciaryIdList() throws Exception {
-        JsonObject payload = generateJudiciariesJson();
+        final JsonObject payload = generateJudiciariesJson();
         when(requester.request(any())).thenReturn(getEnvelope(REFERENCEDATA_QUERY_JUDICIARIES, payload));
 
         final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_QUERY_JUDICIARIES);
-        final Optional<JsonObject> result = referenceDataService.getJudiciariesByJudiciaryIdList(Arrays.asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope);
+        final Optional<JsonObject> result = referenceDataService.getJudiciariesByJudiciaryIdList(Arrays.asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester);
         final JsonObject judiciariesJson = result.get();
 
-        JsonObject judiciaryJson = judiciariesJson.getJsonArray("judiciaries").getJsonObject(0);
+        final JsonObject judiciaryJson = judiciariesJson.getJsonArray("judiciaries").getJsonObject(0);
         assertThat(judiciaryJson.getString("id"), is(JUDICIARY_ID_1.toString()));
         assertThat(judiciaryJson.getString("titlePrefix"), is(JUDICIARY_TITLE_1));
         assertThat(judiciaryJson.getString("surname"), is(JUDICIARY_LAST_NAME_1));
         assertThat(judiciaryJson.getString("forenames"), is(JUDICIARY_FIRST_NAME_1));
 
-        JsonObject judiciaryJson2 = judiciariesJson.getJsonArray("judiciaries").getJsonObject(1);
+        final JsonObject judiciaryJson2 = judiciariesJson.getJsonArray("judiciaries").getJsonObject(1);
         assertThat(judiciaryJson2.getString("id"), is(JUDICIARY_ID_2.toString()));
         assertThat(judiciaryJson2.getString("titlePrefix"), is(JUDICIARY_TITLE_2));
         assertThat(judiciaryJson2.getString("surname"), is(JUDICIARY_LAST_NAME_2));
@@ -463,7 +456,7 @@ public class ReferenceDataServiceTest {
     }
 
     private JsonObject generateJudiciariesJson() throws IOException {
-        String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
+        final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
                 .replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString())
                 .replace("JUDICIARY_TITLE_1", JUDICIARY_TITLE_1)
                 .replace("JUDICIARY_FIRST_NAME_1", JUDICIARY_FIRST_NAME_1)
@@ -488,13 +481,13 @@ public class ReferenceDataServiceTest {
                 Json.createObjectBuilder().build());
     }
 
-    private JsonEnvelope getEnvelope(final String name,JsonObject jsonObject) {
-        return envelopeFrom(
+    private JsonEnvelope getEnvelope(final String name, final JsonObject jsonObject) {
+        return JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
                 jsonObject);
     }
 
-    private JsonObject getPayloadForOrgUnits(String id) {
+    private JsonObject getPayloadForOrgUnits(final String id) {
         return Json.createObjectBuilder()
                 .add("organisationunits", createArrayBuilder()
                         .add(Json.createObjectBuilder()
@@ -533,7 +526,7 @@ public class ReferenceDataServiceTest {
                 " \"uuid\": \"" + documentTypeId + "\",\n" +
                 "\"documentCategory\": \"Defendant level\",\n" +
                 "\"documentType\": \"Magistrate's Sending sheet\",\n" +
-                "\"documentAccess\": [\n" +
+                "\"readUserGroups\": [\n" +
                 "\"Legal advisors\"\n" +
                 "]}";
     }

@@ -35,6 +35,7 @@ public class CourtDocumentRepositoryTest {
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID CASE_ID_1 = UUID.randomUUID();
     private static final UUID CASE_ID_2 = UUID.randomUUID();
+    private static final UUID CASE_ID_3 = UUID.randomUUID();
     private static final UUID COURT_DOCUMENT_ID = UUID.randomUUID();
     private static final UUID APPLICATION_ID = UUID.randomUUID();
     private static final UUID HEARING_ID = UUID.randomUUID();
@@ -70,6 +71,19 @@ public class CourtDocumentRepositoryTest {
         assertEquals(COURT_DOCUMENT_ID, actual.get(0).getCourtDocumentId());
         assertEquals(DocumentCategoryEnum.APPLICATION_DOCUMENT.toString(), actual.get(0).getIndices().iterator().next().getDocumentCategory());
         assertEquals(false, actual.get(0).getContainsFinancialMeans());
+    }
+
+    @Test
+    public void testFindByApplicationIdOrderingSeqNumASC() {
+
+        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_1,20));
+        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_2,10));
+        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_2,30));
+
+        final List<CourtDocumentEntity> actual = repository.findByProsecutionCaseId(CASE_ID_3);
+        assertEquals(10, actual.get(0).getSeqNum().intValue());
+        assertEquals(20, actual.get(1).getSeqNum().intValue());
+        assertEquals(30, actual.get(2).getSeqNum().intValue());
     }
 
     @Test
@@ -134,6 +148,7 @@ public class CourtDocumentRepositoryTest {
     private CourtDocumentEntity getProsecutionCase(Boolean financialMeansFlag) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(COURT_DOCUMENT_ID);
+        courtDocumentEntity.setIsRemoved(false);
         courtDocumentEntity.setPayload(PAYLOAD);
         final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
         courtDocumentIndexEntity.setId(UUID.randomUUID());
@@ -149,6 +164,7 @@ public class CourtDocumentRepositoryTest {
     private CourtDocumentEntity getProsecutionCaseForApplication(Boolean financialMeansFlag) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(COURT_DOCUMENT_ID);
+        courtDocumentEntity.setIsRemoved(false);
         courtDocumentEntity.setPayload(PAYLOAD);
         final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
         courtDocumentIndexEntity.setId(UUID.randomUUID());
@@ -162,9 +178,31 @@ public class CourtDocumentRepositoryTest {
         return courtDocumentEntity;
     }
 
+    private CourtDocumentEntity getProsecutionCaseForApplicationWithSeqNum(UUID caseId, UUID defendantId, Integer seqNumber) {
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(UUID.randomUUID());
+        courtDocumentEntity.setIsRemoved(false);
+        courtDocumentEntity.setPayload(PAYLOAD);
+        courtDocumentEntity.setContainsFinancialMeans(true);
+
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity.setId(UUID.randomUUID());
+        courtDocumentIndexEntity.setDocumentCategory(DocumentCategoryEnum.DEFENDANT_DOCUMENT.toString());
+        courtDocumentIndexEntity.setDefendantId(defendantId);
+        courtDocumentIndexEntity.setProsecutionCaseId(caseId);
+        courtDocumentIndexEntity.setCourtDocument(courtDocumentEntity);
+        courtDocumentEntity.setIndices(new HashSet<>());
+        courtDocumentEntity.getIndices().add(courtDocumentIndexEntity);
+        courtDocumentEntity.setSeqNum(seqNumber);
+        return courtDocumentEntity;
+    }
+
+
+
     private CourtDocumentEntity getProsecutionCaseForNowDocument(Boolean financialMeansFlag) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(COURT_DOCUMENT_ID);
+        courtDocumentEntity.setIsRemoved(false);
         courtDocumentEntity.setPayload(PAYLOAD);
         final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
         courtDocumentIndexEntity.setId(UUID.randomUUID());
@@ -182,6 +220,7 @@ public class CourtDocumentRepositoryTest {
     private CourtDocumentEntity getProsecutioncaseForDefendantDocument(UUID caseId, UUID defendantId) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(UUID.randomUUID());
+        courtDocumentEntity.setIsRemoved(false);
         courtDocumentEntity.setPayload(PAYLOAD);
         courtDocumentEntity.setContainsFinancialMeans(true);
 

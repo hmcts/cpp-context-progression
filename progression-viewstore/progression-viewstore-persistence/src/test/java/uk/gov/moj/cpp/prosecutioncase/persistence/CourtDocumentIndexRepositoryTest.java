@@ -36,6 +36,7 @@ public class CourtDocumentIndexRepositoryTest {
 
         CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setIsRemoved(false);
         final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
         indices.add(getCourtDocumentIndexEntity(courtDocumentEntity, caseId, defendantId, courtDocumentId));
         courtDocumentEntity.setIndices(indices);

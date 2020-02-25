@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -108,7 +109,23 @@ public class ReferenceDataStub {
                 .getResourceAsStream(resourceName))
                 .readObject();
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/document-metadata/.*";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/document-type-access/.*";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(documentType.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.document+json");
+    }
+
+    public static void stubQueryDocumentTypeData(final String resourceName, final String documentTypeId) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = format("/referencedata-service/query/api/rest/referencedata/document-type-access/%s", documentTypeId);
         stubFor(get(urlMatching(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())

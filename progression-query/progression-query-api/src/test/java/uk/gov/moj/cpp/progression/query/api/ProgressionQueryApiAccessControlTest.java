@@ -10,9 +10,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.api.resource.service.CourtDocumentProvider;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider;
+import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Arrays;
@@ -33,10 +35,6 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
             "Defence"
     );
 
-    private static final List<String> ALLOWED_USER_GROUPS_EJECT_CASE = Arrays.asList(
-            "Eject Case Group", "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"
-    );
-
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
@@ -49,24 +47,31 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     @Mock
     private ProgressionProvider progressionProvider;
 
+    @Mock
+    private CourtDocumentProvider caseDocumentProvider;
+
+    @Mock
+    private RbacProvider rbacProvider;
+
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users","Probation Admin", "Judiciary","Court Associate","Deputies", "DJMC", "Judge");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Defence Advocate", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users","Probation Admin", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users","Probation Admin", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates", "Defence Advocate", "District Judge", "Second Line Support");
     }
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetMaterialContent() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "Probation Admin");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "District Judge", "Court Associate", "Defence Users", "Probation Admin", "Youth Offending Service Admin", "Magistrates","Court Administrators", "Probation Admin", "Second Line Support");
+
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetMaterialContent() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "Probation Admin");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-content", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "Probation Admin","District Judge", "Court Associate", "Defence Users", "Probation Admin", "Youth Offending Service Admin", "Magistrates","Court Administrators", "Second Line Support");
     }
 
     @Test
@@ -217,7 +222,7 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Override
     protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, this.userAndGroupProvider).put(ProgressionProvider.class, this.progressionProvider).build();
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, this.userAndGroupProvider).put(ProgressionProvider.class, this.progressionProvider).put(CourtDocumentProvider.class, this.caseDocumentProvider).put(RbacProvider.class, this.rbacProvider).build();
     }
 
 
@@ -266,6 +271,23 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
         assertFailureOutcome(executeRulesWith(action));
         verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(eq(action), listCaptor.capture());
         assertThat(listCaptor.getValue(), Matchers.containsInAnyOrder(ALLOWED_USER_GROUPS.toArray()));
+    }
+
+
+    private void assertSuccessfulOutcomeOnActionForTheSuppliedGroupsOnAddDocument(final String actionName, final String... groupNames) {
+        final Action action = createActionFor(actionName);
+        when(progressionProvider.getAllowedUserGroups(action)).thenReturn(ALLOWED_USER_GROUPS);
+        when(caseDocumentProvider.getDocumentTypeId(action)).thenReturn(action);
+        when(rbacProvider.isLoggedInUserAllowedToReadDocument(action)).thenReturn(true);
+
+        given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, groupNames))
+                .willReturn(true);
+
+        assertSuccessfulOutcome(executeRulesWith(action));
+
+        verify(this.userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(eq(action), this.arrayCaptor.capture());
+        assertThat(this.arrayCaptor.getAllValues(), containsInAnyOrder(groupNames));
+        verifyNoMoreInteractions(this.userAndGroupProvider);
     }
 
 }

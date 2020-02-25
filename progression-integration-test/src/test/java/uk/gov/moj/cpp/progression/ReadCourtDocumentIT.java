@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getMat
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.stubMaterialContent;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 
 import java.util.UUID;
 
@@ -35,6 +36,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         defendantId = randomUUID().toString();
         setupMaterialStub(materialId.toString());
         stubMaterialContent(materialId, MaterialContent.getBytes(), mimeType);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
     }
 
 
@@ -44,7 +46,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
 
         pollForResponse("/search?q=" + materialId.toString(), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON,
-                withJsonPath("$.allowedUserGroups[0]", is("defence")));
+                withJsonPath("$.allowedUserGroups[0]", is("Listing Officers")));
         // and
         pollForResponse("/material/" + materialId + "/metadata",
                 "application/vnd.progression.query.material-metadata+json",

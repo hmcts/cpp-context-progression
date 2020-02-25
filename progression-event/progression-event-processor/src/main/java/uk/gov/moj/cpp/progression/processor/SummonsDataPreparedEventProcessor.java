@@ -14,6 +14,7 @@ import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractOffence
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractReferralReason;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractYouth;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getCourtTime;
+import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getDocumentTypeData;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateCourtCentreAddress;
 import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateReferral;
 
@@ -30,6 +31,7 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
@@ -60,6 +62,7 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class SummonsDataPreparedEventProcessor {
 
+    public static final UUID SUMMONS_DOCUMENT_TYPE_ID = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
     private static final String SUMMONS = "Summons";
     private static final String BILINGUAL_SUMMONS = "BilingualSummons";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
@@ -99,6 +102,9 @@ public class SummonsDataPreparedEventProcessor {
 
     @Inject
     private ReferenceDataService referenceDataService;
+
+    @Inject
+    private Requester requester;
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -220,9 +226,9 @@ public class SummonsDataPreparedEventProcessor {
         final SummonsDataPrepared summonsDataPrepared = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SummonsDataPrepared.class);
         final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds = summonsDataPrepared.getSummonsData().getConfirmedProsecutionCaseIds();
         final List<ListDefendantRequest> listDefendantRequests = summonsDataPrepared.getSummonsData().getListDefendantRequests();
-        final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasons(jsonEnvelope);
+        final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasons(jsonEnvelope, requester);
         final JsonObject referralReasonsJson = referralReasonsJsonOptional.orElseThrow(IllegalArgumentException::new);
-        final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(summonsDataPrepared.getSummonsData().getCourtCentre().getId(), jsonEnvelope);
+        final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(summonsDataPrepared.getSummonsData().getCourtCentre().getId(), jsonEnvelope, requester);
         final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(IllegalArgumentException::new);
 
         for (final ConfirmedProsecutionCaseId confirmedProsecutionCaseId : confirmedProsecutionCaseIds) {
@@ -236,7 +242,7 @@ public class SummonsDataPreparedEventProcessor {
                 if (!confirmedProsecutionCaseId.getId().equals(defendantRequest.getProsecutionCaseId())) {
                     throw new IllegalStateException();
                 }
-                final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(jsonEnvelope, courtCentreJson.getString("lja"));
+                final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(jsonEnvelope, courtCentreJson.getString("lja"), requester);
 
                 LOGGER.debug("Summons requested for case  {}", defendantRequest.getProsecutionCaseId());
                 JsonObject summonsRequestedJson = null;
@@ -330,7 +336,7 @@ public class SummonsDataPreparedEventProcessor {
                 sender,
                 defendantRequest.getProsecutionCaseId(),
                 null);
-        final CourtDocument courtDocument = courtDocument(defendantRequest.getProsecutionCaseId(), defendantId, materialId);
+        final CourtDocument courtDocument = courtDocument(defendantRequest.getProsecutionCaseId(), defendantId, materialId, jsonEnvelope);
 
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter
@@ -352,7 +358,7 @@ public class SummonsDataPreparedEventProcessor {
                 .orElseThrow(IllegalArgumentException::new);
     }
 
-    private CourtDocument courtDocument(final UUID caseId, final UUID defendantId, final UUID materialId) {
+    private CourtDocument courtDocument(final UUID caseId, final UUID defendantId, final UUID materialId, final JsonEnvelope jsonEnvelope) {
         final List<UUID> defendants = new ArrayList<>();
         defendants.add(defendantId);
         final DefendantDocument defendantDocument = DefendantDocument.defendantDocument()
@@ -363,11 +369,10 @@ public class SummonsDataPreparedEventProcessor {
         final DocumentCategory documentCategory = DocumentCategory.documentCategory()
                 .withDefendantDocument(defendantDocument)
                 .build();
-
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(UUID.randomUUID())
-                .withDocumentTypeId(UUID.randomUUID())
-                .withDocumentTypeDescription(SUMMONS)
+                .withDocumentTypeId(SUMMONS_DOCUMENT_TYPE_ID)
+                .withDocumentTypeDescription(getDocumentTypeData(SUMMONS_DOCUMENT_TYPE_ID, referenceDataService, jsonEnvelope, requester).getString("section"))
                 .withMaterials(Collections.singletonList(Material.material()
                                 .withId(materialId)
                                 .withGenerationStatus(null)
@@ -378,11 +383,12 @@ public class SummonsDataPreparedEventProcessor {
                 )
                 .withDocumentCategory(documentCategory)
                 .withName(SUMMONS)
+                .withMimeType("application/pdf")
                 .build();
     }
 
     private String getWelshLJAName(final JsonEnvelope jsonEnvelope, String localJusticeAreaCode) {
-        final Optional<JsonObject> optionalLocalJusticeAreaResponse = referenceDataService.getLocalJusticeArea(jsonEnvelope, localJusticeAreaCode);
+        final Optional<JsonObject> optionalLocalJusticeAreaResponse = referenceDataService.getLocalJusticeArea(jsonEnvelope, localJusticeAreaCode, requester);
         final JsonObject localJusticeAreaResponsePayload = optionalLocalJusticeAreaResponse.orElseThrow(() -> new IllegalArgumentException("No Local Justice Area Details found for Local Justice Area Code"));
         if (localJusticeAreaResponsePayload.equals(JsonValue.NULL)) {
             throw new IllegalArgumentException("No Local Justice Area Details found for Local Justice Area Code");

@@ -146,7 +146,6 @@ public class ApplicationQueryViewTest {
         hearingApplicationEntity.setHearing(new HearingEntity());
 
         CourtDocument courtDocument = CourtDocument.courtDocument()
-                .withIsRemoved(false)
                 .build();
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setPayload("{}");

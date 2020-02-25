@@ -270,10 +270,10 @@ public class CourtApplicationVerificationHelper {
     }
 
     private static void verifyApplicationWithNoApplicantOrganisation(final DocumentContext inputCourtApplication,
-                                                                     final JsonArray outputCourtApplications,
-                                                                     final JsonArray parties,
-                                                                     final JsonObject applicant,
-                                                                     final JsonArray respondents) {
+                                          final JsonArray outputCourtApplications,
+                                          final JsonArray parties,
+                                          final JsonObject applicant,
+                                          final JsonArray respondents) {
         assertNotNull(inputCourtApplication);
         assertEquals(4, parties.size());
 

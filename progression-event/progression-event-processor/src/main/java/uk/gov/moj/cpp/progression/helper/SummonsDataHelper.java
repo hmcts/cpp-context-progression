@@ -5,13 +5,18 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.processor.InvalidHearingTimeException;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -164,6 +169,12 @@ public class SummonsDataHelper {
 
         }
         return courtTime;
+    }
+
+    public static JsonObject getDocumentTypeData(UUID documentTypeId,
+                                                 final ReferenceDataService referenceDataService, final JsonEnvelope jsonEnvelope, Requester requester) {
+        final Optional<JsonObject> documentTypeData = referenceDataService.getDocumentTypeAccessData(documentTypeId, jsonEnvelope, requester);
+        return documentTypeData.orElseThrow(() -> new RuntimeException("failed to look up nows document type " + documentTypeId));
     }
 
     private static JsonObject populateAddress(final JsonObject address) {
