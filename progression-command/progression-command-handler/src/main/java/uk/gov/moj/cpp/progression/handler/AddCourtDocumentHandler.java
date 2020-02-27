@@ -21,6 +21,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+import uk.gov.moj.cpp.progression.exception.RefDataDefinitionException;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
@@ -66,7 +67,7 @@ public class AddCourtDocumentHandler {
     private JsonObjectToObjectConverter jsonToObjectConverter;
 
     @Handles("progression.command.add-court-document")
-    public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws EventStreamException {
+    public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws RefDataDefinitionException, EventStreamException {
         LOGGER.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope);
         final CourtDocument courtDocument = setDefaults(addCourtDocumentEnvelope.payload().getCourtDocument());
 
@@ -78,7 +79,7 @@ public class AddCourtDocumentHandler {
         if (null != documentTypeData && null != documentTypeData.getJsonObject("courtDocumentTypeRBAC")) {
             enrichRefDataAndAppendEventsToStream(addCourtDocumentEnvelope, courtDocument, documentTypeData);
         } else {
-            LOGGER.error("Unable to process as ref data for document Type is not present");
+            throw new RefDataDefinitionException("Unable to process as ref data for document Type is not present");
         }
     }
 

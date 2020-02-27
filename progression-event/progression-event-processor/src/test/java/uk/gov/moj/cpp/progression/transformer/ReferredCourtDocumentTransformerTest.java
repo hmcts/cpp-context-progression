@@ -75,7 +75,7 @@ public class ReferredCourtDocumentTransformerTest {
         // Verify the results
         assertThat(documentTypeId, is(result.getDocumentTypeId()));
         assertThat(CASE_DOCUMENT, is(result.getDocumentTypeDescription()));
-        assertTrue(result.getContainsFinancialMeans());
+        assertThat(result.getContainsFinancialMeans(), is(true));
         assertThat(10, is(result.getSeqNum()));
         assertThat(result.getDocumentTypeRBAC(), notNullValue());
     }

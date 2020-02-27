@@ -2,19 +2,16 @@ package uk.gov.moj.cpp.progression.processor.document;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 
 import java.util.List;
@@ -28,13 +25,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CourtDocumentAddedProcessorTest {
-    @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloper();
+
     @InjectMocks
     private CourtDocumentAddedProcessor eventProcessor;
     @Mock
@@ -92,14 +87,12 @@ public class CourtDocumentAddedProcessorTest {
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
-        assertThat(commands.get(0).metadata(),
-                withMetadataEnvelopedFrom(requestMessage).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
+        assertThat(commands.get(0).metadata(), withMetadataEnvelopedFrom(requestMessage).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
         final JsonObject commandCreateCourtDocumentPayload = commands.get(0).payload();
         //This is an Error Payload Structure that is actually returned....
-        assertFalse(commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getBoolean("containsFinancialMeans"));
+        assertThat(commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getBoolean("containsFinancialMeans"),is(false));
         final JsonObject documentTypeRBACObject = commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getJsonObject("documentTypeRBAC");
-        assertEquals(documentTypeRBACObject, buildDocumentTypeDataWithRBAC());
-
+        assertThat(documentTypeRBACObject, is(buildDocumentTypeDataWithRBAC()));
     }
 
 }

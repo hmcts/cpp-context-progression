@@ -9,6 +9,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -236,7 +238,6 @@ public class CourtDocumentEventListenerTest {
         } else {
             when(courtDocument.getDocumentTypeRBAC()).thenReturn(createDocumentTypeRBACObject());
         }
-
         when(courtDocument.getSeqNum()).thenReturn(10);
 
         processCourtDocumentCreatedAndVerify(requestMessage);
@@ -244,16 +245,14 @@ public class CourtDocumentEventListenerTest {
 
         final CourtDocumentEntity entity = argumentCaptorForCourtDocumentEntity.getValue();
 
-
-        assertEquals(courtDocumentPayload.getJsonObject("courtDocument").getString("courtDocumentId"),
-                entity.getCourtDocumentId().toString());
+        assertThat(courtDocumentPayload.getJsonObject("courtDocument").getString("courtDocumentId"), is(entity.getCourtDocumentId().toString()));
+        assertThat(entity.getSeqNum().intValue(), is(10) );
 
         if (rbacTypeexists) {
             assertNotNull(entity.getCourtDocumentTypeRBAC().getCreateUserGroups());
             assertNotNull(entity.getCourtDocumentTypeRBAC().getDownloadUserGroups());
             assertNotNull(entity.getCourtDocumentTypeRBAC().getReadUserGroups());
         }
-        assertEquals(10, entity.getSeqNum().intValue());
 
     }
 
