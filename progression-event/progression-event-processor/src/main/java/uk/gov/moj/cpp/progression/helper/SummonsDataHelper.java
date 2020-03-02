@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.helper;
 
 import static java.lang.String.format;
+import static java.util.Optional.of;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import uk.gov.justice.services.core.requester.Requester;
@@ -24,7 +26,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.apache.commons.lang3.StringUtils;
 
 @SuppressWarnings({"squid:S1172", "squid:S1192", "squid:S1166"})
 public class SummonsDataHelper {
@@ -127,7 +128,9 @@ public class SummonsDataHelper {
                         .add("offenceLegislation", extractStringFromOffence(offence, "offenceLegislation"))
                         .add("offenceLegislationWelsh", extractStringFromOffence(offence, "offenceLegislationWelsh"))
                         .add("wording", extractStringFromOffence(offence, "wording"))
-                        .add("wordingWelsh", extractStringFromOffence(offence, "wordingWelsh"))
+                        .add("wordingWelsh", of(extractStringFromOffence(offence, "wordingWelsh"))
+                                .filter(a -> isNotBlank(a) && !"N/A".equalsIgnoreCase(a))
+                                .orElse(extractStringFromOffence(offence, "wording")))
                         .build()));
         return updatedOffencesArray.build();
     }
@@ -201,9 +204,9 @@ public class SummonsDataHelper {
     private static String extractName(final JsonObject defendantJson) {
         final StringBuilder builder = new StringBuilder();
         final String firstName = extractStringFromPersonDetails(defendantJson, FIRST_NAME);
-        builder.append(StringUtils.isNotBlank(firstName) ? firstName + DELIMITER : EMPTY);
+        builder.append(isNotBlank(firstName) ? firstName + DELIMITER : EMPTY);
         final String middleName = extractStringFromPersonDetails(defendantJson, MIDDLE_NAME);
-        builder.append(StringUtils.isNotBlank(middleName) ? middleName + DELIMITER : EMPTY);
+        builder.append(isNotBlank(middleName) ? middleName + DELIMITER : EMPTY);
         builder.append(extractStringFromPersonDetails(defendantJson, LAST_NAME));
         return builder.toString();
     }
@@ -211,9 +214,9 @@ public class SummonsDataHelper {
     private static String extractNameFromPerson(final JsonObject personJson) {
         final StringBuilder builder = new StringBuilder();
         final String firstName = personJson.getString(FIRST_NAME, EMPTY);
-        builder.append(StringUtils.isNotBlank(firstName) ? firstName + DELIMITER : EMPTY);
+        builder.append(isNotBlank(firstName) ? firstName + DELIMITER : EMPTY);
         final String middleName = personJson.getString(MIDDLE_NAME, EMPTY);
-        builder.append(StringUtils.isNotBlank(middleName) ? middleName + DELIMITER : EMPTY);
+        builder.append(isNotBlank(middleName) ? middleName + DELIMITER : EMPTY);
         builder.append(personJson.getString(LAST_NAME));
         return builder.toString();
     }

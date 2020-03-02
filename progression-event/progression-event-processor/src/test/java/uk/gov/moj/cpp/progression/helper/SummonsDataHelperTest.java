@@ -168,6 +168,22 @@ public class SummonsDataHelperTest {
     }
 
     @Test
+    public void shouldSetOffenceWordingWelshWithEnglishWhenItIsEmpty() {
+        Defendant defendant = createPersonDefendant(offenceBuilder().withWording("English Wording").withWordingWelsh(null));
+        JsonArray offences = SummonsDataHelper.extractOffences(objectToJsonObjectConverter.convert(defendant));
+        assertThat(1, is(offences.size()));
+        assertThat("English Wording", is(offences.getJsonObject(0).getString("wordingWelsh")));
+    }
+
+    @Test
+    public void shouldSetOffenceWordingWelshWithEnglishWhenItIsN_A() {
+        Defendant defendant = createPersonDefendant(offenceBuilder().withWording("English Wording").withWordingWelsh("N/A"));
+        JsonArray offences = SummonsDataHelper.extractOffences(objectToJsonObjectConverter.convert(defendant));
+        assertThat(1, is(offences.size()));
+        assertThat("English Wording", is(offences.getJsonObject(0).getString("wordingWelsh")));
+    }
+
+    @Test
     public void shouldPopulateReferral() {
         JsonObject referenceData = createReferralReferenceData();
         JsonObject referralReason = SummonsDataHelper.populateReferral(objectToJsonObjectConverter.convert(referenceData));
@@ -230,7 +246,11 @@ public class SummonsDataHelperTest {
     }
 
 
-    private Defendant createPersonDefendant() {
+    private Defendant createPersonDefendant(){
+        return createPersonDefendant(offenceBuilder());
+    }
+
+    private Defendant createPersonDefendant(Offence.Builder offenceBuilder) {
         return Defendant.defendant()
                 .withId(randomUUID())
                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -264,11 +284,7 @@ public class SummonsDataHelperTest {
                                         .build())
                                 .build())
                         .build()))
-                .withOffences(Arrays.asList(Offence.offence()
-                        .withOffenceTitle("off title")
-                        .withOffenceTitleWelsh("off title wel")
-                        .withOffenceLegislation("off leg")
-                        .withOffenceLegislationWelsh("off leg wel")
+                .withOffences(Arrays.asList(offenceBuilder
                         .build()))
                 .build();
     }
@@ -304,13 +320,17 @@ public class SummonsDataHelperTest {
                                         .build())
                                 .build())
                         .build()))
-                .withOffences(Arrays.asList(Offence.offence()
-                        .withOffenceTitle("off title")
-                        .withOffenceTitleWelsh("off title wel")
-                        .withOffenceLegislation("off leg")
-                        .withOffenceLegislationWelsh("off leg wel")
+                .withOffences(Arrays.asList(offenceBuilder()
                         .build()))
                 .build();
+    }
+
+    private Offence.Builder offenceBuilder() {
+        return Offence.offence()
+                .withOffenceTitle("off title")
+                .withOffenceTitleWelsh("off title wel")
+                .withOffenceLegislation("off leg")
+                .withOffenceLegislationWelsh("off leg wel");
     }
 
 }
