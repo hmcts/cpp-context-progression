@@ -27,6 +27,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -100,6 +101,7 @@ public class AdjournHearingEventProcessor {
 
             final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
                     .withHearings(Arrays.asList(builder.build()))
+                    .withAdjournedFromDate(LocalDate.now())
                     .build();
 
             listingService.listCourtHearing(event, listCourtHearing);

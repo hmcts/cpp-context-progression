@@ -249,7 +249,7 @@ public class AdjournHearingEventProcessorTest {
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getWelshName(), is(("Welsh Name")));
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getRoomName(), is(("Room Name")));
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getCourtCentre().getWelshRoomName(), is(("Welsh Room Name")));
-      assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getEarliestStartDateTime(), is(earliestStartDateTime));
+        assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getEarliestStartDateTime(), is(earliestStartDateTime));
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getEstimatedMinutes(), is(estimatedMinutes));
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJurisdictionType(), is(uk.gov.justice.core.courts.JurisdictionType.CROWN));
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialId(), is(judicialId));

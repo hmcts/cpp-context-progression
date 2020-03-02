@@ -9,6 +9,10 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/hearingListingNeeds.json#"
       }
+    },
+    "adjournedFromDate" : {
+      "description": "hearing adjournment date",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
     }
   },
   "required": [
