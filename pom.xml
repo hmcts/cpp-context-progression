@@ -47,7 +47,7 @@
         <hearing.version>6.4.11</hearing.version>
         <usersgroups.version>6.4.6</usersgroups.version>
         <referencedata.offence.version>6.4.0</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.67</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.68</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>

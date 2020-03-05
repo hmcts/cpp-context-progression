@@ -12,15 +12,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.AttendanceDay;
+import uk.gov.justice.core.courts.AttendanceType;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -33,6 +33,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -114,6 +115,15 @@ public class HearingResultEventProcessorTest {
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
                                 .withId(courtApplicationId)
                                 .build()))
+                        .withDefendantAttendance(
+                                Arrays.asList(DefendantAttendance.defendantAttendance()
+                                        .withDefendantId(UUID.randomUUID())
+                                        .withAttendanceDays(Arrays.asList(
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
+                                        ))
+                                        .build())
+                        )
                         .build())
                 .build();
 
@@ -141,6 +151,15 @@ public class HearingResultEventProcessorTest {
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
                         .withId(UUID.randomUUID())
+                        .withDefendantAttendance(
+                                Arrays.asList(DefendantAttendance.defendantAttendance()
+                                        .withDefendantId(UUID.randomUUID())
+                                        .withAttendanceDays(Arrays.asList(
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
+                                        ))
+                                        .build())
+                        )
                         .build())
                 .build();
 
@@ -173,6 +192,15 @@ public class HearingResultEventProcessorTest {
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
                         .withId(UUID.randomUUID())
+                        .withDefendantAttendance(
+                                Arrays.asList(DefendantAttendance.defendantAttendance()
+                                        .withDefendantId(UUID.randomUUID())
+                                        .withAttendanceDays(Arrays.asList(
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
+                                        ))
+                                        .build())
+                        )
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
                                 .withApplicationOutcome(courtApplicationOutcome)
                                 .withId(courtApplicationId)
@@ -209,23 +237,32 @@ public class HearingResultEventProcessorTest {
                 .build();
 
         final UUID commonUUID = UUID.randomUUID();
-        Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
-        Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
-        Defendant defendant3 = Defendant.defendant().withId(UUID.randomUUID()).build();
+        final Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
+        final Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
+        final Defendant defendant3 = Defendant.defendant().withId(UUID.randomUUID()).build();
 
-        List<Defendant> defendants = new ArrayList<>();
+        final List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
         defendants.add(defendant2);
         defendants.add(defendant3);
 
-        List<ProsecutionCase> prosecutionCases = new ArrayList<>();
-        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
+        final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
         prosecutionCases.add(prosecutionCase);
 
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
                         .withId(UUID.randomUUID())
+                        .withDefendantAttendance(
+                                Arrays.asList(DefendantAttendance.defendantAttendance()
+                                        .withDefendantId(UUID.randomUUID())
+                                        .withAttendanceDays(Arrays.asList(
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
+                                        ))
+                                        .build())
+                        )
                         .withProsecutionCases(prosecutionCases)
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
                                 .withApplicationOutcome(courtApplicationOutcome)
@@ -260,6 +297,15 @@ public class HearingResultEventProcessorTest {
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
                         .withId(UUID.randomUUID())
+                        .withDefendantAttendance(
+                                Arrays.asList(DefendantAttendance.defendantAttendance()
+                                        .withDefendantId(UUID.randomUUID())
+                                        .withAttendanceDays(Arrays.asList(
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
+                                        ))
+                                        .build())
+                        )
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
                                 .withApplicationOutcome(courtApplicationOutcome)
                                 .withId(courtApplicationId)

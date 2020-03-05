@@ -7,7 +7,7 @@ import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdD
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
-import uk.gov.justice.core.courts.AttendanceDay;
+import uk.gov.justice.core.courts.AttendanceType;
 import uk.gov.justice.core.courts.CompanyRepresentative;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
@@ -35,11 +35,13 @@ import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.Respondents;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
+import uk.gov.justice.progression.courts.exract.AttendanceDayAndType;
 import uk.gov.justice.progression.courts.exract.AttendanceDays;
 import uk.gov.justice.progression.courts.exract.CompanyRepresentatives;
 import uk.gov.justice.progression.courts.exract.CourtApplications;
 import uk.gov.justice.progression.courts.exract.CourtDecisions;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
+import uk.gov.justice.progression.courts.exract.CustodialEstablishment;
 import uk.gov.justice.progression.courts.exract.DefenceCounsels;
 import uk.gov.justice.progression.courts.exract.DefenceOrganisations;
 import uk.gov.justice.progression.courts.exract.Defendant;
@@ -68,6 +70,11 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3457","squid:S1612", "squid:S3655", "squid:S2259", "squid:S1188", "squid:S2789", "squid:S1067","squid:MethodCyclomaticComplexity", "pmd:NullAssignment"})
 public class CourtExtractTransformer {
 
+    public static final String NOT_PRESENT = "Not present";
+    public static final String PRESENT_BY_PRISON_VIDEO_LINK = "Present - prison video link";
+    public static final String PRESENT_BY_POLICE_VIDEO_LINK = "Present - police video link";
+    public static final String PRESENT_IN_PERSON = "Present - in person";
+    public static final String PRESENT_BY_VIDEO_DEFAULT = "Present - by video";
     @Inject
     TransformationHelper transformationHelper;
 
@@ -78,7 +85,6 @@ public class CourtExtractTransformer {
         final Defendant.Builder defendantBuilder = Defendant.defendant();
         courtExtract.withExtractType(extractType);
 
-        courtExtract.withCaseReference(transformationHelper.getCaseReference(caseAtAGlance.getProsecutionCaseIdentifier()));
         courtExtract.withCaseReference(transformationHelper.getCaseReference(caseAtAGlance.getProsecutionCaseIdentifier()));
 
         final Optional<uk.gov.justice.core.courts.Defendant> caseDefendant = prosecutionCase.getDefendants().stream()
@@ -131,6 +137,13 @@ public class CourtExtractTransformer {
             if (caseDefendant.get().getAssociatedPersons() != null && !caseDefendant.get().getAssociatedPersons().isEmpty()) {
                 ejectExtract.withParentGuardian(transformParentGuardian(caseDefendant.get().getAssociatedPersons()));
             }
+        }
+        if (Objects.nonNull(caseDefendant.get().getPersonDefendant().getCustodialEstablishment())){
+            defendantBuilder.withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                    .withCustody(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getCustody())
+                    .withId(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getId())
+                    .withName(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getName())
+                    .build());
         }
 
         ejectExtract.withExtractType(COURT_EXTRACT);
@@ -339,7 +352,7 @@ public class CourtExtractTransformer {
     private List<ProsecutionCounsels> transformProsecutionCounsel(final List<ProsecutionCounsel> prosecutionCounselsList) {
         return prosecutionCounselsList.stream().map(pc -> ProsecutionCounsels.prosecutionCounsels()
                 .withName(transformationHelper.getName(pc.getFirstName(), pc.getMiddleName(), pc.getLastName()))
-                .withAttendanceDays(transformAttendanceDay(pc.getAttendanceDays()))
+                .withAttendanceDays(transformAttendanceDays(pc.getAttendanceDays()))
                 .withRole(pc.getStatus())
                 .build()
         ).collect(Collectors.toList());
@@ -348,14 +361,21 @@ public class CourtExtractTransformer {
     private List<DefenceCounsels> transformDefenceCounsel(final List<DefenceCounsel> defenceCounselList) {
         return defenceCounselList.stream().map(dc -> DefenceCounsels.defenceCounsels()
                 .withName(transformationHelper.getName(dc.getFirstName(), dc.getMiddleName(), dc.getLastName()))
-                .withAttendanceDays(dc.getAttendanceDays() != null ? transformAttendanceDay(dc.getAttendanceDays()) : new ArrayList<>())
+                .withAttendanceDays(dc.getAttendanceDays() != null ? transformAttendanceDays(dc.getAttendanceDays()) : new ArrayList<>())
                 .withRole(dc.getStatus())
                 .build()).collect(Collectors.toList());
     }
 
-    private List<AttendanceDays> transformAttendanceDay(final List<LocalDate> attendanceDaysList) {
+    private List<AttendanceDays> transformAttendanceDays(final List<LocalDate> attendanceDaysList) {
         return attendanceDaysList.stream().distinct().map(ad -> AttendanceDays.attendanceDays()
                 .withDay(ad)
+                .build()).collect(Collectors.toList());
+    }
+
+    private List<AttendanceDayAndType> transformAttendanceDayAndTypes(final List<AttendanceDayAndType> attendanceDaysList) {
+        return attendanceDaysList.stream().distinct().map(ad -> AttendanceDayAndType.attendanceDayAndType()
+                .withDay(ad.getDay())
+                .withAttendanceType(ad.getAttendanceType())
                 .build()).collect(Collectors.toList());
     }
 
@@ -383,7 +403,7 @@ public class CourtExtractTransformer {
                             .build()
             );
             defendantBuilder.withHearings(transformHearing(hearingsList));
-            defendantBuilder.withAttendanceDays(transformAttendanceDay( transformDefendantAttendanceDay(hearingsList, defendantId)));
+            defendantBuilder.withAttendanceDays(transformAttendanceDayAndTypes( transformDefendantAttendanceDay(hearingsList, defendant)));
             defendantBuilder.withResults(defendant.getJudicialResults());
             final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearingsList, defendantId);
             if (!offences.isEmpty()) {
@@ -397,7 +417,7 @@ public class CourtExtractTransformer {
         return defendantBuilder.build();
     }
 
-    private Defendant transformDefendantWithoutHearingDetails(uk.gov.justice.core.courts.Defendant caseDefendant, final Defendant.Builder defendantBuilder) {
+    private Defendant transformDefendantWithoutHearingDetails(final uk.gov.justice.core.courts.Defendant caseDefendant, final Defendant.Builder defendantBuilder) {
         if (nonNull(caseDefendant)) {
             final Person personDefendant = caseDefendant.getPersonDefendant().getPersonDetails();
 
@@ -442,18 +462,34 @@ public class CourtExtractTransformer {
         return offences;
     }
 
-    private List<LocalDate> transformDefendantAttendanceDay(final List<Hearings> hearingsList, final String defendantId) {
+    private List<AttendanceDayAndType> transformDefendantAttendanceDay(final List<Hearings> hearingsList, final Defendants defendant) {
+
         return hearingsList.stream()
                 .filter(h -> nonNull(h.getDefendantAttendance()))
                 .flatMap((h -> h.getDefendantAttendance().stream()))
                 .filter(Objects::nonNull)
-                .filter( da -> da.getDefendantId().toString().equals(defendantId))
+                .filter(da -> da.getDefendantId().toString().equals(defendant.getId().toString()))
                 .map(DefendantAttendance::getAttendanceDays)
                 .flatMap(Collection::stream)
-                .filter(AttendanceDay::getIsInAttendance)
-                .map(AttendanceDay::getDay)
+                .filter(ad -> !ad.getAttendanceType().equals(AttendanceType.NOT_PRESENT))
+                .map(ad -> AttendanceDayAndType.attendanceDayAndType()
+                        .withDay(ad.getDay())
+                        .withAttendanceType(ad.getAttendanceType().toString().equals(AttendanceType.IN_PERSON.toString()) ? PRESENT_IN_PERSON : extractAttendanceType(defendant)).build())
                 .collect(Collectors.toList());
 
+    }
+
+    private String extractAttendanceType(final Defendants defendant) {
+        if (nonNull(defendant.getCustodialEstablishment())) {
+            final String custody = defendant.getCustodialEstablishment().getCustody();
+            if ("Prison".equals(custody)){
+                return PRESENT_BY_PRISON_VIDEO_LINK;
+            }
+            else if ("Police".equals(custody)) {
+                return PRESENT_BY_POLICE_VIDEO_LINK;
+            }
+        }
+        return PRESENT_BY_VIDEO_DEFAULT;
     }
 
     private List<uk.gov.justice.progression.courts.exract.Offences> transformOffence(final List<Offences> offences) {
@@ -530,7 +566,7 @@ public class CourtExtractTransformer {
     private List<CompanyRepresentatives> transformCompanyRepresentative(final List<CompanyRepresentative> companyRepresentatives) {
         return companyRepresentatives.stream().map(cr -> CompanyRepresentatives.companyRepresentatives()
                 .withName(transformationHelper.getName(cr.getFirstName(),EMPTY,cr.getLastName()))
-                .withAttendanceDays(transformAttendanceDay(cr.getAttendanceDays()))
+                .withAttendanceDays(transformAttendanceDays(cr.getAttendanceDays()))
                 .withRole(cr.getPosition() != null ? cr.getPosition().toString() : EMPTY)
                 .build()
         ).collect(Collectors.toList());

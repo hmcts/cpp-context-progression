@@ -1,11 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.util.Comparator.comparing;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
+import org.apache.commons.collections.CollectionUtils;
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
@@ -43,6 +39,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRep
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
@@ -54,10 +52,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
-import org.apache.commons.collections.CollectionUtils;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.util.Comparator.comparing;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @SuppressWarnings({"squid:S3655", "squid:S1188", "squid:S1135", "squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S134", "squid:S4165", "pmd:NullAssignment"})
 public class GetCaseAtAGlanceService {
@@ -146,7 +145,7 @@ public class GetCaseAtAGlanceService {
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withHearings(createHearings(hearingEntities, caseId))
                 .withDefendantHearings(defendantHearingsList)
-                .withCourtApplications(new ArrayList<CourtApplication>())
+                .withCourtApplications(new ArrayList<>())
                 .build();
     }
 
@@ -187,7 +186,7 @@ public class GetCaseAtAGlanceService {
         return hearingsList;
     }
 
-    private Boolean hasResultAmended(Hearing hearing) {
+    private Boolean hasResultAmended(final Hearing hearing) {
         if (CollectionUtils.isNotEmpty(hearing.getProsecutionCases())) {
             for (final ProsecutionCase prosecutionCase : hearing.getProsecutionCases()) {
                 if (CollectionUtils.isNotEmpty(prosecutionCase.getDefendants())) {
@@ -290,7 +289,7 @@ public class GetCaseAtAGlanceService {
                     .withName(getDefendantName(defendant))
                     .withAge(getDefendantAge(defendant, hearing.getHearingDays()))
                     .withDateOfBirth(getDefendantDataOfBirth(defendant))
-                    .withAddress(nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getPersonDetails().getAddress() : null)
+                    .withAddress(extractAddress(defendant))
                     .withDefenceOrganisation(getDefenceOrganisation(defendant, hearing))
                     .withOffences(getDefendantOffences(defendant))
                     .withJudicialResults(getJudicialResults(defendant.getJudicialResults()))
@@ -302,7 +301,17 @@ public class GetCaseAtAGlanceService {
         });
     }
 
-    private static void addDefendantsAndNonDefendantsToDefendantsView(List<CourtApplication> courtApplications, Hearing hearing, List<Defendants> defendantsList, List<CourtApplicationRespondent> respondents) {
+    private static Address extractAddress(final Defendant defendant) {
+        if (nonNull(defendant.getPersonDefendant())) {
+            return defendant.getPersonDefendant().getPersonDetails().getAddress();
+        } else if (nonNull(defendant.getLegalEntityDefendant())) {
+            return defendant.getLegalEntityDefendant().getOrganisation().getAddress();
+        } else {
+            return null;
+        }
+    }
+
+    private static void addDefendantsAndNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final Hearing hearing, final List<Defendants> defendantsList, final List<CourtApplicationRespondent> respondents) {
         respondents.forEach(courtApplicationRespondent -> {
             final CourtApplicationParty courtApplicationParty = courtApplicationRespondent.getPartyDetails();
             final Defendant defendant = courtApplicationParty.getDefendant();

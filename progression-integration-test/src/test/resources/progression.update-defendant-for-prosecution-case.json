@@ -99,6 +99,11 @@
       "custodyTimeLimit": "2018-01-01",
       "perceivedBirthYear": 2015,
       "driverNumber": "AACC12345",
+      "custodialEstablishment": {
+        "id": "a8254db1-1483-483e-cfb3-b87fde5a0a47",
+        "name": "HMP Belmarsh",
+        "custody": "Prison"
+      },
       "arrestSummonsNumber": "arrest123",
       "employerOrganisation": {
         "name": "Disneyland Paris",

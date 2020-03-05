@@ -1,6 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/courts/progression/query/progression.query.prosecution-case",
   "type": "object",
   "properties": {
     "prosecutionCase": {
@@ -92,6 +91,10 @@
           "items": {
             "$ref": "#/definitions/courtApplication"
           }
+        },
+        "custodialEstablishment": {
+          "description": "The custodial establishment for Defendant",
+          "$ref": "#/definitions/custodyEstablishment"
         }
       },
       "required": [
@@ -432,6 +435,26 @@
         }
       },
       "additionalProperties": false
+		},
+        "custodyEstablishment": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            },
+            "custody": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "custody"
+          ]
     }
   }
 }

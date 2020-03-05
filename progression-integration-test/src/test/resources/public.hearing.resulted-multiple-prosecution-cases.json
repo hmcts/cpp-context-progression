@@ -689,7 +689,7 @@
         "attendanceDays": [
           {
             "day": "2018-01-01",
-            "isInAttendance": true
+            "attendanceType": "IN_PERSON"
           }
         ]
       }

@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -56,10 +57,26 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         updateDefendant(jsonString);
     }
 
-    public void updateDefendant(String jsonString) {
+    public void updateDefendantWithCustody() {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
+        updateDefendantWithCustody(jsonString);
+    }
+
+    public void updateDefendant(final String jsonString) {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void updateDefendantWithCustody(final String jsonString) {
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name","HMP Croydon Category A");
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("id", UUID.randomUUID());
 
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);

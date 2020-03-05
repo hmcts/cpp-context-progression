@@ -42,11 +42,36 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         // then
         helper.verifyInActiveMQ();
 
-        Matcher[] defendantUpdatedMatchers = new Matcher[]{
+        final Matcher[] defendantUpdatedMatchers = new Matcher[]{
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("updatedName")),
                 withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
                 withJsonPath("$.prosecutionCase.defendants[0].aliases", hasSize(1)),
                 withoutJsonPath("$.prosecutionCase.defendants[0].isYouth"),
+        };
+        pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
+        helper.verifyInMessagingQueueForDefendentChanged();
+    }
+
+    @Test
+    public void shouldUpdateDefendantDetailsWithCustodyEstablishment() throws Exception {
+        // given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")))));
+
+        // when
+        helper.updateDefendantWithCustody();
+
+        // then
+        helper.verifyInActiveMQ();
+
+        final Matcher[] defendantUpdatedMatchers = new Matcher[]{
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("updatedName")),
+                withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
+                withJsonPath("$.prosecutionCase.defendants[0].aliases", hasSize(1)),
+                withoutJsonPath("$.prosecutionCase.defendants[0].isYouth"),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.name", is("HMP Croydon Category A")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.custody", is("Prison")),
         };
         pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
         helper.verifyInMessagingQueueForDefendentChanged();

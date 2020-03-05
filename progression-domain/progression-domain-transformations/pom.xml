@@ -19,6 +19,7 @@
         <module>progression-domain-anonymization-events</module>
         <module>progression-domain-transformation-anonymise</module>
         <module>progression-domain-transformations-for-CDES</module>
+        <module>progression-domain-transformation-for-ancillarydocs</module>
     </modules>
 
 
