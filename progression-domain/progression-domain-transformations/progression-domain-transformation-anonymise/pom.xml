@@ -10,12 +10,13 @@
     <artifactId>progression-domain-transformation-anonymise</artifactId>
     <properties>
         <rest-assured.version>2.5.0</rest-assured.version>
+        <stream-transformation-tool-anonymise.version>6.4.5</stream-transformation-tool-anonymise.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>uk.gov.justice</groupId>
             <artifactId>stream-transformation-tool-anonymise</artifactId>
-            <version>5.3.3</version>
+            <version>${stream-transformation-tool-anonymise.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>

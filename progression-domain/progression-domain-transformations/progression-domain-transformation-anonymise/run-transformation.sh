@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TRANSFORMATION_JAR=`echo target/progression-domain-transformation-anonymise*.jar`
-EVENT_TOOL_VERSION=5.3.3
+EVENT_TOOL_VERSION=6.4.5
 EVENT_TOOL_JAR=target/event-tool-${EVENT_TOOL_VERSION}-swarm.jar
 
 PROCESS_FILE=target/processFile
