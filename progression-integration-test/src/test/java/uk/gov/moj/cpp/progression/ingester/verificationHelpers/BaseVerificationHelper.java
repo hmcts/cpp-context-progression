@@ -41,6 +41,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
             final String outputCaseDocumentsPath = format(OUTPUT_CASE_JSON_PATH);
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".id")).getString()))
+                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
             incrementCaseDocumentsCount();
         } catch (final Exception e) {
@@ -80,6 +81,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
         try {
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
+                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"))
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationId", is(id))
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationReference", is(applicationReference))

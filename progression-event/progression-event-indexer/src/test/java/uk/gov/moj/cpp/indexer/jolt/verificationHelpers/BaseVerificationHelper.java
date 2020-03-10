@@ -52,6 +52,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
             final String prosecutingAuthority = ((JsonString) inputProsecutionCase.read(inputDefendantPath + ".prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString();
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".id")).getString()))
+                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"))
                     .assertThat(outputCaseDocumentsPath + ".caseReference", equalTo(caseUrn))
                     .assertThat(outputCaseDocumentsPath + ".prosecutingAuthority", equalTo(prosecutingAuthority));
@@ -78,6 +79,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
 
         try {
             with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
+                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"));
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationId", is(id))
@@ -102,6 +104,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
             final String inputDefendantPath = format(INPUT_DEFENDANTS_JSON_PATH, defendantIndex);
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".prosecutionCaseId")).getString()))
+                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
             incrementCaseDocumentsCount();
         } catch (final Exception e) {
