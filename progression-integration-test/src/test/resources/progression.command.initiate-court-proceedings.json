@@ -3,12 +3,14 @@
     "prosecutionCases": [
       {
         "id": "RANDOM_CASE_ID",
-        "caseMarkers": [{
-          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-          "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-          "markerTypeCode": "WP",
-          "markerTypeDescription": "Prohibited Weapons"
-        }],
+        "caseMarkers": [
+          {
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "markerTypeCode": "WP",
+            "markerTypeDescription": "Prohibited Weapons"
+          }
+        ],
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
           "prosecutionAuthorityCode": "TFL",
@@ -31,11 +33,11 @@
             "aliases": [
               {
                 "firstName": "johnny",
-                "lastName" : "robber"
+                "lastName": "robber"
               },
               {
                 "firstName": "jack the",
-                "lastName" : "knife"
+                "lastName": "knife"
               }
             ],
             "pncId": "1234567",
@@ -62,7 +64,54 @@
                   "vehicleRegistration": "AA12345",
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
-                }
+                },
+                "judicialResults": [
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "isAvailableForCourtExtract": true,
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "amendmentDate": "2000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "2000-01-01",
+                    "lastSharedDateTime": "a",
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "2000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "judicialResultPrompts": [
+                      {
+                        "label": "a",
+                        "welshLabel": "a",
+                        "value": "a",
+                        "promptSequence": 0.1,
+                        "promptReference": "a",
+                        "isAvailableForCourtExtract": true
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "associatedPersons": [
@@ -76,10 +125,9 @@
                   "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "disabilityStatus": "a",
-                  "ethnicity":{
+                  "ethnicity": {
                     "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
                   },
-
                   "gender": "MALE",
                   "interpreterLanguageNeeds": "Hindi",
                   "documentationLanguageNeeds": "WELSH",
@@ -139,7 +187,7 @@
                   "secondaryEmail": "harry.kanejunior@hotmail.com",
                   "fax": "3425678"
                 },
-                "ethnicity":{
+                "ethnicity": {
                   "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
                 }
@@ -185,12 +233,12 @@
         },
         "jurisdictionType": "MAGISTRATES",
         "estimateMinutes": 20,
-        "listedStartDateTime":"LISTED_START_DATE_TIME",
+        "listedStartDateTime": "LISTED_START_DATE_TIME",
         "earliestStartDateTime": "EARLIEST_START_DATE_TIME",
         "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
         "courtCentre": {
-      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
-      	},
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+        },
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",
         "listDefendantRequests": [
@@ -207,6 +255,5 @@
         ]
       }
     ]
-
   }
 }

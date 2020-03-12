@@ -68,7 +68,7 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
         Matcher[] caseUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
                 withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
         };
 

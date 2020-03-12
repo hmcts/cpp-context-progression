@@ -79,8 +79,8 @@ public class HearingUpdatedIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
 
         pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath("$.caseAtAGlance.hearings[0].courtCentre.id", equalTo(courtCentreId)),
-                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
+                withJsonPath("$.hearingsAtAGlance.hearings[0].courtCentre.id", equalTo(courtCentreId)),
+                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
         });
 
         final String updatedCourtCentreId = randomUUID().toString();
@@ -89,8 +89,8 @@ public class HearingUpdatedIT extends AbstractIT {
         sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_UPDATED, hearingUpdatedJson, hearingUpdatedMetadata);
 
         pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath("$.caseAtAGlance.hearings[0].courtCentre.id", equalTo(updatedCourtCentreId)),
-                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
+                withJsonPath("$.hearingsAtAGlance.hearings[0].courtCentre.id", equalTo(updatedCourtCentreId)),
+                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
         });
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
 

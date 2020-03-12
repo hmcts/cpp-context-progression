@@ -21,7 +21,7 @@ import uk.gov.justice.progression.courts.CourtApplications;
 import uk.gov.justice.progression.courts.DefenceOrganisation;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.Defendants;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
@@ -59,7 +59,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @SuppressWarnings({"squid:S3655", "squid:S1188", "squid:S1135", "squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S134", "squid:S4165", "pmd:NullAssignment"})
-public class GetCaseAtAGlanceService {
+public class GetHearingAtAGlanceService {
 
     private static final String SPACE = " ";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
@@ -82,7 +82,13 @@ public class GetCaseAtAGlanceService {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    public GetCaseAtAGlance getCaseAtAGlance(final UUID caseId) {
+    public List<Hearings> getCaseHearings(final UUID caseId){
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseId);
+        final List<HearingEntity> hearingEntities = getHearingEntities(caseDefendantHearingEntities);
+        return createHearings(hearingEntities, caseId);
+    }
+
+    public GetHearingsAtAGlance getHearingAtAGlance(final UUID caseId) {
 
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseId);
         List<HearingEntity> hearingEntities = getHearingEntities(caseDefendantHearingEntities);
@@ -129,7 +135,7 @@ public class GetCaseAtAGlanceService {
         return hearingEntities;
     }
 
-    private GetCaseAtAGlance getQueryResponse(final List<HearingEntity> hearingEntities, final UUID caseId, final ProsecutionCase prosecutionCase, final List<CaseDefendantHearingEntity> caseDefendantHearingEntities) {
+    private GetHearingsAtAGlance getQueryResponse(final List<HearingEntity> hearingEntities, final UUID caseId, final ProsecutionCase prosecutionCase, final List<CaseDefendantHearingEntity> caseDefendantHearingEntities) {
 
         final List<DefendantHearings> defendantHearingsList = new ArrayList<>();
         prosecutionCase.getDefendants().forEach(defendant ->
@@ -140,7 +146,7 @@ public class GetCaseAtAGlanceService {
                         .build())
         );
 
-        return GetCaseAtAGlance.getCaseAtAGlance()
+        return GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withId(caseId)
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withHearings(createHearings(hearingEntities, caseId))

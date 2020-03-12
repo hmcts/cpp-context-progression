@@ -1,20 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.google.common.io.Resources;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -32,8 +30,6 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -44,14 +40,19 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 
-import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CPSEmailNotificationProcessorTest {
@@ -72,7 +73,7 @@ public class CPSEmailNotificationProcessorTest {
     private JsonObject payload;
 
     @Mock
-    private GetCaseAtAGlance getCaseAtAGlanceMock;
+    private GetHearingsAtAGlance getHearingsAtAGlance;
 
     @Mock
     private UsersGroupService usersGroupService;
@@ -99,7 +100,6 @@ public class CPSEmailNotificationProcessorTest {
     private Requester requester;
 
 
-
     private final String prosecutionCaseSampleWithPersonDefendant = "progression.event.prosecutioncase.persondefendant.cpsnotification.json";
     private final String prosecutionCaseSampleWithLegalEntity = "progression.event.prosecutioncase.legalentity.cpsnotification.json";
 
@@ -110,7 +110,7 @@ public class CPSEmailNotificationProcessorTest {
     }
 
     @Test
-    public void getCaseDetails() throws Exception {
+    public void shouldGetCaseDetails() throws Exception {
         Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
         JsonObject prosecutionCaseJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("prosecutionCase");
         ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject, ProsecutionCase.class);
@@ -120,15 +120,15 @@ public class CPSEmailNotificationProcessorTest {
         Optional<CaseVO> caseVOOptional = Whitebox
                 .invokeMethod(cpsEmailNotificationProcessor, "getCaseDetails", prosecutionCaseJsonOptional);
 
-        assertTrue("Case details should not be null", caseVOOptional.isPresent());
+        assertThat("Case details should not be null", caseVOOptional.isPresent(), is(true));
 
         CaseVO CaseVO = caseVOOptional.get();
-        assertEquals("Mismatch caseId","01702930-c1c8-4cfb-8f1c-1df9a58f4e5b" , CaseVO.getCaseId().toString());
-        assertEquals("Mismatch caseURN", "TFL9135196", CaseVO.getCaseURN());
+        assertThat("Mismatch caseId", "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b", is(CaseVO.getCaseId().toString()));
+        assertThat("Mismatch caseURN", "TFL9135196", is(CaseVO.getCaseURN()));
     }
 
     @Test
-    public void getDefendantDetailsForPersonDefendant() throws Exception {
+    public void shouldGetDefendantDetailsForPersonDefendant() throws Exception {
         Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
         JsonObject prosecutionCaseJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("prosecutionCase");
         ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject, ProsecutionCase.class);
@@ -136,18 +136,18 @@ public class CPSEmailNotificationProcessorTest {
         when(jsonObjectToObjectConverterMock.convert(prosecutionCaseJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);
 
         Optional<DefendantVO> defendantVOOptional = Whitebox
-                .invokeMethod(cpsEmailNotificationProcessor, "getDefendantDetails","924cbf53-0b51-4633-9e99-2682be854af4", prosecutionCaseJsonOptional);
+                .invokeMethod(cpsEmailNotificationProcessor, "getDefendantDetails", "924cbf53-0b51-4633-9e99-2682be854af4", prosecutionCaseJsonOptional);
 
-        assertTrue("Person Defendant details should not be null", defendantVOOptional.isPresent());
+        assertThat("Person Defendant details should not be null", defendantVOOptional.isPresent(), is(true));
 
         DefendantVO defendantVO = defendantVOOptional.get();
-        assertEquals("Mismatch first name","Fred" , defendantVO.getFirstName());
-        assertEquals("Mismatch middle name", "John", defendantVO.getMiddleName());
-        assertEquals("Mismatch last name", "Smith", defendantVO.getLastName());
+        assertThat("Mismatch first name", "Fred", is(defendantVO.getFirstName()));
+        assertThat("Mismatch middle name", "John", is(defendantVO.getMiddleName()));
+        assertThat("Mismatch last name", "Smith", is(defendantVO.getLastName()));
     }
 
     @Test
-    public void getDefendantDetailsForLegalEntityDefendant() throws Exception {
+    public void shouldGetDefendantDetailsForLegalEntityDefendant() throws Exception {
         Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithLegalEntity));
         JsonObject prosecutionCaseJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("prosecutionCase");
         ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject, ProsecutionCase.class);
@@ -155,86 +155,86 @@ public class CPSEmailNotificationProcessorTest {
         when(jsonObjectToObjectConverterMock.convert(prosecutionCaseJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);
 
         Optional<DefendantVO> defendantVOOptional = Whitebox
-                .invokeMethod(cpsEmailNotificationProcessor, "getDefendantDetails","f9ef2dbf-d205-4444-8059-fefed44111dd", prosecutionCaseJsonOptional);
+                .invokeMethod(cpsEmailNotificationProcessor, "getDefendantDetails", "f9ef2dbf-d205-4444-8059-fefed44111dd", prosecutionCaseJsonOptional);
 
-        assertTrue("LegalEntity Defendant details should not be null", defendantVOOptional.isPresent());
+        assertThat("LegalEntity Defendant details should not be null", defendantVOOptional.isPresent(), is(true));
 
         DefendantVO defendantVO = defendantVOOptional.get();
-        assertEquals("Mismatch legal entity name","ABC LTD" , defendantVO.getLegalEntityName());
+        assertThat("Mismatch legal entity name", defendantVO.getLegalEntityName(), is("ABC LTD"));
     }
 
     @Test
-    public void getFutureHearings() throws Exception{
-        final GetCaseAtAGlance getCaseAtAGlance = getCaseAtAGlanceWithFutureHearings();
-        Assert.assertEquals("Hearing size mismatched ",3 ,getCaseAtAGlance.getHearings().size());
+    public void shouldGetFutureHearings() throws Exception {
+        final GetHearingsAtAGlance getHearingAtAGlance = getCaseAtAGlanceWithFutureHearings();
+        assertThat("Hearing size mismatched ", 3, is(getHearingAtAGlance.getHearings().size()));
 
-        final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getCaseAtAGlance);
-        Assert.assertEquals("Future hearing size mismatched ",2 ,futureHearings.size());
-  }
+        final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getHearingAtAGlance);
+        assertThat("Future hearing size mismatched ", 2, is(futureHearings.size()));
+    }
 
     @Test
-    public void getEarliestHearing() throws Exception{
-        final GetCaseAtAGlance getCaseAtAGlance = getCaseAtAGlanceWithFutureHearings();
-        final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getCaseAtAGlance);
+    public void shouldGetEarliestHearing() throws Exception {
+        final GetHearingsAtAGlance getHearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
+        final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getHearingsAtAGlance);
         final Optional<Entry<UUID, ZonedDateTime>> earliestHearing = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getEarliestHearing", futureHearings);
-        Assert.assertTrue("Earliest date mismatched",earliestHearing.get().getValue().toLocalDate().isEqual(LocalDate.now().plusDays(1)));
+        assertThat("Earliest date mismatched", earliestHearing.get().getValue().toLocalDate().isEqual(LocalDate.now().plusDays(1)));
     }
 
     @Test
-    public void getCPSEmail() throws Exception{
-         final UUID courtCenterId = UUID.randomUUID();
-         final String testCPSEmail = "abc@xyz.com";
-         final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress",testCPSEmail).build();
+    public void shouldGetCPSEmail() throws Exception {
+        final UUID courtCenterId = UUID.randomUUID();
+        final String testCPSEmail = "abc@xyz.com";
+        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
 
-         when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
-         Optional<String> cpsEmailOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getCPSEmail", jsonEnvelope, courtCenterId);
-         Assert.assertEquals("CPSEmail is mismatched", testCPSEmail, cpsEmailOptional.get());
-   }
+        when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
+        Optional<String> cpsEmailOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getCPSEmail", jsonEnvelope, courtCenterId);
+        assertThat("CPSEmail is mismatched", testCPSEmail, is(cpsEmailOptional.get()));
+    }
 
     @Test
-    public void getEarliestHearingDay() throws Exception{
+    public void shouldGetEarliestHearingDay() throws Exception {
         List<HearingDay> hearingDays = new ArrayList<>();
         hearingDays.add(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(3)).build());
         hearingDays.add(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
         hearingDays.add(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(2)).build());
 
         final ZonedDateTime zonedDateTime = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getEarliestHearingDay", hearingDays);
-        Assert.assertEquals("Earliest hearing day mismatched ",zonedDateTime.toLocalDate(), LocalDate.now().plusDays(1));
+        assertThat("Earliest hearing day mismatched ", zonedDateTime.toLocalDate(), is(LocalDate.now().plusDays(1)));
     }
 
     @Test
-    public void getHearingVO() throws Exception{
-        final GetCaseAtAGlance getCaseAtAGlance = getCaseAtAGlanceWithFutureHearings();
-        final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getCaseAtAGlance);
+    public void shouldGetHearingVO() throws Exception {
+        final GetHearingsAtAGlance getHearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
+        final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getHearingsAtAGlance);
         final Optional<Entry<UUID, ZonedDateTime>> earliestHearing = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getEarliestHearing", futureHearings);
 
-        if(earliestHearing.isPresent()) {
+        if (earliestHearing.isPresent()) {
             final String hearingDate = earliestHearing.get().getValue().toString();
-            final Optional<HearingVO> hearingVOOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getHearingVO",hearingDate, futureHearings, earliestHearing);
+            final Optional<HearingVO> hearingVOOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getHearingVO", hearingDate, futureHearings, earliestHearing);
             final HearingVO hearingVO = hearingVOOptional.get();
             final ZonedDateTime zonedDateTime = ZonedDateTime.parse(hearingVO.getHearingDate());
-            Assert.assertTrue("Hearing date mismatched", zonedDateTime.toLocalDate().isEqual(LocalDate.now().plusDays(1)));
+            Assert.assertThat("Hearing date mismatched", zonedDateTime.toLocalDate().isEqual(LocalDate.now().plusDays(1)), is(true));
             Assert.assertNotNull("Court center name should not be empty", hearingVO.getCourtName());
             Assert.assertNotNull("Court center id should not be empty", hearingVO.getCourtCenterId());
         }
     }
 
     @Test
-    public void getDefendantJson() throws Exception{
+    public void shouldGetDefendantJson() throws Exception {
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
         final JsonObject prosecutionCaseJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("prosecutionCase");
         final UUID defendantId = UUID.fromString("924cbf53-0b51-4633-9e99-2682be854af4");
 
         final JsonObject resultJsonObject = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getDefendantJson", prosecutionCaseJsonObject, defendantId);
-        Assert.assertEquals("Defendant is mismatched", defendantId.toString(), resultJsonObject.getString("id"));
+        assertThat("Defendant is mismatched", defendantId.toString(), is(resultJsonObject.getString("id")));
     }
 
     @Test
-    public void populateCPSNotificationAndSendEmail() throws Exception{
+    public void shouldPpulateCPSNotificationAndSendEmail() throws Exception {
         final String testCPSEmail = "abc@xyz.com";
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
         final UUID defendantId = UUID.fromString("924cbf53-0b51-4633-9e99-2682be854af4");
-        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress",testCPSEmail).build();
+        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
         final UUID uuid = UUID.randomUUID();
         hearingVOMock = HearingVO.builder().hearingDate(ZonedDateTime.now().toString()).courtCenterId(uuid).courtName("testName").build();
 
@@ -245,39 +245,39 @@ public class CPSEmailNotificationProcessorTest {
         Whitebox.invokeMethod(cpsEmailNotificationProcessor, "populateCPSNotificationAndSendEmail",
                 jsonEnvelope, defendantId.toString(), uuid, prosecutionCaseJsonOptional, hearingVOMock, EmailTemplateType.INSTRUCTION);
 
-        verify(referenceDataService,times(1)).getOrganisationUnitById(uuid, jsonEnvelope, requester);
-        verify(usersGroupService,times(1)).getDefenceOrganisationDetails(uuid, jsonEnvelope.metadata());
+        verify(referenceDataService, times(1)).getOrganisationUnitById(uuid, jsonEnvelope, requester);
+        verify(usersGroupService, times(1)).getDefenceOrganisationDetails(uuid, jsonEnvelope.metadata());
     }
 
     @Test
-    public void populateCPSNotification() throws Exception{
+    public void shouldPopulateCPSNotification() throws Exception {
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
-        final JsonObject caseAtAGlanceJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("caseAtAGlance");
+        final JsonObject hearingAtAGlanceJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("hearingsAtAGlance");
         final UUID randomUUID = UUID.randomUUID();
 
-        jsonObject =  createObjectBuilder().add("caseId", randomUUID.toString())
+        jsonObject = createObjectBuilder().add("caseId", randomUUID.toString())
                 .add("defendantId", randomUUID.toString())
                 .add("organisationId", randomUUID.toString()).build();
 
         when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, randomUUID.toString())).thenReturn(prosecutionCaseJsonOptional);
         when(usersGroupService.getDefenceOrganisationDetails(randomUUID, jsonEnvelope.metadata())).thenReturn(buildDefenceOrganisationVO());
         doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
-        when(jsonObjectToObjectConverterMock.convert(caseAtAGlanceJsonObject, GetCaseAtAGlance.class)).thenReturn(getCaseAtAGlanceMock);
+        when(jsonObjectToObjectConverterMock.convert(hearingAtAGlanceJsonObject, GetHearingsAtAGlance.class)).thenReturn(getHearingsAtAGlance);
 
         Whitebox.invokeMethod(cpsEmailNotificationProcessor, "populateCPSNotification", jsonEnvelope, jsonObject, EmailTemplateType.INSTRUCTION);
 
-        verify(progressionService,times(1)).getProsecutionCaseDetailById(jsonEnvelope, randomUUID.toString());
+        verify(progressionService, times(1)).getProsecutionCaseDetailById(jsonEnvelope, randomUUID.toString());
     }
 
     @Test
-    public void getHearingDetailsWithNullHearingVO() throws Exception{
+    public void shouldGetHearingDetailsWithNullHearingVO() throws Exception {
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
         final String testCPSEmail = "abc@xyz.com";
 
-        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress",testCPSEmail).build();
+        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
         final UUID randomUUID = UUID.randomUUID();
 
-        jsonObject =  createObjectBuilder().add("caseId", randomUUID.toString())
+        jsonObject = createObjectBuilder().add("caseId", randomUUID.toString())
                 .add("defendantId", randomUUID.toString())
                 .add("organisationId", randomUUID.toString()).build();
 
@@ -285,11 +285,11 @@ public class CPSEmailNotificationProcessorTest {
         when(referenceDataService.getOrganisationUnitById(randomUUID, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
         when(usersGroupService.getDefenceOrganisationDetails(randomUUID, jsonEnvelope.metadata())).thenReturn(buildDefenceOrganisationVO());
         doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
-        when(jsonObjectToObjectConverterMock.convert(payload, GetCaseAtAGlance.class)).thenReturn(getCaseAtAGlanceMock);
+        when(jsonObjectToObjectConverterMock.convert(payload, GetHearingsAtAGlance.class)).thenReturn(getHearingsAtAGlance);
 
         Optional<HearingVO> hearingVO = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getHearingDetails", prosecutionCaseJsonOptional);
 
-        Assert.assertTrue("Hearing vo is not null", !hearingVO.isPresent());
+        assertThat("Hearing vo is not null", hearingVO.isPresent(), is(false));
 
     }
 
@@ -306,7 +306,7 @@ public class CPSEmailNotificationProcessorTest {
         return new StringToJsonObjectConverter().convert(response);
     }
 
-    private Optional<DefenceOrganisationVO> buildDefenceOrganisationVO(){
+    private Optional<DefenceOrganisationVO> buildDefenceOrganisationVO() {
         return Optional.of(DefenceOrganisationVO.builder()
                 .postcode("POSTCODE")
                 .addressLine1("line1")
@@ -318,7 +318,7 @@ public class CPSEmailNotificationProcessorTest {
                 .email("abc@xyz.com").build());
     }
 
-  private GetCaseAtAGlance getCaseAtAGlanceWithFutureHearings(){
+    private GetHearingsAtAGlance getCaseAtAGlanceWithFutureHearings() {
 
         CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).withName("test court name").build();
 
@@ -347,7 +347,7 @@ public class CPSEmailNotificationProcessorTest {
         hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withCourtCentre(courtCentre).withHearingDays(Collections.singletonList(
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build())).build());
 
-        return GetCaseAtAGlance.getCaseAtAGlance().withHearings(hearings).build();
+        return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
 
     }
 }

@@ -119,9 +119,9 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                         status().is(OK),
                         payload().isJson(allOf(
                                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                                withJsonPath("$.caseAtAGlance.courtApplications.[*].linkedCaseId", hasItem(equalTo(caseId))),
-                                withJsonPath("$.caseAtAGlance.courtApplications.[*].applicationStatus", hasItem(equalTo(status))),
-                                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId)))
+                                withJsonPath("$.hearingsAtAGlance.courtApplications.[*].linkedCaseId", hasItem(equalTo(caseId))),
+                                withJsonPath("$.hearingsAtAGlance.courtApplications.[*].applicationStatus", hasItem(equalTo(status))),
+                                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId)))
                         )));
     }
 

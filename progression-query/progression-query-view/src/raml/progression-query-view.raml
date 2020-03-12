@@ -31,6 +31,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.prosecutioncase+json
             name: progression.query.prosecutioncase
+        (mapping):
+            responseType: application/vnd.progression.query.prosecutioncase.caag+json
+            name: progression.query.prosecutioncase.caag
         ...
       responses:
             200:
@@ -39,6 +42,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.prosecutioncase+json:
                     example:  !include json/progression.query.prosecutioncase.json
                     schema:  !include json/schema/progression.query.prosecutioncase.json
+                  application/vnd.progression.query.prosecutioncase.caag+json:
+                    example:  !include json/progression.query.prosecutioncase.caag.json
+                    schema:  !include json/schema/progression.query.prosecutioncase.caag.json
 
 /defendant-requests/{defendantId}:
   uriParameters:
@@ -169,6 +175,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.application.summary+json
             name: progression.query.application.summary
+        (mapping):
+            responseType: application/vnd.progression.query.application.aaag+json
+            name: progression.query.application.aaag
         ...
       responses:
             200:
@@ -180,7 +189,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.application.summary+json:
                     example:  !include json/progression.query.application.summary.json
                     schema:  !include json/schema/progression.query.application.summary.json
-
+                  application/vnd.progression.query.application.aaag+json:
+                    example:  !include json/progression.query.application.aaag.json
+                    schema:  !include json/schema/progression.query.application.aaag.json
 /applications/{applicationId}/notification-status:
   description: get notification status for application Id
   uriParameters:
@@ -258,6 +269,27 @@ protocols: [ HTTP, HTTPS ]
             example:  !include json/progression.query.associated-organisation-details.json
             schema:  !include json/schema/progression.query.associated-organisation-details.json
 
+/cases/{caseId}/notes:
+  uriParameters:
+        caseId:
+          description: ID of case notes to get
+          type: string
+  get:
+      description: |
+        Return the case notes for the case Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case-notes+json
+            name: progression.query.case-notes
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case-notes+json:
+                    example:  !include json/progression.query.case-notes.json
+                    schema:  !include json/schema/progression.query.case-notes.json
+
 /shareddocuments/{hearingId}:
   description: Return court documents shared for given hearing id
   uriParameters:
@@ -287,6 +319,8 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.shared-court-documents+json:
+
+
 /defendants/{laaContractNumber}:
    uriParameters:
      laaContractNumber:
@@ -323,12 +357,12 @@ protocols: [ HTTP, HTTPS ]
         ...
       responses:
             200:
-                description: OK        
-                body: 
+                description: OK
+                body:
                   application/vnd.progression.query.caseprogressiondetail+json:
                     example:  !include json/progression.query.caseprogressiondetail.json
                     schema:  !include json/schema/progression.query.caseprogressiondetail.json
-                    
+
 /cases:
   get:
       description: |
@@ -356,8 +390,8 @@ protocols: [ HTTP, HTTPS ]
           required: false
       responses:
             200:
-                description: OK        
-                body: 
+                description: OK
+                body:
                   application/vnd.progression.query.cases+json:
                     example:  !include json/progression.query.cases.json
                     schema:  !include json/schema/progression.query.cases.json

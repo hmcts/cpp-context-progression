@@ -60,6 +60,7 @@
     <include file="liquibase/alter-defence-association-access-history-date-datatype.xml"/>
     <include file="liquibase/rename-defence-association.xml"/>
     <include file="liquibase/rename-and-update-defence-association-access-history.xml"/>
+    <include file="liquibase/create-case-note.xml"/>
     <include file="liquibase/created-defendant-laa-association.xml"/>
     <include file="liquibase/create-court-document-type-rbac.xml"/>
     <include file="liquibase/create-shared-court-document.xml"/>

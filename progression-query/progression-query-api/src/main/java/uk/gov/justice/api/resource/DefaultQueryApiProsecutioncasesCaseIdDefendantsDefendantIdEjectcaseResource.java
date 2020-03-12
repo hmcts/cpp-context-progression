@@ -11,7 +11,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.adapter.rest.multipart.FileInputDetailsFactory;
@@ -151,9 +151,9 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdEjectcase
     }
 
     private JsonObject transformToTemplateConvert(JsonObject jsonObject, final String defendantId) {
-        final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("caseAtAGlance"), GetCaseAtAGlance.class);
+        final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("hearingsAtAGlance"), GetHearingsAtAGlance.class);
         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.ejectCase(prosecutionCase, caseAtAGlance, defendantId, userId);
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.ejectCase(prosecutionCase, hearingsAtAGlance, defendantId, userId);
         return objectToJsonObjectConverter.convert(courtExtractRequested);
     }
 

@@ -13,7 +13,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -72,7 +72,7 @@ public class CaseApplicationEjectedEventProcessorTest {
     private JsonObject payload;
 
     @Mock
-    private GetCaseAtAGlance caseAtAGlance;
+    private GetHearingsAtAGlance hearingsAtAGlance;
 
     @Mock
     private ProsecutionCase prosecutionCase;
@@ -110,11 +110,11 @@ public class CaseApplicationEjectedEventProcessorTest {
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(progressionService.getProsecutionCaseDetailById(envelope,
                 prosecutionCaseId)).thenReturn(of(prosecutionCaseJsonObject));
-        when(prosecutionCaseJsonObject.getJsonObject("caseAtAGlance")).thenReturn(payload);
+        when(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance")).thenReturn(payload);
         when(prosecutionCaseJsonObject.getJsonObject("prosecutionCase")).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, GetCaseAtAGlance.class)).thenReturn(caseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(payload, GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(caseAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
+        when(hearingsAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
         when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
         when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
         when(prosecutionCaseIdentifier.getProsecutionAuthorityCode()).thenReturn(prosecutionCaseAuthorityCode);

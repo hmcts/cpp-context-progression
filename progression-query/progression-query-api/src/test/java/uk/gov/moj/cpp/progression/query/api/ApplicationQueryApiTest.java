@@ -96,7 +96,7 @@ public class ApplicationQueryApiTest {
         when(response.payloadAsJsonObject()).thenReturn(responseJson);
 
 
-        Function<Object, JsonEnvelope> f = (obj) -> {
+        final Function<Object, JsonEnvelope> f = (obj) -> {
             suppliedObject = obj;
             return response;
         };
@@ -105,10 +105,15 @@ public class ApplicationQueryApiTest {
 
         assertThat(applicationQueryApi.getApplication(query), equalTo(response));
 
-        JsonObject suppliedJson = (JsonObject) suppliedObject;
+        final JsonObject suppliedJson = (JsonObject) suppliedObject;
         assertThat("andrew", equalTo(suppliedJson.getJsonObject("assignedUser").getString("firstName")));
 
 
     }
 
+    @Test
+    public void shouldGetCourtApplicationForApplicationAtAGlance() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(applicationQueryApi.getCourtApplicationForApplicationAtAGlance(query), equalTo(response));
+    }
 }

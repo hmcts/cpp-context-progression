@@ -5,7 +5,7 @@
     "prosecutionCase": {
       "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
     },
-    "caseAtAGlance": {
+    "hearingsAtAGlance": {
       "type": "object",
       "properties": {
         "id": {
@@ -435,26 +435,26 @@
         }
       },
       "additionalProperties": false
-		},
-        "custodyEstablishment": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "id": {
-              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-            },
-            "custody": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "id",
-            "name",
-            "custody"
-          ]
+    },
+    "custodyEstablishment": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "custody": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "custody"
+      ]
     }
   }
 }

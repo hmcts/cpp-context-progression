@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -39,7 +40,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCounsel;
 import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.progression.courts.CourtApplications;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -59,7 +60,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRep
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,17 +67,25 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetCaseAtAGlanceServiceTest {
+public class GetHearingAtAGlanceServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
+    private static final String HEARING_PAYLOAD = "{\"courtCentre\":{\"address\":{\"address1\":\"176A Lavender Hill\",\"address2\":\"London\",\"address3\":\"\",\"address4\":\"\",\"address5\":\"\",\"postcode\":\"SW11 1JU\"},\"id\":\"f8254db1-1683-483e-afb3-b87fde5a0a26\",\"name\":\"Lavender Hill Magistrates' Court\",\"roomId\":\"9e4932f7-97b2-3010-b942-ddd2624e4dd8\",\"roomName\":\"Courtroom 01\"},\"hasSharedResults\":false,\"hearingDays\":[{\"listedDurationMinutes\":1," +
+            "\"listingSequence\":0,\"sittingDay\":\"2020-02-28T09:00:00.000Z\"},{\"listedDurationMinutes\":20,\"listingSequence\":0,\"sittingDay\":\"2020-02-29T10:00:00.000Z\"},{\"listedDurationMinutes\":20,\"listingSequence\":0,\"sittingDay\":\"2020-03-01T10:00:00.000Z\"},{\"listedDurationMinutes\":20,\"listingSequence\":0,\"sittingDay\":\"2020-03-03T10:00:00.000Z\"},{\"listedDurationMinutes\":2,\"listingSequence\":0,\"sittingDay\":\"2020-03-04T15:00:00.000Z\"}],\"hearingLanguage\":\"ENGLISH\",\"id\":\"133fc23e-746e-49f0-80bc-64add08d62ec\",\"judiciary\":[{\"firstName\":\"Shamim (Sham)\",\"isBenchChairman\":true,\"isDeputy\":true,\"judicialId\":\"0a87257e-5308-397d-b432-30edf4ad1dae\"," +
+            "\"judicialRoleType\":{\"judicialRoleTypeId\":\"0a87257e-5308-397d-b432-30edf4ad1dae\",\"judiciaryType\":\"DJ\"},\"lastName\":\"Qureshi\",\"title\":\"Mr\"}],\"jurisdictionType\":\"CROWN\",\"prosecutionCases\":[{\"defendants\":[{\"id\":\"2a2eeb66-d01b-49c2-8dfc-324d91cac2f7\",\"offences\":[{\"arrestDate\":\"2006-05-04\",\"chargeDate\":\"2004-12-09\",\"count\":0,\"id\":\"09c380f9-e127-4638-bd1e-55079dff953a\",\"modeOfTrial\":\"Summary\",\"offenceCode\":\"CA03014\",\"offenceDefinitionId\":\"d6bd72ad-37bf-330d-bcc6-215728949d3e\",\"offenceTitle\":\"Fail / refuse give assistance to person executing Communications Act search warrant\",\"orderIndex\":500,\"startDate\":\"2004-12-09\"," +
+            "\"wording\":\"Has a violent past and fear that he will commit further offences and\\n                interfere with witnesse\"}],\"personDefendant\":{\"arrestSummonsNumber\":\"TFL\",\"bailStatus\":{\"code\":\"C\",\"description\":\"Remanded into Custody\",\"id\":\"12e69486-4d01-3403-a50a-7419ca040635\"},\"personDetails\":{\"address\":{\"address1\":\"56Police House\",\"address2\":\"StreetDescription\",\"address3\":\"Locality2O\"},\"documentationLanguageNeeds\":\"ENGLISH\",\"gender\":\"MALE\",\"lastName\":\"Ormsby\"}},\"prosecutionAuthorityReference\":\"TFL\",\"prosecutionCaseId\":\"" + CASE_ID + "\"}],\"id\":\"" + CASE_ID + "\",\"initiationCode\":\"C\",\"originatingOrganisation\":" +
+            "\"B01BH00\",\"prosecutionCaseIdentifier\":{\"prosecutionAuthorityCode\":\"DVL2\",\"prosecutionAuthorityId\":\"bcdca7df-ab21-45f6-bc19-f883cf3d407e\",\"caseURN\":\"72GD8580920\"}}],\"type\":{\"description\":\"First Hearing\",\"id\":\"4a0e892d-c0c5-3c51-95b8-704d8c781776\"}}";
     private static final UUID DEFENDANT_ID_1 = randomUUID();
     private static final UUID DEFENDANT_ID_2 = randomUUID();
     private static final UUID CASE_HEARING_ID_1 = randomUUID();
@@ -101,7 +109,7 @@ public class GetCaseAtAGlanceServiceTest {
     private HearingApplicationRepository hearingApplicationRepository;
 
     @InjectMocks
-    private GetCaseAtAGlanceService getCaseAtAGlanceService;
+    private GetHearingAtAGlanceService getHearingAtAGlanceService;
 
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -111,6 +119,10 @@ public class GetCaseAtAGlanceServiceTest {
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Mock
+    private CaseDefendantHearingEntity caseDefendantHearingEntity;
+    @Mock
+    private HearingEntity hearingEntity;
 
     @Before
     public void setup() {
@@ -119,7 +131,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithOneHearingWithTwoDefendantsNoApplications() {
+    public void hearingAtAGlanceHearingWithCaseWithOneHearingWithTwoDefendantsNoApplications() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
@@ -143,7 +155,7 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -154,7 +166,7 @@ public class GetCaseAtAGlanceServiceTest {
         assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
-        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is ("John Williams"));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
         assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
@@ -198,7 +210,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithTwoHearingsWithTwoDefendantsNoApplications() {
+    public void hearingAtAGlanceHearingWithCaseWithTwoHearingsWithTwoDefendantsNoApplications() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         Hearing caseHearing1 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
@@ -233,7 +245,7 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -287,7 +299,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationInSameHearing() {
+    public void hearingAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationInSameHearing() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         CourtApplication courtApplication = createCourtApplicationWithDefendants(APPLICATION_ID, DEFENDANT_ID_1);
@@ -325,7 +337,7 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -383,7 +395,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationInDifferentHearings() {
+    public void hearingAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationInDifferentHearings() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
@@ -421,7 +433,7 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -511,7 +523,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithIndividualInSameHearing() {
+    public void hearingAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithIndividualInSameHearing() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         CourtApplication courtApplication = createCourtApplicationWithIndividuals(APPLICATION_ID, randomUUID());
@@ -546,12 +558,12 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
 
-        // Defendant Hearing details
+        // Defendant Hearing detailss
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
         assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
@@ -602,7 +614,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithOrganisationInSameHearing() {
+    public void hearingAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithOrganisationInSameHearing() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         CourtApplication courtApplication = createCourtApplicationWithOrganisation(APPLICATION_ID, randomUUID());
@@ -637,7 +649,7 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -693,7 +705,7 @@ public class GetCaseAtAGlanceServiceTest {
     }
 
     @Test
-    public void caseAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithProsecutingAuthorityInSameHearing() {
+    public void hearingAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithProsecutingAuthorityInSameHearing() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
         CourtApplication courtApplication = createCourtApplicationWithProsecutingAuthority(APPLICATION_ID, randomUUID());
@@ -728,7 +740,7 @@ public class GetCaseAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetCaseAtAGlance response = this.getCaseAtAGlanceService.getCaseAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -781,6 +793,20 @@ public class GetCaseAtAGlanceServiceTest {
         assertThat(prosecutionCounselsResponse.get(0).getFirstName(), is(caseHearing.getProsecutionCounsels().get(0).getFirstName()));
 
         assertThat(hearingResponse.getHasResultAmended(), is(true));
+    }
+
+    @Test
+    public void shouldGetAllHearingsAssociatedToACase() {
+
+        when(caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(singletonList(caseDefendantHearingEntity));
+        when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
+        when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_INITIALISED);
+        when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD);
+        when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
+
+        List<Hearings> caseHearings = this.getHearingAtAGlanceService.getCaseHearings(CASE_ID);
+
+        assertThat(caseHearings.isEmpty(), is(false));
     }
 
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {

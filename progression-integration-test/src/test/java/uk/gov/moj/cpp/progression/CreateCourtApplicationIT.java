@@ -120,7 +120,7 @@ public class CreateCourtApplicationIT extends AbstractIT {
         Matcher[] caseMatchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.linkedApplicationsSummary", hasSize(2)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationTitle", is("a")),
+                withJsonPath("$.linkedApplicationsSummary[0].applicationTitle", is("Application for bad character")),
                 withJsonPath("$.linkedApplicationsSummary[0].isAppeal", is(false)),
                 withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("DRAFT")),
                 withJsonPath("$.linkedApplicationsSummary[0].respondentDisplayNames", hasSize(1)),

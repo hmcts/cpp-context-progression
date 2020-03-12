@@ -47,6 +47,15 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.prosecutioncase.caag"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.prosecutioncase.caag");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.case-at-a-glance"
   when
     $outcome: Outcome();
@@ -230,6 +239,15 @@ rule "Query - Access control for  progression.query.application"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.application.aaag"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.application.aaag");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.application.summary"
   when
     $outcome: Outcome();
@@ -271,6 +289,15 @@ rule "Query - Access control for  progression.query.associated-organisation"
     $outcome: Outcome();
     $action: Action(name == "progression.query.associated-organisation");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Access all case notes for progression.query.case-notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case-notes");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary"));
   then
     $outcome.setSuccess(true);
 end

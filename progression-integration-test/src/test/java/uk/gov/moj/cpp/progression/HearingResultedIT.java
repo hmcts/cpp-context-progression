@@ -123,9 +123,9 @@ public class HearingResultedIT extends AbstractIT {
 
         Matcher[] personDefendantOffenceUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.caseAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
-                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
-                withJsonPath("$.caseAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
 
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", is("2018-09-10")),

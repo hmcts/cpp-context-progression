@@ -7,8 +7,38 @@
     </parent>
     <artifactId>progression-query-view</artifactId>
     <packaging>war</packaging>
-    <dependencies>
 
+    <properties>
+        <cpp.service-component>QUERY_VIEW</cpp.service-component>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>uk.gov.justice.framework-generators</groupId>
+                <artifactId>rest-client-generator-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.referencedata</groupId>
+                        <artifactId>referencedata-query-api</artifactId>
+                        <version>${referencedata.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.common</groupId>
+            <artifactId>query-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>query-view</artifactId>

@@ -133,7 +133,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
     public void shouldGetProsecutionCaseAtAGlance() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
-                withJsonPath("$.caseAtAGlance.id", is(caseId))
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
     }
 

@@ -89,6 +89,9 @@ subscriptions_descriptor:
         - name: progression.event.case-markers-updated
           schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
 
+        - name: progression.event.case-note-added
+          schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
+
           ############  Association Start ############
         - name: progression.event.defence-organisation-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json

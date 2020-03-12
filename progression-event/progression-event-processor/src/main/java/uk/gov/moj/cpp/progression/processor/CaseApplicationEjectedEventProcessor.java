@@ -5,7 +5,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -83,11 +83,11 @@ public class CaseApplicationEjectedEventProcessor {
         final String prosecutionCaseId = event.payloadAsJsonObject().getString(PROSECUTION_CASE_ID);
         final JsonArrayBuilder hearingIdsBuilder = Json.createArrayBuilder();
         progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId).ifPresent(prosecutionCaseJsonObject -> {
-            final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.
-                    convert(prosecutionCaseJsonObject.getJsonObject("caseAtAGlance"),
-                            GetCaseAtAGlance.class);
-            if (isNotEmpty(caseAtAGlance.getHearings())) {
-                caseAtAGlance.getHearings().stream().forEach(hearing -> hearingIdsBuilder.add(hearing.getId().toString()));
+            final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.
+                    convert(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance"),
+                            GetHearingsAtAGlance.class);
+            if (isNotEmpty(hearingsAtAGlance.getHearings())) {
+                hearingsAtAGlance.getHearings().stream().forEach(hearing -> hearingIdsBuilder.add(hearing.getId().toString()));
             }
         });
         return hearingIdsBuilder.build();

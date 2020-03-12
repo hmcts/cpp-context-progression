@@ -44,4 +44,10 @@ public class ProsecutionCaseQueryApiTest {
         assertThat(prosecutionCaseQueryApi.searchForUserGroupsByMaterialId(query), equalTo(response));
     }
 
+    @Test
+    public void shouldHandleProsecutionCaseAtAGlance() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(prosecutionCaseQueryApi.getProsecutionCaseForCaseAtAGlance(query), equalTo(response));
+    }
+
 }

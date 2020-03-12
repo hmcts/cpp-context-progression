@@ -1,0 +1,13 @@
+{
+  "caseNotes": [
+    {
+      "note": "This is a note",
+      "author": {
+        "firstName": "Bob",
+        "lastName": "Marley"
+      },
+      "createdDateTime": "2020-02-03T17:47:52.067Z"
+    }
+  ]
+}
+

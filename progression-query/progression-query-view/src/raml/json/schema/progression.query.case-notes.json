@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseNotes": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "author": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "firstName",
+                "lastName"
+              ]
+            },
+            "createdDateTime": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "note",
+            "author",
+            "createdDateTime"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "caseNotes"
+  ]
+}

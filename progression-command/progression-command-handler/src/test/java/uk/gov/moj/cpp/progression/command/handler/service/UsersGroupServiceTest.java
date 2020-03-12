@@ -2,31 +2,41 @@ package uk.gov.moj.cpp.progression.command.handler.service;
 
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -48,6 +58,8 @@ public class UsersGroupServiceTest {
     private Metadata metadata;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
     @InjectMocks
     private UsersGroupService usersGroupService;
 
@@ -155,6 +167,32 @@ public class UsersGroupServiceTest {
 
         usersGroupService.getUserGroupsForUser(query);
 
+    }
+
+    @Test
+    public void shouldReturnUserDetailsGivenAKnownUserId() {
+        //Given
+        final UUID userId = randomUUID();
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
+
+        final JsonEnvelope requestEnvelope =  envelopeFrom(
+                metadataWithRandomUUID("usersgroups.get-user-details").withUserId(userId.toString()),
+                createObjectBuilder().build());
+
+        final UserDetails userDetails = new UserDetails( "Bob", "Marley");
+
+        final Envelope<UserDetails> returnedValue = envelop(userDetails)
+                .withName("usersgroups.get-user-details")
+                .withMetadataFrom(requestEnvelope);
+
+        when(requester.requestAsAdmin(any(), eq(UserDetails.class))).thenReturn(returnedValue);
+        //When
+        final Optional<UserDetails> result = usersGroupService.getUserDetails(requestEnvelope);
+
+        //Then
+        verify(requester).requestAsAdmin(envelopeCaptor.capture(), eq(UserDetails.class));
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("usersgroups.get-user-details"));
+        assertThat(result, is(Optional.of(userDetails)));
     }
 
     @Test

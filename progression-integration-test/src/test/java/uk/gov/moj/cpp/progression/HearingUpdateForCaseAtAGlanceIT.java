@@ -70,7 +70,7 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.caseAtAGlance.hearings[0].courtCentre.id", equalTo(newCourtCentreId))
+                withJsonPath("$.hearingsAtAGlance.hearings[0].courtCentre.id", equalTo(newCourtCentreId))
         });
 
     }

@@ -1,23 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
-
-import java.util.Optional;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
@@ -44,13 +26,34 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+
 public class ReceiveRepresentationOrderIT {
 
-    private String caseId = randomUUID().toString();
-    private String defendantId = randomUUID().toString();
-    private String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-    private String statusCode = "G2";
-    private String laaContractNumber = "LAA3456";
+    static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
+    static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents
+            .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+    private static final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents
+            .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
     final String userId = UUID.randomUUID().toString();
     final String userId2 = UUID.randomUUID().toString();
 
@@ -58,17 +61,31 @@ public class ReceiveRepresentationOrderIT {
     final String organisationId2 = UUID.randomUUID().toString();
     final String organisationName1 = "Smith Associates Ltd.";
     final String organisationName2 = "Greg Associates Ltd.";
+    private final String caseId = randomUUID().toString();
+    private final String defendantId = randomUUID().toString();
+    private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+    private final String statusCode = "G2";
+    private final String laaContractNumber = "LAA3456";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
-    static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
+    @AfterClass
+    public static void tearDown() throws JMSException {
+        messageProducerClientPublic.close();
+        messageConsumerClientPublicForRecordLAAReference.close();
+        messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
+    }
 
+    private static void verifyInMessagingQueueForDefendantOffenceUpdated() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForRecordLAAReference);
+        assertTrue(message.isPresent());
+        assertThat(message.get().getJsonArray("updatedOffences").size(), is(1));
+        assertFalse(message.get().containsKey("addedOffences"));
+        assertFalse(message.get().containsKey("deletedOffences"));
+    }
 
-    private static final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
-
+    private static void verifyInMessagingQueueForDefendantLegalAidStatusUpdated() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
+        assertTrue(message.isPresent());
+    }
 
     @Before
     public void setUp() {
@@ -80,27 +97,20 @@ public class ReceiveRepresentationOrderIT {
 
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
-        messageConsumerClientPublicForRecordLAAReference.close();
-        messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
-    }
-
     @Test
-    public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne () throws Exception {
+    public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne() throws Exception {
         //Create prosecution case
         //Given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
         String response = pollProsecutionCasesProgressionFor(caseId);
-        JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
         try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
             //When
             associateOrganisation(defendantId, userId);
 
             //Then
-             helper.verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId1);
+            helper.verifyDefenceOrganisationAssociatedEventGenerated(defendantId, organisationId1);
             verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
                     organisationId1,
                     userId);
@@ -114,7 +124,7 @@ public class ReceiveRepresentationOrderIT {
 
         //Receive Representation Order
         //when
-        Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId2);
+        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId2);
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
 
 
@@ -131,9 +141,9 @@ public class ReceiveRepresentationOrderIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
                 ));
 
-         response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
-        final String hearingId = prosecutioncasesJsonObject.getJsonObject("caseAtAGlance").getJsonArray("defendantHearings")
+        final String hearingId = prosecutioncasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
                 .getJsonObject(0).getJsonArray("hearingIds").getString(0);
 
         final String hearingResponse = getHearingForDefendant(hearingId);
@@ -166,19 +176,6 @@ public class ReceiveRepresentationOrderIT {
                 userId);
 
 
-    }
-
-    private static void verifyInMessagingQueueForDefendantOffenceUpdated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForRecordLAAReference);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getJsonArray("updatedOffences").size(), is(1));
-        assertFalse(message.get().containsKey("addedOffences"));
-        assertFalse(message.get().containsKey("deletedOffences"));
-    }
-
-    private static void verifyInMessagingQueueForDefendantLegalAidStatusUpdated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
-        assertTrue(message.isPresent());
     }
 
 

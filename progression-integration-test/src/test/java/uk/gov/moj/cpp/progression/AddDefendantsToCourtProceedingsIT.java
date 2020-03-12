@@ -92,8 +92,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.caseAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
+                                withJsonPath("$.hearingAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
+                                withJsonPath("$.hearingAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
                         )));
     }
 
@@ -172,7 +172,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         final JsonObject prosecutionCaseJson = getJsonObject(pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId)));
 
-        final Optional<JsonValue> defendantHearing = prosecutionCaseJson.getJsonObject("caseAtAGlance")
+        final Optional<JsonValue> defendantHearing = prosecutionCaseJson.getJsonObject("hearingsAtAGlance")
                 .getJsonArray("defendantHearings")
                 .stream().filter(def1 -> ((JsonObject) def1).getString("defendantId").equals(defendantId))
                 .findFirst();

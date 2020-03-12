@@ -1,11 +1,21 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import static java.util.Collections.emptyList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 import static uk.gov.moj.cpp.progression.query.view.ProsecutionCaseQueryViewTest.ApplicationArbitraryValues.APPLICANT_FIRST_NAME;
 import static uk.gov.moj.cpp.progression.query.view.ProsecutionCaseQueryViewTest.ApplicationArbitraryValues.APPLICANT_LAST_NAME;
@@ -28,16 +38,27 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.progression.courts.DefendantHearings;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
+import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.GetCaseAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
-import uk.gov.moj.cpp.progression.query.view.service.GetCaseAtAGlanceService;
+import uk.gov.moj.cpp.progression.query.view.service.DefenceOrganisationService;
+import uk.gov.moj.cpp.progression.query.view.service.GetHearingAtAGlanceService;
+import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
@@ -49,62 +70,75 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCaseQueryViewTest {
 
+    private static final String PROGRESSION_QUERY_PROSECUTIONCASE_CAAG = "progression.query.prosecutioncase.caag";
+    private static final String PROSECUTION_CASE = "prosecutionCase";
+    private static final Logger LOGGER = getLogger(ProsecutionCaseQueryViewTest.class);
+    private final Enveloper enveloper = createEnveloper();
     @Mock
     private CourtDocumentMaterialRepository courtDocumentMaterialRepository;
-
-
     @Mock
     private SearchProsecutionCaseRepository searchCaseRepository;
-
     @Mock
     private ProsecutionCaseRepository prosecutionCaseRepository;
-
     @Mock
     private CourtDocumentRepository courtDocumentRepository;
-
     @Mock
     private JsonObject jsonObject;
-
     @Mock
     private StringToJsonObjectConverter stringToJsonObjectConverter;
-
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Mock
+    @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
+    @Spy
+    private ListToJsonArrayConverter listToJsonArrayConverter;
     @InjectMocks
     private ProsecutionCaseQuery prosecutionCaseQuery;
-
     @Mock
     private CourtApplicationRepository courtApplicationRepository;
-
     @Mock
-    private GetCaseAtAGlanceService getCaseAtAGlanceService;
+    private GetHearingAtAGlanceService getHearingAtAGlanceService;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
+    private DefenceOrganisationService defenceOrganisationService;
 
+    @Before
+    public void setup() {
+        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+
+        setField(this.listToJsonArrayConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.listToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
+    }
 
     @Test
     public void shouldFindProsecutionCaseById() throws Exception {
@@ -119,7 +153,7 @@ public class ProsecutionCaseQueryViewTest {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setPayload("{}");
 
-        final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withHearings(Arrays.asList(Hearings.hearings().build()))
                 .withDefendantHearings(Arrays.asList(DefendantHearings.defendantHearings().build()))
                 .withId(randomUUID())
@@ -127,17 +161,76 @@ public class ProsecutionCaseQueryViewTest {
 
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(CourtApplication.courtApplication().build());
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtApplication.class))).thenReturn(this.jsonObject);
-        when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        when(getHearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
-        assertThat(response.payloadAsJsonObject().get("caseAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+    }
+
+    @Test
+    public void shouldFindCaseAtAGlanceGivenProsecutionCaseWithUrn() {
+
+        final JsonEnvelope jsonEnvelope = buildEnvelope(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, "progression.query.prosecutioncase.caag.with.urn.json");
+        final JsonObject prosecutionCaseEntityJson = jsonEnvelope.payloadAsJsonObject().getJsonObject(PROSECUTION_CASE);
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG);
+        final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(fromString(caseId));
+        prosecutionCaseEntity.setPayload(prosecutionCaseEntityJson.toString());
+
+        when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(prosecutionCaseEntityJson);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJson, ProsecutionCase.class)).thenReturn(getProsecutionCase(prosecutionCaseEntityJson));
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+
+        assertThat(response.payloadAsJsonObject().getString("caseId"), is(caseId));
+        assertThat(response.payloadAsJsonObject().getJsonObject("caseDetails").getString("caseURN"), is("05PP1000915"));
+        assertThat(response.payloadAsJsonObject().getJsonObject("caseDetails").getJsonArray("caseMarkers"), nullValue());
+        assertThat(response.payloadAsJsonObject().getJsonArray("defendants"), notNullValue());
     }
 
 
     @Test
-    public void shouldFindApplicationsLinkedToProsecutionCase() throws Exception {
+    public void shouldFindApplicationsLinkedToCaseAtAGlanceProsecutionCase() {
+
+        final JsonEnvelope jsonEnvelope = buildEnvelope(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, "progression.query.prosecutioncase.caag.with.urn.json");
+        final JsonObject prosecutionCaseEntityJson = jsonEnvelope.payloadAsJsonObject().getJsonObject(PROSECUTION_CASE);
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG);
+        final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(fromString(caseId));
+        prosecutionCaseEntity.setPayload(prosecutionCaseEntityJson.toString());
+
+        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
+        courtApplicationEntity.setPayload("{}");
+
+        when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
+        when(courtApplicationRepository.findByLinkedCaseId(fromString(caseId))).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(prosecutionCaseEntityJson);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJson, ProsecutionCase.class))
+                .thenReturn(getProsecutionCase(prosecutionCaseEntityJson));
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
+
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert("{}"), CourtApplication.class))
+                .thenReturn(courtApplication);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+
+        assertThat(response.payloadAsJsonObject().get("linkedApplications"), notNullValue());
+    }
+
+
+    @Test
+    public void shouldFindApplicationsLinkedToProsecutionCase() {
         final UUID caseId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("caseId", caseId.toString()).build();
@@ -152,7 +245,7 @@ public class ProsecutionCaseQueryViewTest {
         final List<CourtApplication> courtApplications = new ArrayList<>();
         final CourtApplication courtApplication = getCourtApplication();
         courtApplications.add(courtApplication);
-        final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withHearings(Arrays.asList(Hearings.hearings().build()))
                 .withDefendantHearings(Arrays.asList(DefendantHearings.defendantHearings().build()))
                 .withId(randomUUID())
@@ -164,9 +257,8 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.jsonObject);
-        when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
+        when(getHearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
         courtApplicationEntity.setPayload("{}");
@@ -175,8 +267,9 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("linkedApplicationsSummary"), notNullValue());
-        assertThat(response.payloadAsJsonObject().get("caseAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
     }
+
 
     @Test
     public void shouldFindApplicationsLinkedToProsecutionCaseWithLegalEntityDefendant() {
@@ -194,7 +287,7 @@ public class ProsecutionCaseQueryViewTest {
         final List<CourtApplication> courtApplications = new ArrayList<>();
         final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
         courtApplications.add(courtApplication);
-        final GetCaseAtAGlance getCaseAtAGlance = GetCaseAtAGlance.getCaseAtAGlance()
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withHearings(Arrays.asList(Hearings.hearings().build()))
                 .withDefendantHearings(Arrays.asList(DefendantHearings.defendantHearings().build()))
                 .withId(randomUUID())
@@ -206,9 +299,8 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.jsonObject);
-        when(getCaseAtAGlanceService.getCaseAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
+        when(getHearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
         courtApplicationEntity.setPayload("{}");
@@ -217,11 +309,11 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("linkedApplicationsSummary"), notNullValue());
-        assertThat(response.payloadAsJsonObject().get("caseAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
     }
 
     @Test
-    public void shouldFindUserGroupsByMaterialId() throws Exception {
+    public void shouldFindUserGroupsByMaterialId() {
         final UUID materialId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("q", materialId.toString()).build();
@@ -255,7 +347,7 @@ public class ProsecutionCaseQueryViewTest {
         final UUID caseId = randomUUID();
         final String searchCriteria = "John Smith";
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("q", searchCriteria.toString()).build();
+                .add("q", searchCriteria).build();
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.search-cases").build(),
@@ -348,6 +440,37 @@ public class ProsecutionCaseQueryViewTest {
                                         .build())
                                 .build())
                         .build()))
+                .build();
+    }
+
+    private JsonEnvelope buildEnvelope(final String eventName, final String payloadFileName) {
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try (final InputStream stream = loader.getResourceAsStream(payloadFileName);
+             final JsonReader jsonReader = Json.createReader(stream)) {
+            final JsonObject payload = jsonReader.readObject();
+            final JsonObject jsonObject = Json.createObjectBuilder()
+                    .add("caseId", randomUUID().toString()).build();
+            return envelopeFrom(metadataBuilder().withId(randomUUID()).withName(eventName), payload);
+        } catch (final IOException e) {
+            LOGGER.warn("Error in reading payload {}", payloadFileName, e);
+        }
+        return null;
+    }
+
+    private JsonEnvelope buildEnvelopeWithCaseId(final String eventName) {
+        return envelopeFrom(
+                DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(eventName).createdAt(ZonedDateTime.now()),
+                createObjectBuilder().add("caseId", randomUUID().toString()).build());
+    }
+
+
+    private ProsecutionCase getProsecutionCase(final JsonObject prosecutionCaseEntityJson) {
+        return ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(UUID.randomUUID())
+                        .withCaseURN(prosecutionCaseEntityJson.getJsonObject("prosecutionCaseIdentifier").getString("caseURN"))
+                        .build())
+                .withDefendants(emptyList())
                 .build();
     }
 

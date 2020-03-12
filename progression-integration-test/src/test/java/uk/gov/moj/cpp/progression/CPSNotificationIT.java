@@ -56,7 +56,7 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForDefenceUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-public class CPSNotificationIT extends AbstractIT{
+public class CPSNotificationIT extends AbstractIT {
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED = "public.defence.event.record-instruction-details";
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE = "public.defence.event.record-instruction-details.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -112,7 +112,7 @@ public class CPSNotificationIT extends AbstractIT{
         verifyHearingInitialised(caseId, hearingId);
 
         // Instruct
-      final Metadata metadata = JsonEnvelope.metadataBuilder()
+        final Metadata metadata = JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
                 .withName(PUBLIC_DEFENCE_RECORD_INSTRUCTED)
                 .withUserId(userId)
@@ -156,7 +156,7 @@ public class CPSNotificationIT extends AbstractIT{
     }
 
     private JsonObject getInstructedJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
+                                               final String defendantId, final String courtCentreId) {
         final String strPayload = getPayloadForCreatingRequest(path)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
@@ -192,8 +192,8 @@ public class CPSNotificationIT extends AbstractIT{
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.caseAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.caseAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
+                                withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
+                                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
                         )));
     }
 }

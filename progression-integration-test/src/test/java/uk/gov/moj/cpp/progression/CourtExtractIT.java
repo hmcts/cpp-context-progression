@@ -2,41 +2,34 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationWithDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectCaseExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
-import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,7 +38,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
@@ -55,6 +47,14 @@ import org.junit.Test;
 @SuppressWarnings("squid:S1607")
 public class CourtExtractIT extends AbstractIT {
 
+    private static final String DOCUMENT_TEXT = STRING.next();
+    private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
+    private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
+    private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON = "progression.command.create-court-application-with-defendant.json";
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String caseId;
     private String defendantId;
     private String userId;
@@ -62,15 +62,18 @@ public class CourtExtractIT extends AbstractIT {
     private String courtCentreId;
     private String courtApplicationId;
 
-    private static final String DOCUMENT_TEXT = STRING.next();
-    private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
-    private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
+    @AfterClass
+    public static void tearDown() throws JMSException {
+        messageProducerClientPublic.close();
+    }
 
-    private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
-    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON = "progression.command.create-court-application-with-defendant.json";
+    public static void verifyInMessagingQueueForCasesReferredToCourts() {
+        final String referredToCourt = "public.progression.prosecution-cases-referred-to-court";
+        final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createConsumer(referredToCourt);
+
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
+        assertTrue(message.isPresent());
+    }
 
     @Before
     public void setUp() {
@@ -83,11 +86,6 @@ public class CourtExtractIT extends AbstractIT {
 
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();
-    }
-
-    @AfterClass
-    public static void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
     }
 
     @Test
@@ -105,7 +103,7 @@ public class CourtExtractIT extends AbstractIT {
                         .withUserId(userId)
                         .build());
 
-        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
+        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getString("id"));
 
         // when
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
@@ -128,7 +126,7 @@ public class CourtExtractIT extends AbstractIT {
                         .withUserId(userId)
                         .build());
 
-        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
+        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getString("id"));
 
         // when
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
@@ -153,7 +151,7 @@ public class CourtExtractIT extends AbstractIT {
 
         doAddCourtApplicationAndVerify(true);//Appeal pending scenario
 
-        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("caseAtAGlance").getString("id"));
+        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getString("id"));
 
         // when
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
@@ -202,11 +200,11 @@ public class CourtExtractIT extends AbstractIT {
                         .build());
 
 
-        Matcher[] personDefendantOffenceUpdatedMatchers = {
+        final Matcher[] personDefendantOffenceUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)),
-                withJsonPath("$.caseAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
-                withJsonPath("$.caseAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
-                withJsonPath("$.caseAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
 
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", CoreMatchers.is("2018-01-01")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-10")),
@@ -221,8 +219,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-
-    private void doAddCourtApplicationAndVerify(boolean withDefendant) throws Exception {
+    private void doAddCourtApplicationAndVerify(final boolean withDefendant) throws Exception {
         // Creating first application for the case
         if (withDefendant) {
             addCourtApplicationWithDefendant(caseId, courtApplicationId, defendantId, PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON);
@@ -240,14 +237,6 @@ public class CourtExtractIT extends AbstractIT {
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
         return stringToJsonObjectConverter.convert(strPayload);
-    }
-
-    public static void verifyInMessagingQueueForCasesReferredToCourts() {
-        final String referredToCourt = "public.progression.prosecution-cases-referred-to-court";
-        final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createConsumer(referredToCourt);
-
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
-        assertTrue(message.isPresent());
     }
 }
 

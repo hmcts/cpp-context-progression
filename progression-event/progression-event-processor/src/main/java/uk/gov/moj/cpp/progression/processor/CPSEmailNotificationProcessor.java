@@ -7,7 +7,7 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -168,10 +168,10 @@ public class CPSEmailNotificationProcessor {
 
         if (prosecutionCaseOptional.isPresent()) {
 
-            final JsonObject caseAtAGlanceJsonObject = prosecutionCaseOptional.get().getJsonObject("caseAtAGlance");
-            final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.convert(caseAtAGlanceJsonObject, GetCaseAtAGlance.class);
+            final JsonObject hearingAtAGlanceJsonObject = prosecutionCaseOptional.get().getJsonObject("hearingsAtAGlance");
+            final GetHearingsAtAGlance hearingAtAGlance = jsonObjectToObjectConverter.convert(hearingAtAGlanceJsonObject, GetHearingsAtAGlance.class);
 
-            final List<Hearings> futureHearings = getFutureHearings(caseAtAGlance);
+            final List<Hearings> futureHearings = getFutureHearings(hearingAtAGlance);
 
             final Optional<Entry<UUID, ZonedDateTime>> resultMap = getEarliestHearing(futureHearings);
 
@@ -185,8 +185,8 @@ public class CPSEmailNotificationProcessor {
             return hearingVO;
         }
 
-    private List<Hearings> getFutureHearings(GetCaseAtAGlance caseAtAGlance) {
-        return caseAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
+    private List<Hearings> getFutureHearings(GetHearingsAtAGlance hearingsAtAGlance) {
+        return hearingsAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
                             .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0
                             )).collect(Collectors.toList());
     }

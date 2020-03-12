@@ -54,7 +54,7 @@ import uk.gov.justice.progression.courts.CustodialEstablishment;
 import uk.gov.justice.progression.courts.DefenceOrganisation;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.Defendants;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.Respondents;
@@ -171,11 +171,11 @@ public class CourtExtractTransformerTest {
 
         final String extractType = "CrownCourtExtract";
         //given
-        final GetCaseAtAGlance caseAtAGlance = createCaseAtAGlance();
+        final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlance();
         final List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString(), HEARING_ID_2.toString());
 
         //when
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(caseAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         // then
         assertValues(courtExtractRequested, extractType, HEARING_DATE_2, HEARING_DATE_3);
@@ -200,11 +200,11 @@ public class CourtExtractTransformerTest {
     public void testTransformToCourtExtract_shouldUseSelectedHearing_whenExtractTypeIsCrownCourtExtractAndOneHearingsSelected() {
         final String extractType = "CrownCourtExtract";
         //given
-        final GetCaseAtAGlance caseAtAGlance = createCaseAtAGlance();
-        final List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString());
+        GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlance();
+        List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString());
 
         //when
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(caseAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         // then
         assertValues(courtExtractRequested, extractType, HEARING_DATE_2, HEARING_DATE_3);
@@ -221,11 +221,11 @@ public class CourtExtractTransformerTest {
 
         final String extractType = "CrownCourtExtract";
         //given
-        final GetCaseAtAGlance caseAtAGlance = createCaseAtAGlanceWithCourtApplicationParty();
-        final List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString());
+        GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlanceWithCourtApplicationParty();
+        List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString());
 
         //when
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(caseAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         // then
         assertThat(courtExtractRequested.getIsAppealPending(), is((true)));
@@ -243,10 +243,10 @@ public class CourtExtractTransformerTest {
 
         final String extractType = "CrownCourtExtract";
         //given
-        final GetCaseAtAGlance caseAtAGlance = createCaseAtAGlance();
+        GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlance();
 
         //when
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.ejectCase(prosecutionCase,caseAtAGlance, DEFENDANT_ID.toString(), randomUUID());
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.ejectCase(prosecutionCase,hearingsAtAGlance, DEFENDANT_ID.toString(), randomUUID());
 
         //then
         assertThat(courtExtractRequested.getIsAppealPending(), is((true)));
@@ -369,8 +369,8 @@ public class CourtExtractTransformerTest {
         assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().get(0).getRespondentCounsels().get(0).getStatus(), is("Solicitor"));
     }
 
-    private GetCaseAtAGlance createCaseAtAGlance() {
-        final GetCaseAtAGlance.Builder builder = GetCaseAtAGlance.getCaseAtAGlance().withId(CASE_ID);
+    private GetHearingsAtAGlance createCaseAtAGlance() {
+        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
         builder.withProsecutionCaseIdentifier(createPCIdentifier());
         builder.withDefendantHearings(createDefendantHearing());
         builder.withHearings(createHearings());
@@ -378,8 +378,8 @@ public class CourtExtractTransformerTest {
         return builder.build();
     }
 
-    private GetCaseAtAGlance createCaseAtAGlanceWithCourtApplicationParty() {
-        final GetCaseAtAGlance.Builder builder = GetCaseAtAGlance.getCaseAtAGlance().withId(CASE_ID);
+    private GetHearingsAtAGlance createCaseAtAGlanceWithCourtApplicationParty() {
+        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
         builder.withProsecutionCaseIdentifier(createPCIdentifier());
         builder.withDefendantHearings(createDefendantHearing());
         builder.withHearings(createHearings());

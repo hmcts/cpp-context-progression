@@ -75,4 +75,8 @@ public class ApplicationQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.application.aaag")
+    public JsonEnvelope getCourtApplicationForApplicationAtAGlance(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

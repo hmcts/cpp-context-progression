@@ -61,6 +61,10 @@ public class ProgressionQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.case-notes")
+    public JsonEnvelope getCaseNotes(final JsonEnvelope query) {
+        return requester.request(query);
+    }
     @Handles("progression.query.defendants-by-laacontractnumber")
     public JsonEnvelope getDefendantsByLAAContractNumber(final JsonEnvelope query) {
         return requester.request(query);

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -67,10 +67,10 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
         if(prosecutionCaseJsonObject.isPresent()) {
 
-            final GetCaseAtAGlance caseAtAGlance = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("caseAtAGlance"),
-                    GetCaseAtAGlance.class);
+            final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
+                    GetHearingsAtAGlance.class);
 
-            final List<Hearings> futureHearings = caseAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
+            final List<Hearings> futureHearings = hearingsAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
                     .anyMatch(hday -> hday.getSittingDay().toLocalDate().compareTo(LocalDate.now())>=0
                     )).collect(Collectors.toList());
 

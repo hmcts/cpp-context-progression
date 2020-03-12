@@ -4,7 +4,7 @@
     "type": {
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
       "applicationCode": "a",
-      "applicationType": "a",
+      "applicationType": "Application for bad character",
       "applicationTypeWelsh": "a",
       "applicationLegislation": "a",
       "applicationLegislationWelsh": "a",
@@ -19,7 +19,7 @@
     "applicant": {
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
       "representationOrganisation": {
-        "name": "a",
+        "name": "Police",
         "incorporationNumber": "a",
         "registeredCharityNumber": "a",
         "address": {
@@ -38,18 +38,39 @@
           "secondaryEmail": "rob@abc.com",
           "fax": "a"
         }
+      },
+      "organisation": {
+        "name": "Applicant Organisation",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a1",
+          "address2": "a2",
+          "address3": "a3",
+          "address4": "a4",
+          "address5": "a5",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": "00999900990",
+          "work": "00999900990",
+          "mobile": "00999900990",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
       }
-  },
+    },
     "respondents": [
       {
         "partyDetails": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
-          "synonym": "a",
+          "synonym": "Edward",
           "personDetails": {
             "title": "DR",
-            "firstName": "a",
-            "middleName": "a",
-            "lastName": "a",
+            "firstName": "EDWARD",
+            "middleName": "Middle Name",
+            "lastName": "HARRISON",
             "dateOfBirth": "2000-01-01",
             "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "nationalityCode": "a",
@@ -99,7 +120,7 @@
             ]
           },
           "organisation": {
-            "name": "a",
+            "name": "Respondent Organisation",
             "incorporationNumber": "a",
             "registeredCharityNumber": "a",
             "address": {

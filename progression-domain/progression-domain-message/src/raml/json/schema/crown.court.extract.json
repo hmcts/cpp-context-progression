@@ -245,7 +245,7 @@
         },
         "custodialEstablishment": {
           "description": "The custodial establishment for Defendant",
-          "$ref": "http://justice.gov.uk/progression/courts/getCaseAtAGlance.json#/definitions/custodyEstablishment"
+          "$ref": "http://justice.gov.uk/progression/courts/getHearingsAtAGlance.json#/definitions/custodyEstablishment"
         }
 
       },

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -10,15 +11,18 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
-import uk.gov.justice.core.courts.CaseMarkersUpdated;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
+import uk.gov.justice.core.courts.CaseMarkersUpdated;
+import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationRejected;
@@ -28,11 +32,11 @@ import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
-import uk.gov.justice.core.courts.FundingType;
-import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.FinancialDataAdded;
 import uk.gov.justice.core.courts.FinancialMeansDeleted;
+import uk.gov.justice.core.courts.FundingType;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
@@ -81,9 +85,6 @@ import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociat
 import uk.gov.moj.cpp.progression.events.DefendantLaaAssociated;
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -100,13 +101,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
@@ -135,14 +134,13 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, LocalDate> custodyTimeLimitForDefendant = new HashMap<>();
     private final Map<UUID, List<uk.gov.justice.core.courts.Offence>> defendantCaseOffences = new HashMap<>();
     private final Map<UUID, String> defendantLegalAidStatus = new HashMap<>();
+    private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
+    private final Map<UUID, List<UUID>> defendantFinancialDocs = new HashMap<>();
+    private final Map<UUID, Boolean> defendantProceedingConcluded = new HashMap<>();
     private String caseStatus;
     private String courtCentreId;
     private String reference;
     private int arnCount = 0;
-    private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
-    private final Map<UUID, List<UUID>> defendantFinancialDocs = new HashMap<>();
-    private final Map<UUID, Boolean> defendantProceedingConcluded = new HashMap<>();
-
 
     @Override
     public Object apply(final Object event) {
@@ -275,7 +273,7 @@ public class CaseAggregate implements Aggregate {
 
     }
 
-    private void populateFinancialData(FinancialDataAdded financialDataAdded) {
+    private void populateFinancialData(final FinancialDataAdded financialDataAdded) {
 
         if (financialDataAdded.getApplicationId() != null) {
             this.applicationFinancialDocs.put(financialDataAdded.getApplicationId(), financialDataAdded.getMaterialIds());
@@ -714,7 +712,7 @@ public class CaseAggregate implements Aggregate {
         );
     }
 
-    public Stream<Object> deleteFinancialMeansData(UUID defendantId, UUID caseId) {
+    public Stream<Object> deleteFinancialMeansData(final UUID defendantId, final UUID caseId) {
         final List<UUID> materialIds = this.defendantFinancialDocs.get(defendantId);
         return apply(Stream.of(FinancialMeansDeleted.financialMeansDeleted()
                 .withDefendantId(defendantId)
@@ -724,6 +722,17 @@ public class CaseAggregate implements Aggregate {
         );
 
     }
+
+    public Stream<Object> addNote(final UUID caseId, final String note, final String firstName, final String lastName) {
+        return apply(Stream.of(CaseNoteAdded.caseNoteAdded()
+                .withCaseId(caseId)
+                .withNote(note)
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withCreatedDateTime(ZonedDateTime.now())
+                .build()));
+    }
+    
 
     public Stream<Object> recordLAAReferenceForOffence(final UUID prosecutionCaseId, final UUID defendantId, final UUID offenceId, final LaaReference laaReference) {
         LOGGER.debug("LAA reference is recorded for Offence.");

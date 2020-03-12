@@ -201,7 +201,7 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetQueryHearing() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.hearing", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary","Court Associate");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.hearing", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate");
     }
 
     @Test
@@ -212,7 +212,28 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInQueryAssociatedUser() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.associated-organisation", "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.associated-organisation", "System Users", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge");
+    }
+
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToGetQueryCaseAtAGlance() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge");
+    }
+
+    @Test
+    public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryCaseAtAGlance() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge");
+    }
+
+
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToGetQueryApplicationAtAGlance() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge");
+    }
+
+    @Test
+    public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryApplicationAtAGlance() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge");
     }
 
     @Test
@@ -224,7 +245,6 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     protected Map<Class, Object> getProviderMocks() {
         return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, this.userAndGroupProvider).put(ProgressionProvider.class, this.progressionProvider).put(CourtDocumentProvider.class, this.caseDocumentProvider).put(RbacProvider.class, this.rbacProvider).build();
     }
-
 
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);

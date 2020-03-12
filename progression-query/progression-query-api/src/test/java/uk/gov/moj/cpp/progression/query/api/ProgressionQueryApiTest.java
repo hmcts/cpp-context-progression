@@ -1,22 +1,17 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import javax.json.JsonObject;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionQueryApiTest {
@@ -80,11 +75,16 @@ public class ProgressionQueryApiTest {
     }
 
     @Test
-    public void shouldGetHearingByHearingId(){
+    public void shouldGetHearingByHearingId() {
         when(requester.request(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getHearing(query), equalTo(response));
     }
 
+    @Test
+    public void shouldGetCaseNotesByCaseId() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(progressionHearingsQueryApi.getCaseNotes(query), equalTo(response));
+    }
     @Test
     public void shouldGetDefendantsByLAAContractNumber(){
         when(requester.request(query)).thenReturn(response);

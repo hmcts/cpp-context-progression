@@ -1,11 +1,14 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.ProsecutionCase;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -13,21 +16,22 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseNoteEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseNoteRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import javax.inject.Inject;
+import javax.json.JsonObject;
 
 
 @SuppressWarnings("squid:S3655")
@@ -55,11 +59,13 @@ public class ProsecutionCaseEventListener {
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
     @Inject
+    private CaseNoteRepository caseNoteRepository;
+
+    @Inject
     private HearingRepository hearingRepository;
 
     @Inject
     private SearchProsecutionCase searchCase;
-
 
 
     @Handles("progression.event.prosecution-case-created")
@@ -157,4 +163,13 @@ public class ProsecutionCaseEventListener {
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }
+
+    @Handles("progression.event.case-note-added")
+    public void caseNoteAdded(final JsonEnvelope event) {
+        final CaseNoteAdded caseNoteAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteAdded.class);
+        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(caseNoteAdded.getCaseId(),
+                caseNoteAdded.getNote(), caseNoteAdded.getFirstName(), caseNoteAdded.getLastName(), caseNoteAdded.getCreatedDateTime());
+        caseNoteRepository.save(caseNoteEntity);
+    }
+
 }

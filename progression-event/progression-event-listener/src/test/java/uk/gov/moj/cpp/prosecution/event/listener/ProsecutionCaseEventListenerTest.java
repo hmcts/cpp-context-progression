@@ -4,24 +4,22 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.minidev.json.JSONValue;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -33,10 +31,12 @@ import uk.gov.moj.cpp.application.event.listener.CourtApplicationEventListenerTe
 import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseEventListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseNoteEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseNoteRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
@@ -45,6 +45,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProse
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -52,6 +53,11 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONValue;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,6 +83,9 @@ public class ProsecutionCaseEventListenerTest {
 
     @Mock
     private ProsecutionCaseRepository repository;
+
+    @Mock
+    private CaseNoteRepository caseNoteRepository;
 
     @Mock
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
@@ -113,6 +122,9 @@ public class ProsecutionCaseEventListenerTest {
 
     @Captor
     private ArgumentCaptor<CourtApplicationEntity> courtApplicationEntityArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<CaseNoteEntity> caseNoteArgumentCaptor;
 
     @Mock
     private JsonObject payload;
@@ -175,7 +187,7 @@ public class ProsecutionCaseEventListenerTest {
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
 
-       final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setLinkedCaseId(caseId);
         courtApplicationEntity.setPayload(createPayload("/json/courtApplicationData.json"));
 
@@ -224,8 +236,8 @@ public class ProsecutionCaseEventListenerTest {
                 .add("id", randomUUID().toString())
                 .add("prosecutionCases", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("caseStatus", CASE_STATUS_EJECTED)))
+                                .add("id", randomUUID().toString())
+                                .add("caseStatus", CASE_STATUS_EJECTED)))
                 .add("linkedCaseId", caseId.toString())
                 .add(APPLICATION_STATUS, ApplicationStatus.EJECTED.name()).build());
 
@@ -248,9 +260,47 @@ public class ProsecutionCaseEventListenerTest {
 
     }
 
+    @Test
+    public void shouldHandleCaseNoteAddedEvent() {
+
+        //Given
+        final CaseNoteAdded caseNoteAdded = createCaseNoteAddedEvent();
+
+        //When
+        eventListener.caseNoteAdded(envelope);
+
+        //Then
+        verifyCaseNoteAddedEventResults(caseNoteAdded);
+    }
+
+    private void verifyCaseNoteAddedEventResults(final CaseNoteAdded caseNoteAdded) {
+        verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
+
+        final CaseNoteEntity caseNoteEntity = caseNoteArgumentCaptor.getValue();
+        assertThat(caseNoteEntity.getCaseId(), equalTo(caseNoteAdded.getCaseId()));
+        assertThat(caseNoteEntity.getNote(), equalTo(caseNoteAdded.getNote()));
+        assertThat(caseNoteEntity.getCreatedDateTime(), equalTo(caseNoteAdded.getCreatedDateTime()));
+        assertThat(caseNoteEntity.getFirstName(), equalTo(caseNoteAdded.getFirstName()));
+        assertThat(caseNoteEntity.getLastName(), equalTo(caseNoteAdded.getLastName()));
+    }
+
+    private CaseNoteAdded createCaseNoteAddedEvent() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        final CaseNoteAdded caseNoteAdded = CaseNoteAdded.caseNoteAdded()
+                .withCaseId(prosecutionCase.getId())
+                .withNote("Note")
+                .withFirstName("firstName")
+                .withLastName("lastName")
+                .withCreatedDateTime(ZonedDateTime.now())
+                .build();
+        when(jsonObjectToObjectConverter.convert(payload, CaseNoteAdded.class))
+                .thenReturn(caseNoteAdded);
+        return caseNoteAdded;
+    }
+
     private String createPayload(final String payloadPath) throws IOException {
         final StringWriter writer = new StringWriter();
-        InputStream inputStream =CourtApplicationEventListenerTest.class.getResourceAsStream(payloadPath);
+        InputStream inputStream = CourtApplicationEventListenerTest.class.getResourceAsStream(payloadPath);
         IOUtils.copy(inputStream, writer, UTF_8);
         inputStream.close();
         return writer.toString();

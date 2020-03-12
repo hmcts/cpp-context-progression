@@ -1,18 +1,28 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Optional.ofNullable;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.getString;
+import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 
+import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.AssignedUser;
+import uk.gov.justice.progression.courts.ApplicantDetails;
+import uk.gov.justice.progression.courts.ApplicationDetails;
+import uk.gov.justice.progression.courts.RespondentDetails;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
@@ -40,6 +50,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.persistence.NoResultException;
 
 import org.slf4j.Logger;
@@ -49,31 +60,11 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.QUERY_VIEW)
 public class ApplicationQueryView {
 
+    public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
+    private static final String APPLICATION_ID_NOT_FOUND = "### applicationId not found";
+    private static final String NO_APPLICATION_FOUND_WITH_APPLICATION_ID = "### No application found with applicationId='{}'";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationQueryView.class);
     private static final String APPLICATION_ID = "applicationId";
-
-    @Inject
-    private CourtApplicationRepository courtApplicationRepository;
-
-    @Inject
-    private CourtDocumentRepository courtDocumentRepository;
-
-    @Inject
-    private HearingApplicationRepository hearingApplicationRepository;
-
-    @Inject
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
-
-    @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Inject
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Inject
-    private NotificationStatusRepository notificationStatusRepository;
-
-    public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
     private static final String ID = "id";
     private static final String NOTIFICATION_ID = "notificationId";
     private static final String CASE_ID = "caseId";
@@ -83,6 +74,66 @@ public class ApplicationQueryView {
     private static final String ERROR_MESSAGE = "errorMessage";
     private static final String STATUS_CODE = "statusCode";
     private static final String UPDATED = "updated";
+    @Inject
+    private CourtApplicationRepository courtApplicationRepository;
+    @Inject
+    private CourtDocumentRepository courtDocumentRepository;
+    @Inject
+    private HearingApplicationRepository hearingApplicationRepository;
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Inject
+    private NotificationStatusRepository notificationStatusRepository;
+    @Inject
+    private ApplicationAtAGlanceHelper applicationAtAGlanceHelper;
+    @Inject
+    private ObjectToJsonValueConverter objectToJsonValueConverter;
+
+    @Handles("progression.query.application.aaag")
+    public JsonEnvelope getCourtApplicationForApplicationAtAGlance(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
+        if (applicationId.isPresent()) {
+            try {
+                final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId.get());
+                final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
+                final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationPayload, CourtApplication.class);
+
+                jsonObjectBuilder.add(APPLICATION_ID, applicationId.get().toString());
+
+                final ApplicationDetails applicationDetails = applicationAtAGlanceHelper.getApplicationDetails(courtApplication);
+                final JsonObject applicationDetailsJson = objectToJsonObjectConverter.convert(applicationDetails);
+                jsonObjectBuilder.add("applicationDetails", applicationDetailsJson);
+
+                final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication);
+                final JsonObject applicantDetailsJson = objectToJsonObjectConverter.convert(applicantDetails);
+                jsonObjectBuilder.add("applicantDetails", applicantDetailsJson);
+
+                final List<CourtApplicationEntity> childApplications = courtApplicationRepository.findByParentApplicationId(applicationId.get());
+                if (!childApplications.isEmpty()) {
+                    jsonObjectBuilder.add("linkedApplications", buildApplicationSummaries(childApplications));
+                }
+
+                final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+                if (!respondentDetails.isEmpty()) {
+                    final JsonValue respondentDetailsJson = objectToJsonValueConverter.convert(respondentDetails);
+                    jsonObjectBuilder.add("respondentDetails", respondentDetailsJson);
+                }
+
+            } catch (final NoResultException e) {
+                LOGGER.warn(NO_APPLICATION_FOUND_WITH_APPLICATION_ID, applicationId, e);
+            }
+        } else {
+            LOGGER.warn(APPLICATION_ID_NOT_FOUND);
+        }
+          return envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
 
     @Handles("progression.query.application")
     public JsonEnvelope getApplication(final JsonEnvelope envelope) {
@@ -109,7 +160,7 @@ public class ApplicationQueryView {
             childApplications.add(courtApplicationEntity);
             jsonObjectBuilder.add("hearings", getHearings(childApplications));
         } catch (final NoResultException e) {
-            LOGGER.info("### No application found with applicationId='{}'", applicationId, e);
+            LOGGER.info(NO_APPLICATION_FOUND_WITH_APPLICATION_ID, applicationId, e);
         }
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
@@ -145,7 +196,7 @@ public class ApplicationQueryView {
     @Handles("progression.query.application.notification-status")
     public JsonEnvelope getApplicationNotifications(final JsonEnvelope envelope) {
 
-        final String strApplicationIds = JsonObjects.getString(envelope.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM).orElse("");
+        final String strApplicationIds = getString(envelope.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM).orElse("");
 
         final List<UUID> applicationIds = Arrays.stream(strApplicationIds.trim().split(",")).map(UUID::fromString).collect(Collectors.toList());
 
@@ -157,7 +208,7 @@ public class ApplicationQueryView {
     }
 
     private JsonArray buildApplicationSummaries(final List<CourtApplicationEntity> childApplications) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         childApplications.forEach(cae -> buildApplicationSummary(cae, jsonArrayBuilder));
         return jsonArrayBuilder.build();
     }
@@ -187,7 +238,7 @@ public class ApplicationQueryView {
         courtApplicationEntities.forEach(courtApplicationEntity ->
                 entities.addAll(hearingApplicationRepository.findByApplicationId(courtApplicationEntity.getApplicationId())));
 
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final List<UUID> hearingIds = new ArrayList<>();
         entities.forEach(hearingApplicationEntity -> {
             final UUID hearingId = hearingApplicationEntity.getId().getHearingId();
@@ -201,20 +252,20 @@ public class ApplicationQueryView {
 
     private JsonEnvelope createJsonEnvelope(final JsonEnvelope envelope, final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
 
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
 
         applicationNotificationMap.forEach((k, v) -> applicationNotificationMap.get(k).forEach(notificationStatusEntity -> prepareResponse(notificationStatusEntity, jsonArrayBuilder)));
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         jsonObjectBuilder.add(NOTIFICATION_STATUS, jsonArrayBuilder.build());
 
-        return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
+        return envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
     private void prepareResponse(final NotificationStatusEntity notificationStatusEntity, final JsonArrayBuilder jsonArrayBuilder) {
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         jsonObjectBuilder.add(ID, notificationStatusEntity.getId().toString())
                 .add(NOTIFICATION_ID, notificationStatusEntity.getNotificationId().toString())

@@ -16,7 +16,7 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.progression.courts.GetCaseAtAGlance;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -67,7 +67,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     private Optional<JsonObject> prosecutionCaseJsonObject;
 
     @Mock
-    private GetCaseAtAGlance caseAtAGlance;
+    private GetHearingsAtAGlance hearingsAtAGlance;
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -114,15 +114,15 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedings.class))
                 .thenReturn(defendantsAddedToCourtProceedings);
 
-        caseAtAGlance = getCaseAtAGlanceWithFutureHearings();
+        hearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
 
         prosecutionCaseJsonObject = Optional.of(getProcecutionCaseResponse());
 
         when(progressionService.getProsecutionCaseDetailById(jsonEnvelope,
                 defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString())).thenReturn(prosecutionCaseJsonObject);
 
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("caseAtAGlance"),
-                GetCaseAtAGlance.class)).thenReturn(caseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
+                GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
 
         when(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
@@ -132,10 +132,10 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         verify(sender).send(finalEnvelope);
 
         //Given
-        caseAtAGlance = getCaseAtAGlanceWithNoFutureHearings();
+        hearingsAtAGlance = getCaseAtAGlanceWithNoFutureHearings();
 
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("caseAtAGlance"),
-                GetCaseAtAGlance.class)).thenReturn(caseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
+                GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
 
         when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(),any(), any())).thenReturn(listCourtHearing);
 
@@ -158,7 +158,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         return new StringToJsonObjectConverter().convert(response);
     }
 
-    private GetCaseAtAGlance getCaseAtAGlanceWithFutureHearings() throws Exception {
+    private GetHearingsAtAGlance getCaseAtAGlanceWithFutureHearings() throws Exception {
 
         List<Hearings> hearings = new ArrayList<>();
 
@@ -183,11 +183,11 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(Collections.singletonList(
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build())).build());
 
-        return GetCaseAtAGlance.getCaseAtAGlance().withHearings(hearings).build();
+        return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
 
     }
 
-    private GetCaseAtAGlance getCaseAtAGlanceWithNoFutureHearings() throws Exception {
+    private GetHearingsAtAGlance getCaseAtAGlanceWithNoFutureHearings() throws Exception {
 
         List<Hearings> hearings = new ArrayList<>();
 
@@ -212,7 +212,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(Collections.singletonList(
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().minusWeeks(1)).build())).build());
 
-        return GetCaseAtAGlance.getCaseAtAGlance().withHearings(hearings).build();
+        return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
 
     }
 
