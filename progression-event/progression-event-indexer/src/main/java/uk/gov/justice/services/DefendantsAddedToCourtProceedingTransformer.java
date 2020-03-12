@@ -44,7 +44,6 @@ public class DefendantsAddedToCourtProceedingTransformer implements Transform {
                 caseDetails = new CaseDetails();
                 caseDetails.setCaseId(prosecutionCaseId.toString());
                 caseDetails.set_case_type("PROSECUTION");
-                caseDetails.setCaseStatus("ACTIVE");
                 caseDetails.setParties(parties);
                 caseDetailsExisting = caseDetails;
             }
