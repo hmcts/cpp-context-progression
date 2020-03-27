@@ -1,6 +1,6 @@
 {
   "courtApplication": {
-    "linkedCaseId":"RANDOM_CASE_ID",
+    "linkedCaseId": "RANDOM_CASE_ID",
     "id": "RANDOM_APPLICATION_ID",
     "type": {
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -243,6 +243,8 @@
               {
                 "orderedHearingId": "00000000-0000-0000-0000-000000000000",
                 "isAvailableForCourtExtract": true,
+                "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
                 "label": "a",
                 "welshLabel": "a",
                 "isAdjournmentResult": true,
@@ -274,14 +276,23 @@
                   "a"
                 ],
                 "category": "FINAL",
+                "terminatesOffenceProceedings": false,
+                "lifeDuration" : false,
+                "publishedAsAPrompt" : false,
+                "excludedFromResults" : false,
+                "alwaysPublished" : false,
+                "urgent" : false,
+                "d20" : false,
+                "resultText" : "resultText",
                 "judicialResultPrompts": [
                   {
+                    "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                     "label": "a",
                     "welshLabel": "a",
                     "value": "a",
                     "promptSequence": 0.1,
                     "promptReference": "a",
-                    "isAvailableForCourtExtract": true
+                    "courtExtract":"Y"
                   }
                 ]
               }
@@ -493,6 +504,8 @@
           {
             "isAvailableForCourtExtract":true,
             "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+            "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+            "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
             "label": "a",
             "welshLabel": "a",
             "isAdjournmentResult": true,
@@ -524,14 +537,23 @@
               "a"
             ],
             "category": "FINAL",
+            "terminatesOffenceProceedings": false,
+            "lifeDuration" : false,
+            "publishedAsAPrompt" : false,
+            "excludedFromResults" : false,
+            "alwaysPublished" : false,
+            "urgent" : false,
+            "d20" : false,
+            "resultText" : "resultText",
             "judicialResultPrompts": [
               {
+                "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                 "label": "a",
                 "welshLabel": "a",
                 "value": "a",
                 "promptSequence": 0.1,
                 "promptReference": "a",
-                "isAvailableForCourtExtract":true
+                "courtExtract":"Y"
               }
             ]
           }
@@ -686,6 +708,8 @@
                   {
                     "orderedHearingId": "00000000-0000-0000-0000-000000000000",
                     "isAvailableForCourtExtract":true,
+                    "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                    "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
                     "label": "a",
                     "welshLabel": "a",
                     "isAdjournmentResult": true,
@@ -717,14 +741,23 @@
                       "a"
                     ],
                     "category": "FINAL",
+                    "terminatesOffenceProceedings": false,
+                    "lifeDuration" : false,
+                    "publishedAsAPrompt" : false,
+                    "excludedFromResults" : false,
+                    "alwaysPublished" : false,
+                    "urgent" : false,
+                    "d20" : false,
+                    "resultText" : "resultText",
                     "judicialResultPrompts": [
                       {
+                        "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                         "label": "a",
                         "welshLabel": "a",
                         "value": "a",
                         "promptSequence": 0.1,
                         "promptReference": "a",
-                        "isAvailableForCourtExtract":true
+                        "courtExtract":"Y"
                       }
                     ]
                   }
@@ -936,6 +969,8 @@
               {
                 "isAvailableForCourtExtract": true,
                 "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
                 "label": "a",
                 "welshLabel": "a",
                 "isAdjournmentResult": true,
@@ -967,14 +1002,23 @@
                   "a"
                 ],
                 "category": "FINAL",
+                "terminatesOffenceProceedings": false,
+                "lifeDuration" : false,
+                "publishedAsAPrompt" : false,
+                "excludedFromResults" : false,
+                "alwaysPublished" : false,
+                "urgent" : false,
+                "d20" : false,
+                "resultText" : "resultText",
                 "judicialResultPrompts": [
                   {
+                    "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                     "label": "a",
                     "welshLabel": "a",
                     "value": "a",
                     "promptSequence": 0.1,
                     "promptReference": "a",
-                    "isAvailableForCourtExtract": true
+                    "courtExtract":"Y"
                   }
                 ]
               }
@@ -1084,7 +1128,8 @@
     "courtApplicationPayment": {
       "isFeePaid": true,
       "isFeeUndertakingAttached": true,
-      "isFeeExempt": true
+      "isFeeExempt": true,
+      "paymentReference": "a"
     },
     "applicationStatus": "DRAFT",
     "outOfTimeReasons": "a",
@@ -1092,6 +1137,8 @@
       {
         "isAvailableForCourtExtract": true,
         "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+        "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+        "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
         "label": "a",
         "welshLabel": "a",
         "isAdjournmentResult": true,
@@ -1123,14 +1170,23 @@
           "a"
         ],
         "category": "FINAL",
+        "terminatesOffenceProceedings": false,
+        "lifeDuration" : false,
+        "publishedAsAPrompt" : false,
+        "excludedFromResults" : false,
+        "alwaysPublished" : false,
+        "urgent" : false,
+        "d20" : false,
+        "resultText" : "resultText",
         "judicialResultPrompts": [
           {
+            "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
             "label": "a",
             "welshLabel": "a",
             "value": "a",
             "promptSequence": 0.1,
             "promptReference": "a",
-            "isAvailableForCourtExtract": true
+            "courtExtract":"Y"
           }
         ]
       }

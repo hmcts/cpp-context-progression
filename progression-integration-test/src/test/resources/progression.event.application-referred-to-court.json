@@ -337,6 +337,8 @@
                 ],
                 "judicialResults": [
                   {
+                    "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                    "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
                     "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "label": "a",
                     "welshLabel": "a",
@@ -373,12 +375,13 @@
                     "category": "FINAL",
                     "judicialResultPrompts": [
                       {
+                        "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                         "label": "a",
-                        "isAvailableForCourtExtract": true,
                         "welshLabel": "a",
                         "value": "a",
                         "promptSequence": 0.1,
                         "promptReference": "a",
+                        "courtExtract" : "Y",
                         "usergroups": [
                           "a"
                         ]
@@ -571,6 +574,8 @@
             ],
             "judicialResults": [
               {
+                "judicialResultId": "4be52fec-411c-11ea-b77f-2e728ce88125",
+                "judicialResultTypeId": "4be5329e-411c-11ea-b77f-2e728ce88125",
                 "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "label": "a",
                 "welshLabel": "a",
@@ -607,12 +612,13 @@
                 "category": "FINAL",
                 "judicialResultPrompts": [
                   {
+                    "judicialResultPromptTypeId": "4be537bc-411c-11ea-b77f-2e728ce88125",
                     "label": "a",
-                    "isAvailableForCourtExtract": true,
                     "welshLabel": "a",
                     "value": "a",
                     "promptSequence": 0.1,
                     "promptReference": "a",
+                    "courtExtract" : "Y",
                     "usergroups": [
                       "a"
                     ]
@@ -921,6 +927,8 @@
                     ],
                     "judicialResults": [
                       {
+                        "judicialResultId": "4be53924-411c-11ea-b77f-2e728ce88125",
+                        "judicialResultTypeId": "4be53a50-411c-11ea-b77f-2e728ce88125",
                         "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                         "label": "a",
                         "welshLabel": "a",
@@ -957,12 +965,13 @@
                         "category": "FINAL",
                         "judicialResultPrompts": [
                           {
+                            "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                             "label": "a",
-                            "isAvailableForCourtExtract": true,
                             "welshLabel": "a",
                             "value": "a",
                             "promptSequence": 0.1,
                             "promptReference": "a",
+                            "courtExtract" : "Y",
                             "usergroups": [
                               "a"
                             ]
@@ -1155,6 +1164,8 @@
                 ],
                 "judicialResults": [
                   {
+                    "judicialResultId": "8ec6cb2c-411c-11ea-b77f-2e728ce88125",
+                    "judicialResultTypeId": "8ec6cdc0-411c-11ea-b77f-2e728ce88125",
                     "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "label": "a",
                     "welshLabel": "a",
@@ -1191,12 +1202,13 @@
                     "category": "FINAL",
                     "judicialResultPrompts": [
                       {
+                        "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
                         "label": "a",
-                        "isAvailableForCourtExtract": true,
                         "welshLabel": "a",
                         "value": "a",
                         "promptSequence": 0.1,
                         "promptReference": "a",
+                        "courtExtract" : "Y",
                         "usergroups": [
                           "a"
                         ]
@@ -1265,6 +1277,8 @@
         "outOfTimeReasons": "a",
         "judicialResults": [
           {
+            "judicialResultId": "8ec6cf14-411c-11ea-b77f-2e728ce88125",
+            "judicialResultTypeId": "8ec6d040-411c-11ea-b77f-2e728ce88125",
             "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "label": "a",
             "welshLabel": "a",
@@ -1301,12 +1315,13 @@
             "category": "FINAL",
             "judicialResultPrompts": [
               {
+                "judicialResultPromptTypeId": "8ec6d414-411c-11ea-b77f-2e728ce88125",
                 "label": "a",
-                "isAvailableForCourtExtract": true,
                 "welshLabel": "a",
                 "value": "a",
                 "promptSequence": 0.1,
                 "promptReference": "a",
+                "courtExtract" : "Y",
                 "usergroups": [
                   "a"
                 ]

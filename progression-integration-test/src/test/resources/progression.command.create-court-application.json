@@ -166,13 +166,16 @@
     "courtApplicationPayment": {
     	"isFeePaid": true,
     	"isFeeUndertakingAttached": true,
-    	"isFeeExempt": true
+    	"isFeeExempt": true,
+        "paymentReference": "a"
     },
     "linkedCaseId": "RANDOM_CASE_ID",
     "applicationStatus": "DRAFT",
     "outOfTimeReasons": "a",
     "judicialResults": [
       {
+        "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+        "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
         "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
         "label": "a",
         "welshLabel": "a",
@@ -206,15 +209,23 @@
           "a"
         ],
         "category": "FINAL",
-        "isAvailableForCourtExtract" : true,
+        "terminatesOffenceProceedings": false,
+        "lifeDuration" : false,
+        "publishedAsAPrompt" : false,
+        "excludedFromResults" : false,
+        "alwaysPublished" : false,
+        "urgent" : false,
+        "d20" : false,
+        "resultText" : "resultText",
         "judicialResultPrompts": [
           {
+            "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
             "label": "a",
             "welshLabel": "a",
             "value": "a",
             "promptSequence": 0.1,
             "promptReference": "a",
-            "isAvailableForCourtExtract" : true
+            "courtExtract" : "Y"
           }
         ]
       }

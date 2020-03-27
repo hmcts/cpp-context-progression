@@ -70,8 +70,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("CLOSED"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
-
-
     }
 
     @Before
@@ -137,7 +135,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo(CLOSED.getDescription())),
                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(true)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(true))
-
         };
     }
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/v24/progression/events/listener/hearing-resulted-case-updated.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/v24/core/courts/prosecutionCase.json#"
+    }
+  },
+  "required": [
+    "prosecutionCase"
+  ]
+}

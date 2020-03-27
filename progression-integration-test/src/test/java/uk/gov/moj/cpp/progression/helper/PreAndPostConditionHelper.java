@@ -268,7 +268,6 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_DEFENDANT_ID", defendantId);
     }
 
-
     // Progression Test DSL for preconditions and assertions
     public static void givenCaseAddedToCrownCourt(final String caseId, final String firstDefendantId, final String secondDefendantId) throws IOException {
         final Response writeResponse = addCaseToCrownCourt(caseId, firstDefendantId, secondDefendantId);

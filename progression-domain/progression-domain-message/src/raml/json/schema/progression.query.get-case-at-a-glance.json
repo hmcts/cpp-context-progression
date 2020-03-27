@@ -13,16 +13,16 @@
           "properties": {
             "caseURN": {
               "type": "string"
-            },
+        },
             "caseStatus": {
               "type": "string"
-            },
+        },
             "removalReason": {
               "type": "string"
-            },
+        },
             "caseMarkers": {
-              "type": "array",
-              "items": {
+          "type": "array",
+          "items": {
                 "type": "string"
               }
             }
@@ -58,8 +58,8 @@
         },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
-        }
-      },
+          }
+        },
       "additionalProperties": false
     },
     "caagDefendant": {
@@ -164,10 +164,10 @@
           "$ref": "http://justice.gov.uk/core/courts/allocationDecision.json"
         },
         "plea": {
-          "$ref": "http://justice.gov.uk/core/courts/plea.json"
+            "$ref": "http://justice.gov.uk/core/courts/plea.json"
         },
         "verdict": {
-          "$ref": "http://justice.gov.uk/core/courts/verdict.json"
+            "$ref": "http://justice.gov.uk/core/courts/verdict.json"
         },
         "caagResults": {
           "description": "offence level results",
@@ -180,6 +180,7 @@
         "custodyTimeLimit": {
           "$ref": "http://justice.gov.uk/core/courts/custodyTimeLimit.json"
         }
+
       },
       "required": [
         "id",
@@ -205,8 +206,8 @@
           "minItems": 1,
           "items": {
             "$ref": "#/definitions/caagResultPrompt"
-          }
-        },
+      }
+    },
         "orderedDate": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         },
@@ -238,7 +239,7 @@
         "value": {
           "type": "string"
         }
-      },
+        },
       "required": [
         "label",
         "value"
@@ -259,6 +260,26 @@
         "name"
       ],
       "additionalProperties": false
+    },
+    "custodyEstablishment": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "custody": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "custody"
+      ]
     }
   }
 }

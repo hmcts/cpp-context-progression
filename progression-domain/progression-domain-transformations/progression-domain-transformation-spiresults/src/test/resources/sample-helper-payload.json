@@ -1,0 +1,17 @@
+{
+  "id": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+  "label": "value",
+  "prompts": [
+    {
+      "id": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+      "label": "prompt label 1",
+      "mandatory": true
+    },
+    {
+      "id": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d8",
+      "label": "prompt label 2",
+      "mandatory": true
+    }
+  ],
+  "financial": "N"
+}

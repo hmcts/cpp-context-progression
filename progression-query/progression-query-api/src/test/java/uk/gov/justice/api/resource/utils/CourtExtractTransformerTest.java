@@ -120,6 +120,7 @@ public class CourtExtractTransformerTest {
     private static final String FIRST_NAME_2 = "First name 2";
     private static final String LAST_NAME_2 = " Last name 2";
     private static final String PROMPT_VALUE = "10";
+    private static final String COURT_EXTRACT = "Y";
     private static final LocalDate CONVICTION_DATE = LocalDate.of(2018, 04, 04);
     private static final LocalDate PLEA_DATE = LocalDate.of(2018, 01, 01);
     private static final String DEFENDANT_AGE = "30";
@@ -621,7 +622,7 @@ public class CourtExtractTransformerTest {
         return Arrays.asList(
                 JudicialResultPrompt.judicialResultPrompt()
                         .withLabel(LABEL)
-                        .withIsAvailableForCourtExtract(true)
+                        .withCourtExtract(COURT_EXTRACT)
                         .withValue(PROMPT_VALUE)
                         .build()
         );

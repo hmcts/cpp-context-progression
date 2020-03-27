@@ -732,7 +732,7 @@ public class CaseAggregate implements Aggregate {
                 .withCreatedDateTime(ZonedDateTime.now())
                 .build()));
     }
-    
+
 
     public Stream<Object> recordLAAReferenceForOffence(final UUID prosecutionCaseId, final UUID defendantId, final UUID offenceId, final LaaReference laaReference) {
         LOGGER.debug("LAA reference is recorded for Offence.");

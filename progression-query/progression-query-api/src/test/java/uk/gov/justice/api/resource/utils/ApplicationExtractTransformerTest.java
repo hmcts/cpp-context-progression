@@ -13,15 +13,6 @@ import static org.mockito.Matchers.any;
 import static uk.gov.justice.api.resource.DefaultQueryApiApplicationsApplicationIdExtractResource.STANDALONE_APPLICATION;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
@@ -60,17 +51,30 @@ import uk.gov.justice.progression.courts.exract.RespondentRepresentation;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import javax.json.JsonArray;
+
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import javax.json.JsonArray;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationExtractTransformerTest {
     private static final UUID HEARING_ID_1 = randomUUID();
     private static final UUID HEARING_ID_2 = randomUUID();
     private static final String FULL_NAME = "Jack Denial";
+
     private static final String APPLICATION_TYPE = "Appeal";
     private static final String APPLICATION_OUT_COME = "applicationOutCome";
     private static final String SYNONYM = "synonym";
@@ -84,8 +88,10 @@ public class ApplicationExtractTransformerTest {
     private static final String REPORTING_RESTRICTION_REASON = "Suspect is minor";
     private static final UUID APPLICATION_ID = randomUUID();
     private static final LocalDate ORDERED_DATE = LocalDate.now();
+
     private static final String HEARING_DATE_1 = "2018-06-01T10:00:00.000Z";
     private static final String HEARING_DATE_2 = "2018-07-01T10:00:00.000Z";
+
     private static final String COURT_NAME = "liverpool crown pool";
     private static final String HEARING_TYPE_APPLICATION = "Application";
     private static final String ADDRESS_1 = "22";
@@ -96,6 +102,8 @@ public class ApplicationExtractTransformerTest {
     private static final String LAST_NAME = "Denial";
     private static final String LABEL = "Fine";
     private static final String PROMPT_VALUE = "10";
+    private static final String COURT_EXTRACT = "Y";
+
     private static final LocalDate OUTCOME_DATE = LocalDate.of(2010, 01, 01);
 
     @Spy
@@ -241,6 +249,7 @@ public class ApplicationExtractTransformerTest {
             assertThat(rr.getName(), is(ORG_NAME));
             assertThat(rr.getSynonym(), is(SYNONYM + "R"));
         });
+
     }
 
     private void assertResults(List<JudicialResult> results) {
@@ -249,7 +258,7 @@ public class ApplicationExtractTransformerTest {
             assertThat(r.getDelegatedPowers().getLastName(), is(LAST_NAME));
             assertThat(r.getIsAvailableForCourtExtract(), is(Boolean.TRUE));
             assertThat(r.getLabel(), is(LABEL));
-            assertThat(r.getJudicialResultPrompts().get(0).getIsAvailableForCourtExtract(), is(Boolean.TRUE));
+            assertThat(r.getJudicialResultPrompts().get(0).getCourtExtract(), is("Y"));
             assertThat(r.getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
             assertThat(r.getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
             assertThat(r.getOrderedDate(), is(ORDERED_DATE));
@@ -341,6 +350,7 @@ public class ApplicationExtractTransformerTest {
                 .build());
     }
 
+
     private List<JudicialRole> createJudiciary() {
         return Arrays.asList(
                 JudicialRole.judicialRole()
@@ -416,7 +426,7 @@ public class ApplicationExtractTransformerTest {
         return Arrays.asList(
                 JudicialResultPrompt.judicialResultPrompt()
                         .withLabel(LABEL)
-                        .withIsAvailableForCourtExtract(true)
+                        .withCourtExtract(COURT_EXTRACT)
                         .withValue(PROMPT_VALUE)
                         .build()
         );
