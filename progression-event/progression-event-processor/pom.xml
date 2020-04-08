@@ -10,8 +10,6 @@
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-        <results.version>1.0.8</results.version>
-        <notification.notify.version>0.0.38</notification.notify.version>
     </properties>
 
     <dependencies>
