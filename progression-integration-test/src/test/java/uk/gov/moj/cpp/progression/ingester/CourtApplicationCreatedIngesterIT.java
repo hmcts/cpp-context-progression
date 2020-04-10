@@ -16,7 +16,6 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 
 import uk.gov.moj.cpp.progression.AbstractIT;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +25,6 @@ import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class CourtApplicationCreatedIngesterIT extends AbstractIT {
@@ -39,20 +37,20 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
     private String respondantId;
     private String respondantDefendantId;
 
+    @AfterClass
+    public static void tearDown() {
+        cleanEventStoreTables();
+        cleanViewStoreTables();
+    }
+
     @Before
-    public void setup(){
+    public void setup() {
         applicationId = randomUUID().toString();
         applicantId = randomUUID().toString();
         applicantDefendantId = randomUUID().toString();
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         deleteAndCreateIndex();
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
     @Test

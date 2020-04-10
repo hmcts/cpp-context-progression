@@ -63,14 +63,11 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:S3655", "squid:S1192", "squid:S1168", "pmd:NullAssignment", "squid:CallToDeprecatedMethod"})
 public class ProgressionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionService.class);
-
-    private static final String APPLICATION_ID = "applicationId";
     public static final String CASE_ID = "caseId";
     public static final String PROSECUTION_CASE = "prosecutionCase";
-
     public static final String DEFENDANT_ID = "defendantId";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionService.class);
+    private static final String APPLICATION_ID = "applicationId";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PROGRESSION_QUERY_SEARCH_CASES = "progression.query.search-cases";
@@ -157,7 +154,6 @@ public class ProgressionService {
         return days;
     }
 
-
     private static List<Defendant> filterDefendants(final ConfirmedProsecutionCase confirmedProsecutionCase, final
     ProsecutionCase prosecutionCase, final LocalDate earliestHearingDate) {
 
@@ -183,6 +179,8 @@ public class ProgressionService {
             matchedDefendantOffence, final LocalDate earliestHearingDate) {
         Defendant.Builder builder = Defendant.defendant()
                 .withId(matchedDefendant.getId())
+                .withMasterDefendantId(matchedDefendant.getMasterDefendantId())
+                .withCourtProceedingsInitiated(matchedDefendant.getCourtProceedingsInitiated())
                 .withOffences(matchedDefendantOffence)
                 .withAssociatedPersons(matchedDefendant.getAssociatedPersons())
                 .withDefenceOrganisation(matchedDefendant.getDefenceOrganisation())
@@ -246,7 +244,6 @@ public class ProgressionService {
         }
     }
 
-
     public void prepareSummonsData(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
         final JsonObject casesConfirmedPayload = createObjectBuilder()
                 .add("hearingId", confirmedHearing.getId().toString())
@@ -258,27 +255,27 @@ public class ProgressionService {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA).apply(casesConfirmedPayload));
     }
 
-    public void  updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
+    public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
         final List<ProsecutionCase> prosecutionCases = hearingInitiate.getHearing().getProsecutionCases();
-        if(CollectionUtils.isNotEmpty(prosecutionCases)) {
+        if (CollectionUtils.isNotEmpty(prosecutionCases)) {
             prosecutionCases.stream().forEach(pc -> {
                 final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());
                 if (prosecutionCaseJson.isPresent()) {
                     final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
                     pc.getDefendants().stream().forEach(confirmedDefendantConsumer -> {
-                            final Optional<Defendant> matchedDefendant = prosecutionCaseEntity.getDefendants().stream()
-                                    .filter(defEnt -> defEnt.getId().equals(confirmedDefendantConsumer.getId()) && isYouthUpdated(confirmedDefendantConsumer, defEnt))
-                                    .findFirst();
+                        final Optional<Defendant> matchedDefendant = prosecutionCaseEntity.getDefendants().stream()
+                                .filter(defEnt -> defEnt.getId().equals(confirmedDefendantConsumer.getId()) && isYouthUpdated(confirmedDefendantConsumer, defEnt))
+                                .findFirst();
 
-                            if (matchedDefendant.isPresent()) {
-                                final JsonObject updateYouthPayload = createObjectBuilder()
-                                        .add("defendant", objectToJsonObjectConverter.convert(transformDefendantFromEntity(matchedDefendant.get(), confirmedDefendantConsumer.getIsYouth(), pc.getId())))
-                                        .add("id", confirmedDefendantConsumer.getId().toString())
-                                        .add("prosecutionCaseId", pc.getId().toString())
-                                        .build();
+                        if (matchedDefendant.isPresent()) {
+                            final JsonObject updateYouthPayload = createObjectBuilder()
+                                    .add("defendant", objectToJsonObjectConverter.convert(transformDefendantFromEntity(matchedDefendant.get(), confirmedDefendantConsumer.getIsYouth(), pc.getId())))
+                                    .add("id", confirmedDefendantConsumer.getId().toString())
+                                    .add("prosecutionCaseId", pc.getId().toString())
+                                    .build();
 
-                                sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH).apply(updateYouthPayload));
-                            }
+                            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH).apply(updateYouthPayload));
+                        }
                     });
                 }
             });
@@ -286,7 +283,7 @@ public class ProgressionService {
     }
 
     private boolean isYouthUpdated(final Defendant confirmedDefendantConsumer, final Defendant defEnt) {
-        if(Objects.nonNull(confirmedDefendantConsumer.getIsYouth())) {
+        if (Objects.nonNull(confirmedDefendantConsumer.getIsYouth())) {
             return !confirmedDefendantConsumer.getIsYouth().equals(defEnt.getIsYouth());
         }
         return false;
@@ -593,7 +590,7 @@ public class ProgressionService {
                 .withLastName(judiciaryJson.getString("surname", EMPTY_STRING))
                 .withJudicialRoleType(
                         JudicialRoleType.judicialRoleType()
-                                .withJudicialRoleTypeId(fromString(judiciaryJson.getString("id")))
+                                .withJudicialRoleTypeId(UUID.fromString(judiciaryJson.getString("id")))
                                 .withJudiciaryType(judiciaryJson.getString("judiciaryType"))
                                 .build()
                 )
@@ -616,7 +613,7 @@ public class ProgressionService {
     }
 
     private List<ProsecutionCase> transformProsecutionCase(final List<ConfirmedProsecutionCase> confirmedProsecutionCases, final JsonEnvelope jsonEnvelope, final LocalDate earliestHearingDate) {
-        if(CollectionUtils.isNotEmpty(confirmedProsecutionCases)) {
+        if (CollectionUtils.isNotEmpty(confirmedProsecutionCases)) {
             final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
             confirmedProsecutionCases.stream().forEach(pc -> {
                 final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());

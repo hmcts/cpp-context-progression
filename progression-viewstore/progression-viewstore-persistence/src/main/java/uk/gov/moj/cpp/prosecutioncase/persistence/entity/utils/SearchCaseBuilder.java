@@ -59,6 +59,7 @@ public class SearchCaseBuilder {
                              final String defendantMiddleName, final String defendantLastName, final String defendantFullName,
                              final String defendantDob, final String prosecutor, final String status, final String searchTarget,
                              final String resultPayload, final Boolean isStandaloneApplication) {
+
         this.defendantId = defendantId;
         this.caseId = caseId;
         this.reference = reference;
@@ -72,6 +73,7 @@ public class SearchCaseBuilder {
         this.searchTarget = searchTarget;
         this.resultPayload = resultPayload;
         this.isStandaloneApplication = isStandaloneApplication;
+
     }
 
     public static CaseBuilder searchCaseBuilder() {
@@ -93,7 +95,7 @@ public class SearchCaseBuilder {
     public UUID getDefendantId() {
         return defendantId;
     }
-
+    
     public String getDefendantFirstName() {
         return defendantFirstName;
     }
@@ -195,11 +197,12 @@ public class SearchCaseBuilder {
 
         public SearchCaseBuilder.CaseBuilder withLegalEntityDefendant(final LegalEntityDefendant legalEntityDefendant) {
             if (Objects.nonNull(legalEntityDefendant)) {
-                final Organisation organisation  = legalEntityDefendant.getOrganisation();
+                final Organisation organisation = legalEntityDefendant.getOrganisation();
                 defendantFirstName = defaultString(organisation.getName());
             }
             return this;
         }
+
         public SearchCaseBuilder.CaseBuilder withSearchCaseEntity(final SearchProsecutionCaseEntity searchCaseEntity) {
             this.defendantId = searchCaseEntity.getDefendantId();
             this.caseId = searchCaseEntity.getCaseId();
@@ -215,13 +218,13 @@ public class SearchCaseBuilder {
         }
 
         public SearchCaseBuilder.CaseBuilder withSearchTarget() {
-            final StringBuilder searchTargetStringBuilder =  new StringBuilder();
+            final StringBuilder searchTargetStringBuilder = new StringBuilder();
             searchTargetStringBuilder.append(this.reference);
-            if(StringUtils.isNotBlank(defendantFullName)){
+            if (StringUtils.isNotBlank(defendantFullName)) {
                 searchTargetStringBuilder.append(DELIMITER)
                         .append(defendantFullName);
             }
-            if(StringUtils.isNotBlank(defendantDob)){
+            if (StringUtils.isNotBlank(defendantDob)) {
                 searchTargetStringBuilder.append(DELIMITER)
                         .append(defendantDob);
             }

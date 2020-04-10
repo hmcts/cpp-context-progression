@@ -58,6 +58,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String courtCentreId;
+    private String courtCentreName;
     private String applicationId;
 
     @AfterClass
@@ -74,6 +75,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = UUID.randomUUID().toString();
+        courtCentreName = "Lavender Hill Magistrate's Court";
         applicationId = UUID.randomUUID().toString();
     }
 
@@ -88,7 +90,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-applications-only.json",
-                        caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
+                        caseId, hearingId, defendantId, courtCentreId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -102,10 +104,11 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
+                                            final String defendantId, final String courtCentreId, final String courtCentreName) {
         final String strPayload = getPayload(path)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
                 .replaceAll("APPLICATION_ID", applicationId);
         return stringToJsonObjectConverter.convert(strPayload);
     }

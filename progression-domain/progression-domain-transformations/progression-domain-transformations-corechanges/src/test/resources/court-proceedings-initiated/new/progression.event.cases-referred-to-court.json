@@ -1,0 +1,161 @@
+{
+  "courtReferral": {
+    "courtDocuments": [
+      {
+        "courtDocumentId": "9913b561-ea81-42d3-8710-bc84387a5f31",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "defe54ca-46e2-4751-804d-d0289d2f4fe8"
+            ],
+            "prosecutionCaseId": "189ac832-9d52-4c17-abbe-34b24f40328b"
+          }
+        },
+        "documentTypeId": "460fb0ca-c002-11e8-a355-529269fb1459",
+        "materials": [
+          {
+            "id": "22159dbd-a3f7-4159-b033-ea9134138c45",
+            "name": "bdcNcdkRsgnERqCyNFi",
+            "uploadDateTime": "2019-02-21T16:25:32.702Z"
+          }
+        ],
+        "mimeType": "rwYSYAxzJUifzfy",
+        "name": "xAKqxZEXcplfaYHxmuj"
+      },
+      {
+        "courtDocumentId": "49fad35d-9e2d-40fc-b5fd-2e4835c54e57",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "defe54ca-46e2-4751-804d-d0289d2f4fe8"
+            ],
+            "prosecutionCaseId": "189ac832-9d52-4c17-abbe-34b24f40328b"
+          }
+        },
+        "documentTypeId": "460f8154-c002-11e8-a355-529269fb1459",
+        "materials": [
+          {
+            "id": "49fad35d-9e2d-40fc-b5fd-2e4835c54e57",
+            "name": "jWzjomWnNvkCIBJbqmtaopNkvWutamnIp",
+            "uploadDateTime": "2019-02-13T11:56:03.375Z"
+          }
+        ],
+        "mimeType": "bIrlPcevOEkJYYh",
+        "name": "CkDyxNrVbQGwHdDWPEWFuyBUchxqvvwaj"
+      },
+      {
+        "courtDocumentId": "9a435b12-1934-49f8-96f9-24c51406a335",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "defe54ca-46e2-4751-804d-d0289d2f4fe8"
+            ],
+            "prosecutionCaseId": "189ac832-9d52-4c17-abbe-34b24f40328b"
+          }
+        },
+        "documentTypeId": "460f77c2-c002-11e8-a355-529269fb1459",
+        "materials": [
+          {
+            "id": "517d0927-901e-4153-a823-15e3c7ba0beb",
+            "name": "tLdWGTnANBiDVoMqpD",
+            "uploadDateTime": "2019-02-21T16:25:33.222Z"
+          }
+        ],
+        "mimeType": "qkyUAttFLkfiyyj",
+        "name": "ySzBXlbuataBdworNC"
+      }
+    ],
+    "listHearingRequests": [
+      {
+        "estimateMinutes": 30,
+        "hearingType": {
+          "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "listDefendantRequests": [
+          {
+            "defendantOffences": [
+              "ed5c45e2-7bcb-436d-a190-d64dad475c54"
+            ],
+            "hearingLanguageNeeds": "ENGLISH",
+            "prosecutionCaseId": "189ac832-9d52-4c17-abbe-34b24f40328b",
+            "referralReason": {
+              "defendantId": "defe54ca-46e2-4751-804d-d0289d2f4fe8",
+              "description": "oQVkdecPc",
+              "id": "809f7aac-d285-43a5-9fb1-3a894db71530"
+            },
+            "summonsRequired": "SJP_REFERRAL"
+          }
+        ],
+        "listingDirections": "PESRc",
+        "prosecutorDatesToAvoid": "dOcFJzsLefWumrcyeJTDJWKmbTQZmeEMfPZtMdgQyvpHCUCSeirJZGchfrqhPVgqrVRLxOoGnjHXYLJbvxLUVbxCWouRxtONTCgtFbWSEviyodftwhHWaBfzzRDeJsaqKulAMtbwaOHeEXiTBTaNfkYBtjwRpktkAFyVMRqTYEStbiNtmvmWEmgVkcrpgWJkKWJktnhXGQfEiavyfrabvwIgDHveTYzhcmZktQBhlHOYswBmEZeVUwCCglLYUBEgzrmoDwyjNUizQJSxkdZsLQnPmOyvyMmdCQbmphvWpEvDEsXZMAJWoIwnJsMzyhqtMMXIFYYiFvCrQjaAaqjvluoWYtekvGKhCrnkvWprdPNnbjYAbttmyKVsZVbFbRKWHDrmCTVXpGoIvbbLGRpJhiGMvUvlbZffhjCZiPgdSaYLpzdZQPXrCIYScGoTuSBFJJkUNNigWjvxIjRMCrkqElJLUeyJGbSqHwuHPpmPpungEgHhYONEQYjvZsJzWLbTeeEjDEaMPuMkIUnCxuZGJPTdrPSkxooRdPTTgPYWKIgGnxnoIJvdjURJuWOnUPapyMJzlzadQQOZDwLCydgdVFDoqwrYGsNccSHnRPlIdnZOQCIyRoqFiJZUizfjxRHDjamOqCdlKzJKMHuHErChSlTcgucWREgduhXrwPRrAlMWcxPmJBOdvinNhulATVnfstJIKxuHuDmkmbmJcDmqHjoCmXPUjkFDoyZGrJLdxZQhCqyKGcDBPwaWEMOUhVlJUbSJJeQvMXifyIGvjFzDdBVApryzIMAmHkkUoNSrZ"
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "defe54ca-46e2-4751-804d-d0289d2f4fe8",
+            "courtProceedingsInitiated": "2020-02-21T11:49:18.116Z",
+            "numberOfPreviousConvictionsCited": 0,
+            "offences": [
+              {
+                "chargeDate": "2019-02-07",
+                "count": 1,
+                "id": "ed5c45e2-7bcb-436d-a190-d64dad475c54",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-02-21",
+                  "notifiedPleaValue": "NOTIFIED_NOT_GUILTY",
+                  "offenceId": "ed5c45e2-7bcb-436d-a190-d64dad475c54"
+                },
+                "offenceDefinitionId": "493cde4e-c614-494e-84dd-a606a7cc86bd",
+                "orderIndex": 1,
+                "startDate": "2018-10-16",
+                "wording": "tMsistiNSGBKbVssxuVzPteadAyUtRlqUmtYUUhVOBJfPQJCODqyUxdeGeBUMhGzxlGwGeVyvaGvEkFhILfqQrUJxYReMJQrmvfEdJJLwimlRXYrfhgMIjDkgaqtMcSGDLPmLfJciIFdBLipdjUhFRErCKQhduflnDxXAEbXiFZOUeRWmIiGlxUObRomBdzxYbzHWgyCEFoBNPjsmEEcZUnzejlcOIZOxzGcPOIkznIboneEbbcWrGoUDQWWyiqYdCcfWHZVuhuikDCBiCxR"
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "kbAsxXUdiDFandjya",
+                  "address3": "sulrmQhxV",
+                  "address4": "yXZI",
+                  "postcode": "AA1 1AA"
+                },
+                "contact": {},
+                "dateOfBirth": "2000-03-02",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "HNvDQ",
+                "gender": "MALE",
+                "lastName": "gEFOvyL",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "189ac832-9d52-4c17-abbe-34b24f40328b"
+          }
+        ],
+        "id": "189ac832-9d52-4c17-abbe-34b24f40328b",
+        "initiationCode": "J",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "VlY",
+          "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+          "prosecutionAuthorityReference": "FJZQbguwcb"
+        },
+        "statementOfFacts": "olwpxdmeMzquPXNDrcewGtxrukcRevrbgUHcXCLcRuqZDoennjfKrDhOpyriSFFsoSBlZaqsTQgSlCsMGCZWXkvwMwAoJwOuBBsWTUCnuqInShVIsxcVlAzlAZdGAmmYcEffWoelNVVvpLnfGONsriJJCNQuaZTVKlRsrKqujXgkMrIUXEdkBDbrHZCHMIrEkpTOzCHQIxqNAAvoOEuSjBHHmKWbWgMbHmlunpLnhmuxJhkWRLbradZnfidTgsuuDthmpXDSWKcqnwJKJBFqNfcOdXuXcJXtjXArFFGgQCvwgFonzmMQFQEfgEUhSOIlmQEjnDYoBbrbyqsdjGkwJPHGEOyDUIjkKbdVyUUQLfFRvgCQqyMeGKhpaXmegEYcOtRuZQblUEwVHEeOsubHxhkJABnXMtFJAPKcaQQnZUOjMuCtUvjjyrtjRQNGboDoRQTjTsOMqufZMUhumdblnYJXqBmVUAFsKRlrEjnDYLuzoXbRTvgIolhyUiUXnamJxhnYCHAMKmwnZBefNouOEXWZtTNZypZCDoVzvClypLiyRUrvowiFrzjldCOtEjIpmDGpxaWhYvbeafhxlTTMBoUMAACkIISuqLgOgScwTQsHmJZtdSIQGqZHwWPXlPMmDtNYWsVycoXHcWBXRWtQwxURgqpLEwkxcTLvqdecMyoLtPEWlbmgp"
+      }
+    ],
+    "sjpReferral": {
+      "noticeDate": "2019-02-13",
+      "referralDate": "2019-03-18",
+      "referringJudicialDecision": {
+        "judiciary": [
+          {
+            "judicialName": "EOAgXuWXqOFn",
+            "judicialRoleTypeSJP": "LEGAL_ADVISER"
+          }
+        ],
+        "location": "qnksQEGdnzTzlQSDQUTZHrBsXGsA"
+      }
+    }
+  }
+}

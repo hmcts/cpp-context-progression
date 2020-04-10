@@ -110,7 +110,7 @@ public class ConvictionDateEventListener {
                 .withWordingWelsh(offence.getWordingWelsh())
                 .withLaaApplnReference(offence.getLaaApplnReference())
                 .withProceedingsConcluded(offence.getProceedingsConcluded())
-                .withIsIntroduceAfterInitialProceedings(offence.getIsIntroduceAfterInitialProceedings())
+                .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(offence.getIsDiscontinued())
                 .build();
     }

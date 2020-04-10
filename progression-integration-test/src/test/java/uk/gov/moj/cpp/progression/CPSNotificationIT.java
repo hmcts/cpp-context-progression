@@ -77,6 +77,7 @@ public class CPSNotificationIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String courtCentreId;
+    private String courtCentreName;
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -94,6 +95,7 @@ public class CPSNotificationIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = UUID.randomUUID().toString();
+        courtCentreName = "Lavender Hill Magistrate's Court";
         stubGetOrganisationDetails(ORGANISATION_ID, ORGANISATION_NAME);
     }
 
@@ -105,7 +107,7 @@ public class CPSNotificationIT extends AbstractIT {
 
         sendMessage(PUBLIC_MESSAGE_CONSUMER,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
-                        caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
+                        caseId, hearingId, defendantId, courtCentreId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -121,7 +123,7 @@ public class CPSNotificationIT extends AbstractIT {
                 .build();
 
         final JsonObject recordInstructedPublicEvent =
-                getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId);
+                getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
         sendMessage(PUBLIC_MESSAGE_CONSUMER,
                 PUBLIC_DEFENCE_RECORD_INSTRUCTED, recordInstructedPublicEvent, metadata);
@@ -158,14 +160,16 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     private JsonObject getInstructedJsonObject(final String path, final String caseId, final String hearingId,
-                                               final String defendantId, final String courtCentreId) {
+                                            final String defendantId, final String courtCentreId, final String courtCentreName) {
         final String strPayload = getPayloadForCreatingRequest(path)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId);
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName);
         LOGGER.info("Payload: " + strPayload);
         LOGGER.info("COURT_CENTRE_ID==" + courtCentreId);
+        LOGGER.info("COURT_CENTRE_NAME==" + courtCentreName);
         return stringToJsonObjectConverter.convert(strPayload);
     }
 

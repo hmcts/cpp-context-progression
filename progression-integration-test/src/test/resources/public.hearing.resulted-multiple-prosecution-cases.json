@@ -54,7 +54,9 @@
         "defendants": [
           {
             "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
             "prosecutionCaseId": "CASE_ID_1",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
             "witnessStatement": "a",
@@ -91,7 +93,6 @@
                   "indicatedPleaDate": "2018-01-01",
                   "indicatedPleaValue": "INDICATED_GUILTY",
                   "source": "ONLINE"
-
                 },
                 "plea": {
                   "originatingHearingId": "00000000-0000-0000-0000-000000000000",
@@ -367,7 +368,9 @@
         "defendants": [
           {
             "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
             "prosecutionCaseId": "CASE_ID_2",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
             "witnessStatement": "a",

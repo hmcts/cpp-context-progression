@@ -63,6 +63,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String courtCentreId;
+    private String courtCentreName;
     private String userId;
 
     @Before
@@ -73,6 +74,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         hearingId = randomUUID().toString();
         userId = randomUUID().toString();
         courtCentreId = randomUUID().toString();
+        courtCentreName = "Lavender Hill Magistrate's Court";
     }
 
     @AfterClass
@@ -90,7 +92,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-applications-only.json",
-                        caseId, hearingId, randomUUID().toString(), courtCentreId, applicationId), JsonEnvelope.metadataBuilder()
+                        caseId, hearingId, randomUUID().toString(), courtCentreId, applicationId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -155,7 +157,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
-                        caseId, hearingId, defendantId, courtCentreId, randomUUID().toString()), JsonEnvelope.metadataBuilder()
+                        caseId, hearingId, defendantId, courtCentreId, randomUUID().toString(), courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -248,10 +250,11 @@ public class EjectCaseApplicationIT extends AbstractIT {
     }
 
     public JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                           final String defendantId, final String courtCentreId, String applicationId) {
+                                           final String defendantId, final String courtCentreId, final String applicationId, final String courtCentreName) {
         final String strPayload = getPayload(path)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("APPLICATION_ID", applicationId);

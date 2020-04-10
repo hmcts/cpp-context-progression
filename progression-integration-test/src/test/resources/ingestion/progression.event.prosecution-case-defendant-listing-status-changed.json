@@ -76,7 +76,9 @@
         "defendants": [
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "masterDefendantId": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
             "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "offences": [
               {
                 "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",

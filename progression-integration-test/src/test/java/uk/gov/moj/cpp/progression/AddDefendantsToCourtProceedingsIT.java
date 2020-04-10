@@ -44,6 +44,7 @@ import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -255,6 +256,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         //past duplicate defendant
         final Defendant defendant = Defendant.defendant()
                 .withId(UUID.fromString(defendantId))
+                .withMasterDefendantId(UUID.fromString(defendantId))
+                .withCourtProceedingsInitiated(ZonedDateTime.now(ZoneId.of("UTC")))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();
@@ -263,6 +266,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         //Add defendant
         final Defendant defendant2 = Defendant.defendant()
                 .withId(UUID.fromString(defendantId2))
+                .withMasterDefendantId(UUID.fromString(defendantId2))
+                .withCourtProceedingsInitiated(ZonedDateTime.now(ZoneId.of("UTC")))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();
@@ -274,6 +279,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         //Duplicate defendant in current payload
         final Defendant defendant3 = Defendant.defendant()
                 .withId(UUID.fromString(defendantId2))
+                .withMasterDefendantId(UUID.fromString(defendantId2))
+                .withCourtProceedingsInitiated(ZonedDateTime.now(ZoneId.of("UTC")))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();
@@ -289,7 +296,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .build();
 
         final HearingType hearingType = HearingType.hearingType().withId(randomUUID()).withDescription("TO_JAIL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(randomUUID()).build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(randomUUID()).withName("Court Name 5").build();
 
         final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)

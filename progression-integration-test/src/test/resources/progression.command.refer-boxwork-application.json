@@ -207,6 +207,8 @@
           },
           "defendant": {
             "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "masterDefendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
@@ -804,6 +806,8 @@
               },
               "defendant": {
                 "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "masterDefendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
                 "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "numberOfPreviousConvictionsCited": 0,
                 "prosecutionAuthorityReference": "a",

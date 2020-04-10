@@ -12,6 +12,7 @@
     <modules>
         <module>progression-domain-transformation-anonymise</module>
         <module>progression-domain-transformation-spiresults</module>
+        <module>progression-domain-transformations-corechanges</module>
     </modules>
 
 

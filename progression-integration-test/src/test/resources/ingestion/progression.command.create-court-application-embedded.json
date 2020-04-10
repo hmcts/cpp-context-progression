@@ -102,6 +102,8 @@
       ],
       "defendant": {
         "id": "RANDOM_APPLICANT_DEFENDANT_ID",
+        "masterDefendantId": "RANDOM_APPLICANT_DEFENDANT_ID",
+        "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
         "prosecutionCaseId": "RANDOM_CASE_ID",
         "numberOfPreviousConvictionsCited": 0,
         "prosecutionAuthorityReference": "a",
@@ -567,6 +569,8 @@
         "partyDetails": {
           "defendant": {
             "id": "RANDOM_RESPONDANT_DEFENDANT_ID",
+            "masterDefendantId": "RANDOM_RESPONDANT_DEFENDANT_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "prosecutionCaseId": "RANDOM_CASE_ID",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",

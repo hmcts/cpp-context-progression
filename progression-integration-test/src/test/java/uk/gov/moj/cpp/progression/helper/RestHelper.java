@@ -39,7 +39,7 @@ import org.hamcrest.Matcher;
 
 public class RestHelper {
 
-    public static final int TIMEOUT = 10;
+    public static final int TIMEOUT = 30;
     public static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final int PORT = 8080;
     private static final String BASE_URI = "http://" + HOST + ":" + PORT;

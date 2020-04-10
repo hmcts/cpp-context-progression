@@ -5,6 +5,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -380,6 +381,7 @@ public class ReferredProsecutionCaseTransformerTest {
         assertEquals("lastName", result.getAliases().get(0).getLastName());
         assertEquals("middleName", result.getAliases().get(0).getMiddleName());
         assertEquals("MR", result.getAliases().get(0).getTitle());
+        assertNotNull(result.getCourtProceedingsInitiated());
         assertNull(result.getAliases().get(0).getLegalEntityName());
         assertEquals("legalEntityName", result.getAliases().get(1).getLegalEntityName());
     }

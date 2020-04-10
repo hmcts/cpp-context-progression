@@ -6,11 +6,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.test.utils.core.messaging.DeadLetterQueueBrowser;
+import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
@@ -22,18 +22,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UnifiedSearchRetryIT  extends AbstractIT {
+public class UnifiedSearchRetryIT extends AbstractIT {
+    public static final Poller POLLER = new Poller(300, 1000L);
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
     private static final String EVENT_NAME = "progression.event.court-application-created";
-
     private DeadLetterQueueBrowser deadLetterQueueBrowser;
-
-    @Before
-    public void setup() throws IOException {
-        deadLetterQueueBrowser = new DeadLetterQueueBrowser();
-        deadLetterQueueBrowser.removeMessages();
-        elasticSearchIndexRemoverUtil.deleteCaseIndex("crime_case_index");
-    }
 
     @AfterClass
     public static void tearDown() {
@@ -42,14 +35,23 @@ public class UnifiedSearchRetryIT  extends AbstractIT {
 
     }
 
+    @Before
+    public void setup() throws IOException {
+        deadLetterQueueBrowser = new DeadLetterQueueBrowser();
+        deadLetterQueueBrowser.removeMessages();
+        elasticSearchIndexRemoverUtil.deleteCaseIndex("crime_case_index");
+    }
+
     @Test
+    @SuppressWarnings("squid:S1607")
+//    @Ignore // Passing locally failing with standalone elastic server TODO: fix before master merge
     public void shouldRetryToIngestData() throws IOException {
         final String caseId = randomUUID().toString();
         final String applicationId = randomUUID().toString();
         addCourtApplicationForIngestion(caseId, applicationId, randomUUID().toString(), randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        final Optional<List<String>> deadLetterQueueMessagesResult = getPoller().pollUntilFound(() -> {
+        final Optional<List<String>> deadLetterQueueMessagesResult = POLLER.pollUntilFound(() -> {
 
             final List<String> deadLetterQueueMessages = deadLetterQueueBrowser.browse();
             if (!deadLetterQueueMessages.isEmpty()

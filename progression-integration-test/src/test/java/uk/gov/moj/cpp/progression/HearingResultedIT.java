@@ -60,7 +60,9 @@ public class HearingResultedIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String courtCentreId;
+    private String courtCentreName;
     private String newCourtCentreId;
+    private String newCourtCentreName;
     private String applicationId;
 
     @AfterClass
@@ -90,7 +92,9 @@ public class HearingResultedIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
+        courtCentreName = "Lavender Hill Magistrate's Court";
         newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
+        newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
     }
 
@@ -106,15 +110,15 @@ public class HearingResultedIT extends AbstractIT {
                 .withUserId(userId)
                 .build();
 
-        final JsonObject hearingConfimedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId);
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
         sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfimedJson, metadata);
+                PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
 
         verifyInMessagingQueueForCasesReferredToCourts();
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED + ".json", caseId,
-                        hearingId, defendantId, newCourtCentreId), metadataBuilder()
+                        hearingId, defendantId, newCourtCentreId, newCourtCentreName), metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED)
                         .withUserId(userId)
@@ -125,6 +129,7 @@ public class HearingResultedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.name", hasItem(newCourtCentreName)),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
 
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
@@ -170,13 +175,14 @@ public class HearingResultedIT extends AbstractIT {
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
+                                            final String defendantId, final String courtCentreId, final String courtCentreName) {
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("COURT_CENTRE_NAME", courtCentreName)
         );
     }
 

@@ -43,6 +43,8 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -50,9 +52,8 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-@SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067","squid:S1854","squid:S1135","squid:S1481"})
-public class
-ReferredProsecutionCaseTransformer {
+@SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067", "squid:S1854", "squid:S1135", "squid:S1481"})
+public class ReferredProsecutionCaseTransformer {
 
 
     @Inject
@@ -124,6 +125,8 @@ ReferredProsecutionCaseTransformer {
                         .map(referredOffence -> transform(referredOffence, jsonEnvelope, initiationCode))
                         .collect(Collectors.toList()))
                 .withId(referredDefendant.getId())
+                .withMasterDefendantId(referredDefendant.getId())
+                .withCourtProceedingsInitiated(jsonEnvelope.metadata().createdAt().orElse(ZonedDateTime.now(ZoneId.of("UTC"))))
                 .withPersonDefendant(transform(referredDefendant.getPersonDefendant(), jsonEnvelope))
                 .withWitnessStatementWelsh(referredDefendant.getWitnessStatementWelsh())
                 .withWitnessStatement(referredDefendant.getWitnessStatement())
@@ -153,13 +156,13 @@ ReferredProsecutionCaseTransformer {
                     jsonEnvelope);
 
             final Ethnicity ethnicity = Ethnicity.ethnicity()
-            .withObservedEthnicityCode(fetchValueFromKey(observedEthnicityJson, ETHNICITY_CODE))
-            .withObservedEthnicityDescription(fetchValueFromKey(observedEthnicityJson, ETHNICITY))
-            .withObservedEthnicityId(personDefendant.getObservedEthnicityId())
-            .withSelfDefinedEthnicityCode(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY_CODE))
-            .withSelfDefinedEthnicityDescription(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY))
-            .withSelfDefinedEthnicityId(personDefendant.getSelfDefinedEthnicityId())
-            .build();
+                    .withObservedEthnicityCode(fetchValueFromKey(observedEthnicityJson, ETHNICITY_CODE))
+                    .withObservedEthnicityDescription(fetchValueFromKey(observedEthnicityJson, ETHNICITY))
+                    .withObservedEthnicityId(personDefendant.getObservedEthnicityId())
+                    .withSelfDefinedEthnicityCode(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY_CODE))
+                    .withSelfDefinedEthnicityDescription(fetchValueFromKey(selfDefinedEthnicityJson, ETHNICITY))
+                    .withSelfDefinedEthnicityId(personDefendant.getSelfDefinedEthnicityId())
+                    .build();
 
             return PersonDefendant.personDefendant()
                     .withPersonDetails(transform(personDefendant.getPersonDetails(), ethnicity, jsonEnvelope))
@@ -279,8 +282,9 @@ ReferredProsecutionCaseTransformer {
         }
         return Json.createObjectBuilder().build();
     }
-    private void ensurePostCodePresentWithAddress(final Address address){
-        if(nonNull(address) && isNull(address.getPostcode())){
+
+    private void ensurePostCodePresentWithAddress(final Address address) {
+        if (nonNull(address) && isNull(address.getPostcode())) {
             throw new MissingRequiredFieldException("Postcode is mandatory");
         }
     }

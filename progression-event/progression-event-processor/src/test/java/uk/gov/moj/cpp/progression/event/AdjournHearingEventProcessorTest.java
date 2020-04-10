@@ -126,6 +126,9 @@ public class AdjournHearingEventProcessorTest {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        ZonedDateTime courtProceedingsInitiated = ZonedDateTime.now(ZoneId.of("UTC"));
 
         final UUID roomId = randomUUID();
 
@@ -134,6 +137,8 @@ public class AdjournHearingEventProcessorTest {
                 .withDefendants(Arrays.asList(
                         Defendant.defendant()
                                 .withId(defendantId1)
+                                .withMasterDefendantId(masterDefendantId)
+                                .withCourtProceedingsInitiated(courtProceedingsInitiated)
                                 .withOffences(
                                         Arrays.asList(
                                                 Offence.offence()
@@ -261,6 +266,8 @@ public class AdjournHearingEventProcessorTest {
         assertThat(responseProsecutionCases.get(0).getId(), is(prosecutionCaseId1));
         assertThat(responseProsecutionCases.get(0).getDefendants().size(), is(1));
         assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getId(), is(defendantId1));
+        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getMasterDefendantId(), is(masterDefendantId));
+        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getCourtProceedingsInitiated(), is(courtProceedingsInitiated));
         assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getOffences().size(), is(1));
         assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
 

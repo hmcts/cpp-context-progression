@@ -51,6 +51,7 @@ import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,8 +80,10 @@ public class ListCourtHearingTransformerTest {
     final private String prosecutingAuth = "CPS";
     final private UUID prosecutionCaseId = UUID.randomUUID();
     final private UUID defendantId = UUID.randomUUID();
+    final private UUID masterDefendantId = UUID.randomUUID();
     final private UUID offenceId = UUID.randomUUID();
     final private UUID courtCenterId = UUID.randomUUID();
+    final private ZonedDateTime courtProceedingsInitiated = ZonedDateTime.now(ZoneId.of("UTC"));
     final private int estimateMinutes = 15;
     final private String referralDate = "2018-02-15";
     final private ZonedDateTime listedStartDateTime = ZonedDateTime.parse("2019-06-30T18:32:04.238Z");
@@ -141,14 +144,21 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getEstimatedMinutes(), is(estimateMinutes));
         assertThat(listCourtHearing.getHearings().get(0).getEarliestStartDateTime().toLocalDate().minusDays(14).toString(), is(referralDate));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
-        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendantId));
+        validateDefendant(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
                 .getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
                 .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
-        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
-                .getOffences().get(0).getId(), is(offenceId));
 
+    }
+
+    public void validateDefendant(final Defendant defendant) {
+        assertThat(defendant.getId(), is(defendantId));
+        assertThat(defendant.getMasterDefendantId(), is(masterDefendantId));
+        assertThat(defendant.getCourtProceedingsInitiated(),
+                is(courtProceedingsInitiated));
+        assertThat(defendant
+                .getOffences().get(0).getId(), is(offenceId));
     }
 
     @Test
@@ -177,7 +187,8 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getEstimatedMinutes(), is(estimateMinutes));
         assertThat(listCourtHearing.getHearings().get(0).getEarliestStartDateTime().toLocalDate().minusDays(14).toString(), is(referralDate));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
-        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendantId));
+        validateDefendant(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0));
+
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
                 .getLegalEntityDefendant().getOrganisation().getAddress().getPostcode(), is(postcode));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
@@ -283,6 +294,8 @@ public class ListCourtHearingTransformerTest {
                         .withProsecutionAuthorityCode(prosecutingAuth).build())
                 .withDefendants(Arrays.asList(Defendant.defendant()
                         .withId(defendantId)
+                        .withMasterDefendantId(masterDefendantId)
+                        .withCourtProceedingsInitiated(courtProceedingsInitiated)
                         .withPersonDefendant(PersonDefendant.personDefendant()
                                 .withPersonDetails(Person.person()
                                         .withAddress(Address.address().withPostcode(postcode).build())
@@ -307,6 +320,8 @@ public class ListCourtHearingTransformerTest {
                         .withProsecutionAuthorityCode(prosecutingAuth).build())
                 .withDefendants(Arrays.asList(Defendant.defendant()
                         .withId(defendantId)
+                        .withMasterDefendantId(masterDefendantId)
+                        .withCourtProceedingsInitiated(courtProceedingsInitiated)
                         .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                                 .withOrganisation(Organisation.organisation()
                                         .withAddress(Address.address()

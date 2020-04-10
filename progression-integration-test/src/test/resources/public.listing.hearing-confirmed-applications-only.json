@@ -26,7 +26,8 @@
       }
     ],
     "courtCentre": {
-      "id": "COURT_CENTRE_ID"
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME"
     },
     "courtApplicationIds": [
         "APPLICATION_ID"

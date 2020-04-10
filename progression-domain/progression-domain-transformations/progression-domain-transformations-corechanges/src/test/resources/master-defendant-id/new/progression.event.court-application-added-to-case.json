@@ -1,0 +1,84 @@
+{
+  "courtApplication": {
+    "id": "c3914791-acc5-4e94-88db-3af05284f415",
+    "type": {
+      "applicantSynonym": "DuIcKeega",
+      "applicationCategory": "IZ",
+      "applicationJurisdictionType": "xwnCx",
+      "applicationType": "jZnpsfjLzhahNuIkmBUqMGyhQOlcdiWGsAayjpfJIDTVJRPOFfuwrzlPAxqISzXUecOhYIz",
+      "id": "2932e2b2-af18-38ab-8081-a543440b59fd",
+      "isAppealApplication": false,
+      "isBreachApplication": false,
+      "linkType": "kuTlxL",
+      "respondentSynonym": "dWrWYPloM"
+    },
+    "applicationReceivedDate": "2019-06-06",
+    "applicant": {
+      "id": "52b27284-0686-4894-b1c7-7d4b634cacdb",
+      "prosecutingAuthority": {
+        "prosecutionAuthorityCode": "fHW",
+        "prosecutionAuthorityId": "52b27284-0686-4894-b1c7-7d4b634cacdb"
+      }
+    },
+    "applicationStatus": "mvwQs",
+    "respondents": [
+      {
+        "partyDetails": {
+          "id": "94b47b6d-bc16-4cd7-9f39-1658707053d3",
+          "defendant": {
+            "id": "147c2cdd-62fe-4861-90d5-3534f606d9fb",
+            "masterDefendantId": "147c2cdd-62fe-4861-90d5-3534f606d9fb",
+            "prosecutionCaseId": "2a7008d3-6735-4fc6-8db8-b2ced9630063",
+            "offences": [
+              {
+                "id": "ddae6571-6a67-4b17-b331-56f4ec9813d5",
+                "offenceDefinitionId": "88bf8688-2263-490f-b780-44121bc9d396",
+                "offenceTitle": "mjcVCadYgugJiwFFbNaAQuFBHGgHYMQKOKIjRrJpxSuomfnOtUoHHpHbjmaBLEvDAquAq",
+                "wording": "XLUQSfnYuWARNdowCmTzwXqpLwTbKhKeFvJmMHvFFHjTuFegBLHQIgqtqpRhFKzXfMzqibMiofbIKMvXuCLrwCxBGfXxbhatgaGoAXFOkEpnTYXskBggodCUZpNkgKdRWKbRRxLEEooBHsHZUGCIcYHFpwhudVCubFaGycwqrMNqpPmGfBaoHjxWspUsnDTFjECGJfQFelRZmjptZNyhtAwKOKniBEwqbDmvwJVyBihfnxeULudMNLXxljdIUqKTaMihLvqVkZGBLjEpMXaxZegSJHZVtkAdfyXyXxkMRwgjNVjlDzBOVZFO",
+                "startDate": "2019-01-21",
+                "offenceCode": "rGmxYAp",
+                "offenceTitleWelsh": "WaJbwtinLbOCWRBzsamMgLkxSnvdqkKmdqJGNTgPDNoQZTlHSAcWPeQwfNSkMiMlqGWkmdmfq",
+                "offenceLegislation": "lMpMibVHJkRyvagkhtYRAdCsITYrgQLxUcDDMzFMBBwTqQsArsiOaSsZBpyaYzGiILxobHSBDOlZCr",
+                "offenceLegislationWelsh": "zFFvHXxBknksoxTrpozVBUVBytoridpVjCwsxtfchNNbVSyDuzhPPTlEyKEHTXuGToPtCA",
+                "modeOfTrial": "xxTrLgcQJj",
+                "count": 0,
+                "indicatedPlea": {
+                  "offenceId": "ddae6571-6a67-4b17-b331-56f4ec9813d5",
+                  "indicatedPleaDate": "2019-05-07",
+                  "indicatedPleaValue": "RrWNVdMevJQKcWFrtePC",
+                  "source": "WnTLOEAK"
+                }
+              }
+            ],
+            "defenceOrganisation": {
+              "name": "xAOKoSxJ"
+            },
+            "personDefendant": {
+              "bailStatus": {
+                "id": "eaf18bf8-9569-3656-a4ab-64299f9bd513",
+                "code": "E",
+                "description": "ggMqzhyMEegBBdyhrM"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "szcPEOGvsTbETeFAuw",
+                  "address2": "PWVoWwfrzNDwEh",
+                  "address4": "VIWIbGlDeOZYZSRGZbIQk"
+                },
+                "dateOfBirth": "1968-12-19",
+                "firstName": "GnRqD",
+                "gender": "KKcd",
+                "lastName": "uLTdDu",
+                "nationalityCode": "BBJ",
+                "nationalityDescription": "hiCiiFy",
+                "nationalityId": "49433158-3542-49c8-a9af-581a0e746152"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "linkedCaseId": "2a7008d3-6735-4fc6-8db8-b2ced9630063",
+    "applicationParticulars": "nEPGeQtLWYsGAgyHfkIPNjZyLarPFkiyzXiQNFZubgEvXlrWYwddTQygua"
+  }
+}

@@ -13,7 +13,9 @@
       {
         "pncId": "1234567",
         "id": "DEFENDANT_ID",
+        "masterDefendantId": "DEFENDANT_ID",
         "prosecutionCaseId": "CASE_ID",
+        "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
         "numberOfPreviousConvictionsCited": 5,
         "prosecutionAuthorityReference": "TFL12345-ABC",
         "proceedingsConcluded": true,

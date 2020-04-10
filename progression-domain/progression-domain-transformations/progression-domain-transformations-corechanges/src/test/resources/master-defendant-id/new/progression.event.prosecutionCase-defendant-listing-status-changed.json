@@ -1,0 +1,84 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "welshName": "Llys Ynadon Lavender Hill"
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 30,
+        "sittingDay": "2020-03-16T00:00:00.000Z"
+      }
+    ],
+    "id": "0ff340d5-8a82-404e-a752-64921e87e8f8",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "SJP_REFERRAL",
+        "defendants": [
+          {
+            "id": "4f457997-812e-487e-bbac-4e6b71357178",
+            "masterDefendantId": "4f457997-812e-487e-bbac-4e6b71357178",
+            "numberOfPreviousConvictionsCited": 99,
+            "offences": [
+              {
+                "chargeDate": "2018-08-01",
+                "count": 1,
+                "id": "aec0b4a3-97eb-460e-9416-4ab8744e21bf",
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2020-03-02",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "aec0b4a3-97eb-460e-9416-4ab8744e21bf"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "startDate": "2018-07-02",
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "Flat 1",
+                  "address2": "1 Old Road",
+                  "address3": "London",
+                  "address4": "Merton",
+                  "postcode": "SW99 1AA"
+                },
+                "contact": {},
+                "dateOfBirth": "1965-12-27",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {},
+                "firstName": "Fred",
+                "gender": "MALE",
+                "lastName": "Smith",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "1de94702-4f7b-4905-bdc5-3e18cd4b9508"
+          }
+        ],
+        "id": "1de94702-4f7b-4905-bdc5-3e18cd4b9508",
+        "initiationCode": "J",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+          "prosecutionAuthorityReference": "TFL9330545"
+        },
+        "statementOfFacts": "Prosecution Facts"
+      }
+    ],
+    "type": {
+      "description": "Plea & Trial Preparation",
+      "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+    }
+  },
+  "hearingListingStatus": "SENT_FOR_LISTING"
+}

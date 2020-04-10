@@ -79,8 +79,8 @@
     "pncId": {
       "type": "string"
     },
-    "isYouth":{
-      "type" : "boolean"
+    "isYouth": {
+      "type": "boolean"
     },
     "associatedDefenceOrganisation": {
       "description": "The associated defence representation details",

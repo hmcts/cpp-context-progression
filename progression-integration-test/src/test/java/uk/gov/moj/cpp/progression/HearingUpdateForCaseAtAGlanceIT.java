@@ -38,6 +38,7 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String newCourtCentreId;
+    private String newCourtCentreName;
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -53,6 +54,7 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         newCourtCentreId = randomUUID().toString();
+        newCourtCentreName = "Lavender Hill Magistrate's Court";
     }
 
     @Test
@@ -62,7 +64,7 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_UPDATED, getHearingJsonObject("public.listing.hearing-updated.json", caseId,
-                        hearingId, defendantId, newCourtCentreId), JsonEnvelope.metadataBuilder()
+                        hearingId, defendantId, newCourtCentreId, newCourtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_UPDATED)
                         .withUserId(userId)
@@ -76,13 +78,14 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
+                                            final String defendantId, final String courtCentreId, final String courtCentreName) {
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("COURT_CENTRE_NAME", courtCentreName)
         );
     }
 

@@ -42,25 +42,28 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantUpdatedEventListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedEventListener.class);
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
-
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
     @Inject
     private ProsecutionCaseRepository repository;
-
     @Inject
     private SearchProsecutionCase searchCase;
-
     @Inject
     private CourtApplicationRepository courtApplicationRepository;
-
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedEventListener.class);
+    private static JsonObject jsonFromString(String jsonObjectStr) {
+
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+
+        return object;
+    }
 
     @Handles("progression.event.prosecution-case-defendant-updated")
     public void processProsecutionCaseDefendantUpdated(final JsonEnvelope event) {
@@ -138,6 +141,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     private Defendant getUpdatedDefendant(final Defendant originalDefendant, final Defendant defendant) {
         return Defendant.defendant()
                 .withId(defendant.getId())
+                .withMasterDefendantId(defendant.getMasterDefendantId())
+                .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
                 .withOffences(defendant.getOffences())
                 .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalAidStatus(defendant.getLegalAidStatus())
@@ -264,30 +269,32 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     private Defendant updateDefendant(final Defendant originDefendant, final DefendantUpdate defendant) {
 
-            return Defendant.defendant()
-                    .withOffences(originDefendant.getOffences())
-                    .withPersonDefendant(defendant.getPersonDefendant())
+        return Defendant.defendant()
+                .withOffences(originDefendant.getOffences())
+                .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                    .withAssociatedPersons(defendant.getAssociatedPersons())
-                    .withId(defendant.getId())
-                    .withMitigation(originDefendant.getMitigation())
-                    .withMitigationWelsh(originDefendant.getMitigationWelsh())
-                    .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                    .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
-                    .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                    .withWitnessStatement(originDefendant.getWitnessStatement())
-                    .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
-                    .withDefenceOrganisation(defendant.getDefenceOrganisation())
-                    .withPncId(defendant.getPncId())
-                    .withJudicialResults(originDefendant.getJudicialResults())
-                    .withAliases(defendant.getAliases())
-                    .withIsYouth(defendant.getIsYouth())
-                    .withCroNumber(originDefendant.getCroNumber())
-                    .withLegalAidStatus(originDefendant.getLegalAidStatus())
-                    .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
-                    .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
-                    .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
-                    .build();
+                .withAssociatedPersons(defendant.getAssociatedPersons())
+                .withId(defendant.getId())
+                .withMasterDefendantId(originDefendant.getMasterDefendantId())
+                .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
+                .withMitigation(originDefendant.getMitigation())
+                .withMitigationWelsh(originDefendant.getMitigationWelsh())
+                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withWitnessStatement(originDefendant.getWitnessStatement())
+                .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
+                .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                .withPncId(defendant.getPncId())
+                .withJudicialResults(originDefendant.getJudicialResults())
+                .withAliases(defendant.getAliases())
+                .withIsYouth(defendant.getIsYouth())
+                .withCroNumber(originDefendant.getCroNumber())
+                .withLegalAidStatus(originDefendant.getLegalAidStatus())
+                .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
+                .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
+                .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
+                .build();
 
     }
 
@@ -296,15 +303,6 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         pCaseEntity.setCaseId(prosecutionCase.getId());
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
-    }
-
-    private static JsonObject jsonFromString(String jsonObjectStr) {
-
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        JsonObject object = jsonReader.readObject();
-        jsonReader.close();
-
-        return object;
     }
 
     private List<UUID> getAllDefendantsUUID(CourtApplication courtApplication) {

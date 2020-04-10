@@ -209,6 +209,7 @@ public class SearchProsecutionCaseTest {
                                 .withMiddleName(APPLICANT_PERSON_MIDDLE_NAME)
                                 .withLastName(APPLICANT_PERSON_LAST_NAME)
                                 .build())
+                        .withDefendant(Defendant.defendant().withId(UUID.randomUUID()).build())
                         .build())
                 .withRespondents(Arrays.asList(
                         CourtApplicationRespondent.courtApplicationRespondent()

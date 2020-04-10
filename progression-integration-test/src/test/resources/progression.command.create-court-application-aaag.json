@@ -23,6 +23,8 @@
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
       "defendant": {
         "id": "0e852e11-59c8-4b3b-8db6-9e05b8d67131",
+        "masterDefendantId": "0e852e11-59c8-4b3b-8db6-9e05b8d67131",
+        "courtProceedingsInitiated": "2020-02-21T11:49:18.116Z",
         "prosecutionCaseId": "88cdf36e-92e4-41b0-8277-17d9dba3f06f",
         "numberOfPreviousConvictionsCited": 0,
         "prosecutionAuthorityReference": "a",

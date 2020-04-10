@@ -62,7 +62,7 @@
           "applicationJurisdictionType": "MAGISTRATES",
           "applicationSummonsRecipientType": "APPLICANT"
         },
-        "applicationReceivedDate": "0000-01-01",
+        "applicationReceivedDate": "2000-01-01",
         "applicationReference": "a",
         "applicant": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -207,6 +207,7 @@
           },
           "defendant": {
             "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "masterDefendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
@@ -797,6 +798,7 @@
               },
               "defendant": {
                 "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "masterDefendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "numberOfPreviousConvictionsCited": 0,
                 "prosecutionAuthorityReference": "a",

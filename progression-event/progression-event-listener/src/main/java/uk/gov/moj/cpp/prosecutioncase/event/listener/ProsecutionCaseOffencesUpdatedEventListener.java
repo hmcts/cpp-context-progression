@@ -173,7 +173,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withLaaApplnReference(nonNull(updatedOffence.getLaaApplnReference())
                         ? updatedOffence.getLaaApplnReference(): persistedOffence.getLaaApplnReference())
                 .withProceedingsConcluded(persistedOffence.getProceedingsConcluded())
-                .withIsIntroduceAfterInitialProceedings(persistedOffence.getIsIntroduceAfterInitialProceedings())
+                .withIntroducedAfterInitialProceedings(persistedOffence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(persistedOffence.getIsDiscontinued())
                 .build();
     }

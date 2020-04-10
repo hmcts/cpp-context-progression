@@ -54,6 +54,8 @@
         "defendants": [
           {
             "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "prosecutionCaseId": "CASE_ID",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",

@@ -12,7 +12,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -51,7 +50,8 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
     private DefendantUpdate updateDefendant(final DefendantUpdate defendant) {
-        return DefendantUpdate.defendantUpdate().withId(defendant.getId())
+        return DefendantUpdate.defendantUpdate()
+                .withId(defendant.getId())
                 .withProsecutionCaseId(defendant.getProsecutionCaseId())
                 .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
                 .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())

@@ -1,7 +1,9 @@
 {
   "defendant": {
     "id": "cf73207f-3ced-488a-82a0-3fba79c2ce01",
+    "masterDefendantId": "cf73207f-3ced-488a-82a0-3fba79c2ce01",
     "prosecutionCaseId": "cf73207f-3ced-488a-82a0-3fba79c2ce02",
+    "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
     "numberOfPreviousConvictionsCited": 5,
     "prosecutionAuthorityReference": "TFL12345-ABC",
     "associatedPersons": [

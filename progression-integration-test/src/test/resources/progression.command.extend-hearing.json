@@ -206,7 +206,9 @@
           },
           "defendant": {
             "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "masterDefendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
             "witnessStatement": "a",
@@ -505,8 +507,11 @@
                   }
                 ]
               },
-              "bailStatus": "CONDITIONAL",
-              "bailConditions": "a",
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+                "code": "B",
+                "description": "Conditional Bail"
+              },
               "custodyTimeLimit": "0000-01-01",
               "perceivedBirthYear": 0,
               "driverNumber": "a",
@@ -790,7 +795,9 @@
               },
               "defendant": {
                 "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "masterDefendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
                 "numberOfPreviousConvictionsCited": 0,
                 "prosecutionAuthorityReference": "a",
                 "witnessStatement": "a",
@@ -1089,8 +1096,11 @@
                       }
                     ]
                   },
-                  "bailStatus": "CONDITIONAL",
-                  "bailConditions": "a",
+                  "bailStatus": {
+                    "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+                    "code": "B",
+                    "description": "Conditional Bail"
+                  },
                   "custodyTimeLimit": "0000-01-01",
                   "perceivedBirthYear": 0,
                   "driverNumber": "a",

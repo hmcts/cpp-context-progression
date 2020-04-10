@@ -96,12 +96,14 @@
                 "markerTypeDescription": "a"
               }
             ]
-        },
-        "role": "a"
+          },
+          "role": "a"
         }
       ],
       "defendant": {
         "id": "RANDOM_APPLICANT_DEFENDANT_ID",
+        "masterDefendantId": "RANDOM_APPLICANT_DEFENDANT_ID",
+        "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
         "prosecutionCaseId": "RANDOM_CASE_ID",
         "numberOfPreviousConvictionsCited": 0,
         "prosecutionAuthorityReference": "a",
@@ -502,7 +504,7 @@
         ],
         "judicialResults": [
           {
-            "isAvailableForCourtExtract":true,
+            "isAvailableForCourtExtract": true,
             "orderedHearingId": "00000000-0000-0000-0000-000000000000",
             "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
             "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
@@ -567,6 +569,8 @@
         "partyDetails": {
           "defendant": {
             "id": "RANDOM_RESPONDANT_DEFENDANT_ID",
+            "masterDefendantId": "RANDOM_RESPONDANT_DEFENDANT_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "prosecutionCaseId": "RANDOM_CASE_ID",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",

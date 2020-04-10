@@ -52,22 +52,7 @@ public class PreAndPostConditionHelper {
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
     private static final Logger LOGGER = LoggerFactory.getLogger(PreAndPostConditionHelper.class);
 
-    public static String addDefendant(final String caseId) {
-        String request = null;
-        try (final AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
-            request = addDefendantHelper.addMinimalDefendant();
-            addDefendantHelper.verifyInActiveMQ();
-            addDefendantHelper.verifyInPublicTopic();
-            addDefendantHelper.verifyMinimalDefendantAdded();
-        }
-        return request;
-    }
 
-    public static void addDefendant(final String caseId, final String defendantId) {
-        try (final AddDefendantHelper addDefendantHelper = new AddDefendantHelper(caseId)) {
-            addDefendantHelper.addFullDefendant(defendantId, randomUUID().toString().substring(0, 11));
-        }
-    }
 
     public static Response addCaseToCrownCourt(final String caseId) throws IOException {
         return addCaseToCrownCourt(caseId, randomUUID().toString(), randomUUID().toString());
@@ -199,7 +184,7 @@ public class PreAndPostConditionHelper {
         return Resources.toString(resource, Charset.defaultCharset())
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
-                .replace("RANDOM_DEFENDANT_ID", defendantId)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
                 .replace("RANDOM_DOC_ID", courtDocumentId)
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
@@ -232,6 +217,7 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
                 .replace("RANDOM_DEFENDANT_ID", defendantId)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId)
@@ -255,7 +241,7 @@ public class PreAndPostConditionHelper {
         return Resources.toString(getResource("progression.command.prosecution-case-refer-to-court-minimal-payload.json"), Charset.defaultCharset())
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
-                .replace("RANDOM_DEFENDANT_ID", defendantId);
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId);
     }
 
 
@@ -265,7 +251,7 @@ public class PreAndPostConditionHelper {
         return Resources.toString(getResource(filePath), Charset.defaultCharset())
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
-                .replace("RANDOM_DEFENDANT_ID", defendantId);
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId);
     }
 
     // Progression Test DSL for preconditions and assertions
@@ -333,9 +319,6 @@ public class PreAndPostConditionHelper {
                                 matchers
                         ))).getPayload();
     }
-
-
-
 
 
     public static String getCourtDocuments(final String userId, final String... args) {
@@ -582,7 +565,7 @@ public class PreAndPostConditionHelper {
         return Resources.toString(getResource(fileName), Charset.defaultCharset())
                 .replace("APPLICATION_ID", applicationId)
                 .replace("RANDOM_CASE_ID", caseId)
-                .replace("RANDOM_DEFENDANT_ID", defendantId)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
                 .replace("APPLICANT_ID", applicantId);
     }
 

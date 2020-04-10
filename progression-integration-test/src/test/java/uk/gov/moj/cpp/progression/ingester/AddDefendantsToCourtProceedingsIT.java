@@ -40,6 +40,7 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUt
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -231,6 +232,8 @@ public class AddDefendantsToCourtProceedingsIT {
         //past duplicate defendant
         final Defendant defendant = Defendant.defendant()
                 .withId(UUID.fromString(defendantId))
+                .withMasterDefendantId(UUID.fromString(defendantId))
+                .withCourtProceedingsInitiated(ZonedDateTime.now(ZoneId.of("UTC")))
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();
@@ -258,6 +261,8 @@ public class AddDefendantsToCourtProceedingsIT {
         final Defendant defendant2 = Defendant.defendant()
                 .withLegalEntityDefendant(legalEntityDefendant)
                 .withId(UUID.fromString(defendantId2))
+                .withMasterDefendantId(UUID.fromString(defendantId2))
+                .withCourtProceedingsInitiated(ZonedDateTime.now(ZoneId.of("UTC")))
                 .withPncId("pncId")
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
@@ -277,7 +282,7 @@ public class AddDefendantsToCourtProceedingsIT {
                 .build();
 
         final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).withName("Court Centre 1").build();
 
         final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)

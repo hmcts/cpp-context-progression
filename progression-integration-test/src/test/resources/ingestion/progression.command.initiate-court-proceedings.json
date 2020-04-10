@@ -21,6 +21,8 @@
         "defendants": [
           {
             "id": "RANDOM_DEFENDANT_ID",
+            "masterDefendantId": "RANDOM_DEFENDANT_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "prosecutionCaseId": "RANDOM_CASE_ID",
             "numberOfPreviousConvictionsCited": 5,
             "prosecutionAuthorityReference": "TFL12345-ABC",
@@ -221,7 +223,8 @@
         "earliestStartDateTime": "EARLIEST_START_DATE_TIME",
         "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
         "courtCentre": {
-      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+      		"id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "name": "Lavender Hill Mags Court"
       	},
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",

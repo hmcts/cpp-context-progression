@@ -137,6 +137,8 @@ public class ListCourtHearingTransformer {
             matchedDefendantOffence) {
         return Defendant.defendant()
                 .withId(matchedDefendant.getId())
+                .withMasterDefendantId(matchedDefendant.getMasterDefendantId())
+                .withCourtProceedingsInitiated(matchedDefendant.getCourtProceedingsInitiated())
                 .withOffences(matchedDefendantOffence)
                 .withAssociatedPersons(matchedDefendant.getAssociatedPersons())
                 .withDefenceOrganisation(matchedDefendant.getDefenceOrganisation())

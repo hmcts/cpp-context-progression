@@ -39,7 +39,7 @@ public class DefendantHelper {
     }
 
     public static boolean isAllDefendantProceedingConcluded(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants) {
-        return prosecutionCase.getDefendants().stream().map(defendant ->  {
+        return prosecutionCase.getDefendants().stream().map(defendant -> {
             final List<Offence> udpatedOffences = new ArrayList<>();
             final boolean proceedingConcluded = defendant.getOffences().stream()
                     .map(offence -> getUpdatedOffence(udpatedOffences, offence, offence.getJudicialResults() != null ?
@@ -53,37 +53,38 @@ public class DefendantHelper {
             updatedDefendants.add(updatedDefendant);
 
             return proceedingConcluded;
-
         }).collect(toList()).stream().allMatch(proceedingConcluded -> proceedingConcluded.equals(Boolean.TRUE));
     }
 
     private static Defendant getDefendant(Defendant defendant, final List<Offence> udpatedOffences, boolean proceedingConcluded) {
         return Defendant.defendant()
-                        .withPersonDefendant(defendant.getPersonDefendant())
-                        .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                        .withId(defendant.getId())
-                        .withOffences(udpatedOffences)
-                        .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                        .withAliases(defendant.getAliases())
-                        .withAssociatedPersons(defendant.getAssociatedPersons())
-                        .withDefenceOrganisation(defendant.getDefenceOrganisation())
-                        .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                        .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
-                        .withMitigation(defendant.getMitigation())
-                        .withMitigationWelsh(defendant.getMitigationWelsh())
-                        .withWitnessStatement(defendant.getWitnessStatement())
-                        .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
-                        .withJudicialResults(defendant.getJudicialResults())
-                        .withPncId(defendant.getPncId())
-                        .withCroNumber(defendant.getCroNumber())
-                        .withLegalAidStatus(defendant.getLegalAidStatus())
-                        .withProceedingsConcluded(proceedingConcluded)
-                        .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
-                        .build();
+                .withPersonDefendant(defendant.getPersonDefendant())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                .withId(defendant.getId())
+                .withMasterDefendantId(defendant.getMasterDefendantId())
+                .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
+                .withOffences(udpatedOffences)
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withAliases(defendant.getAliases())
+                .withAssociatedPersons(defendant.getAssociatedPersons())
+                .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
+                .withMitigation(defendant.getMitigation())
+                .withMitigationWelsh(defendant.getMitigationWelsh())
+                .withWitnessStatement(defendant.getWitnessStatement())
+                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                .withJudicialResults(defendant.getJudicialResults())
+                .withPncId(defendant.getPncId())
+                .withCroNumber(defendant.getCroNumber())
+                .withLegalAidStatus(defendant.getLegalAidStatus())
+                .withProceedingsConcluded(proceedingConcluded)
+                .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
+                .build();
     }
 
-    private static Offence getUpdatedOffence(final List<Offence> udpatedOffences,Offence offence, boolean proceedingConcluded) {
-         final Offence updatedOffence = Offence.offence()
+    private static Offence getUpdatedOffence(final List<Offence> udpatedOffences, Offence offence, boolean proceedingConcluded) {
+        final Offence updatedOffence = Offence.offence()
                 .withAllocationDecision(offence.getAllocationDecision())
                 .withAquittalDate(offence.getAquittalDate())
                 .withArrestDate(offence.getArrestDate())
@@ -96,7 +97,7 @@ public class DefendantHelper {
                 .withId(offence.getId())
                 .withIndicatedPlea(offence.getIndicatedPlea())
                 .withIsDiscontinued(offence.getIsDiscontinued())
-                .withIsIntroduceAfterInitialProceedings(offence.getIsIntroduceAfterInitialProceedings())
+                .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
                 .withJudicialResults(offence.getJudicialResults())
                 .withLaaApplnReference(offence.getLaaApplnReference())
                 .withModeOfTrial(offence.getModeOfTrial())
@@ -116,7 +117,7 @@ public class DefendantHelper {
                 .withVictims(offence.getVictims())
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
-                 .build();
+                .build();
         udpatedOffences.add(updatedOffence);
         return updatedOffence;
     }

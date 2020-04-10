@@ -147,6 +147,8 @@ public class AdjournHearingEventProcessor {
                 List<Offence> adjournedOffencesForDefendant = getAdjournedOffencesForDefendant(defendant, nextHearingOffenceIds);
                 Defendant updatedDefendant = Defendant.defendant()
                         .withId(defendant.getId())
+                        .withMasterDefendantId(defendant.getMasterDefendantId())
+                        .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
                         .withOffences(adjournedOffencesForDefendant)
                         .withPersonDefendant(defendant.getPersonDefendant())
                         .withAssociatedPersons(defendant.getAssociatedPersons())

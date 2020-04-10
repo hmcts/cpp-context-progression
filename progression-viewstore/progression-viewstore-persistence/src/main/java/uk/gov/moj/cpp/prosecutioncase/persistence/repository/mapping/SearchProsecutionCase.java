@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
-
 import static uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority.CPS;
 
 import uk.gov.justice.core.courts.CourtApplication;
@@ -29,11 +28,10 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S2629", "squid:S00115", "pmd:BeanMembersShouldSerialize", "squid:CallToDeprecatedMethod"})
 public class SearchProsecutionCase {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchProsecutionCase.class);
-    private static final DateTimeFormatter DOB_FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final String SPACE = " ";
     public static final String COMMA = ",";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchProsecutionCase.class);
+    private static final DateTimeFormatter DOB_FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     @Inject
     private SearchProsecutionCaseRepository searchRepository;
 
@@ -77,17 +75,17 @@ public class SearchProsecutionCase {
             searchEntity.setCaseId(courtApplication.getId().toString());
             searchEntity.setDefendantId(courtApplication.getId());
             searchEntity.setReference(courtApplication.getApplicationReference());
-            
+
             final uk.gov.justice.core.courts.Person applicantPerson = courtApplication.getApplicant().getPersonDetails();
-            if(Objects.nonNull(applicantPerson)) {
+            if (Objects.nonNull(applicantPerson)) {
                 searchEntity.setDefendantFirstName(safeUnbox(applicantPerson.getFirstName(), searchEntity.getDefendantFirstName()));
                 searchEntity.setDefendantMiddleName(safeUnbox(applicantPerson.getMiddleName(), searchEntity.getDefendantMiddleName()));
-                searchEntity.setDefendantLastName(safeUnbox(applicantPerson.getLastName(), searchEntity.getDefendantLastName()));    
-            } 
-            
-            if(Objects.nonNull(courtApplication.getApplicant().getOrganisation())) {
+                searchEntity.setDefendantLastName(safeUnbox(applicantPerson.getLastName(), searchEntity.getDefendantLastName()));
+            }
+
+            if (Objects.nonNull(courtApplication.getApplicant().getOrganisation())) {
                 searchEntity.setDefendantFirstName(safeUnbox(courtApplication.getApplicant().getOrganisation().getName(), searchEntity.getDefendantFirstName()));
-            } 
+            }
 
             if (Objects.nonNull(courtApplication.getRespondents())) {
                 searchEntity.setProsecutor(safeUnbox(buildProsecutorFromApplicationRespondents(courtApplication.getRespondents()), searchEntity.getProsecutor()));
@@ -100,7 +98,7 @@ public class SearchProsecutionCase {
                     .withSearchTargetForApplication()
                     .build().getSearchTarget());
             searchRepository.save(searchEntity);
-            
+
             LOGGER.info("Application Search target created : {} for Application id: {}", searchEntity.getSearchTarget(), courtApplication.getId());
         } else {
             LOGGER.error("Application id: {}, search target not created", courtApplication.getId());
@@ -109,25 +107,25 @@ public class SearchProsecutionCase {
     }
 
     private String buildProsecutorFromApplicationRespondents(final List<CourtApplicationRespondent> respondents) {
-        
+
         return respondents.stream().map(respondent -> {
             String result = StringUtils.EMPTY;
 
-            if(Objects.nonNull(respondent.getPartyDetails())) {
-                final uk.gov.justice.core.courts.Person respondentPerson = respondent.getPartyDetails().getPersonDetails();   
-                if(Objects.nonNull(respondentPerson)) {
+            if (Objects.nonNull(respondent.getPartyDetails())) {
+                final uk.gov.justice.core.courts.Person respondentPerson = respondent.getPartyDetails().getPersonDetails();
+                if (Objects.nonNull(respondentPerson)) {
                     result = defaultString(respondentPerson.getFirstName()).concat(SPACE);
                     result = result.concat(defaultString(respondentPerson.getMiddleName())).concat(SPACE);
                     result = result.concat(defaultString(respondentPerson.getLastName()));
                 }
-                
-                if(Objects.nonNull(respondent.getPartyDetails().getOrganisation())) {
+
+                if (Objects.nonNull(respondent.getPartyDetails().getOrganisation())) {
                     result = respondent.getPartyDetails().getOrganisation().getName();
-                }                
+                }
             }
-                    
+
             return result;
-            
+
         }).collect(Collectors.joining(COMMA));
     }
 

@@ -1,0 +1,241 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "SJP_REFERRAL",
+    "defendants": [
+      {
+        "id": "12777921-20a0-43eb-a895-49df52e96c0a",
+        "masterDefendantId": "12777921-20a0-43eb-a895-49df52e96c0a",
+        "numberOfPreviousConvictionsCited": 3,
+        "offences": [
+          {
+            "chargeDate": "2019-01-01",
+            "convictionDate": "2020-03-01",
+            "count": 1,
+            "id": "23deed12-602c-4c0d-b7f3-364897adb15c",
+            "judicialResults": [
+              {
+                "category": "ANCILLARY",
+                "cjsCode": "4506",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "judicialResultId": "82ab0282-a425-47ad-9f47-ae6098dc9c44",
+                "label": "Adjournment",
+                "lastSharedDateTime": "2020-03-03",
+                "orderedDate": "2020-03-03",
+                "orderedHearingId": "de800986-7070-4cdb-871e-5b158fb6e22d",
+                "rank": 48500,
+                "usergroups": [],
+                "welshLabel": "Gohiriad"
+              },
+              {
+                "category": "ANCILLARY",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "judicialResultId": "d2990106-eed2-4f5a-b23a-df1b817b08e3",
+                "label": "Adjournment reason: To plead guilty or not guilty to the offence(s)",
+                "lastSharedDateTime": "2020-03-03",
+                "orderedDate": "2020-03-03",
+                "orderedHearingId": "de800986-7070-4cdb-871e-5b158fb6e22d",
+                "qualifier": "DM",
+                "rank": 10900,
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "welshLabel": "Rheswm dros ohirio: I bledio’n euog neu’n ddieuog i'r trosedd(au)"
+              },
+              {
+                "category": "ANCILLARY",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "judicialResultId": "247847c7-d9c7-4c8c-93b1-072e9c732743",
+                "judicialResultPrompts": [
+                  {
+                    "isAvailableForCourtExtract": true,
+                    "label": "Date of hearing",
+                    "promptReference": "HDATE",
+                    "promptSequence": 100,
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "value": "13 Mar 2020",
+                    "welshLabel": ""
+                  },
+                  {
+                    "isAvailableForCourtExtract": true,
+                    "label": "Time of hearing",
+                    "promptReference": "HTIME",
+                    "promptSequence": 200,
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "value": "09:00",
+                    "welshLabel": ""
+                  },
+                  {
+                    "isAvailableForCourtExtract": true,
+                    "label": "Courthouse name",
+                    "promptReference": "HCHOUSE",
+                    "promptSequence": 400,
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "value": "Merthyr Tydfil Magistrates' Court",
+                    "welshLabel": ""
+                  },
+                  {
+                    "isAvailableForCourtExtract": true,
+                    "label": "Hearing type",
+                    "promptReference": "HTYPE",
+                    "promptSequence": 500,
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "value": "Judgment",
+                    "welshLabel": ""
+                  },
+                  {
+                    "isAvailableForCourtExtract": true,
+                    "label": "Estimated duration",
+                    "promptReference": "HEST",
+                    "promptSequence": 600,
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "value": "2 Hours",
+                    "welshLabel": ""
+                  }
+                ],
+                "label": "Next hearing in magistrates' court",
+                "lastSharedDateTime": "2020-03-03",
+                "orderedDate": "2020-03-03",
+                "orderedHearingId": "de800986-7070-4cdb-871e-5b158fb6e22d",
+                "rank": 48400,
+                "usergroups": [],
+                "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+              }
+            ],
+            "modeOfTrial": "Summary",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2020-03-03",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "23deed12-602c-4c0d-b7f3-364897adb15c"
+            },
+            "offenceCode": "CA03010",
+            "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Use / install a television set without a licence",
+            "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "23deed12-602c-4c0d-b7f3-364897adb15c",
+              "originatingHearingId": "de800986-7070-4cdb-871e-5b158fb6e22d",
+              "pleaDate": "2020-03-03",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "proceedingsConcluded": false,
+            "startDate": "2018-07-02",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "OF61048",
+                "offenceDefinitionId": "323b0db0-995e-3ff0-9a01-a28c6a601120",
+                "offenceLegislation": "Contrary to section 27 of the Offences Against the Person Act 1861.",
+                "offenceTitle": "Abandon a child under the age of two years whereby life / health endangered"
+              },
+              "offenceId": "23deed12-602c-4c0d-b7f3-364897adb15c",
+              "originatingHearingId": "de800986-7070-4cdb-871e-5b158fb6e22d",
+              "verdictDate": "2020-03-01",
+              "verdictType": {
+                "category": "Guilty but of lesser offence",
+                "categoryType": "GUILTY_BUT_OF_LESSER_OFFENCE_BY_JURY_CONVICTED",
+                "id": "8f14e45f-ceea-367a-9a36-dedd4bea2543"
+              }
+            },
+            "wording": "On **(..SPECIFY DATE..) at **(..SPECIFY TOWNSHIP..)<br /><br />(A)_[used a]_<br />(B)_[installed a]_<br /><br />(C)_[colour]_<br />(D)_[black and white]_<br /><br />television receiver without a licence",
+            "wordingWelsh": "Ar **(..SPECIFY DATE..) bu i chi ddefnyddio derbynnydd teledu<br /><br />(A)_[lliw]_<br />(B)_[du a gwyn]_ <br /><br />heb drwydded"
+          }
+        ],
+        "personDefendant": {
+          "personDetails": {
+            "address": {
+              "address1": "Flat 1",
+              "address2": "Cathays Park",
+              "address3": "Cardiff",
+              "address4": "Wales",
+              "address5": "UK",
+              "postcode": "CF37 8BU"
+            },
+            "contact": {
+              "home": "1231231230",
+              "mobile": "1231231230",
+              "primaryEmail": "aer@af.com"
+            },
+            "dateOfBirth": "1965-12-27",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Fred",
+            "gender": "MALE",
+            "lastName": "Smith",
+            "nationalInsuranceNumber": "AB123456C",
+            "nationalityCode": "POL",
+            "nationalityDescription": "Pole",
+            "nationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
+            "occupation": "TA",
+            "occupationCode": "666",
+            "specificRequirements": "no special needs",
+            "title": "MR"
+          }
+        },
+        "proceedingsConcluded": false,
+        "prosecutionCaseId": "f53d80ff-de39-4d2a-a6b6-095a487f298f"
+      }
+    ],
+    "id": "f53d80ff-de39-4d2a-a6b6-095a487f298f",
+    "initiationCode": "J",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityReference": "TVL1558618"
+    },
+    "statementOfFacts": "Prosecution Facts"
+  }
+}
