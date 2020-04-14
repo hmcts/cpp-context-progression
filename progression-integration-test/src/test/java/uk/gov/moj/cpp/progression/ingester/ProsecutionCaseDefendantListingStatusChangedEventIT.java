@@ -10,6 +10,7 @@ import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
@@ -30,10 +31,13 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingVerificationHelper;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexIngestorUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.document.CaseDocument;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.document.HearingDocument;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.mothers.CaseDocumentMother;
+import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.mothers.HearingDocumentMother;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -70,7 +74,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     private String courtId;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() {
         firstCaseId = randomUUID().toString();
         secondCaseId = randomUUID().toString();
         thirdCaseId = randomUUID().toString();
@@ -86,7 +90,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     }
 
     @Test
-    public void shouldIngestProsecutionCaseDefendantListingStatusChangedEvent() throws IOException {
+    public void shouldIngestProsecutionCaseDefendantListingStatusChangedEvent() {
         final Metadata metadata = createMetadata(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
 
         final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(EVENT_LOCATION);
@@ -176,7 +180,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     @Test
     public void shouldPreserveSjpFlags() throws IOException {
 
-        indexSjpCase(firstCaseId);
+        indexSjpMagistrateCase(thirdCaseId);
 
         final Metadata metadata = createMetadata(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
 
@@ -201,21 +205,24 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
 
         assertTrue(prosecutionCaseResponseJsonObject.isPresent());
 
-        final JsonObject firstCase = getCaseAt(Optional.of(elasticSearchIndexFinderUtil.findByCaseIds("crime_case_index", firstCaseId)), 0);
+        final JsonObject thirdCase = getCaseAt(Optional.of(elasticSearchIndexFinderUtil.findByCaseIds("crime_case_index", thirdCaseId)), 0);
 
-        assertThat(firstCase.getBoolean("_is_charging"), is(false));
-        assertThat(firstCase.getBoolean("_is_crown"), is(true));
-        assertThat(firstCase.getBoolean("_is_magistrates"), is(false));
-        assertThat(firstCase.getBoolean("_is_sjp"), is(true));
+        assertThat("_is_charging flag should be preserved by listing-status-changed", thirdCase.getBoolean("_is_charging"), is(false));
+        assertThat("_is_crown flag should be overwritten by listing-status-changed", thirdCase.getBoolean("_is_crown"), is(true));
+        assertThat("_is_magistrates flag should be overwritten by listing-status-changed", thirdCase.getBoolean("_is_magistrates"), is(false));
+        assertThat("_is_sjp flag should be preserved by listing-status-changed", thirdCase.getBoolean("_is_sjp"), is(true));
     }
 
-    private void indexSjpCase(final String caseId) throws IOException {
+    private void indexSjpMagistrateCase(final String caseId) throws IOException {
+        final List<HearingDocument.Builder> hearingDocuments = singletonList(HearingDocumentMother
+                .defaultHearingAsBuilder()
+                .withJurisdictionType(MAGISTRATES.name()));
+
         final CaseDocument jspCase = CaseDocumentMother.defaultCaseAsBuilder()
                 .with_is_sjp(true)
                 .with_is_charging(false)
-                .with_is_crown(false)
-                .with_is_magistrates(false)
                 .withCaseId(caseId)
+                .withHearings(hearingDocuments)
                 .with_case_type("PROSECUTION").build();
 
         new ElasticSearchIndexIngestorUtil().ingestCaseData(singletonList(jspCase));
