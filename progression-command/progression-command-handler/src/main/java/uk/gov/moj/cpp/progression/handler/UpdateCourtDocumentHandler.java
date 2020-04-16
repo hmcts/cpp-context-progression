@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
+import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
@@ -52,6 +53,7 @@ public class UpdateCourtDocumentHandler {
     public static final String CASE_LEVEL = "Case level";
     public static final String DEFENDANT_LEVEL = "Defendant level";
     public static final String DOCUMENT_CATEGORY = "documentCategory";
+    public static final String APPLICATIONS = "Applications";
 
     @Inject
     private EnvelopeHelper envelopeHelper;
@@ -128,6 +130,13 @@ public class UpdateCourtDocumentHandler {
                     withDefendantDocument(DefendantDocument.defendantDocument().
                             withDefendants(updateCourtDocument.getDefendants()).
                             withProsecutionCaseId(updateCourtDocument.getProsecutionCaseId()).build()).build();
+        }
+
+        else if (documentCategory.equalsIgnoreCase(APPLICATIONS)){
+            return DocumentCategory.documentCategory()
+                    .withApplicationDocument(ApplicationDocument.applicationDocument()
+                            .withApplicationId(updateCourtDocument.getApplicationId())
+                            .build()).build();
         }
 
         else {

@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.core.courts.CourtDocumentShared.courtDocumentShared;
 import static uk.gov.justice.core.courts.CourtDocumentUpdated.courtDocumentUpdated;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -114,30 +116,29 @@ public class CourtDocumentAggregate implements Aggregate {
         final Stream.Builder<Object> builder = Stream.builder();
         final List<UUID> defendants = this.courtDocument.getDocumentCategory().getDefendantDocument() != null ? this.courtDocument.getDocumentCategory().getDefendantDocument().getDefendants() : emptyList();
         if (!defendants.isEmpty()) {
-            defendants.forEach(defendant -> {
-                final SharedCourtDocument sharedCourtDocument = sharedCourtDocument()
-                        .withCourtDocumentId(courtDocumentId)
-                        .withHearingId(hearingId)
-                        .withUserGroupId(userGroupId)
-                        .withUserId(userId)
-                        .withCaseIds(getProsecutionCaseIds(this.courtDocument.getDocumentCategory()))
-                        .withDefendantId(defendant)
-                        .withSeqNum(this.courtDocument.getSeqNum())
-                        .build();
-                addEvents(builder, sharedCourtDocument);
-            });
+            defendants.forEach(defendant ->
+                addEvents(builder, createSharedCourtDocument(courtDocumentId, hearingId, userGroupId, userId, Optional.of(defendant)))
+            );
         } else {
-            final SharedCourtDocument sharedCourtDocument = sharedCourtDocument()
-                    .withCourtDocumentId(courtDocumentId)
-                    .withHearingId(hearingId)
-                    .withUserGroupId(userGroupId)
-                    .withUserId(userId)
-                    .withSeqNum(this.courtDocument.getSeqNum())
-                    .withCaseIds(getProsecutionCaseIds(this.courtDocument.getDocumentCategory()))
-                    .build();
-            addEvents(builder, sharedCourtDocument);
+            addEvents(builder, createSharedCourtDocument(courtDocumentId, hearingId, userGroupId, userId, Optional.empty()));
         }
         return apply(builder.build());
+    }
+
+    private SharedCourtDocument createSharedCourtDocument(final UUID courtDocumentId, final UUID hearingId, final UUID userGroupId, final UUID userId, final Optional<UUID> defendant) {
+        final SharedCourtDocument.Builder shareCourtDocumentBuilder = sharedCourtDocument()
+                .withCourtDocumentId(courtDocumentId)
+                .withHearingId(hearingId)
+                .withUserGroupId(userGroupId)
+                .withUserId(userId)
+                .withSeqNum(this.courtDocument.getSeqNum());
+
+        defendant.ifPresent(shareCourtDocumentBuilder::withDefendantId);
+
+        if(isNull(this.courtDocument.getDocumentCategory().getApplicationDocument())) {
+            shareCourtDocumentBuilder.withCaseIds(getProsecutionCaseIds(this.courtDocument.getDocumentCategory()));
+        }
+        return shareCourtDocumentBuilder.build();
     }
 
     private List<UUID> getProsecutionCaseIds(final DocumentCategory documentCategory) {
@@ -148,12 +149,6 @@ public class CourtDocumentAggregate implements Aggregate {
             return asList(documentCategory.getCaseDocument().getProsecutionCaseId());
         } else if (nonNull(documentCategory.getDefendantDocument())) {
             return asList(documentCategory.getDefendantDocument().getProsecutionCaseId());
-        } else if (nonNull(documentCategory.getApplicationDocument())) {
-            if (null != documentCategory.getApplicationDocument().getProsecutionCaseId()) {
-                return asList(documentCategory.getApplicationDocument().getProsecutionCaseId());
-            } else {
-                return Collections.emptyList();
-            }
         } else {
             return Collections.emptyList();
         }

@@ -119,6 +119,22 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.document+json");
     }
 
+    public static void stubQueryDocumentTypeAccessQueryData(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/document-type-access/.*";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(documentType.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.document-type-access+json");
+    }
+
     public static void stubQueryDocumentTypeData(final String resourceName, final String documentTypeId) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject documentType = Json.createReader(ReferenceDataStub.class

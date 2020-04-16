@@ -29,15 +29,32 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
       }
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     }
   },
-  "required": [
-    "courtDocumentId",
-    "prosecutionCaseId",
-    "documentTypeId",
-    "name",
-    "receivedDateTime",
-    "containsFinancialMeans"
+  "oneOf": [
+    {
+      "required": [
+        "courtDocumentId",
+        "prosecutionCaseId",
+        "documentTypeId",
+        "name",
+        "receivedDateTime",
+        "containsFinancialMeans"
+      ]
+    },
+    {
+      "required": [
+        "courtDocumentId",
+        "applicationId",
+        "documentTypeId",
+        "name",
+        "receivedDateTime",
+        "containsFinancialMeans"
+      ]
+    }
   ],
   "additionalProperties": false
 }
