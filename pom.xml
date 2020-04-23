@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.4.22</version>
+        <version>9.4.27</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -42,7 +42,7 @@
         <material.version>6.4.3</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>6.4.13</referencedata.version>
+        <referencedata.version>6.4.15</referencedata.version>
         <listing.version>6.4.17</listing.version>
         <hearing.version>6.4.29</hearing.version>
         <usersgroups.version>6.4.6</usersgroups.version>

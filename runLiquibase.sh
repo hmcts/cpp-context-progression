@@ -7,9 +7,9 @@
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 declare WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 declare CONTEXT_NAME=progression
-declare FRAMEWORK_VERSION=6.4.0
-declare EVENT_STORE_VERSION=2.4.5
-declare FILE_SERVICE_VERSION=1.17.12
+declare FRAMEWORK_VERSION=6.4.1
+declare EVENT_STORE_VERSION=2.4.11
+declare FILE_SERVICE_VERSION=1.17.13
 
 
 #fail script on error
