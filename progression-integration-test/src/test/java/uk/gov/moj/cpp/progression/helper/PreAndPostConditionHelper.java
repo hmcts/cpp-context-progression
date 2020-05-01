@@ -19,12 +19,13 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.createHttpHeaders;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
+import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
 
@@ -37,11 +38,14 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
+import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +98,12 @@ public class PreAndPostConditionHelper {
                         createHttpHeaders(userId));
         return response;
 
+    }
+
+    public static MultivaluedMap<String, Object> createHttpHeaders(final String userId) {
+        MultivaluedMap<String, Object> headers = new MultivaluedMapImpl<>();
+        headers.add(HeaderConstants.USER_ID, userId);
+        return headers;
     }
 
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws IOException {
@@ -329,6 +339,10 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", new String[]{caseId}), "application/vnd.progression.query.courtdocuments+json", userId);
     }
 
+    public static String getUploadCourtDocumentsByCase(final String userId, final String caseId) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", new String[]{caseId}), "application/vnd.progression.query.courtdocuments+json", userId, status().is(OK),  withJsonPath("$.documentIndices[0].caseIds[0]", CoreMatchers.is(caseId)));
+    }
+
     public static String getCourtDocumentsByCaseWithMatchers(final String userId, final String caseDocumentId, final String caseId) {
         Matcher[] hearingMatchers = {
                 withJsonPath("$.documentIndices[0].document.courtDocumentId", is(caseDocumentId))
@@ -341,6 +355,10 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?defendantId={0}", new String[]{defendantId}), "application/vnd.progression.query.courtdocuments+json", userId);
     }
 
+    public static String getCourtDocumentsByApplication(final String userId, final String applicationid) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?applicationId={0}", new String[]{applicationid}), "application/vnd.progression.query.courtdocuments+json", userId);
+    }
+
     public static String getCourtDocumentsByCaseAndDefendant(final String userId, final String caseId, final String defendantId) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", new String[]{caseId, defendantId}), "application/vnd.progression.query.courtdocuments+json", userId );
     }
@@ -348,6 +366,22 @@ public class PreAndPostConditionHelper {
     public static javax.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId) {
         return getMaterialContentResponse("/material/" + materialId.toString() + "/content", userId, "application/vnd.progression.query.material-content+json");
 
+    }
+
+    public static String getCourtDocumentsByDefendantForDefenceWithNoCaseAndDefenceId(final String userId, final ResponseStatusMatcher responseStatusMatcher) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch", new String[]{}), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
+    }
+
+    public static String getCourtDocumentsByDefendantForDefenceWithNoCaseId(final String userId,  final String defendantId,  final ResponseStatusMatcher responseStatusMatcher) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?defendantId={0}", new String[]{defendantId}), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
+    }
+
+    public static String getCourtDocumentsByDefendantForDefenceWithNoDefendantId(final String userId,  final String caseId, final ResponseStatusMatcher responseStatusMatcher) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", new String[]{caseId}), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
+    }
+
+    public static String getCourtDocumentsByDefendantForDefence(final String userId, final String caseId, final String defendantId, final ResponseStatusMatcher responseStatusMatcher) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", new String[]{caseId, defendantId}), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
     }
 
 

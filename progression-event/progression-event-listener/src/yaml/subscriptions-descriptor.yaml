@@ -68,14 +68,6 @@ subscriptions_descriptor:
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
-        ############  Association Start ############
-        - name: progression.event.defence-organisation-associated
-          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json
-
-        - name: progression.event.defence-organisation-disassociated
-          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
-        ############  Association End ############
-
         - name: progression.event.financial-means-deleted
           schema_uri: http://justice.gov.uk/core/courts/progression.event.financial-means-deleted.json
 
@@ -103,8 +95,8 @@ subscriptions_descriptor:
         - name : progression.event.defendant-laa-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
 
-        - name : progression.event.defendant-defence-association-locked-for-laa
-          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked-for-laa.json
+        - name : progression.event.defendant-defence-association-locked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
 
         - name: progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json

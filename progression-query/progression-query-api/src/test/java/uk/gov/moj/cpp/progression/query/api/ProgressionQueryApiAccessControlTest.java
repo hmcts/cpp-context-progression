@@ -55,12 +55,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Defence Advocate", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Advocates", "Defence Lawyers", "Chambers Clerk", "Chambers Admin", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users","Probation Admin", "Judiciary","Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates", "Defence Advocate", "District Judge", "Second Line Support");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Advocates", "Defence Lawyers", "Chambers Clerk", "Chambers Admin", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support");
     }
 
     @Test

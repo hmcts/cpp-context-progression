@@ -1,0 +1,21 @@
+{
+  "caseId": "756660d1-c506-42cd-a8ff-1662f355ca36",
+  "caseDetails": {
+    "caseStatus": "EJECTED",
+    "removalReason": "Cannot handle case in CPP",
+    "caseMarkers": [
+      "Prohibited Weapons"
+    ]
+  },
+  "prosecutorDetails": {
+    "prosecutionAuthorityCode": "TFL",
+    "prosecutionAuthorityReference": "a3772daa",
+    "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+    "address": {
+      "address1": "6th Floor Windsor House",
+      "address2": "42-50 Victoria Street",
+      "address3": "London",
+      "postcode": "SW1H 0TL"
+    }
+  }
+}

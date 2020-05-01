@@ -36,6 +36,9 @@
     "defenceOrganisation": {
       "description": "The defence organisation details",
       "$ref": "http://justice.gov.uk/core/courts/defenceOrganisation.json#"
+    },
+    "associatedOrganisationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     }
   },
   "required": [

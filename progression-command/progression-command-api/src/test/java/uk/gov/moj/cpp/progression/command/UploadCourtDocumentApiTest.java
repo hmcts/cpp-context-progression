@@ -6,11 +6,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.api.UserDetailsLoader;
 
+import java.util.UUID;
 import java.util.function.Function;
+
+import javax.json.Json;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,16 +42,36 @@ public class UploadCourtDocumentApiTest {
     @Mock
     private Function<Object, JsonEnvelope> function;
 
+    @Mock
+    private UserDetailsLoader userDetailsLoader;
+
     @Test
     public void shouldUpdateOffences() {
-        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
-        when(enveloper.withMetadataFrom(command, "progression.command.upload-court-document"))
-                .thenReturn(function);
-        when(function.apply(any())).thenReturn(commandEnvelope);
 
+        when(command.metadata()).thenReturn(CommandClientTestBase.metadataFor("progression.command.upload-court-document", UUID.randomUUID().toString()));
         uploadCourtDocumentApi.handle(command);
 
-        verify(sender, times(1)).send(commandEnvelope);
+        verify(sender, times(1)).send(any());
     }
 
+    @Test
+    public void shouldUploadMaterial() {
+
+        when(command.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().build());
+        when(userDetailsLoader.isPermitted(any(), any())).thenReturn(true);
+        when(command.metadata()).thenReturn(CommandClientTestBase.metadataFor("progression.command.upload-court-document", UUID.randomUUID().toString()));
+        uploadCourtDocumentApi.handleUploadForDefence(command);
+
+        verify(sender, times(1)).send(any());
+    }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldNotUploadMaterial() {
+
+        when(userDetailsLoader.isPermitted(any(), any())).thenReturn(false);
+        when(command.metadata()).thenReturn(CommandClientTestBase.metadataFor("progression.command.upload-court-document", UUID.randomUUID().toString()));
+        uploadCourtDocumentApi.handleUploadForDefence(command);
+
+        verify(sender, times(1)).send(any());
+    }
 }

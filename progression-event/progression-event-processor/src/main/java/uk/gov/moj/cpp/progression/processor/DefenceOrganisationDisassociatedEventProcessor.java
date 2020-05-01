@@ -25,7 +25,7 @@ public class DefenceOrganisationDisassociatedEventProcessor {
     @Handles("progression.event.defence-organisation-disassociated")
     public void processEvent(final JsonEnvelope event) {
         sender.send(Enveloper.envelop(event.payloadAsJsonObject())
-                .withName("public.progression.defence-organisation-disassociated")
+                .withName("public.defence.defence-organisation-disassociated")
                 .withMetadataFrom(event));
     }
 

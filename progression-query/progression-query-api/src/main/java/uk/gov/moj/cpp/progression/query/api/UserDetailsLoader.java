@@ -1,18 +1,28 @@
 package uk.gov.moj.cpp.progression.query.api;
 
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.query.api.vo.Permission;
+import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -20,7 +30,6 @@ import javax.json.JsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:CallToDeprecatedMethod"})
 public class UserDetailsLoader {
     public static final String GET_USER_DETAILS_REQUEST_ID = "usersgroups.get-user-details";
     private static final String QUERY_GROUPS_FOR_USER = "usersgroups.get-groups-by-user";
@@ -28,19 +37,26 @@ public class UserDetailsLoader {
     private static final String GROUPS = "groups";
     private static final String USER_ID_PARAM = "userId";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserDetailsLoader.class);
+    public static final String PERMISSIONS = "permissions";
 
-    @Inject
-    private Enveloper enveloper;
+    public static final String SOURCE = "source";
+    public static final String TARGET = "target";
+    public static final String OBJECT = "object";
+    public static final String ACTION = "action";
+    public static final String ORGANISATION_ID = "organisationId";
+    public static final String ORGANISATION_NAME = "organisationName";
+
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserDetailsLoader.class);
 
     public UserGroupsUserDetails getUserById(final Requester requester, final JsonEnvelope context, final UUID userId) {
 
-        final JsonEnvelope requestEnvelope = enveloper.withMetadataFrom(context, GET_USER_DETAILS_REQUEST_ID)
-                .apply(createObjectBuilder().add(USER_ID_PARAM, userId.toString())
-                        .build());
-        final JsonEnvelope jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope);
+        final Metadata metadata = metadataFrom(context.metadata()).withName(GET_USER_DETAILS_REQUEST_ID).build();
+        final Envelope requestEnvelope = envelopeFrom(metadata, createObjectBuilder().add(USER_ID_PARAM, userId.toString()).build());
+        final Envelope<JsonObject> jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
 
-        final JsonObject userJson = jsonResultEnvelope.payloadAsJsonObject();
+
+        final JsonObject userJson = jsonResultEnvelope.payload();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("mapped user %s to %s", userId, userJson));
         }
@@ -56,17 +72,75 @@ public class UserDetailsLoader {
         final MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder()
                 .withId(UUID.randomUUID())
                 .withName(QUERY_GROUPS_FOR_USER);
-        final JsonEnvelope response = requester.requestAsAdmin(envelopeFrom(metadataBuilder, createObjectBuilder().add(USER_ID, userId.toString())));
+        final Envelope requestEnvelope = envelopeFrom(metadataBuilder, createObjectBuilder().add(USER_ID, userId.toString()).build());
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
         if (response.payload() == JsonValue.NULL) {
             return new ArrayList<>();
         }
-        final JsonArray jsonArray = response.payloadAsJsonObject().getJsonArray(GROUPS);
+        final JsonArray jsonArray = response.payload().getJsonArray(GROUPS);
         final List<UserGroupsDetails> userGroupsDetails = new ArrayList<>();
         for (final JsonObject userGroup : jsonArray.getValuesAs(JsonObject.class)) {
             userGroupsDetails.add(new UserGroupsDetails(UUID.fromString(userGroup.getString("groupId")), userGroup.getString("groupName")));
         }
         return userGroupsDetails;
     }
+
+    public List<Permission> getPermissions(final Metadata metadata, final Requester requester, String defendantId) {
+        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ACTION, "View").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
+        final MetadataBuilder metadataWithActionName = metadataFrom(metadata).withName("usersgroups.permissions");
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+
+        if (!response.payload().containsKey(PERMISSIONS)) {
+            return Collections.emptyList();
+        }
+        final JsonArray permissionsJsonArray = response.payload().getJsonArray(PERMISSIONS);
+
+        if (permissionsJsonArray == null) {
+            return Collections.emptyList();
+        }
+
+        return permissionsJsonArray.stream()
+                .map(p -> (JsonObject) p)
+                .map(permission ->
+                        Permission.permission()
+                                .withAction(JsonObjects.getString(permission, ACTION).orElse(null))
+                                .withObject(JsonObjects.getString(permission, OBJECT).orElse(null))
+                                .withSource(getNullableUUID(permission, SOURCE))
+                                .withTarget(getNullableUUID(permission, TARGET))
+                                .build()
+                ).collect(Collectors.toList());
+    }
+
+    private static UUID getNullableUUID(final JsonObject permission, final String attribute) {
+        final String uuidString = JsonObjects.getString(permission, attribute).orElse(null);
+        if (nonNull(uuidString)) {
+            return fromString(uuidString);
+        } else {
+            return null;
+        }
+
+    }
+
+
+    protected UserOrganisationDetails getOrganisationDetailsForUser(final Envelope<?> envelope, final Requester requester, String userId) {
+
+
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(USER_ID, userId).build();
+        final Envelope<JsonObject> requestEnvelope = envelop(getOrganisationForUserRequest)
+                .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
+        final JsonEnvelope usersAndGroupsRequestEnvelope = envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
+        final Envelope<JsonObject> response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope, JsonObject.class);
+        final JsonObject organisationDetails = response.payload();
+        if (nonNull(organisationDetails) && organisationDetails.containsKey(ORGANISATION_ID)) {
+            return new UserOrganisationDetails(fromString(organisationDetails.getString(ORGANISATION_ID)),
+                    organisationDetails.getString(ORGANISATION_NAME));
+        }
+
+        return new UserOrganisationDetails();
+    }
+
 
 }
 

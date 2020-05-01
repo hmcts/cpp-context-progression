@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/lock-defence-association-for-laa.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "lockedByRepOrder": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "defendantId",
+    "lockedByRepOrder"
+  ]
+}

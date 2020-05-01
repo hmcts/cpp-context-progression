@@ -63,7 +63,7 @@ public class QueryUtil {
         return new ResponseData(Response.Status.fromStatusCode(response.getStatus()), responseData, response.getHeaders());
     }
 
-    private static <T> Matcher<ResponseData> jsonPayloadMatchesBean(final Class<T> theClass, final BeanMatcher<T> beanMatcher) {
+    public static <T> Matcher<ResponseData> jsonPayloadMatchesBean(final Class<T> theClass, final BeanMatcher<T> beanMatcher) {
         final BaseMatcher<JsonObject> jsonObjectMatcher = MapJsonObjectToTypeMatcher.convertTo(theClass, beanMatcher);
         return new BaseMatcher<ResponseData>() {
             @Override

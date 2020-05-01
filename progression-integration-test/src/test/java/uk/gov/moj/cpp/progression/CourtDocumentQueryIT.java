@@ -1,19 +1,33 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.String.format;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseAndDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefence;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefenceWithNoCaseAndDefenceId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefenceWithNoCaseId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefenceWithNoDefendantId;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -37,10 +51,12 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 public class CourtDocumentQueryIT extends AbstractIT {
 
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
+    private static final String CHAMBER_USER_ID = "f5966b76-6e73-4be8-8780-ce542a46c8a4";
 
     @BeforeClass
     public static void setup() {
         setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-specific-groups-by-user.json");
+        setupAsAuthorisedUser(fromString(CHAMBER_USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
     }
 
 
@@ -263,7 +279,95 @@ public class CourtDocumentQueryIT extends AbstractIT {
         JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
+    @Test
+    public void shouldSendForbiddenAsUserNotAllowedToAccess() throws IOException {
+        final String caseId = UUID.randomUUID().toString();
+        final String defendantId = UUID.randomUUID().toString();
+        getCourtDocumentsByDefendantForDefence(USER_ID, caseId, defendantId, status().is(FORBIDDEN));
 
+    }
+
+
+    @Test
+    public void shouldGetAllCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+        final String caseId = UUID.randomUUID().toString();
+        final String docId = UUID.randomUUID().toString();
+        final String defendantId = UUID.randomUUID().toString();
+        final String docTypeId = UUID.randomUUID().toString();
+        final String organisationId = UUID.randomUUID().toString();
+
+        final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
+                .replace("%ORGANISATION_ID%", organisationId);
+
+
+        final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
+                .replace("%USER_ID%", CHAMBER_USER_ID)
+                .replace("%DEFENDANT_ID%", defendantId)
+                .replace("%ORGANISATION_ID%", organisationId);
+
+        stubUserGroupOrganisation(CHAMBER_USER_ID, organisation);
+        stubUserGroupDefenceClientPermission(defendantId, permission);
+
+
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json");
+        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json", docTypeId);
+
+        //Defendant Level Document 1
+        final String courtDocumentDefendantLevel = addCourtDocumentForDefence(caseId, docId, defendantId,
+                prepareAddCourtDocumentWithDocTypePayload(docTypeId, docId, caseId, defendantId, "progression.add-court-document-def-level.json"));
+        final JsonObject courtDocumentDefendantLevelJson = new StringToJsonObjectConverter().convert(courtDocumentDefendantLevel);
+        final String defendantLevelId = courtDocumentDefendantLevelJson.getJsonObject("courtDocument").getString("courtDocumentId");
+
+        //Doc Type Ref Data
+
+
+
+        final String actualDocument =  getCourtDocumentsByDefendantForDefence(CHAMBER_USER_ID, caseId, defendantId, status().is(OK));;
+        final String expectedPayload = FileUtil.getPayload("expected/expected.progression.court-document-case-def-level1.json")
+                .replace("COURT-DOCUMENT-ID1", defendantLevelId)
+                .replace("DOCUMENT-TYPE-ID1", docTypeId)
+                .replace("CASE-ID", caseId)
+                .replace("DEFENDANT-ID", defendantId);
+
+        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+    }
+
+
+    @Test
+    public void shouldForbiddenWhenPermissionNotExistForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+        final String caseId = UUID.randomUUID().toString();
+        final String defendantId = UUID.randomUUID().toString();
+        final String organisationId = UUID.randomUUID().toString();
+
+        final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
+                .replace("%ORGANISATION_ID%", organisationId);
+
+
+        final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
+                .replace("%USER_ID%", randomUUID().toString())
+                .replace("%DEFENDANT_ID%", defendantId)
+                .replace("%ORGANISATION_ID%", randomUUID().toString());
+
+        stubUserGroupOrganisation(CHAMBER_USER_ID, organisation);
+        stubUserGroupDefenceClientPermission(defendantId, permission);
+
+        getCourtDocumentsByDefendantForDefence(CHAMBER_USER_ID, caseId, defendantId, status().is(FORBIDDEN));
+    }
+
+    @Test
+    public void shouldBadRequestWhenNoCaseAndDefendantForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+        getCourtDocumentsByDefendantForDefenceWithNoCaseAndDefenceId(CHAMBER_USER_ID, status().is(BAD_REQUEST));
+    }
+
+    @Test
+    public void shouldBadRequestWhenNoCaseForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+        getCourtDocumentsByDefendantForDefenceWithNoCaseId(CHAMBER_USER_ID, UUID.randomUUID().toString(), status().is(BAD_REQUEST));
+    }
+
+    @Test
+    public void shouldBadRequestWhenNoDefendantForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+        getCourtDocumentsByDefendantForDefenceWithNoDefendantId(CHAMBER_USER_ID,  UUID.randomUUID().toString(), status().is(BAD_REQUEST));
+    }
     private CustomComparator getCustomComparator() {
         return new CustomComparator(STRICT,
                 new Customization("documentIndices[0].document.materials[0].uploadDateTime", (o1, o2) -> true),
@@ -278,6 +382,19 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document+json",
                 body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        return getCourtDocumentFor(docId, allOf(
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
+                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true))
+        ));
+    }
+
+    private String addCourtDocumentForDefence(final String caseId, final String docId, final String defendantId, final String body) throws IOException {
+
+        final Response writeResponse = postCommandWithUserId(getWriteUrl(format("/defendant/%s/courtdocument/%s", defendantId, docId)),
+                "application/vnd.progression.add-court-document-for-defence+json",
+                body ,CHAMBER_USER_ID);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         return getCourtDocumentFor(docId, allOf(

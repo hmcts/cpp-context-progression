@@ -68,7 +68,7 @@ subscriptions_descriptor:
         - name: public.progression.defence-organisation-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json
 
-        - name: public.progression.defence-organisation-disassociated
+        - name: public.defence.defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
 
         - name: public.progression.case-markers-updated
@@ -130,4 +130,23 @@ subscriptions_descriptor:
 
         - name: public.progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
+
+        - name: public.progression.idpc-document-received
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.idpc-document-received.json
+
+        - name: public.progression.defence-organisation-for-laa-associated
+          schema_uri: http://justice.gov.uk/core/courts/associate-defence-organisation-for-laa.json
+
+        - name: public.progression.defence-organisation-for-laa-disassociated
+          schema_uri: http://moj.gov.uk/cpp/defence/event/processor/events/processor.public.progression.defence-organisation-for-laa-disassociated.json
+
+        - name: public.progression.orphaned-case-associated
+          schema_uri: http://justice.gov.uk/core/courts/associate-orphaned-case.json
+
+        - name: public.progression.defence-association-for-laa-locked
+          schema_uri: http://justice.gov.uk/core/courts/lock-defence-association-for-laa.json
+
+        - name : public.progression.defendant-laa-contract-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
+
       event_source_name: public.event.source

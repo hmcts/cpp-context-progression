@@ -68,4 +68,5 @@
     <include file="liquibase/alter-table-court-document-add-column-seq-num.xml"/>
     <include file="liquibase/alter-table-shared-court-document-add-column-seq-num.xml"/>
     <include file="liquibase/alter-table-court-document-add-column-is-removed.xml"/>
+    <include file="liquibase/drop-defence-association.xml"/>
 </databaseChangeLog>

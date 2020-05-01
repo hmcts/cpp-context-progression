@@ -17,8 +17,7 @@ public class DefendantDefenceAssociationLockedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefendantDefenceAssociationLockedProcessor.class.getName());
 
-    private static final String PROGRESSION_COMMAND_HANDLER_LOCK_DEFENCE_ASSOCIATION_FOR_LAA = "progression.command.handler.lock-defence-association-for-laa";
-
+    private static final String PUBLIC_PROGRESSION_LOCK_DEFENCE_ASSOCIATION_FOR_LAA = "public.progression.defence-association-for-laa-locked";
 
     @Inject
     private Sender sender;
@@ -30,7 +29,8 @@ public class DefendantDefenceAssociationLockedProcessor {
         final JsonObject payload = event.payloadAsJsonObject();
         sender.send(
                 Enveloper.envelop(payload)
-                        .withName(PROGRESSION_COMMAND_HANDLER_LOCK_DEFENCE_ASSOCIATION_FOR_LAA)
+                        .withName(PUBLIC_PROGRESSION_LOCK_DEFENCE_ASSOCIATION_FOR_LAA)
                         .withMetadataFrom(event));
+
     }
 }

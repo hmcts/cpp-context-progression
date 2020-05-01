@@ -103,7 +103,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldReturnEmptyCaseDetailsWhenNoDataFound() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), referenceDataService);
         final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
 
         assertThat(caseDetails, notNullValue());
@@ -116,7 +116,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetCaseDetailsFromProsecutionCase() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
 
         assertThat(caseDetails, notNullValue());
@@ -127,7 +127,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetCaseDetailsWithCaseStatusAndReason() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
 
         assertThat(caseDetails, notNullValue());
@@ -138,7 +138,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetEmptyProsecutorDetailsFromProsecutionCase() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(),  referenceDataService);
         final ProsecutorDetails prosecutorDetails = caseAtAGlanceHelper.getProsecutorDetails();
 
         assertThat(prosecutorDetails, notNullValue());
@@ -151,7 +151,7 @@ public class CaseAtAGlanceHelperTest {
 
         ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseDetails();
         String prosecutorId = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId().toString();
-        caseAtAGlanceHelper = spy(new CaseAtAGlanceHelper(prosecutionCase, new ArrayList<>(), emptyMap(), referenceDataService));
+        caseAtAGlanceHelper = spy(new CaseAtAGlanceHelper(prosecutionCase, new ArrayList<>(),  referenceDataService));
 
         when(referenceDataService.getProsecutor(prosecutorId)).thenReturn(getProsecutorFromReferenceData(prosecutorId));
 
@@ -169,8 +169,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantPersonalDetails() {
 
-        Map<UUID, Organisation> defenceOrganisationMap = ImmutableMap.of(JHON_SMITH_ID, organisation().withName(LEGAL_REP_NAME).build());
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), defenceOrganisationMap, referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
         assertThat(defendants, notNullValue());
@@ -184,7 +183,6 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getNationality(), is(NATIONALITY_DESCRIPTION));
         assertThat(defendantSmith.getAddress(), is(ADDRESS));
         assertThat(defendantSmith.getRemandStatus(), is(REMAND_STATUS));
-        assertThat(defendantSmith.getRepresentation().getName(), is(LEGAL_REP_NAME));
 
         CaagDefendants defendantRambo = defendants.get(1);
         assertThat(defendantRambo.getFirstName(), is("Jhon"));
@@ -201,7 +199,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantPersonalDetailsWithMultipleNationalities() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
         assertThat(defendants, notNullValue());
@@ -217,7 +215,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantMarkerWhenDefendantYouth() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
         assertThat(defendants, notNullValue());
@@ -232,7 +230,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantOffenceDetails() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
         CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getCaagDefendantOffences().isEmpty(), is(false));
@@ -263,7 +261,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantOffenceResultDetails() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
 
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
@@ -281,7 +279,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantOffenceResultDetailsInDescendingOrder() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(),  referenceDataService);
 
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
@@ -292,7 +290,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantWithLegalAidStatus() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
         CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getLegalAidStatus(), is(LEGAL_AID_STATUS));
@@ -301,7 +299,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantLegalEntityOrganisationDetails() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithDefendantLegalEntity(), new ArrayList<>(), emptyMap(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithDefendantLegalEntity(), new ArrayList<>(),  referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
         assertThat(defendants, notNullValue());

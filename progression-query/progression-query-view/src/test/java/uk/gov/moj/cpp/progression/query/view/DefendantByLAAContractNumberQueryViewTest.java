@@ -1,29 +1,27 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.defence.association.persistence.repository.DefenceAssociationRepository;
-import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAKey;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import java.util.Collections;
-
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
+
+import java.util.Collections;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantByLAAContractNumberQueryViewTest {

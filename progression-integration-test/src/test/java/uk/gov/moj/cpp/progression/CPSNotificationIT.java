@@ -4,7 +4,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
@@ -14,26 +13,18 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.associateOrganisation;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.invokeDisassociateOrganisation;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedDataPersisted;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationDisassociatedDataPersisted;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForDefenceUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
@@ -46,11 +37,9 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
 import com.jayway.restassured.path.json.JsonPath;
-import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -127,32 +116,6 @@ public class CPSNotificationIT extends AbstractIT {
 
         sendMessage(PUBLIC_MESSAGE_CONSUMER,
                 PUBLIC_DEFENCE_RECORD_INSTRUCTED, recordInstructedPublicEvent, metadata);
-
-        // notify by email
-        verifyEvent(NOTIFICATION_EMAIL_REQUESTED);
-        verifyEvent(NOTIFICATION_REQUEST_ACCEPTED);
-
-        stubGetUsersAndGroupsQueryForDefenceUsers(userId);
-        stubEnableAllCapabilities();
-        stubGetOrganisationQuery(userId, ORGANISATION_ID, ORGANISATION_NAME);
-        stubGetOrganisationDetails(ORGANISATION_ID, ORGANISATION_NAME);
-
-        try (final DefenceAssociationHelper helper = new DefenceAssociationHelper()) {
-
-            // Associate
-            associateOrganisation(defendantId, userId);
-            helper.verifyDefenceOrganisationAssociatedEventGenerated(defendantId, ORGANISATION_ID);
-            verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
-                    ORGANISATION_ID,
-                    userId);
-
-            // Disassociate
-            final Response response = invokeDisassociateOrganisation(defendantId, userId, ORGANISATION_ID, caseId);
-            assertThat(response.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
-            //Then
-            helper.verifyDefenceOrganisationDisassociatedEventGenerated(defendantId, ORGANISATION_ID);
-            verifyDefenceOrganisationDisassociatedDataPersisted(defendantId, ORGANISATION_ID, userId);
-        }
 
         // notify by email
         verifyEvent(NOTIFICATION_EMAIL_REQUESTED);

@@ -4,8 +4,6 @@ import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSea
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.CaagDefendants;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
@@ -20,7 +18,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
-import uk.gov.moj.cpp.progression.query.view.service.DefenceOrganisationService;
 import uk.gov.moj.cpp.progression.query.view.service.GetHearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
@@ -35,9 +32,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -97,9 +92,6 @@ public class ProsecutionCaseQuery {
     @Inject
     private ReferenceDataService referenceDataService;
 
-    @Inject
-    private DefenceOrganisationService defenceOrganisationService;
-
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
@@ -146,10 +138,9 @@ public class ProsecutionCaseQuery {
 
             jsonObjectBuilder.add(ID, caseId.get().toString());
 
-            final Map<UUID, Organisation> defenceOrganisationMap = getAssociatedDefenceOrganisationMap(prosecutionCase.getDefendants());
             final List<Hearings> caseHearings = getHearingAtAGlanceService.getCaseHearings(caseId.get());
 
-            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, caseHearings, defenceOrganisationMap, referenceDataService);
+            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, caseHearings, referenceDataService);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
 
@@ -247,15 +238,5 @@ public class ProsecutionCaseQuery {
                 && (courtApplication.getType().getIsAppealApplication() &&
                 (ApplicationStatus.DRAFT.equals(courtApplication.getApplicationStatus()) ||
                         ApplicationStatus.LISTED.equals(courtApplication.getApplicationStatus())));
-    }
-
-    private Map<UUID, Organisation> getAssociatedDefenceOrganisationMap(List<Defendant> caseDefendants) {
-        final Map<UUID, Organisation> defenceOrganisationMap = new HashMap<>();
-        caseDefendants.forEach(defendant -> {
-            final Optional<Organisation> associatedDefenceOrganisation = defenceOrganisationService.getAssociatedDefenceOrganisation(defendant.getId());
-            associatedDefenceOrganisation.ifPresent(organisation -> defenceOrganisationMap.put(defendant.getId(), organisation));
-        });
-
-        return defenceOrganisationMap;
     }
 }

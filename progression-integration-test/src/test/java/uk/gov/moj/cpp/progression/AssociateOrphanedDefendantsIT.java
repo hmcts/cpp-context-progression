@@ -1,35 +1,18 @@
 package uk.gov.moj.cpp.progression;
 
-import org.apache.http.HttpStatus;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
-import java.util.Optional;
-import java.util.UUID;
-
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.DefenceAssociationHelper.verifyDefenceOrganisationAssociatedDataPersisted;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetEmptyOrganisationDetailForLAAContractNumber;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
@@ -37,6 +20,25 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
+import org.apache.http.HttpStatus;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AssociateOrphanedDefendantsIT extends AbstractIT {
     private String caseId = randomUUID().toString();
@@ -93,6 +95,7 @@ public class AssociateOrphanedDefendantsIT extends AbstractIT {
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne () throws Exception {
         //Create prosecution case
         //Given
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -117,11 +120,6 @@ public class AssociateOrphanedDefendantsIT extends AbstractIT {
                         .withName(PUBLIC_USER_GROUP_ORG_CREATED)
                         .withUserId(userId)
                         .build());
-
-        //Then
-        verifyDefenceOrganisationAssociatedDataPersisted(defendantId,
-                organisationId2,
-                userId);
 
 
     }

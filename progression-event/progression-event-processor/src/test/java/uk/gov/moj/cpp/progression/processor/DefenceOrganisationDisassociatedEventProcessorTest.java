@@ -2,7 +2,8 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
@@ -51,11 +52,11 @@ public class DefenceOrganisationDisassociatedEventProcessorTest {
 
     private void verifyPublicEvent() {
         verify(sender).send(envelopeArgumentCaptor.capture());
-        assertEquals("public.progression.defence-organisation-disassociated", envelopeArgumentCaptor.getValue().metadata().name());
+        assertThat( envelopeArgumentCaptor.getValue().metadata().name(), is("public.defence.defence-organisation-disassociated"));
         final JsonObject capturedPayload = envelopeArgumentCaptor.getValue().payload();
-        assertEquals(userId.toString(), envelopeArgumentCaptor.getValue().payload().getString("userId"));
-        assertEquals(defendantId.toString(), capturedPayload.getString("defendantId"));
-        assertEquals(organisationId.toString(), envelopeArgumentCaptor.getValue().payload().getString("organisationId"));
+        assertThat(envelopeArgumentCaptor.getValue().payload().getString("userId"), is(userId.toString()));
+        assertThat(capturedPayload.getString("defendantId"), is(defendantId.toString()));
+        assertThat(envelopeArgumentCaptor.getValue().payload().getString("organisationId"), is(organisationId.toString()));
     }
 
     private JsonEnvelope generateDisassociatedEvent(final UUID userId, final UUID defendantId, final UUID organisationId) {

@@ -41,7 +41,7 @@ public class DefendantDefenceAssociationLockedListener {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
 
-    @Handles("progression.event.defendant-defence-association-locked-for-laa")
+    @Handles("progression.event.defendant-defence-association-locked")
     public void processDefendantAssociationLock(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("received event  progression.event.defendant-defence-association-locked {} ", event.payloadAsJsonObject());

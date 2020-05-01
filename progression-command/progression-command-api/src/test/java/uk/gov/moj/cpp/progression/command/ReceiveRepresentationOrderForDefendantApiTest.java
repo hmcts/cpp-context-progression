@@ -1,24 +1,37 @@
 package uk.gov.moj.cpp.progression.command;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.util.function.Function;
-
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.command.service.OrganisationService;
+
+import java.util.function.Function;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ReceiveRepresentationOrderForDefendantApiTest {
+
     @Mock
     private Sender sender;
 
@@ -28,19 +41,48 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Mock
     private Enveloper enveloper;
 
+    @Captor
+    ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
+
     @InjectMocks
     private ReceiveRepresentationOrderForDefendantApi receiveRepresentationOrderForDefendantApi;
 
     @Mock
     private Function<Object, JsonEnvelope> function;
 
+    @Mock
+    OrganisationService organisationService;
+
+    @Mock
+    Requester requester;
+
     @Test
     public void shouldReceiveRepresentationOrderForDefendantAPI() {
-        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
-        when(enveloper.withMetadataFrom(command, "progression.command.handler.receive-representationOrder-for-defendant"))
-                .thenReturn(function);
-        when(function.apply(any())).thenReturn(commandEnvelope);
-        receiveRepresentationOrderForDefendantApi.handle(command);
-        verify(sender, times(1)).send(commandEnvelope);
+        final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder().add("defendantId", randomUUID().toString()).build());
+
+        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        when(organisationService.getAssociatedOrganisation(any(), any(), any())).thenReturn(jsonObjectPayload);
+        receiveRepresentationOrderForDefendantApi.handle(envelope);
+        verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
+        assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is("progression.command.handler.receive-representationOrder-for-defendant"));
+        final JsonObject payload = envelopeArgumentCaptor.getValue().payload();
+        assertThat(payload.getString("associatedOrganisationId"), is(jsonObjectPayload.getString("organisationId")));
     }
+
+
+    @Test
+    public void shouldReceiveRepresentationOrderForDefendantAPIWithNoAssociation() {
+        final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder().add("defendantId", randomUUID().toString()).build());
+
+        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        when(organisationService.getAssociatedOrganisation(any(), any(), any())).thenReturn(jsonObjectPayload);
+        receiveRepresentationOrderForDefendantApi.handle(envelope);
+        verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
+        assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is("progression.command.handler.receive-representationOrder-for-defendant"));
+        final JsonObject payload = envelopeArgumentCaptor.getValue().payload();
+        assertThat(payload.containsKey("associatedOrganisationId"), is(false));
+    }
+
 }

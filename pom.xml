@@ -41,13 +41,14 @@
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <material.version>6.4.3</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
-        <access.control.version>6.4.1</access.control.version>
+        <access.control.version>6.4.11</access.control.version>
         <referencedata.version>6.4.15</referencedata.version>
-        <listing.version>6.4.17</listing.version>
-        <hearing.version>6.4.29</hearing.version>
-        <usersgroups.version>6.4.6</usersgroups.version>
+        <listing.version>6.4.19</listing.version>
+        <hearing.version>6.4.35</hearing.version>
+        <usersgroups.version>6.4.11</usersgroups.version>
+        <defence.version>6.4.1</defence.version>
         <referencedata.offence.version>6.4.0</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.72</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.78</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>

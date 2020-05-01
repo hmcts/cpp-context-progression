@@ -1,0 +1,14 @@
+{
+  "organisationId": "%ORGANISATION_ID%",
+  "organisationType": "LEGAL_ORGANISATION",
+  "organisationName": "Bodgit and Scarper LLP",
+  "addressLine1": "Legal House",
+  "addressLine2": "15 Sewell Street",
+  "addressLine3": "Hammersmith",
+  "addressLine4": "London",
+  "addressPostcode": "SE14 2AB",
+  "phoneNumber": "080012345678",
+  "email": "joe@example.com",
+  "laaContractNumber" :"LAA3482374WER"
+
+}

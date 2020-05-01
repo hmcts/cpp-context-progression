@@ -53,7 +53,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
-import uk.gov.moj.cpp.progression.query.view.service.DefenceOrganisationService;
 import uk.gov.moj.cpp.progression.query.view.service.GetHearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
@@ -126,8 +125,7 @@ public class ProsecutionCaseQueryViewTest {
     private GetHearingAtAGlanceService getHearingAtAGlanceService;
     @Mock
     private ReferenceDataService referenceDataService;
-    @Mock
-    private DefenceOrganisationService defenceOrganisationService;
+
 
     @Before
     public void setup() {

@@ -33,7 +33,16 @@ rule "Query - Access control for  progression.query.courtdocuments"
     $outcome: Outcome();
     $action: Action(name == "progression.query.courtdocuments");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers",
-     "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Defence Users", "Court Associate", "Defence Advocate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support"))
+     "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Court Associate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.courtdocuments.for.defence"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.courtdocuments.for.defence");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"))
   then
     $outcome.setSuccess(true);
 end
@@ -42,7 +51,8 @@ rule "Query - Access control for  progression.query.prosecutioncase"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Defence Users", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Defence Advocate", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Advocates", "Defence Lawyers", "Chambers Clerk", "Chambers Admin", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support"))
   then
     $outcome.setSuccess(true);
 end

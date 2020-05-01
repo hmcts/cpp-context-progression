@@ -8,7 +8,6 @@ import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
-import uk.gov.moj.cpp.progression.command.UpdateCaseMarkersApiTest;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -75,9 +74,11 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         ReferCaseToCourtTest("progression.refer-cases-to-court", "Legal Advisers"),
         UpdateDefendentDetails("progression.update-defendant-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin"),
         UpdateOffences("progression.update-offences-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin"),
-        UploadCourtDocument("progression.upload-court-document", "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support"),
+        UploadCourtDocument("progression.upload-court-document", "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "District Judge", "Court Associate", "Probation Admin", "Second Line Support"),
+        UploadCourtDocumentDefence("progression.upload-court-document-for-defence", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"),
         UpdateCourtDocument("progression.update-court-document", "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Associate", "Court Administrators", "System Users", "Second Line Support"),
         AddCourtDocument("progression.add-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support"),
+        AddCourtDocumentDefence("progression.add-court-document-for-defence", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"),
         CreateCourtApplication("progression.create-court-application", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin"),
         InitiateCourtProceedings("progression.initiate-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin"),
         AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin"),
@@ -85,8 +86,6 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         UpdateCaseMarkersApiTest("progression.update-case-markers", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers"),
         RecordLAAReference("progression.command.record-laareference-for-offence","System Users"),
         EjectCaseOrApplication("progression.eject-case-or-application", "Eject Case Group"),
-        AssociateDefenceOrganisation("progression.associate-defence-organisation", "Defence Users", "System Users"),
-        DisassociateDefenceOrganisation("progression.disassociate-defence-organisation", "Defence Users", "Court Clerks", "Court Administrators", "Crown Court Admin", "Listing Officers", "Legal Advisers", "System Users"),
         ReceiveRepresentationOrder("progression.command.receive-representationorder-for-defendant","System Users");
 
         private final String actionName;

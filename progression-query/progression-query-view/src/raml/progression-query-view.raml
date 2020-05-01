@@ -253,22 +253,6 @@ protocols: [ HTTP, HTTPS ]
             schema: !include json/schema/progression.query.prosecution.notification-status.json
             example: !include json/progression.query.prosecution.notification-status.json
 
-/defendants/{defendantId}/associatedOrganisations:
-  description: get associated defence organisations
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.progression.query.associated-organisation+json
-          name: progression.query.associated-organisation
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.progression.query.associated-organisation+json:
-            example:  !include json/progression.query.associated-organisation-details.json
-            schema:  !include json/schema/progression.query.associated-organisation-details.json
-
 /cases/{caseId}/notes:
   uriParameters:
         caseId:

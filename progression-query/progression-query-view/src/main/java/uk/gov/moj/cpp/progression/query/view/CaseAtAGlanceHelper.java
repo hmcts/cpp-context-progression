@@ -12,7 +12,6 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -30,7 +29,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,14 +47,11 @@ public class CaseAtAGlanceHelper {
 
     private final ProsecutionCase prosecutionCase;
     private final List<Hearings> caseHearings;
-    private final Map<UUID, Organisation> defenceOrganisationMap;
     private final ReferenceDataService referenceDataService;
 
-    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, List<Hearings> caseHearings,
-                               final Map<UUID, Organisation> defenceOrganisationMap, final ReferenceDataService referenceDataService) {
+    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, List<Hearings> caseHearings, final ReferenceDataService referenceDataService) {
         this.prosecutionCase = prosecutionCase;
         this.caseHearings = caseHearings;
-        this.defenceOrganisationMap = defenceOrganisationMap;
         this.referenceDataService = referenceDataService;
     }
 
@@ -117,7 +112,6 @@ public class CaseAtAGlanceHelper {
                     caagDefendant.withLegalAidStatus(defendant.getLegalAidStatus());
                 }
 
-                caagDefendant.withRepresentation(defenceOrganisationMap.get(defendant.getId()));
                 defendantList.add(caagDefendant.build());
             });
         }

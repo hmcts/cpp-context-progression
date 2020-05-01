@@ -18,6 +18,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
@@ -53,6 +54,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         defendantDOB = LocalDate.now().minusYears(15).toString();
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
     }
 
     @Test

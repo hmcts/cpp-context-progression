@@ -62,7 +62,7 @@ public class CPSEmailNotificationProcessor {
     @Inject
     private Requester requester;
 
-    @Handles("public.progression.defence-organisation-disassociated")
+    @Handles("public.defence.defence-organisation-disassociated")
     public void processDisassociatedEmailNotification(final JsonEnvelope jsonEnvelope) {
         final JsonObject requestJson = jsonEnvelope.payloadAsJsonObject();
         populateCPSNotification(jsonEnvelope, requestJson, EmailTemplateType.DISASSOCIATION);

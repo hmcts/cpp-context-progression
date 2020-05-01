@@ -14,6 +14,8 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
+import javax.json.Json;
+
 import org.apache.http.HttpHeaders;
 
 public class UsersAndGroupsStub {
@@ -121,6 +123,21 @@ public class UsersAndGroupsStub {
         body = body.replaceAll("%LAA_CONTRACT_NUMBER%", laaContractNumber);
         body = body.replaceAll("%ORGANISATION_ID%", organisationId);
         body = body.replaceAll("%ORGANISATION_NAME%", organisationName);
+
+        stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+        waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber), GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE);
+
+
+    }
+
+
+    public static void stubGetOrganisationDetailForLAAContractNumberAsEmpty(final String laaContractNumber) {
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
+        String body = Json.createObjectBuilder().build().toString();
 
         stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())

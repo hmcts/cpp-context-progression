@@ -34,6 +34,8 @@ public class WireMockStubUtils {
     public static final String BASE_URI = "http://" + HOST + ":8080";
     private static final String CONTENT_TYPE_QUERY_GROUPS = "application/vnd.usersgroups.groups+json";
     private static final String CONTENT_TYPE_QUERY_HEARING = "application/vnd.hearing.get.hearing+json";
+    private static final String CONTENT_TYPE_QUERY_PERMISSION = "application/vnd.usersgroups.permissions+json";
+    private static final String CONTENT_TYPE_QUERY_USER_ORGANISATION = "application/vnd.usersgroups.get-organisation-details-for-user+json";
 
     static {
         configureFor(HOST, 8080);
@@ -83,6 +85,32 @@ public class WireMockStubUtils {
 
         waitForStubToBeReady(format("/usersgroups-service/query/api/rest/usersgroups/users/{0}/groups", userId), CONTENT_TYPE_QUERY_GROUPS);
     }
+
+    public static void stubUserGroupDefenceClientPermission(final String defendantId, final String responsePayLoad) {
+        stubPingFor("usersgroups-service");
+
+        stubFor(get(urlPathEqualTo(format("/usersgroups-service/query/api/rest/usersgroups/permissions")))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, CONTENT_TYPE_QUERY_PERMISSION)
+                        .withBody(responsePayLoad)));
+
+        waitForStubToBeReady(format("usersgroups-service/query/api/rest/usersgroups/permissions"), CONTENT_TYPE_QUERY_PERMISSION);
+    }
+
+
+    public static void stubUserGroupOrganisation(final String userId, final String responsePayLoad) {
+        stubPingFor("usersgroups-service");
+
+        stubFor(get(urlPathEqualTo(format("/users/{0}/organisation", userId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(responsePayLoad)));
+
+        waitForStubToBeReady(format("/users/{0}/organisation", userId), CONTENT_TYPE_QUERY_USER_ORGANISATION);
+    }
+
 
     public static void mockMaterialUpload() {
         stubPingFor("material-service");

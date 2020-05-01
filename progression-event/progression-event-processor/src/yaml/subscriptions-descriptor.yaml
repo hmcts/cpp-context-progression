@@ -119,6 +119,9 @@ subscriptions_descriptor:
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
 
+        - name : progression.event.defendant-laa-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -221,15 +224,7 @@ subscriptions_descriptor:
         - name: public.defence.event.record-instruction-details
           schema_uri: http://moj.gov.uk/cpp/defence/event/processor/events/public.defence.event.record-instruction-details.json
 
-        - name: public.progression.defence-organisation-disassociated
+        - name: public.defence.defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
-
-          # User Groups Events
-        - name: public.usersgroups.organisation-created
-          schema_uri: http://cpp.moj.gov.uk/usersgroups/json/schemas/public.usersgroups.organisation-created.json
-
-        - name: public.usersgroups.organisation-updated
-          schema_uri: http://cpp.moj.gov.uk/usersgroups/json/schemas/public.usersgroups.organisation-updated.json
-
 
       event_source_name: public.event.source

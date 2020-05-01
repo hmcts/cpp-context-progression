@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.idpc-document-received.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "publishedDate": {
+      "type": "string"
+    },
+    "size" : {
+      "type": "string"
+    },
+    "pageCount" : {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "caseId",
+    "materialId",
+    "defendantId"
+  ]
+}

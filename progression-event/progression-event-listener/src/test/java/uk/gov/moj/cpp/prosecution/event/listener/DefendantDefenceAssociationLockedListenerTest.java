@@ -67,7 +67,7 @@ public class DefendantDefenceAssociationLockedListenerTest {
     @Test
     public void handleDefendantAssociationLock () {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withUserId(randomUUID().toString()).withId(randomUUID()).withName("progression.event.defendant-defence-association-locked-for-laa").build(),
+                JsonEnvelope.metadataBuilder().withUserId(randomUUID().toString()).withId(randomUUID()).withName("progression.event.defendant-defence-association-locked").build(),
                 createPayloadForDefendantDefenceAssociationLocked());
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)

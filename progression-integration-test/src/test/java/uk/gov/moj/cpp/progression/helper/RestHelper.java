@@ -71,6 +71,7 @@ public class RestHelper {
         return pollForResponse(path, mediaType, userId, status().is(OK), payloadMatchers);
     }
 
+
     public static String pollForResponse(final String path, final String mediaType, final String userId, final ResponseStatusMatcher responseStatusMatcher, final Matcher... payloadMatchers) {
 
         return poll(requestParams(getReadUrl(path), mediaType)

@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.query.api;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -11,9 +13,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.query.api.vo.Permission;
+import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -263,4 +269,122 @@ public class DocumentQueryApiTest {
     }
 
 
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestWhenCaseIdAndDefendantIdNotSend() {
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
+        when(requester.request(query)).thenReturn(response);
+
+        target.searchCourtDocumentsForDefence(query);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestWhenCaseIDNotSend() {
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("defendantId", randomUUID().toString()).build());
+        when(requester.request(query)).thenReturn(response);
+
+        target.searchCourtDocumentsForDefence(query);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestWhenDefendantIDNotSend() {
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).build());
+        when(requester.request(query)).thenReturn(response);
+
+        target.searchCourtDocumentsForDefence(query);
+    }
+
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowBadRequestWhenUserIDNotSend() {
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", randomUUID().toString()).build());
+        when(requester.request(query)).thenReturn(response);
+
+        target.searchCourtDocumentsForDefence(query);
+    }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldThrowForbiddenException() {
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(randomUUID().toString()).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", randomUUID().toString()).build());
+        when(requester.request(query)).thenReturn(response);
+
+        target.searchCourtDocumentsForDefence(query);
+    }
+
+    @Test
+    public void shouldHandleSearchCourtDocumentsQueryForDefenceForGivenUserIsAssociated() {
+
+        final String defendantId = "faee972d-f9dd-43d3-9f41-8acc3b908d09";
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(randomUUID().toString()).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", defendantId).build());
+        when(requester.request(any())).thenReturn(response);
+
+        //Given
+        when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356401"), "Test Lab"));
+
+        Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
+                .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
+        Permission secondPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356402"))
+                .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
+        when(userDetailsLoader.getPermissions(any(), any(), any())).thenReturn(asList(firstPermission, secondPermission));
+
+        target.searchCourtDocumentsForDefence(query);
+
+        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
+
+        assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
+    }
+
+
+    @Test
+    public void shouldHandleSearchCourtDocumentsQueryForDefenceForGivenUserIsGranted() {
+
+        final String defendantId = "faee972d-f9dd-43d3-9f41-8acc3b908d09";
+        final String userId = randomUUID().toString();
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(userId).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", defendantId).build());
+        when(requester.request(any())).thenReturn(response);
+
+        //Given
+        when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356411"), "Test Lab"));
+
+        Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
+                .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
+        Permission secondPermission = Permission.permission().withSource(fromString(userId))
+                .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
+        when(userDetailsLoader.getPermissions(any(), any(), any())).thenReturn(asList(firstPermission, secondPermission));
+
+        target.searchCourtDocumentsForDefence(query);
+
+        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
+
+        assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
+    }
+
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldThrowForbiddenForGivenOrganisationDoesNot() {
+
+        final String defendantId = "faee972d-f9dd-43d3-9f41-8acc3b908d09";
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(randomUUID().toString()).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", defendantId).build());
+        when(requester.request(any())).thenReturn(response);
+
+        //Given
+        when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356411"), "Test Lab"));
+
+        Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
+                .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
+        Permission secondPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356402"))
+                .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
+        when(userDetailsLoader.getPermissions(any(), any(), any())).thenReturn(asList(firstPermission, secondPermission));
+
+        target.searchCourtDocumentsForDefence(query);
+    }
 }

@@ -62,7 +62,7 @@ public class HearingAggregate implements Aggregate {
                     this.hearingListingStatus = e.getHearingListingStatus();
                 }),
                 when(HearingResulted.class).apply(e ->
-                            this.hearing = e.getHearing()
+                        this.hearing = e.getHearing()
                 ),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {

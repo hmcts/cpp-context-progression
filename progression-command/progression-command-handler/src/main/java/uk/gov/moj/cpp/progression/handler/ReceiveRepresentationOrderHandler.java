@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.LaaReference;
@@ -22,18 +22,18 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
-import uk.gov.moj.cpp.progression.service.OrganisationService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
-
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static java.util.UUID.fromString;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ReceiveRepresentationOrderHandler {
@@ -57,15 +57,10 @@ public class ReceiveRepresentationOrderHandler {
     UsersGroupService usersGroupService;
 
     @Inject
-    OrganisationService organisationService;
-
-    @Inject
     ProsecutionCaseQueryService prosecutionCaseQueryService;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    private static final String ORGANISATION_ID = "organisationId";
 
     @Handles("progression.command.handler.receive-representationOrder-for-defendant")
     public void handle(final Envelope<ReceiveRepresentationOrderForDefendant> envelope) throws EventStreamException {
@@ -76,8 +71,10 @@ public class ReceiveRepresentationOrderHandler {
         final String statusCode = receiveRepresentationOrderForDefendant.getStatusCode();
         final String laaContractNumber = receiveRepresentationOrderForDefendant.getDefenceOrganisation().getLaaContractNumber();
         final OrganisationDetails organisationDetails = usersGroupService.getOrganisationDetailsForLAAContractNumber(envelope, laaContractNumber);
-        final JsonObject associationJsonObject = organisationService.getAssociatedOrganisation(envelope, receiveRepresentationOrderForDefendant.getDefendantId().toString());
-        final String associatedOrganisationId = associationJsonObject.getString(ORGANISATION_ID, null);
+        String associatedOrganisationId = null;
+        if(nonNull(receiveRepresentationOrderForDefendant.getAssociatedOrganisationId())) {
+            associatedOrganisationId = receiveRepresentationOrderForDefendant.getAssociatedOrganisationId().toString();
+        }
         final Optional<JsonObject> optionalLegalStatus = legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode
                 (jsonEnvelope, statusCode);
         final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(jsonEnvelope, receiveRepresentationOrderForDefendant.getProsecutionCaseId().toString());

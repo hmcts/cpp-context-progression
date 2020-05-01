@@ -95,6 +95,9 @@ public class ReferenceDataServiceTest {
     private ArgumentCaptor<DefaultEnvelope> envelopeArgumentCaptor;
 
     @Captor
+    private ArgumentCaptor<Envelope> standardEnvelopeArgumentCaptor;
+
+    @Captor
     private ArgumentCaptor<Envelope<JsonObject>> welshEnvelopeArgumentCaptor;
 
     @Mock
@@ -243,8 +246,8 @@ public class ReferenceDataServiceTest {
         final JsonObject payload = Json.createReader(
                 new ByteArrayInputStream(getOrganisationPayload(courtCentreId).getBytes()))
                 .readObject();
-        when(requester.request(any()))
-                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(ORGANISATION_UNIT), payload));
+        when(requester.requestAsAdmin(any(), any()))
+                .thenReturn(Envelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(ORGANISATION_UNIT), payload));
 
 
         //when
@@ -254,7 +257,7 @@ public class ReferenceDataServiceTest {
         final Optional<JsonObject> result = referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester);
 
         //then
-        verify(requester).request(envelopeArgumentCaptor.capture());
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
 
 
         final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();

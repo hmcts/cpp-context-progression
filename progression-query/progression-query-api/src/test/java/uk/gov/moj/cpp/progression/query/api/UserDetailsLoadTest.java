@@ -1,11 +1,22 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import uk.gov.QueryClientTestBase;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import org.junit.Assert;
+import javax.json.JsonObject;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -13,10 +24,19 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserDetailsLoadTest extends QueryClientTestBase {
+public class UserDetailsLoadTest {
+
+    public static final String FIRST_NAME = "andrew";
+    public static final String LAST_NAME = "eldritch";
 
     @InjectMocks
     private UserDetailsLoader userDetailsLoader;
+
+    @Mock
+    private JsonEnvelope context;
+
+    @Mock
+    protected Requester requester;
 
     final static class UserDetailsQueryResult {
         private UUID id;
@@ -48,17 +68,33 @@ public class UserDetailsLoadTest extends QueryClientTestBase {
         }
     }
 
+    @Before
+    public void setup() {
+        when(context.metadata()).thenReturn(Envelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName("usersgroups.get-user-details")
+                .build());
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            JsonObject responsePayload = createObjectBuilder()
+                    .add("firstName", FIRST_NAME)
+                    .add("lastName", LAST_NAME)
+                    .build();
+
+            return envelopeFrom(envelope.metadata(), responsePayload);
+        });
+    }
+
     @Test
     public void testLoad() {
         final UserDetailsQueryResult userDetails = new UserDetailsQueryResult();
-        userDetails.setId(UUID.randomUUID());
-        userDetails.setFirstName("andrew");
-        userDetails.setFirstName("eldritch");
-        mockQuery(UserDetailsLoader.GET_USER_DETAILS_REQUEST_ID, userDetails, true);
+        userDetails.setId(randomUUID());
+        userDetails.setFirstName(FIRST_NAME);
+        userDetails.setLastName(LAST_NAME);
         UserGroupsUserDetails result = userDetailsLoader.getUserById(requester, context, userDetails.getId());
-        Assert.assertEquals(userDetails.getId(), result.getUserId());
-        Assert.assertEquals(userDetails.getFirstName(), result.getFirstName());
-        Assert.assertEquals(userDetails.getLastName(), result.getLastName());
+        assertThat(userDetails.getId(), is(result.getUserId()));
+        assertThat(userDetails.getFirstName(), is(result.getFirstName()));
+        assertThat(userDetails.getLastName(), is(result.getLastName()));
 
     }
 }

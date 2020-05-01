@@ -1,10 +1,15 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
@@ -95,8 +100,30 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         return correlationId;
     }
 
+    public void stubForDefence(UUID defendantId) {
+
+        final String organisationId = UUID.randomUUID().toString();
+
+        setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
+        final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
+                .replace("%ORGANISATION_ID%", organisationId);
+
+
+        final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
+                .replace("%USER_ID%", USER_ID)
+                .replace("%DEFENDANT_ID%", defendantId.toString())
+                .replace("%ORGANISATION_ID%", randomUUID().toString());
+
+        stubUserGroupOrganisation(USER_ID, organisation);
+        stubUserGroupDefenceClientPermission(defendantId.toString(), permission);
+
+    }
     public UUID makeMultipartFormPostCall(final String url, final String fileFieldName, final String fileName) {
         return makeMultipartFormPostCall(UUID.fromString(USER_ID), url, fileFieldName, fileName);
+    }
+
+    public void resetUserRoles() {
+        setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-groups-by-user.json");
     }
 
     public JsonPath getMessage() {

@@ -1,6 +1,18 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import com.google.common.base.Strings;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static uk.gov.justice.core.courts.BailStatus.bailStatus;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ID;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.Gender;
@@ -29,26 +41,11 @@ import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static uk.gov.justice.core.courts.BailStatus.bailStatus;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ID;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;

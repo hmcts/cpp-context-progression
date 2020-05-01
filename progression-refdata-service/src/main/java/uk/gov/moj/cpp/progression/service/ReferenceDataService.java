@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
@@ -117,13 +116,13 @@ public class ReferenceDataService {
 
     public Optional<JsonObject> getOrganisationUnitById(final UUID courtCentreId, final JsonEnvelope event, final Requester requester) {
         final JsonObject payload = createObjectBuilder().add(ID, courtCentreId.toString()).build();
-        final JsonEnvelope jsonEnvelop = requester.request(envelop(payload)
+        final Envelope<JsonObject> envelope = requester.requestAsAdmin(envelop(payload)
                 .withName(REFERENCEDATA_GET_ORGANISATION)
-                .withMetadataFrom(event));
+                .withMetadataFrom(event), JsonObject.class);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("'referencedata.query.organisation-unit.v2' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
+            LOGGER.info("'referencedata.query.organisation-unit.v2' {} received with payload {}", courtCentreId, envelope.payload());
         }
-        return Optional.of(jsonEnvelop.payloadAsJsonObject());
+        return Optional.of(envelope.payload());
     }
 
     public Optional<JsonObject> getDocumentTypeAccessData(final UUID documentTypeId, final JsonEnvelope event, final Requester requester) {

@@ -135,11 +135,14 @@ protocols: [ HTTP, HTTPS ]
 /courtdocumentsearch:
   get:
       description: |
-        Search for court documentIndices.
+        Search for court documentIndices.UserDetailsLoaderTest
         ...
         (mapping):
             responseType: application/vnd.progression.query.courtdocuments+json
             name: progression.query.courtdocuments
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments.for.defence+json
+            name: progression.query.courtdocuments.for.defence
         ...
       queryParameters:
               caseId:
@@ -169,7 +172,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.courtdocuments+json:
                     example:  !include json/progression.query.courtdocuments.json
                     schema:  !include json/schema/progression.query.courtdocuments.json
-
+                  application/vnd.progression.query.courtdocuments.for.defence+json:
+                    example:  !include json/progression.query.courtdocuments.json
+                    schema:  !include json/schema/progression.query.courtdocuments.json
 
 /search:
   get:
@@ -363,22 +368,6 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.eject-case+json:
-
-/defendants/{defendantId}/associatedOrganisation:
-  description: get associated defence organisation
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.progression.query.associated-organisation+json
-          name: progression.query.associated-organisation
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.progression.query.associated-organisation+json:
-            example:  !include json/progression.query.associated-organisation.json
-            schema:  !include json/schema/progression.query.associated-organisation.json
 
 /cases/{caseId}/notes:
   uriParameters:
