@@ -41,7 +41,7 @@
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <material.version>6.4.3</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
-        <access.control.version>6.4.11</access.control.version>
+        <access.control.version>6.4.1</access.control.version>
         <referencedata.version>6.4.15</referencedata.version>
         <listing.version>6.4.19</listing.version>
         <hearing.version>6.4.35</hearing.version>
