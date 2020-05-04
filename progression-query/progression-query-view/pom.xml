@@ -97,7 +97,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-refdata-providers</artifactId>
-            <version>${access.control.version}</version>
+            <version>${cpp.access-control.version}</version>
         </dependency>
 
     </dependencies>

@@ -118,7 +118,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-progression-providers</artifactId>
-            <version>${access.control.version}</version>
+            <version>${cpp.access-control.version}</version>
         </dependency>
 
         <!-- JUnit regression testing framework. -->
@@ -166,20 +166,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-refdata-providers</artifactId>
-            <version>${access.control.version}</version>
+            <version>${cpp.access-control.version}</version>
         </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.usersgroups</groupId>
-            <artifactId>usersgroups-query-api</artifactId>
-            <version>${usersgroups.version}</version>
-            <classifier>raml</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
     </dependencies>
 </project>
