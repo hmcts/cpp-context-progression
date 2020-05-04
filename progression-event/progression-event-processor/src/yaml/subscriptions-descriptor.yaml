@@ -92,6 +92,10 @@ subscriptions_descriptor:
         - name: progression.event.case-note-added
           schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
 
+        - name : progression.event.court-document-send-to-cps
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.court-document-send-to-cps.json
+
+
           ############  Association Start ############
         - name: progression.event.defence-organisation-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json
@@ -105,9 +109,6 @@ subscriptions_descriptor:
         - name : progression.event.defendant-defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-disassociated.json
 
-        - name : progression.event.defendant-defence-association-locked
-          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
-
           ############  Association End ############
 
         - name: progression.event.defendant-legalaid-status-updated
@@ -118,6 +119,9 @@ subscriptions_descriptor:
 
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
+
+        - name : progression.event.defendant-defence-association-locked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
 
         - name : progression.event.defendant-laa-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json

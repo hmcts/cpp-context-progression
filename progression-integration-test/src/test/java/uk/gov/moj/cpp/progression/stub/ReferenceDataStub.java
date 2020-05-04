@@ -313,4 +313,36 @@ public class ReferenceDataStub {
 
         waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
     }
+
+    public static void stubGetOrganisationById(final String resourceName, final String statusCode) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/legal-statuses";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(legalStatuses.toString().replace("STATUS_CODE", statusCode))));
+
+        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
+    }
+
+    public static void stubGetOrganisationById(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject judge = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/organisation-units/.*";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(judge.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.organisation-unit.v2+json");
+    }
 }

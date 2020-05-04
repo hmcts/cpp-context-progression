@@ -2,19 +2,23 @@ package uk.gov.moj.cpp.progression.domain.aggregate;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentAudit;
+import uk.gov.justice.core.courts.CourtDocumentSendToCps;
 import uk.gov.justice.core.courts.CourtDocumentShareFailed;
 import uk.gov.justice.core.courts.CourtDocumentShared;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
+import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.DefendantDocument;
@@ -23,6 +27,7 @@ import uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +45,7 @@ public class CourtDocumentAggregateTest {
             .withDocumentCategory(DocumentCategory.documentCategory().build())
             .withMimeType("pdf")
             .withName("name")
+            .withSendToCps(false)
             .build();
 
     private CourtDocumentAggregate aggregate;
@@ -70,7 +76,6 @@ public class CourtDocumentAggregateTest {
     }
 
 
-
     @Test
     public void shouldReturnCourtDocumentDefendantLevelSharedWhenNotADuplicate() {
         final UUID courtDocumentId = randomUUID();
@@ -79,7 +84,7 @@ public class CourtDocumentAggregateTest {
         final UUID caseId = randomUUID();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
-        createCourtDocumentWithDefendant(caseId , Arrays.asList(defendantId1, defendantId2));
+        createCourtDocumentWithDefendant(caseId, Arrays.asList(defendantId1, defendantId2));
         final List<Object> eventStream = aggregate.shareCourtDocument(courtDocumentId, hearingId, userGroupId, null).collect(toList());
 
         assertThat(eventStream.size(), is(2));
@@ -113,6 +118,7 @@ public class CourtDocumentAggregateTest {
         CourtDocument courtDocument = CourtDocument.courtDocument()
                 .withDocumentCategory(DocumentCategory.documentCategory()
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
+                .withSendToCps(false)
                 .build();
         this.aggregate.createCourtDocument(courtDocument);
     }
@@ -122,6 +128,7 @@ public class CourtDocumentAggregateTest {
                 .withDocumentCategory(DocumentCategory.documentCategory()
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build())
                         .withDefendantDocument(DefendantDocument.defendantDocument().withDefendants(defandants).withProsecutionCaseId(caseId).build()).build())
+                .withSendToCps(false)
                 .build();
         this.aggregate.createCourtDocument(courtDocument);
     }
@@ -158,7 +165,7 @@ public class CourtDocumentAggregateTest {
         final UUID caseId = randomUUID();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
-        createCourtDocumentWithDefendant(caseId , Arrays.asList(defendantId1, defendantId2));
+        createCourtDocumentWithDefendant(caseId, Arrays.asList(defendantId1, defendantId2));
 
         aggregate.shareCourtDocument(courtDocumentId, hearingId, userGroupId, null);
         final List<Object> eventStreamForDuplicate = aggregate.shareCourtDocument(courtDocumentId, hearingId, userGroupId, null).collect(toList());
@@ -205,7 +212,7 @@ public class CourtDocumentAggregateTest {
 
     @Test
     public void shouldReturnCourtDocumentAudit() {
-        final  UUID materialId = randomUUID();
+        final UUID materialId = randomUUID();
         Material material = Material.material().withId(materialId).withName("Test").build();
         aggregate.apply(aggregate.addCourtDocument(CourtDocument.courtDocument().withMaterials(asList(material)).build()).collect(toList()));
 
@@ -251,4 +258,57 @@ public class CourtDocumentAggregateTest {
         assertThat(returnedEvent.getFailureReason(), is(format("Document is deleted. Could not update the given court document id: %s", courtDocumentId)));
     }
 
+    @Test
+    public void shouldReturnCourtsDocumentCreatedAndCourtDocumentNotified() {
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentTypeDescription("documentTypeDescription")
+                .withDocumentTypeId(randomUUID())
+                .withDocumentCategory(DocumentCategory.documentCategory().build())
+                .withMimeType("pdf")
+                .withName("name")
+                .withSendToCps(true)
+                .build();
+        final List<Object> eventStream = aggregate.createCourtDocument(courtDocument).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtsDocumentCreated.class)));
+        final Object object1 = eventStream.get(1);
+        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSendToCps.class)));
+    }
+
+    @Test
+    public void shouldReturnCourtsDocumentUpdatedAndCourtDocumentNotified() {
+        final UUID courtDocumentId = randomUUID();
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withCourtDocumentId(courtDocumentId)
+                .withDocumentTypeDescription("documentTypeDescription")
+                .withDocumentTypeId(randomUUID())
+                .withDocumentCategory(DocumentCategory.documentCategory().build())
+                .withMaterials(emptyList())
+                .withMimeType("pdf")
+                .withName("name")
+                .withSendToCps(false)
+                .build();
+        setField(aggregate, "courtDocument", courtDocument);
+
+        final CourtDocument updatedCourtDocument = CourtDocument.courtDocument()
+                .withCourtDocumentId(courtDocumentId)
+                .withDocumentTypeDescription("documentTypeDescription")
+                .withDocumentTypeId(randomUUID())
+                .withDocumentCategory(DocumentCategory.documentCategory().build())
+                .withMimeType("pdf")
+                .withName("name1")
+                .withSendToCps(true)
+                .build();
+
+        final List<Object> eventStream = aggregate.updateCourtDocument(updatedCourtDocument, ZonedDateTime.now(), null).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentUpdated.class)));
+        final Object object1 = eventStream.get(1);
+        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSendToCps.class)));
+    }
 }

@@ -62,6 +62,7 @@ public class AddCourtDocumentIT extends AbstractIT {
     public static final String CHAMBER_USER_ID = UUID.randomUUID().toString();
     private static final MessageConsumer PRIVATE_MESSAGE_CONSUMER = privateEvents.createConsumer("progression.event.court-document-update-failed");
     private static final MessageConsumer consumerForCourtDocumentUpdated = publicEvents.createConsumer(PUBLIC_EVENT_COURT_DOCUMENT_UPADTED);
+    private static final MessageConsumer consumerForCourDocumentNotified = privateEvents.createConsumer("progression.event.court-document-send-to-cps");
 
     @BeforeClass
     public static void init() {
@@ -85,7 +86,7 @@ public class AddCourtDocumentIT extends AbstractIT {
     @Test
     public void shouldAddCourtDocument() throws IOException {
         verifyAddCourtDocument();
-
+        verifyForCourtDocumentNotified();
     }
 
     @Test
@@ -119,6 +120,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
 
         verifyInPublicTopic();
+        verifyForCourtDocumentNotified();
     }
 
     @Test
@@ -340,7 +342,8 @@ public class AddCourtDocumentIT extends AbstractIT {
         //Then
         final String actualDocument = getCourtDocumentFor(docId, allOf(
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
-                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)))
+                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)),
+                withJsonPath("$.courtDocument.sendToCps", equalTo(true)))
         );
 
         final String expectedPayload = getPayload("expected/expected.progression.add-court-document.json")
@@ -370,6 +373,11 @@ public class AddCourtDocumentIT extends AbstractIT {
     public void verifyInPublicTopic() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtDocumentUpdated);
 
+        assertThat(message, notNullValue());
+    }
+
+    public void verifyForCourtDocumentNotified() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourDocumentNotified);
         assertThat(message, notNullValue());
     }
 

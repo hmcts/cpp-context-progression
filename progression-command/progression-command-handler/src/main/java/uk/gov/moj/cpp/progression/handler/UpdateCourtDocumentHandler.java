@@ -101,6 +101,7 @@ public class UpdateCourtDocumentHandler {
                     withDocumentTypeDescription(documentTypeData.getString(SECTION)).
                     withName(updateCourtDocument.getName()).
                     withSeqNum(Integer.valueOf(documentTypeData.getInt(SEQNUM)))
+                    .withSendToCps(updateCourtDocument.getSendToCps())
                     .build();
 
             events = courtDocumentAggregate

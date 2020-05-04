@@ -131,6 +131,9 @@
         },
         "containsFinancialMeans": {
           "type": "boolean"
+        },
+        "sendToCps": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -139,7 +142,8 @@
         "name",
         "documentTypeId",
         "materials",
-        "containsFinancialMeans"
+        "containsFinancialMeans",
+        "sendToCps"
       ],
       "additionalProperties": false
     }

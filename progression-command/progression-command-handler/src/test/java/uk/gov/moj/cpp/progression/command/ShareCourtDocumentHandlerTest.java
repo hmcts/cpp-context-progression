@@ -58,6 +58,7 @@ public class ShareCourtDocumentHandlerTest {
         CourtDocument courtDocument = CourtDocument.courtDocument()
                 .withDocumentCategory(DocumentCategory.documentCategory()
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
+                .withSendToCps(false)
                 .build();
         this.aggregate.createCourtDocument(courtDocument);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);

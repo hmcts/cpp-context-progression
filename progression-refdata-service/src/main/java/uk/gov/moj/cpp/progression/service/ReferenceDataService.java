@@ -122,7 +122,7 @@ public class ReferenceDataService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("'referencedata.query.organisation-unit.v2' {} received with payload {}", courtCentreId, envelope.payload());
         }
-        return Optional.of(envelope.payload());
+        return Optional.ofNullable(envelope.payload());
     }
 
     public Optional<JsonObject> getDocumentTypeAccessData(final UUID documentTypeId, final JsonEnvelope event, final Requester requester) {

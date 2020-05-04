@@ -104,6 +104,7 @@ public class UpdateCourtDocumentHandlerTest {
                 .withDocumentCategory(DocumentCategory.documentCategory()
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
                 .withMaterials(new ArrayList<>())
+                .withSendToCps(false)
                 .build();
         this.aggregate.createCourtDocument(courtDocument);
 
@@ -140,7 +141,7 @@ public class UpdateCourtDocumentHandlerTest {
     private UpdateCourtDocument buildUpdateCourtDocument() {
 
         return UpdateCourtDocument.updateCourtDocument().withCourtDocumentId(randomUUID())
-                .withDocumentTypeId(randomUUID()).withContainsFinancialMeans(true).withDefendants(Arrays.asList(randomUUID())).withName("SJP Notice").build();
+                .withDocumentTypeId(randomUUID()).withContainsFinancialMeans(true).withDefendants(Arrays.asList(randomUUID())).withName("SJP Notice").withSendToCps(false).build();
     }
 
 

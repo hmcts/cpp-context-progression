@@ -67,7 +67,7 @@ public class AddCourtDocumentHandler {
     private JsonObjectToObjectConverter jsonToObjectConverter;
 
     @Handles("progression.command.add-court-document")
-    public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws RefDataDefinitionException, EventStreamException {
+    public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope);
         final CourtDocument courtDocument = setDefaults(addCourtDocumentEnvelope.payload().getCourtDocument());
 
@@ -123,6 +123,7 @@ public class AddCourtDocumentHandler {
                 .withMimeType(courtDocument.getMimeType())
                 .withMaterials(materials)
                 .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
+                .withSendToCps(courtDocument.getSendToCps())
                 .withSeqNum(seqNum)
                 .withDocumentTypeRBAC(DocumentTypeRBAC.
                         documentTypeRBAC()

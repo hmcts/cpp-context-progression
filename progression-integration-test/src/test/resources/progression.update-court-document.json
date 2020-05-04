@@ -7,5 +7,6 @@
   "containsFinancialMeans": true,
   "defendants": [
     "%DEFENDENT-ID2%"
-  ]
+  ],
+  "sendToCps": true
 }

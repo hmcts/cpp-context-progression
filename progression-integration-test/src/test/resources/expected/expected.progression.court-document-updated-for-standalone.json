@@ -1,6 +1,7 @@
 {
   "courtDocument": {
     "containsFinancialMeans": false,
+    "sendToCps": false,
     "courtDocumentId": "COURT-DOCUMENT-ID",
     "documentCategory": {
       "applicationDocument": {

@@ -1,6 +1,7 @@
 {
   "courtDocument": {
     "containsFinancialMeans": true,
+    "sendToCps": true,
     "courtDocumentId": "COURT-DOCUMENT-ID",
     "documentCategory": {
       "defendantDocument": {

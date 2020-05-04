@@ -141,6 +141,7 @@ public class CreateCourtDocumentHandlerTest {
                 .withContainsFinancialMeans(true)
                 .withDocumentCategory(DocumentCategory.documentCategory().build())
                 .withSeqNum(10)
+                .withSendToCps(false)
                 .build();
 
     }

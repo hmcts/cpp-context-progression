@@ -19,6 +19,7 @@
         "receivedDateTime": "2019-12-07T07:16:26.661Z"
       }
     ],
-    "containsFinancialMeans": true
+    "containsFinancialMeans": true,
+    "sendToCps": true
   }
 }

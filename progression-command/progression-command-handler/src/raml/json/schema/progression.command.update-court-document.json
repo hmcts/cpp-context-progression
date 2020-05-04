@@ -32,6 +32,9 @@
     },
     "applicationId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "sendToCps": {
+      "type": "boolean"
     }
   },
   "oneOf": [
@@ -42,7 +45,8 @@
         "documentTypeId",
         "name",
         "receivedDateTime",
-        "containsFinancialMeans"
+        "containsFinancialMeans",
+        "sendToCps"
       ]
     },
     {
@@ -52,7 +56,8 @@
         "documentTypeId",
         "name",
         "receivedDateTime",
-        "containsFinancialMeans"
+        "containsFinancialMeans",
+        "sendToCps"
       ]
     }
   ],

@@ -17,6 +17,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentAudit;
+import uk.gov.justice.core.courts.CourtDocumentSendToCps;
 import uk.gov.justice.core.courts.CourtDocumentShareFailed;
 import uk.gov.justice.core.courts.CourtDocumentShared;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
@@ -95,9 +96,16 @@ public class CourtDocumentAggregate implements Aggregate {
                 .withDocumentTypeRBAC(documentTypeRBAC)
                 .withSeqNum(inputCourtDocumentDetails.getSeqNum())
                 .withMaterials(buildMaterials(receivedDateTime, documentTypeRBAC))
+                .withSendToCps(inputCourtDocumentDetails.getSendToCps())
                 .build();
+        final Stream.Builder<Object> builder = Stream.builder();
+        builder.add(courtDocumentUpdated().withCourtDocument(updatedCourtDocument).build());
 
-        return apply(Stream.of(courtDocumentUpdated().withCourtDocument(updatedCourtDocument).build()));
+        if (inputCourtDocumentDetails.getSendToCps()) {
+            builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(updatedCourtDocument).build());
+        }
+
+        return apply(builder.build());
     }
 
     public Stream<Object> updateCourtDocumentFailed(final UUID courtDocumentId, final String failureReason) {
@@ -173,7 +181,12 @@ public class CourtDocumentAggregate implements Aggregate {
 
     public Stream<Object> createCourtDocument(final CourtDocument courtDocument) {
         LOGGER.debug("court document is being created .");
-        return apply(Stream.of(courtsDocumentCreated().withCourtDocument(courtDocument).build()));
+        final Stream.Builder<Object> builder = Stream.builder();
+        builder.add(courtsDocumentCreated().withCourtDocument(courtDocument).build());
+        if (nonNull(courtDocument.getSendToCps()) && courtDocument.getSendToCps()) {
+            builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(courtDocument).build());
+        }
+        return apply(builder.build());
     }
 
     public Stream<Object> addCourtDocument(final CourtDocument courtDocument) {
@@ -195,30 +208,30 @@ public class CourtDocumentAggregate implements Aggregate {
                 .thenComparing(SharedCourtDocument::getHearingId, this::compare)
                 .thenComparing(SharedCourtDocument::getUserGroupId, this::compare)
                 .thenComparing(SharedCourtDocument::getUserId, this::compare)
-                .thenComparing(SharedCourtDocument::getCaseIds  , this::compareIdList)
+                .thenComparing(SharedCourtDocument::getCaseIds, this::compareIdList)
                 .thenComparing(SharedCourtDocument::getDefendantId, this::compare)
                 .compare(sharedCourtDocument, sharedCourtDocumentToCheck) == 0;
     }
 
     private int compareIdList(List<UUID> compareTo, List<UUID> compareBy) {
-        if(compareTo == null && compareBy == null){
+        if (compareTo == null && compareBy == null) {
             return 0;
-        }else if(compareTo == null){
-                return -1;
-        }else if(compareBy == null){
-                return -1;
-        }else if(compareTo.size() != compareBy.size()) {
-                return -1;
+        } else if (compareTo == null) {
+            return -1;
+        } else if (compareBy == null) {
+            return -1;
+        } else if (compareTo.size() != compareBy.size()) {
+            return -1;
         }
 
         int sum = 0;
-        for(int i =0; i<compareTo.size();i++){
-            sum += compare(compareTo.get(i),compareBy.get(i));
+        for (int i = 0; i < compareTo.size(); i++) {
+            sum += compare(compareTo.get(i), compareBy.get(i));
         }
 
-        if(sum == 0 ){
+        if (sum == 0) {
             return 0;
-        }else {
+        } else {
             return -1;
         }
     }

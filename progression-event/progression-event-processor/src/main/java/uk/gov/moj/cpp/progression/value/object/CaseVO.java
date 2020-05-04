@@ -14,4 +14,5 @@ import java.util.UUID;
 public class CaseVO {
     private UUID caseId;
     private String caseURN;
+    private String defendantList;
 }

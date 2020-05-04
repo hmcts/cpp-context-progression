@@ -122,6 +122,7 @@ public class CreateCourtDocumentHandler {
                 .withAmendmentDate(courtDocument.getAmendmentDate())
                 .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
                 .withMimeType(courtDocument.getMimeType())
+                .withSendToCps(courtDocument.getSendToCps())
                 .build();
     }
 

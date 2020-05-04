@@ -5,5 +5,7 @@ public enum EmailTemplateType {
 
     DISASSOCIATION,
 
-    INSTRUCTION
+    INSTRUCTION,
+
+    COURT_DOCUMENT
 }

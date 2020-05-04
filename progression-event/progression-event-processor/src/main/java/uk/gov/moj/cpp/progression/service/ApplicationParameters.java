@@ -23,6 +23,15 @@ public class ApplicationParameters {
     private String ncesEmailTemplateId;
 
     @Inject
+    @Value(key = "cpsCourtDocumentTemplateId")
+    private String cpsCourtDocumentTemplateId;
+
+
+    @Inject
+    @Value(key = "cpsDefendantCourtDocumentTemplateId")
+    private String cpsDefendantCourtDocumentTemplateId;
+
+    @Inject
     @Value(key = "AZURE_FUNCTION_HOST_NAME")
     private String azureFunctionHostName;
 
@@ -74,4 +83,13 @@ public class ApplicationParameters {
     public String getRelayCaseOnCppFunctionPath() {
         return relayCaseOnCppFunctionPath;
     }
+
+    public String getCpsCourtDocumentTemplateId() {
+        return cpsCourtDocumentTemplateId;
+    }
+
+    public String getCpsDefendantCourtDocumentTemplateId() {
+        return cpsDefendantCourtDocumentTemplateId;
+    }
+
 }
