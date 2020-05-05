@@ -45,8 +45,7 @@
         "documentTypeId",
         "name",
         "receivedDateTime",
-        "containsFinancialMeans",
-        "sendToCps"
+        "containsFinancialMeans"
       ]
     },
     {
@@ -56,8 +55,7 @@
         "documentTypeId",
         "name",
         "receivedDateTime",
-        "containsFinancialMeans",
-        "sendToCps"
+        "containsFinancialMeans"
       ]
     }
   ],

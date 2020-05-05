@@ -142,8 +142,7 @@
         "name",
         "documentTypeId",
         "materials",
-        "containsFinancialMeans",
-        "sendToCps"
+        "containsFinancialMeans"
       ],
       "additionalProperties": false
     }

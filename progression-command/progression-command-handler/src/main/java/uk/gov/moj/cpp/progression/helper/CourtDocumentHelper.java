@@ -32,8 +32,8 @@ public class CourtDocumentHelper {
         builder.name = copy.getName();
         builder.documentTypeRBAC = copy.getDocumentTypeRBAC();
         builder.seqNum = copy.getSeqNum();
-        builder.sendToCps = copy.getSendToCps();
         //optional fields with defaults
+        builder.sendToCps = defaultToFalse(copy.getSendToCps());
         builder.containsFinancialMeans = defaultToFalse(copy.getContainsFinancialMeans());
         return builder;
     }
