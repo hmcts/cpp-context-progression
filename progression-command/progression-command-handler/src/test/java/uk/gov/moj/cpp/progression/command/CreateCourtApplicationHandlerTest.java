@@ -1,29 +1,5 @@
 package uk.gov.moj.cpp.progression.command;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.*;
-import uk.gov.justice.services.core.aggregate.AggregateService;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.eventsourcing.source.core.EventSource;
-import uk.gov.justice.services.eventsourcing.source.core.EventStream;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.progression.handler.CreateCourtApplicationHandler;
-
-import java.util.UUID;
-import java.util.stream.Stream;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
@@ -40,6 +16,35 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+
+import uk.gov.justice.core.courts.AddCourtApplicationToCase;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
+import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CreateCourtApplication;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.handler.CreateCourtApplicationHandler;
+
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CreateCourtApplicationHandlerTest {

@@ -9,7 +9,9 @@ import static java.util.Objects.nonNull;
 import static uk.gov.justice.core.courts.CourtDocumentShared.courtDocumentShared;
 import static uk.gov.justice.core.courts.CourtDocumentUpdated.courtDocumentUpdated;
 import static uk.gov.justice.core.courts.CourtsDocumentCreated.courtsDocumentCreated;
+import static uk.gov.justice.core.courts.DocumentReviewRequired.documentReviewRequired;
 import static uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived.duplicateShareCourtDocumentRequestReceived;
+import static uk.gov.justice.core.courts.Material.material;
 import static uk.gov.justice.core.courts.SharedCourtDocument.sharedCourtDocument;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
@@ -48,6 +50,9 @@ public class CourtDocumentAggregate implements Aggregate {
 
     private static final long serialVersionUID = 101L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAggregate.class);
+    private static final String YOUTH_OFFENDING_SERVICE_ADMIN = "Youth Offending Service Admin";
+    public static final String PROBATION_ADMIN = "Probation Admin";
+    public static final String DEFENCE_USERS = "Defence Users";
 
     private final List<SharedCourtDocument> sharedCourtDocumentList = new ArrayList<>();
 
@@ -194,6 +199,51 @@ public class CourtDocumentAggregate implements Aggregate {
         return apply(Stream.of(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build()));
     }
 
+    public Stream<Object> addCourtDocument(final CourtDocument courtDocument, final List<String> groups, final boolean actionRequired, final UUID materialId, final String section ) {
+        LOGGER.debug("Court document being added");
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build());
+
+        if (actionRequired &&
+                (groups.contains(YOUTH_OFFENDING_SERVICE_ADMIN)
+                        || groups.contains(PROBATION_ADMIN)
+                        || groups.contains(DEFENCE_USERS))) {
+
+
+                    streamBuilder.add(documentReviewRequired()
+                            .withDocumentId(courtDocument.getCourtDocumentId())
+                            .withDocumentType(section)
+                            .withMaterialId(materialId)
+                            .withSource("OTHER")
+                            .withUrn("")
+                            .withCaseId(getProsecutionCaseId(courtDocument))
+                            .withProsecutingAuthority("")
+                            .withDocumentName(courtDocument.getName())
+                            .withReceivedDateTime(courtDocument.getMaterials().stream().findFirst().orElse(material().build()).getReceivedDateTime())
+                            .withCode(singletonList("uploaded-review-required")
+                            ).build()
+            );
+        }
+
+        return apply(streamBuilder.build());
+    }
+
+    private UUID getProsecutionCaseId(final CourtDocument courtDocument) {
+       if(null != courtDocument.getDocumentCategory()) {
+           final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
+           if(documentCategory.getApplicationDocument() != null ) {
+               return documentCategory.getApplicationDocument().getProsecutionCaseId();
+           } else if (documentCategory.getCaseDocument() != null) {
+               return  documentCategory.getCaseDocument().getProsecutionCaseId();
+
+           } else if (documentCategory.getDefendantDocument() != null) {
+               return documentCategory.getDefendantDocument().getProsecutionCaseId();
+           }
+       }
+       return null;
+    }
+
     public Stream<Object> removeCourtDocument(final UUID courtDocumentId, final UUID materialId, final boolean isRemoved) {
         LOGGER.debug("Court document being removed");
         return apply(Stream.of(CourtsDocumentRemoved.courtsDocumentRemoved().withCourtDocumentId(courtDocumentId).withMaterialId(materialId).withIsRemoved(isRemoved).build()));
@@ -245,7 +295,7 @@ public class CourtDocumentAggregate implements Aggregate {
 
     private List<Material> buildMaterials(final ZonedDateTime receivedDateTime, final DocumentTypeRBAC documentTypeRBAC) {
         final Material commandMaterial = this.courtDocument.getMaterials().stream().findFirst().orElse(null);
-        final Material material = commandMaterial != null ? (Material.material().withId(commandMaterial
+        final Material material = commandMaterial != null ? (material().withId(commandMaterial
                 .getId()).withGenerationStatus(commandMaterial.getGenerationStatus())
                 .withName(commandMaterial.getName())
                 .withUploadDateTime(commandMaterial.getUploadDateTime())

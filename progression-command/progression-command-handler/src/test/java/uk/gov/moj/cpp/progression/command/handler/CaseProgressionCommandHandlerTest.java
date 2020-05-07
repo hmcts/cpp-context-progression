@@ -5,6 +5,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -18,16 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.core.aggregate.AggregateService;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.eventsourcing.source.core.EventSource;
-import uk.gov.justice.services.eventsourcing.source.core.EventStream;
-import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 @Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class CaseProgressionCommandHandlerTest {

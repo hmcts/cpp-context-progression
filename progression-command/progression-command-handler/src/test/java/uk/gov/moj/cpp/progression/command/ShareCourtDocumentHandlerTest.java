@@ -1,23 +1,5 @@
 package uk.gov.moj.cpp.progression.command;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.justice.core.courts.CaseDocument;
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.DocumentCategory;
-import uk.gov.justice.core.courts.ShareCourtDocument;
-import uk.gov.justice.services.core.aggregate.AggregateService;
-import uk.gov.justice.services.eventsourcing.source.core.EventSource;
-import uk.gov.justice.services.eventsourcing.source.core.EventStream;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
-import uk.gov.moj.cpp.progression.handler.ShareCourtDocumentHandler;
-
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -31,7 +13,25 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.is
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
 
+import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.ShareCourtDocument;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+import uk.gov.moj.cpp.progression.handler.ShareCourtDocumentHandler;
+
 import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ShareCourtDocumentHandlerTest {

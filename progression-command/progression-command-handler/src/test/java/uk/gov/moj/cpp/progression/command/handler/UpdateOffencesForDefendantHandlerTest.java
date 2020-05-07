@@ -3,15 +3,15 @@ package uk.gov.moj.cpp.progression.command.handler;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.moj.cpp.progression.command.handler.convertor.OffencesForDefendantConverter;
+import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-import uk.gov.moj.cpp.progression.command.handler.convertor.OffencesForDefendantConverter;
-import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
 
 @Deprecated
 @RunWith(MockitoJUnitRunner.class)

@@ -1,12 +1,15 @@
 package uk.gov.moj.cpp.progression.command;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingType;
@@ -27,28 +30,22 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.handler.RecordLAAReferenceToOffenceHandler;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RecordLAAReferenceToOffenceHandlerTest {

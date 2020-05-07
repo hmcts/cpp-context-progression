@@ -9,5 +9,6 @@ public class EventSelector {
     public static final String PUBLIC_EVENT_COURT_DOCUMENT_UPADTED = "public.progression.events.court-document-updated";
     public static final String PUBLIC_COURT_DOCUMENT_SHARE_FAILED = "public.progression.event.court-document-share-failed";
     public static final String PUBLIC_COURT_DOCUMENT_SHARED = "public.progression.event.court-document-shared";
+    public static final String PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED = "public.progression.document-review-required";
 
 }

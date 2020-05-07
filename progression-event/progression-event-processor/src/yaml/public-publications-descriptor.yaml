@@ -8,6 +8,9 @@ subscriptions_descriptor:
         - name: public.progression.events.court-document-uploaded
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-document-uploaded.json
 
+        - name: public.progression.document-review-required
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.document-review-required.json
+
         - name: public.progression.events.court-document-removed
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-document-removed.json
 

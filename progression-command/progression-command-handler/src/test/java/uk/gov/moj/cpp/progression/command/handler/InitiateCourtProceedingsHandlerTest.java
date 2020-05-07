@@ -18,8 +18,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.InitiateCourtProceedings;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -31,6 +31,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CasesReferredToCourtAggregate;
 import uk.gov.moj.cpp.progression.handler.InitiateCourtProceedingsHandler;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;

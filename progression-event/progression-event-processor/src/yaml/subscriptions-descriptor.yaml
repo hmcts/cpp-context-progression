@@ -147,6 +147,9 @@ subscriptions_descriptor:
         - name: progression.events.defendant-offences-does-not-have-required-modeoftrial
           schema_uri: http://justice.gov.uk/core/courts/defendant-offences-does-not-have-required-modeoftrial.json
 
+        - name: progression.event.document-review-required
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.document-review-required.json
+
         - name: progression.events.defendant-addition-failed
           schema_uri: http://justice.gov.uk/core/courts/defendant-addition-failed.json
 
