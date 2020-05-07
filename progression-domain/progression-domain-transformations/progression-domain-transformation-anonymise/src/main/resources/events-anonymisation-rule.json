@@ -30,7 +30,10 @@
     "bailStatus.code",
     "fundingType",
     "applicationStatus",
-    "applicationSummonsTemplateType"
+    "applicationSummonsTemplateType",
+    "caseURN",
+    "caseUrn",
+    "prosecutionAuthorityReference"
   ],
   "events": [
     {
