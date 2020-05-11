@@ -114,6 +114,12 @@
       "fieldsToBeIgnored": [
         "$.statusCode"
       ]
+    },
+    {
+      "eventName": "progression.event.hearing-resulted",
+      "fieldsToBeIgnored": [
+        "$.hearing.defendantAttendance[*].attendanceDays[*].attendanceType"
+      ]
     }
   ]
 }
