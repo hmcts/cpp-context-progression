@@ -1,10 +1,7 @@
 package uk.gov.justice.api.resource.utils;
 
-import static java.util.Objects.nonNull;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.COURT_EXTRACT;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -27,7 +24,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCounsel;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.Verdict;
-import uk.gov.justice.progression.courts.DefenceOrganisation;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
@@ -52,6 +48,7 @@ import uk.gov.justice.progression.courts.exract.PublishingCourt;
 import uk.gov.justice.progression.courts.exract.Representation;
 import uk.gov.justice.progression.courts.exract.RespondentRepresentation;
 
+import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,10 +59,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.COURT_EXTRACT;
 
 @SuppressWarnings({"squid:S3457","squid:S1612", "squid:S3655", "squid:S2259", "squid:S1188", "squid:S2789", "squid:S1067","squid:MethodCyclomaticComplexity", "pmd:NullAssignment"})
 public class CourtExtractTransformer {
@@ -107,7 +104,8 @@ public class CourtExtractTransformer {
                 .filter(COURT_EXTRACT.equals(extractType) ? h -> selectedHearingIdList.contains(h.getId().toString()) : h -> true)
                 .collect(Collectors.toList());
 
-        extractHearingDetails(hearingsAtAGlance, defendantId, userId, courtExtract, defendantBuilder, hearingsList);
+        extractHearingDetails(hearingsAtAGlance, defendantId, userId, courtExtract, defendantBuilder, hearingsList,caseDefendant.get());
+
 
         if (isNotEmpty(hearingsAtAGlance.getCourtApplications())) {
             courtExtract.withCourtApplications(transformCourtApplications(hearingsAtAGlance.getCourtApplications(), hearingsList));
@@ -153,7 +151,7 @@ public class CourtExtractTransformer {
         LOGGER.info("Hearings {}", isNotEmpty(defendantHearings.getHearingIds())? defendantHearings.getHearingIds() : "No hearings present" );
 
         if(isNotEmpty(hearingsList)) {
-            extractHearingDetails(hearingsAtAGlance, defendantId, userId, ejectExtract, defendantBuilder, hearingsList);
+            extractHearingDetails(hearingsAtAGlance, defendantId, userId, ejectExtract, defendantBuilder, hearingsList, caseDefendant.get());
         } else {
             ejectExtract.withDefendant(transformDefendantWithoutHearingDetails(caseDefendant.get(), defendantBuilder));
         }
@@ -167,10 +165,11 @@ public class CourtExtractTransformer {
     }
 
 
-    private void extractHearingDetails(final GetHearingsAtAGlance hearingsAtAGlance, final String defendantId, final UUID userId, final CourtExtractRequested.Builder courtExtract, final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList) {
+    private void extractHearingDetails(final GetHearingsAtAGlance hearingsAtAGlance, final String defendantId, final UUID userId, final CourtExtractRequested.Builder courtExtract,
+                                       final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Defendant caseDefendant) {
         final Hearings latestHearing = hearingsList.size() > 1 ? transformationHelper.getLatestHearings(hearingsList) : hearingsList.get(0);
 
-        courtExtract.withDefendant(transformDefendants(latestHearing.getDefendants(), defendantId, defendantBuilder, hearingsList));
+        courtExtract.withDefendant(transformDefendants(latestHearing.getDefendants(), defendantId, defendantBuilder, hearingsList, caseDefendant));
 
         courtExtract.withPublishingCourt(transformCourtCentre(latestHearing.getCourtCentre(), userId));
 
@@ -386,7 +385,7 @@ public class CourtExtractTransformer {
                 .build();
     }
 
-    private Defendant transformDefendants(final List<Defendants> defendantsList, final String defendantId, final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList) {
+    private Defendant transformDefendants(final List<Defendants> defendantsList, final String defendantId, final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Defendant caseDefendant) {
         final Optional<Defendants> defendants = defendantsList.stream().filter(d -> d.getId().toString().equals(defendantId)).findFirst();
         if (defendants.isPresent()) {
             final Defendants defendant = defendants.get();
@@ -409,9 +408,15 @@ public class CourtExtractTransformer {
             if (!offences.isEmpty()) {
                 defendantBuilder.withOffences(offences);
             }
-            if (nonNull(defendant.getDefenceOrganisation())) {
-                defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, defendant.getDefenceOrganisation(),defendantId));
+            if (nonNull(caseDefendant.getAssociatedDefenceOrganisation())) {
+                defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, caseDefendant.getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation(), defendantId));
+            } else if (nonNull(caseDefendant.getDefenceOrganisation())) {
+                defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, caseDefendant.getDefenceOrganisation(), defendantId));
+                if (nonNull(defendant.getDefenceOrganisation())) {
+                    defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, defendant.getDefenceOrganisation().getDefenceOrganisation(), defendantId));
+                }
             }
+
         }
 
         return defendantBuilder.build();
@@ -439,11 +444,11 @@ public class CourtExtractTransformer {
         return defendantBuilder.build();
     }
 
-    private List<DefenceOrganisations> transformDefenceOrganisation(final List<Hearings> hearingsList,final DefenceOrganisation defenceOrganisation,final String defendantId) {
+    private List<DefenceOrganisations> transformDefenceOrganisation(final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Organisation organisation, final String defendantId) {
         return Collections.singletonList(
                 DefenceOrganisations.defenceOrganisations()
                         .withDefenceCounsels(isNotEmpty(hearingsList)? transformDefenceCounsels(hearingsList, defendantId) : null)
-                        .withDefenceOrganisation(defenceOrganisation.getDefenceOrganisation())
+                        .withDefenceOrganisation(organisation)
                         .build()
         );
     }

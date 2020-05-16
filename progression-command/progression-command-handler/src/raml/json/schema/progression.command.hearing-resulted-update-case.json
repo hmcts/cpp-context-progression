@@ -5,6 +5,17 @@
   "properties": {
     "prosecutionCase": {
       "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    },
+    "courtApplications": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+      }
     }
-  }
+  },
+  "required": [
+    "prosecutionCase"
+  ],
+  "additionalProperties": false
 }

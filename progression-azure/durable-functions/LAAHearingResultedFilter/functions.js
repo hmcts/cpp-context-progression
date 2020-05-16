@@ -2,17 +2,23 @@ const LAA_APPLICATION_REFERENCE_KEY = 'laaApplnReference';
 
 const laaFilter = function(json, context) {
 
-    if (!json) {
+    if (!json.hearing) {
         return null;
     }
 
-    json.prosecutionCases = json.prosecutionCases.map((value)=> {
+    var defendantsFound = 0;
+
+    json.hearing.prosecutionCases = json.hearing.prosecutionCases.map((value)=> {
 
         value.defendants = value.defendants.filter((value) => {
 
             const offenceCount = value.offences.filter(function(element) {
                 return LAA_APPLICATION_REFERENCE_KEY in element;
             }).length;
+
+            if (offenceCount > 0) {
+                defendantsFound ++;
+            }
 
             return offenceCount > 0;
 
@@ -21,7 +27,7 @@ const laaFilter = function(json, context) {
         return value;
     });
 
-    return json;
+    return defendantsFound > 0 ? json : {};
 
 };
 

@@ -143,7 +143,7 @@ public class DefendantDefenceOrganisationChangedListenerTest {
 
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
                 .withDefendants(getDefendants(defendantId, prosecutionCaseId, associatedDefenceOrganisation))
-                .withCaseStatus(CaseStatusEnum.CLOSED.getDescription())
+                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                 .build();
         final Hearing hearing = Hearing.hearing()
                 .withProsecutionCases(Arrays.asList(prosCase))
@@ -175,7 +175,7 @@ public class DefendantDefenceOrganisationChangedListenerTest {
 
         final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert
                 (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
-        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.CLOSED.getDescription()));
+        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
         assertThat(prosecutionCase.getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
         assertThat(prosecutionCase.getDefendants().get(0).getAssociatedDefenceOrganisation().getApplicationReference(), equalTo("ABC1234"));
 
@@ -184,7 +184,7 @@ public class DefendantDefenceOrganisationChangedListenerTest {
 
         final Hearing resultedHearing = this.jsonObjectToObjectConverter.convert
                 (jsonFromString(hearingEntityArgumentCaptor.getValue().getPayload()), Hearing.class);
-        assertThat(resultedHearing.getProsecutionCases().get(0).getCaseStatus(), equalTo(CaseStatusEnum.CLOSED.getDescription()));
+        assertThat(resultedHearing.getProsecutionCases().get(0).getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
         assertThat(resultedHearing.getProsecutionCases().get(0).getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
         assertThat(resultedHearing.getProsecutionCases().get(0).getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), equalTo("Org1"));
         assertThat(resultedHearing.getProsecutionCases().get(0).getDefendants().get(0).getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));

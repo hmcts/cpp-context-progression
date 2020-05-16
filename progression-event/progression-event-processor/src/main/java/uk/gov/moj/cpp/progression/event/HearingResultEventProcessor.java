@@ -45,11 +45,11 @@ public class HearingResultEventProcessor {
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
         final List<CourtApplication> courtApplications = hearingResulted.getHearing().getCourtApplications();
 
-        if(isNotEmpty(hearingResulted.getHearing().getProsecutionCases())){
+        if (isNotEmpty(hearingResulted.getHearing().getProsecutionCases())) {
             final List<ProsecutionCase> prosecutionCasesList = hearingResulted.getHearing().getProsecutionCases();
 
-            for(final ProsecutionCase prosecutionCase : prosecutionCasesList){
-                progressionService.updateCase(event, prosecutionCase);
+            for (final ProsecutionCase prosecutionCase : prosecutionCasesList) {
+                progressionService.updateCase(event, prosecutionCase, courtApplications);
             }
         }
 
@@ -60,7 +60,7 @@ public class HearingResultEventProcessor {
 
             courtApplications.forEach(courtApplication -> {
                 allApplicationIds.add(courtApplication.getId());
-                if(courtApplication.getApplicationOutcome() != null){
+                if (courtApplication.getApplicationOutcome() != null) {
                     applicationIdsHaveOutcome.add(courtApplication.getId());
                 }
             });

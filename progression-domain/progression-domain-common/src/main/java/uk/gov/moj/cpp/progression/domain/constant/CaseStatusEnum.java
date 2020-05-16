@@ -5,6 +5,8 @@ public enum CaseStatusEnum {
     INCOMPLETE("INCOMPLETE"),
     READY_FOR_REVIEW("READY_FOR_REVIEW"),
     SJP_REFERRAL("SJP_REFERRAL"),
+    INACTIVE("INACTIVE"),
+    ACTIVE("ACTIVE"),
     CLOSED("CLOSED");
 
     private String description;

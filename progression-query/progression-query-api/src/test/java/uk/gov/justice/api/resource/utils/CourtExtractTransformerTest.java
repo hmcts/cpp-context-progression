@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -128,6 +129,7 @@ public class CourtExtractTransformerTest {
     private static final LocalDate OUTCOME_DATE = LocalDate.of(2019, 07, 20);
     private static final LocalDate RESPONSE_DATE = LocalDate.of(2019, 07, 25);
     private ProsecutionCase prosecutionCase;
+    private Defendant defendant;
 
     @Spy
     CourtExtractTransformer courtExtractTransformer;
@@ -145,11 +147,16 @@ public class CourtExtractTransformerTest {
     @Before
     public void init() {
 
-        final Defendant defendant = Defendant.defendant().withId(DEFENDANT_ID)
+        defendant = Defendant.defendant().withId(DEFENDANT_ID)
                 .withPersonDefendant(createPersonDefendant(DEFENDANT_ID))
                 .withAssociatedPersons(Arrays.asList(AssociatedPerson.associatedPerson()
                         .withPerson(createPerson())
                         .build()))
+                .withDefenceOrganisation (Organisation.organisation()
+                    .withName(ORGANISATION_NAME)
+                    .withAddress(createAddress())
+                    .withContact(createContact())
+                    .build())
                 .build();
         final List<Defendant> defendants = new ArrayList<Defendant>() {{
             add(defendant);
@@ -164,6 +171,52 @@ public class CourtExtractTransformerTest {
                         .build())
                 .build();
         setField(this.courtExtractTransformer, "transformationHelper", transformationHelper);
+    }
+
+    @Test
+    public void testTransformToCourtExtract_shouldUseDefendantAssociatedDefenceOrganisation_whenPresent() {
+
+
+        defendant = Defendant.defendant().withId(DEFENDANT_ID)
+                .withPersonDefendant(createPersonDefendant(DEFENDANT_ID))
+                .withAssociatedPersons(Arrays.asList(AssociatedPerson.associatedPerson()
+                        .withPerson(createPerson())
+                        .build()))
+                .withAssociatedDefenceOrganisation (AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .withDefenceOrganisation( uk.gov.justice.core.courts.DefenceOrganisation.defenceOrganisation()
+                                .withOrganisation(Organisation.organisation()
+                                        .withName(ORGANISATION_NAME)
+                                        .withAddress(createAddress())
+                                        .withContact(createContact())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        final String extractType = "CrownCourtExtract";
+        //given
+        final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlance();
+        final List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString(), HEARING_ID_2.toString());
+
+        //when
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        // then
+        assertValues(courtExtractRequested, extractType, HEARING_DATE_2, HEARING_DATE_3);
+        final List<AttendanceDayAndType> attendanceDays = courtExtractRequested.getDefendant().getAttendanceDays();
+        assertThat(attendanceDays.size(), is((2)));
+        attendanceDays.forEach(ad -> anyOf(is(CourtExtractTransformer.PRESENT_BY_POLICE_VIDEO_LINK),
+                is(CourtExtractTransformer.PRESENT_BY_PRISON_VIDEO_LINK),
+                is(CourtExtractTransformer.PRESENT_BY_VIDEO_DEFAULT),
+                is(CourtExtractTransformer.PRESENT_IN_PERSON)));
+        assertThat(courtExtractRequested.getCourtApplications().size(), is((1)));
+        assertThat(courtExtractRequested.getCompanyRepresentatives().size(), is(2));
+        assertThat(courtExtractRequested.getProsecutionCounsels().size(), is(2));
+        assertThat(courtExtractRequested.getDefendant().getDefenceOrganisations().get(0).getDefenceCounsels().size(), is(2));
+        assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().size(), is(2));
+        assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getApplicantRepresentation().getApplicantCounsels().size(), is(2));
+        assertThat(courtExtractRequested.getDefendant().getOffences().size(), is(2));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(1).getResults().size(), is(1));
     }
 
 

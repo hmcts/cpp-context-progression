@@ -97,6 +97,7 @@ public class HearingConfirmedEventProcessor {
             LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
             progressionService.updateCourtApplicationStatus(jsonEnvelope, applicationIds, ApplicationStatus.LISTED);
             progressionService.linkApplicationsToHearing(jsonEnvelope, hearing, applicationIds, HearingListingStatus.HEARING_INITIALISED);
+            progressionService.updateCaseStatus(jsonEnvelope, hearing, applicationIds);
             summonsService.generateSummonsPayload(jsonEnvelope, hearingConfirmed.getConfirmedHearing());
         }
 

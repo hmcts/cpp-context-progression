@@ -30,7 +30,7 @@ describe('hearing resulted cache query', () => {
     
         const response = await httpFunction(context);
     
-        expect(response.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
+        expect(response.hearing.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
     });
 
 
@@ -77,7 +77,7 @@ describe('hearing resulted cache query', () => {
 
         const response = await httpFunction(context);
 
-        expect(response.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
+        expect(response.hearing.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
     });
 
 });

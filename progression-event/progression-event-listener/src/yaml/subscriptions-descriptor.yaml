@@ -98,6 +98,9 @@ subscriptions_descriptor:
         - name : progression.event.defendant-defence-association-locked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
 
+        - name: progression.event.defendant-defence-organisation-saved
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.defendant-defence-organisation-saved.json
+
         - name: progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
 
@@ -106,6 +109,10 @@ subscriptions_descriptor:
 
         - name: progression.event.court-document-updated.json
           schema_uri: http://justice.gov.uk/core/courts/court-document-updated.json
+
+        - name: progression.event.hearing-confirmed-case-status-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-confirmed-case-status-updated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

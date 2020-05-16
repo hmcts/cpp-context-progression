@@ -89,6 +89,12 @@ public class PreAndPostConditionHelper {
                 getLAAReferenceForOffenceJsonBody(statusCode));
     }
 
+    public static Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) throws IOException {
+        return postCommandWithUserId(getWriteUrl(String.format("/laaReference/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
+                "application/vnd.progression.command.record-laareference-for-offence+json",
+                getLAAReferenceForOffenceJsonBodyWithStatus(statusCode, statusDescription), userId);
+    }
+
     public static javax.ws.rs.core.Response receiveRepresentationOrder(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String laaContractNumber, final String userId) throws IOException {
         final RestClient restClient = new RestClient();
         final javax.ws.rs.core.Response response =
@@ -204,12 +210,18 @@ public class PreAndPostConditionHelper {
     private static String getReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
                                                                       final String materialIdTwo, final String courtDocumentId, final String referralId, final String caseUrn) throws IOException {
         return getReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
-                materialIdTwo, courtDocumentId,referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+                materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
     }
 
     private static String getLAAReferenceForOffenceJsonBody(final String statusCode) throws IOException {
         return Resources.toString(Resources.getResource("progression.command-record-laareference.json"), Charset.defaultCharset())
                 .replace("RANDOM_STATUS_CODE", statusCode);
+    }
+
+    private static String getLAAReferenceForOffenceJsonBodyWithStatus(final String statusCode, String statusDescription) throws IOException {
+        return Resources.toString(Resources.getResource("progression.command-record-laareference-with-status-description.json"), Charset.defaultCharset())
+                .replace("RANDOM_STATUS_CODE", statusCode)
+                .replace("RANDOM_STATUS_DESCRIPTION", statusDescription);
     }
 
     private static String getReceiveRepresentationOrderJsonBody(final String statusCode, final String laaContractNumber) throws IOException {
@@ -360,7 +372,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static String getCourtDocumentsByCaseAndDefendant(final String userId, final String caseId, final String defendantId) {
-        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", new String[]{caseId, defendantId}), "application/vnd.progression.query.courtdocuments+json", userId );
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", new String[]{caseId, defendantId}), "application/vnd.progression.query.courtdocuments+json", userId);
     }
 
     public static javax.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId) {
@@ -693,7 +705,6 @@ public class PreAndPostConditionHelper {
                         ));
 
     }
-
 
 
 }

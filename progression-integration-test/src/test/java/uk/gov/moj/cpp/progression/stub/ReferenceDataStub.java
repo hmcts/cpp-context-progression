@@ -314,6 +314,22 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
     }
 
+    public static void stubLegalStatusWithStatusDescription(final String resourceName,  final String statusCode, final String statusDescription) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/legal-statuses";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(legalStatuses.toString().replace("LAA_STATUS_CODE", statusCode).replace("LAA_STATUS_DESC", statusDescription))));
+
+        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
+    }
+
     public static void stubGetOrganisationById(final String resourceName, final String statusCode) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class

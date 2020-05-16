@@ -7,7 +7,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.CLOSED;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
@@ -101,7 +101,7 @@ public class HearingResultedCaseUpdatedIT {
 
         sendEventToMessageQueue();
 
-        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("CLOSED"))};
+        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("INACTIVE"))};
         final Optional<JsonObject> updatedElasticSearchCaseResponseJsonObject = findBy(postMatchers);
 
         assertTrue(updatedElasticSearchCaseResponseJsonObject.isPresent());
@@ -120,14 +120,14 @@ public class HearingResultedCaseUpdatedIT {
         sendMessage(messageProducer, HEARING_RESULTED_EVENT, hearingResultedCaseUpdatedResult, metadata);
 
         verifyInMessagingQueue();
-        verifyMessageReceivedInViewStore(CLOSED.getDescription());
+        verifyMessageReceivedInViewStore(INACTIVE.getDescription());
 
     }
 
     private Matcher[] getDefendantUpdatedMatchers() {
         return new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.caseStatus", equalTo(CLOSED.getDescription())),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo(INACTIVE.getDescription())),
                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(true)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(true))
 

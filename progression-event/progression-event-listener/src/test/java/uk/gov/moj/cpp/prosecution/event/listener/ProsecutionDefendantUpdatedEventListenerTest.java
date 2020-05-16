@@ -4,7 +4,6 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -14,7 +13,6 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
-import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -247,7 +245,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
                 .withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId))
-                .withCaseStatus(CaseStatusEnum.CLOSED.getDescription())
+                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
@@ -269,7 +267,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         assertThat(prosecutionCase.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), equalTo(true));
 
-        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.CLOSED.getDescription()));
+        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
 
 
     }

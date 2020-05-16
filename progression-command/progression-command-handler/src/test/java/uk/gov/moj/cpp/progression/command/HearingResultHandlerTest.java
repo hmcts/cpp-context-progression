@@ -212,7 +212,7 @@ public class HearingResultHandlerTest {
                                         is(true)),
                                 withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
                                         is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.CLOSED.getDescription())))
+                                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())))
 
                         )));
 

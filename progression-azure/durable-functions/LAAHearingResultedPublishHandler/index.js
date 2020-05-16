@@ -24,6 +24,8 @@ module.exports = df.orchestrator(function* (context) {
 
     const filteredJson = yield context.df.callActivity('LAAHearingResultedFilter', unfilteredJson);
 
-    return yield context.df.callActivity('HearingResultedPublisher', filteredJson);
+    const result = yield context.df.callActivity('HearingResultedPublisher', filteredJson);
+
+    return result
 
 });

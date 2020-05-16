@@ -110,7 +110,7 @@ public class UpdateCaseHandlerTest {
                                         allOf(
                                                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", is(true)),
                                                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", is(true)),
-                                                withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.CLOSED.getDescription())),
+                                                withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
 
                                         )

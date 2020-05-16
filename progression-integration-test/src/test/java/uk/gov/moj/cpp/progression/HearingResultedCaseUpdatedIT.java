@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.CLOSED;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -68,7 +68,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static void verifyInMessagingQueueForHearingResultedCaseUpdated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
-        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("CLOSED"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
     }
 
@@ -132,7 +132,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.code", equalTo(bailStatusCode)),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", equalTo(bailStatusDescription)),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", equalTo(bailStatusId)),
-                withJsonPath("$.prosecutionCase.caseStatus", equalTo(CLOSED.getDescription())),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo(INACTIVE.getDescription())),
                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(true)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(true))
         };

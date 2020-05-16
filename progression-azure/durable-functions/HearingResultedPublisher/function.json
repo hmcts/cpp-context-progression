@@ -1,7 +1,7 @@
 {
   "bindings": [
     {
-      "name": "hearingId",
+      "name": "filteredJson",
       "type": "activityTrigger",
       "direction": "in"
     },
@@ -11,6 +11,6 @@
       "path": "subscribers/subscribers.json",
       "connection": "Storage",
       "direction": "in"
-    },
+    }
   ]
 }

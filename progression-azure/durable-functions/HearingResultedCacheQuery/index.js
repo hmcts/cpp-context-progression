@@ -67,6 +67,7 @@ async function getResultFromCache(hearingId) {
 
 async function getHearing(hearingId, cjscppuid, context) {
     var result = await getResultFromCache(hearingId);
+    
     if (result == null) {
 
         context.log(`Hearing ${hearingId} not found in cache`);
@@ -78,9 +79,9 @@ async function getHearing(hearingId, cjscppuid, context) {
             throw `Hearing ${hearingId} not found in cache and no CJSCPPUID supplied`;
         }
 
+    } else {
+        context.log(`Hearing ${hearingId} retrieved from cache`);
     }
-
-    context.log(`Hearing ${hearingId} retrieved from cache`);
 
     return result;
 }
@@ -90,6 +91,8 @@ module.exports = async function (context) {
     const hearingId = context.bindings.params.hearingId;
     const cjscppuid = context.bindings.params.cjscppuid;
     redisClient = context.bindings.params.redisClient;
+
+    context.log(`Getting hearing ${hearingId}`);
 
     return await getHearing(hearingId, cjscppuid, context);
 };

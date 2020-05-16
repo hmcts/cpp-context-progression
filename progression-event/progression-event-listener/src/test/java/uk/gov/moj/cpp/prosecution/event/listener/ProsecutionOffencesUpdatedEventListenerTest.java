@@ -12,8 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.LaaReference;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -33,9 +36,15 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -50,7 +59,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Mock
+    @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Mock
@@ -68,8 +77,6 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     @Mock
     private ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated;
 
-    @Mock
-    private DefendantCaseOffences defendantCaseOffences;
 
     @Mock
     private ProsecutionCaseEntity prosecutionCaseEntity;
@@ -92,20 +99,12 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     @Mock
     private Metadata metadata;
 
-    @Mock
-    private ProsecutionCase prosecutionCase;
-
-    @Mock
-    private Hearing hearing;
 
     @InjectMocks
     private ProsecutionCaseOffencesUpdatedEventListener eventListener;
 
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter;
-
-    @Mock
-    private ObjectMapper objectMapper;
 
     @Spy
     private ListToJsonArrayConverter jsonConverter;
@@ -115,6 +114,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
 
         setField(this.jsonConverter, "mapper",
                 new ObjectMapperProducer().objectMapper());
+        setField(this.objectToJsonObjectConverter,"mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonConverter, "stringToJsonObjectConverter",
                 new StringToJsonObjectConverter());
     }
@@ -123,18 +123,53 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     @Test
     public void shouldHandleProsecutionCaseOffencesUpdatedEvent() throws Exception {
         final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
+        final UUID offenceId  = randomUUID();
+        final DefendantCaseOffences defendantCaseOffences =DefendantCaseOffences.defendantCaseOffences()
+                .withDefendantId(randomUUID())
+                .withProsecutionCaseId(randomUUID())
+                .withLegalAidStatus("Withdrawn")
+                .withOffences(Stream.of(Offence.offence()
+                        .withId(offenceId)
+                        .withLaaApplnReference(LaaReference.laaReference()
+                                .withStatusCode("WD")
+                                .withLaaContractNumber("LAA1234")
+                                .withStatusDate(LocalDate.now())
+                                .build())
+                        .build()).collect(Collectors.toList()))
+                .build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(defendantCaseOffences.getProsecutionCaseId())
+                .withDefendants(Stream.of(Defendant.defendant()
+                        .withLegalAidStatus("Withdrawn")
+                        .withProceedingsConcluded(true)
+                        .withId(defendantCaseOffences.getDefendantId())
+                        .withOffences(Stream.of(Offence.offence()
+                                .withId(offenceId)
+                                .withLaaApplnReference(LaaReference.laaReference()
+                                        .withStatusCode("wd")
+                                        .withLaaContractNumber("LAA1234")
+                                        .withStatusDate(LocalDate.now())
+                                        .build())
+
+                        .build()).collect(Collectors.toList()))
+                        .build()).collect(Collectors.toList()))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withProsecutionCases(Stream.of(prosecutionCase).collect(Collectors.toList()))
+                .withId(randomUUID())
+                .build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseOffencesUpdated.class))
                 .thenReturn(prosecutionCaseOffencesUpdated);
         when(envelope.metadata()).thenReturn(metadata);
-        when(defendantCaseOffences.getDefendantId()).thenReturn(UUID.randomUUID());
-        when(defendantCaseOffences.getProsecutionCaseId()).thenReturn(UUID.randomUUID());
+
+
         when(prosecutionCaseOffencesUpdated.getDefendantCaseOffences()).thenReturn(defendantCaseOffences);
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("payload", Json.createObjectBuilder()
                         .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
                                 .add("id", defendantCaseOffences.getDefendantId().toString())
-                                .add("defendantLevelLegalAidStatus", "Granted")
+                                .add("defendantLevelLegalAidStatus", "Withdrawn")
                                 .add("proceedingConcluded", true)
                                 .build())
                                 .build())
@@ -150,19 +185,15 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class))
                 .thenReturn(prosecutionCase);
+
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(objectToJsonObjectConverter.convert(defendantCaseOffences)).thenReturn(jsonObject);
-        when(objectToJsonObjectConverter.convert(prosecutionCase)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendantCaseOffences.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
         when(caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId()))
                 .thenReturn(Arrays.asList(caseDefendantHearingEntity));
         when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
 
         when(hearingEntity.getPayload()).thenReturn(hearingJsonObject.toString());
-        when(objectToJsonObjectConverter.convert(hearingEntity.getPayload())).thenReturn(hearingJsonObject);
         when(jsonObjectToObjectConverter.convert(hearingJsonObject, Hearing.class)).thenReturn(hearing);
-        when(hearing.getProsecutionCases()).thenReturn(Arrays.asList(prosecutionCase));
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(hearingJsonObject);
 
         eventListener.processProsecutionCaseOffencesUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
@@ -170,8 +201,8 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         assertThat(argumentCaptor.getAllValues(), is(notNullValue()));
         final ProsecutionCaseEntity prosecutionCaseEntity = argumentCaptor.getAllValues().get(0);
         final JsonNode prosecutionCaseNode = mapper.valueToTree(JSONValue.parse(prosecutionCaseEntity.getPayload()));
-        assertThat(prosecutionCaseNode.path("payload").path("defendants").get(0).path("defendantLevelLegalAidStatus").asText(), is("Granted"));
-        assertThat(prosecutionCaseNode.path("payload").path("defendants").get(0).path("proceedingConcluded").asBoolean(), is(true));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("legalAidStatus").asText(), is(""));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("proceedingsConcluded").asBoolean(), is(true));
 
 
     }

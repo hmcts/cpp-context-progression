@@ -8,7 +8,7 @@
     },
     "originatingOrganisation": "G01FT01AB",
     "initiationCode": "J",
-    "caseStatus" : "CLOSED",
+    "caseStatus" : "INACTIVE",
     "defendants": [
       {
         "pncId": "1234567",

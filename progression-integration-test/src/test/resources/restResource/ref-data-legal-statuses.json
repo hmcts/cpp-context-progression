@@ -17,6 +17,15 @@
       "defendantLevelStatus": "Granted",
       "validFrom": "2019-07-15",
       "validTo": "2024-07-15"
+    },
+    {
+      "id": "2daefbc3-2f72-8109-82d9-2e60544a6c04",
+      "seqId": 3,
+      "statusCode": "LAA_STATUS_CODE",
+      "statusDescription": "LAA_STATUS_DESC",
+      "defendantLevelStatus": "Pending",
+      "validFrom": "2019-07-15",
+      "validTo": "2024-07-15"
     }
   ]
 }

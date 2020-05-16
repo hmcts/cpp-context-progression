@@ -1,10 +1,15 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
@@ -28,6 +33,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -56,7 +62,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +69,8 @@ import org.slf4j.LoggerFactory;
 public class ProgressionService {
 
     public static final String CASE_ID = "caseId";
-    public static final String PROSECUTION_CASE = "prosecutionCase";
+    private static final String PROSECUTION_CASE = "prosecutionCase";
+
     public static final String DEFENDANT_ID = "defendantId";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionService.class);
     private static final String APPLICATION_ID = "applicationId";
@@ -87,6 +93,9 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE = "progression.command.hearing-resulted-update-case";
+    private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
+    public static final String CASE_STATUS = "caseStatus";
+    private static final String COURT_APPLICATIONS = "courtApplications";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -102,6 +111,9 @@ public class ProgressionService {
     private JsonObjectToObjectConverter jsonObjectConverter;
 
     @Inject
+    private ListToJsonArrayConverter listToJsonArrayConverter;
+
+    @Inject
     private ReferenceDataService referenceDataService;
 
     @Inject
@@ -114,7 +126,7 @@ public class ProgressionService {
     private static JsonArray transformProsecutionCases(final List<ConfirmedProsecutionCase> prosecutionCases) {
         final JsonArrayBuilder prosecutionCasesArrayBuilder = createArrayBuilder();
 
-        if (CollectionUtils.isNotEmpty(prosecutionCases)) {
+        if (isNotEmpty(prosecutionCases)) {
             for (final ConfirmedProsecutionCase prosecutionCase : prosecutionCases) {
                 final JsonArrayBuilder defendantsArrayBuilder = createArrayBuilder();
                 prosecutionCase.getDefendants().stream()
@@ -177,7 +189,7 @@ public class ProgressionService {
 
     private static Defendant populateDefendant(final Defendant matchedDefendant, final List<Offence>
             matchedDefendantOffence, final LocalDate earliestHearingDate) {
-        Defendant.Builder builder = Defendant.defendant()
+        final Defendant.Builder builder = Defendant.defendant()
                 .withId(matchedDefendant.getId())
                 .withMasterDefendantId(matchedDefendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(matchedDefendant.getCourtProceedingsInitiated())
@@ -257,7 +269,7 @@ public class ProgressionService {
 
     public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
         final List<ProsecutionCase> prosecutionCases = hearingInitiate.getHearing().getProsecutionCases();
-        if (CollectionUtils.isNotEmpty(prosecutionCases)) {
+        if (isNotEmpty(prosecutionCases)) {
             prosecutionCases.stream().forEach(pc -> {
                 final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());
                 if (prosecutionCaseJson.isPresent()) {
@@ -363,7 +375,7 @@ public class ProgressionService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("defendantId {} get defendant request payload {}", defendantId, defendantRequest.toObfuscatedDebugString());
         }
-        return Optional.ofNullable(defendantRequest.payloadAsJsonObject());
+        return ofNullable(defendantRequest.payloadAsJsonObject());
     }
 
     public void updateHearingListingStatusToHearingInitiated(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
@@ -517,10 +529,10 @@ public class ProgressionService {
     }
 
     private List<CourtApplication> getCourtApplications(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope) {
-        List<UUID> courtApplicationIds = confirmedHearing.getCourtApplicationIds();
+        final List<UUID> courtApplicationIds = confirmedHearing.getCourtApplicationIds();
         if (courtApplicationIds != null) {
             final List<CourtApplication> applicationDetails = new ArrayList<>();
-            for (UUID applicationId : courtApplicationIds) {
+            for (final UUID applicationId : courtApplicationIds) {
                 getCourtApplicationById(jsonEnvelope, applicationId.toString()).ifPresent(
                         application -> applicationDetails.add(
                                 jsonObjectConverter.convert(application.getJsonObject("courtApplication"), CourtApplication.class))
@@ -613,7 +625,7 @@ public class ProgressionService {
     }
 
     private List<ProsecutionCase> transformProsecutionCase(final List<ConfirmedProsecutionCase> confirmedProsecutionCases, final JsonEnvelope jsonEnvelope, final LocalDate earliestHearingDate) {
-        if (CollectionUtils.isNotEmpty(confirmedProsecutionCases)) {
+        if (isNotEmpty(confirmedProsecutionCases)) {
             final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
             confirmedProsecutionCases.stream().forEach(pc -> {
                 final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());
@@ -654,13 +666,56 @@ public class ProgressionService {
         );
     }
 
-    public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase) {
+    public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications) {
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        payloadBuilder.add(PROSECUTION_CASE, prosecutionCaseJson);
+        if (isNotEmpty(courtApplications)) {
+            payloadBuilder.add(COURT_APPLICATIONS, listToJsonArrayConverter.convert(courtApplications));
+        }
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
-                .apply(createObjectBuilder()
-                        .add(PROSECUTION_CASE, prosecutionCaseJson)
-                        .build()));
+                .apply(payloadBuilder.build()));
 
     }
 
+    public void updateCaseStatus(final JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> applicationIds) {
+        applicationIds.forEach(applicationId -> {
+            final Optional<CourtApplication> courtApplication = getCourtApplication(hearing, applicationId);
+            if (courtApplication.isPresent()) {
+                final Optional<UUID> aCaseId = ofNullable(courtApplication.get().getLinkedCaseId());
+                if (aCaseId.isPresent()) {
+                    final Optional<ProsecutionCase> aCase = getProsecutionCase(hearing, aCaseId);
+                    aCase.ifPresent(aCase1 -> {
+                        if (INACTIVE.getDescription().equalsIgnoreCase(aCase1.getCaseStatus()) && !FINALISED.equals(courtApplication.get().getApplicationStatus())) {
+                            LOGGER.info("Case id '{}' has been updated with case status of '{}'", aCaseId.get(), ACTIVE.getDescription());
+                            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)
+                                    .apply(createObjectBuilder()
+                                            .add(PROSECUTION_CASE, objectToJsonObjectConverter.convert(aCase1))
+                                            .add(CASE_STATUS, ACTIVE.getDescription())
+                                            .build()));
+                        }
+                    });
+                }
+            }
+
+        });
+
+    }
+
+    private Optional<ProsecutionCase> getProsecutionCase(final Hearing hearing, final Optional<UUID> aCaseId) {
+        if (isNotEmpty(hearing.getProsecutionCases())) {
+            return hearing.getProsecutionCases()
+                    .stream()
+                    .filter(prosecutionCase -> prosecutionCase.getId().equals(aCaseId.get()))
+                    .findFirst();
+        }
+        return Optional.empty();
+    }
+
+    private Optional<CourtApplication> getCourtApplication(final Hearing hearing, final UUID applicationId) {
+        return hearing.getCourtApplications()
+                .stream()
+                .filter(courtApplication -> courtApplication.getId().equals(applicationId))
+                .findFirst();
+    }
 }

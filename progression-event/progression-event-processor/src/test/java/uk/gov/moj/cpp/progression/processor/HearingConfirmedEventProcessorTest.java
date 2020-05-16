@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Matchers.any;
@@ -9,6 +10,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
 import uk.gov.justice.core.courts.ConfirmedDefendant;
@@ -34,7 +37,7 @@ import uk.gov.moj.cpp.progression.service.SummonsService;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -96,7 +99,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID caseId = randomUUID();
 
         ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
-        ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withProsecutionCases(Collections.singletonList(confirmedProsecutionCase)).build();
+        ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withProsecutionCases(singletonList(confirmedProsecutionCase)).build();
         JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
         ProsecutionCase prosecutionCase = createProsecutionCase(offenceId, defendantId, caseId);
 
@@ -107,14 +110,14 @@ public class HearingConfirmedEventProcessorTest {
         doNothing().when(progressionService).prepareSummonsData(anyObject(), anyObject());
         when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(progressionService.transformConfirmedHearing(any(),any())).thenReturn(
+        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(Collections.singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
-                        .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
-                                .withDefendants(Collections.singletonList(Defendant.defendant()
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
                                         .withId(randomUUID())
-                                        .withOffences(Collections.singletonList(Offence.offence()
+                                        .withOffences(singletonList(Offence.offence()
                                                 .withId(randomUUID())
                                                 .build()))
                                         .build()))
@@ -128,27 +131,27 @@ public class HearingConfirmedEventProcessorTest {
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender,times(2)).send(finalEnvelope);
+        verify(sender, times(2)).send(finalEnvelope);
         verify(progressionService, times(1)).prepareSummonsData(any(), any());
     }
 
     @Test
     public void shouldHandleHearingConfirmedWithApplicationsEventMessage() {
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-        		.withCourtApplicationIds(Collections.singletonList(randomUUID()))
+                .withCourtApplicationIds(singletonList(randomUUID()))
                 .build();
 
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         doNothing().when(progressionService).prepareSummonsData(anyObject(), anyObject());
         doNothing().when(summonsService).generateSummonsPayload(anyObject(), anyObject());
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(progressionService.transformConfirmedHearing(any(),any())).thenReturn(Hearing.hearing()
+        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(Hearing.hearing()
                 .withId(randomUUID())
-                .withHearingDays(Collections.singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
-                .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
-                        .withDefendants(Collections.singletonList(Defendant.defendant()
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(singletonList(Defendant.defendant()
                                 .withId(randomUUID())
-                                .withOffences(Collections.singletonList(Offence.offence()
+                                .withOffences(singletonList(Offence.offence()
                                         .withId(randomUUID())
                                         .build()))
                                 .build()))
@@ -166,7 +169,7 @@ public class HearingConfirmedEventProcessorTest {
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender,times(1)).send(finalEnvelope);
+        verify(sender, times(1)).send(finalEnvelope);
         verify(progressionService, times(1)).linkApplicationsToHearing(any(), any(), any(), any());
         verify(progressionService, times(1)).updateCourtApplicationStatus(any(), anyList(), any());
         verify(summonsService, times(1)).generateSummonsPayload(any(), any());
@@ -175,9 +178,10 @@ public class HearingConfirmedEventProcessorTest {
     @Test
     public void shouldHandleHearingConfirmedWithCaseAndApplicationsEventMessage() {
         final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(randomUUID(), randomUUID(), randomUUID());
+        final List<UUID> courtApplicationIds = singletonList(randomUUID());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withCourtApplicationIds(Collections.singletonList(randomUUID()))
-                .withProsecutionCases(Collections.singletonList(confirmedProsecutionCase))
+                .withCourtApplicationIds(courtApplicationIds)
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
                 .build();
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
@@ -188,18 +192,19 @@ public class HearingConfirmedEventProcessorTest {
         doNothing().when(progressionService).prepareSummonsData(anyObject(), anyObject());
         doNothing().when(summonsService).generateSummonsPayload(anyObject(), anyObject());
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(progressionService.transformConfirmedHearing(any(),any())).thenReturn(Hearing.hearing()
+        final Hearing hearing = Hearing.hearing()
                 .withId(randomUUID())
-                .withHearingDays(Collections.singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
-                .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
-                        .withDefendants(Collections.singletonList(Defendant.defendant()
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(singletonList(Defendant.defendant()
                                 .withId(randomUUID())
-                                .withOffences(Collections.singletonList(Offence.offence()
+                                .withOffences(singletonList(Offence.offence()
                                         .withId(randomUUID())
                                         .build()))
                                 .build()))
                         .build()))
-                .build());
+                .build();
+        when(progressionService.transformConfirmedHearing(confirmedHearing, envelope)).thenReturn(hearing);
         doNothing().when(progressionService).updateCourtApplicationStatus(anyObject(), any(UUID.class), anyObject());
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-court-application-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
@@ -211,11 +216,12 @@ public class HearingConfirmedEventProcessorTest {
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender,times(2)).send(finalEnvelope);
-        verify(progressionService, times(1)).linkApplicationsToHearing(any(), any(), any(), any());
-        verify(progressionService, times(1)).updateCourtApplicationStatus(any(), anyList(), any());
-        verify(summonsService, times(1)).generateSummonsPayload(any(), any());
-        verify(progressionService, times(1)).prepareSummonsData(any(), any());
+        verify(sender, times(2)).send(finalEnvelope);
+        verify(progressionService, times(1)).linkApplicationsToHearing(envelope, hearing, courtApplicationIds, HEARING_INITIALISED);
+        verify(progressionService, times(1)).updateCourtApplicationStatus(envelope, courtApplicationIds, LISTED);
+        verify(summonsService, times(1)).generateSummonsPayload(envelope, confirmedHearing);
+        verify(progressionService, times(1)).prepareSummonsData(envelope, confirmedHearing);
+        verify(progressionService, times(1)).updateCaseStatus(envelope, hearing, courtApplicationIds);
     }
 
     @Test
@@ -270,34 +276,34 @@ public class HearingConfirmedEventProcessorTest {
 
     private ConfirmedProsecutionCase createConfirmedProsecutionCase(final UUID prosecutionCaseId, final UUID defendantId, final UUID offenceId) {
         return ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withDefendants(Collections.singletonList(createConfirmedDefendant(defendantId, offenceId)))
+                .withDefendants(singletonList(createConfirmedDefendant(defendantId, offenceId)))
                 .withId(prosecutionCaseId)
                 .build();
     }
 
     private ConfirmedDefendant createConfirmedDefendant(final UUID defendantId, final UUID offenceId) {
         return ConfirmedDefendant.confirmedDefendant()
-                    .withId(defendantId)
-                    .withOffences(Collections.singletonList(createConfirmedOffence(offenceId)))
-                    .build();
+                .withId(defendantId)
+                .withOffences(singletonList(createConfirmedOffence(offenceId)))
+                .build();
     }
 
     private ConfirmedOffence createConfirmedOffence(final UUID offenceId) {
         return ConfirmedOffence.confirmedOffence()
-                    .withId(offenceId)
-                    .build();
+                .withId(offenceId)
+                .build();
     }
 
     private ProsecutionCase createProsecutionCase(final UUID offenceId, final UUID defendantId, final UUID caseId) {
         return ProsecutionCase.prosecutionCase().withId(caseId)
-                .withDefendants(Collections.singletonList(createDefendant(defendantId, offenceId)))
+                .withDefendants(singletonList(createDefendant(defendantId, offenceId)))
                 .build();
     }
 
     private Defendant createDefendant(final UUID defendantId, final UUID offenceId) {
         return Defendant.defendant()
                 .withId(defendantId)
-                .withOffences(Collections.singletonList(createOffence(offenceId)))
+                .withOffences(singletonList(createOffence(offenceId)))
                 .build();
     }
 

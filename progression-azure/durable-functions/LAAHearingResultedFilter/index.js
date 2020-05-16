@@ -14,10 +14,19 @@ module.exports = async function (context) {
 
     var json = context.bindings.unfilteredJson;
 
-    if (!json || !json.prosecutionCases) {
+    if (!json || !json.hearing) {
         throw 'Invalid hearing JSON';
     }
     
-    return laaFilter(json, context);
+    context.log(`Ready to filter JSON`)
+    var result = laaFilter(json, context);
+
+    if (result == null) {
+        throw 'Unable to filter JSON - incorrect JSON structure';
+    }
+
+    context.log(`JSON filtered successfully`)
+
+    return result
 
 };

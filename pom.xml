@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -32,7 +34,8 @@
     </modules>
 
     <properties>
-        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec
+        </sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <file-alfresco.version>2.3.0</file-alfresco.version>
@@ -43,11 +46,11 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <referencedata.version>6.4.15</referencedata.version>
         <listing.version>6.4.19</listing.version>
-        <hearing.version>6.4.35</hearing.version>
+        <hearing.version>6.4.37</hearing.version>
         <usersgroups.version>6.4.11</usersgroups.version>
         <defence.version>6.4.1</defence.version>
         <referencedata.offence.version>6.4.0</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.78</criminal-court-public-model.version>
+        <criminal-court-public-model.version>1.0.79</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>

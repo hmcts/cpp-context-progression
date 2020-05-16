@@ -214,7 +214,7 @@ public class HearingAggregate implements Aggregate {
                         .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
                         .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
                         .withRemovalReason(prosecutionCase.getRemovalReason())
-                        .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.CLOSED.getDescription() : prosecutionCase.getCaseStatus())
+                        .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
                         .build();
                 return updatedProsecutionCase;
             }).collect(toList());

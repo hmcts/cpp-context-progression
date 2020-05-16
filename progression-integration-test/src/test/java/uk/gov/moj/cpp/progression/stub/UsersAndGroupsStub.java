@@ -39,6 +39,8 @@ public class UsersAndGroupsStub {
     public static final String GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-details-by-laaContractNumber+json";
     private static final String GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE =
             "application/vnd.usersgroups.get-logged-in-user-groups+json";
+    private static final String GET_ORGANISATION_DETAILS_FOR_USER_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-details-for-user+json";
+    private static final String GET_ORGANISATION_DETAIL_FOR_USER_QUERY = BASE_QUERY + "/users/{0}/organisation";
 
 
     public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
@@ -73,6 +75,23 @@ public class UsersAndGroupsStub {
                 GET_ORGANISATION_QUERY_MEDIA_TYPE,
                 userId,
                 "stub-data/usersgroups.get-groups-by-user.json");
+    }
+
+    public static void stubGetOrganisationDetailsForUser(final String userId, final String organisationId, final String organisationName) {
+
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
+
+        String body = getPayload("stub-data/usersgroups.get-organisation-details-by-user.json");
+        body = body.replaceAll("%ORGANISATION_ID%", organisationId);
+        body = body.replaceAll("%ORGANISATION_NAME%", organisationName);
+
+        stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_FOR_USER_QUERY, userId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+
+        waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_FOR_USER_QUERY, userId), GET_ORGANISATION_DETAILS_FOR_USER_MEDIA_TYPE);
     }
 
 

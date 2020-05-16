@@ -1,5 +1,10 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
@@ -18,22 +23,21 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseOffencesUpdatedEventListener {
 
+    private static final String EMPTY = "";
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
 
@@ -59,13 +63,13 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
             final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
             updateOffenceForDefendant(defendantCaseOffences, prosecutionCase);
             repository.save(getProsecutionCaseEntity(prosecutionCase));
-            final List<CaseDefendantHearingEntity>  caseDefendantHearingEntities = caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId());
-            caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity ->  {
+            final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId());
+            caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
                 final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
                 final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
                 final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
                 hearing.getProsecutionCases().stream().forEach(hearingProsecutionCase ->
-                    updateOffenceForDefendant(defendantCaseOffences, hearingProsecutionCase)
+                        updateOffenceForDefendant(defendantCaseOffences, hearingProsecutionCase)
                 );
                 hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
                 hearingRepository.save(hearingEntity);
@@ -114,7 +118,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                     .withPncId(defendant.getPncId())
                     .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                     .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                    .withLegalAidStatus(defendantCaseOffences.getLegalAidStatus())
+                    .withLegalAidStatus(getLegalAidStatus(defendantCaseOffences.getLegalAidStatus()))
                     .withProceedingsConcluded(defendant.getProceedingsConcluded())
                     .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
                     .withAssociationLockedByRepOrder(defendant.getAssociationLockedByRepOrder())
@@ -122,6 +126,12 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
             prosecutionCase.getDefendants().remove(defendant);
             prosecutionCase.getDefendants().add(updatedDefendant);
         }
+    }
+
+    private String getLegalAidStatus(final String offenceLegalAidStatus) {
+        return offenceLegalAidStatus.equals(WITHDRAWN.getDescription()) || offenceLegalAidStatus.equals(PENDING.getDescription())
+                ? EMPTY
+                : offenceLegalAidStatus;
     }
 
     private static List<Offence> getDeletedOffences(
@@ -171,7 +181,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withModeOfTrial(persistedOffence.getModeOfTrial())
                 .withCount(updatedOffence.getCount())
                 .withLaaApplnReference(nonNull(updatedOffence.getLaaApplnReference())
-                        ? updatedOffence.getLaaApplnReference(): persistedOffence.getLaaApplnReference())
+                        ? updatedOffence.getLaaApplnReference() : persistedOffence.getLaaApplnReference())
                 .withProceedingsConcluded(persistedOffence.getProceedingsConcluded())
                 .withIntroducedAfterInitialProceedings(persistedOffence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(persistedOffence.getIsDiscontinued())

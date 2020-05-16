@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
-
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -19,7 +17,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +44,7 @@ public class UpdateCaseHandler {
         final EventStream eventStream = eventSource.getStreamById(hearingUpdate.getProsecutionCase().getId());
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase());
+        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase(), hearingUpdate.getCourtApplications());
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
     }

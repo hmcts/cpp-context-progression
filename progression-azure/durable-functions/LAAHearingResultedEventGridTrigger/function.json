@@ -9,6 +9,6 @@
       "name": "orchestrationClient",
       "type": "orchestrationClient",
       "direction": "in"
-  }
+    }
   ]
 }

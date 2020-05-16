@@ -127,7 +127,7 @@ public class HearingResultEventListenerTest {
                                 .build())
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
                                 .withId(prosecutionCaseId)
-                                .withCaseStatus(CaseStatusEnum.CLOSED.getDescription())
+                                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                                 .withDefendants(defendants)
                                 .build()))
                         .build())
@@ -214,7 +214,7 @@ public class HearingResultEventListenerTest {
         final Hearing savedHearing2 = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity2.getPayload()), Hearing.class);
 
         assertThat(savedHearing2, notNullValue());
-        assertThat(savedHearing2.getProsecutionCases().get(0).getCaseStatus(), is(CaseStatusEnum.CLOSED.getDescription()));
+        assertThat(savedHearing2.getProsecutionCases().get(0).getCaseStatus(), is(CaseStatusEnum.INACTIVE.getDescription()));
         assertThat(savedHearing2.getProsecutionCases().get(0).getDefendants().get(0).getProceedingsConcluded(), is(true));
         assertThat(savedHearingEntity2.getListingStatus(), equalTo(HearingListingStatus.SENT_FOR_LISTING));
 
