@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -71,6 +72,7 @@ public class HearingQueryViewTest {
         HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
         hearingEntity.setPayload("{}");
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);

@@ -1,20 +1,24 @@
 package uk.gov.moj.cpp.progression.event;
 
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import org.junit.Ignore;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -23,7 +27,10 @@ import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDefendantRequestAdjourned;
+import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -33,12 +40,14 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +61,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -102,6 +114,12 @@ public class HearingResultEventProcessorTest {
     @Mock
     private ProgressionService progressionService;
 
+    @Mock
+    private NextHearingService nextHearingService;
+
+    @Mock
+    private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
+
 
     @Before
     public void initMocks() {
@@ -111,16 +129,16 @@ public class HearingResultEventProcessorTest {
     @Test
     public void handleHearingResultWithoutApplicationOutcome() {
 
-        final UUID courtApplicationId = UUID.randomUUID();
+        final UUID courtApplicationId = randomUUID();
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
                                 .withId(courtApplicationId)
                                 .build()))
                         .withDefendantAttendance(
                                 Arrays.asList(DefendantAttendance.defendantAttendance()
-                                        .withDefendantId(UUID.randomUUID())
+                                        .withDefendantId(randomUUID())
                                         .withAttendanceDays(Arrays.asList(
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
@@ -133,6 +151,9 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
+
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -153,10 +174,10 @@ public class HearingResultEventProcessorTest {
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withDefendantAttendance(
                                 Arrays.asList(DefendantAttendance.defendantAttendance()
-                                        .withDefendantId(UUID.randomUUID())
+                                        .withDefendantId(randomUUID())
                                         .withAttendanceDays(Arrays.asList(
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
@@ -169,6 +190,9 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
+
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -185,7 +209,7 @@ public class HearingResultEventProcessorTest {
     @Test
     public void handleHearingResultWithApplicationOutCome() {
 
-        final UUID courtApplicationId = UUID.randomUUID();
+        final UUID courtApplicationId = randomUUID();
 
         final CourtApplicationOutcome courtApplicationOutcome = CourtApplicationOutcome.courtApplicationOutcome()
                 .withApplicationId(courtApplicationId)
@@ -193,10 +217,10 @@ public class HearingResultEventProcessorTest {
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withDefendantAttendance(
                                 Arrays.asList(DefendantAttendance.defendantAttendance()
-                                        .withDefendantId(UUID.randomUUID())
+                                        .withDefendantId(randomUUID())
                                         .withAttendanceDays(Arrays.asList(
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
@@ -213,6 +237,9 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
+
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -232,16 +259,16 @@ public class HearingResultEventProcessorTest {
     @Test
     public void handleResultWhenProsecutionCaseIsPresentOnHearing() throws Exception {
 
-        final UUID courtApplicationId = UUID.randomUUID();
+        final UUID courtApplicationId = randomUUID();
 
         final CourtApplicationOutcome courtApplicationOutcome = CourtApplicationOutcome.courtApplicationOutcome()
                 .withApplicationId(courtApplicationId)
                 .build();
 
-        final UUID commonUUID = UUID.randomUUID();
+        final UUID commonUUID = randomUUID();
         final Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
         final Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
-        final Defendant defendant3 = Defendant.defendant().withId(UUID.randomUUID()).build();
+        final Defendant defendant3 = Defendant.defendant().withId(randomUUID()).build();
 
         final List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
@@ -259,10 +286,10 @@ public class HearingResultEventProcessorTest {
                 .build());
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withDefendantAttendance(
                                 Arrays.asList(DefendantAttendance.defendantAttendance()
-                                        .withDefendantId(UUID.randomUUID())
+                                        .withDefendantId(randomUUID())
                                         .withAttendanceDays(Arrays.asList(
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
@@ -278,20 +305,27 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
 
+        List<HearingListingNeeds> hearingListingNeedsList = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                .withId(randomUUID())
+                .build());
+        final NextHearingDetails nextHearingDetails = new NextHearingDetails(null, hearingListingNeedsList, null);
+        List<HearingListingNeeds> hearingListingNeedsForNextHearings = new ArrayList<>();
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
+        when(nextHearingService.getNextHearingDetails(any())).thenReturn(nextHearingDetails);
+        when(hearingToHearingListingNeedsTransformer.transform(any())).thenReturn(hearingListingNeedsForNextHearings);
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
-        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplictionsArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(3));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(commonUUID));
-
-
     }
 
     @Test
     public void handleResultWithEmptyProsecutionCaseOnHearing() throws Exception {
 
-        final UUID courtApplicationId = UUID.randomUUID();
+        final UUID courtApplicationId = randomUUID();
 
         final CourtApplicationOutcome courtApplicationOutcome = CourtApplicationOutcome.courtApplicationOutcome()
                 .withApplicationId(courtApplicationId)
@@ -303,10 +337,10 @@ public class HearingResultEventProcessorTest {
                 .build());
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withDefendantAttendance(
                                 Arrays.asList(DefendantAttendance.defendantAttendance()
-                                        .withDefendantId(UUID.randomUUID())
+                                        .withDefendantId(randomUUID())
                                         .withAttendanceDays(Arrays.asList(
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
                                                 AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
@@ -321,8 +355,38 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
 
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
+
         this.eventProcessor.handleHearingResultedPublicEvent(event);
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, never()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplictionsArgumentCaptor.capture());
+    }
+
+    @Test
+    public void handleHearingDefendantRequestAdjournedEvent() {
+        final HearingDefendantRequestAdjourned hearingDefendantRequestAdjourned = HearingDefendantRequestAdjourned.hearingDefendantRequestAdjourned()
+                .withCurrentHearingId(randomUUID())
+                .withDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(randomUUID())
+                        .withDefendantId(randomUUID())
+                        .build()))
+                .build();
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.hearing-defendant-request-adjourned"),
+                objectToJsonObjectConverter.convert(hearingDefendantRequestAdjourned));
+        this.eventProcessor.handleHearingDefendantRequestAdjournedEvent(event);
+        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
+    }
+
+    private Optional<JsonObject> getHearingJson() {
+        Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withHasSharedResults(false)
+                .build();
+        final JsonObject hearingJson = Json.createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .build();
+        return Optional.of(hearingJson);
     }
 }

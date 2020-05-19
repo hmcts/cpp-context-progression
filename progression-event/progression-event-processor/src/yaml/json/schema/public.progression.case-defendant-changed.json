@@ -23,6 +23,10 @@
                "description": "The prosecution case technical identifier",
                "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
             },
+            "masterDefendantId": {
+               "description": "Master defendant id",
+               "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            },
             "numberOfPreviousConvictionsCited": {
                "description": "The number of previous convictions cited by the case prosecuting authority",
                "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"

@@ -111,7 +111,6 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
-
     public static List<Matcher> getCourtDocumentMatchers(final String caseId, final String courtDocumentId, final String materialIdActive, final int position) {
         return newArrayList(
                 withJsonPath("$.courtDocuments[" + position + "].courtDocumentId", is(courtDocumentId)),

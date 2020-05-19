@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 281032067089771391L;
+    private static final long serialVersionUID = 2414350353892037603L;
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
     private CourtApplication courtApplication;
     private UUID boxHearingId;
@@ -109,6 +109,7 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(
                 HearingExtended.hearingExtended()
                         .withHearingRequest(hearingListingNeeds)
+                        .withIsAdjourned(Boolean.FALSE)
                         .build()));
     }
 

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -24,6 +25,9 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -36,9 +40,12 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.handler.AddDefendantsToCourtProceedingsHandler;
+import uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -61,6 +68,9 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
     @Mock
     private AggregateService aggregateService;
+
+    @Mock
+    private MatchedDefendantLoadService matchedDefendantLoadService;
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantsAddedToCourtProceedings.class);
@@ -127,6 +137,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
         final Envelope<AddDefendantsToCourtProceedings> envelope = envelopeFrom(metadata, addDefendantsToCourtProceedings);
 
+        aggregate.apply(new ProsecutionCaseCreated(getProsecutionCase(), null));
         addDefendantsToCourtProceedingsHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -143,5 +154,17 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
                 )
         ));
+
+        verify(matchedDefendantLoadService).aggregateDefendantsSearchResultForAProsecutionCase(any(),any());
+    }
+
+    private ProsecutionCase getProsecutionCase() {
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant().build());
+        return ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .build())
+                .withDefendants(defendants)
+                .build();
     }
 }

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/public.progression.link-cases-response.json",
+  "type": "object",
+  "properties": {
+    "linkResponseResults": {
+      "type": "string",
+      "enum": [
+        "REFERENCE_ALREADY_LINKED",
+        "REFERENCE_NOT_FOUND",
+        "REFERENCE_NOT_VALID",
+        "SUCCESS"
+      ]
+    }
+  },
+  "required": [
+    "linkResponseResults"
+  ],
+  "additionalProperties": false
+}

@@ -26,6 +26,8 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganis
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisationUnitsData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.mockMaterialUpload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
@@ -114,6 +116,8 @@ public class AbstractIT {
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL), "stub-data/hearing.get-hearing-of-type-trial.json");
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL_OF_ISSUE),"stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_NON_TRIAL),"stub-data/hearing.get-hearing-of-type-non-trial.json");
+        stubUnifiedSearchQueryExactMatchWithEmptyResults();
+        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
     }
 
 }

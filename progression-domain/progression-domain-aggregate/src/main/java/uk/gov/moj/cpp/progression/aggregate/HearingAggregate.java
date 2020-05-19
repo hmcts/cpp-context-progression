@@ -1,17 +1,16 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.empty;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.BoxWorkTaskStatus;
+import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
+import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDefendantRequestAdjourned;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -36,9 +35,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.empty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
 
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
@@ -69,11 +72,17 @@ public class HearingAggregate implements Aggregate {
                         listDefendantRequests.addAll(e.getDefendantRequests());
                     }
                 }),
+                when(ExtendHearingDefendantRequestUpdated.class).apply(e -> {
+                    if (isNotEmpty(listDefendantRequests)) {
+                        listDefendantRequests.clear();
+                        listDefendantRequests.addAll(e.getDefendantRequests());
+                    }
+                }),
                 otherwiseDoNothing());
     }
 
     public Stream<Object> createSummonsData(final CourtCentre courtCentre, final ZonedDateTime hearingDateTime, final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds) {
-        if (!listDefendantRequests.isEmpty()) {
+        if (isNotEmpty(listDefendantRequests)) {
             return apply(Stream.of(SummonsDataPrepared.summonsDataPrepared()
                     .withSummonsData(
                             SummonsData.summonsData()
@@ -110,7 +119,7 @@ public class HearingAggregate implements Aggregate {
                     .withCourtCentre(hearing.getCourtCentre())
                     .withDefenceCounsels(hearing.getDefenceCounsels())
                     .withDefendantAttendance(hearing.getDefendantAttendance())
-                    .withDefendantReferralReasons(CollectionUtils.isNotEmpty(referralReasons) ? referralReasons : null)
+                    .withDefendantReferralReasons(isNotEmpty(referralReasons) ? referralReasons : null)
                     .withHasSharedResults(hearing.getHasSharedResults())
                     .withHearingCaseNotes(hearing.getHearingCaseNotes())
                     .withHearingDays(hearing.getHearingDays())
@@ -192,7 +201,16 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(HearingDefendantRequestCreated.hearingDefendantRequestCreated().withDefendantRequests(listDefendantRequests).build()));
     }
 
-    public Stream<Object> saveHearingResult(Hearing hearing, ZonedDateTime sharedTime) {
+    public Stream<Object> adjournHearingDefendantRequest(final UUID currentHearingId, final UUID adjournHearingId) {
+        LOGGER.debug("Adjourn Hearing Defendant Request is being created.");
+        return apply(Stream.of(HearingDefendantRequestAdjourned.hearingDefendantRequestAdjourned()
+                .withCurrentHearingId(currentHearingId)
+                .withAdjournedHearingId(adjournHearingId)
+                .withDefendantRequests(this.listDefendantRequests)
+                .build()));
+    }
+
+    public Stream<Object> saveHearingResult(final Hearing hearing, final ZonedDateTime sharedTime) {
         LOGGER.debug("Hearing Resulted.");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final Hearing.Builder updatedHearingBuilder = Hearing.hearing();
@@ -270,5 +288,19 @@ public class HearingAggregate implements Aggregate {
                     hearingListingStatus);
         }
         return null;
+    }
+
+    public Stream<Object> updateListDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, ConfirmedHearing confirmedHearing) {
+        return apply(Stream.of(ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated()
+                .withDefendantRequests(listDefendantRequests)
+                .withConfirmedHearing(confirmedHearing)
+                .build()));
+    }
+
+    public Stream<Object> createListDefendantRequest(final ConfirmedHearing confirmedHearing) {
+        return apply(Stream.of(ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated()
+                .withDefendantRequests(listDefendantRequests)
+                .withConfirmedHearing(confirmedHearing)
+                .build()));
     }
 }

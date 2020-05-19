@@ -12,6 +12,8 @@
     "defendants": [
       {
         "id": "e1d32d9d-29ec-4934-a932-22a50f223966",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
         "numberOfPreviousConvictionsCited": 5,
         "prosecutionAuthorityReference": "TFL12345-ABC",
@@ -119,7 +121,11 @@
               "fax": "3425678"
             }
           },
-          "bailStatus": "IN_CUSTODY",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "custodyTimeLimit": "2018-01-01",
           "perceivedBirthYear": 2015,
           "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
@@ -155,6 +161,8 @@
       },
       {
         "id": "e1d32d9d-29ec-4934-a932-22a50f223977",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
         "numberOfPreviousConvictionsCited": 5,
         "prosecutionAuthorityReference": "TFL12345-ABC",
@@ -289,7 +297,11 @@
               "fax": "3425678"
             }
           },
-          "bailStatus": "IN_CUSTODY",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "custodyTimeLimit": "2018-01-01",
           "perceivedBirthYear": 2015,
           "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",

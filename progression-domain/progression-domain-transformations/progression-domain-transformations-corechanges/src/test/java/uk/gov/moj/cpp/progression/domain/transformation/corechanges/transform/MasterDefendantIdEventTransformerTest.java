@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.
 import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_PROSECUTION_CASE_CREATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_PROSECUTION_CASE_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_REFERRED_TO_COURT;
+import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_SENDING_SHEET_COMPLETED;
 
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 
@@ -56,6 +57,7 @@ public class MasterDefendantIdEventTransformerTest {
                 {"progression.event.court-application-created.json", PROGRESSION_COURT_APPLICATION_CREATED},
                 {"progression.event.court-application-added-to-case.json", PROGRESSION_COURT_APPLICATION_ADDED_TO_CASE},
                 {"progression.event.court-application-updated.json", PROGRESSION_COURT_APPLICATION_UPDATED},
+                {"progression.events.sending-sheet-completed.json", PROGRESSION_SENDING_SHEET_COMPLETED},
                 {"progression.hearing-initiate-enriched.json", PROGRESSION_HEARING_INITIATE_ENRICHED},
                 {"progression.event.hearing-application-link-created.json", PROGRESSION_HEARING_APPLICATION_LINK_CREATED},
                 {"progression.event.hearing-extended.json", PROGRESSION_HEARING_EXTENDED},

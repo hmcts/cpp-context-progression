@@ -1,0 +1,18 @@
+{
+  "prosecutionCaseId": "2e2f843e-d639-40b3-8611-8015f3a18941",
+  "defendantId": "6a1f123b-e453-10b3-5633-9876f3a23451",
+  "matchedDefendants": [
+    {
+      "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "prosecutionCaseId": "1e2f843e-d639-40b3-8611-8015f3a18952",
+      "masterDefendantId": "ba3ae264-1812-4066-aaa3-17164edbcf30",
+      "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z"
+    },
+    {
+      "defendantId": "0baecac5-222b-402d-9047-84803679edae",
+      "prosecutionCaseId": "642826a3-5ab3-40c9-b369-7b330f47c1a7",
+      "masterDefendantId": "daea9def-3949-4062-8827-b2464cf841a2",
+      "courtProceedingsInitiated": "2020-02-12T05:27:17.210Z"
+    }
+  ]
+}

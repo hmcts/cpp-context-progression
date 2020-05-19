@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectC
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
@@ -52,6 +53,8 @@ public class CourtExtractIT extends AbstractIT {
     private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON = "progression.command.create-court-application-with-defendant.json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -65,6 +68,7 @@ public class CourtExtractIT extends AbstractIT {
     @AfterClass
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
     public static void verifyInMessagingQueueForCasesReferredToCourts() {
@@ -180,6 +184,8 @@ public class CourtExtractIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
                 .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
@@ -200,8 +206,9 @@ public class CourtExtractIT extends AbstractIT {
                         .build());
 
 
-        final Matcher[] personDefendantOffenceUpdatedMatchers = {
+        Matcher[] personDefendantOffenceUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)),
+
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
@@ -219,7 +226,13 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-    private void doAddCourtApplicationAndVerify(final boolean withDefendant) throws Exception {
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(){
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
+        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
+    }
+
+    private void doAddCourtApplicationAndVerify(boolean withDefendant) throws Exception {
         // Creating first application for the case
         if (withDefendant) {
             addCourtApplicationWithDefendant(caseId, courtApplicationId, defendantId, PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON);

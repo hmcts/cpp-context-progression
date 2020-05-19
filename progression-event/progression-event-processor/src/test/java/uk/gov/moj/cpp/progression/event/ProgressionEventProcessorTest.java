@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.event;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Optional.of;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -24,8 +25,11 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
+import org.hamcrest.core.Is;
+import org.mockito.Captor;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
@@ -33,6 +37,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.CrownCourtHearing;
@@ -108,6 +113,9 @@ public class ProgressionEventProcessorTest {
 
     @InjectMocks
     private ProgressionEventProcessor progressionEventProcessor;
+
+    @Captor
+    private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
     private static JsonObject getOffence(final String modeoftrial) {
         return Json.createObjectBuilder().add("legislation", "legislation")
@@ -298,16 +306,21 @@ public class ProgressionEventProcessorTest {
         final JsonEnvelope event = createEnvelope(
                 "progression.event.prosecution-case-created",
                 createObjectBuilder().add("caseId", CASE_ID).build());
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class)).thenReturn(ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                        .withId(fromString(CASE_ID))
+                        .build())
+                .build());
         // when
         progressionEventProcessor.publishProsecutionCaseCreatedEvent(event);
         // then
-        final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor =
-                forClass(JsonEnvelope.class);
-        verify(sender).send(envelopeArgumentCaptor.capture());
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(
-                        "public.progression.prosecution-case-created"),
-                payloadIsJson(withJsonPath(format("$.%s", "caseId"), equalTo(CASE_ID)))));
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), Is.is("public.progression.prosecution-case-created"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("caseId"), Is.is(CASE_ID));
+
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), Is.is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload().getString("prosecutionCaseId"), Is.is(CASE_ID));
     }
 
 

@@ -45,7 +45,7 @@ module.exports = async function (context, req) {
         hearingId: hearingId,
         hearingDate: hearingDate,
         cjscppuid: req.headers.cjscppuid
-    }
+    };
 
     context.log(`Obtained orchestration client. starting LAAGetHearingEventLogOrchestrator`);
 

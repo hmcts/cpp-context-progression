@@ -1,41 +1,116 @@
 package uk.gov.justice.services;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAlias;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.services.unifiedsearch.client.domain.Alias;
 import uk.gov.justice.services.unifiedsearch.client.domain.LaaReference;
 import uk.gov.justice.services.unifiedsearch.client.domain.Offence;
 import uk.gov.justice.services.unifiedsearch.client.domain.Party;
+import uk.gov.justice.services.unifiedsearch.client.domain.RepresentationOrder;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class DomainToIndexMapper {
     private static final String SPACE = " ";
+
+    public Party party(final DefendantUpdate defendant) {
+        final Party party = new Party();
+        party.setPartyId(defendant.getId().toString());
+        party.setPncId(defendant.getPncId());
+        party.set_party_type("DEFENDANT");
+        party.setCroNumber(defendant.getCroNumber());
+        final UUID masterDefendantId = defendant.getMasterDefendantId();
+        if (null != masterDefendantId) {
+            party.setMasterPartyId(masterDefendantId.toString());
+        }
+        final Boolean proceedingsConcluded = defendant.getProceedingsConcluded();
+        if (null != proceedingsConcluded) {
+            party.setProceedingsConcluded(proceedingsConcluded);
+        }
+
+        legalDefendant(defendant.getLegalEntityDefendant(), party);
+        personDefendant(defendant, party);
+        alias(defendant.getAliases(), party);
+        offences(defendant.getOffences(), party);
+        final RepresentationOrder representationOrder = new RepresentationOrder();
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = defendant.getAssociatedDefenceOrganisation();
+        if (associatedDefenceOrganisation != null) {
+            representationOrder.setApplicationReference(associatedDefenceOrganisation.getApplicationReference());
+            representationOrder.setEffectiveFromDate(associatedDefenceOrganisation.getAssociationStartDate() != null ? associatedDefenceOrganisation.getAssociationStartDate().toString() : null);
+            representationOrder.setEffectiveToDate(associatedDefenceOrganisation.getAssociationEndDate() != null ? associatedDefenceOrganisation.getAssociationEndDate().toString() : null);
+            representationOrder.setLaaContractNumber(associatedDefenceOrganisation.getDefenceOrganisation() != null ? associatedDefenceOrganisation.getDefenceOrganisation().getLaaContractNumber() : null);
+        }
+
+        party.setRepresentationOrder(representationOrder);
+        return party;
+    }
 
     public Party party(final Defendant defendant) {
         final Party party = new Party();
         party.setPartyId(defendant.getId().toString());
         party.setPncId(defendant.getPncId());
         party.set_party_type("DEFENDANT");
-
-        legalDefendant(defendant, party);
+        party.setCroNumber(defendant.getCroNumber());
+        if (defendant.getProceedingsConcluded() != null) {
+            party.setProceedingsConcluded(defendant.getProceedingsConcluded());
+        }
+        final ZonedDateTime courtProceedingsInitiated = defendant.getCourtProceedingsInitiated();
+        if (null != courtProceedingsInitiated) {
+            party.setCourtProceedingsInitiated(courtProceedingsInitiated.format(DateTimeFormatter.ISO_INSTANT));
+        }
+        final UUID masterDefendantId = defendant.getMasterDefendantId();
+        if (null != masterDefendantId) {
+            party.setMasterPartyId(masterDefendantId.toString());
+        }
+        legalDefendant(defendant.getLegalEntityDefendant(), party);
         personDefendant(defendant, party);
-        alias(defendant, party);
-        offences(defendant, party);
+        alias(defendant.getAliases(), party);
+        offences(defendant.getOffences(), party);
         return party;
     }
 
-    private Party alias(final Defendant defendant, final Party party) {
-        final List<DefendantAlias> defendantAliases = defendant.getAliases();
+    public Party person(final Person personDetails) {
+        final Party party = new Party();
+        if (personDetails != null) {
+            party.setFirstName(personDetails.getFirstName());
+            party.setMiddleName(personDetails.getMiddleName());
+            party.setLastName(personDetails.getLastName());
+            party.setAddressLines(addressLines(personDetails.getAddress()));
+            party.setDefendantAddress(defendantAddress(personDetails.getAddress()));
+            setAddressPostCodeOfParty(party, personDetails);
+            party.setNationalInsuranceNumber(personDetails.getNationalInsuranceNumber());
+            setDateOfBirthOfParty(party, personDetails);
+            setGenderOfParty(party, personDetails);
+            setTitleOfParty(party, personDetails);
+        }
+        return party;
+    }
+
+    public Party organisation(final Organisation organisation) {
+        final Party party = new Party();
+        party.setOrganisationName(organisation.getName());
+        party.setAddressLines(addressLines(organisation.getAddress()));
+        party.setDefendantAddress(defendantAddress(organisation.getAddress()));
+        party.setPostCode(organisation.getAddress().getPostcode());
+        return party;
+    }
+
+    private Party alias(final List<DefendantAlias> defendantAliases, final Party party) {
         final Set<Alias> aliasSet = new HashSet();
         if (defendantAliases != null) {
             for (final DefendantAlias defendantAlias : defendantAliases) {
@@ -55,8 +130,7 @@ public class DomainToIndexMapper {
         return party;
     }
 
-    private Party legalDefendant(final Defendant defendant, final Party party) {
-        final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
+    private Party legalDefendant(final LegalEntityDefendant legalEntityDefendant, final Party party) {
         if (legalEntityDefendant != null) {
             party.setOrganisationName(legalEntityDefendant.getOrganisation().getName());
         }
@@ -65,13 +139,19 @@ public class DomainToIndexMapper {
 
     private Party personDefendant(final Defendant defendant, final Party party) {
         final PersonDefendant personDefendant = defendant.getPersonDefendant();
-        personDefendant(defendant, party, personDefendant);
+
+        personDefendant(party, personDefendant);
+        return party;
+    }
+
+    private Party personDefendant(final DefendantUpdate defendant, final Party party) {
+        final PersonDefendant personDefendant = defendant.getPersonDefendant();
+        personDefendant(party, personDefendant);
         return party;
     }
 
 
-    private Party offences(final Defendant defendant, final Party party) {
-        final List<uk.gov.justice.core.courts.Offence> offences = defendant.getOffences();
+    private Party offences(final List<uk.gov.justice.core.courts.Offence> offences, final Party party) {
 
         final List<Offence> indexOffences = new ArrayList<>();
         if (offences != null) {
@@ -87,6 +167,7 @@ public class DomainToIndexMapper {
                 offence1.setOffenceTitle(offence.getOffenceTitle());
 
                 indexOffences.add(offence1);
+
             }
         }
         party.setOffences(indexOffences);
@@ -121,7 +202,7 @@ public class DomainToIndexMapper {
         return laaReference;
     }
 
-    private void mapNullableAttributes(final uk.gov.justice.core.courts.Offence offence,final Offence offence1) {
+    private void mapNullableAttributes(final uk.gov.justice.core.courts.Offence offence, final Offence offence1) {
         if (offence.getArrestDate() != null) {
             offence1.setArrestDate(offence.getArrestDate().toString());
         }
@@ -148,7 +229,7 @@ public class DomainToIndexMapper {
         }
     }
 
-    private String addressLines(final Address address) {
+    public static String addressLines(final Address address) {
         if (address != null) {
             final String addressLineOne = address.getAddress1();
             final String addressLineTwo = address.getAddress2();
@@ -168,21 +249,36 @@ public class DomainToIndexMapper {
         return SPACE;
     }
 
-    private void personDefendant(final Defendant defendant,
-                                 final Party party, final PersonDefendant personDefendant) {
+    private void personDefendant(final Party party, final PersonDefendant personDefendant) {
         if (personDefendant != null) {
+            final Person personDetails = personDefendant.getPersonDetails();
             party.setArrestSummonsNumber(personDefendant.getArrestSummonsNumber());
-            final Person personDetails = defendant.getPersonDefendant().getPersonDetails();
             party.setFirstName(personDetails.getFirstName());
             party.setMiddleName(personDetails.getMiddleName());
             party.setLastName(personDetails.getLastName());
             party.setAddressLines(addressLines(personDetails.getAddress()));
+            party.setDefendantAddress(defendantAddress(personDetails.getAddress()));
             setAddressPostCodeOfParty(party, personDetails);
             party.setNationalInsuranceNumber(personDetails.getNationalInsuranceNumber());
             setDateOfBirthOfParty(party, personDetails);
             setGenderOfParty(party, personDetails);
             setTitleOfParty(party, personDetails);
         }
+    }
+
+
+    private uk.gov.justice.services.unifiedsearch.client.domain.Address defendantAddress(final Address address) {
+        final uk.gov.justice.services.unifiedsearch.client.domain.Address defendantAddress = new uk.gov.justice.services.unifiedsearch.client.domain.Address();
+
+        if (address != null) {
+            defendantAddress.setAddress1(address.getAddress1());
+            defendantAddress.setAddress2(address.getAddress2());
+            defendantAddress.setAddress3(address.getAddress3());
+            defendantAddress.setAddress4(address.getAddress4());
+            defendantAddress.setAddress5(address.getAddress5());
+            defendantAddress.setPostCode(address.getPostcode());
+        }
+        return defendantAddress;
     }
 
     private void setAddressPostCodeOfParty(final Party party, final Person personDetails) {

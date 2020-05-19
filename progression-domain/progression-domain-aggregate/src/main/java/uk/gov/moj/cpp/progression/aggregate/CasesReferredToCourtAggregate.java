@@ -37,7 +37,7 @@ public class CasesReferredToCourtAggregate implements Aggregate {
     }
 
     public Stream<Object> referCasesToCourt(final SjpCourtReferral courtReferral) {
-        LOGGER.debug("cases is being refered To Court .");
+        LOGGER.debug("Cases are being referred To Court.");
         return apply(Stream.of(CasesReferredToCourt.casesReferredToCourt().withCourtReferral(courtReferral).build()));
     }
 

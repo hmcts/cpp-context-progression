@@ -100,5 +100,19 @@ public class CaseDefendantHearingRepositoryTest {
         assertThat(actual.get(0).getHearing().getResultLines().iterator().next().getId(), is(RESULT_ID));
     }
 
+    @Test
+    public void shouldFindCaseDefendantHearingEntityByCaseIdAndDefendantId() {
+
+        final List<CaseDefendantHearingEntity> actual = caseDefendantHearingRepository.findByCaseIdAndDefendantId(CASE_ID, DEFENDANT_ID);
+        assertThat(actual.size(), is(1));
+        assertThat(actual.get(0).getId().getCaseId(), is(CASE_ID));
+        assertThat(actual.get(0).getId().getDefendantId(), is(DEFENDANT_ID));
+        assertThat(actual.get(0).getId().getHearingId(), is(HEARING_ID));
+        assertThat(actual.get(0).getHearing().getHearingId(), is(HEARING_ID));
+        assertThat(actual.get(0).getHearing().getListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(actual.get(0).getHearing().getResultLines().size(), is(1));
+        assertThat(actual.get(0).getHearing().getResultLines().iterator().next().getId(), is(RESULT_ID));
+    }
+
 
 }

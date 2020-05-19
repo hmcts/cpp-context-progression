@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.google.common.io.Resources.getResource;
+import static java.nio.charset.Charset.defaultCharset;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
@@ -24,7 +27,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -71,7 +73,6 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
-    private final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
 
     @Mock
     private JsonEnvelope jsonEnvelope;
@@ -97,8 +98,6 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     @Mock
     private ListCourtHearing listCourtHearing;
 
-    private final String prosecutionCaseSampleDataPath = "progression.event.prosecutioncase.data.json";
-
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -116,7 +115,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         hearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
 
-        prosecutionCaseJsonObject = Optional.of(getProcecutionCaseResponse());
+        prosecutionCaseJsonObject = Optional.of(getProsecutionCaseResponse());
 
         when(progressionService.getProsecutionCaseDetailById(jsonEnvelope,
                 defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString())).thenReturn(prosecutionCaseJsonObject);
@@ -124,12 +123,13 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
                 GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
 
-        when(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(jsonEnvelope, "public.progression.defendants-added-to-court-proceedings")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.process-matched-defendants")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
         //When
         eventProcessor.process(jsonEnvelope);
-        verify(sender).send(finalEnvelope);
+        verify(sender, times(2)).send(finalEnvelope);
 
         //Given
         hearingsAtAGlance = getCaseAtAGlanceWithNoFutureHearings();
@@ -145,16 +145,12 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
     }
 
-    private JsonObject getProcecutionCaseResponse() {
+    private JsonObject getProsecutionCaseResponse() {
         String response = null;
         try {
-            response = Resources.toString(
-                    Resources.getResource(prosecutionCaseSampleDataPath),
-                    Charset.defaultCharset()
-            );
-        } catch (final Exception e) {
+            response = Resources.toString(getResource("progression.event.prosecutioncase.data.json"), defaultCharset());
+        } catch (final Exception ignored) {
         }
-
         return new StringToJsonObjectConverter().convert(response);
     }
 

@@ -4,6 +4,8 @@
       {
         "id": "52ab686b-7c45-46b0-bc6b-e81eaf4d7c67",
         "pncId": "1234567",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "offences": [
           {
             "count": 1,
@@ -67,7 +69,11 @@
         "personDefendant": {
           "arrestSummonsNumber": "007",
           "bailConditions": "REGULARLY NEED TO SIGN IN THE REGISTER AND NEAREST POLICE STATION",
-          "bailStatus": "CONDITIONAL",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "custodyTimeLimit": "2019-10-01",
           "driverLicenceCode": "FULL",
           "driverLicenseIssue": "DVLA",
@@ -155,6 +161,8 @@
       {
         "id": "b745343a-0c38-4929-ace4-daebce3dbeb4",
         "pncId": "1234567",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fd",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "offences": [
           {
             "count": 2,
@@ -218,7 +226,11 @@
         "personDefendant": {
           "arrestSummonsNumber": "007",
           "bailConditions": "REGULARLY NEED TO SIGN IN THE REGISTER AND NEAREST POLICE STATION",
-          "bailStatus": "CONDITIONAL",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "custodyTimeLimit": "2019-10-01",
           "driverLicenceCode": "FULL",
           "driverLicenseIssue": "DVLA",
@@ -305,11 +317,17 @@
       },
       {
         "id": "fc66ef42-541e-46dd-88cf-ed96909882e8",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "pncId": "1234567",
         "personDefendant": {
           "arrestSummonsNumber": "007",
           "bailConditions": "REGULARLY NEED TO SIGN IN THE REGISTER AND NEAREST POLICE STATION",
-          "bailStatus": "CONDITIONAL",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "custodyTimeLimit": "2019-10-01",
           "driverLicenceCode": "FULL",
           "driverLicenseIssue": "DVLA",

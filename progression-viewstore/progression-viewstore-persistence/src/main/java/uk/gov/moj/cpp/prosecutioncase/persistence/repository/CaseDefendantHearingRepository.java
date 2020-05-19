@@ -23,5 +23,9 @@ public interface CaseDefendantHearingRepository extends EntityRepository<CaseDef
     @Query("from CaseDefendantHearingEntity entity where entity.id.defendantId in (:defendantId)")
     public abstract List<CaseDefendantHearingEntity> findByDefendantId(@QueryParam("defendantId") UUID defendantId);
 
+    @Query("from CaseDefendantHearingEntity entity where entity.id.defendantId in (:defendantId) and entity.id.caseId in (:caseId)")
+    public abstract List<CaseDefendantHearingEntity> findByCaseIdAndDefendantId(@QueryParam("caseId") UUID caseId,
+                                                                                @QueryParam("defendantId") UUID defendantId);
+
 
 }

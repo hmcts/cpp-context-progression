@@ -1,0 +1,11 @@
+{
+  "prosecutionCaseId": "PROSECUTION_CASE_ID",
+  "prosecutionCaseUrn": "PROSECUTION_CASE_URN",
+  "cases": [
+    {
+      "caseId": "CASE_ID",
+      "caseUrn": "CASE_URN",
+      "linkGroupId": "LINK_GROUP_ID"
+    }
+  ]
+}

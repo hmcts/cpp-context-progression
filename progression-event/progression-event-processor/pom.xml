@@ -10,6 +10,8 @@
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
+        <results.version>6.4.9</results.version>
+        <notification.notify.version>0.0.38</notification.notify.version>
     </properties>
 
     <dependencies>
@@ -127,7 +129,27 @@
             <artifactId>commons-io</artifactId>
             <scope>test</scope>
         </dependency>
-     </dependencies>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.listing</groupId>
+            <artifactId>listing-common</artifactId>
+            <version>${listing.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                    <artifactId>common-core-domain</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

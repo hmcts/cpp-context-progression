@@ -1,7 +1,14 @@
 package uk.gov.moj.cpp.progression.command.handler.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -18,14 +25,8 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class UsersGroupService {

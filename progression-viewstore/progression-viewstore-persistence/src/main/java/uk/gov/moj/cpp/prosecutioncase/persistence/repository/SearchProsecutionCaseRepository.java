@@ -16,6 +16,8 @@ public abstract class SearchProsecutionCaseRepository extends AbstractEntityRepo
 
     @Query("from SearchProsecutionCaseEntity sc where LOWER(sc.searchTarget) LIKE LOWER(:searchCriteria) order by isStandaloneApplication, (defendantFirstName || defendantLastName) NULLS LAST, (defendantFirstName || defendantLastName), prosecutor")
     public abstract List<SearchProsecutionCaseEntity> findBySearchCriteria(@QueryParam("searchCriteria") final String searchCriteria);
+
+    public abstract List<SearchProsecutionCaseEntity> findByCaseId(String caseId);
 }
 
 

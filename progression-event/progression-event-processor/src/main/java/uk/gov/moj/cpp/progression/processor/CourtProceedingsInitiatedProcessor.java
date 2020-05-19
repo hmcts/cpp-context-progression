@@ -1,12 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
+import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -77,10 +77,11 @@ public class CourtProceedingsInitiatedProcessor {
                 .withHearingId(hearingId)
                 .withDefendantRequests(listDefendantRequests)
                 .build());
+        final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId);
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
 
-        progressionService.createProsecutionCases(
-                jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
+        progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
         listingService.listCourtHearing(jsonEnvelope,
                 listCourtHearingTransformer.transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId));
     }
@@ -101,5 +102,10 @@ public class CourtProceedingsInitiatedProcessor {
             }
         }
         return true;
+    }
+
+    private ListCourtHearing prepareListCourtHearing(final JsonEnvelope jsonEnvelope, final CourtReferral courtReferral, final UUID hearingId) {
+        return listCourtHearingTransformer
+                .transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId);
     }
 }

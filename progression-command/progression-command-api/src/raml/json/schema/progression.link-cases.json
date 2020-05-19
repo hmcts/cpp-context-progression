@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/link-cases.json",
+  "type": "object",
+  "properties": {
+    "casesToLink": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseUrns": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "caseLinkType": {
+            "type": "string",
+            "enum": [
+              "LINK",
+              "SPLIT",
+              "MERGE"
+            ]
+          }
+        },
+        "required": [
+          "caseUrns",
+          "caseLinkType"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "casesToLink"
+  ],
+  "additionalProperties": false
+}

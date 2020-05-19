@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
+import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -48,9 +49,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:S1135"})
 public class CasesReferredToCourtProcessor {
 
-    static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
-    static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
-    static final String REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED = "public.progression.refer-prosecution-cases-to-court-accepted";
+    private static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
+    private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
+    private static final String REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED = "public.progression.refer-prosecution-cases-to-court-accepted";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
 
@@ -121,18 +122,18 @@ public class CasesReferredToCourtProcessor {
         final JsonObject privateEventPayload = jsonEnvelope.payloadAsJsonObject();
 
         final SjpCourtReferral sjpCourtReferral = jsonObjectToObjectConverter.convert(privateEventPayload.getJsonObject("courtReferral"), SjpCourtReferral.class);
-        final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
-        final List<CourtDocument> courtDocuments = new ArrayList<>();
+        final List<ProsecutionCase> prosecutionCases;
+        final List<CourtDocument> courtDocuments;
         ListCourtHearing listCourtHearing = null;
         try {
-            sjpCourtReferral.getProsecutionCases().stream().forEach(referredProsecutionCase -> {
+            sjpCourtReferral.getProsecutionCases().forEach(referredProsecutionCase -> {
                 searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
                         .getProsecutionCaseIdentifier().getProsecutionAuthorityReference());
                 searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
                         .getProsecutionCaseIdentifier().getCaseURN());
             });
-            prosecutionCases.addAll(convertToCourtReferral(jsonEnvelope, sjpCourtReferral));
-            courtDocuments.addAll(convertToCourtDocument(jsonEnvelope, sjpCourtReferral));
+            prosecutionCases = new ArrayList<>(convertToCourtReferral(jsonEnvelope, sjpCourtReferral));
+            courtDocuments = new ArrayList<>(convertToCourtDocument(jsonEnvelope, sjpCourtReferral));
             listCourtHearing = prepareListCourtHearing(jsonEnvelope, sjpCourtReferral, prosecutionCases, hearingId);
 
 
@@ -149,7 +150,6 @@ public class CasesReferredToCourtProcessor {
             return;
         }
 
-
         final List<ListDefendantRequest> listDefendantRequests = sjpCourtReferral.getListHearingRequests().stream().map(ReferredListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
         final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
                 .withHearingId(hearingId)
@@ -164,6 +164,13 @@ public class CasesReferredToCourtProcessor {
 
         listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+
+        prosecutionCases.forEach(
+                prosecutionCase -> sender.send(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")
+                        .apply(CaseLinkedToHearing.caseLinkedToHearing()
+                                .withHearingId(hearingId)
+                                .withCaseId(prosecutionCase.getId())
+                                .build())));
 
         //This is a temporary fix to update PCF that SJP case is referred to CC until ATCM has permanent fix. Referral reason has taken from first defendant as SJP deals with only one defendant.
         final JsonObject caseReferredForCourtAcceptedJson = Json.createObjectBuilder()
@@ -203,6 +210,4 @@ public class CasesReferredToCourtProcessor {
                 .map(referredProsecutionCase -> referredProsecutionCaseTransformer
                         .transform(referredProsecutionCase, jsonEnvelope)).collect(Collectors.toList());
     }
-
-
 }

@@ -10,6 +10,7 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -165,7 +166,20 @@ public class ProgressionEventProcessor {
 
     @Handles("progression.event.prosecution-case-created")
     public void publishProsecutionCaseCreatedEvent(final JsonEnvelope event) {
-        sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED).apply(event.payload()));
+        sender.send(Enveloper.envelop(event.payload())
+                .withName(PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED)
+                .withMetadataFrom(event));
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class);
+        final ProsecutionCase prosecutionCase = prosecutionCaseCreated.getProsecutionCase();
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCaseId", prosecutionCase.getId().toString())
+                .build();
+
+        sender.send(Enveloper.envelop(jsonObject)
+                .withName("progression.command.process-matched-defendants")
+                .withMetadataFrom(event));
     }
 
 

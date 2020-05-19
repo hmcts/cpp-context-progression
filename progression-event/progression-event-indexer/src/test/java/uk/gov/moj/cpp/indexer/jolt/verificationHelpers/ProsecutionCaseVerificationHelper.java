@@ -52,6 +52,8 @@ public class ProsecutionCaseVerificationHelper {
                             .assertThat(partiesIndexPath + ".pncId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".pncId")).getString()))
                             .assertThat(partiesIndexPath + ".arrestSummonsNumber", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.arrestSummonsNumber")).getString()))
                             .assertThat(partiesIndexPath + "._party_type", equalTo("DEFENDANT"))
+                            .assertThat(partiesIndexPath + ".masterPartyId", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".masterDefendantId")).getString()))
+                            .assertThat(partiesIndexPath + ".courtProceedingsInitiated", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".courtProceedingsInitiated")).getString()))
 
                             //verification for offence attributes introduced as part of LAA enhancement
                             .assertThat(partiesIndexPath + ".nationalInsuranceNumber", equalTo(((JsonString) inputProsecutionCase.read(defendantIndexPath + ".personDefendant.personDetails.nationalInsuranceNumber")).getString()))
@@ -83,7 +85,6 @@ public class ProsecutionCaseVerificationHelper {
     }
 
     public static void verifyDefendantsForDefendantUpdated(final DocumentContext inputProsecutionCase, final JsonObject outputCase) {
-
         with(outputCase.toString())
                 .assertThat("$.parties[*]", hasSize(1))
                 .assertThat("$.parties[0].partyId", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.id")).getString()))
@@ -96,6 +97,10 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$.parties[0].postCode", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.personDefendant.personDetails.address.postcode")).getString()))
                 .assertThat("$.parties[0].addressLines", equalTo(addressLines(inputProsecutionCase, "$.defendant.personDefendant.personDetails.address")))
                 .assertThat("$.parties[0].pncId", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.pncId")).getString()))
+                .assertThat("$.parties[0].masterPartyId", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.masterDefendantId")).getString()))
+                //.assertThat("$.parties[0].courtProceedingsInitiated", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.courtProceedingsInitiated")).getString()))
+                .assertThat("$.parties[0].croNumber", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.croNumber")).getString()))
+
                 .assertThat("$.parties[0].arrestSummonsNumber", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.personDefendant.arrestSummonsNumber")).getString()))
                 .assertThat("$.parties[0].organisationName", equalTo(((JsonString) inputProsecutionCase.read("$.defendant.legalEntityDefendant.organisation.name")).getString()))
                 .assertThat("$.parties[0]._party_type", equalTo("DEFENDANT"))

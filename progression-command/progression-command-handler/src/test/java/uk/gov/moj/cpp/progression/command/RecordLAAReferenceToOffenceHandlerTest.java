@@ -11,11 +11,15 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.is
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -31,8 +35,10 @@ import uk.gov.moj.cpp.progression.handler.RecordLAAReferenceToOffenceHandler;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -107,11 +113,10 @@ public class RecordLAAReferenceToOffenceHandlerTest {
         final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
                 CASE_ID, DEFENDANT_ID, DEFENDANT_ID_2, OFFENCE_ID);
 
-       aggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
-                defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+        aggregate.apply(new ProsecutionCaseCreated(getProsecutionCase(), null));
+        aggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(), defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
 
-        final JsonObject jsonObject =    generateRecordLAAReferenceForOffence();
-
+        final JsonObject jsonObject = generateRecordLAAReferenceForOffence();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -222,7 +227,14 @@ public class RecordLAAReferenceToOffenceHandlerTest {
 
     }
 
-
-
+    private ProsecutionCase getProsecutionCase() {
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant().build());
+        return ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .build())
+                .withDefendants(defendants)
+                .build();
+    }
 
 }

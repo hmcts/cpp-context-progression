@@ -1,0 +1,10 @@
+{
+  "matchedDefendants": [
+    {
+      "prosecutionCaseId": "PROSECUTION_CASE_ID",
+      "defendantId": "DEFENDANT_ID",
+      "masterDefendantId": "MASTER_DEF_ID",
+      "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z"
+    }
+  ]
+}

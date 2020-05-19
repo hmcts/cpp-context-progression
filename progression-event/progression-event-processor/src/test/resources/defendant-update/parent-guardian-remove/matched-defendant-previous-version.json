@@ -1,0 +1,80 @@
+{
+  "associatedPersons": [
+    {
+      "person": {
+        "address": {
+          "address1": "guard-address",
+          "address2": "guard-address",
+          "address3": "guard-address",
+          "postcode": "guard-postcode"
+        },
+        "firstName": "guard-name",
+        "gender": "MALE",
+        "lastName": "guard-lastName"
+      },
+      "role": "PARENT"
+    }
+  ],
+  "id": "c38fb32d-c332-49a0-94b5-cea255aae232",
+  "isYouth": true,
+  "personDefendant": {
+    "custodialEstablishment": {
+      "custody": "Prison",
+      "id": "03eb8d61-f46e-43f4-b3f0-9a11e28c2ebe",
+      "name": "custody-name"
+    },
+    "employerOrganisation": {
+      "address": {
+        "address1": "employer-address1",
+        "address2": "employer-address2",
+        "address3": "employer-address3",
+        "postcode": "employer-postcode"
+      },
+      "contact": {
+        "home": "employer-contact",
+        "mobile": "employer-mobile",
+        "fax": "employer-fax",
+        "work": "employer-work",
+        "primaryEmail": "employer-primaryEmail",
+        "secondaryEmail": "employer-secondaryEmail"
+      },
+      "name": "employer-name"
+    },
+    "personDetails": {
+      "address": {
+        "address1": "person-address1",
+        "address2": "person-address2",
+        "address3": "person-address3",
+        "address4": "person-address4",
+        "address5": "person-address5",
+        "postcode": "person-postcode"
+      },
+      "contact": {
+        "home": "person-contact",
+        "mobile": "person-mobile",
+        "fax": "person-fax",
+        "work": "person-work",
+        "primaryEmail": "person-primaryEmail",
+        "secondaryEmail": "person-secondaryEmail"
+      },
+      "dateOfBirth": "2008-09-01",
+      "documentationLanguageNeeds": "ENGLISH",
+      "ethnicity": {
+        "selfDefinedEthnicityCode": "W1",
+        "selfDefinedEthnicityDescription": "British",
+        "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+      },
+      "firstName": "person-firstName",
+      "gender": "MALE",
+      "interpreterLanguageNeeds": "ENGLISH",
+      "lastName": "person-lastName",
+      "nationalInsuranceNumber": "person-ni",
+      "nationalityCode": "person-nicode",
+      "nationalityDescription": "person-nidesc",
+      "nationalityId": "609a8551-3e4e-49c7-855c-2b2336344a09",
+      "specificRequirements": "person-specificRequirements",
+      "title": "person-title"
+    }
+  },
+  "prosecutionCaseId": "e23bf84a-e16b-4992-98e2-a460f72ee1a8"
+}

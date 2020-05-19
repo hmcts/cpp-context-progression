@@ -264,6 +264,7 @@ public class AddDefendantsToCourtProceedingsIT {
                 .withMasterDefendantId(UUID.fromString(defendantId2))
                 .withCourtProceedingsInitiated(ZonedDateTime.now(ZoneId.of("UTC")))
                 .withPncId("pncId")
+                .withCroNumber("croNumber")
                 .withProsecutionCaseId(UUID.fromString(caseId))
                 .withOffences(Collections.singletonList(offence))
                 .build();

@@ -118,6 +118,8 @@
               }
             ],
             "id": "d5f94fd0-e87e-42a9-9395-5fc353bb0f2d",
+            "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+            "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
             "mitigation": "I was not there",
             "mitigationWelsh": "I was not there in Welsh",
             "numberOfPreviousConvictionsCited": 5,

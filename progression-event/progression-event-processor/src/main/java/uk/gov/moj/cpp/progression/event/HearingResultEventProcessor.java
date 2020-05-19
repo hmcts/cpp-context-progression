@@ -1,29 +1,55 @@
 package uk.gov.moj.cpp.progression.event;
 
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.ConfirmedHearing;
+import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
+import uk.gov.justice.core.courts.ExtendHearing;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingConfirmed;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingDefendantRequestAdjourned;
+import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-
+import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
-
-import javax.inject.Inject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultEventProcessor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultEventProcessor.class.getName());
 
     @Inject
     private Sender sender;
@@ -35,7 +61,19 @@ public class HearingResultEventProcessor {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
     private ProgressionService progressionService;
+
+    @Inject
+    private ListingService listingService;
+
+    @Inject
+    private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
+
+    @Inject
+    private NextHearingService nextHearingService;
 
     @Handles("public.hearing.resulted")
     public void handleHearingResultedPublicEvent(final JsonEnvelope event) {
@@ -43,30 +81,134 @@ public class HearingResultEventProcessor {
                 .apply(event.payloadAsJsonObject()));
 
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
-        final List<CourtApplication> courtApplications = hearingResulted.getHearing().getCourtApplications();
+        final Hearing hearing = hearingResulted.getHearing();
 
-        if (isNotEmpty(hearingResulted.getHearing().getProsecutionCases())) {
-            final List<ProsecutionCase> prosecutionCasesList = hearingResulted.getHearing().getProsecutionCases();
+        resultProsecutionCases(event, hearing);
+        resultApplications(event, hearing);
+    }
 
-            for (final ProsecutionCase prosecutionCase : prosecutionCasesList) {
-                progressionService.updateCase(event, prosecutionCase, courtApplications);
-            }
-        }
-
-        if (isNotEmpty(courtApplications)) {
-
+    private void resultApplications(final JsonEnvelope event, final Hearing hearing) {
+        if (isNotEmpty(hearing.getCourtApplications())) {
             final List<UUID> applicationIdsHaveOutcome = new ArrayList<>();
             final List<UUID> allApplicationIds = new ArrayList<>();
-
-            courtApplications.forEach(courtApplication -> {
+            hearing.getCourtApplications().forEach(courtApplication -> {
                 allApplicationIds.add(courtApplication.getId());
-                if (courtApplication.getApplicationOutcome() != null) {
+                if (nonNull(courtApplication.getApplicationOutcome())){
                     applicationIdsHaveOutcome.add(courtApplication.getId());
                 }
             });
-            progressionService.linkApplicationsToHearing(event, hearingResulted.getHearing(), allApplicationIds, HearingListingStatus.HEARING_RESULTED);
+            progressionService.linkApplicationsToHearing(event, hearing, allApplicationIds, HearingListingStatus.HEARING_RESULTED);
             progressionService.updateCourtApplicationStatus(event, applicationIdsHaveOutcome, ApplicationStatus.FINALISED);
-
         }
     }
-}
+
+    private void resultProsecutionCases(final JsonEnvelope event, final Hearing hearing) {
+        LOGGER.info("Hearing resulted for the prosecution cases in the hearing id :: {}", hearing.getId());
+        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(event, hearing.getId().toString());
+        final JsonObject hearingJson = hearingPayloadOptional.orElseThrow(() -> new RuntimeException("Hearing not found")).getJsonObject("hearing");
+        final Hearing hearingInProgression = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
+        if (isNotEmpty(hearing.getProsecutionCases())) {
+            hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
+            if (isNull(hearingInProgression.getHasSharedResults()) || !hearingInProgression.getHasSharedResults()) {
+                adjournToExistingHearings(event, hearing);
+                adjournToNewHearings(event, hearing);
+            } else {
+                LOGGER.info("Hearing already resulted for hearing id :: {}", hearing.getId());
+            }
+        }
+    }
+
+    private void adjournToNewHearings(final JsonEnvelope event, final Hearing hearing) {
+        LOGGER.info("Hearing adjourned to new hearing or hearings :: {}", hearing.getId());
+        final List<HearingListingNeeds> hearingListingNeeds = hearingToHearingListingNeedsTransformer.transform(hearing);
+
+        final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
+                .withHearings(hearingListingNeeds)
+                .withAdjournedFromDate(LocalDate.now())
+                .build();
+
+        if (isNotEmpty(hearingListingNeeds)) {
+            listingService.listCourtHearing(event, listCourtHearing);
+            progressionService.updateHearingListingStatusToSentForListing(event, listCourtHearing);
+            for (final HearingListingNeeds hln : hearingListingNeeds) {
+                final JsonObject adjournHearingDefendantRequest = Json.createObjectBuilder()
+                        .add("currentHearingId", hearing.getId().toString())
+                        .add("adjournedHearingId", hln.getId().toString())
+                        .build();
+                sender.send(
+                        envelop(adjournHearingDefendantRequest)
+                                .withName("progression.command.adjourn-hearing-request")
+                                .withMetadataFrom(event));
+            }
+        }
+    }
+
+    @Handles("progression.event.hearing-defendant-request-adjourned")
+    public void handleHearingDefendantRequestAdjournedEvent(final JsonEnvelope event) {
+        final HearingDefendantRequestAdjourned hearingDefendantRequestAdjourned = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingDefendantRequestAdjourned.class);
+        final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
+                .withHearingId(hearingDefendantRequestAdjourned.getAdjournedHearingId())
+                .withDefendantRequests(hearingDefendantRequestAdjourned.getDefendantRequests())
+                .build());
+        sender.send(
+                envelop(hearingDefendantRequestJson)
+                        .withName("progression.command.create-hearing-defendant-request")
+                        .withMetadataFrom(event));
+    }
+
+    private void adjournToExistingHearings(JsonEnvelope jsonEnvelope, final Hearing hearing) {
+        LOGGER.info("Hearing adjourned to exiting hearing or hearings :: {}", hearing.getId());
+        final NextHearingDetails nextHearingDetails = nextHearingService.getNextHearingDetails(hearing);
+
+        nextHearingDetails.getHearingListingNeedsList().forEach(hearingListingNeeds -> {
+            final ExtendHearing extendHearing = ExtendHearing.extendHearing()
+                    .withHearingRequest(hearingListingNeeds)
+                    .withIsAdjourned(TRUE)
+                    .build();
+            sender.send(
+                    envelop(objectToJsonObjectConverter.convert(extendHearing))
+                            .withName("progression.command.extend-hearing")
+                            .withMetadataFrom(jsonEnvelope));
+        });
+        generateSummons(nextHearingDetails.getHearingsMap(), hearing, nextHearingDetails.getNextHearings(), jsonEnvelope);
+    }
+
+    private void generateSummons(Map<UUID, Map<UUID, Map<UUID, Set<UUID>>>> hearingsMap, Hearing hearing, Map<UUID, NextHearing> nextHearings, JsonEnvelope jsonEnvelope) {
+        LOGGER.info("Summons for extended or existing hearing from the current hearing :: {}", hearing.getId());
+        final Map<UUID, List<ConfirmedProsecutionCase>> confirmedHearings = nextHearingService.getConfirmedHearings(hearingsMap);
+        for (final Map.Entry<UUID, List<ConfirmedProsecutionCase>> hearingEntry : confirmedHearings.entrySet()) {
+            final UUID adjournedHearingId = hearingEntry.getKey();
+            final List<ConfirmedProsecutionCase> confirmedProsecutionCases = hearingEntry.getValue();
+            final NextHearing nextHearing = nextHearings.get(adjournedHearingId);
+            final List<ProsecutionCase> cases = progressionService.transformProsecutionCase(confirmedProsecutionCases, nextHearing.getListedStartDateTime().toLocalDate(), jsonEnvelope);
+
+            // update youth summons
+            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, cases);
+
+            // prepare summons data
+            final HearingConfirmed hearingConfirmed = HearingConfirmed.hearingConfirmed()
+                    .withConfirmedHearing(ConfirmedHearing.confirmedHearing()
+                            .withId(hearing.getId())
+                            .withType(nextHearing.getType())
+                            .withJurisdictionType(nextHearing.getJurisdictionType())
+                            .withExistingHearingId(adjournedHearingId)
+                            .withHearingDays(createHearingDays(nextHearing))
+                            .withCourtCentre(nextHearing.getCourtCentre())
+                            .withProsecutionCases(confirmedProsecutionCases)
+                            .build())
+                    .build();
+            progressionService.prepareSummonsDataForExtendHearing(jsonEnvelope, hearingConfirmed);
+        }
+    }
+
+    private List<HearingDay> createHearingDays(final NextHearing nextHearing) {
+        final List<HearingDay> hearingDays = new ArrayList<>();
+        if (nonNull(nextHearing.getListedStartDateTime())) {
+            hearingDays.add(HearingDay.hearingDay()
+                    .withSittingDay(nextHearing.getListedStartDateTime())
+                    .withListedDurationMinutes(nextHearing.getEstimatedMinutes())
+                    .build());
+        }
+        return hearingDays;
+    }
+ }

@@ -12,7 +12,9 @@
         }
       ],
       "id": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc",
-      "prosecutionCaseId": "1d49475d-0b81-42e4-b32e-3cc6a090825a",
+      "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+      "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+      "croNumber": "croNumber","prosecutionCaseId": "1d49475d-0b81-42e4-b32e-3cc6a090825a",
       "numberOfPreviousConvictionsCited": 5,
       "prosecutionAuthorityReference": "TFL12345-ABC",
       "witnessStatement": "he did not do it",
@@ -200,6 +202,9 @@
     {
       "id": "ff9fb1f4-b8d3-4052-b02c-77521bc3b14c",
       "pncId": "1234567-2",
+      "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+      "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+      "croNumber": "croNumber",
       "aliases": [
         {
           "firstName": "Jim",

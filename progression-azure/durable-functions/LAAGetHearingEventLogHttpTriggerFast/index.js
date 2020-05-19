@@ -46,7 +46,7 @@ module.exports = async function (context, req) {
             filteredJson.prosecutionCases[0].defendants &&
             filteredJson.prosecutionCases[0].defendants.length > 0) {
 
-            context.log(`LAA reference found for hearingId ${hearingId}`)
+            context.log(`LAA reference found for hearingId ${hearingId}`);
             context.log(`Filtered JSON is ` + JSON.stringify(filteredJson));
             context.bindings.params.filteredJson = filteredJson;
 
@@ -58,8 +58,8 @@ module.exports = async function (context, req) {
                 context.log(`Returning event log for hearing ${hearingId} with date ${hearingDate}`);
                 context.res.body = (!eventLogJson) ? {} : eventLogJson;
             } catch (e) {
-                context.log(`A server error occured while retrieving the event log`)
-                context.res.body = {'error': `An unknown error has occured while retrieving the event log`}
+                context.log(`A server error occured while retrieving the event log`);
+                context.res.body = {'error': `An unknown error has occured while retrieving the event log`};
                 context.res.status = 503
             }
 

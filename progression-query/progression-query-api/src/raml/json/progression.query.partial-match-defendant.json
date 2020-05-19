@@ -1,0 +1,126 @@
+{
+  "totalMatchedDefendants": 2,
+  "matchedDefendants": [
+    {
+      "defendantId": "db0522a6-8563-4fff-89f2-2050b3b6c431",
+      "masterDefendantId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "caseReference": "20GB12345666",
+      "courtProceedingsInitiated": "2020-03-02T10:00:00.000Z",
+      "prosecutionCaseId": "dfg522a7-8563-4fff-89f2-2050b3b6c531",
+      "firstName": "Teagan",
+      "middleName": "",
+      "lastName": "SMITT",
+      "dateOfBirth": "2019-04-21",
+      "pncId": "2099/1234567L",
+      "croNumber": "",
+      "address": {
+        "addressLine1": "15, somewhere street",
+        "addressLine2": "15th Lane",
+        "addressLine5": "London",
+        "postcode": "HA1 1QF"
+      },
+      "defendantsMatchedCount": 2,
+      "defendantsMatched": [
+        {
+          "defendantId": "fg0522a6-8563-4fff-89f2-2050b3b6c465",
+          "masterDefendantId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "caseReference": "20GB12345666",
+          "courtProceedingsInitiated": "2020-03-02T10:00:00.000Z",
+          "prosecutionCaseId": "drg522a7-8565-4fff-89f2-2050b3b6c567",
+          "firstName": "Teagan",
+          "middleName": "",
+          "lastName": "SMITT",
+          "dateOfBirth": "2019-04-21",
+          "pncId": "2099/1234567L",
+          "croNumber": "",
+          "address": {
+            "addressLine1": "15, somewhere street",
+            "addressLine2": "15th Lane",
+            "addressLine5": "London",
+            "postcode": "HA1 1QF"
+          }
+        },
+        {
+          "defendantId": "gt0522a6-8563-4fff-89f2-2050b3b6c499",
+          "masterDefendantId": "0a5372c5-b60f-4d95-8390-8c6462e2d7af",
+          "caseReference": "45GB12345777",
+          "courtProceedingsInitiated": "2020-03-03T10:00:00.000Z",
+          "prosecutionCaseId": "hgj522a7-8565-4fff-89f2-2050b3b6c589",
+          "firstName": "Teagan",
+          "middleName": "",
+          "lastName": "SITH",
+          "dateOfBirth": "",
+          "pncId": "2099/1234567L",
+          "croNumber": "SF20/123456M",
+          "address": {
+            "addressLine1": "19, ABC street",
+            "addressLine2": "19th Lane",
+            "addressLine5": "London",
+            "postcode": "HA1 1QF"
+          }
+        }
+      ]
+    },
+    {
+      "defendantId": "tfd522a6-8563-4fff-89f2-2050b3b6c799",
+      "masterDefendantId": "9e4932f7-97b2-3010-b942-ddd2624e4ff7",
+      "caseReference": "34GB12345688",
+      "courtProceedingsInitiated": "2020-03-03T10:00:00.000Z",
+      "prosecutionCaseId": "nmk522a7-8565-4fff-89f2-2050b3b6c768",
+      "firstName": "Abbie",
+      "middleName": "",
+      "lastName": "SMITH",
+      "dateOfBirth": "2019-04-21",
+      "pncId": "2099/1234567L",
+      "croNumber": "",
+      "address": {
+        "addressLine1": "15, somewhere street",
+        "addressLine2": "15th Lane",
+        "addressLine5": "London",
+        "postcode": "HA1 1QF"
+      },
+      "defendantsMatchedCount": 2,
+      "defendantsMatched": [
+        {
+          "defendantId": "gt0522a6-8563-4fff-89f2-2050b3b6c699",
+          "masterDefendantId": "9e4932f7-97b2-3010-b942-ddd2624e4ff7",
+          "caseReference": "32GB12345646",
+          "courtProceedingsInitiated": "2020-03-03T10:00:00.000Z",
+          "prosecutionCaseId": "hgj122a7-8565-4fff-89f2-2050b3b6c389",
+          "firstName": "Tuan",
+          "middleName": "",
+          "lastName": "SMITT",
+          "dateOfBirth": "2019-04-21",
+          "pncId": "2099/1234567L",
+          "croNumber": "",
+          "address": {
+            "addressLine1": "178, beta road",
+            "addressLine2": "wilson",
+            "addressLine4": "Middx",
+            "addressLine5": "London",
+            "postcode": "HA1 1QF"
+          }
+        },
+        {
+          "defendantId": "gt0522a6-8563-4fff-89f2-2050b3b6c699",
+          "masterDefendantId": "9e4932f7-97b2-3010-b942-ddd2624e4ee6",
+          "courtProceedingsInitiated": "2020-03-03T10:00:00.000Z",
+          "caseReference": "64GB12345623",
+          "prosecutionCaseId": "poj122a7-8665-4fff-89f2-2050b3b6c389",
+          "firstName": "Teagan",
+          "middleName": ".T.",
+          "lastName": "SMT",
+          "dateOfBirth": "",
+          "pncId": "2099/1234567L",
+          "croNumber": "SF20/123456M",
+          "address": {
+            "addressLine1": "77A charlie street",
+            "addressLine2": "wilton",
+            "addressLine5": "London",
+            "postcode": "HA1 1QF"
+          }
+        }
+      ]
+    }
+  ]
+}

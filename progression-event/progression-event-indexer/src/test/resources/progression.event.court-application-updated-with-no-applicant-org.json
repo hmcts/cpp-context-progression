@@ -2,7 +2,7 @@
   "courtApplication": {
     "id": "5d57fc0d-3d8c-45fe-beb4-f4f4890e80c7",
     "type": {
-      "id": "00000000-0000-0000-0000-000000000000",
+      "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
       "applicationCode": "a",
       "applicationType": "a",
       "applicationTypeWelsh": "a",
@@ -27,18 +27,18 @@
         "middleName": "applicant personDetails middleName",
         "lastName": "applicant personDetails lastName",
         "dateOfBirth": "0000-01-01",
-        "nationalityId": "00000000-0000-0000-0000-000000000000",
+        "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
         "nationalityCode": "a",
         "nationalityDescription": "a",
-        "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+        "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
         "additionalNationalityCode": "a",
         "additionalNationalityDescription": "a",
         "disabilityStatus": "a",
         "ethnicity": {
-          "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+          "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "observedEthnicityCode": "a",
           "observedEthnicityDescription": "a",
-          "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+          "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "selfDefinedEthnicityCode": "a",
           "selfDefinedEthnicityDescription": "a"
         },
@@ -67,8 +67,8 @@
         },
         "personMarkers": [
           {
-            "id": "00000000-0000-0000-0000-000000000000",
-            "markerTypeid": "00000000-0000-0000-0000-000000000000",
+            "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+            "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "markerTypeCode": "a",
             "markerTypeDescription": "a"
           }
@@ -76,6 +76,8 @@
       },
       "defendant": {
         "id": "RANDOM_APPLICANT_DEFENDANT_ID",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "prosecutionCaseId": "RANDOM_CASE_ID",
         "numberOfPreviousConvictionsCited": 0,
         "prosecutionAuthorityReference": "a",
@@ -85,8 +87,8 @@
         "mitigationWelsh": "a",
         "offences": [
           {
-            "id": "00000000-0000-0000-0000-000000000000",
-            "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+            "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+            "offenceDefinitionId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "offenceCode": "a",
             "offenceTitle": "a",
             "offenceTitleWelsh": "a",
@@ -104,13 +106,13 @@
             "count": 0,
             "convictionDate": "0000-01-01",
             "notifiedPlea": {
-              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "notifiedPleaDate": "0000-01-01",
               "notifiedPleaValue": "NOTIFIED_GUILTY"
             },
             "indicatedPlea": {
-              "offenceId": "00000000-0000-0000-0000-000000000000",
-              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+              "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "indicatedPleaDate": "0000-01-01",
               "indicatedPleaValue": "INDICATED_GUILTY",
               "source": "ONLINE",
@@ -122,22 +124,22 @@
               }
             },
             "plea": {
-              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+              "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "delegatedPowers": {
-                "userId": "00000000-0000-0000-0000-000000000000",
+                "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "firstName": "a",
                 "lastName": "a"
               },
-              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "pleaDate": "0000-01-01",
               "pleaValue": "GUILTY"
             },
             "verdict": {
-              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
-              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "verdictDate": "0000-01-01",
               "verdictType": {
-                "id": "00000000-0000-0000-0000-000000000000",
+                "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "sequence": 0,
                 "description": "a",
                 "category": "a",
@@ -149,7 +151,7 @@
                 "unanimous": true
               },
               "lesserOrAlternativeOffence": {
-                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "offenceDefinitionId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "offenceCode": "a",
                 "offenceTitle": "a",
                 "offenceTitleWelsh": "a",
@@ -171,18 +173,18 @@
                 "middleName": "a",
                 "lastName": "a",
                 "dateOfBirth": "0000-01-01",
-                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
-                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "additionalNationalityCode": "a",
                 "additionalNationalityDescription": "a",
                 "disabilityStatus": "a",
                 "ethnicity": {
-                  "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "observedEthnicityCode": "a",
                   "observedEthnicityDescription": "a",
-                  "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "selfDefinedEthnicityCode": "a",
                   "selfDefinedEthnicityDescription": "a"
                 },
@@ -211,8 +213,8 @@
                 },
                 "personMarkers": [
                   {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                    "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                    "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "markerTypeCode": "a",
                     "markerTypeDescription": "a"
                   }
@@ -221,7 +223,7 @@
             ],
             "judicialResults": [
               {
-                "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "isAvailableForCourtExtract":true,
                 "label": "a",
                 "welshLabel": "a",
@@ -235,17 +237,17 @@
                 "orderedDate": "0000-01-01",
                 "lastSharedDateTime": "a",
                 "courtClerk": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
                 "delegatedPowers": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
                 "fourEyesApproval": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
@@ -276,18 +278,18 @@
               "middleName": "defendantAssociatedPersonMiddlename",
               "lastName": "defendantAssociatedPersonLastname",
               "dateOfBirth": "0000-01-01",
-              "nationalityId": "00000000-0000-0000-0000-000000000000",
+              "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "nationalityCode": "a",
               "nationalityDescription": "a",
-              "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+              "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "additionalNationalityCode": "a",
               "additionalNationalityDescription": "a",
               "disabilityStatus": "a",
               "ethnicity": {
-                "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "observedEthnicityCode": "a",
                 "observedEthnicityDescription": "a",
-                "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "selfDefinedEthnicityCode": "a",
                 "selfDefinedEthnicityDescription": "a"
               },
@@ -316,8 +318,8 @@
               },
               "personMarkers": [
                 {
-                  "id": "00000000-0000-0000-0000-000000000000",
-                  "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                  "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                  "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "markerTypeCode": "a",
                   "markerTypeDescription": "a"
                 }
@@ -354,18 +356,18 @@
             "middleName": "a",
             "lastName": "a",
             "dateOfBirth": "0000-01-01",
-            "nationalityId": "00000000-0000-0000-0000-000000000000",
+            "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "nationalityCode": "a",
             "nationalityDescription": "a",
-            "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+            "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "additionalNationalityCode": "a",
             "additionalNationalityDescription": "a",
             "disabilityStatus": "a",
             "ethnicity": {
-              "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "observedEthnicityCode": "a",
               "observedEthnicityDescription": "a",
-              "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "selfDefinedEthnicityCode": "a",
               "selfDefinedEthnicityDescription": "a"
             },
@@ -394,14 +396,18 @@
             },
             "personMarkers": [
               {
-                "id": "00000000-0000-0000-0000-000000000000",
-                "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "markerTypeCode": "a",
                 "markerTypeDescription": "a"
               }
             ]
           },
-          "bailStatus": "CONDITIONAL",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "bailConditions": "a",
           "custodyTimeLimit": "0000-01-01",
           "perceivedBirthYear": 0,
@@ -468,7 +474,7 @@
         "judicialResults": [
           {
             "isAvailableForCourtExtract":true,
-            "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+            "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "label": "a",
             "welshLabel": "a",
             "isAdjournmentResult": true,
@@ -481,17 +487,17 @@
             "orderedDate": "0000-01-01",
             "lastSharedDateTime": "a",
             "courtClerk": {
-              "userId": "00000000-0000-0000-0000-000000000000",
+              "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "firstName": "a",
               "lastName": "a"
             },
             "delegatedPowers": {
-              "userId": "00000000-0000-0000-0000-000000000000",
+              "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "firstName": "a",
               "lastName": "a"
             },
             "fourEyesApproval": {
-              "userId": "00000000-0000-0000-0000-000000000000",
+              "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "firstName": "a",
               "lastName": "a"
             },
@@ -515,10 +521,10 @@
         "croNumber": "a",
         "pncId": "a"
       },
-      "id": "00000000-0000-0000-0000-000000000000",
+      "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
       "synonym": "a",
       "prosecutingAuthority": {
-        "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+        "prosecutionAuthorityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
         "prosecutionAuthorityCode": "a",
         "name": "a",
         "accountCode": "a",
@@ -540,8 +546,10 @@
         }
       },
       "defendant": {
-        "id": "D200000-0000-0000-0000-000000000000",
-        "prosecutionCaseId": "00000000-0000-0000-0000-000000000000",
+        "id": "23306e0b-adf4-425f-a68b-52b6e26bd275",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+        "prosecutionCaseId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
         "numberOfPreviousConvictionsCited": 0,
         "prosecutionAuthorityReference": "a",
         "witnessStatement": "a",
@@ -550,8 +558,8 @@
         "mitigationWelsh": "a",
         "offences": [
           {
-            "id": "00000000-0000-0000-0000-000000000000",
-            "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+            "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+            "offenceDefinitionId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "offenceCode": "a",
             "offenceTitle": "a",
             "offenceTitleWelsh": "a",
@@ -569,13 +577,13 @@
             "count": 0,
             "convictionDate": "0000-01-01",
             "notifiedPlea": {
-              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "notifiedPleaDate": "0000-01-01",
               "notifiedPleaValue": "NOTIFIED_GUILTY"
             },
             "indicatedPlea": {
-              "offenceId": "00000000-0000-0000-0000-000000000000",
-              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+              "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "indicatedPleaDate": "0000-01-01",
               "indicatedPleaValue": "INDICATED_GUILTY",
               "source": "ONLINE",
@@ -587,22 +595,22 @@
               }
             },
             "plea": {
-              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+              "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "delegatedPowers": {
-                "userId": "00000000-0000-0000-0000-000000000000",
+                "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "firstName": "a",
                 "lastName": "a"
               },
-              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "pleaDate": "0000-01-01",
               "pleaValue": "GUILTY"
             },
             "verdict": {
-              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
-              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+              "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "verdictDate": "0000-01-01",
               "verdictType": {
-                "id": "00000000-0000-0000-0000-000000000000",
+                "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "sequence": 0,
                 "description": "a",
                 "category": "a",
@@ -614,7 +622,7 @@
                 "unanimous": true
               },
               "lesserOrAlternativeOffence": {
-                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "offenceDefinitionId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "offenceCode": "a",
                 "offenceTitle": "a",
                 "offenceTitleWelsh": "a",
@@ -624,7 +632,7 @@
             },
             "offenceFacts": {
               "vehicleRegistration": "a",
-              "alcoholReadingAmount": "a",
+              "alcoholReadingAmount": 10,
               "alcoholReadingMethodCode": "a",
               "vehicleCode": "LARGE_GOODS_VEHICLE"
             },
@@ -636,18 +644,18 @@
                 "middleName": "a",
                 "lastName": "a",
                 "dateOfBirth": "0000-01-01",
-                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
-                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "additionalNationalityCode": "a",
                 "additionalNationalityDescription": "a",
                 "disabilityStatus": "a",
                 "ethnicity": {
-                  "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "observedEthnicityCode": "a",
                   "observedEthnicityDescription": "a",
-                  "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "selfDefinedEthnicityCode": "a",
                   "selfDefinedEthnicityDescription": "a"
                 },
@@ -676,8 +684,8 @@
                 },
                 "personMarkers": [
                   {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                    "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                    "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "markerTypeCode": "a",
                     "markerTypeDescription": "a"
                   }
@@ -686,7 +694,7 @@
             ],
             "judicialResults": [
               {
-                "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "label": "a",
                 "welshLabel": "a",
                 "isAdjournmentResult": true,
@@ -700,17 +708,17 @@
                 "orderedDate": "0000-01-01",
                 "lastSharedDateTime": "a",
                 "courtClerk": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
                 "delegatedPowers": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
                 "fourEyesApproval": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
@@ -740,18 +748,18 @@
               "middleName": "a",
               "lastName": "a",
               "dateOfBirth": "0000-01-01",
-              "nationalityId": "00000000-0000-0000-0000-000000000000",
+              "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "nationalityCode": "a",
               "nationalityDescription": "a",
-              "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+              "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "additionalNationalityCode": "a",
               "additionalNationalityDescription": "a",
               "disabilityStatus": "a",
               "ethnicity": {
-                "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "observedEthnicityCode": "a",
                 "observedEthnicityDescription": "a",
-                "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "selfDefinedEthnicityCode": "a",
                 "selfDefinedEthnicityDescription": "a"
               },
@@ -780,8 +788,8 @@
               },
               "personMarkers": [
                 {
-                  "id": "00000000-0000-0000-0000-000000000000",
-                  "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                  "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                  "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "markerTypeCode": "a",
                   "markerTypeDescription": "a"
                 }
@@ -818,18 +826,18 @@
             "middleName": "a",
             "lastName": "a",
             "dateOfBirth": "0000-01-01",
-            "nationalityId": "00000000-0000-0000-0000-000000000000",
+            "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "nationalityCode": "a",
             "nationalityDescription": "a",
-            "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+            "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "additionalNationalityCode": "a",
             "additionalNationalityDescription": "a",
             "disabilityStatus": "a",
             "ethnicity": {
-              "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "observedEthnicityCode": "a",
               "observedEthnicityDescription": "a",
-              "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "selfDefinedEthnicityCode": "a",
               "selfDefinedEthnicityDescription": "a"
             },
@@ -858,14 +866,18 @@
             },
             "personMarkers": [
               {
-                "id": "00000000-0000-0000-0000-000000000000",
-                "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "markerTypeCode": "a",
                 "markerTypeDescription": "a"
               }
             ]
           },
-          "bailStatus": "CONDITIONAL",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
           "bailConditions": "a",
           "custodyTimeLimit": "0000-01-01",
           "perceivedBirthYear": 0,
@@ -931,7 +943,7 @@
         ],
         "judicialResults": [
           {
-            "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+            "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "label": "a",
             "welshLabel": "a",
             "isAdjournmentResult": true,
@@ -945,17 +957,17 @@
             "orderedDate": "0000-01-01",
             "lastSharedDateTime": "a",
             "courtClerk": {
-              "userId": "00000000-0000-0000-0000-000000000000",
+              "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "firstName": "a",
               "lastName": "a"
             },
             "delegatedPowers": {
-              "userId": "00000000-0000-0000-0000-000000000000",
+              "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "firstName": "a",
               "lastName": "a"
             },
             "fourEyesApproval": {
-              "userId": "00000000-0000-0000-0000-000000000000",
+              "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
               "firstName": "a",
               "lastName": "a"
             },
@@ -1003,7 +1015,7 @@
     "respondents": [
       {
         "partyDetails": {
-          "id": "00000000-0000-0000-0000-000000000000",
+          "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "synonym": "a",
           "organisation": {
             "name": "a",
@@ -1034,18 +1046,18 @@
                 "middleName": "a",
                 "lastName": "a",
                 "dateOfBirth": "0000-01-01",
-                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
-                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "additionalNationalityCode": "a",
                 "additionalNationalityDescription": "a",
                 "disabilityStatus": "a",
                 "ethnicity": {
-                  "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "observedEthnicityCode": "a",
                   "observedEthnicityDescription": "a",
-                  "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "selfDefinedEthnicityCode": "a",
                   "selfDefinedEthnicityDescription": "a"
                 },
@@ -1074,8 +1086,8 @@
                 },
                 "personMarkers": [
                   {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                    "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                    "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "markerTypeCode": "a",
                     "markerTypeDescription": "a"
                   }
@@ -1085,7 +1097,7 @@
             }
           ],
           "prosecutingAuthority": {
-            "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+            "prosecutionAuthorityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "prosecutionAuthorityCode": "a",
             "name": "a",
             "accountCode": "a",
@@ -1107,8 +1119,10 @@
             }
           },
           "defendant": {
-            "id": "D1000000-0000-0000-0000-000000000000",
-            "prosecutionCaseId": "00000000-0000-0000-0000-000000000000",
+            "id": "8321f448-8e95-4e45-b6da-cd565e013363",
+            "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+            "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+            "prosecutionCaseId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
             "witnessStatement": "a",
@@ -1117,8 +1131,8 @@
             "mitigationWelsh": "a",
             "offences": [
               {
-                "id": "00000000-0000-0000-0000-000000000000",
-                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                "offenceDefinitionId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "offenceCode": "a",
                 "offenceTitle": "a",
                 "offenceTitleWelsh": "a",
@@ -1136,13 +1150,13 @@
                 "count": 0,
                 "convictionDate": "0000-01-01",
                 "notifiedPlea": {
-                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "notifiedPleaDate": "0000-01-01",
                   "notifiedPleaValue": "NOTIFIED_GUILTY"
                 },
                 "indicatedPlea": {
-                  "offenceId": "00000000-0000-0000-0000-000000000000",
-                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                  "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "indicatedPleaDate": "0000-01-01",
                   "indicatedPleaValue": "INDICATED_GUILTY",
                   "source": "ONLINE",
@@ -1154,22 +1168,22 @@
                   }
                 },
                 "plea": {
-                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "delegatedPowers": {
-                    "userId": "00000000-0000-0000-0000-000000000000",
+                    "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "firstName": "a",
                     "lastName": "a"
                   },
-                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "pleaDate": "0000-01-01",
                   "pleaValue": "GUILTY"
                 },
                 "verdict": {
-                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
-                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                  "offenceId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "verdictDate": "0000-01-01",
                   "verdictType": {
-                    "id": "00000000-0000-0000-0000-000000000000",
+                    "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "sequence": 0,
                     "description": "a",
                     "category": "a",
@@ -1181,7 +1195,7 @@
                     "unanimous": true
                   },
                   "lesserOrAlternativeOffence": {
-                    "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                    "offenceDefinitionId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "offenceCode": "a",
                     "offenceTitle": "a",
                     "offenceTitleWelsh": "a",
@@ -1191,7 +1205,7 @@
                 },
                 "offenceFacts": {
                   "vehicleRegistration": "a",
-                  "alcoholReadingAmount": "a",
+                  "alcoholReadingAmount": 10,
                   "alcoholReadingMethodCode": "a",
                   "vehicleCode": "LARGE_GOODS_VEHICLE"
                 },
@@ -1203,18 +1217,18 @@
                     "middleName": "a",
                     "lastName": "a",
                     "dateOfBirth": "0000-01-01",
-                    "nationalityId": "00000000-0000-0000-0000-000000000000",
+                    "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "nationalityCode": "a",
                     "nationalityDescription": "a",
-                    "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                    "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "additionalNationalityCode": "a",
                     "additionalNationalityDescription": "a",
                     "disabilityStatus": "a",
                     "ethnicity": {
-                      "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                      "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                       "observedEthnicityCode": "a",
                       "observedEthnicityDescription": "a",
-                      "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                      "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                       "selfDefinedEthnicityCode": "a",
                       "selfDefinedEthnicityDescription": "a"
                     },
@@ -1243,8 +1257,8 @@
                     },
                     "personMarkers": [
                       {
-                        "id": "00000000-0000-0000-0000-000000000000",
-                        "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                        "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                        "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                         "markerTypeCode": "a",
                         "markerTypeDescription": "a"
                       }
@@ -1253,7 +1267,7 @@
                 ],
                 "judicialResults": [
                   {
-                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "label": "a",
                     "welshLabel": "a",
                     "isAdjournmentResult": true,
@@ -1267,17 +1281,17 @@
                     "orderedDate": "0000-01-01",
                     "lastSharedDateTime": "a",
                     "courtClerk": {
-                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                       "firstName": "a",
                       "lastName": "a"
                     },
                     "delegatedPowers": {
-                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                       "firstName": "a",
                       "lastName": "a"
                     },
                     "fourEyesApproval": {
-                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                       "firstName": "a",
                       "lastName": "a"
                     },
@@ -1307,18 +1321,18 @@
                   "middleName": "a",
                   "lastName": "a",
                   "dateOfBirth": "0000-01-01",
-                  "nationalityId": "00000000-0000-0000-0000-000000000000",
+                  "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "nationalityCode": "a",
                   "nationalityDescription": "a",
-                  "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                  "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "additionalNationalityCode": "a",
                   "additionalNationalityDescription": "a",
                   "disabilityStatus": "a",
                   "ethnicity": {
-                    "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                    "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "observedEthnicityCode": "a",
                     "observedEthnicityDescription": "a",
-                    "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                    "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "selfDefinedEthnicityCode": "a",
                     "selfDefinedEthnicityDescription": "a"
                   },
@@ -1347,8 +1361,8 @@
                   },
                   "personMarkers": [
                     {
-                      "id": "00000000-0000-0000-0000-000000000000",
-                      "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                      "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                      "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                       "markerTypeCode": "a",
                       "markerTypeDescription": "a"
                     }
@@ -1385,18 +1399,18 @@
                 "middleName": "a",
                 "lastName": "a",
                 "dateOfBirth": "0000-01-01",
-                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
-                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "additionalNationalityCode": "a",
                 "additionalNationalityDescription": "a",
                 "disabilityStatus": "a",
                 "ethnicity": {
-                  "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "observedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "observedEthnicityCode": "a",
                   "observedEthnicityDescription": "a",
-                  "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                  "selfDefinedEthnicityId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "selfDefinedEthnicityCode": "a",
                   "selfDefinedEthnicityDescription": "a"
                 },
@@ -1425,14 +1439,18 @@
                 },
                 "personMarkers": [
                   {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                    "id": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+                    "markerTypeid": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                     "markerTypeCode": "a",
                     "markerTypeDescription": "a"
                   }
                 ]
               },
-              "bailStatus": "CONDITIONAL",
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+                "code": "B",
+                "description": "Conditional Bail"
+              },
               "bailConditions": "a",
               "custodyTimeLimit": "0000-01-01",
               "perceivedBirthYear": 0,
@@ -1498,7 +1516,7 @@
             ],
             "judicialResults": [
               {
-                "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                 "label": "a",
                 "welshLabel": "a",
                 "isAdjournmentResult": true,
@@ -1512,17 +1530,17 @@
                 "orderedDate": "0000-01-01",
                 "lastSharedDateTime": "a",
                 "courtClerk": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
                 "delegatedPowers": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
                 "fourEyesApproval": {
-                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
                   "firstName": "a",
                   "lastName": "a"
                 },
@@ -1568,20 +1586,24 @@
           }
         },
         "applicationResponse": {
-          "originatingHearingId": "00000000-0000-0000-0000-000000000000",
-          "applicationId": "00000000-0000-0000-0000-000000000000",
+          "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+          "applicationId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "applicationResponseDate": "0000-01-01",
           "isAdmitted": true
         }
       }
     ],
     "applicationOutcome": {
-      "originatingHearingId": "00000000-0000-0000-0000-000000000000",
-      "applicationId": "00000000-0000-0000-0000-000000000000",
+      "originatingHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
+      "applicationId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
       "applicationOutcomeDate": "0000-01-01",
-      "applicationOutcomeType": "OUTCOME"
+      "applicationOutcomeType": {
+        "description": "OUTCOME",
+        "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+        "sequence": 1
+      }
     },
-    "parentApplicationId": "00000000-0000-0000-0000-000000000000",
+    "parentApplicationId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
     "applicationParticulars": "a",
     "courtApplicationPayment": {
       "isFeePaid": true,
@@ -1594,7 +1616,7 @@
     "outOfTimeReasons": "a",
     "judicialResults": [
       {
-        "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+        "orderedHearingId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
         "label": "a",
         "welshLabel": "a",
         "isAdjournmentResult": true,
@@ -1608,17 +1630,17 @@
         "orderedDate": "0000-01-01",
         "lastSharedDateTime": "a",
         "courtClerk": {
-          "userId": "00000000-0000-0000-0000-000000000000",
+          "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "firstName": "a",
           "lastName": "a"
         },
         "delegatedPowers": {
-          "userId": "00000000-0000-0000-0000-000000000000",
+          "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "firstName": "a",
           "lastName": "a"
         },
         "fourEyesApproval": {
-          "userId": "00000000-0000-0000-0000-000000000000",
+          "userId": "b692b09e-4386-4dc0-8d0e-290686f4971e",
           "firstName": "a",
           "lastName": "a"
         },

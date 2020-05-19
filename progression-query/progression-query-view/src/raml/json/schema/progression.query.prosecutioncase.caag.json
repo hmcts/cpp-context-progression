@@ -78,6 +78,9 @@
         "id": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
         },
+        "masterDefendantId": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
         "firstName": {
           "type": "string"
         },
@@ -129,6 +132,7 @@
       },
       "required": [
         "id",
+        "masterDefendantId",
         "firstName",
         "lastName"
       ],

@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DefendantsAddedToCourtProceedingTransformer implements Transform {
 
+    public static final String PROSECUTION = "PROSECUTION";
+    public static final String ACTIVE = "ACTIVE";
     private DomainToIndexMapper domainToIndexMapper = new DomainToIndexMapper();
 
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -43,7 +45,8 @@ public class DefendantsAddedToCourtProceedingTransformer implements Transform {
                 final List<Party> parties = new ArrayList<>();
                 caseDetails = new CaseDetails();
                 caseDetails.setCaseId(prosecutionCaseId.toString());
-                caseDetails.set_case_type("PROSECUTION");
+                caseDetails.set_case_type(PROSECUTION);
+                caseDetails.setCaseStatus(ACTIVE);
                 caseDetails.setParties(parties);
                 caseDetailsExisting = caseDetails;
             }

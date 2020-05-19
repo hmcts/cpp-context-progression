@@ -46,14 +46,14 @@ module.exports = async function (context) {
     context.log(`Event log query called`);
 
     if (!filteredJson || Object.keys(filteredJson).length == 0) {
-        context.log(`No data found in filtered JSON for hearing ${hearingId} when event log requested.`)
+        context.log(`No data found in filtered JSON for hearing ${hearingId} when event log requested.`);
         return null;
     }
 
     context.log(`LAA reference found. Proceeding to get hearing event log for hearing ${hearingId} on date ${hearingDate}`);
     
     const eventLog = await getHearingEventLog(hearingId, hearingDate, cjscppuid, context);
-    context.log(`Event log returned from getHearingEventLog function is ` + JSON.stringify(eventLog))
+    context.log(`Event log returned from getHearingEventLog function is ` + JSON.stringify(eventLog));
     return eventLog;
 
 };

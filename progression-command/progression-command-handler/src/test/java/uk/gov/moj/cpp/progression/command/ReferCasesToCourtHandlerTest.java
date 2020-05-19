@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -15,8 +16,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.ReferCasesToCourt;
+import uk.gov.justice.core.courts.ReferredDefendant;
+import uk.gov.justice.core.courts.ReferredPerson;
+import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -30,6 +35,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CasesReferredToCourtAggregate;
 import uk.gov.moj.cpp.progression.handler.ReferCasesToCourtHandler;
+import uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +51,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ReferCaseToCourtHandlerTest {
+public class ReferCasesToCourtHandlerTest {
 
     @Mock
     private EventSource eventSource;
@@ -55,6 +61,9 @@ public class ReferCaseToCourtHandlerTest {
 
     @Mock
     private AggregateService aggregateService;
+
+    @Mock
+    MatchedDefendantLoadService matchedDefendantLoadService;
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
@@ -113,6 +122,7 @@ public class ReferCaseToCourtHandlerTest {
 
                 )
         );
+        verify(matchedDefendantLoadService).aggregateDefendantsSearchResultForAProsecutionCase(any(),any());
     }
 
     private static ReferCasesToCourt generateReferCasesToCourt() {
@@ -131,6 +141,16 @@ public class ReferCaseToCourtHandlerTest {
         return Collections.singletonList(
                 ReferredProsecutionCase.referredProsecutionCase()
                         .withId(CASE_ID)
+                        .withDefendants(Collections.singletonList(
+                                ReferredDefendant.referredDefendant()
+                                        .withId(UUID.randomUUID())
+                                        .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
+                                                .withPersonDetails(ReferredPerson.referredPerson()
+                                                        .withAddress(Address.address().build())
+                                                        .build())
+                                                .build())
+                                        .build()
+                        ))
                         .build()
         );
     }

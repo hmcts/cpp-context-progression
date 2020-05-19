@@ -12,6 +12,9 @@
     },
     "id": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "matchedDefendantHearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     }
   },
   "required": [

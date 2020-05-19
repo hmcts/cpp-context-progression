@@ -70,17 +70,19 @@ public class CaseReferredToCourtEventProcessorTest {
     
     @InjectMocks
     private CasesReferredToCourtProcessor eventProcessor;
+
     @Mock
     private ReferredProsecutionCaseTransformer referredProsecutionCaseTransformer;
+
     @Mock
     private ReferredCourtDocumentTransformer referredCourtDocumentTransformer;
+
     @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
 
     @Mock
-    private ProsecutionCase prosecutionCase;
-    @Mock
     private MessageService messageService ;
+
     @Mock
     private JsonEnvelope jsonEnvelope;
 
@@ -149,6 +151,7 @@ public class CaseReferredToCourtEventProcessorTest {
         when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command" +
                 ".create-prosecution-case")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.create-hearing-defendant-request")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
 

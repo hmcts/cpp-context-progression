@@ -15,10 +15,14 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
-
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 import javax.inject.Inject;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantListingStatusChangedListener {
@@ -30,7 +34,10 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
-    private CaseDefendantHearingRepository repository;
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    @Inject
+    private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
 
     @Inject
     private HearingRepository hearingRepository;
@@ -42,8 +49,27 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
         if (prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases() != null && !prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().isEmpty()) {
             prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().forEach(pc ->
                     pc.getDefendants().forEach(d ->
-                            repository.save(transformCaseDefendantHearingEntity(d, pc, hearingEntity))
+                            caseDefendantHearingRepository.save(transformCaseDefendantHearingEntity(d, pc, hearingEntity))
+                    )
+            );
+        }
+        updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged);
+    }
 
+    private void updateHearingForMatchedDefendants(final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged) {
+        final UUID hearingId = prosecutionCaseDefendantListingStatusChanged.getHearing().getId();
+        final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
+         if (Objects.nonNull(prosecutionCases) && prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus() == HearingListingStatus.HEARING_INITIALISED) {
+            prosecutionCases.forEach(
+                    prosecutionCase -> prosecutionCase.getDefendants().forEach(
+                            defendant -> {
+                                final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByDefendantId(defendant.getId());
+                                if (Objects.nonNull(entity)) {
+                                    entity.setHearingId(hearingId);
+                                    entity.setHearing(hearingRepository.findBy(hearingId));
+                                    matchDefendantCaseHearingRepository.save(entity);
+                                }
+                            }
                     )
             );
         }

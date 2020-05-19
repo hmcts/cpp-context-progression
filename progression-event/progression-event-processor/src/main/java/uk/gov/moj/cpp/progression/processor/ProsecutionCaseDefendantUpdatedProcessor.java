@@ -52,6 +52,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private DefendantUpdate updateDefendant(final DefendantUpdate defendant) {
         return DefendantUpdate.defendantUpdate()
                 .withId(defendant.getId())
+                .withMasterDefendantId(defendant.getMasterDefendantId())
                 .withProsecutionCaseId(defendant.getProsecutionCaseId())
                 .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
                 .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())

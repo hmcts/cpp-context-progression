@@ -30,6 +30,8 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -98,6 +100,7 @@ public class CPSEmailNotificationProcessorTest {
 
     @Mock
     private Requester requester;
+
 
 
     private final String prosecutionCaseSampleWithPersonDefendant = "progression.event.prosecutioncase.persondefendant.cpsnotification.json";
@@ -186,10 +189,10 @@ public class CPSEmailNotificationProcessorTest {
         final String testCPSEmail = "abc@xyz.com";
         final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
 
-        when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
-        Optional<String> cpsEmailOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getCPSEmail", jsonEnvelope, courtCenterId);
-        assertThat("CPSEmail is mismatched", testCPSEmail, is(cpsEmailOptional.get()));
-    }
+         when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
+         Optional<String> cpsEmailOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getCPSEmail", jsonEnvelope, courtCenterId);
+         Assert.assertEquals("CPSEmail is mismatched", testCPSEmail, cpsEmailOptional.get());
+   }
 
     @Test
     public void shouldGetEarliestHearingDay() throws Exception {
@@ -245,8 +248,8 @@ public class CPSEmailNotificationProcessorTest {
         Whitebox.invokeMethod(cpsEmailNotificationProcessor, "populateCPSNotificationAndSendEmail",
                 jsonEnvelope, defendantId.toString(), uuid, prosecutionCaseJsonOptional, hearingVOMock, EmailTemplateType.INSTRUCTION);
 
-        verify(referenceDataService, times(1)).getOrganisationUnitById(uuid, jsonEnvelope, requester);
-        verify(usersGroupService, times(1)).getDefenceOrganisationDetails(uuid, jsonEnvelope.metadata());
+        verify(referenceDataService,times(1)).getOrganisationUnitById(uuid, jsonEnvelope, requester);
+        verify(usersGroupService,times(1)).getDefenceOrganisationDetails(uuid, jsonEnvelope.metadata());
     }
 
     @Test

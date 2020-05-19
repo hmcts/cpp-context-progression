@@ -67,6 +67,8 @@
         "applicant": {
           "defendant": {
             "id": "D1000000-0000-0000-0000-000000000000",
+            "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+            "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
             "prosecutionCaseId": "00000000-0000-0000-0000-000000000000",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
@@ -605,6 +607,8 @@
           },
           "defendant": {
             "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+            "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
             "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "numberOfPreviousConvictionsCited": 0,
             "prosecutionAuthorityReference": "a",
@@ -1199,6 +1203,8 @@
               },
               "defendant": {
                 "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+                "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
                 "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "numberOfPreviousConvictionsCited": 0,
                 "prosecutionAuthorityReference": "a",

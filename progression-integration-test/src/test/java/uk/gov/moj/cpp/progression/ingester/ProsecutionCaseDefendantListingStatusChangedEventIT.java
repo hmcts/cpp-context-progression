@@ -53,6 +53,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class ProsecutionCaseDefendantListingStatusChangedEventIT extends AbstractIT {
 
     private final static String DEFENDANT_LISTING_STATUS_CHANGED_EVENT = "progression.event.prosecutionCase-defendant-listing-status-changed";
@@ -175,42 +176,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
             verificationHelper.verifyHearings(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputCase, 0);
         }
         verificationHelper.verifyCounts(3,3,0);
-    }
-
-    @Test
-    public void shouldPreserveSjpFlags() throws IOException {
-
-        indexSjpMagistrateCase(thirdCaseId);
-
-        final Metadata metadata = createMetadata(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
-
-        final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(EVENT_LOCATION);
-
-        sendMessage(messageProducer, DEFENDANT_LISTING_STATUS_CHANGED_EVENT, prosecutionCaseDefendantListingStatusChangedEvent, metadata);
-
-        verifyInMessagingQueue();
-
-        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
-
-            try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 3) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                fail();
-            }
-            return empty();
-        });
-
-        assertTrue(prosecutionCaseResponseJsonObject.isPresent());
-
-        final JsonObject thirdCase = getCaseAt(Optional.of(elasticSearchIndexFinderUtil.findByCaseIds("crime_case_index", thirdCaseId)), 0);
-
-        assertThat("_is_charging flag should be preserved by listing-status-changed", thirdCase.getBoolean("_is_charging"), is(false));
-        assertThat("_is_crown flag should be overwritten by listing-status-changed", thirdCase.getBoolean("_is_crown"), is(true));
-        assertThat("_is_magistrates flag should be overwritten by listing-status-changed", thirdCase.getBoolean("_is_magistrates"), is(false));
-        assertThat("_is_sjp flag should be preserved by listing-status-changed", thirdCase.getBoolean("_is_sjp"), is(true));
     }
 
     private void indexSjpMagistrateCase(final String caseId) throws IOException {

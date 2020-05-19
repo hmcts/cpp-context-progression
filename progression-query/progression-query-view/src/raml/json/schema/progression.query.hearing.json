@@ -5,6 +5,9 @@
     "hearing": {
       "type":"object",
       "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
     }
   },
   "required": [

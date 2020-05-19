@@ -89,3 +89,21 @@ Feature: CaseAggregate
     Given hearing defendant request created
     When you enrichInitiateHearing on a HearingAggregate with a enrich initiate hearing
     Then initiate hearing with defendant referral reason enriched
+
+  Scenario: Match defendant for incoming prosecution case
+
+    Given no previous events
+    When you matchPartiallyMatchedDefendants on a CaseAggregate with a match defendant
+    Then defendant matched
+
+  Scenario: Defendant has been not matched
+
+    Given no previous events
+    When you matchPartiallyMatchedDefendants on a CaseAggregate with a match defendant
+    Then defendant not already matched
+
+  Scenario: Defendant already been matched
+
+    Given defendant matched
+    When you matchPartiallyMatchedDefendants on a CaseAggregate with a match defendant again
+    Then defendant already matched

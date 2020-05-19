@@ -28,6 +28,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -98,10 +99,12 @@ public class ProgressionServiceTest {
     private static final String JUDICIARY_TYPE_1 = "RECORDER";
     private static final String JUDICIARY_TYPE_2 = "MAGISTRATE";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK = "progression.command-link-prosecution-cases-to-hearing";
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
+    public static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -497,6 +500,23 @@ public class ProgressionServiceTest {
 
 
     @Test
+    public void testCreateHearingProsecutionCaseLink() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK);
+        final UUID hearingId = randomUUID();
+        final List<UUID> caseIds = asList(randomUUID());
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("caseId", caseIds.get(0).toString())
+                .build();
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.linkProsecutionCasesToHearing(envelope, hearingId, caseIds);
+        verify(sender).send(finalEnvelope);
+    }
+
+    @Test
     public void testShouldTransformBoxWorkApplication() {
 
         final UUID applicationId = UUID.randomUUID();
@@ -528,6 +548,39 @@ public class ProgressionServiceTest {
         assertThat(actualHearing.getHearingDays().get(0).getListedDurationMinutes(), CoreMatchers.is(expectedHearing.getHearingDays().get(0).getListedDurationMinutes()));
         assertThat(actualHearing.getCourtApplications().get(0).getDueDate(), CoreMatchers.is(expectedHearing.getCourtApplications().get(0).getDueDate()));
         assertThat(actualHearing.getIsBoxHearing(), CoreMatchers.is(expectedHearing.getIsBoxHearing()));
+
+    }
+
+    @Test
+    public void shouldSendPrepareSummonsForExtendedHearingCommand() {
+
+        final ConfirmedHearing confirmedHearing = generateConfirmedHearingForPrepareSummons();
+        final HearingConfirmed hearingConfirmed = HearingConfirmed.hearingConfirmed()
+                .withConfirmedHearing(confirmedHearing)
+                .build();
+        final JsonEnvelope prepareSummonsEnvelope = getEnvelope(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING);
+        progressionService.prepareSummonsDataForExtendHearing(prepareSummonsEnvelope, hearingConfirmed);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.confirmedHearing.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
+                                withJsonPath("$.confirmedHearing.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
+                                withJsonPath("$.confirmedHearing.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
+                                withJsonPath("$.confirmedHearing.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
+                                withJsonPath("$.confirmedHearing.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
+                                withJsonPath("$.confirmedHearing.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
+                                withJsonPath("$.confirmedHearing.prosecutionCases[0].id", is(CASE_ID_1.toString())),
+                                withJsonPath("$.confirmedHearing.prosecutionCases[0].defendants[0].id", is(DEFENDANT_ID_1.toString())),
+                                withJsonPath("$.confirmedHearing.prosecutionCases[1].id", is(CASE_ID_2.toString())),
+                                withJsonPath("$.confirmedHearing.prosecutionCases[1].defendants[0].id", is(DEFENDANT_ID_2.toString()))
+
+                        )
+                )
+                )
+        );
 
     }
 

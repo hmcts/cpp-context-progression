@@ -324,6 +324,24 @@ protocols: [ HTTP, HTTPS ]
             example:  !include json/progression.query.defendants-by-laacontractnumber.json
             schema:  !include json/schema/progression.query.defendants-by-laacontractnumber.json
 
+/prosecutioncases/{caseId}/lsm-info:
+  uriParameters:
+        caseId:
+          description: ID of case notes to get
+          type: string
+  description: get cases match with given masterDefendantIds
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.case-lsm-info+json
+          name: progression.query.case-lsm-info
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.case-lsm-info+json:
+
 # ***** Deprecated API - Start ********
 
 # ***** Do not add any new API in this section *****
@@ -453,3 +471,41 @@ protocols: [ HTTP, HTTPS ]
                    example: !include json/progression.query.defendant-offences.json
 
 # Deprecated API  - End
+
+/partial-match-defendants:
+  get:
+    description: |
+      Return partial match data
+      ...
+      (mapping):
+      responseType: application/vnd.progression.query.partial-match-defendant+json
+      name: progression.query.partial-match-defendants
+      ...
+    queryParameters:
+      sortField:
+        description: field name for sorting
+        example: defendantName
+        type: string
+        required: false
+      sortOrder:
+        description: direction
+        example: ASC, DESC
+        type: string
+        required: false
+      page:
+        description: page
+        example: 2
+        type: integer
+        required: false
+      pageSize:
+        description: size
+        example: 20
+        type: integer
+        required: false
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.partial-match-defendant+json:
+            schema: !include json/progression.query.partial-match-defendant.json
+            example: !include json/schema/progression.query.partial-match-defendant.json

@@ -6,7 +6,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -26,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
@@ -33,9 +33,6 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Inject
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
     private ListCourtHearingTransformer listCourtHearingTransformer;
@@ -53,8 +50,6 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     @Inject
     private Enveloper enveloper;
 
-    static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
-
     @Handles("progression.event.defendants-added-to-court-proceedings")
     public void process(final JsonEnvelope jsonEnvelope) {
 
@@ -62,29 +57,33 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
         final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedings.class);
 
-        final Optional<JsonObject> prosecutionCaseJsonObject = progressionService.getProsecutionCaseDetailById(jsonEnvelope,
-                defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString());
+        final String prosecutionCaseId = defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString();
+        final Optional<JsonObject> prosecutionCaseJsonObject = progressionService.getProsecutionCaseDetailById(jsonEnvelope, prosecutionCaseId);
 
         if(prosecutionCaseJsonObject.isPresent()) {
+
+            final JsonObject jsonObject = createObjectBuilder()
+                    .add("prosecutionCaseId", prosecutionCaseId)
+                    .build();
+
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.process-matched-defendants").apply(jsonObject));
 
             final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
                     GetHearingsAtAGlance.class);
 
-            final List<Hearings> futureHearings = hearingsAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
-                    .anyMatch(hday -> hday.getSittingDay().toLocalDate().compareTo(LocalDate.now())>=0
-                    )).collect(Collectors.toList());
+            final List<Hearings> futureHearings = hearingsAtAGlance.getHearings().stream()
+                    .filter(hearing -> hearing.getHearingDays().stream()
+                            .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >=0))
+                    .collect(Collectors.toList());
 
             if (!futureHearings.isEmpty()) {
-                sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS).apply(payload));
+                sender.send(enveloper.withMetadataFrom(jsonEnvelope, "public.progression.defendants-added-to-court-proceedings").apply(payload));
             } else {
-
                     final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(jsonEnvelope,
                             Collections.singletonList(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
                                     ProsecutionCase.class)), defendantsAddedToCourtProceedings.getListHearingRequests(), UUID.randomUUID());
                     listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
-
             }
-
         }
     }
 }

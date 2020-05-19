@@ -23,7 +23,6 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -52,35 +51,18 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
     private String referralReasonId;
     private String applicantId1;
     private String applicantDefendantId1;
-    private String respondantId1;
-    private String respondantDefendantId1;
+    private String respondentId1;
+    private String respondentDefendantId1;
     private String applicantId2;
     private String applicantDefendantId2;
-    private String respondantId2;
-    private String respondantDefendantId2;
+    private String respondentId2;
+    private String respondentDefendantId2;
     private String applicationId1;
     private String applicationId2;
     private String applicationReference;
 
     @Before
     public void setup() {
-        caseId = UUID.randomUUID().toString();
-        defendantId = UUID.randomUUID().toString();
-        materialIdActive = randomUUID().toString();
-        materialIdDeleted = randomUUID().toString();
-        courtDocumentId = randomUUID().toString();
-        referralReasonId = randomUUID().toString();
-        applicantId1 = randomUUID().toString();
-        applicantDefendantId1 = randomUUID().toString();
-        respondantId1 = randomUUID().toString();
-        respondantDefendantId1 = randomUUID().toString();
-        applicantId2 = randomUUID().toString();
-        applicantDefendantId2 = randomUUID().toString();
-        respondantId2 = randomUUID().toString();
-        respondantDefendantId2 = randomUUID().toString();
-        applicationId1 = randomUUID().toString();
-        applicationId2 = randomUUID().toString();
-        applicationReference =  randomAlphanumeric(10).toUpperCase();
         deleteAndCreateIndex();
     }
 
@@ -93,12 +75,14 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmation() throws Exception {
 
+        this.initializeIds();
+
         final String caseUrn = generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondantId1, respondantDefendantId1, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondantId2, respondantDefendantId2, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
@@ -118,8 +102,8 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId1)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId1)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId1)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId1)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId1)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondentId1)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId1)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication1 = jsonFromString(payloadStr1);
 
@@ -129,8 +113,8 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId2)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId2)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId2)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId2)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId2)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondentId2)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId2)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication2 = jsonFromString(payloadStr2);
 
@@ -151,14 +135,16 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmationAndVerifyUpdate() throws Exception {
 
+        this.initializeIds();
+
         final String caseUrn = generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondantId1, respondantDefendantId1, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondantId2, respondantDefendantId2, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondantId1, respondantDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
@@ -178,8 +164,8 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId1)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId1)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId1)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId1)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId1)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondentId1)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId1)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication1 = jsonFromString(payloadStr1);
 
@@ -189,8 +175,8 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId2)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId2)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId2)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId2)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId2)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondentId2)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId2)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
         final JsonObject inputApplication2 = jsonFromString(payloadStr2);
         final DocumentContext inputCourtApplication2 = parse(inputApplication2);
@@ -221,6 +207,26 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final JsonObject prosecutionCaseJO = prosecutionCase.read("$.courtReferral.prosecutionCases[0]");
         final JsonObject prosecutionCaseEvent = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
         return parse(prosecutionCaseEvent);
+    }
+
+    private void initializeIds(){
+        caseId = UUID.randomUUID().toString();
+        defendantId = UUID.randomUUID().toString();
+        materialIdActive = randomUUID().toString();
+        materialIdDeleted = randomUUID().toString();
+        courtDocumentId = randomUUID().toString();
+        referralReasonId = randomUUID().toString();
+        applicantId1 = randomUUID().toString();
+        applicantDefendantId1 = randomUUID().toString();
+        respondentId1 = randomUUID().toString();
+        respondentDefendantId1 = randomUUID().toString();
+        applicantId2 = randomUUID().toString();
+        applicantDefendantId2 = randomUUID().toString();
+        respondentId2 = randomUUID().toString();
+        respondentDefendantId2 = randomUUID().toString();
+        applicationId1 = randomUUID().toString();
+        applicationId2 = randomUUID().toString();
+        applicationReference =  randomAlphanumeric(10).toUpperCase();
     }
 }
 

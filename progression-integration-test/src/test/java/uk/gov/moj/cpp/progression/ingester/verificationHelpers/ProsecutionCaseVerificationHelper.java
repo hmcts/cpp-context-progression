@@ -60,13 +60,15 @@ public class ProsecutionCaseVerificationHelper {
                 .assertThat("$.postCode", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.address.postcode")).getString()))
                 .assertThat("$.addressLines", equalTo(addressLines(defendant, "$.personDefendant.personDetails.address")))
                 .assertThat("$.organisationName", equalTo(((JsonString) defendant.read("$.legalEntityDefendant.organisation.name")).getString()))
-                //.assertThat("$.pncId", equalTo(((JsonString) defendant.read("$.pncId")).getString()))
                 .assertThat("$.arrestSummonsNumber", equalTo(((JsonString) defendant.read("$.personDefendant.arrestSummonsNumber")).getString()))
                 .assertThat("$._party_type", equalTo(DEFENDANT))
+                .assertThat("$.masterPartyId", equalTo(((JsonString) defendant.read("$.masterDefendantId")).getString()))
+                .assertThat("$.croNumber", equalTo(((JsonString) defendant.read("$.croNumber")).getString()))
+                .assertThat("$.pncId", equalTo(((JsonString) defendant.read("$.pncId")).getString()))
 
                 //GPE-11009: LAA updates
                 .assertThat("$.nationalInsuranceNumber", equalTo(((JsonString) defendant.read("$.personDefendant.personDetails.nationalInsuranceNumber")).getString()))
-                .assertThat("$.proceedingsConcluded", equalTo((defendant.read("$.proceedingsConcluded")).toString()))
+                .assertThat("$.proceedingsConcluded", equalTo(Boolean.valueOf(defendant.read("$.proceedingsConcluded").toString())))
 
                 //Offence 1
                 .assertThat("$.offences[0].offenceId", equalTo(((JsonString) defendant.read("$.offences[0].id")).getString()))

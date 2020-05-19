@@ -28,6 +28,7 @@ public class SearchProsecutionCaseRepositoryTest {
 
     private String searchCriteria;
     private UUID defedantId;
+    private String caseId;
 
     @Inject
     private SearchProsecutionCaseRepository repository;
@@ -36,6 +37,7 @@ public class SearchProsecutionCaseRepositoryTest {
     public void setUp() {
         defedantId = UUID.fromString("e1d32d9d-29ec-4934-a932-22a50f223966");
         searchCriteria = "%JOHN% %smith% %1977-01-01%";
+        caseId = "5002d600-af66-11e8-b568-0800200c9a66";
     }
 
     @Test
@@ -74,10 +76,24 @@ public class SearchProsecutionCaseRepositoryTest {
         assertEquals(defedantId, actual.getDefendantId());
     }
 
+    @Test
+    public void shouldFindByCaseId() {
+        //given
+        final SearchProsecutionCaseEntity entity = searchProsecutionCase();
+        repository.save(entity);
+
+        //when
+        final SearchProsecutionCaseEntity actual = repository.findByCaseId(entity.getCaseId()).stream().findFirst().get();
+
+        //then
+        assertNotNull("Should not be null", actual);
+        assertEquals(caseId, actual.getCaseId());
+    }
+
     private SearchProsecutionCaseEntity searchProsecutionCase() {
         final SearchProsecutionCaseEntity searchProsecutionCaseEntity = new SearchProsecutionCaseEntity();
         searchProsecutionCaseEntity.setDefendantId(defedantId);
-        searchProsecutionCaseEntity.setCaseId("5002d600-af66-11e8-b568-0800200c9a66");
+        searchProsecutionCaseEntity.setCaseId(caseId);
         searchProsecutionCaseEntity.setReference("PAR-100");
         searchProsecutionCaseEntity.setDefendantFirstName("John");
         searchProsecutionCaseEntity.setDefendantMiddleName("S");

@@ -9,6 +9,7 @@ public final class SchemaVariableConstants {
     public static final String PROGRESSION_COURT_APPLICATION_CREATED = "progression.event.court-application-created";
     public static final String PROGRESSION_COURT_APPLICATION_ADDED_TO_CASE = "progression.event.court-application-added-to-case";
     public static final String PROGRESSION_COURT_APPLICATION_UPDATED = "progression.event.court-application-updated";
+    public static final String PROGRESSION_SENDING_SHEET_COMPLETED = "progression.events.sending-sheet-completed";
     public static final String PROGRESSION_HEARING_INITIATE_ENRICHED = "progression.hearing-initiate-enriched";
     public static final String PROGRESSION_HEARING_APPLICATION_LINK_CREATED = "progression.event.hearing-application-link-created";
     public static final String PROGRESSION_HEARING_EXTENDED = "progression.event.hearing-extended";

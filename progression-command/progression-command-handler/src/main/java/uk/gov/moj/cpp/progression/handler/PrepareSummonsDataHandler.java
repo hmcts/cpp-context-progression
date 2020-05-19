@@ -2,7 +2,10 @@ package uk.gov.moj.cpp.progression.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.ConfirmedHearing;
+import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
 import uk.gov.justice.core.courts.PrepareSummonsData;
+import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -17,6 +20,8 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @SuppressWarnings("squid:S3655")
@@ -46,12 +51,52 @@ public class PrepareSummonsDataHandler {
         }
     }
 
+    @Handles("progression.command.prepare-summons-data-for-extended-hearing")
+    public void handlePrepareSummonsDataForExtendedHearingEvent(final Envelope<PrepareSummonsDataForExtendedHearing> envelope)
+            throws EventStreamException {
+
+        LOGGER.debug("progression.command.prepare-summons-data-for-extended-hearing {}", envelope);
+
+        final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing = envelope.payload();
+        final ConfirmedHearing confirmedHearing = prepareSummonsDataForExtendedHearing.getConfirmedHearing();
+
+        // aggregating based on unallocated hearing id
+        final EventStream eventStream = eventSource.getStreamById(confirmedHearing.getId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.createListDefendantRequest(confirmedHearing);
+
+        if(Objects.nonNull(events)) {
+            appendEventsToStream(envelope, eventStream, events);
+        }
+    }
+
+    @Handles("progression.command.extend-hearing-defendant-request-update-requested")
+    public void handleExtendHearingDefendantRequestUpdateRequestedEvent(final Envelope<ExtendHearingDefendantRequestUpdateRequested> envelope)
+            throws EventStreamException {
+
+        LOGGER.debug("progression.command.extend-hearing-defendant-request-update-requested {}", envelope);
+
+        final ExtendHearingDefendantRequestUpdateRequested extendHearingDefendantRequestUpdateRequested = envelope.payload();
+
+        // aggregating based on allocated hearing id
+        final UUID hearingId = extendHearingDefendantRequestUpdateRequested.getConfirmedHearing().getExistingHearingId();
+        final EventStream eventStream = eventSource.getStreamById(hearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+
+        final Stream<Object> events =
+                hearingAggregate.updateListDefendantRequest(extendHearingDefendantRequestUpdateRequested.getDefendantRequests(),
+                        extendHearingDefendantRequestUpdateRequested.getConfirmedHearing());
+
+        if(Objects.nonNull(events)) {
+            appendEventsToStream(envelope, eventStream, events);
+        }
+    }
+
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(
                 events
                         .map(enveloper.withMetadataFrom(jsonEnvelope)));
     }
-
 
 }

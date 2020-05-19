@@ -5,6 +5,9 @@
   "properties": {
     "hearingRequest": {
       "$ref": "http://justice.gov.uk/core/courts/hearingListingNeeds.json"
+    },
+    "isAdjourned": {
+      "type": "boolean"
     }
   },
   "required": [

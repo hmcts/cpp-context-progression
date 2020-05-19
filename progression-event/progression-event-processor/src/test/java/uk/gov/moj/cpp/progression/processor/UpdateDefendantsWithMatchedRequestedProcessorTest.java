@@ -1,0 +1,207 @@
+package uk.gov.moj.cpp.progression.processor;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.DefendantUpdateDifferenceService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class UpdateDefendantsWithMatchedRequestedProcessorTest {
+
+
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @Spy
+    @InjectMocks
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+    @Spy
+    @InjectMocks
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+
+    @Spy
+    private final Enveloper enveloper = createEnveloper();
+
+    @InjectMocks
+    private UpdateDefendantsWithMatchedRequestedProcessor eventProcessor;
+    @Mock
+    private Sender sender;
+    @Mock
+    private Requester requester;
+    @Mock
+    private JsonEnvelope responseEnvelope;
+    @Mock
+    private DefendantUpdateDifferenceService defendantUpdateDifferenceService;
+    @Mock
+    private ProgressionService progressionService;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void handleUpdateDefendantWithMatchedRequestedEvent() {
+
+        UUID matchedDefendantHearingId = UUID.randomUUID();
+        UUID originalDefendantId = UUID.randomUUID();
+        UUID originalProsecutionCaseId = UUID.randomUUID();
+        UUID masterDefendantId = UUID.randomUUID();
+        DefendantUpdate originalDefendantNextVersion = DefendantUpdate.defendantUpdate()
+                .withId(originalDefendantId)
+                .withProsecutionCaseId(originalProsecutionCaseId)
+                .build();
+        ProsecutionCaseUpdateDefendantsWithMatchedRequested eventContent = ProsecutionCaseUpdateDefendantsWithMatchedRequested.prosecutionCaseUpdateDefendantsWithMatchedRequested()
+                .withMatchedDefendantHearingId(matchedDefendantHearingId)
+                .withDefendant(originalDefendantNextVersion)
+                .build();
+
+        JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-case-update-defendants-with-matched-requested"),
+                objectToJsonObjectConverter.convert(eventContent));
+
+        Defendant originalDefendantPreviousVersion = Defendant.defendant()
+                .withId(originalDefendantId)
+                .withMasterDefendantId(masterDefendantId)
+                .withProsecutionCaseId(originalProsecutionCaseId)
+                .build();
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(originalProsecutionCaseId)
+                .withDefendants(Arrays.asList(originalDefendantPreviousVersion))
+                .build();
+
+        JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, originalProsecutionCaseId.toString()))
+                .thenReturn(
+                        Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+
+
+        UUID matchedDefendantId = UUID.randomUUID();
+        UUID matchedDefendantProsecutionCaseId = UUID.randomUUID();
+        Hearing hearing = Hearing.hearing()
+                .withId(matchedDefendantHearingId)
+                .withProsecutionCases(Arrays.asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(originalProsecutionCaseId)
+                                .withDefendants(Arrays.asList(
+                                        Defendant.defendant()
+                                                .withId(originalDefendantId)
+                                                .withMasterDefendantId(masterDefendantId)
+                                                .withProsecutionCaseId(originalProsecutionCaseId)
+                                                .build()
+                                ))
+                                .build(),
+                        ProsecutionCase.prosecutionCase()
+                                .withId(matchedDefendantProsecutionCaseId)
+                                .withDefendants(Arrays.asList(
+                                        Defendant.defendant()
+                                                .withId(matchedDefendantId)
+                                                .withMasterDefendantId(masterDefendantId)
+                                                .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
+                                                .build()
+                                ))
+                                .build()
+                ))
+                .build();
+
+        JsonObject hearingJson = objectToJsonObjectConverter.convert(hearing);
+        when(progressionService.getHearing(jsonEnvelope, matchedDefendantHearingId.toString())).thenReturn(
+                Optional.of(createObjectBuilder().add("hearing", hearingJson).build()));
+
+        Defendant matchedDefendantPreviousVersion = Defendant.defendant()
+                .withId(matchedDefendantId)
+                .withMasterDefendantId(masterDefendantId)
+                .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
+                .build();
+        ProsecutionCase matchedDefendantProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(matchedDefendantProsecutionCaseId)
+                .withDefendants(Arrays.asList(
+                        matchedDefendantPreviousVersion
+                ))
+                .build();
+
+        JsonObject matchedDefendantProsecutionCaseJson = objectToJsonObjectConverter.convert(matchedDefendantProsecutionCase);
+        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, matchedDefendantProsecutionCaseId.toString())).thenReturn(
+                Optional.of(createObjectBuilder().add("prosecutionCase", matchedDefendantProsecutionCaseJson).build()));
+
+        DefendantUpdate matchedDefendantNextVersion = DefendantUpdate.defendantUpdate()
+                .withId(matchedDefendantId)
+                .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
+                .build();
+        when(defendantUpdateDifferenceService.calculateDefendantUpdate(
+                any(),//eq(originalDefendantPreviousVersion),
+                any(),//eq(originalDefendantNextVersion),
+                any()//eq(matchedDefendantPreviousVersion)
+        )).thenReturn(matchedDefendantNextVersion);
+        // run
+        eventProcessor.handleUpdateDefendantWithMatchedRequestedEvent(jsonEnvelope);
+
+        // verify
+
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+        List<JsonEnvelope> allValues = envelopeArgumentCaptor.getAllValues();
+
+        assertThat(allValues.get(0), jsonEnvelope(
+                metadata().withName("progression.command.update-defendant-for-prosecution-case"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.defendant.id", is(originalDefendantId.toString())),
+                        withJsonPath("$.id", is(originalDefendantId.toString())),
+                        withJsonPath("$.prosecutionCaseId", is(originalProsecutionCaseId.toString()))
+                ))));
+
+        assertThat(allValues.get(1), jsonEnvelope(
+                metadata().withName("progression.command.update-defendant-for-prosecution-case"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.defendant.id", is(matchedDefendantId.toString())),
+                        withJsonPath("$.id", is(matchedDefendantId.toString())),
+                        withJsonPath("$.prosecutionCaseId", is(matchedDefendantProsecutionCaseId.toString()))
+                ))));
+    }
+}

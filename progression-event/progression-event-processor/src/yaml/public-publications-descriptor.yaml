@@ -83,6 +83,18 @@ subscriptions_descriptor:
         - name: public.progression.case-note-added
           schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
 
+        - name: public.progression.defendant-matched
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.defendant-matched.json
+
+        - name: public.progression.defendant-unmatched
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.defendant-unmatched.json
+
+        - name: public.progression.link-cases-response
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.link-cases-response.json
+
+        - name: public.progression.case-linked
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.case-linked.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

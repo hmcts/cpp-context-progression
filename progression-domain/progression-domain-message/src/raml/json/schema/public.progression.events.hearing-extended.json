@@ -10,11 +10,17 @@
 		"courtApplication": {
 			"description": "The court application that is be added to the existing listing",
 			 "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
-		}
+		},
+		 "prosecutionCases": {
+			 "type": "array",
+			 "minItems": 1,
+			 "items": {
+				 "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+			 }
+		 }
 	 },
 	 "required": [
-		"hearingId",
-		"courtApplication"
+		"hearingId"
 	],
 	 "additionalProperties": false
 }

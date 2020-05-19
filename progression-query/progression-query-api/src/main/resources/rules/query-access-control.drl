@@ -320,3 +320,21 @@ rule "Query - Access control for  progression.query.defendants-by-laacontractnum
   then
     $outcome.setSuccess(true);
 end
+
+rule "Query - Access control for  progression.query.partial-match-defendants"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.partial-match-defendants");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Court Admin", "Court Associate", "Court Clerk", "Listing Officers", "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.case-lsm-info"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case-lsm-info");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge"))
+  then
+    $outcome.setSuccess(true);
+end

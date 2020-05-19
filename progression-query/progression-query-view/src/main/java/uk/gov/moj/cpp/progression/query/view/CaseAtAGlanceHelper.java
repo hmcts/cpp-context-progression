@@ -96,7 +96,9 @@ public class CaseAtAGlanceHelper {
         if (nonNull(prosecutionCase.getDefendants())) {
 
             prosecutionCase.getDefendants().forEach(defendant -> {
-                final CaagDefendants.Builder caagDefendant = CaagDefendants.caagDefendants().withId(defendant.getId());
+                final CaagDefendants.Builder caagDefendant = CaagDefendants.caagDefendants()
+                        .withId(defendant.getId())
+                        .withMasterDefendantId(defendant.getMasterDefendantId());
                 setDefendantPersonalDetails(defendant, caagDefendant);
 
                 if (nonNull(defendant.getOffences())) {

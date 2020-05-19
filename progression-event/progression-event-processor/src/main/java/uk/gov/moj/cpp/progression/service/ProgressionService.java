@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Optional.ofNullable;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -22,6 +23,7 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -30,6 +32,7 @@ import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -68,18 +71,21 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:S3655", "squid:S1192", "squid:S1168", "pmd:NullAssignment", "squid:CallToDeprecatedMethod"})
 public class ProgressionService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionService.class);
+
+    private static final String APPLICATION_ID = "applicationId";
     public static final String CASE_ID = "caseId";
     private static final String PROSECUTION_CASE = "prosecutionCase";
 
+    public static final String HEARING_ID = "hearingId";
     public static final String DEFENDANT_ID = "defendantId";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionService.class);
-    private static final String APPLICATION_ID = "applicationId";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PROGRESSION_QUERY_SEARCH_CASES = "progression.query.search-cases";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
     private static final String PROGRESSION_QUERY_DEFENDANT_REQUEST = "progression.query.defendant-request";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
+    private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
@@ -91,6 +97,7 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_COURT_APPLICATION = "progression.query.application";
     private static final String PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_STATUS = "progression.command.update-court-application-status";
     private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
+    private static final String PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK = "progression.command-link-prosecution-cases-to-hearing";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
@@ -147,8 +154,11 @@ public class ProgressionService {
     }
 
     private static Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds) {
+        final ZonedDateTime hearingDateTime = nonNull(hearingListingNeeds.getEarliestStartDateTime()) ?
+                hearingListingNeeds.getEarliestStartDateTime() : hearingListingNeeds.getListedStartDateTime();
+
         return Hearing.hearing()
-                .withHearingDays(populateHearingDays(hearingListingNeeds.getEarliestStartDateTime(), hearingListingNeeds.getEstimatedMinutes()))
+                .withHearingDays(populateHearingDays(hearingDateTime, hearingListingNeeds.getEstimatedMinutes()))
                 .withCourtCentre(hearingListingNeeds.getCourtCentre())
                 .withJurisdictionType(hearingListingNeeds.getJurisdictionType())
                 .withId(hearingListingNeeds.getId())
@@ -209,9 +219,9 @@ public class ProgressionService {
                 .withAliases(matchedDefendant.getAliases())
                 .withPncId(matchedDefendant.getPncId())
                 .withJudicialResults(matchedDefendant.getJudicialResults());
-        if (Objects.nonNull(matchedDefendant.getPersonDefendant()) &&
-                Objects.nonNull(matchedDefendant.getPersonDefendant().getPersonDetails()) &&
-                Objects.nonNull(matchedDefendant.getPersonDefendant().getPersonDetails().getDateOfBirth())) {
+        if (nonNull(matchedDefendant.getPersonDefendant()) &&
+                nonNull(matchedDefendant.getPersonDefendant().getPersonDetails()) &&
+                nonNull(matchedDefendant.getPersonDefendant().getPersonDetails().getDateOfBirth())) {
 
             builder.withIsYouth(LocalDateUtils.isYouth(matchedDefendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), earliestHearingDate));
         }
@@ -243,14 +253,14 @@ public class ProgressionService {
         });
     }
 
-    private void relayCaseToCourtStore(ProsecutionCase prosecutionCase) {
+    private void relayCaseToCourtStore(final ProsecutionCase prosecutionCase) {
 
         if (prosecutionCase != null && prosecutionCase.getProsecutionCaseIdentifier() != null && prosecutionCase.getProsecutionCaseIdentifier().getCaseURN() != null) {
             final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
             payloadBuilder.add("CaseReference", prosecutionCase.getProsecutionCaseIdentifier().getCaseURN());
             try {
                 this.azureFunctionService.relayCaseOnCPP(payloadBuilder.build().toString());
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 LOGGER.error(String.format("Failed to call Azure function %s", ex));
             }
         }
@@ -263,7 +273,6 @@ public class ProgressionService {
                 .add("hearingDateTime", ZonedDateTimes.toString(getEarliestDate(confirmedHearing.getHearingDays())))
                 .add("confirmedProsecutionCaseIds", transformProsecutionCases(confirmedHearing.getProsecutionCases()))
                 .build();
-
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA).apply(casesConfirmedPayload));
     }
 
@@ -294,8 +303,34 @@ public class ProgressionService {
         }
     }
 
+    public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases) {
+        if (isNotEmpty(prosecutionCases)) {
+            prosecutionCases.stream().forEach(pc -> {
+                final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());
+                if (prosecutionCaseJson.isPresent()) {
+                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                    pc.getDefendants().stream().forEach(confirmedDefendantConsumer -> {
+                        final Optional<Defendant> matchedDefendant = prosecutionCaseEntity.getDefendants().stream()
+                                .filter(defEnt -> defEnt.getId().equals(confirmedDefendantConsumer.getId()) && isYouthUpdated(confirmedDefendantConsumer, defEnt))
+                                .findFirst();
+
+                        if (matchedDefendant.isPresent()) {
+                            final JsonObject updateYouthPayload = createObjectBuilder()
+                                    .add("defendant", objectToJsonObjectConverter.convert(transformDefendantFromEntity(matchedDefendant.get(), confirmedDefendantConsumer.getIsYouth(), pc.getId())))
+                                    .add("id", confirmedDefendantConsumer.getId().toString())
+                                    .add("prosecutionCaseId", pc.getId().toString())
+                                    .build();
+
+                            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH).apply(updateYouthPayload));
+                        }
+                    });
+                }
+            });
+        }
+    }
+
     private boolean isYouthUpdated(final Defendant confirmedDefendantConsumer, final Defendant defEnt) {
-        if (Objects.nonNull(confirmedDefendantConsumer.getIsYouth())) {
+        if (nonNull(confirmedDefendantConsumer.getIsYouth())) {
             return !confirmedDefendantConsumer.getIsYouth().equals(defEnt.getIsYouth());
         }
         return false;
@@ -306,6 +341,7 @@ public class ProgressionService {
                 .withIsYouth(isYouth)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withId(defendantEntity.getId())
+                .withMasterDefendantId(defendantEntity.getMasterDefendantId())
                 .withAssociatedPersons(defendantEntity.getAssociatedPersons())
                 .withDefenceOrganisation(defendantEntity.getDefenceOrganisation())
                 .withLegalEntityDefendant(defendantEntity.getLegalEntityDefendant())
@@ -359,6 +395,21 @@ public class ProgressionService {
             result = Optional.of(prosecutioncase.payloadAsJsonObject());
         }
         return result;
+    }
+
+    public Optional<JsonObject> searchLinkedCases(final JsonEnvelope envelope, final String caseId) {
+
+        final JsonObject requestParameter = createObjectBuilder().add("caseId", caseId).build();
+
+        LOGGER.info("search for already linked/merged cases with case id {} ", caseId);
+
+        final JsonEnvelope response = requester.request(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_LINKED_CASES).apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("search for already linked/merged cases response {}", response.toObfuscatedDebugString());
+        }
+
+        return Optional.of(response.payloadAsJsonObject());
     }
 
     public Optional<JsonObject> getDefendantRequestByDefendantId(final JsonEnvelope envelope, final String defendantId) {
@@ -505,7 +556,7 @@ public class ProgressionService {
                 .withReportingRestrictionReason(confirmedHearing.getReportingRestrictionReason())
                 .withType(confirmedHearing.getType())
                 .withHasSharedResults(false)
-                .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), jsonEnvelope, earliestHearingDate))
+                .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope))
                 .withCourtApplications(getCourtApplications(confirmedHearing, jsonEnvelope))
                 .build();
     }
@@ -558,7 +609,7 @@ public class ProgressionService {
         return CourtCentre.courtCentre()
                 .withId(courtCentre.getId())
                 .withName(courtCentreJson.getString("oucodeL3Name"))
-                .withRoomName(Objects.nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
+                .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
                 .withRoomId(courtCentre.getRoomId())
                 .withAddress(uk.gov.justice.core.courts.Address.address()
                         .withAddress1(courtCentreJson.getString(ADDRESS_1, EMPTY))
@@ -624,7 +675,7 @@ public class ProgressionService {
                 .map(cr -> cr.getString(fieldName, EMPTY_STRING)).findFirst().orElse("");
     }
 
-    private List<ProsecutionCase> transformProsecutionCase(final List<ConfirmedProsecutionCase> confirmedProsecutionCases, final JsonEnvelope jsonEnvelope, final LocalDate earliestHearingDate) {
+    public List<ProsecutionCase> transformProsecutionCase(final List<ConfirmedProsecutionCase> confirmedProsecutionCases, final LocalDate earliestHearingDate, final JsonEnvelope jsonEnvelope) {
         if (isNotEmpty(confirmedProsecutionCases)) {
             final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
             confirmedProsecutionCases.stream().forEach(pc -> {
@@ -653,8 +704,28 @@ public class ProgressionService {
         return null;
     }
 
+    public HearingListingNeeds transformHearingToHearingListingNeeds(final Hearing incomingHearing, final UUID existingHearingId) {
+        return HearingListingNeeds.hearingListingNeeds()
+                .withCourtCentre(incomingHearing.getCourtCentre())
+                .withProsecutionCases(incomingHearing.getProsecutionCases())
+                .withId(existingHearingId)
+                .withJurisdictionType(incomingHearing.getJurisdictionType())
+                .withEstimatedMinutes(30)
+                .withType(incomingHearing.getType())
+                .build();
+    }
 
-    public void linkApplicationsToHearing(final JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> applicationIds, HearingListingStatus status) {
+    public void linkProsecutionCasesToHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId, final List<UUID> caseIds) {
+        caseIds.forEach(caseId ->
+                sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK)
+                        .apply(createObjectBuilder()
+                                .add(CASE_ID, caseId.toString())
+                                .add(HEARING_ID, hearingId.toString())
+                                .build()))
+        );
+    }
+
+    public void linkApplicationsToHearing(final JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> applicationIds, final HearingListingStatus status) {
         final JsonObject hearingJson = objectToJsonObjectConverter.convert(hearing);
         applicationIds.forEach(applicationId ->
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)
@@ -710,6 +781,21 @@ public class ProgressionService {
                     .findFirst();
         }
         return Optional.empty();
+    }
+
+    public void prepareSummonsDataForExtendHearing(JsonEnvelope jsonEnvelope, HearingConfirmed hearingConfirmed) {
+        final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing =
+                PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing()
+                        .withConfirmedHearing(hearingConfirmed.getConfirmedHearing())
+                        .build();
+
+        final JsonObject prepareSummonsDataJsonObject = objectToJsonObjectConverter.convert(prepareSummonsDataForExtendedHearing);
+
+        final JsonEnvelope prepareSummonsDataJsonEnvelope =
+                enveloper.withMetadataFrom(jsonEnvelope, "progression.command.prepare-summons-data-for-extended-hearing")
+                        .apply(prepareSummonsDataJsonObject);
+
+        sender.send(prepareSummonsDataJsonEnvelope);
     }
 
     private Optional<CourtApplication> getCourtApplication(final Hearing hearing, final UUID applicationId) {

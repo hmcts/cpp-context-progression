@@ -10,10 +10,13 @@
       }
     ],
     "id": "cf73207f-3ced-488a-82a0-3fba79c2ce01",
+    "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+    "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
     "prosecutionCaseId": "cf73207f-3ced-488a-82a0-3fba79c2ce02",
     "numberOfPreviousConvictionsCited": 5,
     "prosecutionAuthorityReference": "TFL12345-ABC",
     "pncId": "1234567",
+    "croNumber":"croNumber",
     "proceedingsConcluded": false,
     "offences": [
       {
@@ -114,7 +117,7 @@
       "applicationReference": "a",
       "associationStartDate": "2018-01-01",
       "associationEndDate": "2018-01-01",
-      "fundingType": "probono",
+      "fundingType": "REPRESENTATION_ORDER",
       "defenceOrganisation": {
         "organisation": {
           "name": "L J Barr ltd"

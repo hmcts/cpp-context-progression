@@ -711,7 +711,7 @@
                 "judicialResults": [
                   {
                     "orderedHearingId": "00000000-0000-0000-0000-000000000000",
-                    "isAvailableForCourtExtract":true,
+                    "isAvailableForCourtExtract": true,
                     "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
                     "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
                     "label": "a",

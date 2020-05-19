@@ -95,6 +95,14 @@ subscriptions_descriptor:
         - name : progression.event.court-document-send-to-cps
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.court-document-send-to-cps.json
 
+        - name: progression.event.validate-link-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-link-cases.json
+
+        - name: progression.event.validate-merge-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-merge-cases.json
+
+        - name: progression.event.validate-split-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-split-cases.json
 
           ############  Association Start ############
         - name: progression.event.defence-organisation-associated
@@ -125,6 +133,30 @@ subscriptions_descriptor:
 
         - name : progression.event.defendant-laa-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
+
+        - name: progression.event.defendant-matched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-matched.json
+
+        - name: progression.event.master-defendant-id-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated.json
+
+        - name: progression.event.defendant-unmatched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-unmatched.json
+
+        - name: progression.event.prosecution-case-update-defendants-with-matched-requested
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-update-defendants-with-matched-requested.json
+
+        - name: progression.event.cases-unlinked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.cases-unlinked.json
+
+        - name: progression.event.extend-hearing-defendant-request-created
+          schema_uri: http://justice.gov.uk/core/courts/extend-hearing-defendant-request-created.json
+
+        - name: progression.event.extend-hearing-defendant-request-updated
+          schema_uri: http://justice.gov.uk/core/courts/extend-hearing-defendant-request-updated.json
+
+        - name: progression.event.hearing-defendant-request-adjourned
+          schema_uri: http://justice.gov.uk/core/courts/hearing-defendant-request-adjourned.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

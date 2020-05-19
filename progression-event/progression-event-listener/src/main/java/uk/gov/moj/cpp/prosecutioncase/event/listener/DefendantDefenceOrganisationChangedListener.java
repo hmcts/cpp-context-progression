@@ -101,6 +101,8 @@ public class DefendantDefenceOrganisationChangedListener {
                 .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
                 .withAssociatedPersons(originDefendant.getAssociatedPersons())
                 .withId(originDefendant.getId())
+                .withMasterDefendantId(originDefendant.getId())
+                .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
                 .withMitigation(originDefendant.getMitigation())
                 .withMitigationWelsh(originDefendant.getMitigationWelsh())
                 .withNumberOfPreviousConvictionsCited(originDefendant.getNumberOfPreviousConvictionsCited())

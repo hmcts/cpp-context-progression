@@ -32,6 +32,7 @@
       "dateOfBirth": "2005-02-07",
       "firstName": "Harry",
       "id": "8a33d852-4f12-4146-8f1a-33ee38c80cff",
+      "masterDefendantId": "8a33d852-4f12-4146-8f1a-33ee38c80cff",
       "interpreterLanguageNeeds": "Welsh",
       "lastName": "Kane Junior",
       "remandStatus": "Remanded into Custody",

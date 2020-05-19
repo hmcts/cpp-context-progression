@@ -67,6 +67,7 @@ public class DefendantDefenceOrganisationChangedProcessor {
     private DefendantUpdate updateDefendant(final DefendantDefenceOrganisationChanged defendantDefenceOrganisationChanged, final Defendant originalDefendant) {
         return DefendantUpdate.defendantUpdate()
                 .withId(defendantDefenceOrganisationChanged.getDefendantId())
+                .withMasterDefendantId(originalDefendant.getMasterDefendantId())
                 .withProsecutionCaseId(defendantDefenceOrganisationChanged.getProsecutionCaseId())
                 .withAssociatedDefenceOrganisation(defendantDefenceOrganisationChanged.getAssociatedDefenceOrganisation())
                 .withPersonDefendant(originalDefendant.getPersonDefendant())

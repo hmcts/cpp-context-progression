@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.
 import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_PROSECUTION_CASE_CREATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_PROSECUTION_CASE_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_REFERRED_TO_COURT;
+import static uk.gov.moj.cpp.progression.domain.transformation.corechanges.core.SchemaVariableConstants.PROGRESSION_SENDING_SHEET_COMPLETED;
 
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.transformation.corechanges.TransformUtil;
@@ -54,6 +55,7 @@ public class CourtProceedingsInitiatedEventTransformer implements ProgressionEve
                     {PROGRESSION_COURT_APPLICATION_CREATED, "courtApplication\\.applicant\\.defendant|courtApplication\\.respondents\\.\\d\\.partyDetails\\.defendant"},
                     {PROGRESSION_COURT_APPLICATION_ADDED_TO_CASE, "courtApplication\\.applicant\\.defendant|courtApplication\\.respondents\\.\\d\\.partyDetails\\.defendant"},
                     {PROGRESSION_COURT_APPLICATION_UPDATED, "courtApplication\\.applicant\\.defendant|courtApplication\\.respondents\\.\\d\\.partyDetails\\.defendant"},
+                    {PROGRESSION_SENDING_SHEET_COMPLETED, "hearing\\.defendants\\.\\d"},
                     {PROGRESSION_HEARING_INITIATE_ENRICHED, "hearing\\.prosecutionCases\\.\\d\\.defendants\\.\\d"},
                     {PROGRESSION_HEARING_APPLICATION_LINK_CREATED, "hearing\\.prosecutionCases\\.\\d\\.defendants\\.\\d|hearing\\.courtApplications\\.\\d\\.applicant\\.defendant|hearing\\.courtApplications\\.\\d\\.respondents\\.\\d\\.partyDetails\\.defendant"},
                     {PROGRESSION_HEARING_EXTENDED, "hearingRequest\\.prosecutionCases\\.\\d\\.defendants\\.\\d|hearingRequest\\.courtApplications\\.\\d\\.applicant\\.defendant|hearingRequest\\.courtApplications\\.\\d\\.respondents\\.\\d\\.partyDetails\\.defendant"},

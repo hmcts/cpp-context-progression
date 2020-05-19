@@ -182,7 +182,7 @@ public class CourtApplicationVerificationHelper {
                     }
 
                     final String addressLines = applicantParty.getString("addressLines");
-                    assertAddressDetails(person.getJsonObject("address"), addressLines, applicantParty.getString("postCode"));
+                    assertAddressDetails(person.getJsonObject("address"), addressLines, applicantParty.getString("postCode"),applicantParty.getJsonObject("defendantAddress"));
                 });
 
     }

@@ -10,10 +10,12 @@
       }
     ],
     "id": "RANDOM_DEFENDANT_ID",
+    "masterDefendantId":"84e401ff-1f55-44e7-9969-5a2433dd259c",
+    "croNumber":"a12455/123",
+    "pncId": "1234567",
     "prosecutionCaseId": "RANDOM_CASE_ID",
     "numberOfPreviousConvictionsCited": 5,
     "prosecutionAuthorityReference": "RANDOM_REFERENCE",
-    "pncId": "1234567",
     "proceedingsConcluded": true,
     "offences": [
       {

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -15,6 +16,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
@@ -42,11 +44,17 @@ public class ExtendHearingHandler {
 
         final ExtendHearing extendHearing = extendHearingEnvelope.payload();
         final HearingListingNeeds hearingRequest = extendHearing.getHearingRequest();
-
         final EventStream eventStream = eventSource.getStreamById(hearingRequest.getId());
-        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-        final Stream<Object> events = applicationAggregate.extendHearing(hearingRequest);
-        appendEventsToStream(extendHearingEnvelope, eventStream, events);
+
+        if(CollectionUtils.isNotEmpty(hearingRequest.getProsecutionCases())) {
+            final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+            final Stream<Object> events = caseAggregate.extendHearing(hearingRequest, extendHearing.getIsAdjourned());
+            appendEventsToStream(extendHearingEnvelope, eventStream, events);
+        }else {
+            final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+            final Stream<Object> events = applicationAggregate.extendHearing(hearingRequest);
+            appendEventsToStream(extendHearingEnvelope, eventStream, events);
+        }
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

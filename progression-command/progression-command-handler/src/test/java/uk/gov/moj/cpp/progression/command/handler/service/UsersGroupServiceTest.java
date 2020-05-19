@@ -172,11 +172,11 @@ public class UsersGroupServiceTest {
         final UUID userId = randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
 
-        final JsonEnvelope requestEnvelope =  envelopeFrom(
+        final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID("usersgroups.get-user-details").withUserId(userId.toString()),
                 createObjectBuilder().build());
 
-        final UserDetails userDetails = new UserDetails( "Bob", "Marley");
+        final UserDetails userDetails = new UserDetails("Bob", "Marley");
 
         final Envelope<UserDetails> returnedValue = envelop(userDetails)
                 .withName("usersgroups.get-user-details")
@@ -193,7 +193,7 @@ public class UsersGroupServiceTest {
     }
 
     @Test
-    public void  shouldReturnEmptyOrganisationWhenGotEmptyPayloadFromGetOrgarnisationByLAAContractNumberAPI() {
+    public void shouldReturnEmptyOrganisationWhenGotEmptyPayloadFromGetOrgarnisationByLAAContractNumberAPI() {
         //Given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
@@ -201,7 +201,7 @@ public class UsersGroupServiceTest {
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final String laaContractNumber = "LAA1234";
-        final JsonEnvelope response =  envelopeFrom(metadataBuilder, Json.createObjectBuilder().build());
+        final JsonEnvelope response = envelopeFrom(metadataBuilder, Json.createObjectBuilder().build());
         when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //When

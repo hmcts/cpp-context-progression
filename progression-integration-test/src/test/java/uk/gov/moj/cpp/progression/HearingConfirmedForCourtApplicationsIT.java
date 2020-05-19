@@ -36,6 +36,7 @@ import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -56,6 +57,8 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
     private static final MessageConsumer messageConsumerLink = privateEvents.createConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
 
@@ -71,6 +74,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     @AfterClass
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
     @Before
@@ -125,7 +129,6 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
     @Test
     public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearings() throws Exception {
-        hearingId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = UUID.randomUUID().toString();
@@ -134,7 +137,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED + ".json", caseId,
                         hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"), JsonEnvelope.metadataBuilder()
@@ -158,6 +161,12 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                         .build());
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription()));
 
+    }
+
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(){
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
+        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 
     private void pollForApplicationAtAGlance(final String status) {

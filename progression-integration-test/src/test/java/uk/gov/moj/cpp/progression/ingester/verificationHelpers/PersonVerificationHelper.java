@@ -14,6 +14,7 @@ public class PersonVerificationHelper {
 
     public static void assertRespondantDetails(final JsonObject personDetails, final JsonObject party, final String organisationName) {
         assertPersonDetails(personDetails, party, organisationName);
+        assertAddressDetailsForSpecificTypeOfPerson(personDetails, party);
     }
 
     public static void assertDefendantDetails(final JsonObject defendantJsonObject, final JsonObject party, final String organisationName) {
@@ -25,10 +26,22 @@ public class PersonVerificationHelper {
         final String defendantId = defendantJsonObject.getString("id");
         assertEquals(defendantId.toUpperCase(), party.getString("partyId").toUpperCase());
         assertPersonDetails(personDetails, party, organisationName);
+        assertAddressDetailsForSpecificTypeOfPerson(personDetails, party);
+        assertAddressDetailsForSpecificTypeOfPerson(personDetails, party);
         final String arrestSummonsNumber = personDefendant.getString("arrestSummonsNumber");
-        final String pncId = defendantJsonObject.getString("pncId");
         assertEquals(arrestSummonsNumber, party.getString("arrestSummonsNumber"));
+
+        final String pncId = defendantJsonObject.getString("pncId");
         assertEquals(pncId, party.getString("pncId"));
+
+        final String masterDefendantId = defendantJsonObject.getString("masterDefendantId");
+        assertEquals(masterDefendantId.toUpperCase(), party.getString("masterPartyId").toUpperCase());
+
+        final String croNumber = defendantJsonObject.getString("croNumber");
+        assertEquals(croNumber, party.getString("croNumber"));
+
+        final String courtProceedingsInitiated = defendantJsonObject.getString("courtProceedingsInitiated");
+        assertEquals(courtProceedingsInitiated, party.getString("courtProceedingsInitiated"));
     }
 
     private static void assertPersonDetails(final JsonObject personDetails, final JsonObject party, final String organisationName) {
@@ -43,16 +56,21 @@ public class PersonVerificationHelper {
         assertEquals(applicantFirstName, party.getString("firstName"));
         assertEquals(applicantMiddleName, party.getString("middleName"));
         assertEquals(applicantLastName, party.getString("lastName"));
+
         assertEquals(applicantTitle, party.getString("title"));
         assertEquals(applicantDateOfBirth, party.getString("dateOfBirth"));
         assertEquals(applicantGender, party.getString("gender"));
         assertEquals(organisationName, party.getString("organisationName"));
+
+    }
+
+    private static void assertAddressDetailsForSpecificTypeOfPerson(final JsonObject personDetails, final JsonObject party) {
         assertAddressDetails(personDetails.getJsonObject("address"), party.getString("addressLines")
-                , party.getString("postCode"));
+                , party.getString("postCode"), party.getJsonObject("defendantAddress"));
     }
 
     public static void assertOrganisationDetails(final JsonObject personDetails, final JsonObject party) {
         assertAddressDetails(personDetails.getJsonObject("address"), party.getString("addressLines")
-                , party.getString("postCode"));
+                , party.getString("postCode"),party.getJsonObject("defendantAddress"));
     }
 }

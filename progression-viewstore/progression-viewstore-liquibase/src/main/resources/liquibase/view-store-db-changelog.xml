@@ -69,4 +69,7 @@
     <include file="liquibase/alter-table-shared-court-document-add-column-seq-num.xml"/>
     <include file="liquibase/alter-table-court-document-add-column-is-removed.xml"/>
     <include file="liquibase/drop-defence-association.xml"/>
+    <include file="liquibase/create-defendant-partial-match.xml"/>
+    <include file="liquibase/create-match-defendant-case-hearing.xml"/>
+    <include file="liquibase/create-case-link-split-merge.xml"/>
 </databaseChangeLog>

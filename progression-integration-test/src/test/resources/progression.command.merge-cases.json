@@ -1,0 +1,11 @@
+{
+  "prosecutionCaseId": "PROSECUTION_CASE_ID",
+  "casesToLink": [
+    {
+      "caseUrns": [
+        "CASE_URN2"
+      ],
+      "caseLinkType": "MERGE"
+    }
+  ]
+}

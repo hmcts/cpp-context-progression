@@ -210,8 +210,8 @@
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>
-                                <artifactId>*</artifactId>
                                 <groupId>*</groupId>
+                                <artifactId>*</artifactId>
                             </exclusion>
                         </exclusions>
                     </dependency>
@@ -219,6 +219,18 @@
                         <groupId>uk.gov.moj.cpp.progression</groupId>
                         <artifactId>progression-query-api</artifactId>
                         <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.unifiedsearch.query</groupId>
+                        <artifactId>unifiedsearchquery-api</artifactId>
+                        <version>${unifiedsearch.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

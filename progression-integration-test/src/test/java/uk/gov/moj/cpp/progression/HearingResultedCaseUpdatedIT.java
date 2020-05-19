@@ -7,7 +7,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
@@ -46,6 +48,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
             .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -63,6 +67,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
         messageConsumerClientPublicForHearingResultedCaseUpdated.close();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
     private static void verifyInMessagingQueueForHearingResultedCaseUpdated() {
@@ -76,20 +81,20 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     public void setUp() {
         HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         bailStatusCode = "C";
         bailStatusDescription = "Remanded into Custody";
         bailStatusId = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
-
     }
 
     @Test
     public void shouldUpdateHearingResultedCaseUpdated() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED + ".json", caseId,
@@ -109,9 +114,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         final String caseId2 = randomUUID().toString();
         addProsecutionCaseToCrownCourt(caseId2, defendantId);
 
-        final String queryResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final JsonObject hearingsAtAGlance = getJsonObject(queryResponse).getJsonObject("hearingsAtAGlance");
-        hearingId = hearingsAtAGlance.getJsonArray("defendantHearings").getJsonObject(0).getJsonArray("hearingIds").getString(0);
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -124,6 +127,12 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         .build());
 
         pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
+    }
+
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(){
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
+        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 
     private Matcher[] getDefendantUpdatedMatchers() {
@@ -168,5 +177,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
         );
     }
+    
 }
 

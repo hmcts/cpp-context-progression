@@ -1,0 +1,259 @@
+package uk.gov.moj.cpp.progression.query;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
+import uk.gov.moj.cpp.progression.query.utils.CaseLsmInfoConverter;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.*;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseLinkSplitMergeRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+
+
+@RunWith(MockitoJUnitRunner.class)
+public class CaseLsmInfoQueryTest {
+    private static final UUID MASTER_DEFENDANT_1 = fromString("b44fa9bb-dc36-4375-83a9-ff1bc4cd4374");
+    private static final UUID MASTER_DEFENDANT_2 = fromString("1f1fba3c-34ee-454e-b3be-5fb845b2de4a");
+    private static final String CASE_URN = "CN12345";
+    private static final String CASE_URN_M = "CN12345/M";
+    private static final UUID CASE_ID = randomUUID();
+
+    @InjectMocks
+    private CaseLsmInfoQuery caseLsmInfoQuery;
+
+    @Mock
+    private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
+
+    @Mock
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Mock
+    private CaseLsmInfoConverter caseLsmInfoConverter;
+
+    @Mock
+    private CaseLinkSplitMergeRepository caseLinkSplitMergeRepository;
+
+    @Mock
+    private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Mock
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    private JsonEnvelope envelope;
+
+
+    @Before
+    public void setUp(){
+        JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", randomUUID().toString())
+                .build();
+
+        envelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
+                .withName("progression.query.case-lsm-info"), payload);
+
+        ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(randomUUID());
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(Hearing.hearing().build());
+
+        when(jsonObjectToObjectConverter.convert(any(), eq(ProsecutionCase.class)))
+                .thenReturn(ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID)
+                        .withDefendants(Arrays.asList(
+                                Defendant.defendant().withMasterDefendantId(MASTER_DEFENDANT_1).build(),
+                                Defendant.defendant().withMasterDefendantId(MASTER_DEFENDANT_2).build()
+                        ))
+                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                .withCaseURN(CASE_URN)
+                                .build())
+                        .build());
+
+        when(caseLsmInfoConverter.convertMatchedCaseDefendants(anyList(), any(), any()))
+                .thenReturn(Json.createArrayBuilder().add(
+                        Json.createObjectBuilder()
+                                .add("masterDefendantId", MASTER_DEFENDANT_1.toString())
+                ));
+
+        when(caseLsmInfoConverter.convertRelatedCaseDefendants(anyList(), any()))
+                .thenReturn(Json.createArrayBuilder().add(
+                        Json.createObjectBuilder()
+                                .add("masterDefendantId", MASTER_DEFENDANT_1.toString())
+                ));
+
+    }
+
+    @Test
+    public void shouldReturnMatchedCases() {
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = Arrays.asList(
+                buildMatchDefendantCaseEntity(MASTER_DEFENDANT_1, true),
+                buildMatchDefendantCaseEntity(MASTER_DEFENDANT_2, false)
+        );
+
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList()))
+                .thenReturn(matchDefendantCaseHearingEntities);
+
+        when(caseLinkSplitMergeRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+
+        when(caseDefendantHearingRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+
+        JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
+        JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
+        JsonArray matchedDefendantCasesArray = responsePayload.getJsonArray("matchedDefendantCases");
+        assertNotNull(matchedDefendantCasesArray);
+        assertThat(matchedDefendantCasesArray.size(), is(2));
+        assertThat(matchedDefendantCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN));
+
+        JsonArray linkedCasesArray = responsePayload.getJsonArray("linkedCases");
+        assertNull(linkedCasesArray);
+    }
+
+
+    @Test
+    public void shouldReturnEmptyWhenNoCaseFound() {
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList()))
+                .thenReturn(new ArrayList<>());
+        when(caseLinkSplitMergeRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+        when(caseDefendantHearingRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+        JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
+        JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
+
+        JsonArray matchedDefendantCasesArray = responsePayload.getJsonArray("matchedDefendantCases");
+        assertNull(matchedDefendantCasesArray);
+
+        JsonArray linkedCasesArray = responsePayload.getJsonArray("linkedCases");
+        assertNull(linkedCasesArray);
+    }
+
+    @Test
+    public void shouldReturnLinkedCases() {
+        final List<CaseLinkSplitMergeEntity> caseLinkSplitMergeEntities = Arrays.asList(
+                buildCaseLinkSplitMergeEntity(MASTER_DEFENDANT_1, LinkType.LINK, true),
+                buildCaseLinkSplitMergeEntity(MASTER_DEFENDANT_2, LinkType.LINK,false)
+        );
+        when(caseLinkSplitMergeRepository.findByCaseId(any())).thenReturn(caseLinkSplitMergeEntities);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList()))
+                .thenReturn(new ArrayList<>());
+
+
+        when(caseDefendantHearingRepository.findByCaseId(any()))
+                .thenReturn(Arrays.asList(createCaseDefendantHearingEntity()));
+
+        JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
+        JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
+
+        JsonArray matchedDefendantCasesArray = responsePayload.getJsonArray("matchedDefendantCases");
+        assertNull(matchedDefendantCasesArray);
+
+        JsonArray linkedCasesArray = responsePayload.getJsonArray("linkedCases");
+        assertNotNull(linkedCasesArray);
+        assertThat(linkedCasesArray.size(), is(2));
+        assertThat(linkedCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN));
+    }
+
+    @Test
+    public void shouldReturnMergedCases() {
+        final List<CaseLinkSplitMergeEntity> caseLinkSplitMergeEntities = Arrays.asList(
+                buildCaseLinkSplitMergeEntity(MASTER_DEFENDANT_1, LinkType.LINK,true),
+                buildCaseLinkSplitMergeEntity(MASTER_DEFENDANT_2, LinkType.MERGE,false)
+        );
+        when(caseLinkSplitMergeRepository.findByCaseId(any())).thenReturn(caseLinkSplitMergeEntities);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList()))
+                .thenReturn(new ArrayList<>());
+
+
+        when(caseDefendantHearingRepository.findByCaseId(any()))
+                .thenReturn(Arrays.asList(createCaseDefendantHearingEntity()));
+
+        JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
+        JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
+
+        JsonArray matchedDefendantCasesArray = responsePayload.getJsonArray("matchedDefendantCases");
+        assertNull(matchedDefendantCasesArray);
+
+        JsonArray linkedCasesArray = responsePayload.getJsonArray("linkedCases");
+        assertNotNull(linkedCasesArray);
+        assertThat(linkedCasesArray.size(), is(1));
+        assertThat(linkedCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN));
+
+        JsonArray mergedCasesArray = responsePayload.getJsonArray("mergedCases");
+        assertNotNull(mergedCasesArray);
+        assertThat(mergedCasesArray.size(), is(1));
+
+        assertThat(mergedCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN_M));
+    }
+
+    private MatchDefendantCaseHearingEntity buildMatchDefendantCaseEntity(UUID masterDefendantId, boolean hearingExists) {
+        MatchDefendantCaseHearingEntity entity = new MatchDefendantCaseHearingEntity();
+        entity.setId(randomUUID());
+        entity.setMasterDefendantId(masterDefendantId);
+        entity.setHearingId(randomUUID());
+        entity.setDefendantId(randomUUID());
+        entity.setHearing(hearingExists ? new HearingEntity() : null);
+        entity.setProsecutionCase(new ProsecutionCaseEntity());
+        return entity;
+    }
+
+    private CaseLinkSplitMergeEntity buildCaseLinkSplitMergeEntity(UUID masterDefendantId, LinkType linkType, boolean hearingExists) {
+        CaseLinkSplitMergeEntity entity = new CaseLinkSplitMergeEntity();
+        entity.setId(randomUUID());
+        entity.setCaseId(masterDefendantId);
+        entity.setLinkedCaseId(randomUUID());
+        if (linkType == LinkType.MERGE){
+            entity.setReference(CASE_URN_M);
+        }
+        entity.setType(linkType);
+        entity.setLinkedCase(new ProsecutionCaseEntity());
+        entity.setLinkGroupId(randomUUID());
+        return entity;
+    }
+
+    private CaseDefendantHearingEntity createCaseDefendantHearingEntity(){
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        return caseDefendantHearingEntity;
+    }
+}

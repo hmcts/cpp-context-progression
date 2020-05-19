@@ -87,6 +87,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -157,6 +158,7 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
         when(getHearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(CourtApplication.courtApplication().build());
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
@@ -254,6 +256,7 @@ public class ProsecutionCaseQueryViewTest {
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
         when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
         when(getHearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
         courtApplicationEntity.setPayload("{}");
@@ -296,6 +299,7 @@ public class ProsecutionCaseQueryViewTest {
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(Arrays.asList(courtDocumentEntity));
         when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
         when(getHearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
         courtApplicationEntity.setPayload("{}");

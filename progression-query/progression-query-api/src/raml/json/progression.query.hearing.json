@@ -45,5 +45,6 @@
         "isBenchChairman": true
       }
     ]
-  }
+  },
+  "hearingListingStatus" : "HEARING_INITIALISED"
 }

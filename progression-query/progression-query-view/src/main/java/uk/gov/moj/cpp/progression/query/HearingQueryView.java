@@ -49,6 +49,7 @@ public class HearingQueryView {
         }
         final JsonObject hearingRequest = stringToJsonObjectConverter.convert(hearingRequestEntity.getPayload());
         jsonObjectBuilder.add("hearing", hearingRequest);
+        jsonObjectBuilder.add("hearingListingStatus", hearingRequestEntity.getListingStatus().name());
 
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),

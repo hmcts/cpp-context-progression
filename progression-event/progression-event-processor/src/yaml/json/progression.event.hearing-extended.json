@@ -1344,5 +1344,6 @@
         "hearingLanguageNeeds": "ENGLISH"
       }
     ]
-  }
+  },
+  "isAdjourned": true
 }

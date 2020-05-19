@@ -481,7 +481,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-
 /representationOrder/cases/{prosecutionCaseId}/defendants/{defendantId}/offences/{offenceId}:
   uriParameters:
     prosecutionCaseId:
@@ -530,6 +529,66 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+
+/prosecutioncases/{prosecutionCaseId}/defendants/{defendantId}/match:
+  uriParameters:
+      defendantId:
+        description: The id of the defendant to be matched/unmatched in the prosecution case
+        type: string
+  post:
+      description: |
+        Associate partial match defendants to master defendant
+        Unmatch the defendant that is already matched.
+        ...
+        (mapping):
+                    requestType: application/vnd.progression.match-defendant+json
+                    name: progression.match-defendant
+        (mapping):
+                    requestType: application/vnd.progression.unmatch-defendant+json
+                    name: progression.unmatch-defendant
+        ...
+      body:
+        application/vnd.progression.match-defendant+json:
+          example:
+            !include json/progression.match-defendant.json
+          schema:
+            !include json/schema/progression.match-defendant.json
+
+        application/vnd.progression.unmatch-defendant+json:
+          example:
+            !include json/progression.unmatch-defendant.json
+          schema:
+            !include json/schema/progression.unmatch-defendant.json
+
+/prosecutioncases/{prosecutionCaseId}/link:
+  uriParameters:
+      prosecutionCaseId:
+        description: The id of the case to be linked, unlinked, splitted or merged
+        type: string
+  post:
+      description: |
+        Link selected cases
+        ...
+        (mapping):
+            requestType: application/vnd.progression.link-cases+json
+            name: progression.link-cases
+        (mapping):
+            requestType: application/vnd.progression.unlink-cases+json
+            name: progression.unlink-cases
+        ...
+      body:
+        application/vnd.progression.link-cases+json:
+          example:
+            !include json/progression.link-cases.json
+          schema:
+            !include json/schema/progression.link-cases.json
+
+        application/vnd.progression.unlink-cases+json:
+          example:
+            !include json/progression.unlink-cases.json
+          schema:
+            !include json/schema/progression.unlink-cases.json
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 /cases/{caseId} :
@@ -669,6 +728,8 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+# Deprecated API  - End
+
 /courtdocuments/{courtDocumentId}/materials/{materialId}/audit:
   uriParameters:
     courtDocumentId:
@@ -694,4 +755,3 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
-# Deprecated API  - End

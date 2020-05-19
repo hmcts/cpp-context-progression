@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -15,9 +16,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -28,8 +31,11 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.handler.ExtendHearingHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -59,13 +65,17 @@ public class ExtendHearingHandlerTest {
     @InjectMocks
     private ExtendHearingHandler extendHearingHandler;
 
-    private ApplicationAggregate aggregate;
+    private ApplicationAggregate applicationAggregate;
+
+    private CaseAggregate caseAggregate;
 
     @Before
     public void setup() {
-        aggregate = new ApplicationAggregate();
+        applicationAggregate = new ApplicationAggregate();
+        caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
     }
 
     @Test
@@ -79,13 +89,13 @@ public class ExtendHearingHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
 
-        final ExtendHearing extendHearing  = createExtendHearing();
-        aggregate.extendHearing(extendHearing.getHearingRequest());
+        final ExtendHearing extendHearing  = createExtendHearingForApplication();
+        applicationAggregate.extendHearing(extendHearing.getHearingRequest());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.extend-hearing")
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .build();
 
         final Envelope<ExtendHearing> envelope = envelopeFrom(metadata, extendHearing);
@@ -97,19 +107,76 @@ public class ExtendHearingHandlerTest {
                         metadata()
                                 .withName("progression.event.hearing-extended"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearingRequest", notNullValue()))
+                                withJsonPath("$.hearingRequest", notNullValue()),
+                                withJsonPath("$.hearingRequest.courtApplications", notNullValue()))
                         ))
 
                 )
         );
     }
 
-    private static ExtendHearing createExtendHearing() {
+
+    @Test
+    public void shouldProcessCommandForProsecutionCase() throws Exception {
+
+        final ExtendHearing extendHearing  = createExtendHearingForProsecutionCase();
+        caseAggregate.extendHearing(extendHearing.getHearingRequest(), true);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.extend-hearing")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<ExtendHearing> envelope = envelopeFrom(metadata, extendHearing);
+        extendHearingHandler.handle(envelope);
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.hearing-extended"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearingRequest", notNullValue()),
+                                withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()))
+                        ))
+               )
+        );
+    }
+
+
+    private static ExtendHearing createExtendHearingForApplication() {
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .build();
+
+        final List<CourtApplication> courtApplicationList = new ArrayList<>();
+        courtApplicationList.add(courtApplication);
+
         return ExtendHearing.extendHearing()
                 .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
-                        .withId(UUID.randomUUID())
+                        .withCourtApplications(courtApplicationList)
+                        .withId(randomUUID())
                         .build())
                         .build();
+    }
+
+
+    private static ExtendHearing createExtendHearingForProsecutionCase() {
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .build();
+        final List<ProsecutionCase> prosecutionCaseList = new ArrayList<>();
+        prosecutionCaseList.add(prosecutionCase);
+
+        return ExtendHearing.extendHearing()
+                .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
+                        .withProsecutionCases(prosecutionCaseList)
+                        .withId(randomUUID())
+                        .build())
+                .build();
     }
 }
 

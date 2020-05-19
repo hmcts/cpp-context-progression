@@ -26,11 +26,8 @@ public class HearingResultedCaseUpdatedVerificationHelper {
         with(outputCase.toString())
                 .assertThat("$.caseId", equalTo(caseUpdatedEvent.getJsonObject("prosecutionCase").getString("id")))
                 .assertThat("$.caseStatus", equalTo(caseUpdatedEvent.getJsonObject("prosecutionCase").getString("caseStatus")))
-                .assertThat("$.parties[0].proceedingsConcluded", equalTo(valueOf(caseUpdatedEvent.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"))))
-
-
                 .assertThat("$.parties[0].partyId", IsEqual.equalTo(((JsonString) hearingResultedCaseUpdatedEvent.read("$.prosecutionCase.defendants[0].id")).getString()))
-                .assertThat("$.parties[0].proceedingsConcluded", equalTo(valueOf(caseUpdatedEvent.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"))))
+                .assertThat("$.parties[0].proceedingsConcluded", IsEqual.equalTo(Boolean.valueOf(hearingResultedCaseUpdatedEvent.read("$.prosecutionCase.defendants[0].proceedingsConcluded").toString())))
                 .assertThat("$.parties[0].firstName", IsEqual.equalTo(((JsonString) hearingResultedCaseUpdatedEvent.read( "$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName")).getString()))
                 .assertThat("$.parties[0].middleName", IsEqual.equalTo(((JsonString) hearingResultedCaseUpdatedEvent.read( "$.prosecutionCase.defendants[0].personDefendant.personDetails.middleName")).getString()))
                 .assertThat("$.parties[0].lastName", IsEqual.equalTo(((JsonString) hearingResultedCaseUpdatedEvent.read( "$.prosecutionCase.defendants[0].personDefendant.personDetails.lastName")).getString()))

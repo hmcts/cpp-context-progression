@@ -7,6 +7,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -32,7 +34,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:S1135"})
 public class ExtendedHearingProcessor {
 
-    private static final String APPLICATION_REFERRED_AND_HEARING_EXTENDED = "public.progression.events.hearing-extended";
+    private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationReferredToCourtEventProcessor.class.getCanonicalName());
     @Inject
     private ProgressionService progressionService;
@@ -56,6 +58,7 @@ public class ExtendedHearingProcessor {
         final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(jsonEnvelope, hearingId.toString());
 
         final List<CourtApplication> courtApplications = hearingExtended.getHearingRequest().getCourtApplications();
+        final List<ProsecutionCase> prosecutionCases = hearingExtended.getHearingRequest().getProsecutionCases();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Raising public event for hearing extended when application: {} with {}", hearingId, courtApplications);
         }
@@ -70,9 +73,25 @@ public class ExtendedHearingProcessor {
           final Hearing hearing = jsonObjectToObjectConverter.convert(hearingIdFromQuery.get().getJsonObject("hearing"), Hearing.class);
           final Hearing updatedHearing = updateHearingWithApplication(hearing, courtApplication);
           progressionService.linkApplicationsToHearing(jsonEnvelope, updatedHearing, Arrays.asList(courtApplication.getId()), HearingListingStatus.SENT_FOR_LISTING);
-          sender.send(enveloper.withMetadataFrom(jsonEnvelope, APPLICATION_REFERRED_AND_HEARING_EXTENDED).apply(hearingCourtApplication));
-        } else {
-            LOGGER.info("Court application not found for hearing: {}", hearingId);
+          sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).apply(hearingCourtApplication));
+        } else if (Objects.nonNull(prosecutionCases) && hearingIdFromQuery.isPresent()){
+            LOGGER.info("extending hearing {} for prosecution cases",hearingExtended.getHearingRequest().getId() );
+
+            final List<UUID> caseIds = prosecutionCases.stream().map(ProsecutionCase::getId).collect(Collectors.toList());
+            progressionService.linkProsecutionCasesToHearing(jsonEnvelope, hearingId, caseIds);
+
+            // raising public event for listing and hearing
+            final  uk.gov.justice.progression.courts.HearingExtended hearingExtendedEvent = uk.gov.justice.progression.courts.HearingExtended
+                    .hearingExtended()
+                    .withHearingId(hearingId)
+                    .withProsecutionCases(prosecutionCases)
+                    .build();
+
+            final JsonObject hearingProsecutionCases =  objectToJsonObjectConverter.convert(hearingExtendedEvent);
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).apply(hearingProsecutionCases));
+        }
+        else {
+            LOGGER.info("Court Application / Prosecution Case not found for hearing: {}", hearingId);
         }
     }
 
@@ -107,4 +126,5 @@ public class ExtendedHearingProcessor {
                 .withRespondentCounsels(hearing.getRespondentCounsels())
                 .build();
     }
+
 }

@@ -15,8 +15,6 @@ public class ViewStoreCleaner {
                 "case_defendant_hearing",
                 "hearing",
                 "search_prosecution_case",
-                "stream_buffer",
-                "stream_status",
                 "person",
                 "processed_event",
                 "address",
@@ -32,7 +30,10 @@ public class ViewStoreCleaner {
                 "court_document_material",
                 "court_document",
                 "hearing_application",
-                "prosecution_case");
+                "prosecution_case",
+                "case_link_split_merge",
+                "defendant_partial_match",
+                "match_defendant_case_hearing");
     }
 
     public static void cleanEventStoreTables() {

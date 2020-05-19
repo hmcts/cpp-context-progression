@@ -113,6 +113,34 @@ subscriptions_descriptor:
         - name: progression.event.hearing-confirmed-case-status-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-confirmed-case-status-updated.json
 
+
+        - name: progression.event.defendant-partial-match-created
+          schema_uri: http://moj.gov.uk/cpp/progression/events/defendant-partial-match-created.json
+
+        - name: progression.event.defendant-matched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-matched.json
+
+        - name: progression.event.defendant-unmatched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-unmatched.json
+
+        - name: progression.event.master-defendant-id-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated.json
+
+        - name: progression.event.link-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.link-cases.json
+
+        - name: progression.event.split-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.split-cases.json
+
+        - name: progression.event.merge-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.merge-cases.json
+
+        - name: progression.event.hearing-extended
+          schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
+
+        - name: progression.event.cases-unlinked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.cases-unlinked.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

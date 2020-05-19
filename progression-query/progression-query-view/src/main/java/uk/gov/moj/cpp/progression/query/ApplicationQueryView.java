@@ -130,7 +130,7 @@ public class ApplicationQueryView {
         } else {
             LOGGER.warn(APPLICATION_ID_NOT_FOUND);
         }
-          return envelopeFrom(
+        return envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
     }

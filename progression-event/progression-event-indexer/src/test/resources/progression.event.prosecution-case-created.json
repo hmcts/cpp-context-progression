@@ -28,6 +28,8 @@
         ],
         "pncId": "1234567",
         "id": "e1d32d9d-29ec-4934-a932-22a50f223966",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
         "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
         "numberOfPreviousConvictionsCited": 5,
         "prosecutionAuthorityReference": "TFL12345-ABC",

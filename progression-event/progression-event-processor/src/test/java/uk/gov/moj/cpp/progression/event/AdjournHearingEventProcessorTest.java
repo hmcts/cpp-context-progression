@@ -261,16 +261,6 @@ public class AdjournHearingEventProcessorTest {
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
         assertThat(listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
 
-        List<ProsecutionCase> responseProsecutionCases = listCourtHearingArgumentCaptorForListingService.getValue().getHearings().get(0).getProsecutionCases();
-        assertThat(responseProsecutionCases.size(), is(1));
-        assertThat(responseProsecutionCases.get(0).getId(), is(prosecutionCaseId1));
-        assertThat(responseProsecutionCases.get(0).getDefendants().size(), is(1));
-        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getId(), is(defendantId1));
-        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getMasterDefendantId(), is(masterDefendantId));
-        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getCourtProceedingsInitiated(), is(courtProceedingsInitiated));
-        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getOffences().size(), is(1));
-        assertThat(responseProsecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
-
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCentreId));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getRoomId(), is((roomId)));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtCentre().getName(), is(("Name")));

@@ -3,12 +3,29 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.NextHearing;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.NextHearing;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.List;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -45,5 +62,90 @@ public class TestHelper {
                 .build();
     }
 
+    public static Hearing buildHearing(final List<ProsecutionCase> prosecutionCases){
+        return Hearing.hearing()
+                .withId(UUID.randomUUID())
+                .withProsecutionCases(prosecutionCases)
+                .build();
+    }
+
+    public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing){
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withId(offenceId)
+                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                        .withNextHearing(nextHearing)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+    }
+
+    public static ProsecutionCase buildProsecutionCaseWithoutJudicialResult(final UUID caseId, final UUID defendantId, final UUID offenceId){
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withId(offenceId)
+                                .build()))
+                        .build()))
+                .build();
+    }
+
+    public static NextHearing buildNextHearing(UUID type, UUID bookingReference, String courtLocation, LocalDate weekCommencingDate, ZonedDateTime listedStartDateTime){
+        return NextHearing.nextHearing()
+                .withType(HearingType.hearingType()
+                        .withId(type)
+                        .withDescription("HearingType")
+                        .build())
+                .withBookingReference(bookingReference)
+                .withEstimatedMinutes(60)
+                .withCourtCentre(CourtCentre.courtCentre().withCourtHearingLocation(courtLocation).build())
+                .withWeekCommencingDate(weekCommencingDate)
+                .withListedStartDateTime(listedStartDateTime)
+                .build();
+    }
+
+    public static NextHearing buildNextHearing(final UUID existingHearingId) {
+        return NextHearing.nextHearing()
+                .withExistingHearingId(existingHearingId)
+                .build();
+    }
+
+    public static JudicialResult buildJudicialResult(final NextHearing nextHearing) {
+        return JudicialResult.judicialResult()
+                .withNextHearing(nextHearing)
+                .build();
+    }
+
+    public static Offence buildOffence(final UUID offenceId, final List<JudicialResult> judicialResults) {
+        return Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(judicialResults)
+                .build();
+    }
+
+    public static Defendant buildDefendant(final UUID defendantId, final List<Offence> offences) {
+        return buildDefendant(defendantId, offences, null);
+    }
+
+    public static Defendant buildDefendant(final UUID defendantId, final List<Offence> offences, final List<JudicialResult> judicialResults) {
+        return Defendant.defendant()
+                .withId(defendantId)
+                .withOffences(offences)
+                .withJudicialResults(judicialResults)
+                .build();
+    }
+
+    public static ProsecutionCase buildProsecutionCase(final UUID prosecutionCaseId, final List<Defendant> defendants) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(defendants)
+                .build();
+    }
 
 }

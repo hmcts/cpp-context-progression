@@ -71,6 +71,8 @@ public class DefendantDefenceAssociationLockedListener {
                 .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
                 .withAssociatedPersons(originDefendant.getAssociatedPersons())
                 .withId(originDefendant.getId())
+                .withMasterDefendantId(originDefendant.getMasterDefendantId())
+                .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
                 .withMitigation(originDefendant.getMitigation())
                 .withMitigationWelsh(originDefendant.getMitigationWelsh())
                 .withNumberOfPreviousConvictionsCited(originDefendant.getNumberOfPreviousConvictionsCited())
