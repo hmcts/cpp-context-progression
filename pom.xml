@@ -44,7 +44,7 @@
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>6.4.20</referencedata.version>
         <listing.version>6.4.23</listing.version>
-        <hearing.version>6.4.38-LSM</hearing.version>
+        <hearing.version>6.4.40</hearing.version>
         <usersgroups.version>6.4.11</usersgroups.version>
         <defence.version>6.4.1</defence.version>
         <referencedata.offence.version>6.4.0</referencedata.offence.version>
