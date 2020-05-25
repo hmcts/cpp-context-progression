@@ -212,6 +212,18 @@
                         </exclusions>
                     </dependency>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.defence</groupId>
+                        <artifactId>defence-query-api</artifactId>
+                        <version>${defence.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.referencedata</groupId>
                         <artifactId>referencedata-query-api</artifactId>
                         <version>${referencedata.version}</version>

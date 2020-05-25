@@ -1,0 +1,16 @@
+{
+  "caseDefendantOrganisation": {
+    "caseId": "${caseId}",
+    "urn": "ABCD09T56",
+    "defendants": [
+      {
+        "defendantId": "${defendantId}",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7b700"
+      },
+      {
+        "defendantId": "${defendantId}",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7c700"
+      }
+    ]
+  }
+}

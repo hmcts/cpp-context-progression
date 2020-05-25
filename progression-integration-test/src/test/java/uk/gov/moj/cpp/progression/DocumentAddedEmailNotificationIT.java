@@ -6,33 +6,33 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.DefenceStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,7 +43,6 @@ import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,8 +52,7 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-public class CourtDocumentEmailNotificationIT extends AbstractIT {
-
+public class DocumentAddedEmailNotificationIT extends AbstractIT {
     private String caseId;
     private String docId;
     private String defendantId;
@@ -70,11 +68,8 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-
     private final MessageConsumer publicEventConsumer = publicEvents
             .createConsumer("public.progression.court-document-added");
-
-
 
 
     @BeforeClass
@@ -107,54 +102,37 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGenerateNotificationEventWhenCourtDocumentAdded() throws IOException {
+    public void shouldGenerateNotificationForCourtDocumentAddedByNonDefenceUser() throws IOException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
-                        caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                        .withUserId(userId)
-                        .build());
+        final List<String> organizationIds = Arrays.asList("fcb1edc9-786a-462d-9400-318c95c7c700", "fcb1edc9-786a-462d-9400-318c95c7b700");
+        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
+        DefenceStub.stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId);
+        UsersAndGroupsStub.stubGetOrganisationDetailForIds("stub-data/usersgroups.get-organisations-details.json", organizationIds, userId);
+        addCourtDocument("expected/expected.progression.add-court-document-for-email.json");
 
 
-        Matcher[] caseUpdatedMatchers = {
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
-                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
-        };
+        verifyInMessagingQueueForPublicCourtDocumentAdded();
+        verifyInMessagingQueueForEmailSendForDocumentAdded(caseId);
 
-        pollProsecutionCasesProgressionFor(caseId, caseUpdatedMatchers);
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED + ".json", caseId,
-                        hearingId, defendantId, courtCentreId), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
+    }
 
+    private void verifyInMessagingQueueForPublicCourtDocumentAdded() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
+        assertThat(message, notNullValue());
+    }
 
-        Matcher[] personDefendantOffenceUpdatedMatchers = {
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(courtCentreId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
-
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", is("2018-09-10")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent", is(44)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", is("2018-09-14")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", is(55))
-        };
-
-        pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
-
-        addCourtDocument("expected/expected.progression.add-court-document.json");
-        verifyForCourtDocumentSentToCps();
-        verifyForProgressionCommandEmail();
+    private static void verifyInMessagingQueueForEmailSendForDocumentAdded(final String caseId) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
+        assertThat(message, notNullValue());
+        assertThat(message.get(), isJson(withJsonPath("$.caseId",
+                Matchers.hasToString(Matchers.containsString(caseId)))));
+        assertThat(message.get(), isJson(withJsonPath("$.notifications[0].sendToAddress",
+                Matchers.hasToString(Matchers.containsString("joe@example.com")))));
+        assertThat(message.get(), isJson(withJsonPath("$.notifications[1].sendToAddress",
+                Matchers.hasToString(Matchers.containsString("bee@example.com")))));
     }
 
 
@@ -173,7 +151,6 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
                 withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)),
                 withJsonPath("$.courtDocument.sendToCps", equalTo(true)))
         );
-
 
         final String expectedPayload = getPayload(expectedPayloadPath)
                 .replace("COURT-DOCUMENT-ID", docId.toString())
@@ -197,22 +174,6 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         return body;
     }
 
-    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
-        final String strPayload = getPayload(path)
-                .replaceAll("CASE_ID", caseId)
-                .replaceAll("HEARING_ID", hearingId)
-                .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId);
-        return stringToJsonObjectConverter.convert(strPayload);
-    }
-
-
-    private void verifyForCourtDocumentSentToCps() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourDocumentSendToCps);
-        assertThat(message, notNullValue());
-    }
-
     private void verifyForProgressionCommandEmail() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
         assertThat(message, notNullValue());
@@ -224,3 +185,8 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
                 Matchers.hasToString(Matchers.containsString("abc@xyz.co.uk")))));
     }
 }
+
+
+
+
+
