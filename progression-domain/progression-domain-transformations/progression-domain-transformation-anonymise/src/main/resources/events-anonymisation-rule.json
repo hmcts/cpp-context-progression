@@ -33,7 +33,8 @@
     "applicationSummonsTemplateType",
     "caseURN",
     "caseUrn",
-    "prosecutionAuthorityReference"
+    "prosecutionAuthorityReference",
+    "attendanceType"
   ],
   "events": [
     {
