@@ -42,11 +42,11 @@
         <material.version>6.4.3</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>6.4.20</referencedata.version>
+        <referencedata.version>6.4.21</referencedata.version>
         <listing.version>6.4.23</listing.version>
         <hearing.version>6.4.40</hearing.version>
         <usersgroups.version>6.4.11</usersgroups.version>
-        <defence.version>6.4.1</defence.version>
+        <defence.version>6.4.3</defence.version>
         <referencedata.offence.version>6.4.0</referencedata.offence.version>
         <criminal-court-public-model.version>1.0.81</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
