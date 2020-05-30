@@ -49,6 +49,7 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
+@SuppressWarnings({"squid:S1607"})
 public class AddCourtDocumentIT extends AbstractIT {
 
     public static final String ACCESS_CONTROL_FAILED = "Access Control failed for json envelope";

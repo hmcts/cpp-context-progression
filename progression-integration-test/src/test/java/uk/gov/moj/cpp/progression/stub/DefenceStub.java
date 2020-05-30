@@ -32,4 +32,17 @@ public class DefenceStub {
 
         waitForStubToBeReady(MessageFormat.format("/defence-service/query/api/rest/defence/defendants/{0}/associatedOrganisation", defendantId) , "application/vnd.defence.query.associated-organisation+json");
     }
+
+    public static void stubForCaseDefendantsOrganisation (final String resourceName ,final String caseId,final String defendantId) {
+        InternalEndpointMockUtils.stubPingFor("defence-service");
+        String body = getPayload(resourceName)
+                .replace("${defendantId}",defendantId)
+                .replace("${caseId}",caseId);
+        stubFor(get(urlPathEqualTo(MessageFormat.format("/defence-service/query/api/rest/defence/cases/{0}", caseId)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body.toString())));
+
+    }
 }

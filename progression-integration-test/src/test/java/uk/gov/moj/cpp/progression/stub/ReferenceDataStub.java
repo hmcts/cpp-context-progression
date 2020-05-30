@@ -330,6 +330,7 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
     }
 
+
     public static void stubGetOrganisationById(final String resourceName, final String statusCode) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
