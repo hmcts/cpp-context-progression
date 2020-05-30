@@ -1,5 +1,32 @@
 package uk.gov.moj.cpp.progression;
 
+import com.jayway.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.stub.IdMapperStub;
+import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
@@ -24,35 +51,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-
-import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
-
 public class CourtDocumentEmailNotificationIT extends AbstractIT {
 
     private String caseId;
@@ -70,11 +68,6 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-
-    private final MessageConsumer publicEventConsumer = publicEvents
-            .createConsumer("public.progression.court-document-added");
-
-
 
 
     @BeforeClass
@@ -151,14 +144,12 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         };
 
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
-
-        addCourtDocument("expected/expected.progression.add-court-document.json");
+        addCourtDocument();
         verifyForCourtDocumentSentToCps();
         verifyForProgressionCommandEmail();
     }
 
-
-    private void addCourtDocument(final String expectedPayloadPath) throws IOException {
+    private void addCourtDocument() throws IOException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When
@@ -174,8 +165,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
                 withJsonPath("$.courtDocument.sendToCps", equalTo(true)))
         );
 
-
-        final String expectedPayload = getPayload(expectedPayloadPath)
+        final String expectedPayload = getPayload("expected/expected.progression.add-court-document.json")
                 .replace("COURT-DOCUMENT-ID", docId.toString())
                 .replace("DEFENDENT-ID", defendantId.toString())
                 .replace("CASE-ID", caseId.toString());

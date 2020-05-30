@@ -12,12 +12,10 @@ import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
-import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.HearingDefendantRequestAdjourned;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -36,7 +34,6 @@ import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -121,39 +118,14 @@ public class HearingResultEventProcessor {
     private void adjournToNewHearings(final JsonEnvelope event, final Hearing hearing) {
         LOGGER.info("Hearing adjourned to new hearing or hearings :: {}", hearing.getId());
         final List<HearingListingNeeds> hearingListingNeeds = hearingToHearingListingNeedsTransformer.transform(hearing);
-
-        final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
-                .withHearings(hearingListingNeeds)
-                .withAdjournedFromDate(LocalDate.now())
-                .build();
-
         if (isNotEmpty(hearingListingNeeds)) {
+            final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
+                    .withHearings(hearingListingNeeds)
+                    .withAdjournedFromDate(LocalDate.now())
+                    .build();
             listingService.listCourtHearing(event, listCourtHearing);
             progressionService.updateHearingListingStatusToSentForListing(event, listCourtHearing);
-            for (final HearingListingNeeds hln : hearingListingNeeds) {
-                final JsonObject adjournHearingDefendantRequest = Json.createObjectBuilder()
-                        .add("currentHearingId", hearing.getId().toString())
-                        .add("adjournedHearingId", hln.getId().toString())
-                        .build();
-                sender.send(
-                        envelop(adjournHearingDefendantRequest)
-                                .withName("progression.command.adjourn-hearing-request")
-                                .withMetadataFrom(event));
-            }
         }
-    }
-
-    @Handles("progression.event.hearing-defendant-request-adjourned")
-    public void handleHearingDefendantRequestAdjournedEvent(final JsonEnvelope event) {
-        final HearingDefendantRequestAdjourned hearingDefendantRequestAdjourned = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingDefendantRequestAdjourned.class);
-        final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
-                .withHearingId(hearingDefendantRequestAdjourned.getAdjournedHearingId())
-                .withDefendantRequests(hearingDefendantRequestAdjourned.getDefendantRequests())
-                .build());
-        sender.send(
-                envelop(hearingDefendantRequestJson)
-                        .withName("progression.command.create-hearing-defendant-request")
-                        .withMetadataFrom(event));
     }
 
     private void adjournToExistingHearings(JsonEnvelope jsonEnvelope, final Hearing hearing) {

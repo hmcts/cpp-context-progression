@@ -1,39 +1,8 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.BailStatus;
-import uk.gov.justice.core.courts.DelegatedPowers;
-import uk.gov.justice.core.courts.InitiationCode;
-import uk.gov.justice.core.courts.JudicialResultPrompt;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.PleaValue;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.VerdictType;
-import uk.gov.justice.progression.courts.CaagDefendants;
-import uk.gov.justice.progression.courts.CaseDetails;
-import uk.gov.justice.progression.courts.Defendants;
-import uk.gov.justice.progression.courts.HearingListingStatus;
-import uk.gov.justice.progression.courts.Hearings;
-import uk.gov.justice.progression.courts.Offences;
-import uk.gov.justice.progression.courts.ProsecutorDetails;
-import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
-
-import javax.json.JsonObject;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -61,6 +30,41 @@ import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.ADDRESS_
 import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.ADDRESS_5;
 import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.POSTCODE;
 import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.YOUTH_MARKER_TYPE;
+
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.BailStatus;
+import uk.gov.justice.core.courts.DelegatedPowers;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PleaValue;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.VerdictType;
+import uk.gov.justice.progression.courts.CaagDefendants;
+import uk.gov.justice.progression.courts.CaseDetails;
+import uk.gov.justice.progression.courts.Defendants;
+import uk.gov.justice.progression.courts.HearingListingStatus;
+import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.courts.Offences;
+import uk.gov.justice.progression.courts.ProsecutorDetails;
+import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.google.common.collect.ImmutableMap;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAtAGlanceHelperTest {
@@ -91,7 +95,7 @@ public class CaseAtAGlanceHelperTest {
     private static final UUID ALAN_SMITH_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
     private CaseAtAGlanceHelper caseAtAGlanceHelper;
-    private final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 9, 29);
+    private LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 9, 29);
     private static final String ORG_NAME = "Org name";
 
     @Mock
@@ -106,7 +110,6 @@ public class CaseAtAGlanceHelperTest {
         assertThat(caseDetails.getCaseMarkers(), nullValue());
         assertThat(caseDetails.getCaseURN(), nullValue());
         assertThat(caseDetails.getCaseStatus(), nullValue());
-        assertThat(caseDetails.getInitiationCode(), nullValue());
         assertThat(caseDetails.getRemovalReason(), nullValue());
     }
 
@@ -119,7 +122,6 @@ public class CaseAtAGlanceHelperTest {
         assertThat(caseDetails, notNullValue());
         assertThat(caseDetails.getCaseMarkers().size(), is(2));
         assertThat(caseDetails.getCaseURN(), is(CASE_URN));
-        assertThat(caseDetails.getInitiationCode(), is(InitiationCode.J.toString()));
     }
 
     @Test
@@ -147,8 +149,8 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetProsecutorDetailsFromProsecutionCase() {
 
-        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseDetails();
-        final String prosecutorId = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId().toString();
+        ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseDetails();
+        String prosecutorId = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId().toString();
         caseAtAGlanceHelper = spy(new CaseAtAGlanceHelper(prosecutionCase, new ArrayList<>(),  referenceDataService));
 
         when(referenceDataService.getProsecutor(prosecutorId)).thenReturn(getProsecutorFromReferenceData(prosecutorId));
@@ -172,7 +174,7 @@ public class CaseAtAGlanceHelperTest {
 
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
-        final CaagDefendants defendantSmith = defendants.get(0);
+        CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getFirstName(), is("Jhon"));
         assertThat(defendantSmith.getLastName(), is("Smith"));
         assertThat(defendantSmith.getDateOfBirth(), is(DATE_OF_BIRTH));
@@ -182,7 +184,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getAddress(), is(ADDRESS));
         assertThat(defendantSmith.getRemandStatus(), is(REMAND_STATUS));
 
-        final CaagDefendants defendantRambo = defendants.get(1);
+        CaagDefendants defendantRambo = defendants.get(1);
         assertThat(defendantRambo.getFirstName(), is("Jhon"));
         assertThat(defendantRambo.getLastName(), is("Rambo"));
         assertThat(defendantRambo.getDateOfBirth(), nullValue());
@@ -203,7 +205,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
 
-        final CaagDefendants defendantSmith = defendants.get(2);
+        CaagDefendants defendantSmith = defendants.get(2);
         assertThat(defendantSmith.getFirstName(), is("Alan"));
         assertThat(defendantSmith.getLastName(), is("Smith"));
         assertThat(defendantSmith.getNationality(), is(String.format("%s, %s", NATIONALITY_DESCRIPTION, ADD_NATIONALITY_DESCRIPTION)));
@@ -219,7 +221,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
 
-        final CaagDefendants defendantSmith = defendants.get(2);
+        CaagDefendants defendantSmith = defendants.get(2);
         assertThat(defendantSmith.getFirstName(), is("Alan"));
         assertThat(defendantSmith.getLastName(), is("Smith"));
         assertTrue(defendantSmith.getDefendantMarkers().stream().anyMatch(m -> m.equals(YOUTH_MARKER_TYPE)));
@@ -230,7 +232,7 @@ public class CaseAtAGlanceHelperTest {
 
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
-        final CaagDefendants defendantSmith = defendants.get(0);
+        CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getCaagDefendantOffences().isEmpty(), is(false));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceCode(), is(OFFENCE_CODE));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceTitle(), is(OFFENCE_TITLE));
@@ -244,7 +246,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().isEmpty(), is(false));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(1).getLabel(), is(LABEL));
 
-        final CaagDefendants defendantRambo = defendants.get(1);
+        CaagDefendants defendantRambo = defendants.get(1);
         assertThat(defendantRambo.getCaagDefendantOffences().isEmpty(), is(false));
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getId(), notNullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOffenceCode(), is(OFFENCE_CODE));
@@ -263,7 +265,7 @@ public class CaseAtAGlanceHelperTest {
 
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
-        final CaagDefendants defendantSmith = defendants.get(0);
+        CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().isEmpty(), is(false));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(1).getId(), notNullValue());
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(1).getLabel(), is(LABEL));
@@ -281,7 +283,7 @@ public class CaseAtAGlanceHelperTest {
 
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
 
-        final CaagDefendants defendantSmith = defendants.get(0);
+        CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().isEmpty(), is(false));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(0).getId(), is(RECENT_JUDICIAL_RESULT_ID));
     }
@@ -290,7 +292,7 @@ public class CaseAtAGlanceHelperTest {
     public void shouldGetDefendantWithLegalAidStatus() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getDefendantsWithOffenceDetails();
-        final CaagDefendants defendantSmith = defendants.get(0);
+        CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getLegalAidStatus(), is(LEGAL_AID_STATUS));
     }
 
@@ -302,7 +304,7 @@ public class CaseAtAGlanceHelperTest {
 
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(1));
-        final CaagDefendants legalEntityDefendant = defendants.get(0);
+        CaagDefendants legalEntityDefendant = defendants.get(0);
         assertThat(legalEntityDefendant.getLegalEntityDefendant().getName(), is(ORG_NAME));
         assertThat(legalEntityDefendant.getLegalEntityDefendant().getAddress().getAddress1(), is(ADDRESS_1));
         assertThat(legalEntityDefendant.getLegalEntityDefendant().getAddress().getAddress2(), is(ADDRESS_2));
@@ -320,7 +322,6 @@ public class CaseAtAGlanceHelperTest {
 
                 .withCaseStatus(CASE_STATUS)
                 .withRemovalReason(REMOVAL_REASON)
-                       .withInitiationCode(InitiationCode.J)
                 .withCaseMarkers(asList(marker().withId(randomUUID()).withMarkerTypeDescription("Vulnerable or intimidated victim").build(),
                         marker().withId(randomUUID()).withMarkerTypeDescription("Prohibited Weapons").build()))
 

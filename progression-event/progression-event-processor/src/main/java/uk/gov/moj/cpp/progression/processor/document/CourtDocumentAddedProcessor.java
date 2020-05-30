@@ -2,16 +2,12 @@ package uk.gov.moj.cpp.progression.processor.document;
 
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
 import uk.gov.justice.core.courts.DefendantDocument;
-import uk.gov.justice.core.courts.DocumentCategory;
-import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -21,12 +17,9 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
-import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -44,24 +37,14 @@ public class CourtDocumentAddedProcessor {
     private Sender sender;
 
     @Inject
-    private UsersGroupService usersGroupService;
-
-    @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
-
-    @Inject
-    private DefenceNotificationService defenceNotificationService;
-
 
     @Handles("progression.event.court-document-added")
     public void handleCourtDocumentAddEvent(final JsonEnvelope envelope) {
         final CourtsDocumentAdded courtsDocumentAdded = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), CourtsDocumentAdded.class);
         sender.send(Enveloper.envelop(envelope.payloadAsJsonObject()).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(envelope));
         final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_ADDED).build();
-        sender.send(uk.gov.justice.services.messaging.Envelope.envelopeFrom(metadata, envelope.payload()));
-       if(requiresEmailNotification(envelope, courtsDocumentAdded.getCourtDocument())) {
-           defenceNotificationService.prepareNotificationsForCourtDocument(envelope, courtsDocumentAdded.getCourtDocument());
-       }
+        sender.send(envelopeFrom(metadata, envelope.payload()));
 
         if(courtsDocumentAdded.getCourtDocument().getDocumentTypeId().equals(IDPC_DOCUMENT_TYPE_ID)) {
             final DefendantDocument courtDocument = courtsDocumentAdded.getCourtDocument().getDocumentCategory().getDefendantDocument();
@@ -77,31 +60,6 @@ public class CourtDocumentAddedProcessor {
                                             sender.send(envelopeFrom(idpcMetadata,
                                                     createIDPCReceivedBody(material, courtDocument.getProsecutionCaseId(), defendantId)))));
         }
-    }
-
-    @SuppressWarnings("squid:UnusedPrivateMethod")
-    private boolean requiresEmailNotification(final JsonEnvelope envelope, final CourtDocument courtDocument) {
-        return isCaseDocumentOrDefendantDocument(
-                courtDocument.getDocumentCategory())
-                &&
-                isNonDefenceUser(envelope)
-                &&
-                hasReadPermissionForDefenceLawyers(courtDocument.getDocumentTypeRBAC());
-
-    }
-
-    private boolean isNonDefenceUser(final JsonEnvelope envelope) {
-        final List<String> userGroups = usersGroupService.getUserGroupsForUser(envelope).stream().map(x -> x.getGroupName()).collect(Collectors.toList());
-        return !userGroups.contains("Defence Lawyers") && !userGroups.contains("Advocates") && !userGroups.contains("Chambers Admin") && !userGroups.contains("Chambers Clerk");
-    }
-
-    private boolean hasReadPermissionForDefenceLawyers(final DocumentTypeRBAC documentTypeRBAC) {
-        final List<String> readAccessGroups = documentTypeRBAC.getReadUserGroups();
-        return isNotEmpty(readAccessGroups) ? readAccessGroups.contains("Defence Lawyers") : false;
-
-    }
-    private boolean isCaseDocumentOrDefendantDocument(final DocumentCategory documentCategory) {
-        return (null != documentCategory.getCaseDocument()) || (null != documentCategory.getDefendantDocument());
     }
 
     private JsonObject createIDPCReceivedBody(final Material material, final UUID caseId, UUID defendantId) {

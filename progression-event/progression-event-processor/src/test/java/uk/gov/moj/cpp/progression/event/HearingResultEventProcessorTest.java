@@ -18,7 +18,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import org.junit.Ignore;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -27,10 +26,8 @@ import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingDefendantRequestAdjourned;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -361,22 +358,6 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleHearingResultedPublicEvent(event);
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, never()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplictionsArgumentCaptor.capture());
-    }
-
-    @Test
-    public void handleHearingDefendantRequestAdjournedEvent() {
-        final HearingDefendantRequestAdjourned hearingDefendantRequestAdjourned = HearingDefendantRequestAdjourned.hearingDefendantRequestAdjourned()
-                .withCurrentHearingId(randomUUID())
-                .withDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
-                        .withProsecutionCaseId(randomUUID())
-                        .withDefendantId(randomUUID())
-                        .build()))
-                .build();
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("progression.event.hearing-defendant-request-adjourned"),
-                objectToJsonObjectConverter.convert(hearingDefendantRequestAdjourned));
-        this.eventProcessor.handleHearingDefendantRequestAdjournedEvent(event);
-        verify(this.sender , times(1)).send(this.envelopeArgumentCaptor.capture());
     }
 
     private Optional<JsonObject> getHearingJson() {

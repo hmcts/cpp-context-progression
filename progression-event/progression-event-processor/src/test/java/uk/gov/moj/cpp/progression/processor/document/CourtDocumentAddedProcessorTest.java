@@ -5,7 +5,6 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
@@ -17,14 +16,9 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
-import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
-import uk.gov.moj.cpp.progression.service.UsersGroupService;
-import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -55,13 +49,6 @@ public class CourtDocumentAddedProcessorTest {
 
     @Mock
     private Sender sender;
-
-    @Mock
-    private UsersGroupService usersGroupService;
-
-    @Mock
-    private DefenceNotificationService defenceNotificationService;
-
 
 
     @Captor
@@ -114,10 +101,6 @@ public class CourtDocumentAddedProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
 
-        List<UserGroupDetails> userGroupDetails  = new ArrayList<>();
-        userGroupDetails.add(new UserGroupDetails(UUID.randomUUID(),"Chambers Admin"));
-        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
-        when(usersGroupService.getGroupIdForDefenceLawyers()).thenReturn(UUID.randomUUID().toString());
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
         verify(sender, times(2)).send(envelopeCaptor.capture());
@@ -141,9 +124,6 @@ public class CourtDocumentAddedProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
 
-        List<UserGroupDetails> userGroupDetails  = new ArrayList<>();
-        userGroupDetails.add(new UserGroupDetails(UUID.randomUUID(),"Chambers Admin"));
-        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
         verify(sender, times(3)).send(envelopeCaptor.capture());

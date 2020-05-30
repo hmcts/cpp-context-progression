@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import static java.lang.String.format;
+import static java.time.LocalDate.now;
+import static java.time.Period.between;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntityDefendant;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -19,7 +25,6 @@ import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.ProsecutorDetails;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,11 +33,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-import static java.time.LocalDate.now;
-import static java.time.Period.between;
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntityDefendant;
+import javax.json.JsonObject;
 
 public class CaseAtAGlanceHelper {
 
@@ -48,7 +49,7 @@ public class CaseAtAGlanceHelper {
     private final List<Hearings> caseHearings;
     private final ReferenceDataService referenceDataService;
 
-    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> caseHearings, final ReferenceDataService referenceDataService) {
+    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, List<Hearings> caseHearings, final ReferenceDataService referenceDataService) {
         this.prosecutionCase = prosecutionCase;
         this.caseHearings = caseHearings;
         this.referenceDataService = referenceDataService;
@@ -69,11 +70,6 @@ public class CaseAtAGlanceHelper {
 
         caseDetailsBuilder.withCaseStatus(prosecutionCase.getCaseStatus());
         caseDetailsBuilder.withRemovalReason(prosecutionCase.getRemovalReason());
-
-        if (prosecutionCase.getInitiationCode() != null) {
-            caseDetailsBuilder.withInitiationCode(
-                    prosecutionCase.getInitiationCode().toString());
-        }
 
         return caseDetailsBuilder.build();
     }

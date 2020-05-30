@@ -2,11 +2,8 @@ package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -14,8 +11,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-import  java.util.List;
-import java.util.UUID;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
@@ -49,8 +44,6 @@ public class UsersAndGroupsStub {
 
 
     public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
-    public static final String GET_ORGANISATIONS_DETAILS_FORIDS_QUERY = BASE_QUERY + "/organisations*";
-    public static final String GET_ORGANISATION_DETAILS_FORIDS_MEDIA_TYPE = "application/vnd.usersgroups.get-organisations-details-forids+json";
 
 
     public static void stubGetOrganisationQuery(final String userId, final String organisationId, final String organisationName) {
@@ -202,16 +195,4 @@ public class UsersAndGroupsStub {
                         .withBody(getPayload(responseBodyPath))));
         waitForStubToBeReady(format(query, userId), queryMediaType);
     }
-
-    public static void stubGetOrganisationDetailForIds(final String resourceName, final List<String> organisationIds ,final String userId ) {
-        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
-        String body = getPayload(resourceName);
-        stubFor(get(urlPathMatching(GET_ORGANISATIONS_DETAILS_FORIDS_QUERY))
-                .willReturn(aResponse().withStatus(OK.getStatusCode())
-                .withHeader(ID,randomUUID().toString())
-                .withHeader(HttpHeaders.CONTENT_TYPE,APPLICATION_JSON)
-                .withBody(body)));
-        waitForStubToBeReady(GET_ORGANISATIONS_DETAILS_FORIDS_QUERY,GET_ORGANISATION_DETAILS_FORIDS_MEDIA_TYPE);
-    }
-
 }

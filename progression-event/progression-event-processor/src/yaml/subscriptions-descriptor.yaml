@@ -155,9 +155,6 @@ subscriptions_descriptor:
         - name: progression.event.extend-hearing-defendant-request-updated
           schema_uri: http://justice.gov.uk/core/courts/extend-hearing-defendant-request-updated.json
 
-        - name: progression.event.hearing-defendant-request-adjourned
-          schema_uri: http://justice.gov.uk/core/courts/hearing-defendant-request-adjourned.json
-
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

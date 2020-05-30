@@ -48,16 +48,6 @@ public class ApplicationParameters {
     private String relayCaseOnCppFunctionPath;
 
 
-    @Inject
-    @Value(key = "notifyDefenceOfNewMaterialTemplateId", defaultValue = "f5d3b9e6-0583-4062-b00d-38d02b548409")
-    private String notifyDefenceOfNewMaterialTemplateId;
-
-    @Inject
-    @Value(key = "endClientHost", defaultValue = "")
-    private String endClientHost;
-
-
-
     public String getNcesEmailTemplateId() {
 
         return ncesEmailTemplateId;
@@ -102,11 +92,4 @@ public class ApplicationParameters {
         return cpsDefendantCourtDocumentTemplateId;
     }
 
-    public String getNotifyDefenceOfNewMaterialTemplateId() {
-        return notifyDefenceOfNewMaterialTemplateId;
-    }
-
-    public String getEndClientHost() {
-        return endClientHost;
-    }
 }

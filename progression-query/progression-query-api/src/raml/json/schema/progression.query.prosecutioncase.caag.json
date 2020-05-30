@@ -19,9 +19,6 @@
         "removalReason": {
           "type": "string"
         },
-        "initiationCode": {
-          "type": "string"
-        },
         "caseMarkers": {
           "type": "array",
           "items": {

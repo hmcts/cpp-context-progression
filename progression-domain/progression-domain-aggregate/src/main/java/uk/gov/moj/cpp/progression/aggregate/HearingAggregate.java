@@ -10,7 +10,6 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingDefendantRequestAdjourned;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -199,15 +198,6 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> createHearingDefendantRequest(final List<ListDefendantRequest> listDefendantRequests) {
         LOGGER.debug("List Defendant Request is being created.");
         return apply(Stream.of(HearingDefendantRequestCreated.hearingDefendantRequestCreated().withDefendantRequests(listDefendantRequests).build()));
-    }
-
-    public Stream<Object> adjournHearingDefendantRequest(final UUID currentHearingId, final UUID adjournHearingId) {
-        LOGGER.debug("Adjourn Hearing Defendant Request is being created.");
-        return apply(Stream.of(HearingDefendantRequestAdjourned.hearingDefendantRequestAdjourned()
-                .withCurrentHearingId(currentHearingId)
-                .withAdjournedHearingId(adjournHearingId)
-                .withDefendantRequests(this.listDefendantRequests)
-                .build()));
     }
 
     public Stream<Object> saveHearingResult(final Hearing hearing, final ZonedDateTime sharedTime) {
