@@ -26,6 +26,7 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HearingResultedCaseUpdatedIT {
+public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String HEARING_RESULTED_EVENT = "progression.event.hearing-resulted-case-updated";
@@ -71,7 +72,7 @@ public class HearingResultedCaseUpdatedIT {
 
         cleanEventStoreTables();
         cleanViewStoreTables();
-
+        deleteAndCreateIndex();
     }
 
     @After
@@ -97,7 +98,7 @@ public class HearingResultedCaseUpdatedIT {
 
         final DocumentContext inputProsecutionCase = initialCase();
 
-        verifyInitialElasticSearchCase(inputProsecutionCase, initialElasticSearchCaseResponseJsonObject.get());
+        verifyInitialElasticSearchCase(inputProsecutionCase, initialElasticSearchCaseResponseJsonObject.get(), "ACTIVE");
 
         sendEventToMessageQueue();
 

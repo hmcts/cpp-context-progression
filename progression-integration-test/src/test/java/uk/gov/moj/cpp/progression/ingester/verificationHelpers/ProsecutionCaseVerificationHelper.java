@@ -121,20 +121,20 @@ public class ProsecutionCaseVerificationHelper {
     }
 
     public static void verifyCaseCreated(final long partySize,
-                                         final DocumentContext inputProsectionCase,
+                                         final DocumentContext inputProsecutionCase,
                                          final JsonObject outputCase) {
-        final String caseId = ((JsonString) inputProsectionCase.read("$.prosecutionCase.id")).getString();
+        final String caseId = ((JsonString) inputProsecutionCase.read("$.prosecutionCase.id")).getString();
         assertEquals(caseId, outputCase.getString("caseId"));
 
         final JsonArray parties = outputCase.getJsonArray(PARTIES);
         assertNotNull(parties);
         assertThat((long) (parties.size()), is(partySize));
         verifyCaseType(outputCase);
-        verifyProsecutionCase(inputProsectionCase, outputCase);
+        verifyProsecutionCase(inputProsecutionCase, outputCase);
     }
 
-    public static void verifyCaseDefendant(final DocumentContext inputProsectionCase, final JsonObject outputCase, boolean isReferCaseToCourt) {
-        final JsonObject inputDefendant = inputProsectionCase.read("$.prosecutionCase.defendants[0]");
+    public static void verifyCaseDefendant(final DocumentContext inputProsecutionCase, final JsonObject outputCase, boolean isReferCaseToCourt) {
+        final JsonObject inputDefendant = inputProsecutionCase.read("$.prosecutionCase.defendants[0]");
         verifyDefendant(inputDefendant, outputCase);
         final DocumentContext parsedInputDefendant = parse(inputDefendant);
         final JsonString defendantId = inputDefendant.getJsonString("id");

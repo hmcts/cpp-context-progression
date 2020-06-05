@@ -28,4 +28,7 @@ unified_search_descriptor:
      - name: progression.event.defendants-added-to-court-proceedings
        transformer_config: progression.event.defendant-added-to-court-proceeding-java-spec.json
        index_name: crime_case_index
+     - name: progression.event.hearing-confirmed-case-status-updated
+       transformer_config: progression.events.hearing-confirmed-case-status-updated-spec.json
+       index_name: crime_case_index
 ...

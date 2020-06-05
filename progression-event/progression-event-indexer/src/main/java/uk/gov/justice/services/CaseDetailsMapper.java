@@ -13,7 +13,6 @@ public class CaseDetailsMapper {
         final CaseDetails caseDetails = new CaseDetails();
         caseDetails.setCaseId(caseDetailsId.toString());
         caseDetails.set_case_type(caseType);
-        caseDetails.setCaseStatus("ACTIVE");
         if (CROWN.equals(jurisdictionType)) {
             caseDetails.set_is_crown(true);
             caseDetails.set_is_magistrates(false);

@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression.ingester;
 
 import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -14,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
@@ -31,12 +34,10 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.ingester.verificationHelpers.BaseVerificationHelper;
 import uk.gov.moj.cpp.progression.util.Utilities;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -57,13 +58,14 @@ import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import junit.framework.TestCase;
+import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AddDefendantsToCourtProceedingsIT {
+public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
@@ -76,8 +78,6 @@ public class AddDefendantsToCourtProceedingsIT {
     private String materialIdDeleted;
     private String defendantId;
     private String referralReasonId;
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
     private final BaseVerificationHelper verificationHelper = new BaseVerificationHelper();
 
     @AfterClass
@@ -87,17 +87,14 @@ public class AddDefendantsToCourtProceedingsIT {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();
         courtDocumentId = randomUUID().toString();
         defendantId = randomUUID().toString();
         referralReasonId = randomUUID().toString();
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
-        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
-        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
+        deleteAndCreateIndex();
     }
 
     @Test
@@ -107,22 +104,14 @@ public class AddDefendantsToCourtProceedingsIT {
         final String caseUrn = PreAndPostConditionHelper.generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
-            try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject, 1)) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                TestCase.fail();
-            }
+        final Matcher[] caseMatcher = {withJsonPath("$.caseReference", equalTo(caseUrn)),
+                withJsonPath("$.caseId", equalTo(caseId))};
 
-            return empty();
-        });
+        final Optional<JsonObject> prosecussionCaseResponseJsonObject = findBy(caseMatcher);
 
         TestCase.assertTrue(prosecussionCaseResponseJsonObject.isPresent());
 
-        final JsonObject outputCase = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
+        final JsonObject outputCase = prosecussionCaseResponseJsonObject.get();
         final JsonObject prosecutionCase = documentContextProsecutionCase(caseUrn);
         final JsonObject prosecutionCase1 = prosecutionCase.getJsonObject("prosecutionCase");
 

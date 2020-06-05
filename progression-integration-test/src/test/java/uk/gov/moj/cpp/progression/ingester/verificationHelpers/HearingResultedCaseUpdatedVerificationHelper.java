@@ -15,10 +15,10 @@ import org.hamcrest.core.IsEqual;
 
 public class HearingResultedCaseUpdatedVerificationHelper {
 
-    public static void verifyInitialElasticSearchCase(final DocumentContext inputProsecutionCase, final JsonObject outputCase) {
+    public static void verifyInitialElasticSearchCase(final DocumentContext inputProsecutionCase, final JsonObject outputCase, final String caseStatus) {
         with(outputCase.toString())
                 .assertThat("$.caseId", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.id")).getString()))
-                .assertThat("$.caseStatus", equalTo("ACTIVE"));
+                .assertThat("$.caseStatus", equalTo(caseStatus));
     }
 
     public static void verifyUpdatedElasticSearchCase(final JsonObject caseUpdatedEvent, final JsonObject outputCase) {

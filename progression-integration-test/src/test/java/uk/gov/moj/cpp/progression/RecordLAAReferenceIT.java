@@ -49,7 +49,7 @@ import org.junit.Test;
 
 @Ignore
 @SuppressWarnings({"squid:S1607"})
-public class RecordLAAReferenceIT {
+public class RecordLAAReferenceIT extends AbstractIT {
     static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     static final String PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";

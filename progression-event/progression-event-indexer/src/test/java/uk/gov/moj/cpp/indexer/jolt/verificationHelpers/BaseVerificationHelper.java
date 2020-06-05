@@ -8,10 +8,8 @@ import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static uk.gov.justice.services.common.converter.ZonedDateTimes.fromString;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.addressLines;
 
-import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
 import javax.json.JsonArray;
@@ -20,8 +18,6 @@ import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.PathNotFoundException;
-import org.hamcrest.Matcher;
-import org.hamcrest.core.Is;
 
 public class BaseVerificationHelper extends BaseVerificationCountHelper {
     private static final Logger logger = Logger.getLogger(BaseVerificationHelper.class.getName());
@@ -56,7 +52,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
             final String prosecutingAuthority = ((JsonString) inputProsecutionCase.read(inputDefendantPath + ".prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString();
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".id")).getString()))
-                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
+                    .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"))
                     .assertThat(outputCaseDocumentsPath + ".caseReference", equalTo(caseUrn))
                     .assertThat(outputCaseDocumentsPath + ".prosecutingAuthority", equalTo(prosecutingAuthority));
@@ -83,7 +79,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
 
         try {
             with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
-                    .assertThat(outputCaseDocumentsPath + ".caseStatus", equalTo("ACTIVE"))
+                    .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
                     .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"));
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationId", is(id))

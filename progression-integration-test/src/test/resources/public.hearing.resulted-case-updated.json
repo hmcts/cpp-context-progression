@@ -48,7 +48,7 @@
         },
         "originatingOrganisation": "a",
         "initiationCode": "J",
-        "caseStatus": "a",
+        "caseStatus": "INACTIVE",
         "statementOfFacts": "a",
         "statementOfFactsWelsh": "a",
         "defendants": [

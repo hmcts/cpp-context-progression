@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
@@ -42,7 +43,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class OffencesForDefendantChangedIT {
+public class OffencesForDefendantChangedIT extends AbstractIT {
 
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String DEFENDANT_CHANGED_EVENT = "progression.events.offences-for-defendant-changed";
@@ -67,12 +68,9 @@ public class OffencesForDefendantChangedIT {
 
         offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
 
-        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
-        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-
         cleanViewStoreTables();
         cleanEventStoreTables();
-
+        deleteAndCreateIndex();
     }
 
     @AfterClass
