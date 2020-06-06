@@ -217,23 +217,27 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetQueryCaseAtAGlance() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS",
+                "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin");
     }
 
     @Test
     public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryCaseAtAGlance() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers",
+                "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin");
     }
 
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetQueryApplicationAtAGlance() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS",
+                "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin");
     }
 
     @Test
     public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryApplicationAtAGlance() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate",
+                "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin");
     }
 
     @Test

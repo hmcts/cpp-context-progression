@@ -61,7 +61,7 @@ rule "Query - Access control for  progression.query.prosecutioncase.caag"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase.caag");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -253,7 +253,8 @@ rule "Query - Access control for  progression.query.application.aaag"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.application.aaag");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
+        "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -334,7 +335,7 @@ rule "Query - Access control for  progression.query.case-lsm-info"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.case-lsm-info");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin"))
   then
     $outcome.setSuccess(true);
 end
