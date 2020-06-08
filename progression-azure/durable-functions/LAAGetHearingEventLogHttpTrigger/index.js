@@ -29,14 +29,14 @@ module.exports = async function (context, req) {
         context.res = {
             status: 400,
             body: 'A CJSCPPUID request header is required'
-        }; 
+        };
         return;
 
     }
 
     const hearingId = (req.query.hearingId || req.body.hearingId);
     const hearingDate = req.query.hearingDate;
-    
+
     context.log(`Get hearing event log http trigger started for hearing ${hearingId}`);
 
     const client = df.getClient(context);
@@ -45,13 +45,13 @@ module.exports = async function (context, req) {
         hearingId: hearingId,
         hearingDate: hearingDate,
         cjscppuid: req.headers.cjscppuid
-    };
+    }
 
     context.log(`Obtained orchestration client. starting LAAGetHearingEventLogOrchestrator`);
 
-    const instanceId = await client.startNew("LAAGetHearingEventLogOrchestrator", undefined, input);
+    const instanceId = await client.startNew('LAAGetHearingEventLogOrchestrator', undefined, input);
     context.log(`Started orchestration with ID = ${instanceId}.`);
-    
+
     const json = await client.waitForCompletionOrCreateCheckStatusResponse(
         context.bindingData.req, instanceId, 60000, 1000
     );
@@ -62,7 +62,7 @@ module.exports = async function (context, req) {
         context.res = {
             status: 408,
             body: 'Timeout'
-        }; 
+        };
         return;
     }
 

@@ -2,6 +2,12 @@ const getHearing = require('../HearingResultedCacheQuery/index');
 const { laaFilter } = require('../LAAHearingResultedFilter/functions.js');
 const getEventLog = require('../HearingEventLogQuery/index');
 
+function error(context, logMessage) {
+    context.log(`An error occured while filtering the hearing result: ${logMessage}`);
+    context.res.body = {'error': `An unknown error has occured while filtering the hearing result`};
+    context.res.status = 503
+}
+
 module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
 
@@ -40,32 +46,32 @@ module.exports = async function (context, req) {
     context.log(`Returning details for hearing ${hearingId}`);
 
     if (hearingJson) {
-        const filteredJson = laaFilter(hearingJson);
 
-        if (filteredJson.prosecutionCases && 
-            filteredJson.prosecutionCases[0].defendants &&
-            filteredJson.prosecutionCases[0].defendants.length > 0) {
+        const filteredJson = laaFilter(hearingJson, context);
 
-            context.log(`LAA reference found for hearingId ${hearingId}`);
-            context.log(`Filtered JSON is ` + JSON.stringify(filteredJson));
-            context.bindings.params.filteredJson = filteredJson;
+        if (filteredJson == null) error(context, 'filtered JSON is null'); else
+        if (Object.keys(filteredJson).length === 0) error(context, `No LAA reference found for hearing ${hearingId} with date ${hearingDate}`)
+        if (!filteredJson.hearing) error(context, 'filtered JSON has no hearing element'); else
+        if (!filteredJson.hearing.prosecutionCases) error(context, 'filtered JSON has no hearing.prosecutionCases element'); else {
 
-            context.bindings.params.hearingDate = hearingDate;
+            context.log(`Element 'hearing' found in filtered JSON, as expected`)
 
-            try {
-                context.log(`Getting event log for hearing ${hearingId} with date ${hearingDate}`);
-                const eventLogJson = await getEventLog(context);
-                context.log(`Returning event log for hearing ${hearingId} with date ${hearingDate}`);
-                context.res.body = (!eventLogJson) ? {} : eventLogJson;
-            } catch (e) {
-                context.log(`A server error occured while retrieving the event log`);
-                context.res.body = {'error': `An unknown error has occured while retrieving the event log`};
-                context.res.status = 503
+            if (filteredJson.hearing.prosecutionCases[0].defendants &&
+                filteredJson.hearing.prosecutionCases[0].defendants.length > 0) {
+
+                context.bindings.params.filteredJson = filteredJson;
+                context.bindings.params.hearingDate = hearingDate;
+
+                try {
+                    context.log(`Getting event log for hearing ${hearingId} with date ${hearingDate}`);
+                    const eventLogJson = await getEventLog(context);
+                    context.log(`Returning event log for hearing ${hearingId} with date ${hearingDate}`);
+                    context.res.body = (!eventLogJson) ? {} : eventLogJson;
+                } catch (e) {
+                    error(context, `Could not retrieve event log for hearing ${hearingId}`)
+                }
+
             }
-
-        } else {
-            context.log(`No LAA reference found for hearing ${hearingId} with date ${hearingDate}`);
-            context.res.body = {}
         }
     } else {
         context.log(`No data found for hearing ${hearingId} with date ${hearingDate}`);

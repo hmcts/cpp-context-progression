@@ -3,6 +3,7 @@ const LAA_APPLICATION_REFERENCE_KEY = 'laaApplnReference';
 const laaFilter = function(json, context) {
 
     if (!json.hearing) {
+        context.log(`Hearing element not found when attempting to filter hearing JSON`)
         return null;
     }
 
@@ -26,6 +27,8 @@ const laaFilter = function(json, context) {
 
         return value;
     });
+
+    context.log(`Found ${defendantsFound} defendants with LAA reference against one or more offences`)
 
     return defendantsFound > 0 ? json : {};
 

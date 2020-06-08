@@ -1,0 +1,153 @@
+{
+  "hearing": {
+    "applicantCounsels": [],
+    "applicationPartyCounsels": [],
+    "courtApplicationPartyAttendance": [],
+    "courtApplications": [],
+    "courtCentre": {
+      "address": {
+        "address1": "Norwich Place",
+        "address2": "Bexleyheath",
+        "address3": "Kent",
+        "address4": "",
+        "address5": "",
+        "postcode": "DA6 7ND"
+      },
+      "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "name": "Bexley Magistrates' Court",
+      "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+      "roomName": "Courtroom 01"
+    },
+    "defenceCounsels": [],
+    "defendantAttendance": [],
+    "defendantHearingYouthMarkers": [],
+    "defendantReferralReasons": [
+      {
+        "defendantId": "ad03a626-d438-44a5-84b6-14111ec363fa",
+        "description": "Case unsuitable for SJP",
+        "id": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingCaseNotes": [],
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 360,
+        "listingSequence": 0,
+        "sittingDay": "2020-04-17T09:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "ee7b9c09-4a6e-49e3-a484-193dc93a4575",
+    "judiciary": [],
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseMarkers": [],
+        "caseStatus": "SJP_REFERRAL",
+        "defendants": [
+          {
+            "aliases": [],
+            "associatedPersons": [],
+            "courtProceedingsInitiated": "2020-04-03T10:46:55.600Z",
+            "id": "ad03a626-d438-44a5-84b6-14111ec363fa",
+            "judicialResults": [],
+            "masterDefendantId": "ad03a626-d438-44a5-84b6-14111ec363fa",
+            "numberOfPreviousConvictionsCited": 2,
+            "offences": [
+              {
+                "chargeDate": "2020-01-25",
+                "count": 1,
+                "id": "7dc1b279-805f-4ba8-97ea-be635f5764a7",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "judicialResultId": "7e5600fe-16aa-4639-84fe-3919165a65c1",
+                    "judicialResultPrompts": [],
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2020-04-17",
+                    "lifeDuration": false,
+                    "orderedDate": "2020-04-17",
+                    "orderedHearingId": "ee7b9c09-4a6e-49e3-a484-193dc93a4575",
+                    "publishedAsAPrompt": false,
+                    "rank": 8600,
+                    "resultText": "Absolute discharge\n",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-20191601",
+                  "effectiveEndDate": "2019-12-12",
+                  "effectiveStartDate": "2019-09-12",
+                  "statusCode": "GRC",
+                  "statusDate": "2019-12-16",
+                  "statusDescription": "Granted (One Advocate)(Crown court jurisdiction)",
+                  "statusId": "a95d8a0e-95ad-32b8-8ae4-476f8f154fd0"
+                },
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2020-04-03",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "7dc1b279-805f-4ba8-97ea-be635f5764a7"
+                },
+                "offenceCode": "TR11004",
+                "offenceDefinitionId": "a9ac247c-38b3-4da3-be2d-79332a7a34f0"
+              }
+            ],
+            "personDefendant": {
+              "bailConditions": "",
+              "personDetails": {
+                "address": {
+                  "address1": "Flat 1, Armageddon House",
+                  "address2": "13 Old Road",
+                  "address3": "Giggleswick",
+                  "address4": "Merton",
+                  "postcode": "ME1 1AB"
+                },
+                "contact": {},
+                "dateOfBirth": "1980-11-25",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {},
+                "firstName": "Ocean",
+                "gender": "FEMALE",
+                "lastName": "Gagnier",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "18f7b360-9f6d-4588-89e0-0ef8b5349b17"
+          }
+        ],
+        "id": "18f7b360-9f6d-4588-89e0-0ef8b5349b17",
+        "initiationCode": "J",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+          "prosecutionAuthorityReference": "TFL23525RRT9G"
+        },
+        "statementOfFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy"
+      }
+    ],
+    "prosecutionCounsels": [],
+    "respondentCounsels": [],
+    "type": {
+      "description": "Plea and Trial Preparation",
+      "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+    }
+  },
+  "sharedTime": "2020-04-17T16:57:04.978Z[UTC]"
+}

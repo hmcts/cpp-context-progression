@@ -24,6 +24,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -55,7 +56,8 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
 
     @Handles("progression.event.prosecution-case-offences-updated")
     public void processProsecutionCaseOffencesUpdated(final JsonEnvelope event) {
-        final ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseOffencesUpdated.class);
+        final ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated =
+                jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseOffencesUpdated.class);
         final DefendantCaseOffences defendantCaseOffences = prosecutionCaseOffencesUpdated.getDefendantCaseOffences();
         if (defendantCaseOffences != null) {
             final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendantCaseOffences.getProsecutionCaseId());
@@ -85,7 +87,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
         if (optionalDefendant.isPresent() && !defendantCaseOffences.getOffences().isEmpty()) {
             final Defendant defendant = optionalDefendant.get();
 
-            final List<Offence> persistedOffences = optionalDefendant.get().getOffences().stream().collect(Collectors.toList());
+            final List<Offence> persistedOffences = new ArrayList<>(optionalDefendant.get().getOffences());
 
             //Delete
             final List<Offence> offenceDetailListDel = getDeletedOffences(defendantCaseOffences.getOffences(), defendant.getOffences());
@@ -131,7 +133,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
     }
 
     private String getLegalAidStatus(final String offenceLegalAidStatus) {
-        return offenceLegalAidStatus.equals(WITHDRAWN.getDescription()) || offenceLegalAidStatus.equals(PENDING.getDescription())
+        return WITHDRAWN.getDescription().equals(offenceLegalAidStatus) || PENDING.getDescription().equals(offenceLegalAidStatus)
                 ? EMPTY
                 : offenceLegalAidStatus;
     }

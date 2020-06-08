@@ -1,0 +1,149 @@
+package uk.gov.moj.cpp.prosecutioncase.event.listener;
+
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentCaptor.forClass;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCaseOffences;
+import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.Marker;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.PoliceOfficerInCase;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ProsecutionCaseOffencesUpdatedEventListenerTest {
+
+    private final UUID id = randomUUID();
+    private final UUID defendantId = randomUUID();
+    private final UUID prosecutionCaseId = randomUUID();
+
+    private final String classOfCase = "ProsecutionCase";
+    private final String originatingOrganisation = "originatingOrganisation";
+    private final String removalReason = "removal Reason";
+    private final String statementOfFacts = "Statement of facts";
+    private final String statementOfFactsWelsh = "Statement of Facts Welsh";
+    private final String policeOfficerRank = "1";
+
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Mock
+    private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Mock
+    private JsonEnvelope jsonEnvelope;
+
+    @Captor
+    private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor = forClass(ProsecutionCaseEntity.class);
+
+    @Mock
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    @InjectMocks
+    private ProsecutionCaseOffencesUpdatedEventListener prosecutionCaseOffencesUpdatedEventListener;
+
+    @Before
+    public void setUp() {
+        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+    }
+
+    @Test
+    public void testProcessProsecutionCaseOffencesUpdatedWhenOffenceLegalAidStatusIsNull() {
+        final ProsecutionCase prosecutionCase = getProsecutionCase();
+
+        final DefendantCaseOffences defendantCaseOffences = getDefendantCaseOffencesWithNullOffenceLegalAidStatus();
+        final ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated = getProsecutionCaseOffencesUpdated(defendantCaseOffences);
+        final JsonObject eventPayload = objectToJsonObjectConverter.convert(prosecutionCaseOffencesUpdated);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(eventPayload);
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(id);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByCaseId(defendantCaseOffences.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+
+        prosecutionCaseOffencesUpdatedEventListener.processProsecutionCaseOffencesUpdated(jsonEnvelope);
+
+        verify(prosecutionCaseRepository).save(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue(), is(notNullValue()));
+        final ProsecutionCaseEntity updatedProsecutionCaseEntity = argumentCaptor.getValue();
+        assertThat(updatedProsecutionCaseEntity.getCaseId(), is(id));
+    }
+
+    private ProsecutionCaseOffencesUpdated getProsecutionCaseOffencesUpdated(DefendantCaseOffences defendantCaseOffences) {
+        return ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(defendantCaseOffences)
+                .build();
+    }
+
+    private DefendantCaseOffences getDefendantCaseOffencesWithNullOffenceLegalAidStatus() {
+        return DefendantCaseOffences.defendantCaseOffences()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withDefendantId(defendantId)
+                .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                .build();
+    }
+
+    private ProsecutionCase getProsecutionCase() {
+        return ProsecutionCase.prosecutionCase()
+                .withId(id)
+                .withAppealProceedingsPending(true)
+                .withCaseStatus(null)
+                .withBreachProceedingsPending(true)
+                .withClassOfCase(classOfCase)
+                .withPoliceOfficerInCase(PoliceOfficerInCase.policeOfficerInCase().withPoliceOfficerRank(policeOfficerRank).build())
+                .withCaseMarkers(singletonList(Marker.marker().build()))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("123").build())
+                .withDefendants(singletonList(
+                        Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                                .build())
+                )
+                .withInitiationCode(InitiationCode.C)
+                .withOriginatingOrganisation(originatingOrganisation)
+                .withRemovalReason(removalReason)
+                .withStatementOfFacts(statementOfFacts)
+                .withStatementOfFactsWelsh(statementOfFactsWelsh)
+                .build();
+    }
+
+}
