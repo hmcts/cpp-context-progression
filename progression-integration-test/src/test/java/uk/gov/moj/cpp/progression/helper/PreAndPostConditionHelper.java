@@ -500,6 +500,11 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static javax.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId, final UUID defendantId) {
+        return getMaterialContentResponse("/material/" + materialId.toString() + "/content?defendantId="+defendantId, userId, "application/vnd.progression.query.material-content-for-defence+json");
+
+    }
+
     public static String getCourtDocumentsByDefendantForDefenceWithNoCaseAndDefenceId(final String userId, final ResponseStatusMatcher responseStatusMatcher) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch", new String[]{}), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
     }

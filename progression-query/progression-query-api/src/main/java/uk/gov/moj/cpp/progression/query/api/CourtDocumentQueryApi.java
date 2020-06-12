@@ -7,6 +7,7 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.isPermitted;
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -17,8 +18,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.query.api.vo.Permission;
-import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ public class CourtDocumentQueryApi {
     private static final String DEFENDANT_ID = "defendantId";
     private static final String HEARING_DETAIL_TYPE_TRIAL = "TIS";
     private static final String HEARING_DETAIL_TYPE_TRIAL_ISSUE = "TRL";
-    public static final String USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP = "User id Not Supplied for the UserGroups look up";
 
     @Inject
     private Requester requester;
@@ -79,7 +77,7 @@ public class CourtDocumentQueryApi {
         if (!(query.payloadAsJsonObject().containsKey(CASE_ID) && query.payloadAsJsonObject().containsKey(DEFENDANT_ID))) {
             throw new BadRequestException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_DEFENCE));
         }
-        if(!permitted(query)) {
+        if(!isPermitted(query, userDetailsLoader, requester, query.payloadAsJsonObject().getString(DEFENDANT_ID))) {
             throw new ForbiddenRequestException("User has neither associated or granted permission to view");
         }
 
@@ -90,27 +88,7 @@ public class CourtDocumentQueryApi {
         return requester.request(envelopeFrom(metadata, query.payloadAsJsonObject()));
     }
 
-    private boolean permitted(final JsonEnvelope query) {
-        final String userId = query.metadata().userId()
-                .orElseThrow(() -> new IllegalStateException(USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP));
-        final UserOrganisationDetails organisationDetailsForUser = userDetailsLoader.getOrganisationDetailsForUser(query, requester, userId);
-        final List<Permission> permissions = userDetailsLoader.getPermissions(query.metadata(), requester, query.payloadAsJsonObject().getString(DEFENDANT_ID));
-        if(permissions.isEmpty()) {
-            return false;
-        }
 
-        final Permission organisationPermission = Permission.permission()
-                                                .withTarget(fromString(query.payloadAsJsonObject().getString(DEFENDANT_ID)))
-                                                .withSource(organisationDetailsForUser.getOrganisationId())
-                                                .build();
-
-        final Permission userPermission = Permission.permission()
-                .withTarget(fromString(query.payloadAsJsonObject().getString(DEFENDANT_ID)))
-                .withSource(fromString(userId))
-                .build();
-
-        return permissions.contains(organisationPermission) || permissions.contains(userPermission);
-    }
 
     @Handles(COURT_DOCUMENT_PROSECUTION_NOTIFICATION_STATUS)
     public JsonEnvelope getCaseNotificationStatus(final JsonEnvelope query) {

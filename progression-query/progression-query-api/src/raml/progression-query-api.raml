@@ -27,11 +27,20 @@ protocols: [ HTTP, HTTPS ]
       (mapping):
           responseType: application/vnd.progression.query.material-content+json
           name: progression.query.material-content
+      (mapping):
+          responseType: application/vnd.progression.query.material-content-for-defence+json
+          name: progression.query.material-content-for-defence
       ...
+      queryParameters:
+          defendantId:
+            type: string
+            example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374
+            required: false
     responses:
       200:
         body:
           application/vnd.progression.query.material-content+json:
+          application/vnd.progression.query.material-content-for-defence+json:
 
 /prosecutioncases/{caseId}/defendants/{defendantId}/extract/{template}:
   description: get court extract content as pdf

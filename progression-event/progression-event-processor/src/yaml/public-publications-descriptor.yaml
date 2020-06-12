@@ -95,6 +95,9 @@ subscriptions_descriptor:
         - name: public.progression.case-linked
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.case-linked.json
 
+        - name: public.progression.events.court-document-created
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-document-created.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

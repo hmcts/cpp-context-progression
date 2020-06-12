@@ -80,7 +80,7 @@ public class SharedCourtDocumentsQueryView {
                         return o2.getDocument().getMaterials().get(0).getUploadDateTime().compareTo(o1.getDocument().getMaterials().get(0).getUploadDateTime());
                     }
                     return -1;
-                }).collect(Collectors.toList());
+                }).filter(courtDocumentIndex -> courtDocumentIndex.getDefendantIds().isEmpty() || courtDocumentIndex.getDefendantIds().contains(defendantId)).collect(Collectors.toList());
 
         result.setDocumentIndices(courtDocumentIndices);
 

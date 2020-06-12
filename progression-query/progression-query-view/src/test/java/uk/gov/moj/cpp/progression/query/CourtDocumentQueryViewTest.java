@@ -356,6 +356,45 @@ public class CourtDocumentQueryViewTest {
     }
 
     @Test
+    public void shouldNotFindDocumentsByDefendantIdIfDocumentBelongsToOtherDefendant() {
+
+        final UUID defendantId = randomUUID();
+
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
+        final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
+
+        addId(null, randomUUID(), null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id);
+        jsonBuilder.add(CourtDocumentQuery.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+
+        JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(CourtDocumentQuery.COURT_DOCUMENTS_SEARCH_NAME).build(),
+                jsonBuilder.build());
+
+        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups((Action) Mockito.any(), (List<String>) Mockito.any())).thenReturn(true);
+        when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) Mockito.any())).thenReturn(true);
+
+        Answer<?> transformResult = new Answer<Object>() {
+            @Override
+            public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
+                CourtDocument courtDocument = (CourtDocument) invocationOnMock.getArguments()[0];
+                UUID id = courtDocumentId2Id.get(courtDocument.getCourtDocumentId());
+                return id2ExpectedCourtDocumentIndex.get(id);
+            }
+        };
+
+        when(courtDocumentTransform.transform(Mockito.any())).thenAnswer(transformResult);
+
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+        CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(0));
+
+
+    }
+
+    @Test
     public void shouldFindDocumentsByCaseIdNotPermitted() {
         shouldFindDocuments(true,false, asList(UUID.randomUUID()), null, null);
     }

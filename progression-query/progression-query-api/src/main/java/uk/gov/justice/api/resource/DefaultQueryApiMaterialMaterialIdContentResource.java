@@ -1,5 +1,7 @@
 package uk.gov.justice.api.resource;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -16,18 +18,22 @@ import uk.gov.justice.services.adapter.rest.processor.RestProcessor;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.logging.HttpTraceLoggerHelper;
 import uk.gov.justice.services.messaging.logging.TraceLogger;
 import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.query.api.UserDetailsLoader;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -48,6 +54,9 @@ import javax.ws.rs.core.Response;
 @Adapter(Component.QUERY_API)
 public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryApiMaterialMaterialIdContentResource {
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT = "progression.query.material-content";
+    public static final String PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE = "progression.query.material-content-for-defence";
+    private static final String MATERIAL_ID = "materialId";
+    private static final String DEFENDANT_ID = "defendantId";
     @Inject
     RestProcessor restProcessor;
 
@@ -80,25 +89,50 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
     @Inject
     private MaterialClient materialClient;
 
+    @Inject
+    private Requester requester;
+
+    @Inject
+    private UserDetailsLoader userDetailsLoader;
+
 
     @Override
     public Response getMaterialByMaterialIdContent(final String materialId, final UUID userId) {
 
-        final JsonEnvelope documentQuery = envelopeFrom(
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PROGRESSION_QUERY_MATERIAL_CONTENT)
-                        .withUserId(userId.toString())
-                        .build(),
-                createObjectBuilder()
-                        .add("materialId", materialId)
-                        .build()
-        );
+        final JsonEnvelope documentQuery = getMaterialQueryEnvelope(materialId, userId, PROGRESSION_QUERY_MATERIAL_CONTENT, empty());
 
+        return processInterceptor(documentQuery);
+
+    }
+
+    private Response processInterceptor(final JsonEnvelope documentQuery) {
         return interceptorChainProcessor.process(interceptorContextWithInput(documentQuery))
                 .map(this::getDocumentContent)
                 .orElse(status(NOT_FOUND).build());
+    }
 
+    @Override
+    public Response getMaterialForDefenceByMaterialIdContent(final String materialId, final String defendantId, final UUID userId) {
+
+        final JsonEnvelope documentQuery = getMaterialQueryEnvelope(materialId, userId, PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE, of(defendantId));
+
+        return processInterceptor(documentQuery);
+
+    }
+
+    private JsonEnvelope getMaterialQueryEnvelope(final String materialId, final UUID userId, final String actionName, final Optional<String> defendantId) {
+
+        final JsonObjectBuilder builder = createObjectBuilder();
+        builder.add(MATERIAL_ID, materialId);
+        defendantId.ifPresent(id->builder.add(DEFENDANT_ID,id));
+
+        return envelopeFrom(metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(actionName)
+                        .withUserId(userId.toString())
+                        .build(),
+                builder.build()
+        );
     }
 
 
@@ -109,7 +143,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
             final UUID systemUser = serviceContextSystemUserProvider.getContextSystemUserId()
                     .orElseThrow(() -> new WebApplicationException("System user for progression context not found"));
 
-            final String materialId = document.payloadAsJsonObject().getString("materialId");
+            final String materialId = document.payloadAsJsonObject().getString(MATERIAL_ID);
 
             final Response documentContentResponse = materialClient.getMaterial(fromString(materialId), systemUser);
             return Response.fromResponse(documentContentResponse).entity(documentContentResponse.readEntity(InputStream.class)).build();

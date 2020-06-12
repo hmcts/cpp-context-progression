@@ -124,7 +124,7 @@ public class UserDetailsLoader {
     }
 
 
-    protected UserOrganisationDetails getOrganisationDetailsForUser(final Envelope<?> envelope, final Requester requester, String userId) {
+    public UserOrganisationDetails getOrganisationDetailsForUser(final Envelope<?> envelope, final Requester requester, String userId) {
 
 
         final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(USER_ID, userId).build();

@@ -4,6 +4,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.CourtDocument;
@@ -47,7 +49,6 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,19 +129,19 @@ public class CourtDocumentQuery {
 
         final List<CourtDocumentEntity> courtDocumentEntities = new ArrayList<>();
         boolean foundSearchParameter = false;
-        if (StringUtils.isNotEmpty(strCaseIds)) {
+        if (isNotEmpty(strCaseIds)) {
             foundSearchParameter = true;
             courtDocumentEntities.addAll(commaSeparatedUuidParam2UUIDs(strCaseIds).stream()
                     .map(caseId -> courtDocumentRepository.findByProsecutionCaseId(caseId))
                     .flatMap(List::stream).collect(Collectors.toList()));
         }
-        if (StringUtils.isNotEmpty(strApplicationIds)) {
+        if (isNotEmpty(strApplicationIds)) {
             foundSearchParameter = true;
             courtDocumentEntities.addAll(commaSeparatedUuidParam2UUIDs(strApplicationIds).stream()
                     .map(applicationId -> courtDocumentRepository.findByApplicationId(applicationId))
                     .flatMap(List::stream).collect(Collectors.toList()));
         }
-        if (StringUtils.isNotEmpty(defendantId)) {
+        if (isNotEmpty(defendantId)) {
             foundSearchParameter = true;
             courtDocumentEntities.addAll(courtDocumentRepository.findByDefendantId(UUID.fromString(defendantId)));
         }
@@ -183,7 +184,9 @@ public class CourtDocumentQuery {
                 .collect(Collectors.toList());
 
         final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments.stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
-                .map(courtDocumentFiltered->courtDocumentTransform.transform(courtDocumentFiltered).build()).collect(Collectors.toList());
+                .map(courtDocumentFiltered->courtDocumentTransform.transform(courtDocumentFiltered).build())
+                .filter(courtDocumentIndex -> isEmpty(defendantId) || courtDocumentIndex.getDefendantIds().isEmpty() || courtDocumentIndex.getDefendantIds().contains(UUID.fromString(defendantId)))
+                .collect(Collectors.toList());
 
         result.setDocumentIndices(courtDocumentIndices);
 

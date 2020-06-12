@@ -2,19 +2,26 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtsDocumentCreated;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 
 import java.util.List;
+import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -29,6 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CourtDocumentCreatedProcessorTest {
 
     private static final String PROGRESSION_COMMAND_UPDATE_FINANCIAL_MEANS_DATA = "progression.command.update-financial-means-data";
+    private static final String PROGRESSION_PUBLIC_COURT_DOCUMENT_CREATED = "public.progression.events.court-document-created";
 
     @Mock
     private Sender sender;
@@ -36,6 +44,9 @@ public class CourtDocumentCreatedProcessorTest {
 
     @InjectMocks
     private CourtDocumentCreatedProcessor processor;
+
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectConverter;
 
 
     @Captor
@@ -46,20 +57,28 @@ public class CourtDocumentCreatedProcessorTest {
     public void shouldRaiseUpdateFinancialMeansDataCommand() {
 
         JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject();
+        final String courtDocumentId = courtDocumentPayload.getJsonObject("courtDocument").getJsonString("courtDocumentId").getString();
 
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-created"),
                 courtDocumentPayload);
 
-        processor.processCourtDocumentCreated(requestMessage);
-        verify(sender, times(1)).send(envelopeCaptor.capture());
+        final JsonObject publicEventPayload = Json.createObjectBuilder()
+                .add("courtDocumentId", courtDocumentId)
+                .build();
 
-        Envelope<JsonObject> command = envelopeCaptor.getValue();
+
+        when(jsonObjectConverter.convert(any(JsonObject.class), eq(CourtsDocumentCreated.class))).thenReturn(CourtsDocumentCreated.courtsDocumentCreated().withCourtDocument(CourtDocument.courtDocument().withCourtDocumentId(UUID.fromString(courtDocumentId)).build()).build());
+
+        processor.processCourtDocumentCreated(requestMessage);
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
-        assertThat(commands.get(0).metadata(),
-                withMetadataEnvelopedFrom(requestMessage).withName(PROGRESSION_COMMAND_UPDATE_FINANCIAL_MEANS_DATA));
-        JsonObject commandCreateCourtDocumentPayload = commands.get(0).payload();
-        assertTrue(commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getBoolean("containsFinancialMeans"));
+        assertThat(commands.get(0).metadata().name(), is(PROGRESSION_PUBLIC_COURT_DOCUMENT_CREATED));
+        assertThat(commands.get(1).metadata().name(), is(PROGRESSION_COMMAND_UPDATE_FINANCIAL_MEANS_DATA));
+        assertThat(commands.get(0).payload().getJsonObject("courtDocument").getJsonString("courtDocumentId").getString(), is(courtDocumentId));
+        JsonObject commandCreateCourtDocumentPayload = commands.get(1).payload();
+        assertThat(commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getBoolean("containsFinancialMeans"), is(true));
 
     }
 

@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.query.api;
 
+import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.isPermitted;
+
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -12,6 +15,7 @@ import javax.inject.Inject;
 @ServiceComponent(Component.QUERY_API)
 public class CourtDocumentApi {
 
+    private static final String DEFENDANT_ID = "defendantId";
     @Inject
     private UserDetailsLoader userDetailsLoader;
 
@@ -35,6 +39,17 @@ public class CourtDocumentApi {
      */
     @Handles("progression.query.material-content")
     public JsonEnvelope getCaseDocumentDetails(final JsonEnvelope envelope) {
+
+        return envelope;
+
+    }
+
+    @Handles("progression.query.material-content-for-defence")
+    public JsonEnvelope getCaseDocumentDetailsForDefence(final JsonEnvelope envelope) {
+
+        if(!isPermitted(envelope, userDetailsLoader, requester, envelope.payloadAsJsonObject().getString(DEFENDANT_ID))) {
+            throw new ForbiddenRequestException("User has neither associated or granted permission to view");
+        }
 
         return envelope;
 
