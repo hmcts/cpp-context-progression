@@ -45,15 +45,15 @@
         <referencedata.version>6.4.22</referencedata.version>
         <listing.version>6.4.26</listing.version>
         <hearing.version>6.4.51</hearing.version>
-        <usersgroups.version>6.4.17</usersgroups.version>
-        <defence.version>6.4.4</defence.version>
+        <usersgroups.version>6.4.18</usersgroups.version>
+        <defence.version>6.4.6</defence.version>
         <referencedata.offence.version>6.4.0</referencedata.offence.version>
         <criminal-court-public-model.version>1.0.85</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
         <results.version>6.4.10</results.version>
-        <notification.notify.version>0.0.38</notification.notify.version>
+        <notification.notify.version>6.4.4</notification.notify.version>
         <unifiedsearch.version>6.4.04</unifiedsearch.version>
     </properties>
 
