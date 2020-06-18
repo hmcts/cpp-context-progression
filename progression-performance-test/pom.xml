@@ -21,7 +21,7 @@
         </target.jdbc.url>
         <target.jdbc.username>postgres</target.jdbc.username>
         <target.jdbc.password>postgres</target.jdbc.password>
-        <target.jdbc.settingsKey />
+        <target.jdbc.settingsKey/>
 
         <jmeter.test.file>*.jmx</jmeter.test.file>
         <!-- Performance tests don't need compilation -->

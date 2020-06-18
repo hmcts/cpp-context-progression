@@ -1,11 +1,10 @@
 package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.assertAddressDetails;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.PersonVerificationHelper.assertDefendantDetails;
@@ -27,14 +26,14 @@ public class CourtApplicationVerificationHelper {
 
     public static void verifyStandaloneApplication(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {
         final String applicationid = ((JsonString) inputCourtApplication.read("$.courtApplication.id")).getString();
-        assertEquals(applicationid, transformedJson.getString("caseId"));
-        assertEquals("APPLICATION", transformedJson.getString("_case_type"));
+        assertThat(applicationid, is(transformedJson.getString("caseId")));
+        assertThat("APPLICATION", is(transformedJson.getString("_case_type")));
     }
 
     public static void verifyEmbeddedApplication(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {
         final String linkedCaseId = ((JsonString) inputCourtApplication.read("$.courtApplication.linkedCaseId")).getString();
-        assertEquals(linkedCaseId, transformedJson.getString("caseId"));
-        assertEquals("PROSECUTION", transformedJson.getString("_case_type"));
+        assertThat(linkedCaseId, is(transformedJson.getString("caseId")));
+        assertThat("PROSECUTION", is(transformedJson.getString("_case_type")));
     }
 
     public static void verifyAddApplication(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {
@@ -67,12 +66,12 @@ public class CourtApplicationVerificationHelper {
 
         final String sourceApplicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
         final JsonObject transformedApplication = transformedJson.getJsonArray("applications").getJsonObject(0);
-        assertNotNull(transformedApplication);
+        assertThat(transformedApplication, is(notNullValue()));
 
         final JsonString applicationReferenceValue = transformedApplication.getJsonString("applicationReference");
-        assertNotNull(applicationReferenceValue);
+        assertThat(applicationReferenceValue,  is(notNullValue()));
 
-        assertEquals(sourceApplicationReference, applicationReferenceValue.getString());
+        assertThat(sourceApplicationReference, is(applicationReferenceValue.getString()));
 
     }
 
@@ -91,7 +90,7 @@ public class CourtApplicationVerificationHelper {
         if (arnValue != null) {
             final String arn = ((JsonString) arnValue).getString();
             final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
-            assertEquals(arn, outputApplication.getString("applicationReference"));
+            assertThat(arn, is(outputApplication.getString("applicationReference")));
         }
     }
 
@@ -103,11 +102,11 @@ public class CourtApplicationVerificationHelper {
         final String applicationDecisionSoughtByDate = ((JsonString) courtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
         final String dueDate = ((JsonString) courtApplication.read("$.courtApplication.dueDate")).getString();
         final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
-        assertEquals(id, outputApplication.getString("applicationId"));
-        assertEquals(applicationType, outputApplication.getString("applicationType"));
-        assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
-        assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
-        assertEquals(dueDate, outputApplication.getString("dueDate"));
+        assertThat(id, is(outputApplication.getString("applicationId")));
+        assertThat(applicationType, is(outputApplication.getString("applicationType")));
+        assertThat(applicationReceivedDate, is(outputApplication.getString("receivedDate")));
+        assertThat(applicationDecisionSoughtByDate, is(outputApplication.getString("decisionDate")));
+        assertThat(dueDate, is(outputApplication.getString("dueDate")));
     }
 
     private static void verifyApplicantTransformationWhenNoOrganisation(final JsonObject applicant, final JsonArray parties) {
@@ -165,7 +164,7 @@ public class CourtApplicationVerificationHelper {
                 .filter(p -> p.getString("_party_type").equalsIgnoreCase("applicant"))
                 .forEach(applicantParty -> {
 
-                    assertEquals(applicantId, applicantParty.getString("partyId"));
+                    assertThat(applicantId, is(applicantParty.getString("partyId")));
 
                     final JsonObject organisationPerson = organisationPersons.getJsonObject(organisationPersonsIndex.getAndIncrement());
                     final JsonObject person = organisationPerson.getJsonObject("person");
@@ -208,7 +207,7 @@ public class CourtApplicationVerificationHelper {
                     .filter(p -> p.getString("_party_type").equalsIgnoreCase("respondent"))
                     .forEach(respondentParty -> {
 
-                        assertEquals(respondentId, respondentParty.getString("partyId"));
+                        assertThat(respondentId, is(respondentParty.getString("partyId")));
                         final JsonObject organisation = partyDetails.getJsonObject("organisation");
                         if (respondentDetails != null && organisation != null) {
                             final String organisationName = organisation.getString("name");
@@ -216,7 +215,7 @@ public class CourtApplicationVerificationHelper {
                         }
 
                         final JsonObject defendant = partyDetails.getJsonObject("defendant");
-                        assertNotNull(defendant);
+                        assertThat(defendant, is(notNullValue()));
                         final long defendantCount = parties.stream()
                                 .filter(p -> ((JsonObject) p).getString("_party_type").equalsIgnoreCase("defendant"))
                                 .count();
@@ -249,7 +248,7 @@ public class CourtApplicationVerificationHelper {
                         && (p.getString("partyId").equalsIgnoreCase(applicantId)))
                 .findFirst();
 
-        assertTrue(applicant.isPresent());
+        assertThat(applicant.isPresent(), is(Boolean.TRUE));
         assertPersonDetails(personDetails, applicant.get());
 
     }
@@ -259,8 +258,8 @@ public class CourtApplicationVerificationHelper {
                                           final JsonArray parties,
                                           final JsonObject applicant,
                                           final JsonArray respondents) {
-        assertNotNull(inputCourtApplication);
-        assertEquals(4, parties.size());
+        assertThat(inputCourtApplication, is(notNullValue()));
+        assertThat(parties, hasSize(4));
 
         verifyApplication(inputCourtApplication, outputCourtApplications);
 
@@ -274,13 +273,85 @@ public class CourtApplicationVerificationHelper {
                                           final JsonArray parties,
                                           final JsonObject applicant,
                                           final JsonArray respondents) {
-        assertNotNull(inputCourtApplication);
-        assertEquals(4, parties.size());
+        assertThat(inputCourtApplication, is(notNullValue()));
+        assertThat(parties, hasSize(4));
 
         verifyApplication(inputCourtApplication, outputCourtApplications);
 
         verifyApplicantTransformationWhenNoOrganisation(applicant, parties);
 
         verifyRespondentsTransformation(respondents, parties);
+    }
+
+    public static void verifyAddApplicationWithoutRespondent(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {
+
+        final JsonArray outputCourtApplications = transformedJson.getJsonArray("applications");
+        final JsonArray parties = transformedJson.getJsonArray("parties");
+        final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
+
+        assertThat(inputCourtApplication, is(notNullValue()));
+        assertThat(outputCourtApplications, is(notNullValue()));
+        assertThat(parties, hasSize(2));
+
+        verifyArn(inputCourtApplication, outputCourtApplications);
+        verifyApplication(inputCourtApplication, outputCourtApplications);
+        verifyApplicantTransformationWithoutRespondent(applicant, parties);
+    }
+
+    private static void verifyApplicantTransformationWithoutRespondent(final JsonObject applicant, final JsonArray parties) {
+        final String applicantId = applicant.getString("id");
+
+        final JsonObject personDetails = applicant.getJsonObject("personDetails");
+        if (personDetails != null) {
+            verifyApplicantPersonDetails(personDetails, parties, applicantId);
+        }
+
+        final JsonArray organisationPersons = applicant.getJsonArray("organisationPersons");
+        final AtomicInteger organisationPersonsIndex = new AtomicInteger(0);
+        final JsonObject applicantDefendant = applicant.getJsonObject("defendant");
+
+        final Stream<JsonObject> defendantPartyStream = parties.stream().map(JsonObject.class::cast)
+                .filter(p -> p.getString("_party_type").equalsIgnoreCase("defendant"));
+
+        final long defendantCount = defendantPartyStream.count();
+        assertThat(defendantCount, is(1l));
+
+        verifyDefendant(applicantDefendant, parties);
+
+        assertThat(organisationPersons.size(), greaterThan(0));
+
+        final long applicantCount = parties.stream()
+                .map(JsonObject.class::cast)
+                .filter(p -> p.getString("_party_type").equalsIgnoreCase("applicant"))
+                .count();
+
+        assertThat(applicantCount, greaterThan(0l));
+
+        final JsonObject firstOrganisationPerson = organisationPersons.getJsonObject(0);
+
+        parties.stream()
+                .map(JsonObject.class::cast)
+                .filter(p -> p.getString("_party_type").equalsIgnoreCase("applicant"))
+                .forEach(applicantParty -> {
+
+                    assertThat(applicantId, is(applicantParty.getString("partyId")));
+
+                    final JsonObject organisationPerson = organisationPersons.getJsonObject(organisationPersonsIndex.getAndIncrement());
+                    final JsonObject person = organisationPerson.getJsonObject("person");
+
+                    final JsonObject organisation = applicant.getJsonObject("organisation");
+                    if (organisation != null) {
+                        final String organisationName = organisation.getString("name");
+                        final JsonString applicantLastName = applicantParty.getJsonString("lastName");
+                        if (applicantLastName != null) {
+                            assertApplicantDetails(person, applicantParty, organisationName);
+                        } else {
+                            assertOrganisationDetails(person, applicantParty);
+                        }
+                    }
+
+                    final String addressLines = applicantParty.getString("addressLines");
+                    assertAddressDetails(person.getJsonObject("address"), addressLines, applicantParty.getString("postCode"),applicantParty.getJsonObject("defendantAddress"));
+                });
     }
 }

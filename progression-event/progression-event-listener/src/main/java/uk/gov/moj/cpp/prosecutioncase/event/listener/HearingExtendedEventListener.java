@@ -23,7 +23,6 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -59,8 +58,8 @@ public class HearingExtendedEventListener {
         final List<ProsecutionCase> prosecutionCasesToAdd = hearingListingNeeds.getProsecutionCases();
 
         if (isNotEmpty(hearingListingNeeds.getProsecutionCases())) {
-            final UUID hearingId = hearingListingNeeds.getId();
-            final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingId);
+            // unAllocated Hearing
+            final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingListingNeeds.getId());
 
             final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
 
@@ -72,7 +71,7 @@ public class HearingExtendedEventListener {
             hearingRepository.save(dbHearingEntity);
             LOGGER.info("Hearing : {} has been updated with new cases ", dbHearingEntity.getHearingId());
 
-            removeUnallocatedHearing(hearingExtended, prosecutionCasesToAdd, dbHearingEntity);
+            removeUnallocatedHearing(hearingExtended, prosecutionCasesToAdd);
 
             // associate new cases and defendant with existing allocated hearing and save in case_defendant_hearing joint table
             prosecutionCasesToAdd.forEach(prosecutionCase -> prosecutionCase.getDefendants().forEach(defendant -> {
@@ -88,24 +87,18 @@ public class HearingExtendedEventListener {
         }
     }
 
-    private void removeUnallocatedHearing(HearingExtended hearingExtended, List<ProsecutionCase> prosecutionCasesToAdd, HearingEntity dbHearingEntity) {
-        if (nonNull(hearingExtended.getIsAdjourned()) && !hearingExtended.getIsAdjourned()) {
-            //remove unallocated hearing id from case_defendant_hearing table
+    private void removeUnallocatedHearing(HearingExtended hearingExtended, List<ProsecutionCase> prosecutionCasesToAdd) {
+        if (nonNull(hearingExtended.getIsAdjourned()) && !hearingExtended.getIsAdjourned() && !hearingExtended.getIsPartiallyAllocated()) {
             prosecutionCasesToAdd.forEach(prosecutionCase -> prosecutionCase.getDefendants().forEach(defendant -> {
-                final List<CaseDefendantHearingEntity> entitiesToRemove = caseDefendantHearingRepository.findByCaseIdAndDefendantId(prosecutionCase.getId(), defendant.getId());
-                if (isNotEmpty(entitiesToRemove)) {
-                    entitiesToRemove.forEach(entity -> {
-                        if(!entity.getHearing().getHearingId().equals(dbHearingEntity.getHearingId())){
-                            caseDefendantHearingRepository.remove(entity);
-                            LOGGER.info("Hearing : {} has been deleted ", entity.getHearing().getHearingId());
-                        }
-                    });
-                }
+                LOGGER.info("Remove entries from link table 'case_defendant_hearing' table for hearing id :{}, case id :{}, defendant id :{}",
+                        hearingExtended.getIsPartiallyAllocated(), prosecutionCase.getId(), defendant.getId());
+                final CaseDefendantHearingEntity entity = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId());
+                caseDefendantHearingRepository.remove(entity);
             }));
         }
     }
 
-    private static JsonObject jsonFromString(String jsonObjectStr) {
+    private static JsonObject jsonFromString(final String jsonObjectStr) {
         final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();

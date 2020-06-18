@@ -1,25 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,11 +16,30 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.getHearingIdFromListCourtHearingRequest;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@SuppressWarnings("squid:S1607")
 public class ExtendHearingIT extends AbstractIT {
 
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -53,7 +52,6 @@ public class ExtendHearingIT extends AbstractIT {
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createConsumer("progression.event.hearing-extended");
     private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createConsumer("progression.event.summons-data-prepared");
-
 
     @BeforeClass
     public static void setUp() {
@@ -94,6 +92,7 @@ public class ExtendHearingIT extends AbstractIT {
         LOGGER.info("*** Extended Hearing : {}  | caseId : {}  |  defendant id : {}", extendedHearingId, caseId, defendantId );
 
         doHearingConfirmedAndVerify(extendedHearingId,caseId,defendantId,courtCentreId,userId);
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         // UnAllocated hearing Id
         final String caseId1 = randomUUID().toString();
@@ -112,13 +111,11 @@ public class ExtendHearingIT extends AbstractIT {
         doHearingConfirmedAndVerify(existingHearingId,caseId1,defendantId1,courtCentreId1,userId1, extendedHearingId);
 
         doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId1);
-        queryAndVerifyHearingIsExtended(extendedHearingId);
+        queryAndVerifyHearingIsExtended(extendedHearingId, 2);
 
-        doVerifyProgressionSummonsDataPreparedEvent(caseIds, defendantIds);
         doVerifyProgressionSummonsDataPreparedEvent(caseIds, defendantIds);
 
     }
-
 
     private void doReferCaseToCourtAndVerify(final String caseId, final String defendantId) throws IOException {
 
@@ -147,7 +144,6 @@ public class ExtendHearingIT extends AbstractIT {
 
     }
 
-
     private void doHearingConfirmedAndVerify(String hearingId, String caseId, String defendantId, String courtCentreId, String userId, String extendedHearingId) {
 
         final Metadata metadata = metadataBuilder()
@@ -169,25 +165,24 @@ public class ExtendHearingIT extends AbstractIT {
 
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(){
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         final String resultHearingId = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
         getHearingForDefendant(resultHearingId, new Matcher[0]);
         LOGGER.info("Hearing Id for defendant listing status changed : {} ", resultHearingId);
         return resultHearingId;
- }
+    }
 
-  private void doVerifyProgressionHearingExtendedEvent(final String allocatedHearingId, final String caseId){
-     final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProgressionHearingExtendedEvent);
-     final JsonObject extendHearingCommand = message.get();
-
-     assertThat(extendHearingCommand.getJsonObject("hearingRequest").getString("id"),  equalTo(allocatedHearingId));
-     assertThat(extendHearingCommand.getJsonObject("hearingRequest")
+    private void doVerifyProgressionHearingExtendedEvent(final String allocatedHearingId, final String caseId) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProgressionHearingExtendedEvent);
+        final JsonObject extendHearingCommand = message.get();
+        assertThat(extendHearingCommand.getJsonObject("hearingRequest").getString("id"),  equalTo(allocatedHearingId));
+        assertThat(extendHearingCommand.getJsonObject("hearingRequest")
              .getJsonArray("prosecutionCases").getJsonObject(0).getString("id"),  is(caseId));
- }
+    }
 
-    private void doVerifyProgressionSummonsDataPreparedEvent(final List<String> caseIds, final List<String> defendantIds){
+    private void doVerifyProgressionSummonsDataPreparedEvent(final List<String> caseIds, final List<String> defendantIds) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProgressionSummonsDataPreparedEvent);
         final JsonObject extendHearingCommand = message.get();
 
@@ -203,18 +198,15 @@ public class ExtendHearingIT extends AbstractIT {
                 .getJsonObject(0).getJsonObject("referralReason").getString("defendantId")));
     }
 
-
-    private void queryAndVerifyHearingIsExtended(final String allocatedHearingId){
+    private void queryAndVerifyHearingIsExtended(final String allocatedHearingId, final int numberOfProsecutionCases) {
         final Matcher[] hearingMatchers = {
                 withJsonPath("$", notNullValue()),
                 withJsonPath("$.hearing.id", is(allocatedHearingId))
         };
 
        final String dbHearing =  pollForResponse("/hearingSearch/" + allocatedHearingId, PROGRESSION_QUERY_HEARING_JSON, hearingMatchers);
-        final JsonObject hearingExtendedJsonObject = stringToJsonObjectConverter.convert(dbHearing);
-        assertThat(hearingExtendedJsonObject.getJsonObject("hearing")
-                .getJsonArray("prosecutionCases").size(),  is(2));
+       final JsonObject hearingExtendedJsonObject = stringToJsonObjectConverter.convert(dbHearing);
+       assertThat(hearingExtendedJsonObject.getJsonObject("hearing")
+                .getJsonArray("prosecutionCases").size(),  is(numberOfProsecutionCases));
     }
-
-
 }

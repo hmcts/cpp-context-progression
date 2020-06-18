@@ -14,6 +14,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -80,7 +81,6 @@ public class CPSNotificationIT extends AbstractIT {
         IdMapperStub.setUp();
         HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = UUID.randomUUID().toString();
@@ -92,7 +92,7 @@ public class CPSNotificationIT extends AbstractIT {
     public void shouldNotifyCPS() throws Exception {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
 
         sendMessage(PUBLIC_MESSAGE_CONSUMER,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,

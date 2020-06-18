@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.listAllStubMappings;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -14,12 +15,18 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
+
 public class UnifiedSearchStub {
 
     private static final String SEARCH_QUERY = "/unifiedsearchquery-service/query/api/rest/unifiedsearchquery/defendant-cases";
     private static final String SEARCH_QUERY_TYPE = "application/vnd.unifiedsearch.query.defendant.cases+json";
     private static final String SERVICE_NAME = "unifiedsearchquery-service";
 
+    public static void removeStub() {
+        listAllStubMappings()
+                .getMappings()
+                .removeIf(m -> m.getRequest().getUrlPath() != null && m.getRequest().getUrlPath().equals(SEARCH_QUERY));
+    }
 
     public static void stubUnifiedSearchQueryExactMatchWithEmptyResults() {
         InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
@@ -88,6 +95,27 @@ public class UnifiedSearchStub {
                 SEARCH_QUERY_TYPE);
     }
 
+    public static void stubUnifiedSearchQueryPartialMatchWithEmptyResults() {
+        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
+
+        stubFor(get(urlPathMatching(SEARCH_QUERY))
+                .inScenario("EXACT_IS_EMPTY_PARTIAL_IS_EMPTY")
+                .whenScenarioStateIs("PARTIAL")
+                .withQueryParam("proceedingsConcluded", matching(".*"))
+                .withQueryParam("pageSize", matching(".*"))
+                .withQueryParam("startFrom", matching(".*"))
+                .withQueryParam("pncId", matching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(getUnifiedSearchEmptyResult())
+                ).willSetStateTo(STARTED));
+
+        waitForStubToBeReady(SEARCH_QUERY +
+                        "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=25&startFrom=0&pncId=1234",
+                SEARCH_QUERY_TYPE);
+    }
     private static String getUnifiedSearchEmptyResult() {
         return "{\n" +
                 "  \"totalResults\": 0,\n" +

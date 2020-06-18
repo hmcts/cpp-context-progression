@@ -138,6 +138,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-extended
           schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
 
+        - name: progression.event.hearing-updated-for-partial-allocation
+          schema_uri: http://justice.gov.uk/core/courts/hearing-updated-for-partial-allocation.json
+
         - name: progression.event.cases-unlinked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.cases-unlinked.json
 

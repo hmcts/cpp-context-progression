@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
@@ -57,7 +58,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         masterDefendantId_1 = randomUUID().toString();
         prosecutionCaseId_2 = randomUUID().toString();
         defendantId_2 = randomUUID().toString();
-        hearingId = randomUUID().toString();
+
     }
 
     @Test
@@ -68,6 +69,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         verifyInMessagingQueueForProsecutionCaseCreated();
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
 
         // initiation of second case
         initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);

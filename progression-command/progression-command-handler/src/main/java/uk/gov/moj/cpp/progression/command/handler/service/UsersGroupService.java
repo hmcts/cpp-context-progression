@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command.handler.service;
 
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
@@ -154,8 +155,11 @@ public class UsersGroupService {
     }
 
     private static boolean emptyPayload(JsonEnvelope response) {
-        final JsonObject payload = response.payloadAsJsonObject();
-
-        return payload.isEmpty();
+        if (isNull(response) || response.payload().equals(JsonValue.NULL)) {
+            return Boolean.TRUE;
+        } else {
+            final JsonObject payload = response.payloadAsJsonObject();
+            return payload.isEmpty();
+        }
     }
 }

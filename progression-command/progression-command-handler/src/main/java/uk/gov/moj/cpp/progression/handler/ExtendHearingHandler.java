@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import org.apache.commons.collections.CollectionUtils;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -46,11 +47,11 @@ public class ExtendHearingHandler {
         final HearingListingNeeds hearingRequest = extendHearing.getHearingRequest();
         final EventStream eventStream = eventSource.getStreamById(hearingRequest.getId());
 
-        if(CollectionUtils.isNotEmpty(hearingRequest.getProsecutionCases())) {
+        if (isNotEmpty(hearingRequest.getProsecutionCases())) {
             final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-            final Stream<Object> events = caseAggregate.extendHearing(hearingRequest, extendHearing.getIsAdjourned());
+            final Stream<Object> events = caseAggregate.extendHearing(hearingRequest, extendHearing.getIsAdjourned(), extendHearing.getExtendedHearingFrom(), extendHearing.getIsPartiallyAllocated());
             appendEventsToStream(extendHearingEnvelope, eventStream, events);
-        }else {
+        } else {
             final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
             final Stream<Object> events = applicationAggregate.extendHearing(hearingRequest);
             appendEventsToStream(extendHearingEnvelope, eventStream, events);

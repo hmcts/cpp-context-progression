@@ -33,6 +33,7 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import java.time.LocalDate;

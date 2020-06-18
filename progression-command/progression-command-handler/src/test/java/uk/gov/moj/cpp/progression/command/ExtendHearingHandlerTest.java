@@ -115,12 +115,11 @@ public class ExtendHearingHandlerTest {
         );
     }
 
-
     @Test
     public void shouldProcessCommandForProsecutionCase() throws Exception {
 
         final ExtendHearing extendHearing  = createExtendHearingForProsecutionCase();
-        caseAggregate.extendHearing(extendHearing.getHearingRequest(), true);
+        caseAggregate.extendHearing(extendHearing.getHearingRequest(), true, randomUUID(), false);
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -144,7 +143,6 @@ public class ExtendHearingHandlerTest {
         );
     }
 
-
     private static ExtendHearing createExtendHearingForApplication() {
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
@@ -161,7 +159,6 @@ public class ExtendHearingHandlerTest {
                         .build())
                         .build();
     }
-
 
     private static ExtendHearing createExtendHearingForProsecutionCase() {
 

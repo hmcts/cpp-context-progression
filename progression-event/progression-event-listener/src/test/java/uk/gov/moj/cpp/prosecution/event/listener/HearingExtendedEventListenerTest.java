@@ -60,19 +60,24 @@ public class HearingExtendedEventListenerTest {
     @Mock
     private Hearing hearing;
     private UUID hearingId;
+    private UUID prosecutionCaseId;
+    private UUID defendantId;
     private String hearingPayload;
 
 
     @Before
     public void setup() throws IOException {
         hearingId = randomUUID();
+        prosecutionCaseId = randomUUID();
+        defendantId = randomUUID();
         hearingPayload = createPayload("/json/hearingDataProsecutionCase.json");
     }
 
     @Test
     public void hearingExtendedForCase()  {
 
-        final HearingExtended hearingExtended = createHearingExtended();
+        final UUID extendedFromHearingId = randomUUID();
+        final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId, prosecutionCaseId, defendantId);
         final HearingEntity hearingEntity = createHearingEntity();
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntityList = new ArrayList<>();
         caseDefendantHearingEntityList.add(createCaseDefendantHearingEntity());
@@ -87,7 +92,7 @@ public class HearingExtendedEventListenerTest {
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
         verify(objectToJsonObjectConverter, times(1)).convert(hearing);
-        verify(caseDefendantHearingRepository,times(1)).findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class));
+        verify(caseDefendantHearingRepository,times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository,times(1)).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository,times(1)).save(any(CaseDefendantHearingEntity.class));
     }
@@ -102,33 +107,35 @@ public class HearingExtendedEventListenerTest {
 
     }
 
-    private HearingExtended createHearingExtended() {
+    private HearingExtended createHearingExtended(final UUID hearingId, final UUID extendedFromHearingId, final UUID prosecutionCaseId, final UUID defendantId) {
         final Defendant defendant = Defendant.defendant()
-                .withId(randomUUID())
+                .withId(defendantId)
                 .build();
 
         final List<Defendant> defendantList = new ArrayList<>();
-                defendantList.add(defendant);
+        defendantList.add(defendant);
 
-       final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withId(randomUUID())
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
                 .withDefendants(defendantList)
                 .build();
 
-       final List<ProsecutionCase> prosecutionCaseList = new ArrayList<>();
-       prosecutionCaseList.add(prosecutionCase);
+        final List<ProsecutionCase> prosecutionCaseList = new ArrayList<>();
+        prosecutionCaseList.add(prosecutionCase);
 
-       final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
-       .withId(hearingId)
-       .withProsecutionCases(prosecutionCaseList)
-       .build();
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(prosecutionCaseList)
+                .build();
 
-       final  HearingExtended hearingExtended = HearingExtended.hearingExtended()
-               .withHearingRequest(hearingListingNeeds)
-               .withIsAdjourned(false)
-               .build();
+        final  HearingExtended hearingExtended = HearingExtended.hearingExtended()
+                .withHearingRequest(hearingListingNeeds)
+                .withExtendedHearingFrom(extendedFromHearingId)
+                .withIsAdjourned(false)
+                .withIsPartiallyAllocated(false)
+                .build();
 
-       return hearingExtended;
+        return hearingExtended;
     }
 
     private String createPayload(final String payloadPath) throws IOException {

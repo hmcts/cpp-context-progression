@@ -20,6 +20,7 @@ import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 /**
  * DB integration tests for {@link CaseDefendantHearingRepository} class
@@ -34,9 +35,11 @@ public class CaseDefendantHearingRepositoryTest {
     private static final UUID HEARING_ID = UUID.randomUUID();
     private static final UUID RESULT_ID = UUID.randomUUID();
 
-
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    @Inject
+    private HearingRepository hearingRepository;
 
     @Before
     public void setUp(){
@@ -50,6 +53,7 @@ public class CaseDefendantHearingRepositoryTest {
         hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
+        hearingRepository.save(hearingEntity);
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID, HEARING_ID));

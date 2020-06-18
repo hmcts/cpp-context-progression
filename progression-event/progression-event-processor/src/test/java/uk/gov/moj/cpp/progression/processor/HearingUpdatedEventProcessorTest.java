@@ -1,5 +1,14 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Optional.of;
+import static javax.json.Json.createObjectBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,27 +16,23 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-
 import javax.json.JsonObject;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,47 +57,60 @@ public class HearingUpdatedEventProcessorTest {
     private HearingUpdatedEventProcessor eventProcessor;
 
     @Mock
-    private HearingUpdated hearingUpdated;
-
-    @Mock
-    private JsonEnvelope envelope;
-
-    @Mock
-    private JsonObject payload;
-
-    @Mock
     private ProgressionService progressionService;
 
-    @Mock
+    @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Mock
-    private ConfirmedHearing confirmedHearing;
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Before
     public void initMocks() {
-        MockitoAnnotations.initMocks(this);
+        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
     public void shouldHandleHearingConfirmedEventMessage() {
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingUpdated.class))
-                .thenReturn(hearingUpdated);
+        final UUID hearingId = UUID.randomUUID();
+        final HearingUpdated hearingUpdated = HearingUpdated.hearingUpdated()
+                .withUpdatedHearing(ConfirmedHearing.confirmedHearing()
+                        .withId(hearingId)
+                        .withProsecutionCases(Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                                .withId(UUID.randomUUID())
+                                .build()))
+                        .withCourtApplicationIds(Arrays.asList(UUID.randomUUID()))
+                        .build())
+                .build();
 
-        when(hearingUpdated.getUpdatedHearing()).thenReturn(confirmedHearing);
-        when(confirmedHearing.getCourtApplicationIds()).thenReturn(Arrays.asList(UUID.randomUUID()));
-        when(confirmedHearing.getProsecutionCases()).thenReturn(Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().build()));
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .build();
 
-        eventProcessor.publishHearingDetailChangedPublicEvent(envelope);
+        final Optional<JsonObject> hearingJson = of(createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .build());
 
-        verify(progressionService, times(1)).updateHearingListingStatusToHearingUpdate(envelopeArgumentCaptor.capture(), hearingUpdatedArgumentCaptor.capture());
-        assertEquals(hearingUpdated, hearingUpdatedArgumentCaptor.getValue());
+        JsonEnvelope jsonEnvelope = getJsonEnvelope(hearingUpdated);
+        when(progressionService.getHearing(jsonEnvelope, hearingId.toString())).thenReturn(hearingJson);
+        when(progressionService.updateHearingForHearingUpdated(any(), any(), any())).thenReturn(hearing);
+
+        eventProcessor.publishHearingDetailChangedPublicEvent(jsonEnvelope);
+
+        verify(progressionService, times(1)).updateHearingListingStatusToHearingUpdate(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture());
+        assertEquals(hearing, hearingArgumentCaptor.getValue());
 
         verify(progressionService, times(1)).linkApplicationsToHearing(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
 
         verify(progressionService, times(1)).publishHearingDetailChangedPublicEvent(envelopeArgumentCaptor.capture(), hearingUpdatedArgumentCaptor.capture());
-        assertEquals(hearingUpdated, hearingUpdatedArgumentCaptor.getValue());
+        assertEquals(hearingUpdated.getUpdatedHearing().getId(), hearingUpdatedArgumentCaptor.getValue().getUpdatedHearing().getId());
+    }
+
+    private JsonEnvelope getJsonEnvelope(final HearingUpdated hearingUpdated) {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.listing.hearing-updated"),
+                objectToJsonObjectConverter.convert(hearingUpdated));
     }
 
 }

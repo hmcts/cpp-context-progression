@@ -5,13 +5,16 @@ import uk.gov.justice.core.courts.HearingDay;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static java.util.Optional.ofNullable;
 
 public class HearingDaysMapper {
 
     public List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> extractHearingDays(final Hearing hearing) {
         final List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> hearingDays = new ArrayList<>();
-        for (final HearingDay hearingDay : hearing.getHearingDays()) {
+        for (final HearingDay hearingDay : ofNullable(hearing.getHearingDays()).orElse(Collections.emptyList())) {
             final uk.gov.justice.services.unifiedsearch.client.domain.HearingDay hearingDayIndex
                     = new uk.gov.justice.services.unifiedsearch.client.domain.HearingDay();
             if (hearingDay != null) {

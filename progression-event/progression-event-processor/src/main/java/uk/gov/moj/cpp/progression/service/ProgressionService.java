@@ -34,6 +34,7 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -101,6 +102,7 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
+    private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     public static final String CASE_STATUS = "caseStatus";
     private static final String COURT_APPLICATIONS = "courtApplications";
 
@@ -171,8 +173,13 @@ public class ProgressionService {
 
     private static List<HearingDay> populateHearingDays(final ZonedDateTime earliestStartDateTime, final Integer
             getEstimatedMinutes) {
-        final List<HearingDay> days = new ArrayList<>();
-        days.add(HearingDay.hearingDay().withListedDurationMinutes(getEstimatedMinutes).withSittingDay(earliestStartDateTime).build());
+
+        List<HearingDay> days = null;
+
+        if(nonNull(earliestStartDateTime) && nonNull(getEstimatedMinutes)) {
+            days = new ArrayList<>();
+            days.add(HearingDay.hearingDay().withListedDurationMinutes(getEstimatedMinutes).withSittingDay(earliestStartDateTime).build());
+        }
         return days;
     }
 
@@ -449,10 +456,10 @@ public class ProgressionService {
         });
     }
 
-    public void updateHearingListingStatusToHearingUpdate(final JsonEnvelope jsonEnvelope, final HearingUpdated hearingUpdated) {
+    public void updateHearingListingStatusToHearingUpdate(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
         final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
                 .add(HEARING_LISTING_STATUS, "HEARING_INITIALISED")
-                .add(HEARING, objectToJsonObjectConverter.convert(transformConfirmedHearing(hearingUpdated.getUpdatedHearing(), jsonEnvelope)))
+                .add(HEARING, objectToJsonObjectConverter.convert(hearing))
                 .build();
         LOGGER.info("update hearing listing status after initiate hearing with payload {}", hearingListingStatusCommand);
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
@@ -557,7 +564,24 @@ public class ProgressionService {
                 .withType(confirmedHearing.getType())
                 .withHasSharedResults(false)
                 .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope))
-                .withCourtApplications(getCourtApplications(confirmedHearing, jsonEnvelope))
+                .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
+                .build();
+    }
+
+    public Hearing updateHearingForHearingUpdated(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final Hearing hearing) {
+
+        return Hearing.hearing()
+                .withHearingDays(confirmedHearing.getHearingDays())
+                .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
+                .withJurisdictionType(confirmedHearing.getJurisdictionType())
+                .withId(confirmedHearing.getId())
+                .withHearingLanguage(confirmedHearing.getHearingLanguage())
+                .withJudiciary(enrichJudiciaries(confirmedHearing.getJudiciary(), jsonEnvelope))
+                .withReportingRestrictionReason(confirmedHearing.getReportingRestrictionReason())
+                .withType(confirmedHearing.getType())
+                .withHasSharedResults(false)
+                .withProsecutionCases(hearing.getProsecutionCases())
+                .withCourtApplications(hearing.getCourtApplications())
                 .build();
     }
 
@@ -579,7 +603,7 @@ public class ProgressionService {
                 .build();
     }
 
-    private List<CourtApplication> getCourtApplications(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope) {
+    public List<CourtApplication> extractCourtApplications(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope) {
         final List<UUID> courtApplicationIds = confirmedHearing.getCourtApplicationIds();
         if (courtApplicationIds != null) {
             final List<CourtApplication> applicationDetails = new ArrayList<>();
@@ -796,6 +820,14 @@ public class ProgressionService {
                         .apply(prepareSummonsDataJsonObject);
 
         sender.send(prepareSummonsDataJsonEnvelope);
+    }
+
+    public void updateHearingForPartialAllocation(JsonEnvelope jsonEnvelope, UpdateHearingForPartialAllocation updateHearingForPartialAllocation){
+
+        final JsonEnvelope updateHearingForPartialAllocationEnvelope = enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION)
+                .apply(updateHearingForPartialAllocation);
+
+        sender.send(updateHearingForPartialAllocationEnvelope);
     }
 
     private Optional<CourtApplication> getCourtApplication(final Hearing hearing, final UUID applicationId) {

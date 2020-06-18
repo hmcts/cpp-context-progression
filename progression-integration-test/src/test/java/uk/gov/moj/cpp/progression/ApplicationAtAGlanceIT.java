@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUER
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -100,6 +101,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldVerifyApplicationAtAGlance() throws Exception {
         doReferCaseToCourtAndVerify();
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         doHearingConfirmedAndVerify();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
         verifyApplicationAtAGlance(courtApplicationId);
@@ -108,6 +110,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldVerifyLinkedApplicationsInApplicationAtAGlance() throws Exception {
         doReferCaseToCourtAndVerify();
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         doHearingConfirmedAndVerify();
         final String firstApplicationId = courtApplicationId;
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
@@ -247,7 +250,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
 
     private void setupData() {
         userId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = randomUUID().toString();

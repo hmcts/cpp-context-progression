@@ -21,13 +21,16 @@ import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnabl
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatusWithStatusDescription;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchWithEmptyResults;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailsForUser;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import org.junit.Ignore;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
@@ -45,11 +48,10 @@ import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-@Ignore
-@SuppressWarnings({"squid:S1607"})
-public class RecordLAAReferenceIT extends AbstractIT {
+public class RecordLAAReferenceIT extends  AbstractIT {
     static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     static final String PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";
@@ -69,11 +71,22 @@ public class RecordLAAReferenceIT extends AbstractIT {
     private final String organisationName = "Greg Associates Ltd.";
     private String userId;
 
+    @BeforeClass
+    public static void before() {
+        removeStub();
+        stubUnifiedSearchQueryExactMatchWithEmptyResults();
+        stubUnifiedSearchQueryPartialMatchWithEmptyResults();
+    }
+
     @AfterClass
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForRecordLAAReference.close();
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
+
+        removeStub();
+        stubUnifiedSearchQueryExactMatchWithEmptyResults();
+        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
     }
 
     private static void verifyInMessagingQueueForDefendantOffenceUpdated() {

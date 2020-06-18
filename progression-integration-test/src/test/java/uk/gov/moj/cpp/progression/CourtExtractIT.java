@@ -14,6 +14,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationWithDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectCaseExtractPdf;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extractHearingIdFromProsecutionCasesProgression;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -84,7 +85,6 @@ public class CourtExtractIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         userId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         courtCentreId = randomUUID().toString();
         courtApplicationId = randomUUID().toString();
 
@@ -98,6 +98,7 @@ public class CourtExtractIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+        hearingId = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -121,6 +122,7 @@ public class CourtExtractIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+        hearingId = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -144,6 +146,7 @@ public class CourtExtractIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+        hearingId=extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject,defendantId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",

@@ -19,7 +19,7 @@ public class CaseDefendantHearingEntity implements Serializable {
     @Id
     private CaseDefendantHearingKey id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "hearing_id", insertable = false, updatable = false, referencedColumnName = "hearing_id")
     private HearingEntity hearing;
 

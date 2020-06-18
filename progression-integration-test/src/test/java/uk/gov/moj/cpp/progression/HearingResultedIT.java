@@ -12,6 +12,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -90,7 +91,6 @@ public class HearingResultedIT extends AbstractIT {
     public void setUp() {
         HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
@@ -118,6 +118,7 @@ public class HearingResultedIT extends AbstractIT {
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
 
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
         verifyInMessagingQueueForCasesReferredToCourts();
 
         sendMessage(messageProducerClientPublic,
@@ -143,6 +144,7 @@ public class HearingResultedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", is(55))
         };
 
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
 
     }
@@ -151,24 +153,27 @@ public class HearingResultedIT extends AbstractIT {
     public void shouldUpdateHearingResulted() throws Exception {
         addStandaloneCourtApplication(applicationId,  UUID.randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         pollForApplicationStatus(applicationId, "DRAFT");
-
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingWithStandAloneApplicationJsonObject("public.listing.hearing-confirmed-applications-only.json",
-                        applicationId, hearingId, courtCentreId), JsonEnvelope.metadataBuilder()
+                        applicationId, hearingId, caseId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
                         .build());
 
         pollForApplicationStatus(applicationId, "LISTED");
-
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingWithStandAloneApplicationJsonObject( "public.hearing.resulted-with-standalone-application.json",
-                        applicationId, hearingId, courtCentreId), JsonEnvelope.metadataBuilder()
+                        applicationId, hearingId, caseId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED)
                         .withUserId(userId)
                         .build());
+
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         final String hearingIdQueryResult = pollForResponse("/hearingSearch/"+ hearingId, PROGRESSION_QUERY_HEARING_JSON);
         final JsonObject hearingJsonObject = getJsonObject(hearingIdQueryResult);
@@ -199,9 +204,11 @@ public class HearingResultedIT extends AbstractIT {
     }
 
 
-    private JsonObject getHearingWithStandAloneApplicationJsonObject(final String path, final String applicationId, final String hearingId, final String courtCentreId) {
+    private JsonObject getHearingWithStandAloneApplicationJsonObject(final String path, final String applicationId, final String hearingId, final String caseId, final String defendantId, final String courtCentreId) {
             final String strPayload = getPayloadForCreatingRequest(path)
                     .replaceAll("HEARING_ID", hearingId)
+                    .replaceAll("CASE_ID", caseId)
+                    .replaceAll("DEFENDANT_ID", defendantId)
                     .replaceAll("COURT_CENTRE_ID", courtCentreId)
                     .replaceAll("APPLICATION_ID", applicationId);
             return stringToJsonObjectConverter.convert(strPayload);

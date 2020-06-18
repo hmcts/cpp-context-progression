@@ -1,9 +1,13 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 import static com.jayway.jsonpath.JsonPath.parse;
-import static junit.framework.TestCase.assertNotNull;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyAddApplication;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyAddApplicationWhenNoOrganisationApplicant;
+import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyAddApplicationWithoutRespondent;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
@@ -33,7 +37,7 @@ public class CourtApplicationCaseCreatedTransformationTest {
     public void shouldTransformStandaloneCourtCreatedApplication() throws IOException {
 
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-created-spec.json");
-        assertNotNull(specJson);
+        assertThat(specJson, is(notNullValue()));
 
         final JsonObject inputJson = readJson("/progression.event.court-application-created.json");
         final DocumentContext inputCourtApplication = parse(inputJson);
@@ -46,7 +50,7 @@ public class CourtApplicationCaseCreatedTransformationTest {
     public void shouldTransformEmbeddedCourtCreatedApplication() throws IOException {
 
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-created-spec.json");
-        assertNotNull(specJson);
+        assertThat(specJson, is(notNullValue()));
 
         final JsonObject inputJson = readJson("/progression.event.court-application-created-embedded.json");
         final DocumentContext inputCourtApplication = parse(inputJson);
@@ -59,12 +63,25 @@ public class CourtApplicationCaseCreatedTransformationTest {
     public void shouldTransformStandaloneCourtCreatedApplicationWithNoApplicantOrganisation() throws IOException {
 
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-created-spec.json");
-        assertNotNull(specJson);
+        assertThat(specJson, is(notNullValue()));
 
         final JsonObject inputJson = readJson("/progression.event.court-application-created-with-no-applicant-org.json");
         final DocumentContext inputCourtApplication = parse(inputJson);
         final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
         verifyStandaloneApplication(inputCourtApplication, transformedJson);
         verifyAddApplicationWhenNoOrganisationApplicant(inputCourtApplication, transformedJson);
+    }
+
+    @Test
+    public void shouldTransformStandaloneCourtCreatedApplicationWithoutRespondent() throws IOException {
+
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-created-spec.json");
+        assertThat(specJson, is(notNullValue()));
+
+        final JsonObject inputJson = readJson("/progression.event.court-application-created-without-respondents.json");
+        final DocumentContext inputCourtApplication = parse(inputJson);
+        final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        verifyStandaloneApplication(inputCourtApplication, transformedJson);
+        verifyAddApplicationWithoutRespondent(inputCourtApplication, transformedJson);
     }
 }

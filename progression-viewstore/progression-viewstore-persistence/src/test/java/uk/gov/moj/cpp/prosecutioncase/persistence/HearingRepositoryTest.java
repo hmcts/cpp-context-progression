@@ -49,18 +49,15 @@ public class HearingRepositoryTest {
 
     @Before
     public void setUp(){
-
-
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
         hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
-
+        hearingRepository.save(hearingEntity);
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID, HEARING_ID));
         caseDefendantHearingEntity.setHearing(hearingEntity);
-
         caseDefendantHearingRepository.save(caseDefendantHearingEntity);
     }
 

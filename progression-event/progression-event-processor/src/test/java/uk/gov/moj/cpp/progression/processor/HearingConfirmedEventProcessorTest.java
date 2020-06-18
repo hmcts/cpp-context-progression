@@ -7,6 +7,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,8 +27,10 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -35,6 +38,8 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SummonsService;
 
@@ -42,6 +47,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -86,6 +92,10 @@ public class HearingConfirmedEventProcessorTest {
     private JsonEnvelope finalEnvelope;
     @Mock
     private ProgressionService progressionService;
+    @Mock
+    private PartialHearingConfirmService partialHearingConfirmService;
+    @Mock
+    private ListingService listingService;
     @Mock
     private SummonsService summonsService;
     @Mock
@@ -149,6 +159,77 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
+    public void shouldHandleHearingConfirmedWithCasesEventMessageWhenPartialHearingConfirm() throws Exception {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final UUID hearingId = randomUUID();
+        ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .build();
+        JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
+        ProsecutionCase prosecutionCase = createProsecutionCase(offenceId, defendantId, caseId);
+        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(createProsecutionCase(offenceId, defendantId, caseId));
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
+        doNothing().when(progressionService).prepareSummonsData(anyObject(), anyObject());
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
+        when(partialHearingConfirmService.getDifferences(envelope,confirmedHearing)).thenReturn(deltaProsecutionCases);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now(ZoneId.of("UTC"))).build()))
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(progressionService.getHearing(anyObject(), anyString())).thenReturn(Optional.empty());
+        final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = buildUpdateHearingForPartialAllocation(hearingId);
+        final ListCourtHearing listCourtHearing =buildListCourtHearing(randomUUID());
+        when(partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(hearingId, deltaProsecutionCases)).thenReturn(updateHearingForPartialAllocation);
+        when(partialHearingConfirmService.transformToListCourtHearing(eq(deltaProsecutionCases),any())).thenReturn(listCourtHearing);
+
+        eventProcessor.processEvent(envelope);
+
+        verify(progressionService).updateHearingForPartialAllocation(envelope,updateHearingForPartialAllocation);
+        verify(progressionService).updateHearingForPartialAllocation(envelope,updateHearingForPartialAllocation);
+        verify(listingService).listCourtHearing(envelope,listCourtHearing);
+
+
+    }
+
+    private UpdateHearingForPartialAllocation buildUpdateHearingForPartialAllocation(UUID hearingId){
+       return UpdateHearingForPartialAllocation.updateHearingForPartialAllocation()
+                .withHearingId(hearingId)
+                .build();
+    }
+
+    private ListCourtHearing buildListCourtHearing(UUID hearingId){
+        return ListCourtHearing.listCourtHearing()
+                .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                        .withId(hearingId)
+                        .build()))
+                .build();
+    }
+
+    @Test
     public void shouldProcessHearingConfirmedForExtendHearing()  {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -192,6 +273,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.prepare-summons-data-for-extended-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing-defendant-request-update-requested")).thenReturn(enveloperFunction);
         when(progressionService.transformHearingToHearingListingNeeds(any(Hearing.class), any(UUID.class))).thenReturn(hearingListingNeeds);
+        when(partialHearingConfirmService.getDifferences(any(), any())).thenReturn(new ArrayList<>());
 
         doNothing().when(progressionService).prepareSummonsData(anyObject(), anyObject());
 

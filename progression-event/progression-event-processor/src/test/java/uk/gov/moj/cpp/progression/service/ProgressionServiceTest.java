@@ -27,6 +27,7 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
@@ -39,7 +40,10 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
+import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -54,6 +58,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -105,6 +110,7 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     public static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
+    private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -582,6 +588,45 @@ public class ProgressionServiceTest {
                 )
         );
 
+    }
+
+    @Test
+    public void shouldUpdateHearingForPartialAllocation() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = UpdateHearingForPartialAllocation.updateHearingForPartialAllocation()
+                .withHearingId(hearingId)
+                .withProsecutionCasesToRemove(asList(ProsecutionCasesToRemove.prosecutionCasesToRemove()
+                        .withCaseId(caseId)
+                        .withDefendantsToRemove(asList(DefendantsToRemove.defendantsToRemove()
+                                .withDefendantId(defendantId)
+                                .withOffencesToRemove(asList(OffencesToRemove.offencesToRemove()
+                                        .withOffenceId(offenceId)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION);
+
+        progressionService.updateHearingForPartialAllocation(envelope, updateHearingForPartialAllocation);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.hearingId", is(hearingId.toString())),
+                                withJsonPath("$.prosecutionCasesToRemove[0].caseId", is(caseId.toString())),
+                                withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].defendantId", is(defendantId.toString())),
+                                withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].offencesToRemove[0].offenceId", is(offenceId.toString()))
+
+                        )
+                )
+                )
+        );
     }
 
 }

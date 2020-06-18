@@ -15,6 +15,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -101,7 +102,6 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         courtCentreId = randomUUID().toString();
         userId = randomUUID().toString();
     }
@@ -109,9 +109,10 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     @Test
     public void shouldGenerateNotificationEventWhenCourtDocumentAdded() throws IOException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
+
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
                         caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()

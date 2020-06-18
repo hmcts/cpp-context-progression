@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -13,6 +14,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addSta
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectCaseApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -71,7 +73,6 @@ public class EjectCaseApplicationIT extends AbstractIT {
         stubInitiateHearing();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        hearingId = randomUUID().toString();
         userId = randomUUID().toString();
         courtCentreId = randomUUID().toString();
         courtCentreName = "Lavender Hill Magistrate's Court";
@@ -89,10 +90,13 @@ public class EjectCaseApplicationIT extends AbstractIT {
         addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
         verifyInMessagingQueueForStandaloneCourtApplicationCreated();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-applications-only.json",
-                        caseId, hearingId, randomUUID().toString(), courtCentreId, applicationId, courtCentreName), JsonEnvelope.metadataBuilder()
+
+                        caseId, hearingId, defendantId, courtCentreId, applicationId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -154,7 +158,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         verifyInMessagingQueueForCourtApplicationCreated(reference + "-1");
         //assert first application
         pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_DRAFT));
-
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
                         caseId, hearingId, defendantId, courtCentreId, randomUUID().toString(), courtCentreName), JsonEnvelope.metadataBuilder()
