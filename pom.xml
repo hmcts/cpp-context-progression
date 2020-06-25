@@ -5,12 +5,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.4.30</version>
+        <version>10.0.2</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>6.4.55-SNAPSHOT</version>
+    <version>7.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -42,7 +42,7 @@
         <material.version>6.4.3</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>6.4.24</referencedata.version>
+        <referencedata.version>6.4.25</referencedata.version>
         <listing.version>6.4.30</listing.version>
         <hearing.version>6.4.51</hearing.version>
         <usersgroups.version>6.4.18</usersgroups.version>

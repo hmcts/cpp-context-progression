@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>6.4.55-SNAPSHOT</version>
+        <version>7.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-api</artifactId>
     <packaging>war</packaging>
@@ -16,6 +16,7 @@
             <plugin>
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>rest-client-generator-plugin</artifactId>
+                <version>${cpp.framework.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -118,7 +119,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-progression-providers</artifactId>
-            <version>${cpp.access-control.version}</version>
+            <version>${platform-libraries.version}</version>
         </dependency>
 
         <!-- JUnit regression testing framework. -->
@@ -166,7 +167,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-refdata-providers</artifactId>
-            <version>${cpp.access-control.version}</version>
+            <version>${platform-libraries.version}</version>
         </dependency>
     </dependencies>
 </project>
