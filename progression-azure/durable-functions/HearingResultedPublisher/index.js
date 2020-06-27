@@ -10,6 +10,9 @@
  */
 
 const { default: axiosStatic } = require('axios');
+const https = require('https');
+const ca = require ('win-ca');
+const { Agent } = require('http');
 
 function filterOnSubscriberKey(subscriberKey, subscriberJson) {
     var filteredSubscribers = subscriberJson.filter(function(element) {
@@ -18,21 +21,52 @@ function filterOnSubscriberKey(subscriberKey, subscriberJson) {
     return filteredSubscribers;
 }
 
-function publish(endpoint, publishPayload, context) {
+function getCertificates(context) {
+    let certificates = []
 
-    context.log(`Publishing to ${endpoint}`);
-    const response = axiosStatic.post(endpoint, publishPayload,
-        publishPayload, {
+    ca({
+        format: ca.der2.pem,
+        store: ['My'],
+        ondata: crt => certificates.push(crt)
+    })
+
+    context.log("Certificate count under 'My' store is " + certificates.length);
+    return certificates;
+}
+
+async function postWrapper(endpoint, publishPayload, certificates, context) {
+
+    return axiosStatic.post(endpoint, publishPayload, {
         headers: {
             'Ocp-Apim-Subscription-Key': process.env.LAA_PUBLISH_RESULTS_API_KEY
-        }})
-    .then(resp => {
-        context.log('Response received');
+        },
+        httpsAgent: new https.Agent({ca: certificates})
     })
-    .catch(err => {throw err})
+}
 
-    return response
+async function publishToAllSubscribers(laaSubscribers, publishPayload, context) {
 
+    let certificates = getCertificates(context);
+
+    try {
+        for (i=0; i<laaSubscribers.length; i++) {
+            let laaSubscriber = laaSubscribers[i]
+            let endpoint = laaSubscriber.subscriber_endpoint_uri
+            context.log(`Publishing to ${endpoint}`);
+
+            const result = await postWrapper(endpoint, publishPayload, certificates, context)
+
+            laaSubscriber.result = result
+            if (result == null) {
+                context.log(`Failed to publish to ${endpoint}`);
+            } else {
+                context.log(`Request to publish to ${endpoint} succeeded`);
+            }
+
+        }
+    } catch (err) {
+        context.log(`Exception caught when trying to publish to subscriber - error ${err}`);
+    }
 }
 
 module.exports = async function (context) {
@@ -48,18 +82,10 @@ module.exports = async function (context) {
 
     const subscriberJson = context.bindings.subscriberJson;
 
-    const laaSubscribers = filterOnSubscriberKey('LAA', subscriberJson);
+    let laaSubscribers = filterOnSubscriberKey('LAA', subscriberJson);
 
-    laaSubscribers.forEach(function(laaSubscriber) {
-        laaSubscriber.result = null
-        try {
-            const result = publish(laaSubscriber.subscriber_endpoint_uri, publishPayload, context);
-            laaSubscriber.result = result
-            context.log(`Publish success to ${laaSubscriber.subscriber_endpoint_uri}`);
-        } catch (err) {
-            context.log(`Failed to publish to ${laaSubscriber.subscriber_endpoint_uri} - error ${err}`);
-        }
-    });
+    await publishToAllSubscribers(laaSubscribers, publishPayload, context)
 
     return {published_to: laaSubscribers};
+
 };

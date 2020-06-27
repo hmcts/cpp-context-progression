@@ -19,9 +19,9 @@ describe('filter hearing', () => {
 
         expect(response.published_to.length).toBe(2);
         expect(response.published_to[0].subscriber_endpoint_uri).toBe('https://2.laa.example.com');
-        expect(response.published_to[0].result).toBe(null);
+        expect(response.published_to[0].result).toBe(undefined);
         expect(response.published_to[1].subscriber_endpoint_uri).toBe('https://4.laa.example.com');
-        expect(response.published_to[1].result).toBe(null);
+        expect(response.published_to[1].result).toBe(undefined);
 
     });
     
