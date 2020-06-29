@@ -22,13 +22,13 @@
                         <phase>generate-resources</phase>
                     </execution>
                     <execution>
-                        <id>npm install</id>
+                        <id>npm ci</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <phase>test-compile</phase>
                         <configuration>
-                            <arguments>install</arguments>
+                            <arguments>ci</arguments>
                             <workingDirectory>durable-functions</workingDirectory>
                         </configuration>
                     </execution>
