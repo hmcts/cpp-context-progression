@@ -202,32 +202,6 @@ public class ReferredProsecutionCaseTransformerTest {
     }
 
     @Test
-    public void shouldThrowExceptionForMissingRequiredFieldExceptionForPostcodeMissing() {
-        expectedException.expect(MissingRequiredFieldException.class);
-        final UUID lastName = randomUUID();
-        final UUID nationalityId = randomUUID();
-        final UUID ethnicityId = randomUUID();
-
-        final ReferredPerson referredPerson = factory.populatePojo(ReferredPerson.referredPerson()
-                .withLastName(lastName.toString())
-                .withAdditionalNationalityId(nationalityId)
-                .withEthnicityId(ethnicityId)
-                .withNationalityId(nationalityId)
-                .withAddress(Address.address().build())
-                .withTitle("DR")
-                .build());
-        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
-
-        when(referenceDataService.getNationality(jsonEnvelope, nationalityId, requester))
-                .thenReturn(of(getNationalityObject()));
-
-        // Run the test
-        referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
-
-        verifyNoMoreInteractions(referenceDataService);
-    }
-
-    @Test
     public void testTransformPersonDefendant() {
         // Setup
 

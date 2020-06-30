@@ -4,9 +4,11 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -66,6 +68,8 @@ public class ListCourtHearingTransformer {
 
     @Inject
     private ReferenceDataService referenceDataService;
+
+    private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
 
     /**
      * earliestDate = add 28 days to the notice date earliest lead date = add 14 days to the
@@ -226,11 +230,13 @@ public class ListCourtHearingTransformer {
             personDefendant = Optional.ofNullable(defendant.get().getPersonDefendant());
             legalEntityDefendant = Optional.ofNullable(defendant.get().getLegalEntityDefendant());
             if (personDefendant.isPresent()) {
-                return getRequiredField(getRequiredField(personDefendant.get().getPersonDetails().getAddress(), "Address is missing for personDefendant")
-                        .getPostcode(), "Postcode is missing for personDefendant").split(" ")[0];
+                final Address address = getRequiredField(personDefendant.get().getPersonDetails().getAddress(), "Address is missing for personDefendant");
+                final String postcode = getRequiredField(address.getPostcode(), POSTCODE_IS_MISSING + " personDefendant");
+                return postcode.split(" ")[0];
             } else if (legalEntityDefendant.isPresent()) {
-                return getRequiredField(getRequiredField(legalEntityDefendant.get().getOrganisation().getAddress(), "Address is missing for legalEntityDefendant")
-                        .getPostcode(), "Postcode is missing for legalEntityDefendant").split(" ")[0];
+                final Address address = getRequiredField(legalEntityDefendant.get().getOrganisation().getAddress(), "Address is missing for legalEntityDefendant");
+                final String postcode = getRequiredField(address.getPostcode(), POSTCODE_IS_MISSING + " legalEntityDefendant");
+                return postcode.split(" ")[0];
             }
         }
         throw new MissingRequiredFieldException("Defendant is missing");
@@ -278,13 +284,14 @@ public class ListCourtHearingTransformer {
                             .withListingDirections(referredListHearingRequest.getListingDirections())
                             .withReportingRestrictionReason(referredListHearingRequest.getReportingRestrictionReason())
                             .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequest.getListDefendantRequests()))
-                            .withCourtCentre(referenceDataService.getCourtCentre(jsonEnvelope, getDefendantPostcode(listOfProsecutionCase), getProsecutionAuthorityCode(prosecutionCases), requester))
+                            .withCourtCentre(calculateCourtCentre(sjpReferral, referenceDataService, jsonEnvelope, listOfProsecutionCase, prosecutionCases, requester))
                             .build();
                     hearingsList.add(hearings);
                 });
 
         return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
     }
+
 
     public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
                                       final List<ListHearingRequest> listHearingRequests, final UUID hearingId) {
@@ -421,4 +428,38 @@ public class ListCourtHearingTransformer {
                         .build()
         ).collect(Collectors.toList());
     }
+
+    private CourtCentre calculateCourtCentre(final SjpReferral sjpReferral,
+                                             final ReferenceDataService referenceDataService,
+                                             final JsonEnvelope jsonEnvelope,
+                                             final List<ProsecutionCase> listOfProsecutionCase,
+                                             final List<ProsecutionCase> prosecutionCases,
+                                             final Requester requester) {
+        try {
+            final Optional<JsonObject> responseOuCode =
+                    referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(
+                            jsonEnvelope,
+                            getDefendantPostcode(listOfProsecutionCase),
+                            getProsecutionAuthorityCode(prosecutionCases),
+                            requester);
+
+            final String oucode;
+            if (responseOuCode.isPresent() && !responseOuCode.get().getJsonArray("courts").isEmpty()) {
+                final String courtHouseCode = ((JsonObject)
+                        responseOuCode.get().getJsonArray("courts").get(0)).getString("oucode");
+                oucode = courtHouseCode;
+            } else {
+                oucode = sjpReferral.getReferringJudicialDecision().getCourtHouseCode();
+            }
+            return referenceDataService.getCourtCentre(oucode, jsonEnvelope, requester);
+
+        } catch (MissingRequiredFieldException e) {
+            if (e.getMessage().contains(POSTCODE_IS_MISSING)) {
+                return referenceDataService.getCourtCentre(sjpReferral.getReferringJudicialDecision().getCourtHouseCode(), jsonEnvelope, requester);
+            } else {
+                throw e;
+            }
+        }
+    }
+
 }

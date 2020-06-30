@@ -262,6 +262,18 @@ public class ReferenceDataService {
                 .build();
     }
 
+    public CourtCentre getCourtCentre(final String oucode, final JsonEnvelope jsonEnvelope, final Requester requester ){
+        final JsonObject jsonObject = getCourtsOrganisationUnitsByOuCode(jsonEnvelope, oucode, requester).orElseThrow(RuntimeException::new);
+        final JsonObject orgUnit = (JsonObject) jsonObject.getJsonArray("organisationunits").get(0);
+
+        return CourtCentre.courtCentre()
+                .withId(fromString(orgUnit.getString("id")))
+                .withName(orgUnit.getString("oucodeL3Name", null))
+                .withWelshName(orgUnit.getString("oucodeL3WelshName", null))
+                .build();
+
+    }
+
     public Optional<JsonObject> getEthinicity(final JsonEnvelope event, final UUID id, final Requester requester) {
 
         LOGGER.info(" Calling {} to get ethinicity for {} ", REFERENCEDATA_QUERY_ETHNICITIES, id);

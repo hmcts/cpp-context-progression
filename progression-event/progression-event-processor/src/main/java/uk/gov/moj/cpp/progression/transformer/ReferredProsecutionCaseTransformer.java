@@ -16,7 +16,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALIT
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.SHORT_NAME;
 
-import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Ethnicity;
@@ -38,7 +37,6 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
-import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
@@ -228,8 +226,6 @@ public class ReferredProsecutionCaseTransformer {
         final JsonObject additionalNationalityJson = getNationalityJson(referredPerson.getAdditionalNationalityId(),
                 jsonEnvelope);
 
-        ensurePostCodePresentWithAddress(referredPerson.getAddress());
-
         return Person.person()
                 .withAddress(referredPerson.getAddress())
                 .withAdditionalNationalityCode(fetchValueFromKey(additionalNationalityJson, NATIONALITY_CODE))
@@ -283,10 +279,5 @@ public class ReferredProsecutionCaseTransformer {
         return Json.createObjectBuilder().build();
     }
 
-    private void ensurePostCodePresentWithAddress(final Address address) {
-        if (nonNull(address) && isNull(address.getPostcode())) {
-            throw new MissingRequiredFieldException("Postcode is mandatory");
-        }
-    }
 }
 

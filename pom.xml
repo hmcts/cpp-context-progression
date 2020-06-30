@@ -48,8 +48,8 @@
         <usersgroups.version>7.0.2</usersgroups.version>
         <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>6.4.2</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.93</criminal-court-public-model.version>
-        <coredomain.version>1.0.93</coredomain.version>
+        <criminal-court-public-model.version>1.0.95</criminal-court-public-model.version>
+        <coredomain.version>1.0.95</coredomain.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>

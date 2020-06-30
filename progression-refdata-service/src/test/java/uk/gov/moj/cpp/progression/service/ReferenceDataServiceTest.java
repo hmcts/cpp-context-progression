@@ -416,6 +416,27 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
+    public void shouldRequestCourtCenterWithNoPostCode() {
+        //given
+        final String postcode = "";
+        final String prosecutingAuth = "CPS";
+        final UUID id = randomUUID();
+        final String oucode = "B01LY00";
+
+        final JsonObject payloadForCourts = getPayloadForCourts();
+        final JsonObject payloadForOrgUnits = getPayloadForOrgUnits(id.toString());
+        final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_GET_COURTCENTER);
+
+        when(requester.request(any()))
+                .thenReturn(getEnvelope(REFERENCEDATA_GET_COURTCENTER, payloadForOrgUnits), getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForOrgUnits));
+
+        //when
+        final CourtCentre result = referenceDataService.getCourtCentre(oucode, envelope, requester);
+        //then
+        assertThat(result.getId(), is(id));
+    }
+
+    @Test
     public void shouldRequestReferralReasons() {
         final JsonObject payload = getReferralReasonsPayload();
 

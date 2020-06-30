@@ -122,9 +122,29 @@ public class PreAndPostConditionHelper {
         return addProsecutionCaseToCrownCourt(caseId, defendantId, generateUrn());
     }
 
+    public static Response addProsecutionCaseToCrownCourtNullPostCode(final String caseId, final String defendantId) throws IOException {
+        return addProsecutionCaseToCrownCourtNullPostCode(caseId, defendantId, generateUrn());
+    }
+
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                jsonPayload.toString());
+    }
+
+    public static Response addProsecutionCaseToCrownCourtNullPostCode(final String caseId, final String defendantId, final String caseUrn) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(
+                createReferProsecutionCaseToCrownCourtJsonBodyNullPostCode(
+                        caseId,
+                        defendantId,
+                        randomUUID().toString(),
+                        randomUUID().toString(),
+                        randomUUID().toString(),
+                        randomUUID().toString(),
+                        caseUrn));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
@@ -336,6 +356,24 @@ public class PreAndPostConditionHelper {
                                                                          final String caseUrn) throws IOException {
         return createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
                 materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+    }
+
+    private static String createReferProsecutionCaseToCrownCourtJsonBodyNullPostCode(
+            final String caseId,
+            final String defendantId,
+            final String materialIdOne,
+            final String materialIdTwo, final String courtDocumentId,
+            final String referralId,
+            final String caseUrn) throws IOException {
+
+        return createReferProsecutionCaseToCrownCourtJsonBody(caseId,
+                defendantId,
+                materialIdOne,
+                materialIdTwo,
+                courtDocumentId,
+                referralId,
+                caseUrn,
+                "progression.command.prosecution-case-refer-to-court-null-postcode.json");
     }
 
     private static String getLAAReferenceForOffenceJsonBody(final String statusCode) throws IOException {

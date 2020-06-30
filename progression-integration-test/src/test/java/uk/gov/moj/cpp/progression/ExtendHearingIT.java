@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtNullPostCode;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extendHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -21,7 +22,9 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -53,9 +56,35 @@ public class ExtendHearingIT extends AbstractIT {
     private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createConsumer("progression.event.hearing-extended");
     private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createConsumer("progression.event.summons-data-prepared");
 
+    private static List<String> caseIds = new ArrayList<>();
+    private static List<String> defendantIds = new ArrayList<>();
+    private static String caseId;
+    private static String defendantId;
+    private static String courtCentreId;
+    private static String userId;
+    private static String caseId1;
+    private static String defendantId1;
+    private static String courtCentreId1;
+    private static String userId1;
+
+
     @BeforeClass
     public static void setUp() {
         HearingStub.stubInitiateHearing();
+    }
+
+    @Before
+    public void setUpBeforeTest() {
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        courtCentreId = randomUUID().toString();
+        userId = randomUUID().toString();
+        caseId1 = randomUUID().toString();
+        defendantId1 = randomUUID().toString();
+        courtCentreId1 = randomUUID().toString();
+        userId1 = randomUUID().toString();
+        caseIds.add(caseId);
+        defendantIds.add(defendantId);
     }
 
     @AfterClass
@@ -76,16 +105,6 @@ public class ExtendHearingIT extends AbstractIT {
 
     @Test
     public void shouldExtendHearingForProsecutionCases() throws Exception {
-        final List<String> caseIds = new ArrayList<>();
-        final List<String> defendantIds = new ArrayList<>();
-
-        // Allocated hearing Id
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String courtCentreId = randomUUID().toString();
-        final String userId = randomUUID().toString();
-        caseIds.add(caseId);
-        defendantIds.add(defendantId);
 
         doReferCaseToCourtAndVerify(caseId, defendantId);
         final String extendedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
@@ -95,10 +114,6 @@ public class ExtendHearingIT extends AbstractIT {
         doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         // UnAllocated hearing Id
-        final String caseId1 = randomUUID().toString();
-        final String defendantId1 = randomUUID().toString();
-        final String courtCentreId1 = randomUUID().toString();
-        final String userId1 = randomUUID().toString();
         caseIds.add(caseId1);
         defendantIds.add(defendantId1);
 
@@ -117,11 +132,44 @@ public class ExtendHearingIT extends AbstractIT {
 
     }
 
-    private void doReferCaseToCourtAndVerify(final String caseId, final String defendantId) throws IOException {
+    @Test
+    public void shouldExtendHearingForProsecutionCasesNullPostCode() throws Exception {
 
+        doReferCaseToCourtAndVerifyNullPostCode(caseId, defendantId);
+        final String extendedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+        LOGGER.info("*** Extended Hearing : {}  | caseId : {}  |  defendant id : {}", extendedHearingId, caseId, defendantId );
+
+        doHearingConfirmedAndVerify(extendedHearingId,caseId,defendantId,courtCentreId,userId);
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        // UnAllocated hearing Id
+        caseIds.add(caseId1);
+        defendantIds.add(defendantId1);
+
+        doReferCaseToCourtAndVerifyNullPostCode(caseId1,defendantId1);
+
+        final String existingHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+        LOGGER.info("*** Existing Hearing : {}  | caseId : {}  |  defendant id : {}", existingHearingId, caseId1, defendantId1 );
+
+        // Extending hearing
+        doHearingConfirmedAndVerify(existingHearingId,caseId1,defendantId1,courtCentreId1,userId1, extendedHearingId);
+
+        doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId1);
+        queryAndVerifyHearingIsExtended(extendedHearingId, 2);
+
+        doVerifyProgressionSummonsDataPreparedEvent(caseIds, defendantIds);
+
+    }
+
+    private void doReferCaseToCourtAndVerify(final String caseId, final String defendantId) throws IOException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+    }
 
+    private void doReferCaseToCourtAndVerifyNullPostCode(final String caseId, final String defendantId) throws IOException {
+        addProsecutionCaseToCrownCourtNullPostCode(caseId, defendantId);
+        //pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchersNullDefendantPostCode(caseId, defendantId));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
     private void doHearingConfirmedAndVerify(String hearingId, String caseId, String defendantId, String courtCentreId, String userId) {
