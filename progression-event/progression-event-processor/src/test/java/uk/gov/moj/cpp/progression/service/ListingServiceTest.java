@@ -18,13 +18,16 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -46,6 +49,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
+import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING;
 
 @SuppressWarnings({"squid:S1607","unused"})
 @RunWith(MockitoJUnitRunner.class)
@@ -58,7 +62,7 @@ public class ListingServiceTest {
     @InjectMocks
     private ListingService listingService;
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    private ArgumentCaptor<Envelope> envelopeArgumentCaptor;
     @Mock
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Mock
@@ -99,6 +103,39 @@ public class ListingServiceTest {
         final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
         assertThat(metadata.name(), is(LISTING_COMMAND_SEND_CASE_FOR_LISTING));
 
+
+        verifyNoMoreInteractions(sender);
+    }
+
+    @Test
+    public void shouldListUnscheduledHearings(){
+        //given
+        ListUnscheduledCourtHearing listCourtHearing = getListUnscheduledCourtHearing();
+
+        final JsonObject listCourtHearingJson = Json.createObjectBuilder().build();
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonEnvelope envelopeListCourtHearing = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING).build(),
+                listCourtHearingJson);
+
+
+        when(objectToJsonObjectConverter.convert(any(ListCourtHearing.class)))
+                .thenReturn(listCourtHearingJson);
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        listingService.listUnscheduledHearings(jsonEnvelope, listCourtHearing);
+
+        when(enveloper.withMetadataFrom(envelopeReferral, LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING)).thenReturn(objectJsonEnvelopeFunction);
+        when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelopeListCourtHearing);
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
+        assertThat(metadata.name(), is(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING));
 
         verifyNoMoreInteractions(sender);
     }
@@ -166,6 +203,28 @@ public class ListingServiceTest {
                         .withAddress5("Address 5")
                         .withPostcode("DD4 4DD")
                         .build())
+                .build();
+    }
+
+    private ListUnscheduledCourtHearing getListUnscheduledCourtHearing() {
+        return ListUnscheduledCourtHearing.listUnscheduledCourtHearing()
+                .withHearings(Arrays.asList(HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
+                        .withId(UUID.randomUUID())
+                        .withCourtCentre(createCourtCenter())
+                        .withCourtApplications(createCourtApplications())
+                        .withEstimatedMinutes(15)
+                        .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
+                                .withJudicialId(UUID.randomUUID())
+                                .build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(UUID.randomUUID())
+                                .build()))
+                        .withType(HearingType.hearingType()
+                                .withId(UUID.randomUUID())
+                                .withDescription("SENTENCING")
+                                .build())
+
+                        .build()))
                 .build();
     }
 }

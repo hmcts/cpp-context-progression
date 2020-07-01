@@ -27,6 +27,8 @@ import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.SharedResultLine;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
+import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
+import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -53,6 +55,7 @@ public class HearingAggregate implements Aggregate {
     private BoxWorkTaskStatus boxWorkTaskStatus;
     private Hearing hearing;
     private HearingListingStatus hearingListingStatus;
+    private Boolean unscheduledHearingListedFromThisHearing;
 
     @Override
     public Object apply(final Object event) {
@@ -78,6 +81,9 @@ public class HearingAggregate implements Aggregate {
                         listDefendantRequests.addAll(e.getDefendantRequests());
                     }
                 }),
+                when(UnscheduledHearingListingRequested.class).apply(e ->
+                   this.unscheduledHearingListedFromThisHearing = true
+                ),
                 otherwiseDoNothing());
     }
 
@@ -211,7 +217,7 @@ public class HearingAggregate implements Aggregate {
                 final List<Defendant> updatedDefendants = new ArrayList<>();
 
                 final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
-                final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
+                return ProsecutionCase.prosecutionCase()
                         .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                         .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                         .withId(prosecutionCase.getId())
@@ -226,7 +232,6 @@ public class HearingAggregate implements Aggregate {
                         .withRemovalReason(prosecutionCase.getRemovalReason())
                         .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
                         .build();
-                return updatedProsecutionCase;
             }).collect(toList());
             updatedHearingBuilder.withProsecutionCases(updatedProsecutionCases);
         }
@@ -295,4 +300,26 @@ public class HearingAggregate implements Aggregate {
                 .withConfirmedHearing(confirmedHearing)
                 .build()));
     }
+
+    public Stream<Object> listUnscheduledHearing(final Hearing hearing) {
+        if (Boolean.TRUE.equals(this.unscheduledHearingListedFromThisHearing)){
+            LOGGER.info("Unscheduled hearing has been listing from this hearing with id {}", hearing.getId());
+            return empty();
+        }
+
+        return apply(Stream.of(UnscheduledHearingListingRequested
+                .unscheduledHearingListingRequested()
+                .withHearing(hearing)
+                .build()));
+    }
+
+    public Stream<Object> recordUnscheduledHearing(final UUID hearingId, final List<UUID> uuidList) {
+
+        return apply(Stream.of(UnscheduledHearingRecorded
+                                       .unscheduledHearingRecorded()
+                                       .withHearingId(hearingId)
+                                       .withUnscheduledHearingIds(uuidList)
+                                       .build()));
+    }
+
 }

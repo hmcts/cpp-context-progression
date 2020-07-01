@@ -52,6 +52,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.io.IOException;
@@ -108,7 +109,10 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
+    private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
+    private static final String PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND = "progression.command.list-unscheduled-hearing";
+    private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
     public static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     @Spy
@@ -124,6 +128,8 @@ public class ProgressionServiceTest {
     private ListToJsonArrayConverter listToJsonArrayConverter;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Envelope> envelopeCaptor;
     @Mock
     private Requester requester;
     @Mock
@@ -222,6 +228,43 @@ public class ProgressionServiceTest {
                 )
                 )
         );
+    }
+
+    @Test
+    public void shouldListUnscheduledHearing() throws Exception {
+        final Hearing hearing = Hearing.hearing().withId(UUID.randomUUID()).build();
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND);
+        progressionService.listUnscheduledHearings(envelope, hearing);
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND));
+        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearing.getId().toString()));
+    }
+
+    public void shouldRecordUnlistedHearing() {
+        final UUID hearingId = randomUUID();
+        final UUID unscheduledHearingId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing().withId(unscheduledHearingId).build();
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING);
+        progressionService.recordUnlistedHearing(envelope, hearingId, asList(hearing));
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING));
+        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
+        assertThat(jsonObject.getString("unscheduledHearingIds.length()"), is(unscheduledHearingId.toString()));
+        assertThat(jsonObject.getString("unscheduledHearingIds[0]"), is(unscheduledHearingId.toString()));
+    }
+
+    @Test
+    public void shouldSendUpdateDefendantListingStatusForUnscheduledListing(){
+        final List<Hearing> hearings = Arrays.asList(Hearing.hearing().withId(UUID.randomUUID()).build());
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND);
+        progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings);
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND));
+        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearings.get(0).getId().toString()));
     }
 
     @Test

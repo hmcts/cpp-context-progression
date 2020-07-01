@@ -9,6 +9,10 @@
     },
     "hearingListingStatus": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    },
+    "isUnscheduled" : {
+      "description": "Indicates if a result cause Listing Unscheduled",
+      "type": "boolean"
     }
   },
   "required": [

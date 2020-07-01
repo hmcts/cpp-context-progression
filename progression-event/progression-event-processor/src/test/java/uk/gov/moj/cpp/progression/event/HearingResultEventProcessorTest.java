@@ -38,6 +38,9 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
+import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
@@ -72,7 +75,6 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private Sender sender;
-
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -113,11 +115,16 @@ public class HearingResultEventProcessorTest {
     private ProgressionService progressionService;
 
     @Mock
+    private ListingService listingService;
+
+    @Mock
     private NextHearingService nextHearingService;
 
     @Mock
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
 
+    @Mock
+    private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
 
     @Before
     public void initMocks() {
@@ -195,11 +202,11 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, never()).linkApplicationsToHearing(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
+        verify(progressionService, never()).linkApplicationsToHearing((JsonEnvelope) envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
 
-        final List<JsonEnvelope> allValues = envelopeArgumentCaptor.getAllValues();
+        final List allValues = envelopeArgumentCaptor.getAllValues();
         assertThat(allValues.size(), is(1));
-        assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-result"));
+        assertThat(((DefaultEnvelope)allValues.get(0)).metadata().name(), equalTo("progression.command.hearing-result"));
 
     }
 

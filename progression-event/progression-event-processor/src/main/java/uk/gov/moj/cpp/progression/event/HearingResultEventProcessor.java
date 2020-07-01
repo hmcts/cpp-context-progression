@@ -29,6 +29,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -71,18 +72,26 @@ public class HearingResultEventProcessor {
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
 
     @Inject
+    private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
+
+    @Inject
     private NextHearingService nextHearingService;
 
     @Handles("public.hearing.resulted")
     public void handleHearingResultedPublicEvent(final JsonEnvelope event) {
-        this.sender.send(this.enveloper.withMetadataFrom(event, "progression.command.hearing-result")
-                .apply(event.payloadAsJsonObject()));
+        this.sender.send(Enveloper.envelop(event.payloadAsJsonObject())
+                .withName("progression.command.hearing-result")
+                .withMetadataFrom(event));
 
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
         final Hearing hearing = hearingResulted.getHearing();
 
         resultProsecutionCases(event, hearing);
         resultApplications(event, hearing);
+
+        if (hearingResultUnscheduledListingHelper.checksIfUnscheduledHearingNeedsToBeCreated(hearing)) {
+            progressionService.listUnscheduledHearings(event, hearing);
+        }
     }
 
     private void resultApplications(final JsonEnvelope event, final Hearing hearing) {

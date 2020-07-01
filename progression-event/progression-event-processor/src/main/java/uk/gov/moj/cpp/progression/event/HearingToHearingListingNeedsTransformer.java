@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class HearingToHearingListingNeedsTransformer {
+public class  HearingToHearingListingNeedsTransformer {
 
     @Inject
     private HearingBookingReferenceListExtractor hearingBookingReferenceListExtractor;

@@ -1,47 +1,0 @@
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] ------------------------------------------------------------------------
-[INFO] Building hearing-domain-transform-pojo 2.5.18-CC-SNAPSHOT
-[INFO] ------------------------------------------------------------------------
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-json/2.5.18-CC-SNAPSHOT/maven-metadata.xml
-Progress (1): 793 B                   Downloaded from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-json/2.5.18-CC-SNAPSHOT/maven-metadata.xml (793 B at 297 B/s)
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-json/2.5.18-CC-SNAPSHOT/hearing-json-2.5.18-CC-20190427.093150-8.pom
-Progress (1): 1.1 kB                    Downloaded from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-json/2.5.18-CC-SNAPSHOT/hearing-json-2.5.18-CC-20190427.093150-8.pom (1.1 kB at 3.6 kB/s)
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-parent/2.5.18-CC-SNAPSHOT/maven-metadata.xml
-Progress (1): 618 B                   Downloaded from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-parent/2.5.18-CC-SNAPSHOT/maven-metadata.xml (618 B at 2.6 kB/s)
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-parent/2.5.18-CC-SNAPSHOT/hearing-parent-2.5.18-CC-20190427.093150-8.pom
-Progress (1): 4.1/7.9 kBProgress (1): 7.4/7.9 kBProgress (1): 7.9 kB                        Downloaded from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-parent/2.5.18-CC-SNAPSHOT/hearing-parent-2.5.18-CC-20190427.093150-8.pom (7.9 kB at 2.2 kB/s)
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/core/domain/core-domain-transform-model/1.0.24-CC-SNAPSHOT/maven-metadata.xml
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/core/domain/core-domain-parent/1.0.24-CC-SNAPSHOT/maven-metadata.xml
-[INFO] 
-[INFO] --- maven-dependency-plugin:3.0.2:tree (default-cli) @ hearing-domain-transform-pojo ---
-Downloading from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-json/2.5.18-CC-SNAPSHOT/hearing-json-2.5.18-CC-20190427.093150-8.jar
-Progress (1): 4.1/24 kBProgress (1): 7.4/24 kBProgress (1): 12/24 kB Progress (1): 16/24 kBProgress (1): 20/24 kBProgress (1): 24/24 kBProgress (1): 24 kB                      Downloaded from artifactory: https://libraries.mdv.cpp.nonlive/artifactory/repocentral/uk/gov/moj/cpp/hearing/hearing-json/2.5.18-CC-SNAPSHOT/hearing-json-2.5.18-CC-20190427.093150-8.jar (24 kB at 53 kB/s)
-[INFO] uk.gov.moj.cpp.hearing:hearing-domain-transform-pojo:jar:2.5.18-CC-SNAPSHOT
-[INFO] +- com.fasterxml.jackson.core:jackson-annotations:jar:2.8.11:compile
-[INFO] +- uk.gov.justice.utils:utilities-core:jar:1.13.2:compile
-[INFO] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.8.11:compile
-[INFO] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.8.11:compile
-[INFO] |  +- com.fasterxml.jackson.module:jackson-module-parameter-names:jar:2.8.11:compile
-[INFO] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr353:jar:2.8.11:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.8.11:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.8.11.1:compile
-[INFO] |  +- com.google.guava:guava:jar:19.0:compile
-[INFO] |  +- javax.json:javax.json-api:jar:1.0:compile
-[INFO] |  +- org.apache.commons:commons-lang3:jar:3.4:compile
-[INFO] |  \- org.slf4j:slf4j-api:jar:1.7.10:compile
-[INFO] +- uk.gov.moj.cpp.hearing:hearing-json:jar:2.5.18-CC-SNAPSHOT:compile
-[INFO] +- uk.gov.moj.cpp.core.domain:criminal-court-public-model:jar:1.0.26-CC:compile
-[INFO] \- uk.gov.moj.cpp.core.domain:core-domain-transform-model:jar:1.0.24-CC-SNAPSHOT:compile
-[INFO]    +- org.jetbrains.kotlin:kotlin-stdlib:jar:1.3.11:compile
-[INFO]    |  +- org.jetbrains.kotlin:kotlin-stdlib-common:jar:1.3.11:compile
-[INFO]    |  \- org.jetbrains:annotations:jar:13.0:compile
-[INFO]    +- org.jetbrains.kotlin:kotlin-reflect:jar:1.3.11:compile
-[INFO]    \- uk.gov.moj.cpp.core.domain:core-domain-tools-examples:jar:1.0.0:compile
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 34.269 s
-[INFO] Finished at: 2019-04-29T11:44:34+01:00
-[INFO] Final Memory: 23M/323M
-[INFO] ------------------------------------------------------------------------

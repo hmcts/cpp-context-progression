@@ -58,7 +58,7 @@ public class HearingToHearingListingNeedsTransformer {
                            final Map<String, HearingListingNeeds> hearingListingNeedsMap,
                            final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap,
                            final List<JudicialRole> judiciaries){
-        if (isNull(judicialResult.getNextHearing()) || nonNull(judicialResult.getNextHearing().getExistingHearingId())) {
+        if (isNull(judicialResult.getNextHearing()) || nonNull(judicialResult.getNextHearing().getExistingHearingId()) || nonNull(judicialResult.getNextHearing().getDateToBeFixed())) {
             return;
         }
 

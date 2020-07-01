@@ -7,11 +7,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.progression.AbstractIT.CPP_UID_HEADER;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 
 import java.util.Optional;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -38,13 +40,13 @@ public class Utilities {
         private Matcher<?> matcher;
         private final long timeout;
 
-        public EventListener(final String eventType) {
-            this(eventType, 10000);
+        private EventListener(final MessageConsumer messageConsumer, final String eventType) {
+            this(messageConsumer, eventType, 10000);
         }
 
-        public EventListener(final String eventType, long timeout) {
+        private EventListener(final MessageConsumer messageConsumer, final String eventType, long timeout) {
             this.eventType = eventType;
-            this.messageConsumer = publicEvents.createConsumer(eventType);
+            this.messageConsumer = messageConsumer;
             this.timeout = timeout;
         }
 
@@ -72,14 +74,26 @@ public class Utilities {
             this.matcher = matcher;
             return this;
         }
+
+        public void close() throws JMSException {
+            this.messageConsumer.close();
+        }
     }
 
     public static EventListener listenFor(String mediaType) {
-        return new EventListener(mediaType);
+        return new EventListener(publicEvents.createConsumer(mediaType), mediaType);
     }
 
     public static EventListener listenFor(String mediaType, long timeout) {
-        return new EventListener(mediaType, timeout);
+        return new EventListener(publicEvents.createConsumer(mediaType),mediaType, timeout);
+    }
+
+    public static EventListener listenForPrivateEvent(String mediaType) {
+        return new EventListener(privateEvents.createConsumer(mediaType), mediaType);
+    }
+
+    public static EventListener listenForPrivateEvent(String mediaType, long timeout) {
+        return new EventListener(privateEvents.createConsumer(mediaType),mediaType, timeout);
     }
 
     public static class JsonUtil {

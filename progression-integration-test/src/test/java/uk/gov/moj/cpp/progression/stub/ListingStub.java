@@ -30,6 +30,8 @@ public class ListingStub {
     private static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
     private static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
 
+    private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE = "application/vnd.listing.command.list-unscheduled-court-hearing+json";
+
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
 
@@ -37,6 +39,11 @@ public class ListingStub {
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader(CONTENT_TYPE, LISTING_COMMAND_TYPE)));
+
+        stubFor(post(urlPathEqualTo(LISTING_COMMAND))
+                .willReturn(aResponse().withStatus(SC_ACCEPTED)
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE)));
 
         stubFor(get(urlPathEqualTo(LISTING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_OK)));

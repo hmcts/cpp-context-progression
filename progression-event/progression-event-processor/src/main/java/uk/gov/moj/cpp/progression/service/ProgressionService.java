@@ -88,9 +88,12 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
+    private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
+    private static final String PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND = "progression.command.list-unscheduled-hearing";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
+    private static final String UNSCHEDULED = "isUnscheduled";
     private static final String HEARING = "hearing";
     private static final String HEARING_INITIALISED = "HEARING_INITIALISED";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
@@ -105,6 +108,7 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     public static final String CASE_STATUS = "caseStatus";
     private static final String COURT_APPLICATIONS = "courtApplications";
+    public static final String UNSCHEDULED_HEARING_IDS = "unscheduledHearingIds";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -454,6 +458,38 @@ public class ProgressionService {
             LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
         });
+    }
+
+
+    public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
+        final JsonObject payload = Json.createObjectBuilder()
+                .add(HEARING, objectToJsonObjectConverter.convert(hearing))
+                .build();
+
+        sender.send(Enveloper.envelop(payload).withName(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND).withMetadataFrom(jsonEnvelope));
+    }
+
+    public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings) {
+        unscheduledHearings.forEach(unscheduledHearing -> {
+            final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+                    .add(UNSCHEDULED, true)
+                    .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                    .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
+                    .build();
+            sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
+        });
+    }
+
+    public void recordUnlistedHearing(final JsonEnvelope jsonEnvelope, final UUID originalHearingId, List<Hearing> newHearingIds) {
+        final JsonArrayBuilder newHearingIdArrays = createArrayBuilder();
+        newHearingIds.stream().forEach(s->newHearingIdArrays.add(s.getId().toString()));
+
+
+        final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+                                                                   .add(HEARING_ID, originalHearingId.toString())
+                                                                   .add(UNSCHEDULED_HEARING_IDS,newHearingIdArrays.build())
+                                                                   .build();
+            sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING).withMetadataFrom(jsonEnvelope));
     }
 
     public void updateHearingListingStatusToHearingUpdate(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
