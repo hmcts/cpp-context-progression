@@ -16,6 +16,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -25,6 +27,7 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.junit.Test;
@@ -74,7 +77,24 @@ public class CourtDocumentReviewRequiredProcessorTest {
                         .add("caseId", "caseId")
                         .add("code", createArrayBuilder().add("uploaded-review-required"))
         );
-        when(progressionService.getProsecutionCaseDetailById(any(), anyString())).thenReturn(Optional.empty());
+
+        final Optional<JsonObject> prosecutionCasePayload = Optional.of(createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("prosecutionCaseIdentifier", createObjectBuilder()
+                                .add("prosecutionAuthorityReference", "URNCASE1124")
+                                .add("prosecutionAuthorityCode", "PRAUTH").build())
+                        .build())
+                .build());
+
+        when(progressionService.getProsecutionCaseDetailById(any(), anyString()))
+                .thenReturn(prosecutionCasePayload);
+        when(jsonObjectToObjectConverter.convert(prosecutionCasePayload.get().getJsonObject("prosecutionCase"), ProsecutionCase.class))
+                .thenReturn(ProsecutionCase.prosecutionCase()
+                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                .withCaseURN("URNCASE1124")
+                                .withProsecutionAuthorityCode("PRAUTH")
+                                .build())
+                        .build());
         courtDocumentReviewRequiredProcessor.processDocumentReviewRequired(eventEnvelope);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
@@ -87,8 +107,8 @@ public class CourtDocumentReviewRequiredProcessorTest {
                 withJsonPath("$.receivedDateTime", equalTo("2020-01-20T13:50:00Z")),
                 withJsonPath("$.documentId", equalTo(documentId.toString())),
                 withJsonPath("$.source", equalTo("OTHER")),
-                withJsonPath("$.urn", equalTo("abcd123")),
-                withJsonPath("$.prosecutingAuthority", equalTo("abc")),
+                withJsonPath("$.urn", equalTo("URNCASE1124")),
+                withJsonPath("$.prosecutingAuthority", equalTo("PRAUTH")),
                 withJsonPath("$.documentType", equalTo("Applications")),
                 withJsonPath("$.code.[0]", equalTo("uploaded-review-required"))
         )));

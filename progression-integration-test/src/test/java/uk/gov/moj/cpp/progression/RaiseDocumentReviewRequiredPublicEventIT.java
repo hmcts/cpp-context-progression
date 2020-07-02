@@ -7,6 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseWithUrn;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
@@ -21,10 +23,8 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
 public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
 
     private final Poller poller = new Poller();
@@ -35,6 +35,11 @@ public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
         final UUID documentId = randomUUID();
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
+        final String urn = generateUrn();
+
+        addProsecutionCaseWithUrn(caseId.toString(), defendantId.toString(), urn);
+
+        final MessageConsumer messageConsumer = publicEvents.createConsumer(PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED);
 
         final String addCourtDocumentPayload = getPayload("progression.add-court-document.json")
                 .replaceAll("%RANDOM_DOCUMENT_ID%", documentId.toString())
@@ -44,28 +49,15 @@ public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
         final Response response = postCommand(getWriteUrl("/courtdocument/" + documentId),
                 "application/vnd.progression.add-court-document+json",
                 addCourtDocumentPayload);
-
         assertThat(response.getStatusCode(), is(SC_ACCEPTED));
 
-        try (final MessageConsumer messageConsumer = publicEvents.createConsumer(PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED)) {
-            final Optional<JsonObject> message = poller.pollUntilFound(() -> retrieveMessageAsJsonObject(messageConsumer));
-            if (message.isPresent()) {
-                // check payload is something like
-                //{
-                //        "materialId": "45b0c3fe-afe6-4652-882f-7882d79eadd9",
-                //        "receivedDateTime": "2020-01-20T13:50:00Z",
-                //        "documentId": "45b0c3fe-afe6-4652-882f-7882d79eadd9",
-                //        "source": "OTHER",
-                //        "urn": "abcd123",
-                //        "prosecutingAuthority": "abc",
-                //        "documentType": "Applications",
-                //        "code": [
-                //        "uploaded-review-required"
-                //        ]
-                //}
-            } else {
-                fail();
-            }
+        final Optional<JsonObject> message = poller.pollUntilFound(() -> retrieveMessageAsJsonObject(messageConsumer));
+        if (message.isPresent()) {
+            final JsonObject responsePayload = message.get();
+            assertThat(responsePayload.getString("caseId"), is(caseId.toString()));
+            assertThat(responsePayload.getString("urn"), is(urn));
+        } else {
+            fail();
         }
     }
 }
