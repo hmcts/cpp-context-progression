@@ -65,17 +65,18 @@ public class ReadCourtDocumentIT extends AbstractIT {
     @Test
     public void shouldGetMaterialMetadataAndContentForDefence() throws Exception {
         final UUID organisationId = randomUUID();
+        final UUID userId = randomUUID();
 
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
                 .replace("%ORGANISATION_ID%", organisationId.toString());
 
 
         final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
-                .replace("%USER_ID%", USER_ID_VALUE.toString())
+                .replace("%USER_ID%", userId.toString())
                 .replace("%DEFENDANT_ID%", defendantId)
                 .replace("%ORGANISATION_ID%", organisationId.toString());
 
-        stubUserGroupOrganisation(USER_ID_VALUE.toString(), organisation);
+        stubUserGroupOrganisation(userId.toString(), organisation);
         stubUserGroupDefenceClientPermission(defendantId, permission);
 
         // given
@@ -90,7 +91,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         );
 
 
-        final Response documentContentResponse = getMaterialContent(materialId, USER_ID_VALUE,fromString(defendantId));
+        final Response documentContentResponse = getMaterialContent(materialId, userId,fromString(defendantId));
         assertThat(documentContentResponse.readEntity(String.class), equalTo(MaterialContent));
     }
 
@@ -100,17 +101,18 @@ public class ReadCourtDocumentIT extends AbstractIT {
         final UUID userOrganisationId = randomUUID();
         final UUID permittedOrganisationId = randomUUID();
         final UUID  defendantIdPermission = randomUUID();
+        final UUID userId = randomUUID();
 
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
                 .replace("%ORGANISATION_ID%", userOrganisationId.toString());
 
 
         final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
-                .replace("%USER_ID%", USER_ID_VALUE.toString())
+                .replace("%USER_ID%", userId.toString())
                 .replace("%DEFENDANT_ID%", defendantIdPermission.toString())
                 .replace("%ORGANISATION_ID%", permittedOrganisationId.toString());
 
-        stubUserGroupOrganisation(USER_ID_VALUE.toString(), organisation);
+        stubUserGroupOrganisation(userId.toString(), organisation);
         stubUserGroupDefenceClientPermission(defendantId, permission);
 
         // given
@@ -125,7 +127,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         );
 
 
-        final Response documentContentResponse = getMaterialContent(materialId, USER_ID_VALUE,fromString(defendantId));
+        final Response documentContentResponse = getMaterialContent(materialId, userId,fromString(defendantId));
         assertThat(documentContentResponse.getStatus(), is(SC_FORBIDDEN));
     }
 
