@@ -37,6 +37,7 @@ public class CourtDocumentEnricher {
                 .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
                 .withSeqNum(seqNum)
                 .withDocumentTypeRBAC(documentTypeRBAC)
+                .withSendToCps(courtDocument.getSendToCps())
                 .build();
     }
 

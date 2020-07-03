@@ -2,11 +2,10 @@ package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -14,10 +13,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-import  java.util.List;
-import java.util.UUID;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+
+import java.util.List;
 
 import javax.json.Json;
 
@@ -76,12 +75,13 @@ public class UsersAndGroupsStub {
                 userId,
                 "stub-data/usersGroups.get-Groups-by-loggedIn-user.json");
     }
-    public static void stubGetUsersAndGroupsQuery(final String userId) {
-        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
-                GET_GROUPS_QUERY,
-                GET_ORGANISATION_QUERY_MEDIA_TYPE,
-                userId,
-                "stub-data/usersgroups.get-groups-by-user.json");
+    public static void stubGetUsersAndGroupsQuery() {
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/.*"))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/usersgroups.get-non-defence-groups-by-user.json"))));
     }
 
     public static void stubGetOrganisationDetailsForUser(final String userId, final String organisationId, final String organisationName) {

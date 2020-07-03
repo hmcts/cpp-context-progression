@@ -89,6 +89,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     @Before
     public void setup() {
+        UsersAndGroupsStub.stubGetUsersAndGroupsQuery();
         HearingStub.stubInitiateHearing();
         NotificationServiceStub.setUp();
         IdMapperStub.setUp();
