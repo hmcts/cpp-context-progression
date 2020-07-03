@@ -39,10 +39,6 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
-    private MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-            .createConsumer("public.progression.prosecution-case-created");
-    private MessageConsumer publicEventConsumerForDefendantUpdated = publicEvents
-            .createConsumer("public.progression.case-defendant-changed");
     private String prosecutionCaseId_1;
     private String defendantId_1;
     private String masterDefendantId_1;
@@ -65,21 +61,30 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
     public void shouldUpdateProsecutionCaseDefendantWithMatched() throws Exception {
 
         // initiation of first case
-        initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
-        verifyInMessagingQueueForProsecutionCaseCreated();
+        try (final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
+                .createConsumer("public.progression.prosecution-case-created")) {
+            initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
+            verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
+        }
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
 
         // initiation of second case
-        initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);
-        verifyInMessagingQueueForProsecutionCaseCreated();
+        try (final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
+                .createConsumer("public.progression.prosecution-case-created")) {
+            initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);
+            verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
+        }
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
         // match defendant2 associated to case 2
-        matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
-        verifyInMessagingQueueForDefendantUpdated();
+        try (final MessageConsumer publicEventConsumerForDefendantUpdated = publicEvents
+                .createConsumer("public.progression.case-defendant-changed")){
+            matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
+            verifyInMessagingQueueForDefendantUpdated(publicEventConsumerForDefendantUpdated);
+        }
 
         // confirm Hearing with 2 Prosecution Case
         sendMessage(messageProducerClientPublic,
@@ -117,12 +122,12 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
     }
 
-    private void verifyInMessagingQueueForProsecutionCaseCreated() {
+    private void verifyInMessagingQueueForProsecutionCaseCreated(final MessageConsumer publicEventConsumerForProsecutionCaseCreated) {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForProsecutionCaseCreated);
         assertTrue(message.isPresent());
     }
 
-    private void verifyInMessagingQueueForDefendantUpdated() {
+    private void verifyInMessagingQueueForDefendantUpdated(final MessageConsumer publicEventConsumerForDefendantUpdated) {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForDefendantUpdated);
         assertTrue(message.isPresent());
     }

@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -84,6 +85,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         consumerForCourDocumentSendToCps.close();
         consumerForProgressionCommandEmail.close();
         messageProducerClientPublic.close();
+        setupUsersGroupQueryStub();
     }
 
 
