@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_SAC;
@@ -150,14 +151,67 @@ public class UnscheduledCourtHearingListTransformerTest {
 
         final Offence offence1 = createOffenceWithJR(asList(wofnResult()));
         final Offence offence2 = createOffenceWithJR(asList(wofnResult()));
-        final List<Offence> offences = asList(offence1, offence2);
+        final Offence offence3 = createOffenceWithJR(asList(wofnResult()));
+        final List<Offence> offences = asList(offence1, offence2,offence3);
         final Hearing hearing = createHearingWithOffences(offences);
 
         final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList =  unscheduledCourtHearingListTransformer.transformHearing(hearing);
         assertThat(unscheduledListingNeedsList.size(), is(1));
         final HearingUnscheduledListingNeeds unscheduledListingNeeds = unscheduledListingNeedsList.get(0);
         assertThat(unscheduledListingNeeds.getTypeOfList().getId(), is(WOFN));
+        assertThat(unscheduledListingNeeds.getProsecutionCases().stream().flatMap(s->s.getDefendants().stream())
+                           .flatMap(s->s.getOffences().stream()).count(), is(3L));
     }
+
+    @Test
+    public void shouldReturnOneHearingWhenTwoOffenceAndBothUnscheduledAndSameTypeOfListingWithNHCCS() {
+
+        final Offence offence1 = createOffenceWithJR(asList(wofnResult(),resultWithNextHearingDateTobeFixed()));
+        final Offence offence2 = createOffenceWithJR(asList(wofnResult()));
+        final Offence offence3 = createOffenceWithJR(asList(wofnResult()));
+        final List<Offence> offences = asList(offence1, offence2,offence3);
+        final Hearing hearing = createHearingWithOffences(offences);
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList =  unscheduledCourtHearingListTransformer.transformHearing(hearing);
+        assertThat(unscheduledListingNeedsList.size(), is(2));
+        final HearingUnscheduledListingNeeds unscheduledListingNeeds = unscheduledListingNeedsList.stream().filter(s->s.getTypeOfList().getId().equals(WOFN)).findFirst().get();
+        assertThat(unscheduledListingNeeds.getTypeOfList().getId(), is(WOFN));
+        assertThat(unscheduledListingNeeds.getProsecutionCases().stream().flatMap(s->s.getDefendants().stream())
+                           .flatMap(s->s.getOffences().stream()).count(), is(2L));
+    }
+
+    @Test
+    public void shouldReturnOneHearingWhenTwoOffenceAndBothUnscheduledAndSameTypeOfListingWith2Defendants() {
+
+        final Offence offence1 = createOffenceWithJR(asList(wofnResult()));
+        final Offence offence2 = createOffenceWithJR(asList(wofnResult()));
+        final Offence offence3 = createOffenceWithJR(asList(wofnResult()));
+        final List<Offence> offences = asList(offence1, offence2,offence3);
+        final Hearing hearing =     Hearing.hearing()
+                                            .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                                            .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                                                                                 .withId(UUID.randomUUID())
+                                                                                 .withDefendants(asList(Defendant.defendant()
+                                                                                                                .withId(UUID.randomUUID())
+                                                                                                                .withOffences(offences)
+                                                                                                                .build(),
+                                                                                         Defendant.defendant()
+                                                                                                 .withId(UUID.randomUUID())
+                                                                                                 .withOffences(asList(createOffenceWithJR(asList(wofnResult()))))
+                                                                                                 .build()))
+                                                                                 .build()))
+                                            .build();
+
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList =  unscheduledCourtHearingListTransformer.transformHearing(hearing);
+        assertThat(unscheduledListingNeedsList.size(), is(2));
+        final HearingUnscheduledListingNeeds unscheduledListingNeeds = unscheduledListingNeedsList.get(0);
+        assertThat(unscheduledListingNeeds.getTypeOfList().getId(), is(WOFN));
+
+        assertThat(unscheduledListingNeeds.getProsecutionCases().stream().flatMap(s->s.getDefendants().stream())
+                           .flatMap(s->s.getOffences().stream()).count(), anyOf(is(3L),is(1L)));
+    }
+
 
 
     /***
@@ -304,6 +358,8 @@ public class UnscheduledCourtHearingListTransformerTest {
                 .build();
     }
 
+
+
     private Offence createOffenceWithJR(final List<JudicialResult> judicialResults) {
         return Offence.offence()
                 .withId(UUID.randomUUID())
@@ -354,15 +410,7 @@ public class UnscheduledCourtHearingListTransformerTest {
                 .build();
     }
 
-    private JudicialResult resultWithNextHearingFixedDate(){
-        return JudicialResult.judicialResult()
-                 .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build())
-                .withIsUnscheduled(true)
-                .withJudicialResultTypeId(UUID.randomUUID())
-                .withLabel(NHCCS_LABEL)
-                .withJudicialResultPrompts(Collections.emptyList())
-                .build();
-    }
+
 
     private JudicialResult resultUnscheduledFalse(){
         return JudicialResult.judicialResult()

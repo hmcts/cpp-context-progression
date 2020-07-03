@@ -16,11 +16,11 @@ import uk.gov.justice.core.courts.TypeOfList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class UnscheduledCourtHearingListTransformer {
     public static final UUID RESULT_DEFINITION_SAC = UUID.fromString("77b2055a-33af-47f9-bb60-1f8bf3a95cd8");
     public static final UUID RESULT_DEFINITION_NHCCS = UUID.fromString("fbed768b-ee95-4434-87c8-e81cbc8d24c8");
     public static final UUID HEARING_TYPE_HRG_ID = UUID.fromString("ff7f05e1-8a65-39bf-8d65-f73ef9a4ebed");
-    public static final String HEARING_TYPE_HRG_DESC = "HRG";
+    public static final String HEARING_TYPE_HRG_DESC = "Hearing";
     public static final String DATE_AND_TIME_TO_BE_FIXED = "Date and time to be fixed";
 
     public List<HearingUnscheduledListingNeeds> transformHearing(final Hearing hearing) {
@@ -76,7 +76,7 @@ public class UnscheduledCourtHearingListTransformer {
                     Arrays.asList(createCourtApplication(courtApplication, judicialResultWithNextHearing.get())), hearingType, courtCentre);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
-                                "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
+                            "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
                     hearingListingNeeds.getId(), typeOfList, jurisdictionType, hearingType, courtCentre, courtApplication.getId(), hearing.getId());
 
             return Optional.of(hearingListingNeeds);
@@ -96,7 +96,7 @@ public class UnscheduledCourtHearingListTransformer {
                         Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre());
 
                 LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
-                                    "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
+                                "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
                         hearingListingNeeds.getId(), typeOfList, jurisdictionType, hearingType, hearing.getCourtCentre(), courtApplication.getId(), hearing.getId());
 
                 return Optional.of(hearingListingNeeds);
@@ -106,30 +106,55 @@ public class UnscheduledCourtHearingListTransformer {
         return Optional.empty();
     }
 
-    private List<HearingUnscheduledListingNeeds> transformDefendant(final Hearing hearing,
+    private List<HearingUnscheduledListingNeeds> transformDefendant(final Hearing originalHearing,
                                                                     final ProsecutionCase prosecutionCase,
                                                                     final Defendant defendant) {
 
         final List<HearingUnscheduledListingNeeds> hearingUnscheduledListingNeeds = new ArrayList<>();
-        final Set<String> key = new HashSet<>();
 
-        defendant.getOffences().stream()
-                .filter(o -> nonNull(o.getJudicialResults()))
-                .forEach(offence ->
-                {
-                    final Optional<HearingUnscheduledListingNeeds> unscheduledListingNeeds = transformDefendantOffence(hearing, prosecutionCase, defendant, offence);
-                    if (unscheduledListingNeeds.isPresent()) {
-                        final String requestKey = defendant.getId().toString() + unscheduledListingNeeds.get().getTypeOfList().getId().toString();
-                        if (key.add(requestKey)) {
-                            hearingUnscheduledListingNeeds.add(unscheduledListingNeeds.get());
-                        }
-                    }
-                });
+
+        final Map<UUID, List<HearingUnscheduledListingNeeds>> uuidListMap =
+                defendant.getOffences().stream()
+                        .filter(offence -> nonNull(offence.getJudicialResults()))
+                        .map(offence -> transformDefendantOffence(originalHearing, prosecutionCase, defendant, offence))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.groupingBy(o -> o.getTypeOfList().getId()));
+
+        uuidListMap.forEach((key, value) -> {
+            if (value.size() > 1) {
+                final Optional<HearingUnscheduledListingNeeds> listingNeeds = mergeListingNeedsWithSameTypeOfList(originalHearing, prosecutionCase, defendant, value);
+                listingNeeds.ifPresent(hearingUnscheduledListingNeeds::add);
+
+            } else {
+                hearingUnscheduledListingNeeds.addAll(value);
+            }
+        });
 
         return hearingUnscheduledListingNeeds;
     }
 
-    private Optional<HearingUnscheduledListingNeeds> transformDefendantOffence(final Hearing hearing,
+    private Optional<HearingUnscheduledListingNeeds> mergeListingNeedsWithSameTypeOfList(final Hearing originalHearing,
+                                                                                         final ProsecutionCase prosecutionCase,
+                                                                                         final Defendant defendant,
+                                                                                         final List<HearingUnscheduledListingNeeds> hearingUnscheduledListingNeeds) {
+        final List<Offence> offences = hearingUnscheduledListingNeeds.stream()
+                .flatMap(s -> s.getProsecutionCases().stream())
+                .flatMap(s -> s.getDefendants().stream())
+                .flatMap(s -> s.getOffences().stream())
+                .collect(Collectors.toList());
+        final ProsecutionCase pc = createProsecutionCase(prosecutionCase, defendant, offences);
+
+        final Optional<HearingUnscheduledListingNeeds> unscheduledListingNeeds = hearingUnscheduledListingNeeds.stream().findFirst();
+
+        if (unscheduledListingNeeds.isPresent()) {
+            return Optional.of(createHearingListingNeeds(originalHearing, unscheduledListingNeeds.get().getTypeOfList(), unscheduledListingNeeds.get().getJurisdictionType(),
+                    Arrays.asList(pc), null, unscheduledListingNeeds.get().getType(), unscheduledListingNeeds.get().getCourtCentre()));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<HearingUnscheduledListingNeeds> transformDefendantOffence(final Hearing originalHearing,
                                                                                final ProsecutionCase prosecutionCase,
                                                                                final Defendant defendant,
                                                                                final Offence offence) {
@@ -137,17 +162,17 @@ public class UnscheduledCourtHearingListTransformer {
 
         if (judicialResultWithNextHearing.isPresent()) {
             final TypeOfList typeOfList = buildTypeOfList(judicialResultWithNextHearing.get(), offence.getJudicialResults(), true);
-            final JurisdictionType jurisdictionType = getJuristictionType(hearing.getJurisdictionType(), judicialResultWithNextHearing.get());
+            final JurisdictionType jurisdictionType = getJuristictionType(originalHearing.getJurisdictionType(), judicialResultWithNextHearing.get());
             final HearingType hearingType = judicialResultWithNextHearing.get().getNextHearing().getType();
             final CourtCentre courtCentre = judicialResultWithNextHearing.get().getNextHearing().getCourtCentre();
-            final ProsecutionCase pc = createProsecutionCase(prosecutionCase, defendant, offence);
+            final ProsecutionCase pc = createProsecutionCase(prosecutionCase, defendant, Arrays.asList(offence));
 
-            final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType,
+            final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(originalHearing, typeOfList, jurisdictionType,
                     Arrays.asList(pc), null, hearingType, courtCentre);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
-                                "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
-                    hearingUnscheduledListingNeeds.getId(), typeOfList, jurisdictionType, hearingType, hearing.getCourtCentre(), offence.getId(), hearing.getId());
+                            "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
+                    hearingUnscheduledListingNeeds.getId(), typeOfList, jurisdictionType, hearingType, originalHearing.getCourtCentre(), offence.getId(), originalHearing.getId());
 
             return Optional.of(hearingUnscheduledListingNeeds);
         }
@@ -157,17 +182,17 @@ public class UnscheduledCourtHearingListTransformer {
         if (judicialResultWithUnscheduledFlag.isPresent()) {
 
             final TypeOfList typeOfList = buildTypeOfList(judicialResultWithUnscheduledFlag.get(), offence.getJudicialResults(), false);
-            final JurisdictionType jurisdictionType = getJuristictionType(hearing.getJurisdictionType(), judicialResultWithUnscheduledFlag.get());
-            final ProsecutionCase pc = createProsecutionCase(prosecutionCase, defendant, offence);
+            final JurisdictionType jurisdictionType = getJuristictionType(originalHearing.getJurisdictionType(), judicialResultWithUnscheduledFlag.get());
+            final ProsecutionCase pc = createProsecutionCase(prosecutionCase, defendant, Arrays.asList(offence));
 
             final HearingType hearingType = HearingType.hearingType().withId(HEARING_TYPE_HRG_ID).withDescription(HEARING_TYPE_HRG_DESC).build();
 
-            final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType,
-                    Arrays.asList(pc), null, hearingType, hearing.getCourtCentre());
+            final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(originalHearing, typeOfList, jurisdictionType,
+                    Arrays.asList(pc), null, hearingType, originalHearing.getCourtCentre());
 
             LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
-                                "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
-                    hearingUnscheduledListingNeeds.getId(), typeOfList, jurisdictionType, hearingType, hearing.getCourtCentre(), offence.getId(), hearing.getId());
+                            "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
+                    hearingUnscheduledListingNeeds.getId(), typeOfList, jurisdictionType, hearingType, originalHearing.getCourtCentre(), offence.getId(), originalHearing.getId());
 
             return Optional.of(hearingUnscheduledListingNeeds);
         }
@@ -176,28 +201,28 @@ public class UnscheduledCourtHearingListTransformer {
 
     }
 
-    private TypeOfList buildTypeOfList(final JudicialResult judicialResult, final List<JudicialResult> allJudicialResults, boolean hasNextHearing) {
+    private TypeOfList buildTypeOfList(final JudicialResult judicialResult, final List<JudicialResult> allJudicialResults, final boolean hasNextHearing) {
 
         final Optional<JudicialResult> sacJR = allJudicialResults.stream()
-                                                       .filter(jr -> RESULT_DEFINITION_SAC.equals(jr.getJudicialResultTypeId()))
-                                                       .findFirst();
+                .filter(jr -> RESULT_DEFINITION_SAC.equals(jr.getJudicialResultTypeId()))
+                .findFirst();
 
         if (hasNextHearing && sacJR.isPresent()) {
             return TypeOfList.typeOfList()
-                           .withId(RESULT_DEFINITION_NHCCS)
-                           .withDescription(String.format("%s / %s", DATE_AND_TIME_TO_BE_FIXED, sacJR.get().getLabel()))
-                           .build();
+                    .withId(RESULT_DEFINITION_NHCCS)
+                    .withDescription(String.format("%s / %s", DATE_AND_TIME_TO_BE_FIXED, sacJR.get().getLabel()))
+                    .build();
         }
         if (hasNextHearing) {
             return TypeOfList.typeOfList()
-                           .withId(RESULT_DEFINITION_NHCCS)
-                           .withDescription(DATE_AND_TIME_TO_BE_FIXED)
-                           .build();
+                    .withId(RESULT_DEFINITION_NHCCS)
+                    .withDescription(DATE_AND_TIME_TO_BE_FIXED)
+                    .build();
         }
         return TypeOfList.typeOfList()
-                       .withId(judicialResult.getJudicialResultTypeId())
-                       .withDescription(judicialResult.getLabel())
-                       .build();
+                .withId(judicialResult.getJudicialResultTypeId())
+                .withDescription(judicialResult.getLabel())
+                .build();
     }
 
     private JurisdictionType getJuristictionType(final JurisdictionType hearingJurisdictionType, final JudicialResult judicialResult) {
@@ -215,40 +240,40 @@ public class UnscheduledCourtHearingListTransformer {
     public boolean hasNextHearingWithDateToBeFixed(final JudicialResult judicialResult) {
 
         return (judicialResult.getNextHearing() != null && judicialResult.getNextHearing().getDateToBeFixed() != null)
-                        ? judicialResult.getNextHearing().getDateToBeFixed() : Boolean.FALSE;
+                ? judicialResult.getNextHearing().getDateToBeFixed() : Boolean.FALSE;
     }
 
     private CourtApplication createCourtApplication(final CourtApplication courtApplication, final JudicialResult judicialResult) {
         return CourtApplication.courtApplication()
-                       .withApplicant(courtApplication.getApplicant())
-                       .withApplicationDecisionSoughtByDate(courtApplication.getApplicationDecisionSoughtByDate())
-                       .withApplicationOutcome(courtApplication.getApplicationOutcome())
-                       .withApplicationParticulars(courtApplication.getApplicationParticulars())
-                       .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                       .withApplicationReference(courtApplication.getApplicationReference())
-                       .withApplicationStatus(courtApplication.getApplicationStatus())
-                       .withType(courtApplication.getType())
-                       .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
-                       .withBreachedOrder(courtApplication.getBreachedOrder())
-                       .withBreachedOrderDate(courtApplication.getBreachedOrderDate())
-                       .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
-                       .withCourtApplicationPayment(courtApplication.getCourtApplicationPayment())
-                       .withDueDate(courtApplication.getDueDate())
-                       .withId(courtApplication.getId())
-                       .withJudicialResults(Arrays.asList(judicialResult))
-                       .withLinkedCaseId(courtApplication.getLinkedCaseId())
-                       .withOrderingCourt(courtApplication.getOrderingCourt())
-                       .withParentApplicationId(courtApplication.getParentApplicationId())
-                       .withRemovalReason(courtApplication.getRemovalReason())
-                       .withRespondents(courtApplication.getRespondents())
-                       .build();
+                .withApplicant(courtApplication.getApplicant())
+                .withApplicationDecisionSoughtByDate(courtApplication.getApplicationDecisionSoughtByDate())
+                .withApplicationOutcome(courtApplication.getApplicationOutcome())
+                .withApplicationParticulars(courtApplication.getApplicationParticulars())
+                .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
+                .withApplicationReference(courtApplication.getApplicationReference())
+                .withApplicationStatus(courtApplication.getApplicationStatus())
+                .withType(courtApplication.getType())
+                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
+                .withBreachedOrder(courtApplication.getBreachedOrder())
+                .withBreachedOrderDate(courtApplication.getBreachedOrderDate())
+                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
+                .withCourtApplicationPayment(courtApplication.getCourtApplicationPayment())
+                .withDueDate(courtApplication.getDueDate())
+                .withId(courtApplication.getId())
+                .withJudicialResults(Arrays.asList(judicialResult))
+                .withLinkedCaseId(courtApplication.getLinkedCaseId())
+                .withOrderingCourt(courtApplication.getOrderingCourt())
+                .withParentApplicationId(courtApplication.getParentApplicationId())
+                .withRemovalReason(courtApplication.getRemovalReason())
+                .withRespondents(courtApplication.getRespondents())
+                .build();
     }
 
     private ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase, final Defendant defendant,
-                                                  final Offence offence) {
+                                                  final List<Offence> offences) {
 
         return ProsecutionCase.prosecutionCase()
-                .withDefendants(Arrays.asList(createDefendant(defendant, offence)))
+                .withDefendants(Arrays.asList(createDefendant(defendant, offences)))
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withId(prosecutionCase.getId())
                 .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
@@ -266,13 +291,13 @@ public class UnscheduledCourtHearingListTransformer {
 
     }
 
-    private Defendant createDefendant(final Defendant defendant, final Offence offence) {
+    private Defendant createDefendant(final Defendant defendant, final List<Offence> offences) {
 
         return Defendant.defendant()
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                 .withPersonDefendant(defendant.getPersonDefendant())
-                .withOffences(Arrays.asList(offence))
+                .withOffences(offences)
                 .withId(defendant.getId())
                 .withMasterDefendantId(defendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
@@ -300,23 +325,24 @@ public class UnscheduledCourtHearingListTransformer {
     private HearingUnscheduledListingNeeds createHearingListingNeeds(final Hearing hearing, final TypeOfList typeOfList,
                                                                      final JurisdictionType jurisdictionType,
                                                                      final List<ProsecutionCase> prosecutionCases,
-                                                                     final List<CourtApplication> courtApplications, HearingType hearingType, CourtCentre courtCentre) {
+                                                                     final List<CourtApplication> courtApplications, final HearingType hearingType, final CourtCentre courtCentre) {
 
         return HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
-                       .withId(UUID.randomUUID())
-                       .withTypeOfList(typeOfList)
-                       .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                       .withProsecutionCases(prosecutionCases)
-                       .withJurisdictionType(jurisdictionType)
-                       .withJudiciary(hearing.getJudiciary())
-                       .withType(HearingType.hearingType()
-                                         .withId(hearingType.getId())
-                                         .withDescription(hearingType.getDescription())
-                                         .build())
-                       .withEstimatedMinutes(0)
-                       .withCourtCentre(courtCentre)
-                       .withCourtApplications(courtApplications)
-                       .build();
+                .withId(UUID.randomUUID())
+                .withTypeOfList(typeOfList)
+                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
+                .withProsecutionCases(prosecutionCases)
+                .withJurisdictionType(jurisdictionType)
+                .withJudiciary(hearing.getJudiciary())
+                .withType(HearingType.hearingType()
+                        .withId(hearingType.getId())
+                        .withDescription(hearingType.getDescription())
+                        .build())
+                .withEstimatedMinutes(0)
+                .withCourtCentre(courtCentre)
+                .withCourtApplications(courtApplications)
+                .build();
     }
+
 
 }

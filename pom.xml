@@ -46,7 +46,7 @@
         <listing.version>6.4.32</listing.version>
         <hearing.version>6.4.51</hearing.version>
         <usersgroups.version>7.0.2</usersgroups.version>
-        <defence.version>6.4.6</defence.version>
+        <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>6.4.2</referencedata.offence.version>
         <criminal-court-public-model.version>1.0.91</criminal-court-public-model.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
