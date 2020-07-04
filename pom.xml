@@ -54,7 +54,7 @@
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
         <results.version>6.4.10</results.version>
-        <notification.notify.version>6.4.4</notification.notify.version>
+        <notification.notify.version>7.0.1</notification.notify.version>
         <unifiedsearch.version>6.4.04</unifiedsearch.version>
     </properties>
 
