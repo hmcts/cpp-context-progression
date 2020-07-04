@@ -1,15 +1,17 @@
 package uk.gov.moj.cpp.progression.event;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.Category.FINAL;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
@@ -20,6 +22,7 @@ import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -32,23 +35,29 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
+import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.transformer.HearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
-import javax.inject.Inject;
-import javax.json.JsonObject;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultEventProcessor {
@@ -58,9 +67,6 @@ public class HearingResultEventProcessor {
 
     @Inject
     private Sender sender;
-
-    @Inject
-    private Enveloper enveloper;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -133,16 +139,17 @@ public class HearingResultEventProcessor {
     private void resultApplications(final JsonEnvelope event, final Hearing hearing, final boolean isHearingAdjournedAlreadyForCourtApplications) {
         if (isNotEmpty(hearing.getCourtApplications())) {
             LOGGER.info("Hearing contains court applications resulted for hearing id :: {}", hearing.getId());
-            final List<UUID> applicationIdsHaveOutcome = new ArrayList<>();
+            final List<UUID> applicationIdsResultCategoryFinal = new ArrayList<>();
             final List<UUID> allApplicationIds = new ArrayList<>();
             hearing.getCourtApplications().forEach(courtApplication -> {
                 allApplicationIds.add(courtApplication.getId());
-                if (nonNull(courtApplication.getApplicationOutcome())){
-                    applicationIdsHaveOutcome.add(courtApplication.getId());
+                final boolean isResultCategoryFinal = ofNullable(courtApplication.getJudicialResults()).isPresent() ? courtApplication.getJudicialResults().stream().filter(Objects::nonNull).map(JudicialResult::getCategory).anyMatch(FINAL::equals) : FALSE;
+                if ( isResultCategoryFinal) {
+                    applicationIdsResultCategoryFinal.add(courtApplication.getId());
                 }
             });
             progressionService.linkApplicationsToHearing(event, hearing, allApplicationIds, HearingListingStatus.HEARING_RESULTED);
-            progressionService.updateCourtApplicationStatus(event, applicationIdsHaveOutcome, ApplicationStatus.FINALISED);
+            progressionService.updateCourtApplicationStatus(event, applicationIdsResultCategoryFinal, ApplicationStatus.FINALISED);
 
             final boolean isHearingAdjournedForCourtApplications = hearingResultHelper.doCourtApplicationsContainNextHearingResults(hearing.getCourtApplications());
             LOGGER.info("Hearing with hearing id containing court applications :: {} resulted with next hearing :: {}", hearing.getId(), isHearingAdjournedForCourtApplications);
@@ -198,7 +205,7 @@ public class HearingResultEventProcessor {
 
                         progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), ApplicationStatus.LISTED);
                         final Hearing updatedHearing = updateHearingWithApplication(existingHearing, courtApplication);
-                        progressionService.linkApplicationsToHearing(event, updatedHearing, asList(courtApplication.getId()), HearingListingStatus.HEARING_INITIALISED);
+                        progressionService.linkApplicationsToHearing(event, updatedHearing, singletonList(courtApplication.getId()), HEARING_INITIALISED);
                         sender.send(envelop(objectToJsonObjectConverter.convert(hearingExtended))
                                 .withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED)
                                 .withMetadataFrom(event));

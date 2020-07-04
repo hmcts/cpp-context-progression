@@ -7,7 +7,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -17,12 +16,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
+import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.Defendant;
@@ -30,27 +29,33 @@ import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -63,10 +68,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
-import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
-import javax.json.Json;
-import javax.json.JsonObject;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultEventProcessorTest {
@@ -76,9 +77,6 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private Sender sender;
-
-    @Spy
-    private final Enveloper enveloper = createEnveloper();
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
@@ -173,7 +171,6 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingArgumentCaptor.getValue(), notNullValue());
         assertThat(hearingArgumentCaptor.getValue().getId(), equalTo(hearingResulted.getHearing().getId()));
         assertThat(applicationIdsArgumentCaptor.getValue(), notNullValue());
-        assertEquals(0, applicationIdsArgumentCaptor.getValue().size());
         assertThat(hearingListingStatusArgumentCaptor.getValue(), equalTo(HearingListingStatus.HEARING_RESULTED));
         assertNull(hearingResulted.getHearing().getCourtApplications().get(0).getApplicationOutcome());
     }
@@ -240,6 +237,9 @@ public class HearingResultEventProcessorTest {
                         )
                         .withCourtApplications(asList(CourtApplication.courtApplication()
                                 .withApplicationOutcome(courtApplicationOutcome)
+                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
+                                        .withCategory(Category.ANCILLARY).build()))
                                 .withId(courtApplicationId)
                                 .build()))
                         .build())
@@ -304,6 +304,9 @@ public class HearingResultEventProcessorTest {
 
         final List<CourtApplication> courtApplications = singletonList(CourtApplication.courtApplication()
                 .withApplicationOutcome(courtApplicationOutcome)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(Category.ANCILLARY).build()))
                 .withId(courtApplicationId)
                 .build());
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
@@ -355,6 +358,9 @@ public class HearingResultEventProcessorTest {
 
         final List<CourtApplication> courtApplications = singletonList(CourtApplication.courtApplication()
                 .withApplicationOutcome(courtApplicationOutcome)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(Category.ANCILLARY).build()))
                 .withId(courtApplicationId)
                 .build());
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
