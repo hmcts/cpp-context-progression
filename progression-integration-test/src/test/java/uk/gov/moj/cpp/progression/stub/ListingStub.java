@@ -57,9 +57,13 @@ public class ListingStub {
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
-                                        JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
-                                        return prosecutionCase.getString("id").equals(caseId) &&
+                                        if(payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases")){
+                                            JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                            return prosecutionCase.getString("id").equals(caseId) &&
                                                 prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId);
+                                        }else{
+                                            return false;
+                                        }
                                     }
                             )
 
@@ -76,12 +80,17 @@ public class ListingStub {
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
-                                        JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
-                                        JSONObject defendantListingNeeds = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("defendantListingNeeds").getJSONObject(0);
+                                        if(payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases")){
+                                            JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                            JSONObject defendantListingNeeds = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("defendantListingNeeds").getJSONObject(0);
 
-                                        return prosecutionCase.getString("id").equals(caseId) &&
-                                                prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
-                                                defendantListingNeeds.getBoolean("isYouth") == isYouth;
+                                            return prosecutionCase.getString("id").equals(caseId) &&
+                                                    prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
+                                                    defendantListingNeeds.getBoolean("isYouth") == isYouth;
+
+                                        }else{
+                                            return false;
+                                        }
                                     }
                             )
 

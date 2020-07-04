@@ -25,7 +25,7 @@
     "listedStartDateTime": "2015-01-12T05:27:17.210Z",
     "earliestStartDateTime": "2015-01-12T05:27:17.210Z",
     "endDate": "0000-01-01",
-    "estimatedMinutes": 0,
+    "estimatedMinutes": 30,
     "prosecutorDatesToAvoid": "a",
     "listingDirections": "a",
     "reportingRestrictionReason": "a",
@@ -128,6 +128,24 @@
         "courtApplicationId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
         "courtApplicationPartyId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
         "hearingLanguageNeeds": "ENGLISH"
+      }
+    ],
+    "bookedSlots": [
+      {
+        "oucode": "B01EF00",
+        "session": "AM",
+        "duration": 180,
+        "startTime": "2020-05-21T00:00:00.000Z",
+        "courtRoomId": 793,
+        "courtScheduleId": "8e837de0-743a-4a2c-9db3-b2e678c48729"
+      },
+      {
+        "oucode": "B01EF01",
+        "session": "AM",
+        "duration": 180,
+        "startTime": "2020-05-22T00:00:00.000Z",
+        "courtRoomId": 793,
+        "courtScheduleId": "b7fd32dc-54eb-4bb1-b5fe-88077390e25c"
       }
     ]
   }

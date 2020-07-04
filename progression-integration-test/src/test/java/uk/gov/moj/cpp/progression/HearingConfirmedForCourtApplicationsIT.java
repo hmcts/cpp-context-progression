@@ -62,6 +62,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
             .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
     private static final MessageConsumer messageConsumerLink = privateEvents.createConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+    private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -180,7 +181,8 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                                 withJsonPath("$.hearingsAtAGlance.courtApplications.[*].linkedCaseId", hasItem(equalTo(caseId))),
                                 withJsonPath("$.hearingsAtAGlance.courtApplications.[*].applicationStatus", hasItem(equalTo(status))),
-                                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId)))
+                                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
+                                withJsonPath("$.hearingsAtAGlance.latestHearingJurisdictionType", equalTo(MAGISTRATES_JURISDICTION_TYPE))
                         )));
     }
 

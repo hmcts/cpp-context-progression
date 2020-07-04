@@ -12,6 +12,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.progression.courts.LatestHearingJurisdictionType;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
@@ -29,6 +30,7 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -69,7 +71,8 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
         Matcher[] caseUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
-                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
+                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true)),
+                withJsonPath("$.hearingsAtAGlance.latestHearingJurisdictionType", equalTo(MAGISTRATES_JURISDICTION_TYPE))
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseUpdatedMatchers);

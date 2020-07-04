@@ -247,8 +247,6 @@ public class HearingToHearingListingNeedsTransformer {
 
     private String createMapKey(Set<UUID> courtScheduleIds) {
         final String mergedCourtScheduleIds = courtScheduleIds.stream().map(UUID::toString).sorted().collect(Collectors.joining(","));
-        return new StringBuilder()
-                .append("CourtScheduleId:").append(mergedCourtScheduleIds)
-                .toString();
+        return "CourtScheduleId:" + mergedCourtScheduleIds;
     }
 }

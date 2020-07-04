@@ -1,0 +1,76 @@
+{
+  "application": {
+    "applicant": {
+      "defendant": {
+        "courtProceedingsInitiated": "2020-06-27T15:31:59.921Z",
+        "id": "RANDOM_DEFENDANT_ID",
+        "isYouth": false,
+        "masterDefendantId": "RANDOM_DEFENDANT_ID",
+        "offences": [
+          {
+            "arrestDate": "2016-01-01",
+            "chargeDate": "2016-01-01",
+            "count": 0,
+            "id": "a3e2c582-9220-4de2-89e5-80a2d90cd944",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03014",
+            "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+            "orderIndex": 1,
+            "startDate": "2015-07-02",
+            "wording": "Some offence wording"
+          }
+        ],
+        "personDefendant": {
+          "bailConditions": "Some bail conditions",
+          "bailStatus": {
+            "code": "B",
+            "description": "Conditional Bail",
+            "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+          },
+          "personDetails": {
+            "additionalNationalityCode": "POL",
+            "additionalNationalityDescription": "Pole",
+            "additionalNationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
+            "address": {
+              "address1": "4PXgcz98Wf"
+            },
+            "dateOfBirth": "1956-08-06",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Aliyah",
+            "gender": "NOT_SPECIFIED",
+            "lastName": "Ernser",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "title": "MR"
+          }
+        },
+        "prosecutionAuthorityReference": "82GD2173520",
+        "prosecutionCaseId": "RANDOM_CASE_ID"
+      },
+      "id": "73ba1213-9d2a-473b-a3a7-a0ecd9a905c6"
+    },
+    "applicationReceivedDate": "2019-10-10",
+    "applicationReference": "RANDOM_REFERENCE",
+    "applicationStatus": "DRAFT",
+    "id": "RANDOM_APPLICATION_ID",
+    "linkedCaseId": "RANDOM_CASE_ID",
+    "type": {
+      "applicantSynonym": "Applicant",
+      "applicationCategory": "CO",
+      "applicationCode": "CJ03520",
+      "applicationJurisdictionType": "EITHER",
+      "applicationLegislation": "In accordance with Part 3 of Schedule 8 to the Criminal Justice Act 2003.",
+      "applicationSummonsRecipientType": "RESPONDENT",
+      "applicationSummonsTemplateType": "GENERIC_APPLICATION",
+      "applicationType": "Application to revoke a community order and re-sentence",
+      "id": "00201dcc-0480-3d7e-90af-2e5190a62338",
+      "isAppealApplication": false,
+      "isBreachApplication": false,
+      "linkType": "LINKED",
+      "respondentSynonym": "Defendant"
+    }
+  }
+}

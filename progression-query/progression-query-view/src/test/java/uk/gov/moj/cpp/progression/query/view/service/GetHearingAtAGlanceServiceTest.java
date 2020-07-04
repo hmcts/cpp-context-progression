@@ -7,6 +7,9 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
+import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -42,6 +45,7 @@ import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.progression.courts.CourtApplications;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.courts.LatestHearingJurisdictionType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -86,14 +90,22 @@ public class GetHearingAtAGlanceServiceTest {
             "\"judicialRoleType\":{\"judicialRoleTypeId\":\"0a87257e-5308-397d-b432-30edf4ad1dae\",\"judiciaryType\":\"DJ\"},\"lastName\":\"Qureshi\",\"title\":\"Mr\"}],\"jurisdictionType\":\"CROWN\",\"prosecutionCases\":[{\"defendants\":[{\"id\":\"2a2eeb66-d01b-49c2-8dfc-324d91cac2f7\",\"offences\":[{\"arrestDate\":\"2006-05-04\",\"chargeDate\":\"2004-12-09\",\"count\":0,\"id\":\"09c380f9-e127-4638-bd1e-55079dff953a\",\"modeOfTrial\":\"Summary\",\"offenceCode\":\"CA03014\",\"offenceDefinitionId\":\"d6bd72ad-37bf-330d-bcc6-215728949d3e\",\"offenceTitle\":\"Fail / refuse give assistance to person executing Communications Act search warrant\",\"orderIndex\":500,\"startDate\":\"2004-12-09\"," +
             "\"wording\":\"Has a violent past and fear that he will commit further offences and\\n                interfere with witnesse\"}],\"personDefendant\":{\"arrestSummonsNumber\":\"TFL\",\"bailStatus\":{\"code\":\"C\",\"description\":\"Remanded into Custody\",\"id\":\"12e69486-4d01-3403-a50a-7419ca040635\"},\"personDetails\":{\"address\":{\"address1\":\"56Police House\",\"address2\":\"StreetDescription\",\"address3\":\"Locality2O\"},\"documentationLanguageNeeds\":\"ENGLISH\",\"gender\":\"MALE\",\"lastName\":\"Ormsby\"}},\"prosecutionAuthorityReference\":\"TFL\",\"prosecutionCaseId\":\"" + CASE_ID + "\"}],\"id\":\"" + CASE_ID + "\",\"initiationCode\":\"C\",\"originatingOrganisation\":" +
             "\"B01BH00\",\"prosecutionCaseIdentifier\":{\"prosecutionAuthorityCode\":\"DVL2\",\"prosecutionAuthorityId\":\"bcdca7df-ab21-45f6-bc19-f883cf3d407e\",\"caseURN\":\"72GD8580920\"}}],\"type\":{\"description\":\"First Hearing\",\"id\":\"4a0e892d-c0c5-3c51-95b8-704d8c781776\"}}";
+
+    private static final String HEARING_PAYLOAD_WITH_NO_HEARING_DAYS = "{\"courtCentre\":{\"address\":{\"address1\":\"176A Lavender Hill\",\"address2\":\"London\",\"address3\":\"\",\"address4\":\"\",\"address5\":\"\",\"postcode\":\"SW11 1JU\"},\"id\":\"f8254db1-1683-483e-afb3-b87fde5a0a26\",\"name\":\"Lavender Hill Magistrates' Court\",\"roomId\":\"9e4932f7-97b2-3010-b942-ddd2624e4dd8\",\"roomName\":\"Courtroom 01\"},\"hasSharedResults\":false,\"hearingDays\":[],\"hearingLanguage\":\"ENGLISH\",\"id\":\"133fc23e-746e-49f0-80bc-64add08d62ec\",\"judiciary\":[{\"firstName\":\"Shamim (Sham)\",\"isBenchChairman\":true,\"isDeputy\":true,\"judicialId\":\"0a87257e-5308-397d-b432-30edf4ad1dae\"," +
+            "\"judicialRoleType\":{\"judicialRoleTypeId\":\"0a87257e-5308-397d-b432-30edf4ad1dae\",\"judiciaryType\":\"DJ\"},\"lastName\":\"Qureshi\",\"title\":\"Mr\"}],\"jurisdictionType\":\"CROWN\",\"prosecutionCases\":[{\"defendants\":[{\"id\":\"2a2eeb66-d01b-49c2-8dfc-324d91cac2f7\",\"offences\":[{\"arrestDate\":\"2006-05-04\",\"chargeDate\":\"2004-12-09\",\"count\":0,\"id\":\"09c380f9-e127-4638-bd1e-55079dff953a\",\"modeOfTrial\":\"Summary\",\"offenceCode\":\"CA03014\",\"offenceDefinitionId\":\"d6bd72ad-37bf-330d-bcc6-215728949d3e\",\"offenceTitle\":\"Fail / refuse give assistance to person executing Communications Act search warrant\",\"orderIndex\":500,\"startDate\":\"2004-12-09\"," +
+            "\"wording\":\"Has a violent past and fear that he will commit further offences and\\n                interfere with witnesse\"}],\"personDefendant\":{\"arrestSummonsNumber\":\"TFL\",\"bailStatus\":{\"code\":\"C\",\"description\":\"Remanded into Custody\",\"id\":\"12e69486-4d01-3403-a50a-7419ca040635\"},\"personDetails\":{\"address\":{\"address1\":\"56Police House\",\"address2\":\"StreetDescription\",\"address3\":\"Locality2O\"},\"documentationLanguageNeeds\":\"ENGLISH\",\"gender\":\"MALE\",\"lastName\":\"Ormsby\"}},\"prosecutionAuthorityReference\":\"TFL\",\"prosecutionCaseId\":\"" + CASE_ID + "\"}],\"id\":\"" + CASE_ID + "\",\"initiationCode\":\"C\",\"originatingOrganisation\":" +
+            "\"B01BH00\",\"prosecutionCaseIdentifier\":{\"prosecutionAuthorityCode\":\"DVL2\",\"prosecutionAuthorityId\":\"bcdca7df-ab21-45f6-bc19-f883cf3d407e\",\"caseURN\":\"72GD8580920\"}}],\"type\":{\"description\":\"First Hearing\",\"id\":\"4a0e892d-c0c5-3c51-95b8-704d8c781776\"}}";
     private static final UUID DEFENDANT_ID_1 = randomUUID();
     private static final UUID DEFENDANT_ID_2 = randomUUID();
+    private static final UUID DEFENDANT_ID_3 = randomUUID();
     private static final UUID CASE_HEARING_ID_1 = randomUUID();
     private static final UUID CASE_HEARING_ID_2 = randomUUID();
+    private static final UUID CASE_HEARING_ID_3 = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID APPLICATION_HEARING_ID = randomUUID();
     private static final LocalDate LOCALDATE_NOW = LocalDate.now();
     private static final UUID GENERIC_UUID = randomUUID();
+    private static final String EMPTY_STRING = "";
     private final UUID LAA_STATUS_ID = randomUUID();
 
     @Mock
@@ -137,7 +149,7 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -216,8 +228,8 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing1 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity1 = createHearingEntity(caseHearing1, CASE_HEARING_ID_1);
-        HearingEntity caseHearingEntity2 = createHearingEntity(caseHearing1, CASE_HEARING_ID_2);
+        HearingEntity caseHearingEntity1 = createHearingEntity(caseHearing1, CASE_HEARING_ID_1, HEARING_INITIALISED);
+        HearingEntity caseHearingEntity2 = createHearingEntity(caseHearing1, CASE_HEARING_ID_2, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -306,7 +318,7 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing = createCaseHearing(prosecutionCase, courtApplication, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -401,7 +413,7 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -418,7 +430,7 @@ public class GetHearingAtAGlanceServiceTest {
 
         CourtApplication courtApplication = createCourtApplicationWithDefendants(APPLICATION_ID, DEFENDANT_ID_1);
         Hearing applicationHearing = createApplicationHearing(courtApplication, APPLICATION_HEARING_ID);
-        HearingEntity applicationHearingEntity = createHearingEntity(applicationHearing, APPLICATION_HEARING_ID);
+        HearingEntity applicationHearingEntity = createHearingEntity(applicationHearing, APPLICATION_HEARING_ID, HEARING_INITIALISED);
 
         CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
@@ -530,7 +542,7 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing = createCaseHearing(prosecutionCase, courtApplication, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -621,7 +633,7 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing = createCaseHearing(prosecutionCase, courtApplication, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -712,7 +724,7 @@ public class GetHearingAtAGlanceServiceTest {
         Hearing caseHearing = createCaseHearing(prosecutionCase, courtApplication, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
-        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
 
         List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
 
@@ -807,6 +819,62 @@ public class GetHearingAtAGlanceServiceTest {
         List<Hearings> caseHearings = this.getHearingAtAGlanceService.getCaseHearings(CASE_ID);
 
         assertThat(caseHearings.isEmpty(), is(false));
+    }
+
+    @Test
+    public void shouldGetAllHearingsAssociatedToACaseWithNoDefendantAge() {
+
+        when(caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(singletonList(caseDefendantHearingEntity));
+        when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
+        when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_INITIALISED);
+        when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD_WITH_NO_HEARING_DAYS);
+        when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
+
+        List<Hearings> caseHearings = this.getHearingAtAGlanceService.getCaseHearings(CASE_ID);
+        assertThat(caseHearings.isEmpty(), is(false));
+        assertThat(caseHearings.get(0).getDefendants().get(0).getAge(), is (EMPTY_STRING));
+    }
+
+    @Test
+    public void shouldNotReturnHearingsSentForListing() {
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2, DEFENDANT_ID_3));
+        Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity hearingEntity1 = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
+        HearingEntity hearingEntity2 = createHearingEntity(caseHearing, CASE_HEARING_ID_2, SENT_FOR_LISTING);
+        HearingEntity hearingEntity3 = createHearingEntity(caseHearing, CASE_HEARING_ID_3, HEARING_RESULTED);
+
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(hearingEntity1);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity2.setHearing(hearingEntity2);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity3 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity3.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_3, CASE_HEARING_ID_3));
+        caseDefendantHearingEntity3.setHearing(hearingEntity3);
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity3);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+
+        // Prosecution Case Id assertion
+        assertThat(response.getId(), is(CASE_ID));
+
+        // Defendant Hearing details
+        assertThat(response.getHearings().size(), is(2));
+        assertThat(response.getLatestHearingJurisdictionType(), is(LatestHearingJurisdictionType.CROWN));
     }
 
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {
@@ -1029,14 +1097,14 @@ public class GetHearingAtAGlanceServiceTest {
                 .build();
     }
 
-    private HearingEntity createHearingEntity(Hearing hearing, UUID hearingId) {
+    private HearingEntity createHearingEntity(Hearing hearing, UUID hearingId, HearingListingStatus hearingListingStatus) {
 
         JsonObject hearingJson = objectToJsonObjectConverter.convert(hearing);
 
         HearingEntity entity = new HearingEntity();
         entity.setHearingId(hearingId);
         entity.setPayload(hearingJson.toString());
-        entity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        entity.setListingStatus(hearingListingStatus);
 
         return entity;
     }

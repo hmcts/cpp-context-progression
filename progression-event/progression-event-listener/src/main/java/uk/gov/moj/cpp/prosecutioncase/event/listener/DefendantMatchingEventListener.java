@@ -41,6 +41,8 @@ import java.util.UUID;
 public class DefendantMatchingEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefendantMatchingEventListener.class);
+    private static final String INACTIVE = "INACTIVE";
+    private static final String CLOSED = "CLOSED";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -94,7 +96,8 @@ public class DefendantMatchingEventListener {
 
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(defendantUnmatched.getProsecutionCaseId());
         final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
-        if (isNull(prosecutionCase.getCaseStatus()) || !("CLOSED".equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
+        if (isNull(prosecutionCase.getCaseStatus()) ||
+                !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
             matchDefendantCaseHearingRepository.remove(matchDefendantCaseHearingRepository.findByDefendantId(defendantUnmatched.getDefendantId()));
             updateMasterDefendant(defendantUnmatched.getDefendantId(), defendantUnmatched.getDefendantId(), prosecutionCase);
         }
@@ -122,7 +125,8 @@ public class DefendantMatchingEventListener {
     private void associateMasterDefendantToDefendant(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId) {
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(prosecutionCaseId);
         final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
-        if (isNull(prosecutionCase.getCaseStatus()) || !("CLOSED".equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
+        if (isNull(prosecutionCase.getCaseStatus()) ||
+                !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
             updateMasterDefendant(defendantId, masterDefendantId, prosecutionCase);
 
             MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByDefendantId(defendantId);

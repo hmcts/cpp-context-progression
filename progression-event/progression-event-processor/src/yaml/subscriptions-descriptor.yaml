@@ -62,6 +62,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-extended
           schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
 
+        - name: progression.event.slots-booked-for-application
+          schema_uri: http://justice.gov.uk/core/courts/slots-booked-for-application.json
+
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 

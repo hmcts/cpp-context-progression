@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,5 +25,21 @@ public class HearingBookingReferenceListExtractor {
                 .distinct()
                 .collect(Collectors.toList());
 
+    }
+
+    /**
+     *  Returns distinct list of BookingReference.
+     *  Collects all BookingReferences under CourtApplication -> JudicialResults(nullable) -> NextHearing(nullable)
+     */
+    public List<UUID> extractBookingReferences(final List<CourtApplication> courtApplications){
+        return courtApplications.stream()
+                .map(CourtApplication::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(judicialResults -> judicialResults.stream()
+                        .filter(judicialResult -> nonNull(judicialResult.getNextHearing())
+                                && nonNull(judicialResult.getNextHearing().getBookingReference())))
+                .map(judicialResult -> judicialResult.getNextHearing().getBookingReference())
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

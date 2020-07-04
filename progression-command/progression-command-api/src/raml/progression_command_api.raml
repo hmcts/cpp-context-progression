@@ -325,6 +325,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.extend-hearing+json
             name: progression.extend-hearing
+        (mapping):
+            requestType: application/vnd.progression.book-slots-for-application+json
+            name: progression.book-slots-for-application
         ...
       body:
         application/vnd.progression.refer-application-to-court+json:
@@ -337,6 +340,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.extend-hearing.json
             schema:
              !include json/schema/progression.extend-hearing.json
+        application/vnd.progression.book-slots-for-application+json:
+            example:
+             !include json/progression.book-slots-for-application.json
+            schema:
+             !include json/schema/progression.book-slots-for-application.json
       responses:
             202:
                 description: OK

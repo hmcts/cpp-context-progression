@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListedCourtApplicationChanged;
+import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
@@ -45,17 +46,20 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 2414350353892037603L;
+    private static final long serialVersionUID = 1331113876243908494L;
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
     private CourtApplication courtApplication;
     private UUID boxHearingId;
-    private Set<UUID> hearingIds = new HashSet<>();
+    private final Set<UUID> hearingIds = new HashSet<>();
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(ApplicationReferredToCourt.class).apply(e ->
-                    this.applicationStatus = ApplicationStatus.LISTED
+                        this.applicationStatus = ApplicationStatus.LISTED
+                ),
+                when(SlotsBookedForApplication.class).apply(e ->
+                        this.hearingIds.add(e.getHearingRequest().getId())
                 ),
                 when(BoxworkApplicationReferred.class).apply(e ->
                         this.applicationStatus = ApplicationStatus.IN_PROGRESS
@@ -82,7 +86,7 @@ public class ApplicationAggregate implements Aggregate {
                 when(HearingApplicationLinkCreated.class).apply(
                         e -> {
                             hearingIds.add(e.getHearing().getId());
-                            if(e.getHearing() !=null && e.getHearing().getIsBoxHearing() != null && e.getHearing().getIsBoxHearing()){
+                            if (e.getHearing() != null && e.getHearing().getIsBoxHearing() != null && e.getHearing().getIsBoxHearing()) {
                                 boxHearingId = e.getHearing().getId();
                             }
                         }
@@ -96,7 +100,7 @@ public class ApplicationAggregate implements Aggregate {
 
     }
 
-    public Stream<Object> referApplicationToCourt(HearingListingNeeds hearingListingNeeds) {
+    public Stream<Object> referApplicationToCourt(final HearingListingNeeds hearingListingNeeds) {
         LOGGER.debug("application has been referred to court");
         return apply(Stream.of(
                 ApplicationReferredToCourt.applicationReferredToCourt()
@@ -104,7 +108,7 @@ public class ApplicationAggregate implements Aggregate {
                         .build()));
     }
 
-    public Stream<Object> extendHearing(HearingListingNeeds hearingListingNeeds) {
+    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds) {
         LOGGER.debug("hearing has been extended");
         return apply(Stream.of(
                 HearingExtended.hearingExtended()
@@ -113,10 +117,18 @@ public class ApplicationAggregate implements Aggregate {
                         .build()));
     }
 
+    public Stream<Object> bookSlotsForApplication(final HearingListingNeeds hearingListingNeeds) {
+        LOGGER.debug("slots has been requested to book for application");
+        return apply(Stream.of(
+                SlotsBookedForApplication.slotsBookedForApplication()
+                        .withHearingRequest(hearingListingNeeds)
+                        .build()));
+    }
+
     public Stream<Object> referBoxWorkApplication(final HearingListingNeeds hearingListingNeeds) {
         LOGGER.debug("Box work application has been referred");
         final Stream.Builder<Object> eventStreamBuilder = Stream.builder();
-        for (CourtApplication ca : hearingListingNeeds.getCourtApplications()) {
+        for (final CourtApplication ca : hearingListingNeeds.getCourtApplications()) {
             updateCourtApplication(ca).forEach(o -> eventStreamBuilder.accept(o));
         }
         eventStreamBuilder.accept(BoxworkApplicationReferred.boxworkApplicationReferred()
@@ -159,7 +171,7 @@ public class ApplicationAggregate implements Aggregate {
                                 .build()));
     }
 
-    public Stream<Object> addApplicationToCase(CourtApplication application) {
+    public Stream<Object> addApplicationToCase(final CourtApplication application) {
         LOGGER.debug("Court application has been added to case");
         return apply(Stream.of(CourtApplicationAddedToCase.courtApplicationAddedToCase().withCourtApplication(application).build()));
     }
@@ -172,8 +184,9 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(ApplicationEjected.applicationEjected()
                 .withApplicationId(courtApplicationId).withRemovalReason(removalReason).build()));
     }
+
     public Stream<Object> createHearingApplicationLink(final Hearing hearing, final UUID applicationId,
-                                                       HearingListingStatus hearingListingStatus) {
+                                                       final HearingListingStatus hearingListingStatus) {
         LOGGER.debug("Hearing Application link been created");
         return apply(Stream.of(
                 HearingApplicationLinkCreated.hearingApplicationLinkCreated()
@@ -188,7 +201,7 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     public Stream<Object> recordNotificationRequestAccepted(final UUID applicationId, final UUID notificationId, final ZonedDateTime acceptedTime) {
-            return apply(Stream.of(new NotificationRequestAccepted(null, applicationId, notificationId, acceptedTime)));
+        return apply(Stream.of(new NotificationRequestAccepted(null, applicationId, notificationId, acceptedTime)));
     }
 
     public Stream<Object> recordNotificationRequestFailure(final UUID applicationId, final UUID notificationId, final ZonedDateTime failedTime, final String errorMessage, final Optional<Integer> statusCode) {

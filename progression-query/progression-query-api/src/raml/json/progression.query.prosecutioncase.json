@@ -400,6 +400,7 @@
       }
     ],
     "id": "368b9b20-e357-41b5-9452-6b2092c80ad0",
+    "latestHearingJurisdictionType" : "CROWN",
     "prosecutionCaseIdentifier": {
       "prosecutionAuthorityCode": "TFL",
       "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",

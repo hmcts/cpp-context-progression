@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.book-slots-for-application.json",
+  "type": "object",
+  "properties": {
+    "hearingRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingListingNeeds.json"
+    }
+  },
+  "required": [
+    "hearingRequest"
+  ],
+  "additionalProperties": false
+}

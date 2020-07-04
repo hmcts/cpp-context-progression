@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.Criteria.where;
+import static com.jayway.jsonpath.Filter.filter;
+import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -40,6 +43,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
+import com.jayway.jsonpath.Filter;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
@@ -155,14 +159,17 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     private static void verifyHearingInitialised(final String caseId, final String hearingId) {
+
+        final Filter hearingIdFilter = filter(where("id").is(hearingId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, randomUUID()))
                 .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
+                                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter))
                         )));
     }
 }

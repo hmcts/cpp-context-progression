@@ -3,32 +3,29 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import javax.json.Json;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.List;
 import java.util.UUID;
-
-import javax.json.Json;
 
 public class TestHelper {
 
@@ -62,10 +59,38 @@ public class TestHelper {
                 .build();
     }
 
+    public static Hearing buildHearingWithCourtApplications(final List<CourtApplication> courtApplications){
+        return Hearing.hearing()
+                .withId(UUID.randomUUID())
+                .withCourtApplications(courtApplications)
+                .build();
+    }
+
     public static Hearing buildHearing(final List<ProsecutionCase> prosecutionCases){
         return Hearing.hearing()
                 .withId(UUID.randomUUID())
                 .withProsecutionCases(prosecutionCases)
+                .build();
+    }
+
+    public static CourtApplication buildCourtApplicationWithJudicialResults(final UUID courtApplicationId, final List<JudicialResult> judicialResults) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withJudicialResults(judicialResults)
+                .build();
+    }
+
+    public static CourtApplication buildCourtApplication(final UUID courtApplicationId, final NextHearing nextHearing) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(randomUUID())
+                                .build())
+                        .build())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withNextHearing(nextHearing)
+                        .build()))
                 .build();
     }
 
@@ -107,6 +132,7 @@ public class TestHelper {
                 .withCourtCentre(CourtCentre.courtCentre().withCourtHearingLocation(courtLocation).build())
                 .withWeekCommencingDate(weekCommencingDate)
                 .withListedStartDateTime(listedStartDateTime)
+                .withHearingLanguage(HearingLanguage.ENGLISH)
                 .build();
     }
 

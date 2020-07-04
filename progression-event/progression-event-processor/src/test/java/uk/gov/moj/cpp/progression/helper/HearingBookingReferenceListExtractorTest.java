@@ -1,26 +1,34 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCaseWithoutJudicialResult;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
-
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCaseWithoutJudicialResult;
-
 @RunWith(MockitoJUnitRunner.class)
 public class HearingBookingReferenceListExtractorTest {
+
+    private static final UUID COURT_APPLICATION_ID_1 = randomUUID();
+    private static final UUID COURT_APPLICATION_ID_2 = randomUUID();
+    private static final UUID COURT_APPLICATION_ID_3 = randomUUID();
+
     private static final UUID CASE_ID_1 = randomUUID();
     private static final UUID DEFENDANT_ID_1 = randomUUID();
     private static final UUID OFFENCE_ID_1 = randomUUID();
@@ -96,4 +104,69 @@ public class HearingBookingReferenceListExtractorTest {
         assertThat(result.size(), is(1));
     }
 
+    @Test
+    public void shouldReturnOneBookingReferenceWhenOneBookingReferenceExistsInResults(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplication(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null))
+        ));
+        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0), equalTo(BOOKING_REFERENCE_1));
+    }
+
+    @Test
+    public void shouldReturnTwoBookingReferencesWhenTwoDistinctBookingReferencesExistInResults(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplication(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
+                buildCourtApplication(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
+        ));
+        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        assertThat(result.size(), is(2));
+        assertThat(result, hasItems(BOOKING_REFERENCE_1, BOOKING_REFERENCE_2));
+    }
+
+    @Test
+    public void shouldReturnDistinctBookingReferencesWhenDuplicateBookingReferencesExistInResults(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplication(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
+                buildCourtApplication(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null)),
+                buildCourtApplication(COURT_APPLICATION_ID_3, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
+        ));
+        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        assertThat(result.size(), is(2));
+        assertThat(result, hasItems(BOOKING_REFERENCE_1, BOOKING_REFERENCE_2));
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenNoBookingReferencesExistInResults(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplication(COURT_APPLICATION_ID_1, buildNextHearing(null, null, null, null, null)),
+                buildCourtApplication(COURT_APPLICATION_ID_2, buildNextHearing(null, null, null, null, null)),
+                buildCourtApplication(COURT_APPLICATION_ID_3, buildNextHearing(null, null, null, null, null))
+        ));
+        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        assertThat(result.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenNoNextHearingsExistInResults(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplication(COURT_APPLICATION_ID_1, null),
+                buildCourtApplication(COURT_APPLICATION_ID_2, null),
+                buildCourtApplication(COURT_APPLICATION_ID_3, null)
+        ));
+        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        assertThat(result.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenNoJudicialResultsExistInResults() {
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(singletonList(
+                CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .build()
+        ));
+        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        assertThat(result.size(), is(0));
+    }
 }

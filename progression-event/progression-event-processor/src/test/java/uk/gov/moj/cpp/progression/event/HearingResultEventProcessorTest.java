@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -29,6 +30,7 @@ import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -36,8 +38,8 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
@@ -66,7 +68,6 @@ import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransf
 import javax.json.Json;
 import javax.json.JsonObject;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultEventProcessorTest {
 
@@ -86,7 +87,7 @@ public class HearingResultEventProcessorTest {
     private ArgumentCaptor<List<UUID>> applicationIdsArgumentCaptor;
 
     @Captor
-    private ArgumentCaptor<List<CourtApplication>> courtApplictionsArgumentCaptor;
+    private ArgumentCaptor<List<CourtApplication>> courtApplicationsArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<Hearing> hearingArgumentCaptor;
@@ -125,6 +126,9 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
+
+    @Mock
+    private HearingResultHelper hearingResultHelper;
 
     @Before
     public void initMocks() {
@@ -175,7 +179,7 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void handleHearingResultWithNoApplications() throws EventStreamException {
+    public void handleHearingResultWithNoApplications() {
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
@@ -198,6 +202,8 @@ public class HearingResultEventProcessorTest {
 
         final Optional<JsonObject> hearingJsonOptional = getHearingJson();
         when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
+        when(hearingResultHelper.doProsecutionCasesContainNextHearingResults(anyList())).thenReturn(true);
+        when(hearingResultHelper.doCourtApplicationsContainNextHearingResults(anyList())).thenReturn(true);
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -260,9 +266,8 @@ public class HearingResultEventProcessorTest {
         assertThat(applicationStatusArgumentCaptor.getValue(), equalTo(ApplicationStatus.FINALISED));
     }
 
-
     @Test
-    public void handleResultWhenProsecutionCaseIsPresentOnHearing() throws Exception {
+    public void handleResultWhenProsecutionCaseIsPresentOnHearing() {
 
         final UUID courtApplicationId = randomUUID();
 
@@ -271,9 +276,21 @@ public class HearingResultEventProcessorTest {
                 .build();
 
         final UUID commonUUID = randomUUID();
-        final Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
-        final Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
-        final Defendant defendant3 = Defendant.defendant().withId(randomUUID()).build();
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(commonUUID)
+                .withOffences(asList(Offence.offence()
+                        .build()))
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(commonUUID)
+                .withOffences(asList(Offence.offence()
+                        .build()))
+                .build();
+        final Defendant defendant3 = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(asList(Offence.offence()
+                        .build()))
+                .build();
 
         final List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
@@ -321,8 +338,8 @@ public class HearingResultEventProcessorTest {
         when(hearingToHearingListingNeedsTransformer.transform(any())).thenReturn(hearingListingNeedsForNextHearings);
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplictionsArgumentCaptor.capture());
+        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(3));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(commonUUID));
     }
@@ -365,7 +382,7 @@ public class HearingResultEventProcessorTest {
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, never()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplictionsArgumentCaptor.capture());
+        verify(progressionService, never()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
     }
 
     private Optional<JsonObject> getHearingJson() {

@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.Criteria.where;
+import static com.jayway.jsonpath.Filter.filter;
+import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -25,6 +28,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.Filter;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -79,9 +83,13 @@ public class HearingUpdatedIT extends AbstractIT {
 
         verifyInMessagingQueue(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
 
+        final Filter hearingIdFilter = filter(where("id").is(hearingId)
+                .and("courtCentre.id").is(courtCentreId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+
         pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath("$.hearingsAtAGlance.hearings[0].courtCentre.id", equalTo(courtCentreId)),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter))
         });
 
         final String updatedCourtCentreId = randomUUID().toString();
@@ -89,9 +97,13 @@ public class HearingUpdatedIT extends AbstractIT {
         final JsonObject hearingUpdatedJson = getHearingUpdatedJsonObject(hearingId, updatedCourtCentreId);
         sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_UPDATED, hearingUpdatedJson, hearingUpdatedMetadata);
 
+        final Filter updatedHearingIdFilter = filter(where("id").is(hearingId)
+                .and("courtCentre.id").is(updatedCourtCentreId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+
         pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath("$.hearingsAtAGlance.hearings[0].courtCentre.id", equalTo(updatedCourtCentreId)),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED"))
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedHearingIdFilter))
         });
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
 
