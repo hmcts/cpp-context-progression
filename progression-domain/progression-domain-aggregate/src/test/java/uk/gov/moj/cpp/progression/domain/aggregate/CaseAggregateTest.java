@@ -28,6 +28,7 @@ import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
@@ -72,8 +73,6 @@ import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociat
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -87,8 +86,6 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -546,7 +543,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseCreated.class)));
+        assertThat(object.getClass(), is(equalTo(ProsecutionCaseCreated.class)));
     }
 
     @Test
@@ -563,7 +560,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantsNotAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsNotAddedToCourtProceedings.class)));
 
         //Assert total defendants are empty
         assertThat(defendantsNotAddedToCourtProceedings.getDefendants().isEmpty(), is(true));
@@ -590,7 +587,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantsAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
 
         //Assert total defendants with count 3 including duplicates
         assertThat(defendantsAddedToCourtProceedings.getDefendants().size(), is(3));
@@ -604,7 +601,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseEjected.class)));
+        assertThat(object.getClass(), is(equalTo(CaseEjected.class)));
     }
 
     @Test
@@ -632,7 +629,7 @@ public class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
         assertThat(eventStream.size(), is(3));
         final Object object1 = eventStream.get(0);
-        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().size(), is(1));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
@@ -644,7 +641,7 @@ public class CaseAggregateTest {
                 is(LegalAidStatusEnum.GRANTED.getDescription()));
 
         final Object object2 = eventStream.get(1);
-        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().size(), is(1));
@@ -674,7 +671,7 @@ public class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
         assertThat(eventStream.size(), is(3));
         final Object object1 = eventStream.get(0);
-        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().size(), is(1));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
@@ -686,7 +683,7 @@ public class CaseAggregateTest {
                 is(LegalAidStatusEnum.REFUSED.getDescription()));
 
         final Object object2 = eventStream.get(1);
-        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().size(), is(1));
@@ -716,7 +713,7 @@ public class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
         assertThat(eventStream.size(), is(3));
         final Object object1 = eventStream.get(0);
-        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().size(), is(1));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusId(), is(laaReference.getStatusId()));
@@ -728,7 +725,7 @@ public class CaseAggregateTest {
                 is(WITHDRAWN.getDescription()));
 
         final Object object2 = eventStream.get(1);
-        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().size(), is(1));
@@ -774,11 +771,11 @@ public class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId2, laaReference2).collect(toList());
         assertThat(eventStream.size(), is(3));
         final Object object1 = eventStream.get(0);
-        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
                 is(LegalAidStatusEnum.GRANTED.getDescription()));
         final Object object2 = eventStream.get(1);
-        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
 
@@ -821,22 +818,26 @@ public class CaseAggregateTest {
 
         final LaaReference laaReference1 = generateRecordLAAReferenceForOffence("WD", WITHDRAWN.getDescription());
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId1, laaReference1).collect(toList());
-        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.size(), is(5));
 
         final Object object1 = eventStream.get(0);
-        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
                 is(WITHDRAWN.getDescription()));
         final Object object2 = eventStream.get(1);
-        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
 
         final Object object3 = eventStream.get(2);
-        assertThat(object3.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantLegalaidStatusUpdated.class)));
+        assertThat(object3.getClass(), is(equalTo(DefendantLegalaidStatusUpdated.class)));
 
         final Object object4 = eventStream.get(3);
-        assertThat(object4.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantDefenceOrganisationDisassociated.class)));
+        assertThat(object4.getClass(), is(equalTo(DefendantDefenceOrganisationChanged.class)));
+
+        final Object object5 = eventStream.get(4);
+        assertThat(object5.getClass(), is(equalTo(DefendantDefenceOrganisationDisassociated.class)));
+
     }
 
 
@@ -879,19 +880,19 @@ public class CaseAggregateTest {
 
         final LaaReference laaReference1 = generateRecordLAAReferenceForOffence("WD", WITHDRAWN.getDescription());
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId1, laaReference1).collect(toList());
-        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.size(), is(5));
 
         final Object object1 = eventStream.get(0);
-        assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(ProsecutionCaseOffencesUpdated.class)));
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
                 is(NO_VALUE.getDescription()));
         final Object object2 = eventStream.get(1);
-        assertThat(object2.getClass(), is(CoreMatchers.<Class<?>>equalTo(OffencesForDefendantChanged.class)));
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
 
         final Object object3 = eventStream.get(2);
-        assertThat(object3.getClass(), is(CoreMatchers.<Class<?>>equalTo(DefendantLegalaidStatusUpdated.class)));
+        assertThat(object3.getClass(), is(equalTo(DefendantLegalaidStatusUpdated.class)));
     }
 
     @Test
@@ -983,7 +984,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseLinkedToHearing.class)));
+        assertThat(object.getClass(), is(equalTo(CaseLinkedToHearing.class)));
     }
 
     @Test
@@ -992,7 +993,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseNoteAdded.class)));
+        assertThat(object.getClass(), is(equalTo(CaseNoteAdded.class)));
     }
 
     @Test
@@ -1029,7 +1030,7 @@ public class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.updateCaseStatus(prosecutionCase().build(), SJP_REFERRAL.getDescription()).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(HearingConfirmedCaseStatusUpdated.class)));
+        assertThat(object.getClass(), is(equalTo(HearingConfirmedCaseStatusUpdated.class)));
     }
 
     @Test
@@ -1059,7 +1060,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(HearingResultedCaseUpdated.class)));
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
 
@@ -1092,7 +1093,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(HearingResultedCaseUpdated.class)));
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(SJP_REFERRAL.getDescription()));
 

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.command;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.moj.cpp.progression.command.api.helper.ProgressionCommandHelper.removeProperty;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Handles;

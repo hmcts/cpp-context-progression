@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.command.api.helper;
+package uk.gov.moj.cpp.progression.domain.helper;
 
 import java.util.Map;
 
@@ -7,9 +7,9 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-public class ProgressionCommandHelper {
+public class JsonHelper {
 
-    private ProgressionCommandHelper() {
+    private JsonHelper() {
 
     }
     public static JsonObject removeProperty(final JsonObject origin, final String key){

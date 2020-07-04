@@ -22,9 +22,9 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
-import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
+import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,17 +67,22 @@ public class UsersGroupServiceTest {
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
-        final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
-        final JsonEnvelope response = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
-        when(requester.requestAsAdmin(any())).thenReturn(response);
+        JsonObject responseJsonObject = Json.createObjectBuilder().add("organisationId",organisationId.toString()).build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), "userId").build();
+
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            JsonObject responsePayload = responseJsonObject;
+            return envelopeFrom(envelope.metadata(), responsePayload);
+        });
+
 
         //When
-        final JsonEnvelope result = usersGroupService.getOrganisationDetailsForUser(query);
+        final Envelope<JsonObject> result = usersGroupService.getOrganisationDetailsForUser(query);
 
         //Then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
-        assertThat(result.payloadAsJsonObject().getString("organisationId"), is(organisationId.toString()));
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
+        assertThat(result.payload().getString("organisationId"), is(organisationId.toString()));
 
     }
 
@@ -208,7 +213,7 @@ public class UsersGroupServiceTest {
         final OrganisationDetails result = usersGroupService.getOrganisationDetailsForLAAContractNumber(query, laaContractNumber);
 
         //Then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
         assertEquals(null, result.getId());
         assertEquals(null, result.getName());
         assertEquals(null, result.getType());

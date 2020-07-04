@@ -4,7 +4,7 @@ import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.moj.cpp.progression.command.api.helper.ProgressionCommandHelper.removeProperty;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;

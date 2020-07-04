@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -21,11 +22,12 @@ import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnabl
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatusWithStatusDescription;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchWithEmptyResults;
-import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailsForUser;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
@@ -51,7 +53,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class RecordLAAReferenceIT extends  AbstractIT {
+public class RecordLAAReferenceIT extends AbstractIT {
     static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     static final String PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";
@@ -62,13 +64,13 @@ public class RecordLAAReferenceIT extends  AbstractIT {
             .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
     private static final MessageConsumer messageConsumerClientPublicForLaaDisasociated = publicEvents
             .createConsumer(PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED);
+    private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+    private final String laaContractNumber = "LAA3456";
+    private final String organisationName = "Greg Associates Ltd.";
+    private final String organisationId = UUID.randomUUID().toString();
     private String caseId;
     private String defendantId;
-    private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private String statusCode;
-    private final String laaContractNumber = "LAA3456";
-    private String organisationId = UUID.randomUUID().toString();
-    private final String organisationName = "Greg Associates Ltd.";
     private String userId;
 
     @BeforeClass
@@ -151,6 +153,7 @@ public class RecordLAAReferenceIT extends  AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, randomUUID().toString(), "Smith Associates Ltd.");
 
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
 
@@ -170,7 +173,12 @@ public class RecordLAAReferenceIT extends  AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDate", is("2019-07-15")),
                         withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("")),
                         withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
+                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true)),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.applicationReference", equalTo("AB746921")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.isAssociatedByLAA", equalTo(true)),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", equalTo(laaContractNumber))
+
+
                 ));
 
         pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
@@ -181,7 +189,8 @@ public class RecordLAAReferenceIT extends  AbstractIT {
         stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", "WD", "Withdrawn");
         stubGetOrganisationDetailsForUser(userId, organisationId, organisationName);
 
-        recordLAAReferenceWithUserId(caseId, defendantId, offenceId, "WD", "Withdrawn", userId);
+        Response withdrawResponse = recordLAAReferenceWithUserId(caseId, defendantId, offenceId, "WD", "Withdrawn", userId);
+        assertThat(withdrawResponse.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
 
         //Then
         verifyInMessagingQueueForDefendantOffenceUpdated();
@@ -193,7 +202,8 @@ public class RecordLAAReferenceIT extends  AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusCode", is("WD")),
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDescription", is("Withdrawn")),
                         withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("")),
-                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true)))
+                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true)),
+                        withoutJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation"))
         );
 
         pollProsecutionCasesProgressionFor(caseId, caseWithDefendantLaaReferenceWithDrawnMatchers);

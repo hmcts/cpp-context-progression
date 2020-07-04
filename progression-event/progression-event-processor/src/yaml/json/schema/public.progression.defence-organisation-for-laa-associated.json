@@ -19,7 +19,7 @@
         "REPRESENTATION_ORDER_APPLIED_FOR",
         "COURT_APPOINTED",
         "PRO_BONO",
-        "PRIVATE_FUNDED"
+        "PRIVATE"
       ]
     },
     "laaContractNumber": {

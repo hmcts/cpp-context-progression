@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
+
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -11,12 +17,6 @@ import uk.gov.moj.cpp.progression.command.service.OrganisationService;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
-
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.moj.cpp.progression.command.api.helper.ProgressionCommandHelper.addProperty;
 
 @ServiceComponent(COMMAND_API)
 public class ReceiveRepresentationOrderForDefendantApi {

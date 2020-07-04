@@ -2,13 +2,12 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.util.UUID.randomUUID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
-import com.google.common.io.Resources;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
@@ -23,9 +22,12 @@ import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -33,22 +35,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+
 import javax.json.JsonObject;
 
+import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.service.ListingService;
-import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantsAddedToCourtProceedingsProcessorTest {
@@ -70,9 +71,6 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
     @Mock
     private GetHearingsAtAGlance hearingsAtAGlance;
-
-    @Spy
-    private final Enveloper enveloper = createEnveloper();
 
     @Mock
     private JsonEnvelope jsonEnvelope;
@@ -105,8 +103,10 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
     @Test
     public void shouldHandleCasesReferredToCourtEventMessage() throws Exception {
+        final UUID userId = randomUUID();
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings").build());
 
         defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
 
@@ -123,13 +123,9 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
                 GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
 
-        when(enveloper.withMetadataFrom(jsonEnvelope, "public.progression.defendants-added-to-court-proceedings")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.process-matched-defendants")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-
         //When
         eventProcessor.process(jsonEnvelope);
-        verify(sender, times(2)).send(finalEnvelope);
+        verify(sender, times(2)).send(any());
 
         //Given
         hearingsAtAGlance = getCaseAtAGlanceWithNoFutureHearings();
@@ -257,6 +253,16 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                 .withListHearingRequests(Collections.singletonList(listHearingRequest))
                 .build();
 
+    }
+
+    private MetadataBuilder getMetadataBuilder(final UUID userId, final String name) {
+        return JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName(name)
+                .withCausation(randomUUID())
+                .withClientCorrelationId(randomUUID().toString())
+                .withStreamId(randomUUID())
+                .withUserId((Objects.isNull(userId) ? randomUUID() : userId).toString());
     }
 
 }

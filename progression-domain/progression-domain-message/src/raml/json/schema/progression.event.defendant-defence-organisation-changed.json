@@ -16,8 +16,7 @@
   },
   "required": [
     "prosecutionCaseId",
-    "defendantId",
-    "associatedDefenceOrganisation"
+    "defendantId"
   ],
   "additionalProperties": false
 }

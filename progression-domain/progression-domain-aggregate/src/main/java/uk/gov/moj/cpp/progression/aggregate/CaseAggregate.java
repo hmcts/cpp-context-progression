@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
@@ -34,6 +35,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationRejected;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
@@ -54,6 +56,7 @@ import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -103,7 +106,10 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
+import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
+import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociatedByDefenceContext;
+import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.DefendantLaaAssociated;
@@ -149,7 +155,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 6499998429732699957L;
+    private static final long serialVersionUID = 6499998429732699958L;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
@@ -303,6 +309,8 @@ public class CaseAggregate implements Aggregate {
                 when(HearingConfirmedCaseStatusUpdated.class).apply(this::hearingConfirmedCaseStatusUpdated),
                 when(DefendantDefenceOrganisationAssociated.class).apply(this::updateDefendantAssociatedDefenceOrganisation),
                 when(DefendantDefenceOrganisationDisassociated.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
+                when(DefenceOrganisationDissociatedByDefenceContext.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
+                when(DefenceOrganisationAssociatedByDefenceContext.class).apply(this::updateDefendantAssociatedDefenceOrganisation),
                 when(DefendantMatched.class).apply(
                         e -> this.matchedDefendantIds.add(e.getDefendantId())
                 ),
@@ -871,6 +879,10 @@ public class CaseAggregate implements Aggregate {
                             .withOrganisationId(defendantAssociatedDefenceOrganisation.get(defendantId))
                             .withCaseId(prosecutionCaseId)
                             .build();
+                    streamBuilder.add(DefendantDefenceOrganisationChanged.defendantDefenceOrganisationChanged()
+                            .withProsecutionCaseId(prosecutionCaseId)
+                            .withDefendantId(defendantId)
+                            .build());
                     streamBuilder.add(defendantDefenceOrganisationDisassociated);
                 }
             }
@@ -991,6 +1003,70 @@ public class CaseAggregate implements Aggregate {
                     .withLockedByRepOrder(true)
                     .build());
 
+        }
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> receiveAssociateDefenceOrganisation(final String organisationName, final UUID defendantId, final UUID prosecutionCaseId, final String laaContractNumber, final ZonedDateTime startTime, final String representationType, final OrganisationDetails organisationDetails) {
+        LOGGER.debug("Receive AssociateDefenceOrganisation");
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if (this.defendantCaseOffences.containsKey(defendantId) && !isAlreadyAssociated(defendantId)) {
+
+            final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                    .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                            .withLaaContractNumber(laaContractNumber)
+                            .withOrganisation(Organisation.organisation()
+                                    .withAddress(Address.address()
+                                            .withAddress1(organisationDetails.getAddressLine1())
+                                            .withAddress2(organisationDetails.getAddressLine2())
+                                            .withAddress3(organisationDetails.getAddressLine3())
+                                            .withAddress4(organisationDetails.getAddressLine4())
+                                            .withPostcode(organisationDetails.getAddressPostcode())
+                                            .build())
+                                    .withName(organisationName)
+                                    .build())
+                            .build())
+                    .withIsAssociatedByLAA(false)
+                    .withFundingType(FundingType.valueOf(representationType))
+                    .withAssociationStartDate(LocalDate.from(startTime))
+                    .build();
+
+            streamBuilder.add(DefendantDefenceOrganisationChanged.defendantDefenceOrganisationChanged()
+                    .withProsecutionCaseId(prosecutionCaseId)
+                    .withDefendantId(defendantId)
+                    .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                    .build());
+
+            streamBuilder.add(DefenceOrganisationAssociatedByDefenceContext.defenceOrganisationAssociatedByDefenceContext()
+                    .withDefendantId(defendantId)
+                    .withLaaContractNumber(laaContractNumber)
+                    .withOrganisationId(organisationDetails.getId())
+                    .withOrganisationName(organisationName)
+                    .withRepresentationType(RepresentationType.valueOf(representationType))
+                    .withStartDate(startTime)
+                    .build());
+        }
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> receiveDisAssociateDefenceOrganisation(final UUID defendantId, final UUID prosecutionCaseId, final UUID organisationId) {
+        LOGGER.debug("Receive DisAssociateDefenceOrganisation");
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if (this.defendantCaseOffences.containsKey(defendantId)) {
+
+
+            streamBuilder.add(DefendantDefenceOrganisationChanged.defendantDefenceOrganisationChanged()
+                    .withProsecutionCaseId(prosecutionCaseId)
+                    .withDefendantId(defendantId)
+                    .build());
+
+            streamBuilder.add(DefenceOrganisationDissociatedByDefenceContext.defenceOrganisationDissociatedByDefenceContext()
+                    .withCaseId(prosecutionCaseId)
+                    .withDefendantId(defendantId)
+                    .withOrganisationId(organisationId)
+                    .build());
         }
         return apply(streamBuilder.build());
     }
@@ -1270,10 +1346,10 @@ public class CaseAggregate implements Aggregate {
         return matchedDefendantsList;
     }
 
-    private void handleDefenceOrganisationAssociationAndDisassociation(final UUID organisationId, final String organisationName, final String associatedOrganisationId,
+    private void handleDefenceOrganisationAssociationAndDisassociation(final UUID organisationId, final String organisationName, final String alreadyAssociatedOrganisationId,
                                                                        final UUID prosecutionCaseId, final UUID defendantId, final String laaContractNumber, final Stream.Builder<Object> streamBuilder) {
 
-        if (organisationId == null && associatedOrganisationId != null) {
+        if (organisationId == null && alreadyAssociatedOrganisationId != null) {
             LOGGER.error("Organisation not set up for LAA Contract Number {}", laaContractNumber);
             //Raise event to store orphaned defendants so that it can be fetched when organisation is Set up.
             streamBuilder.add(DefendantLaaAssociated.defendantLaaAssociated()
@@ -1286,15 +1362,15 @@ public class CaseAggregate implements Aggregate {
             streamBuilder.add(defendantDefenceOrganisationDisassociated()
                     .withDefendantId(defendantId)
                     .withCaseId(prosecutionCaseId)
-                    .withOrganisationId(fromString(associatedOrganisationId))
+                    .withOrganisationId(fromString(alreadyAssociatedOrganisationId))
                     .build());
-        } else if (organisationId != null && associatedOrganisationId != null) {
-            if (!organisationId.toString().equals(associatedOrganisationId)) {
+        } else if (organisationId != null && alreadyAssociatedOrganisationId != null) {
+            if (!organisationId.toString().equals(alreadyAssociatedOrganisationId)) {
                 // Disassociate the existing defence organisation and associate the one which is linked with one from payload
                 streamBuilder.add(defendantDefenceOrganisationDisassociated()
                         .withDefendantId(defendantId)
                         .withCaseId(prosecutionCaseId)
-                        .withOrganisationId(fromString(associatedOrganisationId))
+                        .withOrganisationId(fromString(alreadyAssociatedOrganisationId))
                         .build());
                 streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                         .withDefendantId(defendantId)
@@ -1371,13 +1447,27 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void removeDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationDisassociated defendantDefenceOrganisationDisassociated) {
-        if (this.defendantAssociatedDefenceOrganisation.containsKey(defendantDefenceOrganisationDisassociated.getDefendantId())) {
-            this.defendantAssociatedDefenceOrganisation.remove(defendantDefenceOrganisationDisassociated.getDefendantId());
-        }
+        removeFromOrganisationMap(defendantDefenceOrganisationDisassociated.getDefendantId());
+    }
+
+    private void removeDefendantAssociatedDefenceOrganisation(final DefenceOrganisationDissociatedByDefenceContext defenceOrganisationDissociatedByDefenceContext) {
+        removeFromOrganisationMap(defenceOrganisationDissociatedByDefenceContext.getDefendantId());
+    }
+
+    private void removeFromOrganisationMap(final UUID defendantId) {
+        this.defendantAssociatedDefenceOrganisation.remove(defendantId);
     }
 
     private void updateDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationAssociated defendantDefenceOrganisationAssociated) {
         this.defendantAssociatedDefenceOrganisation.put(defendantDefenceOrganisationAssociated.getDefendantId(), defendantDefenceOrganisationAssociated.getOrganisationId());
+    }
+
+    private void updateDefendantAssociatedDefenceOrganisation(final DefenceOrganisationAssociatedByDefenceContext defenceOrganisationAssociatedByDefenceContext) {
+        this.defendantAssociatedDefenceOrganisation.put(defenceOrganisationAssociatedByDefenceContext.getDefendantId(), defenceOrganisationAssociatedByDefenceContext.getOrganisationId());
+    }
+
+    private boolean isAlreadyAssociated(final UUID defendantId) {
+        return !isNull(this.defendantAssociatedDefenceOrganisation.get(defendantId));
     }
 
 }

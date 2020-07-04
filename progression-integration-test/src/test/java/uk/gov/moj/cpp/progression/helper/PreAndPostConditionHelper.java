@@ -90,10 +90,15 @@ public class PreAndPostConditionHelper {
                 getLAAReferenceForOffenceJsonBody(statusCode));
     }
 
-    public static Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) throws IOException {
-        return postCommandWithUserId(getWriteUrl(String.format("/laaReference/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
-                "application/vnd.progression.command.record-laareference-for-offence+json",
-                getLAAReferenceForOffenceJsonBodyWithStatus(statusCode, statusDescription), userId);
+
+    public static javax.ws.rs.core.Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) throws IOException {
+        final RestClient restClient = new RestClient();
+        final javax.ws.rs.core.Response response =
+                restClient.postCommand(getWriteUrl(String.format("/laaReference/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
+                        "application/vnd.progression.command.record-laareference-for-offence+json",
+                        getLAAReferenceForOffenceJsonBodyWithStatus(statusCode, statusDescription),
+                        createHttpHeaders(userId));
+        return response;
     }
 
     public static javax.ws.rs.core.Response receiveRepresentationOrder(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String laaContractNumber, final String userId) throws IOException {

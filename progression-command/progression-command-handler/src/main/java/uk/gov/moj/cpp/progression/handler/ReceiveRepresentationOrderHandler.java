@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.LaaReference;
@@ -12,7 +13,6 @@ import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
@@ -20,7 +20,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
-import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
+import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
@@ -46,9 +46,6 @@ public class ReceiveRepresentationOrderHandler {
 
     @Inject
     private AggregateService aggregateService;
-
-    @Inject
-    private Enveloper enveloper;
 
     @Inject
     LegalStatusReferenceDataService legalStatusReferenceDataService;
@@ -111,7 +108,7 @@ public class ReceiveRepresentationOrderHandler {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(
                 events
-                        .map(enveloper.withMetadataFrom(jsonEnvelope)));
+                        .map(toEnvelopeWithMetadataFrom(jsonEnvelope)));
     }
 
 }

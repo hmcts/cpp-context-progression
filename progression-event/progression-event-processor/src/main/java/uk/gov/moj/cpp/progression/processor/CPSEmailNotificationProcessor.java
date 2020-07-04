@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import lombok.extern.slf4j.Slf4j;
+import static java.lang.Boolean.parseBoolean;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -14,7 +17,9 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -26,8 +31,6 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,9 +43,20 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class CPSEmailNotificationProcessor {
+
+    private static final String PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED = "progression.command.handler.disassociate-defence-organisation";
+    private static final String IS_LAA = "isLAA";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -62,16 +76,26 @@ public class CPSEmailNotificationProcessor {
     @Inject
     private Requester requester;
 
+    @Inject
+    private Sender sender;
+
     @Handles("public.defence.defence-organisation-disassociated")
     public void processDisassociatedEmailNotification(final JsonEnvelope jsonEnvelope) {
         final JsonObject requestJson = jsonEnvelope.payloadAsJsonObject();
+        final boolean isLAA = parseBoolean(requestJson.containsKey(IS_LAA) ? requestJson.get(IS_LAA).toString() : "false");
+
+        if(!isLAA){
+            final Metadata metadata = metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED).build();
+            sender.send(envelopeFrom(metadata, removeProperty(requestJson, IS_LAA)));
+        }
+
         populateCPSNotification(jsonEnvelope, requestJson, EmailTemplateType.DISASSOCIATION);
     }
 
     @Handles("public.defence.event.record-instruction-details")
     public void processInstructedEmailNotification(final JsonEnvelope jsonEnvelope) {
         final JsonObject requestJson = jsonEnvelope.payloadAsJsonObject();
-        final boolean isFirstInstruction = Boolean.parseBoolean(requestJson.get("firstInstruction").toString());
+        final boolean isFirstInstruction = parseBoolean(requestJson.get("firstInstruction").toString());
         if(isFirstInstruction) {
             populateCPSNotification(jsonEnvelope,requestJson,EmailTemplateType.INSTRUCTION);
         }
@@ -252,6 +276,16 @@ public class CPSEmailNotificationProcessor {
                 .filter(e -> defendantId.toString().equals(e.getString("id")))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
+    }
+
+    private JsonObject removeProperty(final JsonObject origin, final String key){
+        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
+            if (!entry.getKey().equals(key)){
+                builder.add(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder.build();
     }
 
 }

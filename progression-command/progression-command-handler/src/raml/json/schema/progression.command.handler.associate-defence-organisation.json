@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json",
+  "id": "http://justice.gov.uk/progression/courts/associate-defence-organisation.json",
   "type": "object",
   "properties": {
-    "userId": {
+    "caseId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "defendantId": {
@@ -12,22 +12,34 @@
     "organisationId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "caseId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    "laaContractNumber": {
+      "type": "string"
     },
-    "endDate": {
+    "representationType": {
+      "type": "string",
+      "enum": [
+        "REPRESENTATION_ORDER",
+        "REPRESENTATION_ORDER_APPLIED_FOR",
+        "COURT_APPOINTED",
+        "PRO_BONO",
+        "PRIVATE"
+      ]
+    },
+    "startDate": {
       "type": "string",
       "format": "date-time"
     },
-    "isLAA" : {
-      "type": "boolean"
+    "organisationName": {
+      "type": "string"
     }
   },
   "required": [
-    "userId",
+    "caseId",
     "defendantId",
     "organisationId",
-    "caseId",
-    "endDate"
-  ]
+    "representationType",
+    "startDate",
+    "organisationName"
+  ],
+  "additionalProperties": true
 }

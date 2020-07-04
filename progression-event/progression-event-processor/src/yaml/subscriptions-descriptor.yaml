@@ -269,4 +269,7 @@ subscriptions_descriptor:
         - name: public.defence.defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
 
+        - name: public.defence.defence-organisation-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.event.defence-organisation-associated.json
+
       event_source_name: public.event.source

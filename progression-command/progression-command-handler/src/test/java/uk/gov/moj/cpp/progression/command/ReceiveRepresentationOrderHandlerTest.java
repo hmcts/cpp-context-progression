@@ -40,7 +40,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
-import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
+import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.DefendantLaaAssociated;

@@ -8,23 +8,24 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.command.handler.service.payloads.OrganisationDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserDetails;
 import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
+import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
+
+import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,12 @@ public class UsersGroupService {
     private static final String ORGANISATION_NAME = "organisationName";
     private static final String ORGANISATION_TYPE = "organisationType";
     private static final String LAA_CONTRACT_NUMBER = "laaContractNumber";
+    private static final String ADDRESS_1 = "addressLine1";
+    private static final String ADDRESS_2 = "addressLine2";
+    private static final String ADDRESS_3 = "addressLine3";
+    private static final String ADDRESS_4 = "addressLine4";
+    private static final String POSTCODE = "addressPostcode";
+    private static final String EMAIL = "email";
 
     private static final String GROUPS = "groups";
     private static final String GROUP_ID = "groupId";
@@ -47,12 +54,19 @@ public class UsersGroupService {
     @Inject
     @ServiceComponent(COMMAND_HANDLER)
     private Requester requester;
-    @Inject
-    private Enveloper enveloper;
 
+    private static boolean notFound(JsonEnvelope response) {
+        final JsonValue payload = response.payload();
 
+        return payload == null
+                || payload.equals(JsonValue.NULL);
+    }
 
-    protected JsonEnvelope getOrganisationDetailsForUser(final Envelope<?> envelope) {
+    private static boolean emptyPayload(JsonObject response) {
+        return isNull(response) || response.isEmpty();
+    }
+
+    protected Envelope<JsonObject> getOrganisationDetailsForUser(final Envelope<?> envelope) {
 
         final String userId = envelope.metadata().userId()
                 .orElseThrow(() -> new IllegalStateException(USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP));
@@ -61,8 +75,13 @@ public class UsersGroupService {
         final Envelope<JsonObject> requestEnvelope = envelop(getOrganisationForUserRequest)
                 .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
         LOGGER.info("Payload from envelope :: {}", requestEnvelope.payload());
-        final JsonEnvelope usersAndGroupsRequestEnvelope = envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
-        return requester.requestAsAdmin(usersAndGroupsRequestEnvelope);
+
+        return requester.requestAsAdmin(envelopeFrom(
+                metadataFrom(requestEnvelope.metadata()),
+                requestEnvelope.payload()
+                ), JsonObject.class
+        );
+
     }
 
     protected Envelope<UserDetails> getUserDetailsAsAdmin(final Envelope<?> envelope) {
@@ -84,13 +103,33 @@ public class UsersGroupService {
         return response.payloadAsJsonObject();
     }
 
-    protected JsonEnvelope getOrganisationForLaaContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
+    protected Envelope<JsonObject> getOrganisationForLaaContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
 
-        final JsonObject getOrganisationRequest = Json.createObjectBuilder().add(LAA_CONTRACT_NUMBER, laaContractNumber).build();
-        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getOrganisationRequest)
-                .withName("usersgroups.get-organisation-details-by-laaContractNumber").withMetadataFrom(envelope);
-        final JsonEnvelope organisationRequestEnvelope = JsonEnvelope.envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
-        return requester.requestAsAdmin(organisationRequestEnvelope);
+        final JsonObject orgDetailsJsonEnvelope = Json.createObjectBuilder().add(LAA_CONTRACT_NUMBER, laaContractNumber).build();
+
+        return requester.requestAsAdmin(envelopeFrom(
+                metadataFrom(envelope.metadata()).withName("usersgroups.get-organisation-details-by-laaContractNumber"),
+                orgDetailsJsonEnvelope
+                ), JsonObject.class
+        );
+
+    }
+
+    protected JsonObject getOrganisationForOrganisationId(final Envelope<?> envelope, final String organisationId) {
+
+        final JsonObject orgDetailsJsonEnvelope = Json.createObjectBuilder().add(ORGANISATION_ID, organisationId).build();
+
+        final Envelope<JsonObject> jsonResultEnvelope = requester.requestAsAdmin(envelopeFrom(
+                metadataFrom(envelope.metadata()).withName("usersgroups.get-organisation-details"),
+                orgDetailsJsonEnvelope
+                ), JsonObject.class
+        );
+
+        if(isNull(jsonResultEnvelope) || emptyPayload(jsonResultEnvelope.payload())){
+            return null;
+        }
+
+        return jsonResultEnvelope.payload();
     }
 
     private void checkGroupExistsForUser(final String userId, final JsonEnvelope response) {
@@ -107,35 +146,41 @@ public class UsersGroupService {
         return ofNullable(response.payload());
     }
 
-    public OrganisationDetails getUserOrgDetails(final Envelope<?> envelope) {
-        final JsonEnvelope orgResponse = getOrganisationDetailsForUser(envelope);
-        if (notFound(orgResponse)) {
+    public OrganisationDetails getOrganisationDetailsForLAAContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
+        final Envelope<JsonObject> jsonResultEnvelope = getOrganisationForLaaContractNumber(envelope, laaContractNumber);
+
+        if (isNull(jsonResultEnvelope) || emptyPayload(jsonResultEnvelope.payload())) {
             return OrganisationDetails.newBuilder().build();
         }
-        return OrganisationDetails.of(fromString(orgResponse.payloadAsJsonObject().getString(ORGANISATION_ID)),
-                orgResponse.payloadAsJsonObject().getString(ORGANISATION_NAME),
-                orgResponse.payloadAsJsonObject().getString(ORGANISATION_TYPE));
+
+        return OrganisationDetails.of(fromString(jsonResultEnvelope.payload().getString(ORGANISATION_ID)),
+                jsonResultEnvelope.payload().getString(ORGANISATION_NAME),
+                jsonResultEnvelope.payload().getString(ORGANISATION_TYPE));
+
     }
 
-    public OrganisationDetails getOrganisationDetailsForLAAContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
-        final JsonEnvelope orgResponse = getOrganisationForLaaContractNumber(envelope, laaContractNumber);
+    public OrganisationDetails getOrganisationDetailsForOrganisationId(final Envelope<?> envelope, final String organisationId) {
+        final JsonObject orgResponse = getOrganisationForOrganisationId(envelope, organisationId);
         if (emptyPayload(orgResponse)) {
             return OrganisationDetails.newBuilder().build();
         }
-        return OrganisationDetails.of(fromString(orgResponse.payloadAsJsonObject().getString(ORGANISATION_ID)),
-                orgResponse.payloadAsJsonObject().getString(ORGANISATION_NAME),
-                orgResponse.payloadAsJsonObject().getString(ORGANISATION_TYPE));
-
+        return OrganisationDetails.newBuilder()
+                .withAddressLine1(orgResponse.getString(ADDRESS_1))
+                .withAddressLine2(getOptionalJsonString(orgResponse, ADDRESS_2))
+                .withAddressLine3(getOptionalJsonString(orgResponse, ADDRESS_3))
+                .withAddressLine4(orgResponse.getString(ADDRESS_4))
+                .withAddressPostcode(orgResponse.getString(POSTCODE))
+                .withEmail(orgResponse.getString(EMAIL))
+                .withId(fromString(orgResponse.getString(ORGANISATION_ID)))
+                .withLaaContractNumber(getOptionalJsonString(orgResponse, LAA_CONTRACT_NUMBER))
+                .withName(orgResponse.getString(ORGANISATION_NAME))
+                .withPhoneNumber(orgResponse.getString(ORGANISATION_NAME))
+                .withType(orgResponse.getString(ORGANISATION_TYPE))
+                .build();
     }
 
-    public JsonObject getOrganisationDetailWithAddress(final Envelope<?> envelope) {
-        final JsonEnvelope orgResponse = getOrganisationDetailsForUser(envelope);
-        if (notFound(orgResponse)) {
-            return null;
-        }
-        return orgResponse.payloadAsJsonObject();
-
-
+    private String getOptionalJsonString(final JsonObject jsonObject, final String fieldName) {
+        return jsonObject.containsKey(fieldName) ? jsonObject.getString(fieldName) : null;
     }
 
     public List<UserGroupDetails> getUserGroupsForUser(final Envelope<?> envelope) {
@@ -145,21 +190,5 @@ public class UsersGroupService {
                 .stream()
                 .map(o -> new UserGroupDetails(fromString(o.getString(GROUP_ID)), o.getString(GROUP_NAME)))
                 .collect(toList());
-    }
-
-    private static boolean notFound(JsonEnvelope response) {
-        final JsonValue payload = response.payload();
-
-        return payload == null
-                || payload.equals(JsonValue.NULL) ;
-    }
-
-    private static boolean emptyPayload(JsonEnvelope response) {
-        if (isNull(response) || response.payload().equals(JsonValue.NULL)) {
-            return Boolean.TRUE;
-        } else {
-            final JsonObject payload = response.payloadAsJsonObject();
-            return payload.isEmpty();
-        }
     }
 }

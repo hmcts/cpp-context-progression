@@ -66,35 +66,18 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
 
     private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationAssociation = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
-
+    private static final String NO_LAA_CONTRACT_NUMBER_REGISTER = "LAA12345";
     final String userId = UUID.randomUUID().toString();
     final String userId2 = UUID.randomUUID().toString();
-
-    String organisationId1;
-    String organisationId2;
     final String organisationName1 = "Smith Associates Ltd.";
     final String organisationName2 = "Greg Associates Ltd.";
-    private String caseId;
-    private String defendantId;
     private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private final String statusCode = "G2";
     private final String laaContractNumber = "LAA3456";
-    private static final String NO_LAA_CONTRACT_NUMBER_REGISTER = "LAA12345";
-
-
-    @Before
-    public void setUp() {
-        organisationId1 = UUID.randomUUID().toString();
-        organisationId2 = UUID.randomUUID().toString();
-        caseId = randomUUID().toString();
-        defendantId = randomUUID().toString();
-        ReferenceDataStub.stubLegalStatus("/restResource/ref-data-legal-statuses.json", statusCode);
-        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, organisationId2, organisationName2);
-        stubGetOrganisationQuery(userId, organisationId1, organisationName1);
-        stubGetOrganisationDetails(organisationId1, organisationName1);
-        stubEnableAllCapabilities();
-    }
-
+    String organisationId1;
+    String organisationId2;
+    private String caseId;
+    private String defendantId;
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -116,7 +99,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         assertThat(request.getString("laaContractNumber"), is(laaContractNumber));
         assertThat(request.getBoolean("isAssociatedByLAA"), is(isAssociation));
     }
-
 
     private static void verifyInMessagingQueueFoDefenceDisassociation(String defendantId, String prosecutionCaseId, String organisationId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForDefenceOrganisationDisassociation);
@@ -157,6 +139,19 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         assertThat(message.isPresent(), is(true));
     }
 
+    @Before
+    public void setUp() {
+        organisationId1 = UUID.randomUUID().toString();
+        organisationId2 = UUID.randomUUID().toString();
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        ReferenceDataStub.stubLegalStatus("/restResource/ref-data-legal-statuses.json", statusCode);
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, organisationId2, organisationName2);
+        stubGetOrganisationQuery(userId, organisationId1, organisationName1);
+        stubGetOrganisationDetails(organisationId1, organisationName1);
+        stubEnableAllCapabilities();
+    }
+
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne() throws Exception {
         //Create prosecution case
@@ -193,6 +188,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("Granted")),
                         withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
+
                 ));
 
         pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
@@ -333,7 +329,28 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDate", is("2019-07-15")),
                         withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("Granted")),
                         withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
+                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true)),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.applicationReference", equalTo("AB746921")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", equalTo(laaContractNumber)),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.address.address1", equalTo("address1")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.address.address2", equalTo("address2")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.address.address3", equalTo("address3")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.address.address4", equalTo("address4")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.address.address5", equalTo("address5")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.address.postcode", equalTo("GIR0AA")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.contact.home", equalTo("12346")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.contact.mobile", equalTo("7111133444")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.contact.primaryEmail", equalTo("test@hmcts.net")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.contact.secondaryEmail", equalTo("test@hmcts.net")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.contact.work", equalTo("12345")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.contact.fax", equalTo("1234")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.incorporationNumber", equalTo("7689")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.registeredCharityNumber", equalTo("7654")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.name", equalTo("Smith Ltd")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", equalTo("REPRESENTATION_ORDER")),
+                        withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.isAssociatedByLAA", equalTo(true))
+
+
                 ));
 
         pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
@@ -364,7 +381,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getJsonArray("defendants").getJsonObject(0)
                 .getString("legalAidStatus"), equalTo("Granted"));
     }
-
 
 
     @Test

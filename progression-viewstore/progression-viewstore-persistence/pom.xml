@@ -14,7 +14,7 @@
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>persistence-deltaspike</artifactId>
         </dependency>
@@ -27,7 +27,7 @@
             <artifactId>common</artifactId>
         </dependency>
         <!-- Progression Dependencies -->
-       <dependency>
+        <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-domain-message</artifactId>
             <version>${project.version}</version>
@@ -38,7 +38,7 @@
         </dependency>
 
         <!-- Test Dependencies -->
-       <dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

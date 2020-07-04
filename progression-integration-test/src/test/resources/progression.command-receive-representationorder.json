@@ -6,24 +6,24 @@
   "defenceOrganisation": {
     "laaContractNumber": "RANDOM_LAA_CONTRACT_NUMBER",
     "organisation" : {
-      "name": "a",
-      "incorporationNumber": "a",
-      "registeredCharityNumber": "a",
+      "name": "Smith Ltd",
+      "incorporationNumber": "7689",
+      "registeredCharityNumber": "7654",
       "address": {
-        "address1": "a",
-        "address2": "a",
-        "address3": "a",
-        "address4": "a",
-        "address5": "a",
+        "address1": "address1",
+        "address2": "address2",
+        "address3": "address3",
+        "address4": "address4",
+        "address5": "address5",
         "postcode": "GIR0AA"
       },
       "contact": {
-        "home": " ",
-        "work": "a",
-        "mobile": " ",
-        "primaryEmail": "!.!@00.00",
-        "secondaryEmail": "!.!@00.00",
-        "fax": "a"
+        "home": "12346",
+        "work": "12345",
+        "mobile": "7111133444",
+        "primaryEmail": "test@hmcts.net",
+        "secondaryEmail": "test@hmcts.net",
+        "fax": "1234"
       }
     }
   }

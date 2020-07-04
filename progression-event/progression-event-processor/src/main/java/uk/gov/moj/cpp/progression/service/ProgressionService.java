@@ -217,6 +217,7 @@ public class ProgressionService {
                 .withOffences(matchedDefendantOffence)
                 .withAssociatedPersons(matchedDefendant.getAssociatedPersons())
                 .withDefenceOrganisation(matchedDefendant.getDefenceOrganisation())
+                .withAssociatedDefenceOrganisation(matchedDefendant.getAssociatedDefenceOrganisation())
                 .withLegalEntityDefendant(matchedDefendant.getLegalEntityDefendant())
                 .withMitigation(matchedDefendant.getMitigation())
                 .withMitigationWelsh(matchedDefendant.getMitigationWelsh())

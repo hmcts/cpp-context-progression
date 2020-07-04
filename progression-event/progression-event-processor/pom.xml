@@ -73,6 +73,11 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>common-core-domain</artifactId>
+            <version>${coredomain.version}</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
