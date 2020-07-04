@@ -12,7 +12,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -164,7 +163,7 @@ public class HearingResultedIT extends AbstractIT {
                         .build());
 
         pollForApplicationStatus(applicationId, "LISTED");
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
+
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingWithStandAloneApplicationJsonObject( "public.hearing.resulted-with-standalone-application.json",
                         applicationId, hearingId, caseId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
