@@ -1,12 +1,15 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -40,9 +43,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.restassured.path.json.JsonPath;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,11 +60,13 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
+    final static long timeoutInMillis = 10000;
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumer(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
+    private static MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static MessageConsumer messageConsumerClientPublicForRecordLAAReference;
+    private static MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated;
+    private static MessageConsumer messageConsumerClientPublicForCaseDefendantChanged;
+    private static MessageConsumer multipleMessageConsumerClientPublicForCaseDefendantChanged;
 
     private static final String statusCode = "G2";
     private static final String userId = UUID.randomUUID().toString();
@@ -75,7 +83,7 @@ public class DefenceFlowIT extends AbstractIT {
 
 
     @BeforeClass
-    public static void setUp() {
+    public static void setUpClass() {
         ReferenceDataStub.stubLegalStatus("/restResource/ref-data-legal-statuses.json", statusCode);
         stubEnableAllCapabilities();
         stubGetOrganisationDetailForLAAContractNumber(laaContractNumber,organisationId, organisationName);
@@ -87,12 +95,26 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     @AfterClass
-    public static void tearDown() throws JMSException {
+    public static void tearDownClass() throws JMSException {
         messageProducerClientPublic.close();
+    }
+
+    @Before
+    public void setUp() {
+        messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
+        messageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumer(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
+        multipleMessageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumerForMultipleSelectors(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
+    }
+
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerClientPublicForRecordLAAReference.close();
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
         messageConsumerClientPublicForCaseDefendantChanged.close();
+        multipleMessageConsumerClientPublicForCaseDefendantChanged.close();
     }
+
 
     @Test
     public void shouldSuccessfullyDisassociateDefenceOrganisationFromDefenceWhenReceiveRepresentationOrderFirst () throws Exception {
@@ -146,7 +168,7 @@ public class DefenceFlowIT extends AbstractIT {
         defenceOrganisationMatcher = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber2)));
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, defenceOrganisationMatcher));
-        verifyInMessagingQueueForCaseDefendantChanged(laaContractNumber2);
+        assertThat(isPublicCaseDefendantChangedEventExists(laaContractNumber2), is(true));
 
     }
 
@@ -224,6 +246,31 @@ public class DefenceFlowIT extends AbstractIT {
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("defendant").getJsonObject("associatedDefenceOrganisation").getJsonObject("defenceOrganisation").getJsonString("laaContractNumber").getString(), is(laaContractNumber));
     }
+
+    private static boolean isPublicCaseDefendantChangedEventExists(final String laaContractNumber) {
+
+        final long startTime = System.currentTimeMillis();
+        JsonPath message;
+        do {
+            message = QueueUtil.retrieveMessage(multipleMessageConsumerClientPublicForCaseDefendantChanged);
+
+            if (message != null) {
+                if(isJson(allOf(
+                        withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),
+                        withJsonPath("$.defendant.associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber))
+                )).matches(message.prettify())){
+                    return true;
+                }
+            }
+
+        } while (timeoutInMillis > (System.currentTimeMillis() - startTime));
+
+        return false;
+    }
+
+
+
+
 
 
 
