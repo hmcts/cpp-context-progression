@@ -6,10 +6,10 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertTrue;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
@@ -63,25 +63,23 @@ import javax.json.JsonValue;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Ignore
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     // This test is ignored and should be refactored.
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
-    private static final MessageConsumer messageConsumerClientPublic = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private MessageConsumer messageConsumerClientPublic;
+    private MessageProducer messageProducerClientPublic;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerClientPublic.close();
         messageProducerClientPublic.close();
     }
@@ -93,17 +91,19 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("$.hearingAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.hearingAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
+                                withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
+                                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
                         )));
     }
 
     @Before
     public void setUp() {
+        messageConsumerClientPublic = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+        messageProducerClientPublic = publicEvents.createProducer();
     }
 
     @Test
-    public void shouldInvokeDefentantsAddedToCaseAndListHearingRequestEvents() throws Exception {
+    public void shouldInvokeDefendantsAddedToCaseAndListHearingRequestEvents() throws Exception {
 
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
@@ -130,7 +130,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInvokeDefentantsNotAddedToCaseAndListHearingRequestEvents() throws Exception {
+    public void shouldInvokeDefendantsNotAddedToCaseAndListHearingRequestEvents() throws Exception {
 
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
@@ -227,7 +227,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         Matcher[] matchers = {
                 withJsonPath("$.prosecutionCase.defendants[?(@.id=='" + defendantId + "')]", notNullValue()),
-                withJsonPath("$.prosecutionCase.defendants[?(@.id=='" + defendantId + "')].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[?(@.id=='" + defendantId + "')].prosecutionCaseId", hasItem(caseId)),
         };
 
         pollProsecutionCasesProgressionFor(caseId, matchers);
