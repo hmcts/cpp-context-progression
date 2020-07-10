@@ -6,10 +6,10 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertTrue;
-import static org.junit.matchers.JUnitMatchers.hasItem;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
@@ -47,7 +47,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +59,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -72,7 +72,6 @@ import org.slf4j.LoggerFactory;
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
-    // This test is ignored and should be refactored.
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
     private MessageConsumer messageConsumerClientPublic;
@@ -212,13 +211,11 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForDefendantsAddedToCourtHearings(final String caseId, final String defendantId) {
-        final Optional<JsonObject> message =
-                QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublic);
-        assertTrue(message.isPresent());
-        assertThat(message.get(), isJson(withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].prosecutionCaseId",
-                Matchers.hasToString(Matchers.containsString(caseId)))));
-        assertThat(message.get(), isJson(withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].defendantId",
-                Matchers.hasToString(Matchers.containsString(defendantId)))));
+        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerClientPublic, isJson(Matchers.allOf(
+                withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].defendantId", is(defendantId))
+        )));
+        assertNotNull(message);
     }
 
     private void verifyDefendantsAddedInViewStore(final String caseId, final String defendantId) {
@@ -301,9 +298,9 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .withListDefendantRequests(Arrays.asList(listDefendantRequest2))
+                .withListDefendantRequests(Collections.singletonList(listDefendantRequest2))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
-                .withEstimateMinutes(new Integer(20))
+                .withEstimateMinutes(20)
                 .build();
 
         return AddDefendantsToCourtProceedings

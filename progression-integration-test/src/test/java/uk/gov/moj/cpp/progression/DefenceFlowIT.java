@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -16,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
@@ -43,7 +45,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.jayway.restassured.path.json.JsonPath;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -60,7 +61,6 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
-    final static long timeoutInMillis = 10000;
 
     private static MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static MessageConsumer messageConsumerClientPublicForRecordLAAReference;
@@ -249,30 +249,11 @@ public class DefenceFlowIT extends AbstractIT {
 
     private static boolean isPublicCaseDefendantChangedEventExists(final String laaContractNumber) {
 
-        final long startTime = System.currentTimeMillis();
-        JsonPath message;
-        do {
-            message = QueueUtil.retrieveMessage(multipleMessageConsumerClientPublicForCaseDefendantChanged);
-
-            if (message != null) {
-                if(isJson(allOf(
-                        withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),
-                        withJsonPath("$.defendant.associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber))
-                )).matches(message.prettify())){
-                    return true;
-                }
-            }
-
-        } while (timeoutInMillis > (System.currentTimeMillis() - startTime));
-
-        return false;
+        return nonNull(retrieveMessage(multipleMessageConsumerClientPublicForCaseDefendantChanged, isJson(allOf(
+                    withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),
+                    withJsonPath("$.defendant.associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber))
+            ))));
     }
-
-
-
-
-
-
 
     private JsonObject createPayloadForDisassociation(final boolean isLAA) {
         return Json.createObjectBuilder()

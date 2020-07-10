@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.OptionalPresent.ifPresent;
 
@@ -23,6 +24,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
 import org.apache.activemq.command.ActiveMQTextMessage;
+import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,7 @@ public class QueueUtil {
     private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://" + HOST + ":61616");
 
     private static final long RETRIEVE_TIMEOUT = 90000;
+    private static final long MESSAGE_RETRIEVE_TRIAL_TIMEOUT = 10000;
 
     private final Session session;
 
@@ -93,6 +96,20 @@ public class QueueUtil {
         } catch (final JMSException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static JsonPath retrieveMessage(final MessageConsumer consumer, final Matcher matchers) {
+        final long startTime = System.currentTimeMillis();
+        JsonPath message;
+        do {
+            message = retrieveMessage(consumer, RETRIEVE_TIMEOUT).orElse(null);
+            if (ofNullable(message).isPresent()) {
+                if(matchers.matches(message.prettify())){
+                    return message;
+                }
+            }
+        } while (MESSAGE_RETRIEVE_TRIAL_TIMEOUT > (System.currentTimeMillis() - startTime));
+        return null;
     }
 
     public static JsonPath retrieveMessage(final MessageConsumer consumer) {
