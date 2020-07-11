@@ -1,0 +1,1358 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01",
+      "lja": {
+        "ljaCode": 2577,
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "code": "B01LY00"
+    },
+    "defendantReferralReasons": [],
+    "hasSharedResults": true,
+    "hearingDays": [],
+    "hearingLanguage": "ENGLISH",
+    "id": "1828f356-f746-4f2d-932b-79ef2df95c80",
+    "judiciary": [],
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "SJP_REFERRAL",
+        "defendants": [
+          {
+            "id": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+            "numberOfPreviousConvictionsCited": 99,
+            "offences": [
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "a154d828-1234-47f0-b8d5-e81227831d94",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "a154d828-5678-47f0-b8d5-e81227831d95",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "bb7e8c03-9012-4024-ad65-2f220de45f2c",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "a154d828-3456-47f0-b8d5-e81227831d97",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "Flat 1",
+                  "address2": "1 Old Road",
+                  "address3": "London",
+                  "address4": "Merton",
+                  "postcode": "SW99 1AA"
+                },
+                "contact": {
+                },
+                "dateOfBirth": "1965-12-27",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                },
+                "firstName": "Fred",
+                "gender": "MALE",
+                "lastName": "Smith",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+            "masterDefendantId": "dba49c16-13d9-4ee0-98de-9b2d78fc8686"
+          },
+          {
+            "id": "e06f1327-0a23-4749-b61e-d4e901365fe2",
+            "numberOfPreviousConvictionsCited": 99,
+            "offences": [
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-API-TEST-1228",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "9d81ce7b-78b0-4853-9d21-f38a7b609207",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "bb7e8c03-3046-4024-ad65-2f220de45f2c",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-API-TEST-1228",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "6b45095a-5da8-4829-8644-d6f6ff0bb691",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "Flat 1",
+                  "address2": "1 Old Road",
+                  "address3": "London",
+                  "address4": "Merton",
+                  "postcode": "SW99 1AA"
+                },
+                "contact": {
+                },
+                "dateOfBirth": "1965-12-27",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                },
+                "firstName": "Fred",
+                "gender": "MALE",
+                "lastName": "Smith",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a"
+          },
+          {
+            "id": "aeb6328d-19d4-49e8-8426-290f096b81dc",
+            "numberOfPreviousConvictionsCited": 99,
+            "offences": [
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "10df5e52-0f18-4021-a99f-c354b93cc2b0",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "70165fe7-e8af-4465-af41-56a4304c9adc",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-API-TEST-1228",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "68a591be-981f-467b-8ac8-3c2b3b32484e",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-API-TEST-1228",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              },
+              {
+                "allocationDecision": {},
+                "chargeDate": "2018-08-01",
+                "convictionDate": "2019-11-14",
+                "count": 1,
+                "id": "c7f865bd-3057-4c9f-9db4-77caf452e5e3",
+                "indicatedPlea": {},
+                "judicialResults": [
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  },
+                  {
+                    "judicialResultId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                    "judicialResultTypeId": "cf70d7ed-8049-4fe2-b02f-5a23b5e39184",
+                    "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+                    "label": "Instalments only",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "isConvictedResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "orderedDate": "2020-01-20",
+                    "category": "Fine",
+                    "resultText": "Instalments only",
+                    "terminatesOffenceProceedings": "",
+                    "isLifeDuration": false,
+                    "isPublishedAsAPrompt": false,
+                    "publishedForNows": true,
+                    "isExcludedFromResults": false,
+                    "isAlwaysPublished": true,
+                    "isUrgent": false,
+                    "isD20": false
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-API-TEST-1228",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2019-11-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "FirstName",
+                    "lastName": "LastName",
+                    "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "pleaDate": "2019-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2018-07-02",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "PS90010",
+                    "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                    "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                  },
+                  "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                  "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                  "verdictDate": "2019-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                  }
+                },
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "Flat 1",
+                  "address2": "1 Old Road",
+                  "address3": "London",
+                  "address4": "Merton",
+                  "postcode": "SW99 1AA"
+                },
+                "contact": {
+                },
+                "dateOfBirth": "1965-12-27",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                },
+                "firstName": "Fred",
+                "gender": "MALE",
+                "lastName": "Smith",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a"
+          }
+        ],
+        "id": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "initiationCode": "J",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+          "prosecutionAuthorityReference": "TFL4359536"
+        },
+        "statementOfFacts": "Prosecution Facts"
+      }
+    ],
+    "type": {
+      "description": "Sentence",
+      "id": "c6d76309-c912-436b-a21b-a4c4450bc052"
+    }
+  },
+  "sharedTime": "2019-11-13T17:16:48.048Z"
+}

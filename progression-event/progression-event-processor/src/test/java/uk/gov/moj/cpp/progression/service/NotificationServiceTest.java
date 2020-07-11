@@ -126,7 +126,7 @@ public class NotificationServiceTest {
 
         doNothing().when(systemIdMapperService).mapNotificationIdToCaseId(caseId, notificationId);
 
-        notificationService.print(envelope, notificationId, caseId, null, materialId);
+        notificationService.sendLetter(envelope, notificationId, caseId, null, materialId, false);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.print"),

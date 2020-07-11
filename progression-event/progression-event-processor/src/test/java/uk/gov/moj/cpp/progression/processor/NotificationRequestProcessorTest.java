@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -14,6 +15,9 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 
 import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,26 +56,55 @@ public class NotificationRequestProcessorTest {
     }
 
 
-    @SuppressWarnings("deprecation")
     @Test
-    public void shouldPrintResultOrder() throws Exception {
+    public void shouldPrintDocument() throws Exception {
 
         final String clientId = randomUUID().toString();
         final UUID notificationId = randomUUID();
 
         final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("resulting.events.result-order-print-requested")
+                metadataWithRandomUUID("progression.event.print-requested")
                         .withClientCorrelationId(clientId),
                 createObjectBuilder()
                         .add("materialId", materialId.toString())
                         .add("notificationId", notificationId.toString())
                         .add("caseId", caseId.toString())
+                        .add("postage", false)
                         .build());
 
         notificationRequestProcessor.printDocument(event);
 
-        verify(notificationNotifyService).sendLetterNotification(event, notificationId, materialId);
+        verify(notificationNotifyService).sendLetterNotification(event, notificationId, materialId, false);
         verify(notificationService).recordPrintRequestAccepted(event);
+    }
+
+    @Test
+    public void shouldEmailDocument() {
+
+        final String clientId = randomUUID().toString();
+        final UUID notificationId = randomUUID();
+        final JsonObject notification = createObjectBuilder()
+                .add("materialId", materialId.toString())
+                .add("notificationId", notificationId.toString())
+                .add("caseId", caseId.toString())
+                .add("postage", false)
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("notifications", createArrayBuilder()
+                        .add(notification)
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.email-requested")
+                        .withClientCorrelationId(clientId), payload
+        );
+
+        notificationRequestProcessor.emailDocument(event);
+
+        verify(notificationNotifyService).sendEmailNotification(event, notification);
+        verify(notificationService).recordEmailRequestAccepted(event);
     }
 
 

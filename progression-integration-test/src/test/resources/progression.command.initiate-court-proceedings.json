@@ -106,6 +106,8 @@
                     "category": "FINAL",
                     "terminatesOffenceProceedings": false,
                     "lifeDuration" : false,
+                    "rollUpPrompts": false,
+                    "publishedForNows" : false,
                     "publishedAsAPrompt" : false,
                     "excludedFromResults" : false,
                     "alwaysPublished" : false,

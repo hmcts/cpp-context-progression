@@ -1,0 +1,96 @@
+[
+  {
+    "informantRegisterRequest":{
+      "registerDate":"2020-01-20",
+      "prosecutionAuthorityId":"31af405e-7b60-4dd8-a244-c24c2d3fa594",
+      "prosecutionAuthorityCode":"TFL",
+      "fileName":"InformantRegister_TFL_2020-01-20.csv",
+      "recipients":
+      [
+        {
+          "recipientName":"Fred Smith",
+          "emailAddress1":"test@hmcst.net",
+          "emailTemplateName":"email-template",
+          "emailAddress2":""
+        }
+      ]
+    ,
+      "hearingVenue":{
+        "courtHouse":"Name Of Court Center",
+        "ljaName":"Coventry and Warwickshire (Warwickshire) Magistrates' Court",
+
+        "courtSessions":[
+          {
+            "courtRoom":"Room name",
+            "hearingStartTime":"09:00:00",
+            "caseApplicationReferences":"TFL4359536",
+            "defendants":[
+              {
+                "name":"Fred Smith",
+                "dateOfBirth":"1999-12-27",
+                "arrestSummonsNumbers":[
+                  "ASN_1999999"
+                ],
+                "address1":"Flat 1",
+                "address2":"1 Old Road",
+                "address3":"London",
+                "address4":"Merton",
+                "results":[
+                  {
+                    "resultText":"Pay by date  ----> date"
+                  }
+                ],
+                "offences":[
+                  {
+                    "offenceCode":"PS90010",
+                    "orderIndex":1,
+                    "offenceTitle":"Public service vehicle - passenger use altered / defaced   ticket",
+                    "pleaValue":"NOT_GUILTY",
+                    "offenceResults":[
+                      {
+                        "resultText":"Pay by date----> date"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name":"Fred Daligarce",
+                "dateOfBirth":"1965-12-27",
+                "arrestSummonsNumbers":[
+                  "ASN_200000001"
+                ],
+                "address1":"Flat 1",
+                "address2":"1 Old Road",
+                "address3":"London",
+                "address4":"Merton",
+                "results":[
+                  {
+                    "resultText":"Pay by date----> date"
+                  }
+                ],
+                "offences":[
+                  {
+                    "offenceCode":"PS90010",
+                    "orderIndex":1,
+                    "offenceTitle":"Public service vehicle - passenger use altered / defaced   ticket",
+                    "pleaValue":"GUILTY",
+                    "offenceResults":[
+                      {
+                        "resultText":"Pay by date----> date"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+
+      }
+
+
+
+    }
+  }
+]

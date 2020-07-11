@@ -7,6 +7,78 @@
     </parent>
     <artifactId>progression-azure-functions</artifactId>
     <packaging>pom</packaging>
+    <properties>
+        <functionAppName>fa-ste-laa</functionAppName>
+        <functionAppRegion>uksouth</functionAppRegion>
+        <stagingDirectory>${project.build.directory}/azure-functions/${functionAppName}
+        </stagingDirectory>
+        <functionResourceGroup>RG-STE-LAA</functionResourceGroup>
+    </properties>
+    <profiles>
+        <profile>
+            <id>it-test</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>install node and npm</id>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                            </execution>
+                            <execution>
+                                <id>npm pre-integration-test</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <arguments>run func</arguments>
+                                    <workingDirectory>durable-functions</workingDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>npm integration-test</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <arguments>run it-test</arguments>
+                                    <workingDirectory>Integration-Test</workingDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>npm post integration-test</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <arguments>run post-func</arguments>
+                                    <workingDirectory>durable-functions</workingDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <nodeVersion>v10.14.1</nodeVersion>
+                            <downloadRoot>https://nodejs.org/dist/</downloadRoot>
+                            <installDirectory>durable-functions</installDirectory>
+                            <workingDirectory>durable-functions</workingDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>

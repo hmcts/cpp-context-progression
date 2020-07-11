@@ -30,6 +30,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class UsersGroupService {
     private static final String USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP = "User id Not Supplied for the UserGroups look up";
@@ -57,17 +58,17 @@ public class UsersGroupService {
 
         return Optional.of(DefenceOrganisationVO.builder()
                 .name(jsonObject.getString("organisationName", null))
-                .email(jsonObject.getString(EMAIL,null))
-                .phoneNumber(jsonObject.getString("phoneNumber",null))
+                .email(jsonObject.getString(EMAIL, null))
+                .phoneNumber(jsonObject.getString("phoneNumber", null))
                 .addressLine1(jsonObject.getString("addressLine1", null))
                 .addressLine2(jsonObject.getString("addressLine2", null))
                 .addressLine3(jsonObject.getString("addressLine3", null))
                 .addressLine4(jsonObject.getString("addressLine4", null))
                 .postcode(jsonObject.getString("addressPostcode", null))
                 .build());
-  }
+    }
 
-    public String  getGroupIdForDefenceLawyers() {
+    public String getGroupIdForDefenceLawyers() {
         final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(GROUP_NAME, "Defence Lawyers").build();
         final Metadata metadata = metadataBuilder().withName("usersgroups.get-group-details-byname")
                 .withClientCorrelationId(randomUUID().toString())
@@ -80,16 +81,17 @@ public class UsersGroupService {
     }
 
     public List<String> getEmailsForOrganisationIds(final JsonEnvelope envelope, final List<String> orgIds) {
-        final JsonObject orgIdsForEmails = createObjectBuilder().add("ids",  join(",", orgIds)).build();
+        final JsonObject orgIdsForEmails = createObjectBuilder().add("ids", join(",", orgIds)).build();
         final Envelope<JsonObject> requestEnvelope = envelop(orgIdsForEmails)
                 .withName("usersgroups.get-organisations-details-forids").withMetadataFrom(envelope);
         final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
         return response.payload().getJsonArray("organisations")
-                .stream().map(x -> (JsonObject)x)
+                .stream().map(x -> (JsonObject) x)
                 .filter(x -> x.containsKey(EMAIL))
                 .map(x -> x.getString(EMAIL))
                 .collect(Collectors.toList());
     }
+
     protected JsonObject getUserGroupsDetailsForUser(final JsonEnvelope envelope) {
 
         final String userId = envelope.metadata().userId()
@@ -110,6 +112,17 @@ public class UsersGroupService {
                 .collect(toList());
     }
 
+    public JsonObject getGroupsWithOrganisation(final JsonEnvelope event) {
+        final JsonObject payload = Json.createObjectBuilder().build();
+
+        final JsonEnvelope requestEnvelope = requester.request(envelop(payload)
+                .withName("usersgroups.get-groups-with-organisation")
+                .withMetadataFrom(event));
+
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+
+        return response.payload();
+    }
 
 }
 

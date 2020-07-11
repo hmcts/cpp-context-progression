@@ -42,7 +42,9 @@ public class NotificationRequestProcessor {
 
         final UUID materialId = fromString(eventPayload.getString(MATERIAL_ID));
 
-        notificationNotifyService.sendLetterNotification(event, notificationId, materialId);
+        final boolean postage = eventPayload.containsKey("postage") && eventPayload.getBoolean("postage");
+
+        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, postage);
 
         notificationService.recordPrintRequestAccepted(event);
     }

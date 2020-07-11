@@ -163,7 +163,7 @@ public class TestHelper {
         return Defendant.defendant()
                 .withId(defendantId)
                 .withOffences(offences)
-                .withJudicialResults(judicialResults)
+                .withDefendantCaseJudicialResults(judicialResults)
                 .build();
     }
 

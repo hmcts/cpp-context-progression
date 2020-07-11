@@ -7,7 +7,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "latestHearingJurisdictionType" : {
           "description": "The jurisdiction type of the latest hearing",
@@ -49,7 +49,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "name": {
           "type": "string"
@@ -112,7 +112,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "type": {
           "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
@@ -204,6 +204,14 @@
           "items": {
             "$ref": "http://justice.gov.uk/core/courts/companyRepresentative.json"
           }
+        },
+        "defendantJudicialResults": {
+          "description": "defendant level results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/defendantJudicialResult.json"
+          }
         }
       },
       "required": [
@@ -220,7 +228,7 @@
       "type": "object",
       "properties": {
         "defendantId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "defenceOrganisation": {
           "description": "The organisation details of the defence representation",
@@ -239,11 +247,11 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "offenceDefinitionId": {
           "description": "The identifier of the offence from reference data",
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "offenceCode": {
           "type": "string"
@@ -335,7 +343,7 @@
       "type": "object",
       "properties": {
         "defendantId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "defendantName": {
           "type": "string"
@@ -344,7 +352,7 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           }
         }
       }
@@ -353,7 +361,7 @@
       "type": "object",
       "properties": {
         "applicationId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "applicationType": {
           "description": "The organisation details of the defence representation",
@@ -419,7 +427,7 @@
           "type": "string"
         },
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "custody": {
           "type": "string"

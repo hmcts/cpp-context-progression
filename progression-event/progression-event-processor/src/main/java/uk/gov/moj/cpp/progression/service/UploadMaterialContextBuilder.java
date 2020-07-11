@@ -16,7 +16,8 @@ public class UploadMaterialContextBuilder {
     private UUID fileId;
     private UUID caseId;
     private UUID applicationId;
-    private boolean isRemotePrintingRequired;
+    private boolean firstClassLetter;
+    private boolean secondClassLetter;
     private List<EmailChannel> emailNotifications;
 
     public UploadMaterialContextBuilder setSender(final Sender sender) {
@@ -59,8 +60,13 @@ public class UploadMaterialContextBuilder {
         return this;
     }
 
-    public UploadMaterialContextBuilder setIsRemotePrintingRequired(final boolean isRemotePrintingRequired) {
-        this.isRemotePrintingRequired = isRemotePrintingRequired;
+    public UploadMaterialContextBuilder setFirstClassLetter(final boolean firstClassLetter) {
+        this.firstClassLetter = firstClassLetter;
+        return this;
+    }
+
+    public UploadMaterialContextBuilder setSecondClassLetter(final boolean secondClassLetter) {
+        this.secondClassLetter = secondClassLetter;
         return this;
     }
 
@@ -79,7 +85,8 @@ public class UploadMaterialContextBuilder {
         uploadMaterialContext.setMaterialId(materialId);
         uploadMaterialContext.setCaseId(caseId);
         uploadMaterialContext.setApplicationId(applicationId);
-        uploadMaterialContext.setRemotePrintingRequired(isRemotePrintingRequired);
+        uploadMaterialContext.setFirstClassLetter(firstClassLetter);
+        uploadMaterialContext.setSecondClassLetter(secondClassLetter);
         uploadMaterialContext.setEmailNotifications(emailNotifications);
         return uploadMaterialContext;
     }

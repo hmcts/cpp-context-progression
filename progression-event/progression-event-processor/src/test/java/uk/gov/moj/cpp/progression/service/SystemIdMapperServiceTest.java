@@ -42,6 +42,33 @@ public class SystemIdMapperServiceTest {
     private SystemIdMapperService systemIdMapperService;
 
     @Test
+    public void shouldReturnCppCaseIdForNotificationId() {
+        final UUID userId = randomUUID();
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
+        final UUID notificationId = randomUUID();
+        systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
+        verify(systemIdMapperClient).findBy(notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, SystemIdMapperService.CASE_TARGET_TYPE, userId);
+    }
+
+    @Test
+    public void shouldReturnApplicationIdForNotificationId() {
+        final UUID userId = randomUUID();
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
+        final UUID notificationId = randomUUID();
+        systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
+        verify(systemIdMapperClient).findBy(notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, SystemIdMapperService.APPLICATION_TARGET_TYPE, userId);
+    }
+
+    @Test
+    public void shouldReturnMaterialIdForNotificationId() {
+        final UUID userId = randomUUID();
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
+        final UUID notificationId = randomUUID();
+        systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString());
+        verify(systemIdMapperClient).findBy(notificationId.toString(), SystemIdMapperService.SOURCE_TYPE, SystemIdMapperService.MATERIAL_TARGET_TYPE, userId);
+    }
+
+    @Test
     public void shouldReturnCaseIdWhenCaseIdMappingExists() {
 
         final UUID notificationId = randomUUID();
@@ -70,6 +97,38 @@ public class SystemIdMapperServiceTest {
         when(systemIdMapperClient.add(systemIdMapArgumentCaptor.capture(), any())).thenReturn(new AdditionResponse(randomUUID(), OK, empty()));
 
         systemIdMapperService.mapNotificationIdToCaseId(mappedCppCaseId, notificationId);
+
+        verify(systemIdMapperClient).add(any(SystemIdMap.class), any(UUID.class));
+    }
+
+    @Test
+    public void shouldMapNotificationIdToApplicationId() {
+
+        final UUID notificationId = randomUUID();
+        final UUID mappedApplicationId = randomUUID();
+        final UUID userId = randomUUID();
+        final ArgumentCaptor<SystemIdMap> systemIdMapArgumentCaptor = ArgumentCaptor.forClass(SystemIdMap.class);
+
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
+        when(systemIdMapperClient.add(systemIdMapArgumentCaptor.capture(), any())).thenReturn(new AdditionResponse(randomUUID(), OK, empty()));
+
+        systemIdMapperService.mapNotificationIdToApplicationId(mappedApplicationId, notificationId);
+
+        verify(systemIdMapperClient).add(any(SystemIdMap.class), any(UUID.class));
+    }
+
+    @Test
+    public void shouldMapNotificationIdToMaterialId() {
+
+        final UUID notificationId = randomUUID();
+        final UUID mappedMaterialId = randomUUID();
+        final UUID userId = randomUUID();
+        final ArgumentCaptor<SystemIdMap> systemIdMapArgumentCaptor = ArgumentCaptor.forClass(SystemIdMap.class);
+
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
+        when(systemIdMapperClient.add(systemIdMapArgumentCaptor.capture(), any())).thenReturn(new AdditionResponse(randomUUID(), OK, empty()));
+
+        systemIdMapperService.mapNotificationIdToMaterialId(mappedMaterialId, notificationId);
 
         verify(systemIdMapperClient).add(any(SystemIdMap.class), any(UUID.class));
     }

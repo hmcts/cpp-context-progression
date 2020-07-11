@@ -3,15 +3,15 @@
   "id": "http://justice.gov.uk/progression/courts/change-boxwork-assignment.json",
   "type": "object",
   "properties": {
-  	"applicationId": {
-  		"$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-  	},
-	"userId": {
-		  "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-	  }
-	},
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "userId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
   "required": [
-  	    "applicationId"
+    "applicationId"
   ],
   "additionalProperties": false
 }

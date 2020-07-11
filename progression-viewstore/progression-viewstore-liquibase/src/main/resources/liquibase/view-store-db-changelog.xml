@@ -72,4 +72,13 @@
     <include file="liquibase/create-defendant-partial-match.xml"/>
     <include file="liquibase/create-match-defendant-case-hearing.xml"/>
     <include file="liquibase/create-case-link-split-merge.xml"/>
+    <include file="liquibase/create-now-document-request.xml"/>
+    <include file="liquibase/create-informant-register-request.xml"/>
+    <include file="liquibase/create-court-register-request.xml"/>
+    <include file="liquibase/alter-court-register-system-doc-id.xml"/>
+    <include file="liquibase/alter-informant-register-file-id.xml"/>
+    <include file="liquibase/create-prison-court-register.xml"/>
+    <include file="liquibase/alter-prison-court-register-file-id.xml"/>
+    <include file="liquibase/alter-informant-register-hearing-id.xml"/>
+    <include file="liquibase/alter-court-register-hearing-id.xml"/>
 </databaseChangeLog>

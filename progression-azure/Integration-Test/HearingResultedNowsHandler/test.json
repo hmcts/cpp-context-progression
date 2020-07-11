@@ -1,0 +1,448 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-05-14"
+            }
+          ],
+          "defendantId": "11c0be09-d634-4f35-a17f-09c66e80841f"
+        }
+      ],
+      "defendantReferralReasons": [
+        {
+          "defendantId": "11c0be09-d634-4f35-a17f-09c66e80841f",
+          "description": "Defence request",
+          "id": "798e3d82-44fa-40e6-a93d-4c8f5322fa66"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-14T10:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+      "jurisdictionType": "MAGISTRATES",
+      "prosecutionCases": [
+        {
+          "caseStatus": "SJP_REFERRAL",
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-05-12T21:39:19.411Z",
+              "id": "11c0be09-d634-4f35-a17f-09c66e80841f",
+              "isYouth": true,
+              "masterDefendantId": "11c0be09-d634-4f35-a17f-09c66e80841f",
+              "numberOfPreviousConvictionsCited": 2,
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-14",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "6d8f4a60-d8a1-4650-9e7c-e7f4944e69dc",
+                    "originatingHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                    "sequenceNumber": 90
+                  },
+                  "chargeDate": "2020-04-09",
+                  "convictionDate": "2020-05-14",
+                  "count": 1,
+                  "id": "6d8f4a60-d8a1-4650-9e7c-e7f4944e69dc",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1115",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "durationElement": {
+                        "primaryDurationUnit": "D",
+                        "primaryDurationValue": 10
+                      },
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "ba57787a-a52e-4999-ad5d-f04814956d6b",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                          "label": "Imprisonment Period",
+                          "promptReference": "imprisonmentPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "10 Days",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 400,
+                          "type": "FIXL",
+                          "usergroups": [
+                          ],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                      "label": "Suspended sentence order - imprisonment",
+                      "lastSharedDateTime": "2020-05-12",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 9200,
+                      "resultText": "Suspended sentence order - imprisonment\nImprisonment Period 10 Days\nResponsible officer a probation officer",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-05-12",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "6d8f4a60-d8a1-4650-9e7c-e7f4944e69dc"
+                  },
+                  "offenceCode": "CA03014",
+                  "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+                  "offenceLegislation": "Contrary to section 366(8)(b) and    (9) of the Communications Act 2003.",
+                  "offenceLegislationWelsh": "",
+                  "offenceTitle": "Fail    / refuse give assistance to person executing Communications Act search warrant",
+                  "offenceTitleWelsh": "",
+                  "orderIndex": 1,
+                  "plea": {
+                    "offenceId": "6d8f4a60-d8a1-4650-9e7c-e7f4944e69dc",
+                    "originatingHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                    "pleaDate": "2020-05-14",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2020-04-04",
+                  "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+                  "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+                },
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-14",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "0325fc65-8091-42cd-ab3d-d6041aa74219",
+                    "originatingHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                    "sequenceNumber": 90
+                  },
+                  "chargeDate": "2020-04-08",
+                  "convictionDate": "2020-05-14",
+                  "count": 1,
+                  "id": "0325fc65-8091-42cd-ab3d-d6041aa74219",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1115",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "durationElement": {
+                        "primaryDurationUnit": "D",
+                        "primaryDurationValue": 10
+                      },
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "0cde7e4a-ddb2-43de-bb2c-0c0e55609888",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                          "label": "Imprisonment Period",
+                          "promptReference": "imprisonmentPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "10 Days",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 400,
+                          "type": "FIXL",
+                          "usergroups": [
+                          ],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                      "label": "Suspended sentence order - imprisonment",
+                      "lastSharedDateTime": "2020-05-12",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 9200,
+                      "resultText": "Suspended sentence order - imprisonment\nImprisonment Period 10 Days\nResponsible officer a probation officer",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-05-12",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "0325fc65-8091-42cd-ab3d-d6041aa74219"
+                  },
+                  "offenceCode": "CA03011",
+                  "offenceDefinitionId": "a2804f0e-ecb1-3855-947d-01ea5bb2a70b",
+                  "offenceLegislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+                  "offenceLegislationWelsh": "Yn groes i adran 363(3)(a) a (4) Deddf Cyfathrebu 2003.",
+                  "offenceTitle": "Possess a television set with intent to install / use without a licence",
+                  "offenceTitleWelsh": "Bod â meddiant teledu gan fwriadu'i osod/ddefnyddio heb drwydded",
+                  "orderIndex": 2,
+                  "plea": {
+                    "offenceId": "0325fc65-8091-42cd-ab3d-d6041aa74219",
+                    "originatingHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                    "pleaDate": "2020-05-14",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2020-04-06",
+                  "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+                  "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+                },
+                {
+                  "chargeDate": "2020-04-10",
+                  "count": 1,
+                  "id": "6a14ffd8-4875-4c59-9d81-f262de562d4c",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1115",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "durationElement": {
+                        "primaryDurationUnit": "D",
+                        "primaryDurationValue": 10,
+                        "secondaryDurationUnit": "Y",
+                        "secondaryDurationValue": 1
+                      },
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "13215924-034e-47e7-8531-a32ca03c914d",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                          "label": "Total custodial period",
+                          "promptReference": "totalCustodialPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "11 Days",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 2,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "95618691-0742-417e-82b9-c4d4bff94585",
+                          "label": "Suspended period",
+                          "promptReference": "suspendedPeriod",
+                          "promptSequence": 200,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "1 Years",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                          "label": "Imprisonment Period",
+                          "promptReference": "imprisonmentPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "10 Days",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 400,
+                          "type": "FIXL",
+                          "usergroups": [
+                          ],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                      "label": "Suspended sentence order - imprisonment",
+                      "lastSharedDateTime": "2020-05-12",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "8e20954c-bdab-46c5-8000-a7ea1cb43198",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 9200,
+                      "resultText": "Suspended sentence order - imprisonment\nTotal custodial period 11 Days\nSuspended period 1 Years\nImprisonment Period 10 Days\nResponsible officer a probation officer",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-05-12",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "6a14ffd8-4875-4c59-9d81-f262de562d4c"
+                  },
+                  "offenceCode": "CA03014",
+                  "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+                  "offenceLegislation": "Contrary to section 366(8)(b) and    (9) of the Communications Act 2003.",
+                  "offenceLegislationWelsh": "",
+                  "offenceTitle": "Fail    / refuse give assistance to person executing Communications Act search warrant",
+                  "offenceTitleWelsh": "",
+                  "orderIndex": 3,
+                  "startDate": "2020-03-26",
+                  "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+                  "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "???",
+                "bailConditions": "",
+                "bailReasons": "",
+                "driverNumber": "MORGA657054459BF",
+                "personDetails": {
+                  "address": {
+                    "address1": "Flat 1, Armageddon House",
+                    "address2": "13 Old Road",
+                    "address3": "Giggleswick",
+                    "address4": "Merton",
+                    "address5": "London",
+                    "postcode": "EX15 1AB"
+                  },
+                  "contact": {
+                    "home": "02099999999",
+                    "mobile": "0754321007",
+                    "primaryEmail": "email_primary@ghijkl.com"
+                  },
+                  "dateOfBirth": "2005-05-16",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Daniele Daniele Daniele",
+                  "gender": "MALE",
+                  "lastName": "Smith",
+                  "nationalInsuranceNumber": "AE123456C",
+                  "nationalityCode": "GBR",
+                  "nationalityDescription": "British",
+                  "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                  "occupation": "TA",
+                  "occupationCode": "666",
+                  "specificRequirements": "no special needs",
+                  "title": "MR"
+                }
+              },
+              "prosecutionCaseId": "ebd251bf-7847-4711-b994-3f40296b3be8"
+            }
+          ],
+          "id": "ebd251bf-7847-4711-b994-3f40296b3be8",
+          "initiationCode": "J",
+          "originatingOrganisation": "GAEAA01",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "TVL",
+            "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+            "prosecutionAuthorityReference": "TVL185046NNDT"
+          },
+          "statementOfFacts": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+          "statementOfFactsWelsh": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017"
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    },
+    "sharedTime": "2020-05-12T22:00:22.209Z"
+  }
+}

@@ -184,6 +184,58 @@ baseUri:  message://command/handler/message/progression
           schema: !include json/schema/progression.command.record-unscheduled-hearing.json
 
 
+        application/vnd.progression.command.add-now-document-request+json:
+          example:  !include json/progression.command.add-now-document-request.json
+          schema: !include json/schema/progression.command.add-now-document-request.json
+
+        application/vnd.progression.command.apply-enforcement-acknowledgement+json:
+          example:  !include json/progression.command.apply-enforcement-acknowledgement.json
+          schema: !include json/schema/progression.command.apply-enforcement-acknowledgement.json
+
+        application/vnd.progression.command.enforcement-acknowledgement-error+json:
+          example:  !include json/progression.command.enforcement-acknowledgement-error.json
+          schema: !include json/schema/progression.command.enforcement-acknowledgement-error.json
+
+        application/vnd.progression.command.add-informant-register+json:
+          schema: !include json/schema/progression.command.add-informant-register.json
+          example: !include json/progression.command.add-informant-register.json
+
+        application/vnd.progression.command.generate-informant-register+json:
+          example: !include json/progression.command.generate-informant-register.json
+          schema:  !include json/schema/progression.command.generate-informant-register.json
+
+        application/vnd.progression.command.generate-informant-register-by-date+json:
+          example: !include json/progression.command.generate-informant-register-by-date.json
+          schema:  !include json/schema/progression.command.generate-informant-register-by-date.json
+
+        application/vnd.progression.command.notify-informant-register+json:
+          example: !include json/progression.command.notify-informant-register.json
+          schema:  !include json/schema/progression.command.notify-informant-register.json
+
+        application/vnd.progression.command.add-court-register+json:
+          example:  !include json/progression.command.add-court-register.json
+          schema: !include json/schema/progression.command.add-court-register.json
+
+        application/vnd.progression.command.add-prison-court-register+json:
+          example:  !include json/progression.command.add-prison-court-register.json
+          schema: !include json/schema/progression.command.add-prison-court-register.json
+
+        application/vnd.progression.command.record-prison-court-register-generated+json:
+          example:  !include json/progression.command.record-prison-court-register-generated.json
+          schema:   !include json/schema/progression.command.record-prison-court-register-generated.json
+
+        application/vnd.progression.command.generate-court-register+json:
+            example: !include json/progression.command.generate-court-register.json
+            schema:  !include json/schema/progression.command.generate-court-register.json
+
+        application/vnd.progression.command.generate-court-register-by-date+json:
+            example: !include json/progression.command.generate-court-register-by-date.json
+            schema:  !include json/schema/progression.command.generate-court-register-by-date.json
+
+        application/vnd.progression.command.notify-court-register+json:
+            example: !include json/progression.command.notify-court-register.json
+            schema:  !include json/schema/progression.command.notify-court-register.json
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
         application/vnd.progression.command.handler.add-case-to-crown-court+json:

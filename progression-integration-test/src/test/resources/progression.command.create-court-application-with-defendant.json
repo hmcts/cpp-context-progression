@@ -335,6 +335,8 @@
         "isConvictedResult": true,
         "amendmentDate": "2019-01-01",
         "amendmentReason": "a",
+        "rollUpPrompts": false,
+        "publishedForNows" : false,
         "cjsCode": "a",
         "rank": 0.1,
         "orderedDate": "2019-01-01",

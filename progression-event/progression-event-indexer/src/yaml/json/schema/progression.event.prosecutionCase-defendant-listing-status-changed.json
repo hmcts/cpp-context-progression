@@ -14,7 +14,7 @@
       "type": "string"
     },
     "boxWorkAssignedUserId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "boxWorkTaskStatus": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/boxWorkTaskStatus"

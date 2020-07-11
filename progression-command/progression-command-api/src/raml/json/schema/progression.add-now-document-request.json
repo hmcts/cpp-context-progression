@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/add-now-document-request.json",
+  "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-document-request.json"
+}

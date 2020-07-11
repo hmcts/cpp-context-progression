@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/informant-register-recorded.json",
+  "type": "object",
+  "properties": {
+    "prosecutionAuthorityId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "informantRegister": {
+      "$ref": "http://justice.gov.uk/core/courts/informantRegisterDocument/informantRegisterDocumentRequest.json"
+    }
+  },
+  "required": [
+    "prosecutionAuthorityId",
+    "informantRegister"
+  ],
+  "additionalProperties": false
+}

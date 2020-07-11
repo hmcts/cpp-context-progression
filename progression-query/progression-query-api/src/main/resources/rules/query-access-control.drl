@@ -348,3 +348,90 @@ rule "Query - Access control for  progression.query.case-lsm-info"
   then
     $outcome.setSuccess(true);
 end
+
+rule "progression - Query - API - progression.query.now-document-requests-by-request-id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.now-document-requests-by-request-id");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.now-document-request-by-hearing"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.now-document-request-by-hearing");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.informant-register-document-request"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.informant-register-document-request");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.informant-register-document-by-material"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.informant-register-document-by-material");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.informant-register-document-by-request-date"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.informant-register-document-by-request-date");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.court-register-document-request"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.court-register-document-request");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.court-register-document-by-material"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.court-register-document-by-material");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.court-register-document-by-request-date"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.court-register-document-by-request-date");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression - Query - API - progression.query.prison-court-register-document-by-court-centre"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.prison-court-register-document-by-court-centre");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
+    "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin"))
+  then
+    $outcome.setSuccess(true);
+end

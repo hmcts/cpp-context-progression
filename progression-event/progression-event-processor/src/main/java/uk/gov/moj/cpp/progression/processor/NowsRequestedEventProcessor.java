@@ -1,36 +1,40 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NowDocument;
+import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.SummonsDataHelper;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -49,98 +53,131 @@ public class NowsRequestedEventProcessor {
     public static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final Logger LOGGER = LoggerFactory.getLogger(NowsRequestedEventProcessor.class);
-    private final Enveloper enveloper;
     private final Sender sender;
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter;
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
     private final DocumentGeneratorService documentGeneratorService;
-    @Inject
-    private ReferenceDataService refDataService;
+    private final ReferenceDataService refDataService;
+    private final UsersGroupService usersGroupService;
+
     @Inject
     private Requester requester;
 
     @Inject
-    public NowsRequestedEventProcessor(final Enveloper enveloper, final Sender sender,
+    public NowsRequestedEventProcessor(final Sender sender,
                                        final DocumentGeneratorService documentGeneratorService,
                                        final JsonObjectToObjectConverter jsonObjectToObjectConverter,
                                        final ObjectToJsonObjectConverter objectToJsonObjectConverter,
-                                       final ReferenceDataService refDataService
-    ) {
-        this.enveloper = enveloper;
+                                       final ReferenceDataService refDataService,
+                                       final UsersGroupService usersGroupService) {
         this.sender = sender;
         this.jsonObjectToObjectConverter = jsonObjectToObjectConverter;
         this.objectToJsonObjectConverter = objectToJsonObjectConverter;
         this.documentGeneratorService = documentGeneratorService;
         this.refDataService = refDataService;
+        this.usersGroupService = usersGroupService;
     }
 
-    //handle the public now document request from the hearing service
-    @Handles("public.hearing.now-document-requested")
-    public void processPublicNowDocumentRequested(final JsonEnvelope event) {
+    @Handles("progression.event.now-document-requested")
+    public void processNowDocumentRequested(final JsonEnvelope event) {
+
         final UUID userId = fromString(event.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
 
         final JsonObject requestJson = event.payloadAsJsonObject();
-        final NowDocumentRequest nowDocumentRequest = jsonObjectToObjectConverter.convert(requestJson, NowDocumentRequest.class);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Nows requested payload - {}", requestJson);
         }
-        addAsCourtDocuments(event, nowDocumentRequest);
+
+        final NowDocumentRequested nowDocumentRequested = jsonObjectToObjectConverter.convert(requestJson, NowDocumentRequested.class);
+
+        final NowDocumentRequest nowDocumentRequest = nowDocumentRequested.getNowDocumentRequest();
+
+        if (nowDocumentRequest.getStorageRequired()) {
+            addAsCourtDocuments(event, nowDocumentRequest);
+        }
+
         documentGeneratorService.generateNow(sender, event, userId, nowDocumentRequest);
+
     }
 
     private void addAsCourtDocuments(final JsonEnvelope incomingEvent, final NowDocumentRequest nowDocumentRequest) {
-        // GPE-6752 could also iterate resultLines to discover case and hearing associations
-        // this is assuming that all cases in the hearing relate to this document
-        final List<UUID> prosecutionIds = Arrays.asList(nowDocumentRequest.getCaseId());
 
-        final String orderName = nowDocumentRequest.getNowContent().getOrderName();
+        final List<String> permittedGroups = getPermittedGroups(incomingEvent, nowDocumentRequest);
 
         final Optional<JsonObject> documentTypeData = refDataService.getDocumentTypeAccessData(NOW_DOCUMENT_TYPE_ID, incomingEvent, requester);
 
-
-        final JsonObject documentTypeDataJsonObject = documentTypeData.orElseThrow(() -> new RuntimeException("failed to look up nows document type " + NOW_DOCUMENT_TYPE_ID));
-
+        final JsonObject documentTypeDataJsonObject = documentTypeData.orElseThrow(() -> new RuntimeException("Failed to look up NOWS document type " + NOW_DOCUMENT_TYPE_ID));
 
         if (!documentTypeDataJsonObject.containsKey(COURT_DOCUMENT_TYPE_RBAC) && !documentTypeDataJsonObject.getJsonObject(COURT_DOCUMENT_TYPE_RBAC).containsKey(READ_USER_GROUPS)) {
-            throw new RuntimeException("no courtDocumentTypeRBAC specified for  nows document type " + NOW_DOCUMENT_TYPE_ID);
+            throw new RuntimeException("No courtDocumentTypeRBAC specified for NOWS document type: " + NOW_DOCUMENT_TYPE_ID);
         }
 
-        final JsonObject documentTypeRBACData = documentTypeDataJsonObject.getJsonObject(COURT_DOCUMENT_TYPE_RBAC);
+        LOGGER.info("permittedGroups == {} ", permittedGroups);
 
-        final List<String> rbacUserGroups = getRBACUserGroups(documentTypeRBACData, READ_USER_GROUPS);
+        final CourtDocument courtDocument = courtDocument(nowDocumentRequest, permittedGroups, documentTypeDataJsonObject);
 
-        final List<String> permittedGroups = Stream.concat(rbacUserGroups.stream()
-                .map(el -> el.replace("\"", "")), nowDocumentRequest.getUsergroups().stream())
-                .collect(Collectors.toList());
+        final JsonObject jsonObject = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
-        final CourtDocument courtDocument =
-                courtDocument(nowDocumentRequest, prosecutionIds, orderName, permittedGroups, incomingEvent);
-
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("courtDocument", objectToJsonObjectConverter
-                        .convert(courtDocument)).build();
-        sender.send(enveloper.withMetadataFrom(incomingEvent, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
+        sender.send(envelop(jsonObject).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(incomingEvent));
     }
 
-    private List<String> getRBACUserGroups(final JsonObject documentTypeRBACData, final String accessLevel) {
+    private List<String> getPermittedGroups(final JsonEnvelope event, final NowDocumentRequest nowDocumentRequest) {
 
-        if (!documentTypeRBACData.containsKey(accessLevel)) {
-            return new ArrayList<>();
+        final JsonObject groupsWithOrganisation = usersGroupService.getGroupsWithOrganisation(event);
+
+        final Map<String, List<JsonObject>> resultsGroupMappings = getResultsGroupMappings(groupsWithOrganisation);
+
+        final List<String> visibleToUserGroups = nowDocumentRequest.getVisibleToUserGroups();
+
+        final List<String> notVisibleToUserGroups = nowDocumentRequest.getNotVisibleToUserGroups();
+
+        //In NOWs document visibleToUserGroups and notVisibleToUserGroups are mutual exclusive
+        if (nonNull(visibleToUserGroups)) {
+            final List<List<String>> cppGroupUsersList = visibleToUserGroups.stream()
+                    .map(userGroupName -> getAssociatedGroups(resultsGroupMappings, userGroupName))
+                    .collect(toList());
+
+            cppGroupUsersList.add(getAssociatedGroups(resultsGroupMappings, "HMCTS"));
+            return cppGroupUsersList.stream().flatMap(Collection::stream).collect(toList());
         }
-        final JsonArray documentTypeRBACJsonArray = documentTypeRBACData.getJsonArray(accessLevel);
 
-        return IntStream.range(0, (documentTypeRBACJsonArray).size()).mapToObj(i -> documentTypeRBACJsonArray.getJsonObject(i).getJsonObject("cppGroup").getString("groupName")).collect(toList());
+        if (nonNull(notVisibleToUserGroups)) {
+            notVisibleToUserGroups.forEach(notVisibleToUserGroup -> resultsGroupMappings.remove(notVisibleToUserGroup.toUpperCase()));
+            return getAllGroups(resultsGroupMappings);
+        }
+
+        return getAllGroups(resultsGroupMappings);
     }
 
-    @Handles("hearing.events.nows-material-status-updated")
-    public void propagateNowsMaterialStatusUpdated(final JsonEnvelope envelope) {
-        this.sender.send(this.enveloper.withMetadataFrom(envelope, "public.hearing.events.nows-material-status-updated")
-                .apply(createObjectBuilder()
-                        .add("materialId", envelope.payloadAsJsonObject().getJsonString("materialId"))
-                        .build()
-                ));
+    private Map<String, List<JsonObject>> getResultsGroupMappings(JsonObject groupsWithOrganisation) {
+
+        final JsonArray groupsArray = groupsWithOrganisation.getJsonArray("groupsWithOrganisation");
+
+        return groupsArray.stream()
+                .map(jsonValue -> (JsonObject) jsonValue)
+                .filter(jsonObject -> jsonObject.containsKey("resultsReferenceDataGroup"))
+                .filter(jsonObject -> jsonObject.containsKey("documentsReferenceDataGroup"))
+                .collect(Collectors.groupingBy(jsonObject -> jsonObject.getString("resultsReferenceDataGroup").toUpperCase()));
+    }
+
+    private List<String> getAssociatedGroups(final Map<String, List<JsonObject>> resultsGroupMappings, final String resultGroup) {
+        final List<JsonObject> resultsList = resultsGroupMappings.getOrDefault(resultGroup.toUpperCase(), Collections.emptyList());
+        return resultsList.stream().map(jsonObject -> jsonObject.getString("groupName")).collect(toList());
+    }
+
+    private List<String> getAllGroups(final Map<String, List<JsonObject>> resultsGroupMap) {
+        final Set<String> resultsSet = new HashSet<>();
+        resultsGroupMap.forEach((k, v) -> resultsSet.addAll(getAssociatedGroups(resultsGroupMap, k)));
+        return new ArrayList<>(resultsSet);
+    }
+
+    private DocumentTypeRBAC getRBACDataObject(final List<String> permittedRBACUserGroups) {
+        return DocumentTypeRBAC.
+                documentTypeRBAC()
+                .withReadUserGroups(permittedRBACUserGroups)
+                .withDownloadUserGroups(permittedRBACUserGroups)
+                .build();
     }
 
     private NowDocument nowDocument(final UUID defendantId, final List<UUID> prosecutionCaseIds, final UUID hearingId) {
@@ -151,14 +188,23 @@ public class NowsRequestedEventProcessor {
                 .build();
     }
 
-    private CourtDocument courtDocument(final NowDocumentRequest nowDocumentRequest, final List<UUID> prosecutionCaseIds, final String orderName,
-                                        final List<String> permittedGroups, final JsonEnvelope incomingEvent) {
-        final NowDocument nowDocument = nowDocument(nowDocumentRequest.getDefendantId(), prosecutionCaseIds, nowDocumentRequest.getHearingId());
+    private CourtDocument courtDocument(final NowDocumentRequest nowDocumentRequest, final List<String> permittedGroups, final JsonObject documentTypeDataJsonObject) {
+
+        final Integer seqNum = Integer.valueOf(documentTypeDataJsonObject.getJsonNumber("seqNum") == null ? "0" : documentTypeDataJsonObject.getJsonNumber("seqNum").toString());
+
+        final String sectionName = documentTypeDataJsonObject.getString("section", "");
+
+        final String orderName = String.join(" - ", nowDocumentRequest.getSubscriberName(), nowDocumentRequest.getNowContent().getOrderName());
+
+        final NowDocument nowDocument = nowDocument(nowDocumentRequest.getMasterDefendantId(), nowDocumentRequest.getCases(), nowDocumentRequest.getHearingId());
+
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(UUID.randomUUID())
                 .withDocumentTypeId(NOW_DOCUMENT_TYPE_ID)
-                .withDocumentTypeDescription(SummonsDataHelper.getDocumentTypeData(NOW_DOCUMENT_TYPE_ID, refDataService, incomingEvent, requester).getString("section"))
-                .withMaterials(Arrays.asList(Material.material()
+                .withDocumentTypeDescription(sectionName)
+                .withDocumentTypeRBAC(getRBACDataObject(permittedGroups))
+                .withSeqNum(seqNum)
+                .withMaterials(Collections.singletonList(Material.material()
                         .withId(nowDocumentRequest.getMaterialId())
                         .withGenerationStatus(null)
                         .withUserGroups(permittedGroups)
@@ -176,4 +222,3 @@ public class NowsRequestedEventProcessor {
                 .build();
     }
 }
-

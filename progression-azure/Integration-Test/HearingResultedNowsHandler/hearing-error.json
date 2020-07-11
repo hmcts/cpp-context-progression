@@ -1,0 +1,201 @@
+{
+  "hearing" : {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-05-18"
+            }
+          ],
+          "defendantId": "0973ffde-2a80-45fa-b941-ec983e244ca1"
+        }
+      ],
+      "defendantReferralReasons": [
+        {
+          "defendantId": "0973ffde-2a80-45fa-b941-ec983e244ca1",
+          "description": "For trial",
+          "id": "809f7aac-d285-43a5-9fb1-3a894db71530"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-18T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-19T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-20T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-21T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-22T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-23T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-24T00:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-25T09:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "b2d38105-4387-44d1-a285-b3550037769d",
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "caseStatus": "CLOSED",
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-05-18T10:05:08.508Z",
+              "id": "0973ffde-2a80-45fa-b941-ec983e244ca1",
+              "isYouth": true,
+              "masterDefendantId": "0973ffde-2a80-45fa-b941-ec983e244ca1",
+              "numberOfPreviousConvictionsCited": 2,
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-18",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "2349c4a1-6eb5-4296-88bf-faf116d8df1a",
+                    "originatingHearingId": "b2d38105-4387-44d1-a285-b3550037769d",
+                    "sequenceNumber": 90
+                  },
+                  "chargeDate": "2020-04-16",
+                  "convictionDate": "2020-05-18",
+                  "count": 1,
+                  "id": "2349c4a1-6eb5-4296-88bf-faf116d8df1a",
+                  "isDisposed": false,
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-05-18",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "2349c4a1-6eb5-4296-88bf-faf116d8df1a"
+                  },
+                  "offenceCode": "CA03012",
+                  "offenceDefinitionId": "51ed3322-499a-4430-94cc-d52964f108db",
+                  "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                  "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                  "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+                  "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                  "orderIndex": 1,
+                  "plea": {
+                    "offenceId": "2349c4a1-6eb5-4296-88bf-faf116d8df1a",
+                    "originatingHearingId": "b2d38105-4387-44d1-a285-b3550037769d",
+                    "pleaDate": "2020-05-18",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2020-04-12",
+                  "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+                  "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "???",
+                "bailConditions": "",
+                "bailReasons": "",
+                "driverNumber": "MORGA657054459BF",
+                "personDetails": {
+                  "address": {
+                    "address1": "Flat 1, Armageddon House",
+                    "address2": "13 Old Road",
+                    "address3": "Giggleswick",
+                    "address4": "Merton",
+                    "address5": "London",
+                    "postcode": "TN4 1AB"
+                  },
+                  "contact": {
+                    "home": "02099999999",
+                    "mobile": "0754321007",
+                    "primaryEmail": "email_primary@ghijkl.com"
+                  },
+                  "dateOfBirth": "2002-05-23",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Willem Willem Willem",
+                  "gender": "MALE",
+                  "lastName": "Smith",
+                  "nationalInsuranceNumber": "AE123456C",
+                  "nationalityCode": "GBR",
+                  "nationalityDescription": "British",
+                  "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                  "occupation": "TA",
+                  "occupationCode": "666",
+                  "specificRequirements": "no special needs",
+                  "title": "MR"
+                }
+              },
+              "proceedingsConcluded": true,
+              "prosecutionCaseId": "8ae434f7-0a82-4202-96c1-f6fd106602ca"
+            }
+          ],
+          "id": "8ae434f7-0a82-4202-96c1-f6fd106602ca",
+          "initiationCode": "J",
+          "originatingOrganisation": "GAEAA01",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "TVL",
+            "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+            "prosecutionAuthorityName": "TV Licensing",
+            "prosecutionAuthorityOUCode": "GAEAA01",
+            "prosecutionAuthorityReference": "TVL96181ALLN"
+          },
+          "statementOfFacts": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+          "statementOfFactsWelsh": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017"
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    },
+    "sharedTime": "2020-05-18T11:47:57.727Z"
+  }
+}

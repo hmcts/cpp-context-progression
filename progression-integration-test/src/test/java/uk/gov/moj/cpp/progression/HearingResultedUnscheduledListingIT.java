@@ -7,6 +7,7 @@ import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Utilities;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
@@ -40,7 +42,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.Utilities.listenForPrivateEvent;
 
 public class HearingResultedUnscheduledListingIT extends AbstractIT {
-
+    private static final String DOCUMENT_TEXT = STRING.next();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING = "public.hearing.resulted-unscheduled-listing";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
@@ -77,6 +79,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     @Before
     public void setUp() {
+        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();
         ListingStub.stubListCourtHearing();
 

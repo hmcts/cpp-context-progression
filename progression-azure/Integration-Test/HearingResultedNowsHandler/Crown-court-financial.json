@@ -1,0 +1,272 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "The Court Building",
+          "address2": "Bricket Road",
+          "address3": "St. Albans",
+          "address4": "Herts.",
+          "address5": "",
+          "postcode": "AL1 3JW"
+        },
+        "id": "0e0bb700-0384-37bd-954e-da2645e55610",
+        "name": "St. Albans Crown Court",
+        "roomId": "3259d801-2ad9-392d-af3f-851bbe72fff2",
+        "roomName": "Courtroom 02",
+        "lja": {
+          "ljaCode": 1910
+        },
+        "code": "C41ST00"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-04-10"
+            }
+          ],
+          "defendantId": "a62b9fb4-b6f5-4607-9496-b6049e05d540"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-10T10:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "9b8fba56-eae1-4d22-8ce9-c699c2886f0e",
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "defendants": [
+            {
+              "id": "a62b9fb4-b6f5-4607-9496-b6049e05d540",
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "judicialResultId": "f15acae0-00bb-4a30-905d-23723caed2f5",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                      "label": "Date to pay in full by",
+                      "promptReference": "PBD",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [
+                        "Court Clerks",
+                        "Legal Advisers"
+                      ],
+                      "value": "20 Jul 2020",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+                  "label": "Pay by date",
+                  "lastSharedDateTime": "2020-04-10",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-17",
+                  "orderedHearingId": "9b8fba56-eae1-4d22-8ce9-c699c2886f0e",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "rank": 53500,
+                  "resultDefinitionGroup": "Payment terms",
+                  "resultText": "Pay by date\nDate to pay in full by 20 Jul 2020",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                  ],
+                  "welshLabel": "Swm i’w dalu"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "cjsCode": "3117",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": true,
+                  "judicialResultId": "dc8967b8-3825-4942-bda0-da95f491aeeb",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": true,
+                      "judicialResultPromptTypeId": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+                      "label": "Amount of surcharge",
+                      "promptReference": "AOS",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [
+                        "Court Clerks",
+                        "Legal Advisers"
+                      ],
+                      "value": "£12",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+                  "label": "Surcharge",
+                  "lastSharedDateTime": "2020-04-10",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-17",
+                  "orderedHearingId": "9b8fba56-eae1-4d22-8ce9-c699c2886f0e",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "rank": 7500,
+                  "resultText": "Surcharge\nAmount of surcharge £12",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                  ],
+                  "welshLabel": "Gordal"
+                }
+              ],
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-04-10",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "a2e1f1bf-3381-4603-945b-444e1fe6c626",
+                    "originatingHearingId": "9b8fba56-eae1-4d22-8ce9-c699c2886f0e",
+                    "sequenceNumber": 90
+                  },
+                  "convictionDate": "2020-04-10",
+                  "count": 0,
+                  "id": "a2e1f1bf-3381-4603-945b-444e1fe6c626",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1015",
+                      "courtClerk": {
+                        "firstName": "Evan",
+                        "lastName": "Roberts",
+                        "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "fcd71e67-41d7-49c1-9c84-232e58c4facb",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                          "label": "Amount of fine",
+                          "promptReference": "AOF",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "£12",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                      "label": "Fine",
+                      "lastSharedDateTime": "2020-04-10",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "9b8fba56-eae1-4d22-8ce9-c699c2886f0e",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 7700,
+                      "resultText": "Fine\nAmount of fine £12",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ],
+                      "welshLabel": "Dirwy"
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "a2e1f1bf-3381-4603-945b-444e1fe6c626",
+                    "originatingHearingId": "9b8fba56-eae1-4d22-8ce9-c699c2886f0e",
+                    "pleaDate": "2020-04-10",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailConditions": "",
+                "bailReasons": "",
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O",
+                    "postcode": "E17 9BG"
+                  },
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "gender": "MALE",
+                  "lastName": "Ormsby"
+                }
+              },
+              "prosecutionAuthorityReference": "TFL",
+              "prosecutionCaseId": "fa17cee5-b604-440d-a555-111b64632e15",
+              "masterDefendantId": "a62b9fb4-b6f5-4607-9496-b6049e05d540"
+            }
+          ],
+          "id": "fa17cee5-b604-440d-a555-111b64632e15",
+          "initiationCode": "S",
+          "originatingOrganisation": "B01BH00",
+          "prosecutionCaseIdentifier": {
+            "caseURN": "77GD4126720",
+            "prosecutionAuthorityCode": "SPI",
+            "prosecutionAuthorityId": "ecf4412d-5d9c-4f60-b064-f6ba503801d7"
+          }
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    },
+    "sharedTime": "2020-04-10T12:28:03.622Z"
+  }
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "results": [
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "offenceId": "a154d828-1234-47f0-b8d5-e81227831d94",
+        "level": "O",
+        "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "judicialResult": {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+          "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "2020-01-20",
+          "category": "Fine",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "isUrgent": false,
+          "isD20": false,
+          "level": "O"
+        }
+      },
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "offenceId": "a154d828-1234-47f0-b8d5-e81227831d94",
+        "level": "O",
+        "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "judicialResult": {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17002",
+          "judicialResultTypeId": "c514dcec-804c-11e8-adc0-fa7ae01bbebc",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "2020-01-20",
+          "category": "Fine",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "isUrgent": false,
+          "isD20": false,
+          "level": "O"
+        }
+      }
+    ],
+    "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+    "vocabulary": {
+      "custodyLocationIsPolice": false,
+      "custodyLocationIsPrison": false,
+      "atLeastOneCustodialResult": false,
+      "allNonCustodialResults": true,
+      "atLeastOneNonCustodialResult": true,
+      "appearedInPerson": false,
+      "appearedByVideoLink": false
+    }
+  }
+]

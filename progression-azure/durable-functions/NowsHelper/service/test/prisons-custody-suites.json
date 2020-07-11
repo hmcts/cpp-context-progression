@@ -1,0 +1,15 @@
+{
+  "prisons-custody-suites": [
+    {
+      "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+      "name": "HMIRC The Verne",
+      "type": "Prison",
+      "emails": [
+        {
+          "emailType": "OMU",
+          "emailAddress": "omu.theverne@justice.gov.uk"
+        }
+      ]
+    }
+  ]
+}

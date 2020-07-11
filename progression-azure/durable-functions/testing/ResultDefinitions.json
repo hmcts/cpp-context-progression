@@ -1,0 +1,969 @@
+{
+  "resultDefinitions": [
+    {
+      "id": "bdb32555-8d55-4dc1-b4b6-580db5132496",
+      "label": "Attachment of earnings order",
+      "shortCode": "AEOC",
+      "level": "C",
+      "rank": 48100,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "attachment",
+            "earnings",
+            "Order"
+          ]
+        },
+        {
+          "wordGroup": [
+            "AEOC"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "cjsCode": "1511",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Gorchymyn Atafaelu Enillion",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "a289b1bd-06c8-4da3-b117-0bae6017857c",
+          "label": "Reason",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 100,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "1",
+          "max": "ALL"
+        },
+        {
+          "id": "485f7d22-718c-4f47-bbd5-f8d934417a03",
+          "label": "Employer's name",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 200,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerName",
+          "welshLabel": "Enw eich cyflogwr"
+        },
+        {
+          "id": "86854563-b404-4cd4-9c05-50f1e61a0bfe",
+          "label": "Employer's address Line 1",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 300,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerAddress1",
+          "welshLabel": "Llinell gyntaf cyfeiriad y cyflogwr"
+        },
+        {
+          "id": "ef87b9fe-1d9d-46a2-b094-ce5ba24a9835",
+          "label": "Employer's address Line 2",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 400,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerAddress2",
+          "welshLabel": "Ail linell cyfeiriad y cyflogwr"
+        },
+        {
+          "id": "df1d55f8-29dd-42d2-8f99-cb4d369cb38b",
+          "label": "Employer's address Line 3",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 500,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerAddress3",
+          "welshLabel": "Trydedd linell cyfeiriad y cyflogwr"
+        },
+        {
+          "id": "d3d8e5dc-4ced-4d57-bcbb-5de8f91a580a",
+          "label": "Employer's address Line 4",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 600,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerAddress4",
+          "welshLabel": "Pedwaredd llinell cyfeiriad y cyflogwr"
+        },
+        {
+          "id": "a812f1c7-96df-4d8d-9684-25e4e227b2e2",
+          "label": "Employer's address Line 5",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 700,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerAddress5",
+          "welshLabel": "Pumed llinell cyfeiriad y cyflogwr"
+        },
+        {
+          "id": "4ff32fe8-5508-4b7e-8e6f-b3e79763a9fe",
+          "label": "Employer's post code",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 800,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "employerPostCode",
+          "welshLabel": "Cod post cyfeiriad y cyflogwr"
+        },
+        {
+          "id": "eb1d0fdc-2e51-4e98-9f6e-ee0daa14c157",
+          "label": "Employee reference number",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 900,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "1",
+          "max": "20",
+          "reference": "employerReferenceNumber",
+          "welshLabel": "Cyfeirnod y cyflogai"
+        }
+      ]
+    },
+    {
+      "id": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+      "label": "Pay by date",
+      "shortCode": "PDATE",
+      "level": "C",
+      "rank": 48700,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "PBD",
+            "PDATE"
+          ]
+        },
+        {
+          "wordGroup": [
+            "pay",
+            "full",
+            "date"
+          ]
+        },
+        {
+          "wordGroup": [
+            "pay",
+            "by",
+            "date"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Swm i’w dalu",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "ee7d253a-c629-11e8-a355-529269fb1459",
+          "label": "Date to pay in full by",
+          "resultPromptRule": "mandatory",
+          "type": "DATE",
+          "sequence": 100,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PBD",
+          "welshLabel": "Rhaid talu'r swm llawn erbyn"
+        },
+        {
+          "id": "a9ad5002-ea38-4374-a475-4b352cdfa207",
+          "label": "Parent / Guardian to pay",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 200,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PARENT_GAURDIAN_TO_PAY"
+        },
+        {
+          "id": "e57dd7e2-edbe-11e8-8eb2-f2801f1b9fd1",
+          "label": "Number of days in default",
+          "resultPromptRule": "optional",
+          "type": "INT",
+          "sequence": 300,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "1",
+          "max": "999",
+          "reference": "DID",
+          "welshLabel": "Nifer y diwrnodau lle erys y ddyled heb ei thalu"
+        }
+      ]
+    },
+    {
+      "id": "272d1ec2-634b-11e8-adc0-fa7ae01bbebc",
+      "label": "Lump sum plus instalments",
+      "shortCode": "LUMSI",
+      "level": "C",
+      "rank": 47800,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "pay",
+            "lump",
+            "sum",
+            "instalments"
+          ]
+        },
+        {
+          "wordGroup": [
+            "lump",
+            "sum",
+            "instalments"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Lwmp swm a rhandaliadau",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "11ba492a-e2ad-11e8-9f32-f2801f1b9fd1",
+          "label": "Lump sum amount",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 100,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "0",
+          "max": "1000000000",
+          "reference": "LSA",
+          "welshLabel": "Cyfanswm y lwmp swm"
+        },
+        {
+          "id": "1393acda-7a35-4d65-859d-6298e1470cf1",
+          "label": "Instalment amount",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 200,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "0",
+          "max": "1000000000",
+          "reference": "IAMT",
+          "welshLabel": "Swm y rhandaliad"
+        },
+        {
+          "id": "fb4f761c-29d0-4a8e-a947-3debf281dab0",
+          "label": "Payment frequency following lump sum",
+          "resultPromptRule": "mandatory",
+          "type": "FIXL",
+          "sequence": 300,
+          "fixedListId": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PF",
+          "welshLabel": "Amlder y taliadau yn dilyn lwmp swm"
+        },
+        {
+          "id": "e091af2e-43d0-495d-b3b0-432010358a45",
+          "label": "Instalment start date",
+          "resultPromptRule": "mandatory",
+          "type": "DATE",
+          "sequence": 400,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "ISTD",
+          "welshLabel": "Dyddiad cychwyn y rhandaliad"
+        },
+        {
+          "id": "a9ad5002-ea38-4374-a475-4b352cdfa207",
+          "label": "Parent / Guardian to pay",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 500,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PARENT_GAURDIAN_TO_PAY"
+        },
+        {
+          "id": "e57dd7e2-edbe-11e8-8eb2-f2801f1b9fd1",
+          "label": "Number of days in default",
+          "resultPromptRule": "optional",
+          "type": "INT",
+          "sequence": 600,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "1",
+          "max": "999",
+          "reference": "DID",
+          "welshLabel": "Nifer y diwrnodau lle erys y ddyled heb ei thalu"
+        },
+        {
+          "id": "d0f08c9c-e1e5-46eb-b573-f1728bc51414",
+          "label": "Payment card required",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 700,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PAYMENT_CARD_REQUIRED"
+        }
+      ]
+    },
+    {
+      "id": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+      "label": "Instalments only",
+      "shortCode": "INSTL",
+      "level": "C",
+      "rank": 47900,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "pay",
+            "instalments",
+            "only"
+          ]
+        },
+        {
+          "wordGroup": [
+            "instalments",
+            "only"
+          ]
+        },
+        {
+          "wordGroup": [
+            "INSTL"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Rhandaliadau yn unig",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "1393acda-7a35-4d65-859d-6298e1470cf1",
+          "label": "Instalment amount",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 100,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "0",
+          "max": "1000000000",
+          "reference": "IAMT",
+          "welshLabel": "Swm y rhandaliad"
+        },
+        {
+          "id": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+          "label": "Payment frequency",
+          "resultPromptRule": "mandatory",
+          "type": "FIXL",
+          "sequence": 200,
+          "fixedListId": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PF",
+          "welshLabel": "Amlder y taliadau"
+        },
+        {
+          "id": "e091af2e-43d0-495d-b3b0-432010358a45",
+          "label": "Instalment start date",
+          "resultPromptRule": "mandatory",
+          "type": "DATE",
+          "sequence": 300,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "ISTD",
+          "welshLabel": "Dyddiad cychwyn y rhandaliad"
+        },
+        {
+          "id": "a9ad5002-ea38-4374-a475-4b352cdfa207",
+          "label": "Parent / Guardian to pay",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 400,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PARENT_GAURDIAN_TO_PAY"
+        },
+        {
+          "id": "e57dd7e2-edbe-11e8-8eb2-f2801f1b9fd1",
+          "label": "Number of days in default",
+          "resultPromptRule": "optional",
+          "type": "INT",
+          "sequence": 500,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "1",
+          "max": "999",
+          "reference": "DID",
+          "welshLabel": "Nifer y diwrnodau lle erys y ddyled heb ei thalu"
+        },
+        {
+          "id": "d0f08c9c-e1e5-46eb-b573-f1728bc51414",
+          "label": "Payment card required",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 600,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PAYMENT_CARD_REQUIRED"
+        }
+      ]
+    },
+    {
+      "id": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+      "label": "Collection order",
+      "shortCode": "COLO",
+      "level": "C",
+      "rank": 38200,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "COLO"
+          ]
+        },
+        {
+          "wordGroup": [
+            "collection",
+            "Order"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "A",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "B",
+      "welshLabel": "Gorchymyn Casglu",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+          "label": "Collection order type",
+          "resultPromptRule": "optional",
+          "type": "FIXL",
+          "sequence": 100,
+          "fixedListId": "d7d75420-aace-11e8-98d0-529269fb1459",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "welshLabel": "Math o orchymyn casglu"
+        },
+        {
+          "id": "369b6e22-4678-4b04-9fe9-5bb53bed5067",
+          "label": "Reason for not making an attachment of earnings order or deduction from benefit application",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 200,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "1",
+          "max": "99"
+        },
+        {
+          "id": "dc44f589-6dd2-4a8d-9164-c1796c6b0e36",
+          "label": "Reason for making an attachment of earnings order",
+          "resultPromptRule": "optional",
+          "type": "FIXLM",
+          "sequence": 300,
+          "fixedListId": "1fa26fa6-da67-48f7-9bb4-9b55d825854e",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "welshLabel": "Rheswm dros wneud gorchymyn atafaelu enillion"
+        },
+        {
+          "id": "16ade3fb-9f0f-4ce4-a6c8-fa96277e1519",
+          "label": "Reason for making an application for deductions from benefit",
+          "resultPromptRule": "optional",
+          "type": "FIXLM",
+          "sequence": 400,
+          "fixedListId": "1fa26fa6-da67-48f7-9bb4-9b55d825854e",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "welshLabel": "Rheswm dros wneud cais i ddidynnu o fudd-dal"
+        }
+      ]
+    },
+    {
+      "id": "a09bbfa0-5dd5-11e8-9c2d-fa7ae01bbebc",
+      "label": "Reserve Terms Lump sum",
+      "shortCode": "RLSUM",
+      "level": "C",
+      "rank": 47500,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "rt",
+            "ls"
+          ]
+        },
+        {
+          "wordGroup": [
+            "pay",
+            "reserve",
+            "terms",
+            "lump"
+          ]
+        },
+        {
+          "wordGroup": [
+            "reserve",
+            "terms",
+            "lump"
+          ]
+        },
+        {
+          "wordGroup": [
+            "reserve",
+            "terms",
+            "lump",
+            "sum"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Cyfandaliad y Telerau Wrth Gefn Talu’r cyfandaliad o fewn",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "c131cab0-5dd6-11e8-9c2d-fa7ae01bbebc",
+          "label": "Pay lump sum in full within",
+          "resultPromptRule": "mandatory",
+          "type": "FIXL",
+          "sequence": 100,
+          "fixedListId": "cd4cc782-5dd6-11e8-9c2d-fa7ae01bbebc",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "LSPW",
+          "welshLabel": "Talu’r lwmp swm yn llawn o fewn"
+        }
+      ]
+    },
+    {
+      "id": "d6e93aae-5dd7-11e8-9c2d-fa7ae01bbebc",
+      "label": "Reserve Terms Lump sum plus instalments",
+      "shortCode": "RLSUMI",
+      "level": "C",
+      "rank": 47600,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "pay",
+            "reserve",
+            "terms",
+            "lump",
+            "sum",
+            "instalments"
+          ]
+        },
+        {
+          "wordGroup": [
+            "reserve",
+            "terms",
+            "lump",
+            "sum",
+            "instalments"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Lwmp swm a rhandaliadau - Telerau Wrth Gefn",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "8e235a65-5ea2-4fff-ba3b-6cdb74195436",
+          "label": "Lump sum amount",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 100,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "0",
+          "max": "1000000000",
+          "reference": "LSA",
+          "welshLabel": "Cyfanswm y lwmp swm"
+        },
+        {
+          "id": "1393acda-7a35-4d65-859d-6298e1470cf1",
+          "label": "Instalment amount",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 200,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "0",
+          "max": "1000000000",
+          "reference": "IAMT",
+          "welshLabel": "Swm y rhandaliad"
+        },
+        {
+          "id": "b487696e-dfc9-4c89-80d3-337a4319e925",
+          "label": "Instalment start date",
+          "resultPromptRule": "mandatory",
+          "type": "DATE",
+          "sequence": 300,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "welshLabel": "Dyddiad cychwyn y rhandaliad"
+        },
+        {
+          "id": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+          "label": "Payment frequency",
+          "resultPromptRule": "mandatory",
+          "type": "FIXL",
+          "sequence": 400,
+          "fixedListId": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PF",
+          "welshLabel": "Amlder y taliadau"
+        }
+      ]
+    },
+    {
+      "id": "9ba8f03a-5dda-11e8-9c2d-fa7ae01bbebc",
+      "label": "Reserve Terms Instalments only",
+      "shortCode": "RINSTL",
+      "level": "C",
+      "rank": 47700,
+      "isAvailableForCourtExtract": true,
+      "financial": "N",
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "lifeDuration": false,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "pay",
+            "reserve",
+            "terms",
+            "instalments"
+          ]
+        },
+        {
+          "wordGroup": [
+            "reserve",
+            "terms",
+            "instalments"
+          ]
+        }
+      ],
+      "adjournment": "N",
+      "category": "F",
+      "urgent": "N",
+      "convicted": "N",
+      "d20": "N",
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "jurisdiction": "M",
+      "welshLabel": "Rhandaliadau yn unig - Telerau Wrth Gefn",
+      "terminatesOffenceProceedings": false,
+      "prompts": [
+        {
+          "id": "1393acda-7a35-4d65-859d-6298e1470cf1",
+          "label": "Instalment amount",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 100,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "min": "0",
+          "max": "1000000000",
+          "reference": "IAMT",
+          "welshLabel": "Swm y rhandaliad"
+        },
+        {
+          "id": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+          "label": "Payment frequency",
+          "resultPromptRule": "mandatory",
+          "type": "FIXL",
+          "sequence": 200,
+          "fixedListId": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "PF",
+          "welshLabel": "Amlder y taliadau"
+        },
+        {
+          "id": "e091af2e-43d0-495d-b3b0-432010358a45",
+          "label": "Instalment start date",
+          "resultPromptRule": "mandatory",
+          "type": "DATE",
+          "sequence": 300,
+          "userGroups": [
+            "Court Clerks",
+            "Legal Advisers"
+          ],
+          "courtExtract": "Y",
+          "financial": "N",
+          "jurisdiction": "B",
+          "reference": "ISTD",
+          "welshLabel": "Dyddiad cychwyn y rhandaliad"
+        }
+      ]
+    }
+  ]
+}

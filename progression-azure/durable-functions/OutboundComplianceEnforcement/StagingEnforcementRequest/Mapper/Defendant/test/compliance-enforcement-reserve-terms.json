@@ -1,0 +1,116 @@
+{
+  "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+  "complianceCorrelationId": "80408a36-f65f-4bb9-844e-705be1e44a5d",
+  "prosecutionCaseURNPRN": "TFL4359536",
+  "prosecutingAuthorityCode": "TFL",
+  "includesGuiltyPlea": true,
+  "reserveTermsResults": [
+    {
+      "judicialResultId": "b8f91621-135a-4c26-8b38-e83dbeda0b3f",
+      "judicialResultTypeId": "9ba8f03a-5dda-11e8-9c2d-fa7ae01bbebc",
+      "orderedHearingId": "7669d6a3-ef75-40c7-ac13-8be3a9875c62",
+      "label": "Reserve Terms Instalments only",
+      "isAdjournmentResult": false,
+      "isFinancialResult": true,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "20-01-2020",
+      "category": "Fine",
+      "resultText": "Reserve Terms Instalments only",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false,
+      "judicialResultPrompts": [
+        {
+          "judicialResultPromptTypeId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+          "promptReference": "PF",
+          "label": "Payment frequency",
+          "courtExtract": "can be entered into court extract",
+          "value": "WEEKLY"
+        },
+        {
+          "judicialResultPromptTypeId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+          "promptReference": "IAMT",
+          "label": "Installment amount",
+          "courtExtract": "can be entered into court extract",
+          "value": "40"
+        },
+        {
+          "judicialResultPromptTypeId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+          "promptReference": "instalmentStartDate",
+          "label": "Installment start date",
+          "courtExtract": "can be entered into court extract",
+          "value": "2020-12-12"
+        }
+      ]
+    },
+    {
+      "judicialResultId": "b3303496-c090-4365-adc6-b2e6fe7a40fe",
+      "judicialResultTypeId": "d6e93aae-5dd7-11e8-9c2d-fa7ae01bbebc",
+      "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+      "label": "Reserve Terms Lump sum plus instalments",
+      "isAdjournmentResult": false,
+      "isFinancialResult": true,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "20-01-2020",
+      "category": "Fine",
+      "resultText": "Reserve Terms Lump",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false
+    }
+  ],
+  "impositionResults": [
+    {
+      "judicialResultId": "c6d26764-5b6a-4e30-8860-2e1093f89a6e",
+      "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+      "judicialResultTypeId": "12a8f03a-5dda-11e8-9c2d-fa7ae01bbebc",
+      "label": "Imprisonment",
+      "isAdjournmentResult": false,
+      "isFinancialResult": true,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "20-01-2020",
+      "category": "Prison",
+      "resultText": "Imprisonment court order",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false
+    }
+  ],
+  "collectionOrderResults": [
+    {
+      "judicialResultId": "b3303496-c090-4365-adc6-b2e6fe7a40fe",
+      "judicialResultTypeId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+      "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+      "label": "Collection order",
+      "isAdjournmentResult": false,
+      "isFinancialResult": true,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "20-01-2020",
+      "category": "Fine",
+      "resultText": "collection order",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false
+    }
+  ]
+}

@@ -597,6 +597,132 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           schema:
             !include json/schema/progression.unlink-cases.json
 
+/nows:
+  post:
+      description: |
+        Request to generate a now document
+        ...
+          (mapping):
+              requestType: application/vnd.progression.add-now-document-request+json
+              name: progression.add-now-document-request
+        ...
+      body:
+        application/vnd.progression.add-now-document-request+json:
+            example:
+             !include json/progression.add-now-document-request.json
+            schema:
+             !include json/schema/progression.add-now-document-request.json
+      responses:
+            202:
+                description: OK
+
+/informant-register:
+  post:
+    description: |
+      add informant register
+      ...
+      (mapping):
+          requestType: application/vnd.progression.add-informant-register+json
+          name: progression.add-informant-register
+      ...
+    body:
+      application/vnd.progression.add-informant-register+json:
+        example:
+          !include json/progression.add-informant-register.json
+        schema:
+          !include json/schema/progression.add-informant-register.json
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/informant-register/generate:
+  post:
+      description: |
+        Request for generation of informant register by register date
+        ...
+        (mapping):
+            requestType: application/vnd.progression.generate-informant-register+json
+            name: progression.generate-informant-register
+        (mapping):
+            requestType: application/vnd.progression.generate-informant-register-by-date+json
+            name: progression.generate-informant-register-by-date
+        ...
+      body:
+        application/vnd.progression.generate-informant-register+json: !!null
+        application/vnd.progression.generate-informant-register-by-date+json:
+          example:
+            !include json/progression.generate-informant-register-by-date.json
+          schema:
+            !include json/schema/progression.generate-informant-register-by-date.json
+      responses:
+            202:
+                description: OK
+
+/court-register:
+  post:
+      description: |
+        add court register
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-court-register+json
+            name: progression.add-court-register
+        ...
+      body:
+        application/vnd.progression.add-court-register+json:
+            example:
+              !include json/progression.add-court-register.json
+            schema:
+              !include json/schema/progression.add-court-register.json
+      responses:
+        202:
+          description: OK
+
+/prison-court-register:
+  post:
+    description: |
+      add prison court register
+      ...
+      (mapping):
+          requestType: application/vnd.progression.add-prison-court-register+json
+          name: progression.add-prison-court-register
+      ...
+    body:
+      application/vnd.progression.add-prison-court-register+json:
+        example:
+          !include json/progression.add-prison-court-register.json
+        schema:
+          !include json/schema/progression.add-prison-court-register.json
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/court-register/generate:
+  post:
+      description: |
+        Request for generation of court register per court center
+        ...
+        (mapping):
+            requestType: application/vnd.progression.generate-court-register+json
+            name: progression.generate-court-register
+        (mapping):
+            requestType: application/vnd.progression.generate-court-register-by-date+json
+            name: progression.generate-court-register-by-date
+        ...
+      body:
+        application/vnd.progression.generate-court-register+json: !!null
+        application/vnd.progression.generate-court-register-by-date+json:
+          example:
+            !include json/progression.generate-court-register-by-date.json
+          schema:
+            !include json/schema/progression.generate-court-register-by-date.json
+      responses:
+            202:
+                description: OK
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 /cases/{caseId} :

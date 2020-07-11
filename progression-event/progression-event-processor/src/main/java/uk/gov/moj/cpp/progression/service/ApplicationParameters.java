@@ -2,6 +2,9 @@ package uk.gov.moj.cpp.progression.service;
 
 import uk.gov.justice.services.common.configuration.Value;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.inject.Inject;
 
 public class ApplicationParameters {
@@ -56,7 +59,25 @@ public class ApplicationParameters {
     @Value(key = "endClientHost", defaultValue = "")
     private String endClientHost;
 
+    @Inject
+    @Value(key = "pcr_email_template_id")
+    private String prisonCourtRegisterEmailTemplateId;
 
+    @Inject
+    @Value(key = "cr_email_template_id")
+    private String courtRegisterEmailTemplateId;
+
+    @Inject
+    @Value(key = "ir_email_template_id")
+    private String informantRegisterEmailTemplateId;
+
+    @Inject
+    @Value(key = "now_email_template_id")
+    private String nowEmailTemplateId;
+
+    @Inject
+    @Value(key = "now_sla_email_template_id")
+    private String nowSlaEmailTemplateId;
 
     public String getNcesEmailTemplateId() {
 
@@ -108,5 +129,16 @@ public class ApplicationParameters {
 
     public String getEndClientHost() {
         return endClientHost;
+    }
+
+    public String getEmailTemplateId(final String templateName) {
+        final Map<String, String> emailTemplatesMap = new HashMap<>();
+        emailTemplatesMap.put("pcr_standard", this.prisonCourtRegisterEmailTemplateId);
+        emailTemplatesMap.put("ir_standard", this.informantRegisterEmailTemplateId);
+        emailTemplatesMap.put("cr_standard", this.courtRegisterEmailTemplateId);
+        emailTemplatesMap.put("now_standard_template", this.nowEmailTemplateId);
+        emailTemplatesMap.put("now_sla_template", this.nowSlaEmailTemplateId);
+
+        return emailTemplatesMap.getOrDefault(templateName, "");
     }
 }

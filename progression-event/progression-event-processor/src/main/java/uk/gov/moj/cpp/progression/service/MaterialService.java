@@ -25,6 +25,7 @@ public class MaterialService {
     protected static final String UPLOAD_MATERIAL = "material.command.upload-file";
     protected static final String MATERIAL_METADETA_QUERY = "material.query.material-metadata";
     private static final Logger LOGGER = LoggerFactory.getLogger(MaterialService.class.getCanonicalName());
+    private static final String FIELD_MATERIAL_ID = "materialId";
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
@@ -40,20 +41,19 @@ public class MaterialService {
         LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
         final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
         final JsonObject uploadMaterialPayload = Json.createObjectBuilder()
-                .add("materialId", materialId.toString())
+                .add(FIELD_MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", fileServiceId.toString())
                 .build();
 
         LOGGER.info("requesting material service to upload file id {} for material {}", fileServiceId, materialId);
 
         sender.send(assembleEnvelopeWithPayloadAndMetaDetails(uploadMaterialPayload, UPLOAD_MATERIAL, userId.toString()));
-
     }
 
     public Optional<JsonObject> getMaterialMetadata(final JsonEnvelope envelope, final UUID materialId) {
 
         final JsonObject requestParameter = createObjectBuilder()
-                .add("materialId", materialId.toString()).build();
+                .add(FIELD_MATERIAL_ID, materialId.toString()).build();
 
         LOGGER.info("materialId {} material metadata request ", materialId);
 
@@ -66,6 +66,4 @@ public class MaterialService {
         }
         return Optional.ofNullable(materialMetadata.payloadAsJsonObject());
     }
-
-
 }

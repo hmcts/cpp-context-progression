@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-register-recorded.json",
+  "type": "object",
+  "properties": {
+    "courtCentreId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtRegister": {
+      "$ref": "http://justice.gov.uk/core/courts/courtRegisterDocument/courtRegisterDocumentRequest.json"
+    }
+  },
+  "required": [
+    "courtCentreId",
+    "courtRegister"
+  ],
+  "additionalProperties": false
+}

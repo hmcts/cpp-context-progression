@@ -433,6 +433,207 @@ protocols: [ HTTP, HTTPS ]
         body:
           application/vnd.progression.query.case-lsm-info+json:
 
+/nows/request/{requestId}:
+  uriParameters:
+        requestId:
+          description: ID of gob request Id to get
+          type: string
+  get:
+      description: |
+        Return the now document requests for the request Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.now-document-requests-by-request-id+json
+            name: progression.query.now-document-requests-by-request-id
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.now-document-requests-by-request-id+json:
+                    example:  !include json/progression.query.now-document-requests-by-request-id.json
+                    schema:  !include json/schema/progression.query.now-document-requests-by-request-id.json
+
+/nows/hearing/{hearingId}:
+  uriParameters:
+        hearingId:
+          description: hearing Id
+          type: string
+  get:
+      description: |
+        Return the now document requests for the hearing Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.now-document-request-by-hearing+json
+            name: progression.query.now-document-request-by-hearing
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.now-document-request-by-hearing+json:
+                    example:  !include json/progression.query.now-document-request-by-hearing.json
+                    schema:  !include json/schema/progression.query.now-document-request-by-hearing.json
+
+/informant-register/request/{requestStatus}:
+  uriParameters:
+        requestStatus:
+          description: informant register document by request sttaus
+          type: string
+  get:
+      description: |
+        Return all the informant register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.informant-register-document-request+json
+            name: progression.query.informant-register-document-request
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.informant-register-document-request+json:
+                    example:  !include json/progression.query.informant-register-document-request.json
+                    schema:  !include json/schema/progression.query.informant-register-document-request.json
+
+/informant-register/material/{materialId}:
+  uriParameters:
+        materialId:
+          description: material id for particular prosecution authority
+          type: string
+  get:
+      description: |
+        Return all the informant register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.informant-register-document-by-material+json
+            name: progression.query.informant-register-document-by-material
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.informant-register-document-by-material+json:
+                    example:  !include json/progression.query.informant-register-document-by-material.json
+                    schema:  !include json/schema/progression.query.informant-register-document-by-material.json
+
+/informant-register/requestByDate:
+  get:
+      description: |
+        Return all the informant register document generation requests by request date
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.informant-register-document-by-request-date+json
+            name: progression.query.informant-register-document-by-request-date
+        ...
+      queryParameters:
+          registerDate:
+            description: registerDate
+            type: string
+            required: true
+          prosecutionAuthorityCode:
+            description: comma seperated prosecution authorities
+            type: string
+            required: false
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.informant-register-document-by-request-date+json:
+                    example:  !include json/progression.query.informant-register-document-by-request-date.json
+                    schema:  !include json/schema/progression.query.informant-register-document-by-request-date.json
+
+/court-register/request/{requestStatus}:
+  uriParameters:
+        requestStatus:
+          description: court register request status
+          type: string
+  get:
+      description: |
+        Return all the court register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-register-document-request+json
+            name: progression.query.court-register-document-request
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-register-document-request+json:
+                    example:  !include json/progression.query.court-register-document-request.json
+                    schema:  !include json/schema/progression.query.court-register-document-request.json
+
+/court-register/material/{materialId}:
+  uriParameters:
+        materialId:
+          description: material id for particular court center
+          type: string
+  get:
+      description: |
+        Return all the court register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-register-document-by-material+json
+            name: progression.query.court-register-document-by-material
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-register-document-by-material+json:
+                    example:  !include json/progression.query.court-register-document-by-material.json
+                    schema:  !include json/schema/progression.query.court-register-document-by-material.json
+
+/court-register/requestByDate:
+  get:
+      description: |
+        Return all the court register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-register-document-by-request-date+json
+            name: progression.query.court-register-document-by-request-date
+        ...
+
+      queryParameters:
+            registerDate:
+              description: registerDate
+              type: string
+              required: true
+            courtHouse:
+              description: comma seperated court house names
+              type: string
+              required: false
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-register-document-by-request-date+json:
+                    example:  !include json/progression.query.court-register-document-by-request-date.json
+                    schema:  !include json/schema/progression.query.court-register-document-by-request-date.json
+
+/prison-court-register/request/{courtCentreId}:
+  uriParameters:
+        courtCentreId:
+          description: court centre id for particular court centre
+          type: string
+  get:
+      description: |
+        Return all the prison court register document requests by court centre Id
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.prison-court-register-document-by-court-centre+json
+            name: progression.query.prison-court-register-document-by-court-centre
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.prison-court-register-document-by-court-centre+json:
+                    example: !include json/progression.query.prison-court-register-document-by-court-centre.json
+                    schema: !include json/schema/progression.query.prison-court-register-document-by-court-centre.json
+
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 

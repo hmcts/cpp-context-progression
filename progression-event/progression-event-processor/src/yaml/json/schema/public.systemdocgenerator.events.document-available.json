@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/document-available.json",
+  "type": "object",
+  "properties": {
+    "payloadFileServiceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "templateIdentifier": {
+      "type": "string"
+    },
+    "conversionFormat": {
+      "type": "string"
+    },
+    "requestedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "documentFileServiceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "generatedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generateVersion" : {
+      "type": "integer"
+    },
+    "sourceCorrelationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "originatingSource": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "payloadFileServiceId",
+    "templateIdentifier",
+    "conversionFormat",
+    "requestedTime",
+    "documentFileServiceId",
+    "generatedTime",
+    "generateVersion"
+  ]
+}

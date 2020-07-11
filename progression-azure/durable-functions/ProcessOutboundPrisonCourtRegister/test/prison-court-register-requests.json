@@ -1,0 +1,111 @@
+[
+  {
+    "requestId": "5bf2ab58-1f0a-447c-af67-34ae6f075769",
+    "prosecutionAuthorityCode": "TVL",
+    "prosecutionCaseReference": "/TFL000000034",
+    "originator": "Courts",
+    "imposingCourt": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "plea": {
+      "includesOnline": false,
+      "includesGuilty": true
+    },
+    "collectionOrder": {
+      "isApplicationForBenefitsDeduction": false,
+      "isAttachmentOfEarnings": false,
+      "isCollectionOrderMade": false
+    },
+    "paymentTerms": {
+      "paymentTermsType": "FORTNIGHTLY_INSTALMENTS",
+      "instalmentAmount": null,
+      "instalmentStartDate": "2020-03-20",
+      "parentGuardianToPay": false
+    },
+    "imposition": [
+      {
+        "offenceCode": "CA03011",
+        "impositionResultCode": "FVS",
+        "impositionAmount": 12
+      },
+      {
+        "offenceCode": "CA03011",
+        "impositionResultCode": "FO",
+        "impositionAmount": 23
+      },
+      {
+        "offenceCode": "CA03011",
+        "impositionResultCode": "FO",
+        "impositionAmount": 24
+      }
+    ],
+    "defendant": {
+      "address1": "Flat 1, Armageddon House",
+      "address2": "13 Old Road",
+      "address3": "Giggleswick",
+      "address4": "Merton",
+      "address5": "London",
+      "dateOfBirth": "1998-09-18",
+      "dateOfSentence": "2020-03-10",
+      "documentLanguage": "ENGLISH",
+      "emailAddress1": "email_primary@ghijkl.com",
+      "forenames": "Adult Adult Offender",
+      "hearingLanguage": "ENGLISH",
+      "nationalInsuranceNumber": "AE123456C",
+      "postcode": "LA17 1AB",
+      "surname": "Smith",
+      "telephoneNumberHome": "02099999999",
+      "telephoneNumberMobile": "0754321007",
+      "title": "MR"
+    }
+  },
+  {
+    "requestId": "80408a36-f65f-4bb9-844e-705be1e44a5d",
+    "prosecutionAuthorityCode": "TFL",
+    "prosecutionCaseReference": "TFL4359536",
+    "originator": "Courts",
+    "imposingCourt": "853b1ff8-fc2a-44d1-a621-0cd16419f54a",
+    "plea": {
+      "includesOnline": false,
+      "includesGuilty": true
+    },
+    "collectionOrder": {
+      "isApplicationForBenefitsDeduction": false,
+      "isAttachmentOfEarnings": false,
+      "isCollectionOrderMade": true,
+      "reserveTerms": {
+        "reserveTermsType": "INSTALMENTS_ONLY",
+        "installments": {}
+      }
+    },
+    "paymentTerms": {
+      "paymentTermsType": "BY_DATE",
+      "payByDate": "2020-12-12",
+      "instalmentAmount": 12.13,
+      "instalmentStartDate": "2020-01-01",
+      "parentGuardianToPay": true,
+      "defaultDaysInJail": "20",
+      "paymentCardRequired": "Y"
+    },
+    "imposition": [
+      {
+        "offenceCode": "PS90010",
+        "impositionResultCode": "FCOST",
+        "impositionAmount": 20,
+        "majorCreditor": "TFL2"
+      }
+    ],
+    "defendant": {
+      "address1": "Flat 1",
+      "address2": "1 Old Road",
+      "address3": "London",
+      "address4": "Merton",
+      "dateOfBirth": "1965-12-27",
+      "dateOfSentence": "20-01-2020",
+      "documentLanguage": "ENGLISH",
+      "forenames": "Fred",
+      "hearingLanguage": "ENGLISH",
+      "postcode": "SW99 1AA",
+      "surname": "Smith",
+      "title": "MR"
+    }
+  }
+]

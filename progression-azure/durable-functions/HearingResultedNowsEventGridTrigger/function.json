@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "type": "eventGridTrigger",
+      "name": "eventGridEvent",
+      "direction": "in"
+    },
+    {
+      "name": "orchestrationClient",
+      "type": "orchestrationClient",
+      "direction": "in"
+  }
+  ]
+}

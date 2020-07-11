@@ -237,6 +237,7 @@ public class HearingAggregate implements Aggregate {
         }
 
         updatedHearingBuilder
+                .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
                 .withIsBoxHearing(hearing.getIsBoxHearing())
                 .withId(hearing.getId())
                 .withHearingDays(hearing.getHearingDays())

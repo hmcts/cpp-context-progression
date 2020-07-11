@@ -6,17 +6,15 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 
 import java.util.Optional;
@@ -29,7 +27,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -37,9 +34,6 @@ public class NotificationNotifyServiceTest {
 
     @Mock
     private Sender sender;
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
     private MaterialUrlGenerator materialUrlGenerator;
@@ -66,13 +60,12 @@ public class NotificationNotifyServiceTest {
 
         when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(letterUrl);
 
-        notificationNotifyService.sendLetterNotification(event, notificationId, materialId);
+        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, true);
 
-        final ArgumentCaptor<JsonEnvelope> envelopeCaptor = forClass(JsonEnvelope.class);
+        final ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
+        verify(sender).sendAsAdmin(captor.capture());
 
-        verify(sender).sendAsAdmin(envelopeCaptor.capture());
-
-        final JsonEnvelope printCommandEnvelope = envelopeCaptor.getValue();
+        final Envelope<?> printCommandEnvelope = captor.getValue();
 
         final Metadata metadata = printCommandEnvelope.metadata();
 
@@ -86,11 +79,11 @@ public class NotificationNotifyServiceTest {
             fail();
         }
 
-        final JsonObject payload = printCommandEnvelope.payloadAsJsonObject();
+        final JsonObject payload = (JsonObject) printCommandEnvelope.payload();
 
         with(payload.toString())
                 .assertThat("notificationId", is(notificationId.toString()))
                 .assertThat("letterUrl", is(letterUrl))
-        ;
+                .assertThat("postage", is("first"));
     }
 }

@@ -13,13 +13,13 @@
         "type": "object",
         "properties": {
           "caseId": {
-            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           },
           "caseUrn": {
             "type": "string"
           },
           "linkGroupId": {
-            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           }
         },
         "required": [

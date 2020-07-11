@@ -4,6 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_ACCEPTED;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_FAILED;
+import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_NOT_SENT;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_SUCCEEDED;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -70,12 +71,12 @@ public class NotificationListener {
         notificationStatus.setNotificationType(NotificationType.PRINT);
         notificationStatus.setUpdated(updated);
 
-        if(payload.containsKey(CASE_ID)) {
+        if (payload.containsKey(CASE_ID)) {
             final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
             notificationStatus.setCaseId(caseId);
         }
 
-        if(payload.containsKey(APPLICATION_ID)) {
+        if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = UUID.fromString(payload.getString(APPLICATION_ID));
             notificationStatus.setCaseId(applicationId);
         }
@@ -90,44 +91,14 @@ public class NotificationListener {
         LOGGER.info("Received progression.event.email-requested event {}", event);
 
         final JsonObject jsonObject = event.payloadAsJsonObject();
-
+        final ZonedDateTime updated = event.metadata().createdAt().orElse(ZonedDateTime.now());
         final JsonArray notifications = jsonObject.getJsonArray(NOTIFICATIONS);
 
         for (final JsonValue emailPayload : notifications) {
 
             final JsonObject payload = (JsonObject) emailPayload;
 
-            final UUID notificationId = UUID.fromString(payload.getString(NOTIFICATION_ID));
-
-            final ZonedDateTime updated = event.metadata().createdAt().orElse(ZonedDateTime.now());
-
-            final NotificationStatusEntity notificationStatus = new NotificationStatusEntity();
-            notificationStatus.setNotificationId(notificationId);
-            notificationStatus.setNotificationStatus(NOTIFICATION_REQUEST);
-            notificationStatus.setNotificationType(NotificationType.EMAIL);
-            notificationStatus.setUpdated(updated);
-
-            if (jsonObject.containsKey(APPLICATION_ID)) {
-                final UUID applicationId = UUID.fromString(jsonObject.getString(APPLICATION_ID));
-                notificationStatus.setApplicationId(applicationId);
-            }
-
-            if (jsonObject.containsKey(CASE_ID)) {
-                final UUID caseId = UUID.fromString(jsonObject.getString(CASE_ID));
-                notificationStatus.setCaseId(caseId);
-            }
-
-            if (jsonObject.containsKey(MATERIAL_ID)) {
-                final UUID materialId = UUID.fromString(jsonObject.getString(MATERIAL_ID));
-                notificationStatus.setMaterialId(materialId);
-            }
-
-            if (payload.containsKey(PAYLOAD)) {
-                final String payloadString = payload.getString(PAYLOAD);
-                notificationStatus.setPayload(payloadString);
-            }
-
-            notificationStatusRepository.save(notificationStatus);
+            createNotificationStatus(jsonObject, payload, NOTIFICATION_REQUEST, updated);
         }
     }
 
@@ -139,23 +110,44 @@ public class NotificationListener {
 
         final UUID notificationId = UUID.fromString(payload.getString(NOTIFICATION_ID));
 
-        final ZonedDateTime updated = ZonedDateTimes.fromString(payload.getString(ACCEPTED_TIME));
-
         final NotificationStatusEntity notificationStatus = getPrintStatusWith(notificationId, NOTIFICATION_REQUEST_ACCEPTED);
 
-        if(payload.containsKey(CASE_ID)) {
+        if (payload.containsKey(CASE_ID)) {
             final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
             notificationStatus.setCaseId(caseId);
         }
 
-        if(payload.containsKey(APPLICATION_ID)) {
+        if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = UUID.fromString(payload.getString(APPLICATION_ID));
             notificationStatus.setApplicationId(applicationId);
         }
 
+        if (payload.containsKey(MATERIAL_ID)) {
+            final UUID materialId = UUID.fromString(payload.getString(MATERIAL_ID));
+            notificationStatus.setMaterialId(materialId);
+        }
+
+        if (payload.containsKey(ACCEPTED_TIME)) {
+            final ZonedDateTime updated = ZonedDateTimes.fromString(payload.getString(ACCEPTED_TIME));
+            notificationStatus.setUpdated(updated);
+        }
+
         notificationStatus.setNotificationStatus(NOTIFICATION_REQUEST_ACCEPTED);
-        notificationStatus.setUpdated(updated);
         notificationStatusRepository.save(notificationStatus);
+    }
+
+    @Transactional
+    @Handles("progression.event.email-request-not-sent")
+    public void emailRequestNotSent(final JsonEnvelope event) {
+
+        LOGGER.info("Received progression.event.email-request-not-sent event {}", event);
+
+        final JsonObject jsonObject = event.payloadAsJsonObject();
+        final ZonedDateTime updated = event.metadata().createdAt().orElse(ZonedDateTime.now());
+
+        final JsonObject payload = jsonObject.getJsonObject("notification");
+
+        createNotificationStatus(jsonObject, payload, NOTIFICATION_REQUEST_NOT_SENT, updated);
     }
 
     @Transactional
@@ -169,14 +161,19 @@ public class NotificationListener {
 
         final NotificationStatusEntity notificationStatus = getPrintStatusWith(notificationId, NOTIFICATION_REQUEST_FAILED);
 
-        if(payload.containsKey(CASE_ID)) {
+        if (payload.containsKey(CASE_ID)) {
             final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
             notificationStatus.setCaseId(caseId);
         }
 
-        if(payload.containsKey(APPLICATION_ID)) {
+        if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = UUID.fromString(payload.getString(APPLICATION_ID));
             notificationStatus.setApplicationId(applicationId);
+        }
+
+        if (payload.containsKey(MATERIAL_ID)) {
+            final UUID materialId = UUID.fromString(payload.getString(MATERIAL_ID));
+            notificationStatus.setMaterialId(materialId);
         }
 
         notificationStatus.setNotificationStatus(NOTIFICATION_REQUEST_FAILED);
@@ -200,14 +197,19 @@ public class NotificationListener {
 
         final NotificationStatusEntity notificationStatus = getPrintStatusWith(notificationId, NOTIFICATION_REQUEST_SUCCEEDED);
 
-        if(payload.containsKey(CASE_ID)) {
+        if (payload.containsKey(CASE_ID)) {
             final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
             notificationStatus.setCaseId(caseId);
         }
 
-        if(payload.containsKey(APPLICATION_ID)) {
+        if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = UUID.fromString(payload.getString(APPLICATION_ID));
             notificationStatus.setApplicationId(applicationId);
+        }
+
+        if (payload.containsKey(MATERIAL_ID)) {
+            final UUID materialId = UUID.fromString(payload.getString(MATERIAL_ID));
+            notificationStatus.setMaterialId(materialId);
         }
 
         notificationStatus.setNotificationStatus(NOTIFICATION_REQUEST_SUCCEEDED);
@@ -233,6 +235,38 @@ public class NotificationListener {
 
     private Map<NotificationStatus, NotificationStatusEntity> printStatuses(final UUID notificationId) {
         return Maps.uniqueIndex(notificationStatusRepository.findByNotificationId(notificationId), NotificationStatusEntity::getNotificationStatus);
+    }
+
+    private void createNotificationStatus(final JsonObject jsonObject, final JsonObject payload, final NotificationStatus notificationRequest, final ZonedDateTime updated) {
+        final UUID notificationId = UUID.fromString(payload.getString(NOTIFICATION_ID));
+
+        final NotificationStatusEntity notificationStatus = new NotificationStatusEntity();
+        notificationStatus.setNotificationId(notificationId);
+        notificationStatus.setNotificationStatus(notificationRequest);
+        notificationStatus.setNotificationType(NotificationType.EMAIL);
+        notificationStatus.setUpdated(updated);
+
+        if (jsonObject.containsKey(APPLICATION_ID)) {
+            final UUID applicationId = UUID.fromString(jsonObject.getString(APPLICATION_ID));
+            notificationStatus.setApplicationId(applicationId);
+        }
+
+        if (jsonObject.containsKey(CASE_ID)) {
+            final UUID caseId = UUID.fromString(jsonObject.getString(CASE_ID));
+            notificationStatus.setCaseId(caseId);
+        }
+
+        if (jsonObject.containsKey(MATERIAL_ID)) {
+            final UUID materialId = UUID.fromString(jsonObject.getString(MATERIAL_ID));
+            notificationStatus.setMaterialId(materialId);
+        }
+
+        if (payload.containsKey(PAYLOAD)) {
+            final String payloadString = payload.getString(PAYLOAD);
+            notificationStatus.setPayload(payloadString);
+        }
+
+        notificationStatusRepository.save(notificationStatus);
     }
 
 }

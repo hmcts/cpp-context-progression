@@ -1,0 +1,496 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-05-23"
+            }
+          ],
+          "defendantId": "9edaafe2-3bfa-4c22-8785-21921ed989ab"
+        }
+      ],
+      "defendantReferralReasons": [
+        {
+          "defendantId": "9edaafe2-3bfa-4c22-8785-21921ed989ab",
+          "description": "For trial",
+          "id": "809f7aac-d285-43a5-9fb1-3a894db71530"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-23T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-24T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-25T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-26T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-27T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-28T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-29T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-30T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-31T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-01T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-02T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-03T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-04T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-05T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-06T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-07T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-08T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-09T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-10T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-11T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-12T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-13T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-14T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-15T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-16T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-17T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-18T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-19T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-20T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-21T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-22T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-23T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-24T00:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-06-25T09:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "26b83b58-3197-4584-972a-3329445d8803",
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "caseStatus": "SJP_REFERRAL",
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-05-23T10:57:21.283Z",
+              "id": "9edaafe2-3bfa-4c22-8785-21921ed989ab",
+              "isYouth": false,
+              "masterDefendantId": "9edaafe2-3bfa-4c22-8785-21921ed989ab",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "2d9705af-02ce-4d0e-822b-2e5a09789ead",
+                    "originatingHearingId": "26b83b58-3197-4584-972a-3329445d8803",
+                    "sequenceNumber": 90
+                  },
+                  "chargeDate": "2020-04-18",
+                  "convictionDate": "2020-05-23",
+                  "count": 1,
+                  "id": "2d9705af-02ce-4d0e-822b-2e5a09789ead",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1017",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "3aa2f830-a8ca-4d5e-99c9-21e26b132366",
+                      "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                      "label": "Absolute discharge",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "26b83b58-3197-4584-972a-3329445d8803",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 11600,
+                      "resultText": "Absolute discharge\n",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ],
+                      "welshLabel": "Rhyddhad diamod"
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "ANCILLARY",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "3412a5f0-0273-4502-81d6-fd66978fe052",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "b2e4231b-7e10-42a2-a5b8-1256f9b6c52f",
+                          "label": "Fixed penalty issued by Local Justice Area",
+                          "promptReference": "fixedPenaltyIssuedByLocalJusticeArea",
+                          "promptSequence": 100,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "Fixed penalty issued by Local Justice Area",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "25dd9978-f104-420f-96e2-c7ba13ea2727",
+                          "label": "Fixed penalty Local Justice Area code",
+                          "promptReference": "fixedPenaltyLocalJusticeAreaCode",
+                          "promptSequence": 200,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "10",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "9e000308-3987-4e5d-9724-28949c54906a",
+                          "label": "Fixed penalty offence date",
+                          "promptReference": "fixedPenaltyOffenceDate",
+                          "promptSequence": 300,
+                          "type": "DATE",
+                          "usergroups": [
+                          ],
+                          "value": "01 Jan 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "453f2eff-24f0-4984-a9ea-648085d408ef",
+                          "label": "Fixed penalty DVLA offence code",
+                          "promptReference": "fixedPenaltyDVLAOffenceCode",
+                          "promptSequence": 400,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "DVLA",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "36bc5731-88fa-4c45-9c58-ad44a733a5d3",
+                          "label": "Court contact email address (SPOC)",
+                          "promptReference": "courtContactEmailAddressSPOC",
+                          "promptSequence": 500,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "test@mail.com",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "6601cb85-d544-419d-bc24-683409874676",
+                      "label": "Fixed Penalty Points Removed",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "26b83b58-3197-4584-972a-3329445d8803",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 68900,
+                      "resultText": "Fixed Penalty Points Removed\nFixed penalty issued by Local Justice Area Fixed penalty issued by Local Justice Area\nFixed penalty Local Justice Area code 10\nFixed penalty offence date 01 Jan 2020\nFixed penalty DVLA offence code DVLA\nCourt contact email address (SPOC) test@mail.com",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-05-23",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "2d9705af-02ce-4d0e-822b-2e5a09789ead"
+                  },
+                  "offenceCode": "CA03014",
+                  "offenceDefinitionId": "5d6226b1-2aae-42a8-903f-0b859bd232bc",
+                  "offenceLegislation": "Contrary to section 366(8)(b) and    (9) of the Communications Act 2003.",
+                  "offenceLegislationWelsh": "Yn groes i adran 366(8)(b) a (9) Deddf Cyfathrebu 2003.",
+                  "offenceTitle": "Fail    / refuse give assistance to person executing Communications Act search warrant",
+                  "offenceTitleWelsh": "Methu / gwrthod rhoi cymorth i unigolyn sy'n gweithredu gwarant chwilio dan y Ddeddf Cyfathrebu",
+                  "orderIndex": 1,
+                  "plea": {
+                    "offenceId": "2d9705af-02ce-4d0e-822b-2e5a09789ead",
+                    "originatingHearingId": "26b83b58-3197-4584-972a-3329445d8803",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "NOT_GUILTY"
+                  },
+                  "startDate": "2020-04-10",
+                  "verdict": {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "CA03014",
+                      "offenceDefinitionId": "5d6226b1-2aae-42a8-903f-0b859bd232bc",
+                      "offenceLegislation": "Contrary to section 366(8)(b) and    (9) of the Communications Act 2003.",
+                      "offenceTitle": "Fail    / refuse give assistance to person executing Communications Act search warrant"
+                    },
+                    "offenceId": "2d9705af-02ce-4d0e-822b-2e5a09789ead",
+                    "originatingHearingId": "26b83b58-3197-4584-972a-3329445d8803",
+                    "verdictDate": "2020-05-23",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY_BY_JURY_CONVICTED",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                    }
+                  },
+                  "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+                  "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "???",
+                "bailConditions": "",
+                "bailReasons": "",
+                "custodialEstablishment": {
+                  "custody": "Prison",
+                  "id": "d5c35bad-5e03-3df5-8944-07fe4a983da7",
+                  "name": "HMP Ashfield"
+                },
+                "driverNumber": "MORGA657054459BF",
+                "personDetails": {
+                  "address": {
+                    "address1": "Flat 1, Armageddon House",
+                    "address2": "13 Old Road",
+                    "address3": "Giggleswick",
+                    "address4": "Merton",
+                    "address5": "London",
+                    "postcode": "NE43 1AB"
+                  },
+                  "contact": {
+                    "home": "02099999999",
+                    "mobile": "0754321007",
+                    "primaryEmail": "email_primary@ghijkl.com"
+                  },
+                  "dateOfBirth": "1994-05-30",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Karman Karman Karman",
+                  "gender": "MALE",
+                  "lastName": "Smith",
+                  "nationalInsuranceNumber": "AE123456C",
+                  "nationalityCode": "GBR",
+                  "nationalityDescription": "British",
+                  "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                  "specificRequirements": "no special needs"
+                }
+              },
+              "prosecutionCaseId": "c72666ac-2463-4bc1-b442-0bc066903d69"
+            }
+          ],
+          "id": "c72666ac-2463-4bc1-b442-0bc066903d69",
+          "initiationCode": "J",
+          "originatingOrganisation": "GAEAA01",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Barton House",
+              "address2": "Bond Street",
+              "address3": "Bristol",
+              "postcode": "BS98 1TL"
+            },
+            "majorCreditorCode": "TVL3",
+            "prosecutionAuthorityCode": "TVL",
+            "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+            "prosecutionAuthorityName": "TV Licensing",
+            "prosecutionAuthorityOUCode": "GAEAA01",
+            "prosecutionAuthorityReference": "TVL31347SHNX"
+          },
+          "statementOfFacts": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+          "statementOfFactsWelsh": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017"
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    },
+    "sharedTime": "2020-05-23T11:17:10.222Z"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "informantRegisterDocumentRequests": [
+    {
+      "registerDate": "2020-01-20T00:00:00Z",
+      "hearingDate": "2020-04-17T09:00:00.000Z",
+      "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+      "prosecutionAuthorityCode": "TFL",
+      "majorCreditorCode": "OUCode",
+      "prosecutionAuthorityName": "Barnet county court",
+      "fileName": "InformantRegister_TFL_2020-01-20.csv",
+      "hearingVenue": {
+        "courtHouse": "Name Of Court Center",
+        "ljaName": "Coventry and Warwickshire (Warwickshire) Magistrates' Court",
+        "courtSessions": [
+          {
+            "courtRoom": "Room name",
+            "hearingStartTime": "2020-03-12",
+            "defendants": [
+              {
+                "name": "Fred Smith",
+                "dateOfBirth": "1999-12-27",
+                "address1": "Flat 1",
+                "address2": "1 Old Road",
+                "address3": "London",
+                "address4": "Merton",
+                "postCode": "SW99 1AA",
+                "title": "MR",
+                "firstName": "Fred",
+                "lastName": "Smith",
+                "results": [
+                  {
+                    "cjsResultCode": "1023",
+                    "resultText": "Pay by date /n Reserve Terms Lump sum"
+                  }
+                ],
+                "prosecutionCasesOrApplications": [
+                  {
+                    "caseOrApplicationReference": "TFL4359536",
+                    "offences": [
+                      {
+                        "offenceCode": "PS90010",
+                        "orderIndex": 1,
+                        "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                        "pleaValue": "NOT_GUILTY",
+                        "offenceResults": [
+                          {
+                            "cjsResultCode": "1019",
+                            "resultText": "Pay by date /n Reserve Terms Lump sum"
+                          }
+                        ]
+                      }
+                    ],
+                    "results": [
+                      {
+                        "cjsResultCode": "1020",
+                        "resultText": "Pay by date /n Reserve Terms Lump sum"
+                      }
+                    ],
+                    "arrestSummonsNumber": "ASN_1999999"
+                  }
+                ]
+              },
+              {
+                "name": "Fred Daligarce",
+                "dateOfBirth": "1965-12-27",
+                "address1": "Flat 1",
+                "address2": "1 Old Road",
+                "address3": "London",
+                "address4": "Merton",
+                "postCode": "SW99 1AA",
+                "title": "MR",
+                "firstName": "Fred",
+                "lastName": "Daligarce",
+                "prosecutionCasesOrApplications": [
+                  {
+                    "caseOrApplicationReference": "TFL4359536",
+                    "offences": [
+                      {
+                        "offenceCode": "PS90010",
+                        "orderIndex": 1,
+                        "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                        "pleaValue": "GUILTY"
+                      }
+                    ],
+                    "results": [
+                      {
+                        "cjsResultCode": "1021",
+                        "resultText": "Pay by date /n Reserve Terms Lump sum"
+                      }
+                    ],
+                    "arrestSummonsNumber": "ASN_200000001"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+

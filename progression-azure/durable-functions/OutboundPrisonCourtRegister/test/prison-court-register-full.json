@@ -1,0 +1,178 @@
+[
+  {
+    "hearingId": "598bbda4-f99a-4fa6-958f-10e70ae57858",
+    "hearingDate": "2020-03-25T01:00:00Z",
+    "matchedSubscriptions": [
+      {
+        "id": "f300c115-8220-42a4-95f8-095392dcbc4e",
+        "name": "Employer Subscription",
+        "isNowSubscription": true,
+        "isEDTSubscription": false,
+        "isInformantRegisterSubscription": false,
+        "isCourtRegisterSubscription": false,
+        "isPrisonCourtRegisterSubscription": false,
+        "recipient": {
+          "nowSubscription": "f300c115-8220-42a4-95f8-095392dcbc4e",
+          "recipientFromCase": true,
+          "recipientFromSubscription": false,
+          "recipientFromResults": false,
+          "isApplyDefenceOrganisationDetails": false,
+          "isApplyParentGuardianDetails": false,
+          "isApplyDefendantDetails": false,
+          "isApplyDefendantCustodyDetails": true,
+          "isApplyApplicantDetails": false,
+          "isApplyRespondentDetails": false,
+          "firstName": "firstName1",
+          "middleName": "middleName1",
+          "lastName": "lastName1",
+          "organisationName": "organisationName1",
+          "emailAddress1": "emailAddress11",
+          "emailAddress2": "emailAddress21",
+          "emailTemplateName": ""
+        },
+        "subscriptionVocabulary": {
+          "appearedByVideoLink": false,
+          "appearedInPerson": false,
+          "anyAppearance": false,
+          "inCustody": false,
+          "custodyLocationIsPrison": false,
+          "custodyLocationIsPolice": false,
+          "allNonCustodialResults": false,
+          "atleastOneNonCustodialResult": false,
+          "atleastOneCustodialResult": false,
+          "youthDefendant": false,
+          "adultDefendant": false,
+          "adultOrYouthDefendant": false,
+          "welshCourtHearing": false,
+          "englishCourtHearing": false,
+          "anyCourtHearing": false
+        },
+        "firstClassLetterDelivery": false,
+        "secondClassLetterDelivery": false,
+        "emailDelivery": true,
+        "forDistribution": true,
+        "includedNOWS": [
+          "10115268-8efc-49fe-b8e8-feee216a03da"
+        ],
+        "startDate": "2020-02-28"
+      },
+      {
+        "id": "zzz0c115-8220-42a4-95f8-095392dcbc4e",
+        "name": "Employer Subscription",
+        "isNowSubscription": true,
+        "isEDTSubscription": false,
+        "isInformantRegisterSubscription": false,
+        "isCourtRegisterSubscription": false,
+        "isPrisonCourtRegisterSubscription": false,
+        "recipient": {
+          "nowSubscription": "zzz0c115-8220-42a4-95f8-095392dcbc4e",
+          "recipientFromCase": false,
+          "recipientFromSubscription": false,
+          "recipientFromResults": true,
+          "isApplyDefenceOrganisationDetails": false,
+          "isApplyParentGuardianDetails": false,
+          "isApplyDefendantDetails": false,
+          "isApplyDefendantCustodyDetails": false,
+          "isApplyApplicantDetails": false,
+          "isApplyRespondentDetails": false,
+          "firstName": "firstName2",
+          "middleName": "middleName2",
+          "lastName": "lastName2",
+          "organisationName": "organisationName2",
+          "emailAddress1": "emailAddress12",
+          "emailAddress2": "emailAddress22",
+          "emailTemplateName": ""
+        },
+        "subscriptionVocabulary": {
+          "appearedByVideoLink": false,
+          "appearedInPerson": false,
+          "anyAppearance": false,
+          "inCustody": false,
+          "custodyLocationIsPrison": false,
+          "custodyLocationIsPolice": false,
+          "allNonCustodialResults": false,
+          "atleastOneNonCustodialResult": false,
+          "atleastOneCustodialResult": false,
+          "youthDefendant": false,
+          "adultDefendant": false,
+          "adultOrYouthDefendant": false,
+          "welshCourtHearing": false,
+          "englishCourtHearing": false,
+          "anyCourtHearing": false
+        },
+        "firstClassLetterDelivery": false,
+        "secondClassLetterDelivery": false,
+        "emailDelivery": true,
+        "forDistribution": true,
+        "includedNOWS": [
+          "10115268-8efc-49fe-b8e8-feee216a03da"
+        ],
+        "startDate": "2020-02-28"
+      }
+    ],
+    "registerDefendant": {
+      "id": "50ca140b-d3d0-441e-9048-4e4da9e92ff0",
+      "isYouth": false,
+      "defendantIds": [
+        "50ca140b-d3d0-441e-9048-4e4da9e92ff0"
+      ],
+      "applications": [],
+      "cases": [
+        "68267a5f-a82e-44a3-ab02-77c5e7218864"
+      ],
+      "masterDefendantId": "11111",
+      "results": [
+        {
+          "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+          "defendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "level": "O",
+          "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "judicialResult": {
+            "judicialResultId": "",
+            "orderedHearingId": "",
+            "label": "",
+            "isAdjournmentResult": "",
+            "isFinancialResult": "",
+            "isConvictedResult": "",
+            "isAvailableForCourtExtract": "",
+            "orderedDate": "2020-03-24",
+            "category": "",
+            "resultText": "",
+            "terminatesOffenceProceedings": "",
+            "isLifeDuration": "",
+            "isPublishedAsAPrompt": "",
+            "isExcludedFromResults": "",
+            "isAlwaysPublished": "",
+            "isUrgent": "",
+            "isD20": ""
+          }
+        },
+        {
+          "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+          "defendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "level": "O",
+          "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "judicialResult": {
+            "judicialResultId": "",
+            "orderedHearingId": "",
+            "label": "",
+            "isAdjournmentResult": "",
+            "isFinancialResult": "",
+            "isConvictedResult": "",
+            "isAvailableForCourtExtract": "",
+            "orderedDate": "2020-03-25",
+            "category": "",
+            "resultText": "",
+            "terminatesOffenceProceedings": "",
+            "isLifeDuration": "",
+            "isPublishedAsAPrompt": "",
+            "isExcludedFromResults": "",
+            "isAlwaysPublished": "",
+            "isUrgent": "",
+            "isD20": ""
+          }
+        }
+      ]
+    }
+  }
+]

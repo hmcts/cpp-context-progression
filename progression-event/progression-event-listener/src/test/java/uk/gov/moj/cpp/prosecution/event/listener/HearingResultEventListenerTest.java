@@ -24,6 +24,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -351,8 +352,17 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getId(), is(hearingId));
         assertThat(savedHearing1.getCourtApplications(), notNullValue());
         assertThat(savedHearing1.getCourtApplications().get(0).getId(), is(courtApplicationId));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().get(0).getLabel(), is("PublishedForNowsFALSE"));
+
         assertThat(savedHearing1.getProsecutionCases(), notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getDefendantCaseJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getDefendantCaseJudicialResults().get(0).getLabel(),
+                is("PublishedForNowsFALSE"));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults().get(0).getLabel(),
+                is("PublishedForNowsFALSE"));
     }
 
     private List<CourtApplication> getCourtApplications(final UUID courtApplicationId) {
@@ -363,6 +373,8 @@ public class HearingResultEventListenerTest {
                 .withLinkedCaseId(randomUUID())
                 .withOrderingCourt(CourtCentre.courtCentre().build())
                 .withRespondents(singletonList(CourtApplicationRespondent.courtApplicationRespondent().build()))
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
+                        JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                 .build());
     }
 
@@ -370,8 +382,12 @@ public class HearingResultEventListenerTest {
         final Defendant defendant = Defendant.defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(true)
+                .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
+                        JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                 .withOffences(singletonList(Offence.offence()
                         .withId(randomUUID())
+                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
+                                JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                         .build()))
                 .build();
         return ProsecutionCase.prosecutionCase()

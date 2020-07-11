@@ -230,7 +230,7 @@ public class ProgressionService {
                 .withCroNumber(matchedDefendant.getCroNumber())
                 .withAliases(matchedDefendant.getAliases())
                 .withPncId(matchedDefendant.getPncId())
-                .withJudicialResults(matchedDefendant.getJudicialResults());
+                .withDefendantCaseJudicialResults(matchedDefendant.getDefendantCaseJudicialResults());
         if (nonNull(matchedDefendant.getPersonDefendant()) &&
                 nonNull(matchedDefendant.getPersonDefendant().getPersonDetails()) &&
                 nonNull(matchedDefendant.getPersonDefendant().getPersonDetails().getDateOfBirth())) {
@@ -367,7 +367,7 @@ public class ProgressionService {
                 .withCroNumber(defendantEntity.getCroNumber())
                 .withAliases(defendantEntity.getAliases())
                 .withPncId(defendantEntity.getPncId())
-                .withJudicialResults(defendantEntity.getJudicialResults())
+                .withJudicialResults(defendantEntity.getDefendantCaseJudicialResults())
                 .build();
     }
 
@@ -513,9 +513,7 @@ public class ProgressionService {
     public Optional<CourtApplication> getCourtApplicationByIdTyped(final JsonEnvelope envelope, final String courtApplicationId) {
         final Optional<JsonObject> jsonObject = getCourtApplicationById(envelope, courtApplicationId);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(String.format("getCourtApplicationByIdTyped courtApplication: %s payload: %s", courtApplicationId, jsonObject.toString())
-            );
-
+            LOGGER.info(String.format("getCourtApplicationByIdTyped courtApplication: %s payload: %s", courtApplicationId, jsonObject.toString()));
         }
         return jsonObject.map(json -> jsonObjectConverter.convert(json.getJsonObject("courtApplication"), CourtApplication.class));
     }

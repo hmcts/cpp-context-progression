@@ -13,6 +13,7 @@ public class NotificationRequestAccepted {
 
     private final UUID caseId;
     private final UUID applicationId;
+    private final UUID materialId;
     private final UUID notificationId;
     private final ZonedDateTime acceptedTime;
 
@@ -20,10 +21,12 @@ public class NotificationRequestAccepted {
     public NotificationRequestAccepted(
             @JsonProperty("caseId") final UUID caseId,
             @JsonProperty("applicationId") final UUID applicationId,
+            @JsonProperty("materialId") final UUID materialId,
             @JsonProperty("notificationId") final UUID notificationId,
             @JsonProperty("acceptedTime") final ZonedDateTime acceptedTime) {
         this.caseId = caseId;
         this.applicationId = applicationId;
+        this.materialId = materialId;
         this.notificationId = notificationId;
         this.acceptedTime = acceptedTime;
     }
@@ -42,5 +45,9 @@ public class NotificationRequestAccepted {
 
     public ZonedDateTime getAcceptedTime() {
         return acceptedTime;
+    }
+
+    public UUID getMaterialId() {
+        return materialId;
     }
 }

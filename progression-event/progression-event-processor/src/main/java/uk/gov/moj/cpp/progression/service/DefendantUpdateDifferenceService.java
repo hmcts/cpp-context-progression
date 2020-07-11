@@ -33,7 +33,7 @@ public class DefendantUpdateDifferenceService {
                 .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
                 .withDefenceOrganisation(originDefendant.getDefenceOrganisation())
                 .withPncId(originDefendant.getPncId())
-                .withJudicialResults(originDefendant.getJudicialResults())
+                .withJudicialResults(originDefendant.getDefendantCaseJudicialResults())
                 .withAliases(originDefendant.getAliases())
                 .withIsYouth(originDefendant.getIsYouth())
                 .withCroNumber(originDefendant.getCroNumber())

@@ -1,0 +1,93 @@
+{
+  "judicialResults": [
+    {
+      "judicialResultId": "c6d26764-5b6a-4e30-8860-2e1093f89a6e",
+      "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+      "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+      "label": "Imprisonment",
+      "isAdjournmentResult": false,
+      "isFinancialResult": false,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "2020-01-20",
+      "category": "Prison",
+      "resultText": "Imprisonment court order",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false,
+      "level": "D",
+      "judicialResultPrompts": [
+        {
+          "judicialResultPromptTypeId": "a9ad5002-ea38-4374-a475-4b352cdfa208",
+          "promptReference": "witnessName",
+          "usergroups": [
+
+          ]
+        },
+        {
+          "judicialResultPromptTypeId": "1bcdae76-37f8-4331-9076-fd46dbd4b1fd"
+        }
+      ],
+      "primary": true,
+      "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b"
+    },
+    {
+      "judicialResultId": "b8f91621-135a-4c26-8b38-e83dbeda0b3d",
+      "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd2",
+      "orderedHearingId": "7669d6a3-ef75-40c7-ac13-8be3a9875c62",
+      "label": "Imprisonment",
+      "isAdjournmentResult": false,
+      "isFinancialResult": true,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "2020-01-20",
+      "category": "Fine",
+      "resultText": "Financial Penalty",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false,
+      "level": "C",
+      "judicialResultPrompts": [
+        {
+          "judicialResultPromptTypeId": "a9ad5002-ea38-4374-a475-4b352cdfa208"
+        },
+        {
+          "judicialResultPromptTypeId": "1bcdae76-37f8-4331-9076-fd46dbd4b1fc"
+        }
+      ],
+      "primary": true,
+      "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b"
+    },
+    {
+      "judicialResultId": "b8f91621-135a-4c26-8b38-e83dbeda0b3d",
+      "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd2",
+      "orderedHearingId": "7669d6a3-ef75-40c7-ac13-8be3a9875c62",
+      "label": "Imprisonment",
+      "isAdjournmentResult": false,
+      "isFinancialResult": true,
+      "isConvictedResult": false,
+      "isAvailableForCourtExtract": true,
+      "orderedDate": "2020-01-20",
+      "category": "Fine",
+      "resultText": "Financial Penalty",
+      "terminatesOffenceProceedings": "",
+      "isLifeDuration": false,
+      "isPublishedAsAPrompt": false,
+      "isExcludedFromResults": false,
+      "isAlwaysPublished": true,
+      "isUrgent": false,
+      "isD20": false,
+      "level": "C",
+      "primary": true,
+      "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b"
+    }
+  ]
+}

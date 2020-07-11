@@ -6,31 +6,33 @@
   "properties": {
     "userId": {
       "description": "The requesting user",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "fileId": {
       "description": "File ref",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "hearingId": {
       "description": "The hearingId",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "caseId": {
       "description": "The caseId",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "applicationId": {
       "description": "The ApplicationId",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "materialId": {
       "description": "The address4",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "nowsNotificationDocumentState": {
-      "description": "State need to notify",
-      "$ref": "http://justice.gov.uk/core/courts/notificationDocumentState.json#"
+    "firstClassLetter": {
+      "type": "boolean"
+    },
+    "secondClassLetter": {
+      "type": "boolean"
     },
     "emailNotifications": {
       "description": "The email notifications required to be sent for this document",
@@ -39,12 +41,8 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/notification/email-channel.json"
       }
-    },
-    "isRemotePrintingRequired": {
-      "type": "boolean"
     }
   },
-
   "required": [
     "userId",
     "fileId",

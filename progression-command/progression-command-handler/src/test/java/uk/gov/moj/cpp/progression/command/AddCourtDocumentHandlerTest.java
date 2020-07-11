@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.command;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -27,6 +28,7 @@ import uk.gov.justice.core.courts.CourtsDocumentAdded;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.messaging.Envelope;
@@ -40,15 +42,18 @@ import uk.gov.moj.cpp.progression.handler.courts.document.CourtDocumentEnricher;
 import uk.gov.moj.cpp.progression.handler.courts.document.DefaultCourtDocumentFactory;
 import uk.gov.moj.cpp.progression.handler.courts.document.DocumentTypeAccessProvider;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -69,6 +74,9 @@ public class AddCourtDocumentHandlerTest {
     private AggregateService aggregateService;
 
     @Mock
+    private ReferenceDataService refDataService;
+
+    @Mock
     private CourtDocumentEnricher courtDocumentEnricher;
 
     @Mock
@@ -82,6 +90,9 @@ public class AddCourtDocumentHandlerTest {
 
     @Mock
     private DefaultCourtDocumentFactory defaultCourtDocumentFactory;
+
+    @Mock
+    private Requester requester;
 
     @Mock
     private Logger logger;
@@ -139,6 +150,12 @@ public class AddCourtDocumentHandlerTest {
         when(courtDocumentEnricher.enrichWithMaterialUserGroups(courtDocument, documentTypeData)).thenReturn(enrichedCourtDocument);
         when(eventSource.getStreamById(enrichedCourtDocument.getCourtDocumentId())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
+        when(refDataService.getDocumentTypeAccessData(courtDocument.getDocumentTypeId(), jsonEnvelope, requester)).thenReturn(Optional.of(Json.createObjectBuilder()
+                .add("courtDocumentTypeRBAC",
+                        Json.createObjectBuilder()
+                                .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
+                                .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
+                                .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build()).build()));
         when(courtDocumentAggregate.addCourtDocument(enrichedCourtDocument)).thenReturn(Stream.of(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build()));
 
         final Metadata metadata = Envelope
@@ -172,22 +189,26 @@ public class AddCourtDocumentHandlerTest {
     private JsonObject buildCourtDocumentWithoutDocumentType() {
 
         final JsonObject documentCategory =
-                Json.createObjectBuilder().add("defendantDocument",
-                        Json.createObjectBuilder()
+                createObjectBuilder().add("defendantDocument",
+                        createObjectBuilder()
                                 .add("prosecutionCaseId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")
                                 .add("defendants", createArrayBuilder().add("e1d32d9d-29ec-4934-a932-22a50f223966"))).build();
 
-        return Json.createObjectBuilder().add("courtDocument",
-                Json.createObjectBuilder()
+        return createObjectBuilder().add("courtDocument",
+                createObjectBuilder()
                         .add("courtDocumentId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")
                         .add("documentCategory", documentCategory)
                         .add("name", "SJP Notice")
                         .add("documentTypeId", "0bb7b276-9dc0-4af2-83b9-f4acef0c7898")
                         .add("documentTypeDescription", "SJP Notice")
                         .add("mimeType", "pdf")
-                        .add("materials", Json.createObjectBuilder().add("id", "5e1cc18c-76dc-47dd-99c1-d6f87385edf1"))
+                        .add("materials", createObjectBuilder().add("id", "5e1cc18c-76dc-47dd-99c1-d6f87385edf1"))
                         .add("containsFinancialMeans", false)
                         .add("seqNum", 10))
                 .build();
+    }
+
+    private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
+        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 }

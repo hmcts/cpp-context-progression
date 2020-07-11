@@ -1,0 +1,12 @@
+{
+  "AzureWebJobsStorage": "usedevelopmentstorage=true",
+  "REFERENCE_DATA_CONTEXT_API_BASE_URI": "http://localhost:8080",
+  "ENFORCEMENT_CONTEXT_API_BASE_URI": "http://localhost:8080",
+  "PROGRESSION_CONTEXT_API_BASE_URI": "http://localhost:8080",
+  "cjscppuid": "7aee5dea-b0de-4604-b49b-86c7788cfc4b",
+  "REDIS_HOST": "localhost",
+  "REDIS_KEY": "iievMedi1N12exPmAn7SDH+KXtarprio6Bfh7tI1wQg=",
+  "REDIS_PORT": "6379",
+  "enforcementUserId": "a085e359-6069-4694-8820-7810e7dfe762",
+  "FUNCTIONS_WORKER_RUNTIME": "node"
+}

@@ -1,0 +1,11 @@
+{
+  "materialId": "y4569450-52be-4da0-g5et-d4ac85f2fce0",
+  "originator": "courts",
+  "requestId": "b42f1d49-52be-4da0-ac9e-d4ac85f2fce0",
+  "acknowledgement": {
+    "errorCode": "ERR1234",
+    "errorMessage": "post code is wrong"
+  },
+  "exportStatus": "ENFORCEMENT_EXPORT_FAILED",
+  "updated": "2017-07-19"
+}

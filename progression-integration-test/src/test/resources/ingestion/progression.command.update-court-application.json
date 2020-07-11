@@ -279,6 +279,8 @@
                 "category": "FINAL",
                 "terminatesOffenceProceedings": false,
                 "lifeDuration" : false,
+                "rollUpPrompts": false,
+                "publishedForNows" : false,
                 "publishedAsAPrompt" : false,
                 "excludedFromResults" : false,
                 "alwaysPublished" : false,
@@ -501,7 +503,7 @@
             "legalEntityName": "a"
           }
         ],
-        "judicialResults": [
+        "defendantCaseJudicialResults": [
           {
             "isAvailableForCourtExtract":true,
             "orderedHearingId": "00000000-0000-0000-0000-000000000000",
@@ -540,6 +542,8 @@
             "category": "FINAL",
             "terminatesOffenceProceedings": false,
             "lifeDuration" : false,
+            "rollUpPrompts": false,
+            "publishedForNows" : false,
             "publishedAsAPrompt" : false,
             "excludedFromResults" : false,
             "alwaysPublished" : false,
@@ -746,6 +750,8 @@
                     "category": "FINAL",
                     "terminatesOffenceProceedings": false,
                     "lifeDuration" : false,
+                    "rollUpPrompts": false,
+                    "publishedForNows" : false,
                     "publishedAsAPrompt" : false,
                     "excludedFromResults" : false,
                     "alwaysPublished" : false,
@@ -968,7 +974,7 @@
                 "legalEntityName": "a"
               }
             ],
-            "judicialResults": [
+            "defendantCaseJudicialResults": [
               {
                 "isAvailableForCourtExtract":true,
                 "orderedHearingId": "00000000-0000-0000-0000-000000000000",
@@ -1007,6 +1013,8 @@
                 "category": "FINAL",
                 "terminatesOffenceProceedings": false,
                 "lifeDuration" : false,
+                "rollUpPrompts": false,
+                "publishedForNows" : false,
                 "publishedAsAPrompt" : false,
                 "excludedFromResults" : false,
                 "alwaysPublished" : false,
@@ -1175,6 +1183,8 @@
         "category": "FINAL",
         "terminatesOffenceProceedings": false,
         "lifeDuration" : false,
+        "rollUpPrompts": false,
+        "publishedForNows" : false,
         "publishedAsAPrompt" : false,
         "excludedFromResults" : false,
         "alwaysPublished" : false,

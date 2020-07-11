@@ -17,7 +17,7 @@ module.exports = async function (context) {
     if (!json || !json.hearing) {
         throw 'Invalid hearing JSON';
     }
-    
+
     context.log(`Ready to filter JSON`)
     var result = laaFilter(json, context);
 

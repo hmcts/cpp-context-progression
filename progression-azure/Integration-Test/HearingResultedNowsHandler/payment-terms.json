@@ -1,0 +1,752 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "BY_VIDEO",
+              "day": "2020-05-23"
+            }
+          ],
+          "defendantId": "350de6af-9649-4b4d-bad5-9400c62bbd5a"
+        },
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-05-23"
+            }
+          ],
+          "defendantId": "7e6de2c5-fe11-47c8-9efd-57faba9be0f0"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 1,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-23T08:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-24T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-25T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-27T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 2,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-28T14:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "dda77222-e93b-4714-9be0-bd63d2a60921",
+      "judiciary": [
+        {
+          "firstName": "Susan Katherine",
+          "isBenchChairman": true,
+          "isDeputy": true,
+          "judicialId": "00ac8ed3-b432-3bdd-8ebb-ebcb2ba10a00",
+          "judicialRoleType": {
+            "judicialRoleTypeId": "00ac8ed3-b432-3bdd-8ebb-ebcb2ba10a00",
+            "judiciaryType": "Magistrate"
+          },
+          "lastName": "Bonnell",
+          "title": ""
+        }
+      ],
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-05-23T14:35:36.015Z",
+              "id": "7e6de2c5-fe11-47c8-9efd-57faba9be0f0",
+              "masterDefendantId": "7e6de2c5-fe11-47c8-9efd-57faba9be0f0",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "3cc14206-9a61-4d84-bd6f-6da5e03cf275",
+                    "originatingHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2005-11-19",
+                  "chargeDate": "2004-12-09",
+                  "convictionDate": "2020-05-23",
+                  "count": 0,
+                  "id": "3cc14206-9a61-4d84-bd6f-6da5e03cf275",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1116",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "d41167da-80f5-45de-b7a5-4542157d1b63",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                          "label": "End Date",
+                          "promptReference": "endDate",
+                          "promptSequence": 100,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "25 Jun 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 200,
+                          "type": "FIXL",
+                          "usergroups": [],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                          "label": "Supervising Court",
+                          "promptReference": "supervisingCourt",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "Lavendar",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                          "label": "Probation team to be notified organisation name",
+                          "promptReference": "probationteamtobenotifiedOrganisationName",
+                          "promptSequence": 700,
+                          "type": "NAMEADDRESS",
+                          "usergroups": [],
+                          "value": "",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                      "label": "Community order England / Wales",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 5300,
+                      "resultText": "Community order England / Wales\nEnd Date 25 Jun 2020\nResponsible officer a probation officer\nSupervising Court Lavendar\nProbation team to be notified organisation name ",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    },
+                    {
+                      "alwaysPublished": true,
+                      "category": "ANCILLARY",
+                      "cjsCode": "3101",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "57ce325f-de85-4058-a39c-bb234c7d4d30",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                          "label": "Number of hours",
+                          "promptReference": "numberOfHours",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [],
+                          "value": "5 Hours",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                      "label": "Community requirement: Unpaid work",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 5400,
+                      "resultDefinitionGroup": "Community Requirement",
+                      "resultText": "Community requirement: Unpaid work\nNumber of hours 5 Hours",
+                      "rollUpPrompts": false,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "3cc14206-9a61-4d84-bd6f-6da5e03cf275",
+                    "originatingHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailConditions": "",
+                "bailReasons": "",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "COR1",
+                  "gender": "MALE",
+                  "lastName": "Ormsby",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionCaseId": "d7ff81b2-7507-4e8c-a589-bc093e3c90f8"
+            },
+            {
+              "courtProceedingsInitiated": "2020-05-23T14:35:44.958Z",
+              "id": "350de6af-9649-4b4d-bad5-9400c62bbd5a",
+              "masterDefendantId": "350de6af-9649-4b4d-bad5-9400c62bbd5a",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "a844cb98-0afb-48d3-a7cf-0aa290c1bea2",
+                    "originatingHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2015-12-29",
+                  "chargeDate": "2004-12-09",
+                  "convictionDate": "2020-05-23",
+                  "count": 0,
+                  "id": "a844cb98-0afb-48d3-a7cf-0aa290c1bea2",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1116",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "1e76add5-c8da-462b-b0a6-03f0391a24df",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                          "label": "End Date",
+                          "promptReference": "endDate",
+                          "promptSequence": 100,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "30 Jul 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 200,
+                          "type": "FIXL",
+                          "usergroups": [],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                          "label": "Supervising Court",
+                          "promptReference": "supervisingCourt",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "XYZ",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                          "label": "Probation team to be notified organisation name",
+                          "promptReference": "probationteamtobenotifiedOrganisationName",
+                          "promptSequence": 700,
+                          "type": "NAMEADDRESS",
+                          "usergroups": [],
+                          "value": "",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                      "label": "Community order England / Wales",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 5300,
+                      "resultText": "Community order England / Wales\nEnd Date 30 Jul 2020\nResponsible officer a probation officer\nSupervising Court XYZ\nProbation team to be notified organisation name ",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    },
+                    {
+                      "alwaysPublished": true,
+                      "category": "ANCILLARY",
+                      "cjsCode": "3105",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "f51bf239-b6c3-45fa-9953-97a5c4f1a644",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "82ee7d2f-99b1-476d-8938-2c824549c365",
+                          "label": "Curfew period",
+                          "promptReference": "curfewPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [],
+                          "value": "5 Days",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "206a8658-96da-42cb-80a7-ae1c0e440e11",
+                          "label": "Start date",
+                          "promptReference": "startDate",
+                          "promptSequence": 200,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "01 Aug 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "3b0c95d5-9595-4ddd-88b8-1a2e3e70d01f",
+                          "label": "This order lasts until",
+                          "promptReference": "thisOrderLastsUntil",
+                          "promptSequence": 300,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "06 Aug 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "51f96065-e622-4f72-b7dc-0c11c17d1983",
+                          "label": "Curfew address, details and timings",
+                          "promptReference": "curfewAddressDetailsAndTimings",
+                          "promptSequence": 400,
+                          "qualifier": "BA",
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "LINE1",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "6577e3ca-3e80-4412-8cba-bc608e012cf0",
+                      "label": "Community requirement: Curfew",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "qualifier": "BA",
+                      "rank": 5600,
+                      "resultDefinitionGroup": "Community Requirement",
+                      "resultText": "Community requirement: Curfew\nCurfew period 5 Days\nStart date 01 Aug 2020\nThis order lasts until 06 Aug 2020\nCurfew address, details and timings LINE1",
+                      "rollUpPrompts": false,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "a844cb98-0afb-48d3-a7cf-0aa290c1bea2",
+                    "originatingHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                },
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "0c61e3ba-7ccc-4de7-a35f-00729af6bcdf",
+                    "originatingHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2015-11-19",
+                  "chargeDate": "2014-02-09",
+                  "convictionDate": "2020-05-23",
+                  "count": 0,
+                  "id": "0c61e3ba-7ccc-4de7-a35f-00729af6bcdf",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": true,
+                      "category": "ANCILLARY",
+                      "cjsCode": "3105",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "9bf1bc0a-11a6-4df4-87ab-b0209bbed359",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "82ee7d2f-99b1-476d-8938-2c824549c365",
+                          "label": "Curfew period",
+                          "promptReference": "curfewPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [],
+                          "value": "4 Days",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "206a8658-96da-42cb-80a7-ae1c0e440e11",
+                          "label": "Start date",
+                          "promptReference": "startDate",
+                          "promptSequence": 200,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "01 Aug 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "3b0c95d5-9595-4ddd-88b8-1a2e3e70d01f",
+                          "label": "This order lasts until",
+                          "promptReference": "thisOrderLastsUntil",
+                          "promptSequence": 300,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "05 Aug 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "51f96065-e622-4f72-b7dc-0c11c17d1983",
+                          "label": "Curfew address, details and timings",
+                          "promptReference": "curfewAddressDetailsAndTimings",
+                          "promptSequence": 400,
+                          "qualifier": "BA",
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "line3",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "6577e3ca-3e80-4412-8cba-bc608e012cf0",
+                      "label": "Community requirement: Curfew",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "qualifier": "BA",
+                      "rank": 5600,
+                      "resultDefinitionGroup": "Community Requirement",
+                      "resultText": "Community requirement: Curfew\nCurfew period 4 Days\nStart date 01 Aug 2020\nThis order lasts until 05 Aug 2020\nCurfew address, details and timings line3",
+                      "rollUpPrompts": false,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1116",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "35538cac-1ce0-43ca-b229-96f5eb9161d7",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                          "label": "End Date",
+                          "promptReference": "endDate",
+                          "promptSequence": 100,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "30 Jul 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 200,
+                          "type": "FIXL",
+                          "usergroups": [],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                          "label": "Supervising Court",
+                          "promptReference": "supervisingCourt",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "XYZ",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                          "label": "Probation team to be notified organisation name",
+                          "promptReference": "probationteamtobenotifiedOrganisationName",
+                          "promptSequence": 700,
+                          "type": "NAMEADDRESS",
+                          "usergroups": [],
+                          "value": "",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                      "label": "Community order England / Wales",
+                      "lastSharedDateTime": "2020-05-23",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-24",
+                      "orderedHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 5300,
+                      "resultText": "Community order England / Wales\nEnd Date 30 Jul 2020\nResponsible officer a probation officer\nSupervising Court XYZ\nProbation team to be notified organisation name ",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01040",
+                  "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+                  "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                  "orderIndex": 503,
+                  "plea": {
+                    "offenceId": "0c61e3ba-7ccc-4de7-a35f-00729af6bcdf",
+                    "originatingHearingId": "dda77222-e93b-4714-9be0-bd63d2a60921",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2018-02-19",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFLA",
+                "bailConditions": "",
+                "bailReasons": "",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "COR2",
+                  "gender": "MALE",
+                  "lastName": "Ormsby1",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionCaseId": "d7ff81b2-7507-4e8c-a589-bc093e3c90f8"
+            }
+          ],
+          "id": "d7ff81b2-7507-4e8c-a589-bc093e3c90f8",
+          "initiationCode": "C",
+          "originatingOrganisation": "B01BH00",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "line1",
+              "address2": "line2",
+              "address3": "line3",
+              "postcode": "SL2 5FZ"
+            },
+            "majorCreditorCode": "CDE04",
+            "prosecutionAuthorityCode": "SPI",
+            "prosecutionAuthorityId": "6349e97b-3f95-4142-bf71-84847266cafa",
+            "prosecutionAuthorityName": "SPI-TEST",
+            "prosecutionAuthorityOUCode": "B01BH00",
+            "caseURN": "14GD9568720"
+          }
+        }
+      ],
+      "type": {
+        "description": "First Hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      }
+    },
+    "sharedTime": "2020-05-23T14:43:00.615Z"
+  }
+}

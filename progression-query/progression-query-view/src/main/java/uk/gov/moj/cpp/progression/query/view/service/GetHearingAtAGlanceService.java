@@ -1,8 +1,13 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.util.Comparator.comparing;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -11,6 +16,7 @@ import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationResponse;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -44,8 +50,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRep
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
@@ -57,13 +61,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.util.Comparator.comparing;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655", "squid:S1188", "squid:S1135", "squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S134", "squid:S4165", "pmd:NullAssignment"})
 public class GetHearingAtAGlanceService {
@@ -161,7 +164,7 @@ public class GetHearingAtAGlanceService {
     }
 
     private void retrieveUniqueHearings(final List<HearingEntity> hearingEntities, final List<UUID> hearingIds, final List<HearingApplicationEntity> applicationHearingEntities) {
-        if (CollectionUtils.isNotEmpty(applicationHearingEntities)) {
+        if (isNotEmpty(applicationHearingEntities)) {
             applicationHearingEntities.forEach(hearingApplicationEntity -> {
                 if (!hearingIds.contains(hearingApplicationEntity.getId().getHearingId())) {
                     hearingEntities.add(hearingApplicationEntity.getHearing());
@@ -238,6 +241,7 @@ public class GetHearingAtAGlanceService {
                     .withHearingListingStatus(getHearingListingStatus(hearingEntity))
                     .withHasResultAmended(hasResultAmended(hearing))
                     .withIsBoxHearing(hearing.getIsBoxHearing())
+                    .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
                     .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
                     .build();
             hearingsList.add(hearingsView);
@@ -246,20 +250,20 @@ public class GetHearingAtAGlanceService {
     }
 
     private Boolean hasResultAmended(final Hearing hearing) {
-        if (CollectionUtils.isNotEmpty(hearing.getProsecutionCases())) {
+        if (isNotEmpty(hearing.getProsecutionCases())) {
             for (final ProsecutionCase prosecutionCase : hearing.getProsecutionCases()) {
-                if (CollectionUtils.isNotEmpty(prosecutionCase.getDefendants())) {
+                if (isNotEmpty(prosecutionCase.getDefendants())) {
                     for (final Defendant defendant : prosecutionCase.getDefendants()) {
-                        if (CollectionUtils.isNotEmpty(defendant.getJudicialResults())) {
-                            for (final JudicialResult judicialResult : defendant.getJudicialResults()) {
+                        if (isNotEmpty(defendant.getDefendantCaseJudicialResults())) {
+                            for (final JudicialResult judicialResult : defendant.getDefendantCaseJudicialResults()) {
                                 if (judicialResult.getAmendmentDate() != null) {
                                     return TRUE;
                                 }
                             }
                         }
-                        if (CollectionUtils.isNotEmpty(defendant.getOffences())) {
+                        if (isNotEmpty(defendant.getOffences())) {
                             for (final Offence offence : defendant.getOffences()) {
-                                if (CollectionUtils.isNotEmpty(offence.getJudicialResults())) {
+                                if (isNotEmpty(offence.getJudicialResults())) {
                                     for (final JudicialResult judicialResult : offence.getJudicialResults()) {
                                         if (judicialResult.getAmendmentDate() != null) {
                                             return TRUE;
@@ -272,14 +276,21 @@ public class GetHearingAtAGlanceService {
                 }
             }
         }
-        if (CollectionUtils.isNotEmpty(hearing.getCourtApplications())) {
+        if (isNotEmpty(hearing.getCourtApplications())) {
             for (final CourtApplication courtApplication : hearing.getCourtApplications()) {
-                if (CollectionUtils.isNotEmpty(courtApplication.getJudicialResults())) {
+                if (isNotEmpty(courtApplication.getJudicialResults())) {
                     for (final JudicialResult judicialResult : courtApplication.getJudicialResults()) {
                         if (judicialResult.getAmendmentDate() != null) {
                             return TRUE;
                         }
                     }
+                }
+            }
+        }
+        if (isNotEmpty(hearing.getDefendantJudicialResults())) {
+            for (final DefendantJudicialResult defendantJudicialResult : hearing.getDefendantJudicialResults()) {
+                if (nonNull(defendantJudicialResult.getJudicialResult()) && defendantJudicialResult.getJudicialResult().getAmendmentDate() != null) {
+                    return TRUE;
                 }
             }
         }
@@ -303,26 +314,26 @@ public class GetHearingAtAGlanceService {
     private static List<Defendants> createDefendants(final UUID caseId, final List<ProsecutionCase> prosecutionCases, final List<CourtApplication> courtApplications, final Hearing hearing) {
         LOGGER.info("Create defendants for case {}", caseId);
         final List<Defendants> defendantsList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(prosecutionCases)) {
+        if (isNotEmpty(prosecutionCases)) {
             final ProsecutionCase prosecutionCase = prosecutionCases.stream()
                     .filter(pc -> pc.getId().equals(caseId))
                     .findFirst().get();
             addDefendantsToDefendantsView(prosecutionCase.getDefendants(), hearing, defendantsList, courtApplications);
         }
 
-        if (CollectionUtils.isNotEmpty(prosecutionCases) && CollectionUtils.isNotEmpty(courtApplications)) {
+        if (isNotEmpty(prosecutionCases) && isNotEmpty(courtApplications)) {
             courtApplications.forEach(courtApplication -> {
                 final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
-                if (CollectionUtils.isNotEmpty(respondents)) {
+                if (isNotEmpty(respondents)) {
                     addNonDefendantsToDefendantsView(courtApplications, defendantsList, respondents);
                 }
             });
         }
 
-        if (CollectionUtils.isEmpty(prosecutionCases) && CollectionUtils.isNotEmpty(courtApplications)) {
+        if (CollectionUtils.isEmpty(prosecutionCases) && isNotEmpty(courtApplications)) {
             courtApplications.forEach(courtApplication -> {
                 final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
-                if (CollectionUtils.isNotEmpty(respondents)) {
+                if (isNotEmpty(respondents)) {
                     addDefendantsAndNonDefendantsToDefendantsView(courtApplications, hearing, defendantsList, respondents);
                 }
             });
@@ -352,7 +363,7 @@ public class GetHearingAtAGlanceService {
                     .withAddress(extractAddress(defendant))
                     .withDefenceOrganisation(getDefenceOrganisation(defendant, hearing))
                     .withOffences(getDefendantOffences(defendant))
-                    .withJudicialResults(getJudicialResults(defendant.getJudicialResults()))
+                    .withJudicialResults(getJudicialResults(defendant.getDefendantCaseJudicialResults()))
                     .withCourtApplications(getCourtApplicationsForDefendant(courtApplications, defendant.getId()))
                     .withLegalAidStatus(defendant.getLegalAidStatus())
                     .withProceedingsConcluded(defendant.getProceedingsConcluded())
@@ -384,7 +395,7 @@ public class GetHearingAtAGlanceService {
                         .withAddress(nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getPersonDetails().getAddress() : null)
                         .withDefenceOrganisation(getDefenceOrganisation(defendant, hearing))
                         .withOffences(getDefendantOffences(defendant))
-                        .withJudicialResults(getJudicialResults(defendant.getJudicialResults()))
+                        .withJudicialResults(getJudicialResults(defendant.getDefendantCaseJudicialResults()))
                         .withCourtApplications(getCourtApplicationsForDefendant(courtApplications, defendant.getId()))
                         .withLegalAidStatus(defendant.getLegalAidStatus())
                         .withProceedingsConcluded(defendant.getProceedingsConcluded())
@@ -410,10 +421,10 @@ public class GetHearingAtAGlanceService {
 
     private static List<CourtApplications> getCourtApplicationsForDefendant(final List<CourtApplication> courtApplications, final UUID defendantId) {
         List<CourtApplications> courtApplicationsViewList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(courtApplications)) {
+        if (isNotEmpty(courtApplications)) {
             courtApplicationsViewList = new ArrayList<>();
             for (final CourtApplication courtApplication : courtApplications) {
-                if (CollectionUtils.isNotEmpty(courtApplication.getRespondents())) {
+                if (isNotEmpty(courtApplication.getRespondents())) {
                     for (final CourtApplicationRespondent courtApplicationRespondent : courtApplication.getRespondents()) {
                         final Defendant defendant = courtApplicationRespondent.getPartyDetails().getDefendant();
                         if (nonNull(defendant) && defendant.getId().equals(defendantId)) {
@@ -439,7 +450,7 @@ public class GetHearingAtAGlanceService {
     private static List<CourtApplications> getCourtApplicationsForNonDefendant(final List<CourtApplication> courtApplications, final UUID partyDetailsId) {
         final List<CourtApplications> courtApplicationsViewList = new ArrayList<>();
         courtApplications.forEach(courtApplication -> {
-            if (CollectionUtils.isNotEmpty(courtApplication.getRespondents())) {
+            if (isNotEmpty(courtApplication.getRespondents())) {
                 courtApplication.getRespondents().forEach(courtApplicationRespondent -> {
                     if (partyDetailsId.equals(courtApplicationRespondent.getPartyDetails().getId())) {
                         courtApplicationsViewList.add(CourtApplications.courtApplications()

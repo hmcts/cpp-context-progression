@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Command schema for notifying informant register document to the prosecution authority",
+  "id": "http://justice.gov.uk/progression/courts/notify-informant-register.json",
+  "type": "object",
+  "properties": {
+    "fileId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionAuthorityId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "templateId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prosecutionAuthorityId"
+  ],
+  "additionalProperties": false
+}

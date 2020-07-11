@@ -1,0 +1,609 @@
+[
+  {
+    "masterDefendantId": "5b83edba-64a4-43e6-8b7c-d94b951159c1",
+    "complianceCorrelationId": "7e5c69c0-2dbd-440f-bde2-d09024189862",
+    "prosecutionCaseURNPRN": "TVL30950AT46L",
+    "prosecutingAuthorityCode": "TVL",
+    "includesGuiltyPlea": true,
+    "impositionResults": [
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "1002",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "durationElement": {
+          "primaryDurationUnit": "Y",
+          "primaryDurationValue": 1
+        },
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "judicialResultId": "8d75084d-a1c7-45ab-899a-d9a165cb45d6",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+            "label": "Total imprisonment period",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Total imprisonment period is life true",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "52c9c1f5-2a00-45ee-bca3-024d43626773",
+            "label": "Prison Name",
+            "promptReference": "prisonName",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Prison Name Test",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "cdf0fcf4-a792-469b-8adf-1e5097ac404c",
+            "label": "Prison address line 1",
+            "promptReference": "prisonAddress1",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Line 1",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+            "label": "Probation team to be notified",
+            "promptSequence": 600,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "sdaadawd",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "Y",
+            "durationSequence": 1,
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+            "label": "Imprisonment Period",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "1 Years",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+            "label": "Bail remand days to count (tagged days)",
+            "promptSequence": 700,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "3",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+        "label": "Imprisonment",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 6100,
+        "resultText": "Imprisonment\nTotal imprisonment period Total imprisonment period is life true\nPrison Name Prison Name Test\nPrison address line 1 Line 1\nProbation team to be notified sdaadawd\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 3",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "level": "O"
+      },
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "1002",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "durationElement": {
+          "primaryDurationUnit": "Y",
+          "primaryDurationValue": 1
+        },
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "judicialResultId": "8d75084d-a1c7-45ab-899a-d9a165cb45d6",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+            "label": "Total imprisonment period",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Total imprisonment period is life true",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "52c9c1f5-2a00-45ee-bca3-024d43626773",
+            "label": "Prison Name",
+            "promptReference": "prisonName",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Prison Name Test",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "cdf0fcf4-a792-469b-8adf-1e5097ac404c",
+            "label": "Prison address line 1",
+            "promptReference": "prisonAddress1",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Line 1",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+            "label": "Probation team to be notified",
+            "promptSequence": 600,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "sdaadawd",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "Y",
+            "durationSequence": 1,
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+            "label": "Imprisonment Period",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "1 Years",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+            "label": "Bail remand days to count (tagged days)",
+            "promptSequence": 700,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "3",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+        "label": "Imprisonment",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 6100,
+        "resultText": "Imprisonment\nTotal imprisonment period Total imprisonment period is life true\nPrison Name Prison Name Test\nPrison address line 1 Line 1\nProbation team to be notified sdaadawd\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 3",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "level": "O"
+      },
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "1018",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "durationElement": {
+          "primaryDurationUnit": "D",
+          "primaryDurationValue": 10
+        },
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "judicialResultId": "47e9b4dd-ffec-4bf2-a485-e50f3aecbc43",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "durationSequence": 1,
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+            "label": "Period of conditional discharge",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "10 Days",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+        "label": "Conditional discharge",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 8500,
+        "resultText": "Conditional discharge\nPeriod of conditional discharge 10 Days",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Rhyddhad Amodol",
+        "level": "O"
+      },
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "1002",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "durationElement": {
+          "primaryDurationUnit": "Y",
+          "primaryDurationValue": 1
+        },
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "judicialResultId": "8d75084d-a1c7-45ab-899a-d9a165cb45d6",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+            "label": "Total imprisonment period",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Total imprisonment period is life true",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "52c9c1f5-2a00-45ee-bca3-024d43626773",
+            "label": "Prison Name",
+            "promptReference": "prisonName",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Prison Name Test",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "cdf0fcf4-a792-469b-8adf-1e5097ac404c",
+            "label": "Prison address line 1",
+            "promptReference": "prisonAddress1",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Line 1",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+            "label": "Probation team to be notified",
+            "promptSequence": 600,
+            "type": "TXT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "sdaadawd",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "Y",
+            "durationSequence": 1,
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+            "label": "Imprisonment Period",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "1 Years",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+            "label": "Bail remand days to count (tagged days)",
+            "promptSequence": 700,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "3",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+        "label": "Imprisonment",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 6100,
+        "resultText": "Imprisonment\nTotal imprisonment period Total imprisonment period is life true\nPrison Name Prison Name Test\nPrison address line 1 Line 1\nProbation team to be notified sdaadawd\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 3",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "level": "O"
+      },
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "1018",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "durationElement": {
+          "primaryDurationUnit": "D",
+          "primaryDurationValue": 10
+        },
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "judicialResultId": "47e9b4dd-ffec-4bf2-a485-e50f3aecbc43",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "durationSequence": 1,
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+            "label": "Period of conditional discharge",
+            "promptSequence": 100,
+            "type": "INT",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "10 Days",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+        "label": "Conditional discharge",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 8500,
+        "resultText": "Conditional discharge\nPeriod of conditional discharge 10 Days",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Rhyddhad Amodol",
+        "level": "O"
+      },
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "1015",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": true,
+        "judicialResultId": "419d208c-ea7e-45d6-bc57-109c12481a19",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": true,
+            "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+            "label": "Amount of fine",
+            "promptReference": "AOF",
+            "promptSequence": 100,
+            "type": "CURR",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "£23",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+        "label": "Fine",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 7700,
+        "resultText": "Fine\nAmount of fine £23",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Dirwy",
+        "level": "O"
+      },
+      {
+        "alwaysPublished": false,
+        "category": "FINAL",
+        "cjsCode": "3012",
+        "courtClerk": {
+          "firstName": "Evan",
+          "lastName": "Roberts",
+          "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": true,
+        "judicialResultId": "bd82f175-7b81-46e9-a587-d7ed1514c38d",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": true,
+            "judicialResultPromptTypeId": "26985e5b-fe1f-4d7d-a21a-57207c5966e7",
+            "label": "Amount of compensation",
+            "promptReference": "AOCOM",
+            "promptSequence": 100,
+            "type": "CURR",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "£23",
+            "welshLabel": ""
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+            "label": "Major creditor name",
+            "promptReference": "CREDNAME",
+            "promptSequence": 200,
+            "type": "FIXL",
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "value": "Television Licensing Organisation",
+            "welshLabel": ""
+          }
+        ],
+        "judicialResultTypeId": "ae89b99c-e0e3-47b5-b218-24d4fca3ca53",
+        "label": "Compensation",
+        "lastSharedDateTime": "2020-04-12",
+        "lifeDuration": false,
+        "orderedDate": "2020-04-12",
+        "orderedHearingId": "1e5b18b8-d611-4f8b-8923-ccf3f7e5cd85",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "rank": 7900,
+        "resultText": "Compensation\nAmount of compensation £23\nMajor creditor name Television Licensing Organisation",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Iawndal",
+        "level": "O"
+      }
+    ]
+  }
+]

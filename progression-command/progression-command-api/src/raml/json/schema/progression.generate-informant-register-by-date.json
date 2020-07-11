@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/generate-informant-register-by-date.json",
+  "type": "object",
+  "properties": {
+    "registerDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "prosecutionAuthorities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "registerDate"
+  ],
+  "additionalProperties": false
+}

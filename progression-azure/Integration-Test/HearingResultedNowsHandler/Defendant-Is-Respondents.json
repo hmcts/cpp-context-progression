@@ -1,0 +1,394 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtApplications": [
+        {
+          "applicant": {
+            "id": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+            "prosecutingAuthority": {
+              "prosecutionAuthorityCode": "TFL",
+              "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595"
+            }
+          },
+          "applicationReceivedDate": "2020-01-02",
+          "applicationReference": "TFL33228Y7FH-1",
+          "applicationStatus": "DRAFT",
+          "id": "76ffa265-fc60-4da7-aeab-1008a3ec97eb",
+          "linkedCaseId": "2298f77c-153d-47d9-aec8-74f66118de67",
+          "parentApplicationId": "1ff65571-c05c-4610-9a3f-f2f3f1728119",
+          "respondents": [
+            {
+              "partyDetails": {
+                "defendant": {
+                  "id": "cdecb265-0eb4-4008-80aa-ef1bc4a49030",
+                  "isYouth": true,
+                  "numberOfPreviousConvictionsCited": 2,
+                  "offences": [
+                    {
+                      "chargeDate": "2020-03-17",
+                      "count": 1,
+                      "id": "c27a35f7-7677-4482-90c3-f3d003df4abc",
+                      "modeOfTrial": "Summary",
+                      "notifiedPlea": {
+                        "notifiedPleaDate": "2020-04-17",
+                        "notifiedPleaValue": "NO_NOTIFICATION",
+                        "offenceId": "c27a35f7-7677-4482-90c3-f3d003df4abc"
+                      },
+                      "offenceCode": "TR11051",
+                      "offenceDefinitionId": "6fe39805-a7c9-4d03-9e99-51f5a2a8a8d6",
+                      "offenceLegislation": "Contrary to byelaw 19(1) and 23 of the Transport for London Railway Byelaws made under paragraph 26 of Schedule 11 to the Greater London Authority Act 1999 and confirmed under section 67 of the Transport Act 1962.",
+                      "offenceTitle": "Alter ticket with intent to defraud the operator of the Transport for London regional railway network",
+                      "orderIndex": 1,
+                      "startDate": "2020-03-11",
+                      "wording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction "
+                    }
+                  ],
+                  "personDefendant": {
+                    "personDetails": {
+                      "address": {
+                        "address1": "Flat 1, Armageddon House",
+                        "address2": "13 Old Road",
+                        "address3": "Giggleswick",
+                        "address4": "Merton",
+                        "postcode": "HU12 1AB"
+                      },
+                      "dateOfBirth": "2003-04-22",
+                      "documentationLanguageNeeds": "ENGLISH",
+                      "firstName": "Hasaan",
+                      "gender": "FEMALE",
+                      "lastName": "Smith",
+                      "title": "MR"
+                    }
+                  },
+                  "prosecutionCaseId": "2298f77c-153d-47d9-aec8-74f66118de67",
+                  "masterDefendantId": "322471ca-f487-4b6e-bce9-d1c61992106c"
+                },
+                "id": "d9c5c5a4-0253-4e68-967b-6e94a3fdc9a6"
+              }
+            }
+          ],
+          "type": {
+            "applicantSynonym": "Applicant",
+            "applicationCategory": "VP",
+            "applicationCode": "AS14518",
+            "applicationJurisdictionType": "EITHER",
+            "applicationLegislation": "Pursuant to section 88 of the Anti-social Behaviour, Crime and Policing Act 2014.",
+            "applicationType": "Application for an order of reimbursement in relation to a closure order",
+            "id": "05e62917-a071-3124-925b-b759a54bfffe",
+            "isAppealApplication": false,
+            "isBreachApplication": false,
+            "linkType": "LINKED",
+            "respondentSynonym": "Respondent"
+          }
+        }
+      ],
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01",
+        "lja": {
+          "ljaCode": 2577,
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "code": "B01LY00"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-04-17"
+            }
+          ],
+          "defendantId": "cdecb265-0eb4-4008-80aa-ef1bc4a49030"
+        }
+      ],
+      "defendantReferralReasons": [
+        {
+          "defendantId": "cdecb265-0eb4-4008-80aa-ef1bc4a49030",
+          "description": "For trial",
+          "id": "809f7aac-d285-43a5-9fb1-3a894db71530"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-17T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-18T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-19T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-20T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-21T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-22T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-23T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-24T00:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-25T09:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "e79f9210-8020-4303-85cb-7eb40d9e35b2",
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "caseStatus": "CLOSED",
+          "defendants": [
+            {
+              "id": "cdecb265-0eb4-4008-80aa-ef1bc4a49030",
+              "numberOfPreviousConvictionsCited": 2,
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-04-17",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "c27a35f7-7677-4482-90c3-f3d003df4abc",
+                    "originatingHearingId": "e79f9210-8020-4303-85cb-7eb40d9e35b2",
+                    "sequenceNumber": 90
+                  },
+                  "chargeDate": "2020-03-17",
+                  "convictionDate": "2020-04-17",
+                  "count": 1,
+                  "id": "c27a35f7-7677-4482-90c3-f3d003df4abc",
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1002",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "durationElement": {
+                        "primaryDurationUnit": "Y",
+                        "primaryDurationValue": 1
+                      },
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "6a7516cb-122e-4ed1-8a2b-3a25ab55d06a",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                          "label": "Total imprisonment period",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "Total imprisonment period 2 Years",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "52c9c1f5-2a00-45ee-bca3-024d43626773",
+                          "label": "Prison Name",
+                          "promptReference": "prisonName",
+                          "promptSequence": 400,
+                          "type": "TXT",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "Prison Name",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "cdf0fcf4-a792-469b-8adf-1e5097ac404c",
+                          "label": "Prison address line 1",
+                          "promptReference": "prisonAddress1",
+                          "promptSequence": 400,
+                          "type": "TXT",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "Prison address line 1",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+                          "label": "Probation team to be notified",
+                          "promptSequence": 600,
+                          "type": "TXT",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "Probation team to be notified",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                          "label": "Imprisonment Period",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "1 Years",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                          "label": "Bail remand days to count (tagged days)",
+                          "promptSequence": 700,
+                          "type": "INT",
+                          "usergroups": [
+                            "Court Clerks",
+                            "Legal Advisers"
+                          ],
+                          "value": "12",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                      "label": "Imprisonment",
+                      "lastSharedDateTime": "2020-04-17",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "e79f9210-8020-4303-85cb-7eb40d9e35b2",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 6100,
+                      "resultText": "Imprisonment\nTotal imprisonment period Total imprisonment period 2 Years\nPrison Name Prison Name\nPrison address line 1 Prison address line 1\nProbation team to be notified Probation team to be notified\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 12",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-04-17",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "c27a35f7-7677-4482-90c3-f3d003df4abc"
+                  },
+                  "offenceCode": "TR11051",
+                  "offenceDefinitionId": "6fe39805-a7c9-4d03-9e99-51f5a2a8a8d6",
+                  "offenceLegislation": "Contrary to byelaw 19(1) and 23 of the Transport for London Railway Byelaws made under paragraph 26 of Schedule 11 to the Greater London Authority Act 1999 and confirmed under section 67 of the Transport Act 1962.",
+                  "offenceLegislationWelsh": "",
+                  "offenceTitle": "Alter ticket with intent to defraud the operator of the Transport for London regional railway network",
+                  "offenceTitleWelsh": "",
+                  "orderIndex": 1,
+                  "plea": {
+                    "offenceId": "c27a35f7-7677-4482-90c3-f3d003df4abc",
+                    "originatingHearingId": "e79f9210-8020-4303-85cb-7eb40d9e35b2",
+                    "pleaDate": "2020-04-17",
+                    "pleaValue": "GUILTY"
+                  },
+                  "proceedingsConcluded": true,
+                  "startDate": "2020-03-11",
+                  "wording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction "
+                }
+              ],
+              "personDefendant": {
+                "bailConditions": "",
+                "bailReasons": "",
+                "personDetails": {
+                  "address": {
+                    "address1": "Flat 1, Armageddon House",
+                    "address2": "13 Old Road",
+                    "address3": "Giggleswick",
+                    "address4": "Merton",
+                    "postcode": "HU12 1AB"
+                  },
+                  "contact": {
+
+                  },
+                  "dateOfBirth": "2003-04-22",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+
+                  },
+                  "firstName": "Hasaan",
+                  "gender": "FEMALE",
+                  "lastName": "Smith",
+                  "title": "MR"
+                }
+              },
+              "proceedingsConcluded": true,
+              "prosecutionCaseId": "2298f77c-153d-47d9-aec8-74f66118de67",
+              "masterDefendantId": "322471ca-f487-4b6e-bce9-d1c61992106c"
+            }
+          ],
+          "id": "2298f77c-153d-47d9-aec8-74f66118de67",
+          "initiationCode": "J",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "TFL",
+            "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+            "prosecutionAuthorityReference": "TFL33228Y7FH"
+          },
+          "statementOfFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy"
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    },
+    "sharedTime": "2020-04-17T14:28:39.594Z"
+  }
+}

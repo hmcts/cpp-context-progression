@@ -87,7 +87,7 @@ public class DefendantDefenceAssociationLockedListener {
                 .withLegalAidStatus(originDefendant.getLegalAidStatus())
                 .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
                 .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
-                .withJudicialResults(originDefendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(originDefendant.getDefendantCaseJudicialResults())
                 .withCroNumber(originDefendant.getCroNumber())
                 .withAssociationLockedByRepOrder(lockedByRepOrder)
                 .build();

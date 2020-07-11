@@ -1,0 +1,10 @@
+{
+  "recipient": [
+    {
+      "templateId": "89b10041-b44d-43c8-9b1e-d1b9fee15c93",
+      "recipientName": "Mr. John Wick",
+      "sendToAddress": "john.wick@gmail.com"
+    }
+  ],
+  "prosecutionAuthorityId": "5cbfc512-a19f-485c-bb3c-a1125f8e9e67"
+}

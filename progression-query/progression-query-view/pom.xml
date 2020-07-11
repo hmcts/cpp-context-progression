@@ -42,9 +42,12 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>query-view</artifactId>
-
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>criminal-court-public-model</artifactId>
+            <version>${criminal-court-public-model.version}</version>
+        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

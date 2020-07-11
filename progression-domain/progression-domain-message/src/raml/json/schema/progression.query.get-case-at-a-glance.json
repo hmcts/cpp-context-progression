@@ -57,7 +57,7 @@
           "type": "string"
         },
         "prosecutionAuthorityId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
@@ -69,10 +69,10 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "masterDefendantId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "firstName": {
           "type": "string"
@@ -135,7 +135,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "offenceCode": {
           "type": "string"
@@ -203,7 +203,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "label": {
           "type": "string"
@@ -275,7 +275,7 @@
           "type": "string"
         },
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "custody": {
           "type": "string"

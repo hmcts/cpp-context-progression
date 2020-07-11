@@ -1,0 +1,429 @@
+{
+  "courtCentre": {
+    "address": {
+      "address1": "176A Lavender Hill",
+      "address2": "London",
+      "address3": "",
+      "address4": "",
+      "address5": "",
+      "postcode": "SW11 1JU"
+    },
+    "code": "B01LY00",
+    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "lja": {
+      "ljaCode": "2577",
+      "ljaName": "South West London Magistrates' Court"
+    },
+    "name": "Lavender Hill Magistrates' Court",
+    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+    "roomName": "Courtroom 01"
+  },
+  "defendantAttendance": [
+    {
+      "attendanceDays": [
+        {
+          "attendanceType": "IN_PERSON",
+          "day": "2020-06-16"
+        }
+      ],
+      "defendantId": "0c9ba7ad-1e8e-4857-a4e1-bf0771466957"
+    }
+  ],
+  "defendantReferralReasons": [
+    {
+      "defendantId": "0c9ba7ad-1e8e-4857-a4e1-bf0771466957",
+      "description": "Defence request",
+      "id": "798e3d82-44fa-40e6-a93d-4c8f5322fa66"
+    }
+  ],
+  "hasSharedResults": true,
+  "hearingDays": [
+    {
+      "listedDurationMinutes": 1,
+      "listingSequence": 0,
+      "sittingDay": "2020-06-16T09:00:00.000Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "4e5483f4-3a5e-4d38-a12f-63e39df1cdd8",
+  "jurisdictionType": "MAGISTRATES",
+  "prosecutionCases": [
+    {
+      "caseStatus": "SJP_REFERRAL",
+      "defendants": [
+        {
+          "courtProceedingsInitiated": "2020-06-15T20:39:58.278Z",
+          "defendantCaseJudicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "FINAL",
+              "cjsCode": "3011",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": true,
+              "isDeleted": false,
+              "isFinancialResult": true,
+              "judicialResultId": "180dc4fd-9a8a-489e-9199-03edc26e5469",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": true,
+                  "judicialResultPromptTypeId": "db261fd9-c6bb-4e10-b93f-9fd98418f7b0",
+                  "label": "Amount of costs",
+                  "promptReference": "AOC",
+                  "promptSequence": 100,
+                  "type": "CURR",
+                  "usergroups": [
+
+                  ],
+                  "value": "£70",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address first name",
+                  "promptReference": "minorcreditornameandaddressFirstName",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "indFirstName",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address middle name",
+                  "promptReference": "minorcreditornameandaddressMiddleName",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "middleName",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address last name",
+                  "promptReference": "minorcreditornameandaddressLastName",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "lastName",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address address line 1",
+                  "promptReference": "minorcreditornameandaddressAddress1",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "line1",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address address line 2",
+                  "promptReference": "minorcreditornameandaddressAddress2",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "line2",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address address line 3",
+                  "promptReference": "minorcreditornameandaddressAddress3",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "line3",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address address line 4",
+                  "promptReference": "minorcreditornameandaddressAddress4",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "line4",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address address line 5",
+                  "promptReference": "minorcreditornameandaddressAddress5",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "line5",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address post code",
+                  "promptReference": "minorcreditornameandaddressPostCode",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "SL2 5FZ",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address email address 1",
+                  "promptReference": "minorcreditornameandaddressEmail1",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "a@a.com",
+                  "welshLabel": ""
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "5707f766-b5b5-4747-9b15-542e7d170301",
+                  "label": "Minor creditor name and address email address 2",
+                  "promptReference": "minorcreditornameandaddressEmail2",
+                  "promptSequence": 300,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [
+
+                  ],
+                  "value": "b@a.com",
+                  "welshLabel": ""
+                }
+              ],
+              "judicialResultTypeId": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+              "label": "Costs",
+              "lastSharedDateTime": "2020-06-15",
+              "lifeDuration": false,
+              "orderedDate": "2020-06-16",
+              "orderedHearingId": "4e5483f4-3a5e-4d38-a12f-63e39df1cdd8",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 57200,
+              "resultText": "Costs\nAmount of costs £70\nMinor creditor name and address first name indFirstName\nMinor creditor name and address middle name middleName\nMinor creditor name and address last name lastName\nMinor creditor name and address address line 1 line1\nMinor creditor name and address address line 2 line2\nMinor creditor name and address address line 3 line3\nMinor creditor name and address address line 4 line4\nMinor creditor name and address address line 5 line5\nMinor creditor name and address post code SL2 5FZ\nMinor creditor name and address email address 1 a@a.com\nMinor creditor name and address email address 2 b@a.com",
+              "rollUpPrompts": true,
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [
+
+              ],
+              "welshLabel": "Costau"
+            }
+          ],
+          "id": "0c9ba7ad-1e8e-4857-a4e1-bf0771466957",
+          "isYouth": false,
+          "masterDefendantId": "0c9ba7ad-1e8e-4857-a4e1-bf0771466957",
+          "numberOfPreviousConvictionsCited": 2,
+          "offences": [
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2020-06-16",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "56a9c929-95d7-409a-8213-8c58d7a3b330",
+                "originatingHearingId": "4e5483f4-3a5e-4d38-a12f-63e39df1cdd8",
+                "sequenceNumber": 90
+              },
+              "chargeDate": "2020-05-15",
+              "convictionDate": "2020-06-16",
+              "count": 1,
+              "id": "56a9c929-95d7-409a-8213-8c58d7a3b330",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "cjsCode": "1015",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": true,
+                  "judicialResultId": "e2587923-7601-48b7-ad29-368c5a230efe",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": true,
+                      "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                      "label": "Amount of fine",
+                      "promptReference": "AOF",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [
+
+                      ],
+                      "value": "£60",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                  "label": "Fine",
+                  "lastSharedDateTime": "2020-06-15",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-06-16",
+                  "orderedHearingId": "4e5483f4-3a5e-4d38-a12f-63e39df1cdd8",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 10700,
+                  "resultText": "Fine\nAmount of fine £60",
+                  "rollUpPrompts": true,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+
+                  ],
+                  "welshLabel": "Dirwy"
+                }
+              ],
+              "modeOfTrial": "Summary",
+              "notifiedPlea": {
+                "notifiedPleaDate": "2020-06-15",
+                "notifiedPleaValue": "NO_NOTIFICATION",
+                "offenceId": "56a9c929-95d7-409a-8213-8c58d7a3b330"
+              },
+              "offenceCode": "CA03012",
+              "offenceDefinitionId": "51ed3322-499a-4430-94cc-d52964f108db",
+              "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+              "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+              "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+              "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+              "orderIndex": 1,
+              "plea": {
+                "offenceId": "56a9c929-95d7-409a-8213-8c58d7a3b330",
+                "originatingHearingId": "4e5483f4-3a5e-4d38-a12f-63e39df1cdd8",
+                "pleaDate": "2020-06-16",
+                "pleaValue": "GUILTY"
+              },
+              "startDate": "2020-05-09",
+              "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+              "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "???",
+            "bailConditions": "",
+            "bailReasons": "",
+            "driverNumber": "MORGA657054459BF",
+            "personDetails": {
+              "address": {
+                "address1": "Flat 1, Armageddon House",
+                "address2": "13 Old Road",
+                "address3": "Giggleswick",
+                "address4": "Merton",
+                "address5": "London",
+                "postcode": "SL6 1AB"
+              },
+              "contact": {
+                "home": "02099999999",
+                "mobile": "0754321007",
+                "primaryEmail": "email_primary@ghijkl.com"
+              },
+              "dateOfBirth": "1953-07-02",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Bosco Bosco Bosco",
+              "gender": "MALE",
+              "lastName": "Smith",
+              "nationalInsuranceNumber": "AE123456C",
+              "nationalityCode": "GBR",
+              "nationalityDescription": "British",
+              "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+              "occupation": "TA",
+              "occupationCode": "666",
+              "specificRequirements": "no special needs",
+              "title": "MR"
+            }
+          },
+          "prosecutionCaseId": "8b4cbedc-8b12-4a40-8830-b907a9fd1e91"
+        }
+      ],
+      "id": "8b4cbedc-8b12-4a40-8830-b907a9fd1e91",
+      "initiationCode": "J",
+      "originatingOrganisation": "GAEAA01",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Barton House",
+          "address2": "Bond Street",
+          "address3": "Bristol",
+          "postcode": "BS98 1TL"
+        },
+        "majorCreditorCode": "CDE04",
+        "prosecutionAuthorityCode": "TVL",
+        "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+        "prosecutionAuthorityName": "TV Licensing",
+        "prosecutionAuthorityOUCode": "GAEAA01",
+        "prosecutionAuthorityReference": "TVL53544BJRMP"
+      },
+      "statementOfFacts": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+      "statementOfFactsWelsh": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017"
+    }
+  ],
+  "type": {
+    "description": "Plea and Trial Preparation",
+    "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+  }
+}

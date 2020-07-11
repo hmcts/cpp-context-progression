@@ -13,6 +13,7 @@ import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.CourtApplicationOutcomeType;
@@ -25,6 +26,7 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -105,6 +107,8 @@ public class GetHearingAtAGlanceServiceTest {
     private static final UUID APPLICATION_HEARING_ID = randomUUID();
     private static final LocalDate LOCALDATE_NOW = LocalDate.now();
     private static final UUID GENERIC_UUID = randomUUID();
+    public static final LocalDate AMENDMENT_DATE = LocalDate.now();
+    public static final String AMENDMENT_REASON = "amendmentReason";
     private static final String EMPTY_STRING = "";
     private final UUID LAA_STATUS_ID = randomUUID();
 
@@ -350,7 +354,6 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
-
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
 
@@ -877,6 +880,38 @@ public class GetHearingAtAGlanceServiceTest {
         assertThat(response.getLatestHearingJurisdictionType(), is(LatestHearingJurisdictionType.CROWN));
     }
 
+    @Test
+    public void shouldSetJudiciaryResultsForAllDefendants() {
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, singletonList(DEFENDANT_ID_1));
+        Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity);
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+
+        when(caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(singletonList(caseDefendantHearingEntity));
+        when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
+        when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_INITIALISED);
+        when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD);
+        when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        final GetHearingsAtAGlance hearingAtAGlance = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        assertThat(hearingAtAGlance.getHearings().isEmpty(), is(false));
+        final Hearings hearings = hearingAtAGlance.getHearings().get(0);
+        assertThat(hearings.getDefendantJudicialResults().isEmpty(), is(false));
+        final DefendantJudicialResult judicialResult = hearings.getDefendantJudicialResults().get(0);
+        assertThat(judicialResult.getJudicialResult().getAmendmentReason(), is(AMENDMENT_REASON));
+        assertThat(judicialResult.getJudicialResult().getAmendmentDate(), is(AMENDMENT_DATE));
+        assertThat(judicialResult.getJudicialResult().getCategory(), is(Category.INTERMEDIARY));
+    }
+
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
@@ -1015,6 +1050,14 @@ public class GetHearingAtAGlanceServiceTest {
     }
 
     private Hearing createCaseHearing(ProsecutionCase prosecutionCase, CourtApplication courtApplication, UUID hearingId) {
+        final JudicialResult judicialResult = JudicialResult.judicialResult()
+                .withCategory(Category.INTERMEDIARY)
+                .withAmendmentReason(AMENDMENT_REASON)
+                .withIsAdjournmentResult(true)
+                .withAmendmentDate(AMENDMENT_DATE)
+                .build();
+        final DefendantJudicialResult defendantJudicialResult = new DefendantJudicialResult(judicialResult, DEFENDANT_ID_1);
+
         return Hearing.hearing()
                 .withId(hearingId)
                 .withType(HearingType.hearingType()
@@ -1041,6 +1084,7 @@ public class GetHearingAtAGlanceServiceTest {
                         .withWelshName("welsh name")
                         .withWelshRoomName("welsh room name")
                         .build())
+                .withDefendantJudicialResults(singletonList(defendantJudicialResult))
                 .withProsecutionCounsels(Arrays.asList(ProsecutionCounsel.prosecutionCounsel()
                         .withFirstName("first name")
                         .build()))
@@ -1150,7 +1194,7 @@ public class GetHearingAtAGlanceServiceTest {
                 .withPersonDefendant(createPersonDefendant())
                 .withOffences(createOffences())
                 .withLegalAidStatus("Granted")
-                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withAmendmentDate(LocalDate.now())
                         .build()))
                 .build();

@@ -1,0 +1,168 @@
+[
+  {
+    "defendantIds": {},
+    "results": [
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "level": "O",
+        "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "judicialResult": {
+          "judicialResultId": "",
+          "orderedHearingId": "",
+          "label": "",
+          "isAdjournmentResult": "",
+          "isFinancialResult": "",
+          "isConvictedResult": "",
+          "isAvailableForCourtExtract": "",
+          "orderedDate": "",
+          "category": "",
+          "resultText": "",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": "",
+          "isPublishedAsAPrompt": "",
+          "isExcludedFromResults": "",
+          "isAlwaysPublished": "",
+          "isUrgent": "",
+          "isD20": ""
+        }
+      },
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "level": "O",
+        "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "judicialResult": {
+          "judicialResultId": "",
+          "orderedHearingId": "",
+          "label": "",
+          "isAdjournmentResult": "",
+          "isFinancialResult": "",
+          "isConvictedResult": "",
+          "isAvailableForCourtExtract": "",
+          "orderedDate": "",
+          "category": "",
+          "resultText": "",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": "",
+          "isPublishedAsAPrompt": "",
+          "isExcludedFromResults": "",
+          "isAlwaysPublished": "",
+          "isUrgent": "",
+          "isD20": ""
+        }
+      }
+    ],
+    "cases": {},
+    "applications": {},
+    "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4"
+  },
+  {
+    "defendantIds": {},
+    "results": [
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "level": "O",
+        "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "judicialResult": {
+          "judicialResultId": "c6d26764-5b6a-4e30-8860-2e1093f89a6e",
+          "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+          "label": "Imprisonment",
+          "isAdjournmentResult": "",
+          "isFinancialResult": "",
+          "isConvictedResult": "",
+          "isAvailableForCourtExtract": "",
+          "orderedDate": "",
+          "category": "",
+          "resultText": "",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": "",
+          "isPublishedAsAPrompt": "",
+          "isExcludedFromResults": "",
+          "isAlwaysPublished": "",
+          "isUrgent": "",
+          "isD20": ""
+        }
+      },
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "level": "O",
+        "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "judicialResult": {
+          "judicialResultId": "b8f91621-135a-4c26-8b38-e83dbeda0b3f",
+          "orderedHearingId": "7669d6a3-ef75-40c7-ac13-8be3a9875c62",
+          "label": "Financial Penalty",
+          "isAdjournmentResult": "",
+          "isFinancialResult": "",
+          "isConvictedResult": "",
+          "isAvailableForCourtExtract": "",
+          "orderedDate": "",
+          "category": "",
+          "resultText": "",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": "",
+          "isPublishedAsAPrompt": "",
+          "isExcludedFromResults": "",
+          "isAlwaysPublished": "",
+          "isUrgent": "",
+          "isD20": ""
+        }
+      },
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "level": "O",
+        "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "judicialResult": {
+          "judicialResultId": "c6d26764-5b6a-4e30-8860-2e1093f89a6e",
+          "orderedHearingId": "f9f41ca5-a963-46ec-b2c2-a307883c1db5",
+          "label": "Imprisonment",
+          "isAdjournmentResult": "",
+          "isFinancialResult": "",
+          "isConvictedResult": "",
+          "isAvailableForCourtExtract": "",
+          "orderedDate": "",
+          "category": "",
+          "resultText": "",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": "",
+          "isPublishedAsAPrompt": "",
+          "isExcludedFromResults": "",
+          "isAlwaysPublished": "",
+          "isUrgent": "",
+          "isD20": ""
+        }
+      },
+      {
+        "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+        "defendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "level": "O",
+        "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "judicialResult": {
+          "judicialResultId": "b8f91621-135a-4c26-8b38-e83dbeda0b3f",
+          "orderedHearingId": "7669d6a3-ef75-40c7-ac13-8be3a9875c62",
+          "label": "Financial Penalty",
+          "isAdjournmentResult": "",
+          "isFinancialResult": "",
+          "isConvictedResult": "",
+          "isAvailableForCourtExtract": "",
+          "orderedDate": "",
+          "category": "",
+          "resultText": "",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": "",
+          "isPublishedAsAPrompt": "",
+          "isExcludedFromResults": "",
+          "isAlwaysPublished": "",
+          "isUrgent": "",
+          "isD20": ""
+        }
+      }
+    ],
+    "cases": {},
+    "applications": {},
+    "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052"
+  }
+]

@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/stagingenforcement/json/schema/event/public-enforce-financial-imposition-acknowledgement.json",
+  "type": "object",
+  "properties": {
+    "originator": {
+      "description": "Used for correlation purposes.  A short string sent by the originator and expected on the responding public event so that the originator may understand if the response is for a request that they originated",
+      "type": "string"
+    },
+    "requestId": {
+      "description": "Unique identifier for the request. Duplicate requests will not be processed by GoB.  ATCM set this to caseId but CC will need to set to the order id as there may be multiple impositions per case",
+      "$ref": "#/definitions/uuid"
+    },
+    "acknowledgement": {
+      "$ref": "#/definitions/acknowledgement"
+    },
+    "exportStatus": {
+      "type": "string",
+      "enum": [
+        "AWAITING_EXPORT_TO_ENFORCEMENT",
+        "ENFORCEMENT_EXPORTED",
+        "ENFORCEMENT_EXPORT_FAILED",
+        "ENFORCEMENT_ACKNOWLEDGED",
+        "ENFORCEMENT_ACKNOWLEDGEMENT_FAILED",
+        "ENFORCEMENT_REQUEST_SELECTED"
+      ]
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "originator",
+    "requestId",
+    "acknowledgement",
+    "exportStatus",
+    "updated"
+  ],
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    },
+    "acknowledgement": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "accountNumber": {
+              "type": "string",
+              "minLength": 9,
+              "maxLength": 9
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "accountNumber"
+          ]
+        },
+        {
+          "properties": {
+            "errorCode": {
+              "type": "string",
+              "maxLength": 5
+            },
+            "errorMessage": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "errorCode",
+            "errorMessage"
+          ]
+        }
+      ]
+    }
+  }
+}

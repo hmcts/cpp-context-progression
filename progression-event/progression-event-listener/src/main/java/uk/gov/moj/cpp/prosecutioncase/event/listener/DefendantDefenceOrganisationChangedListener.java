@@ -115,7 +115,7 @@ public class DefendantDefenceOrganisationChangedListener {
                 .withAliases(originDefendant.getAliases())
                 .withIsYouth(originDefendant.getIsYouth())
                 .withLegalAidStatus(originDefendant.getLegalAidStatus())
-                .withJudicialResults(originDefendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(originDefendant.getDefendantCaseJudicialResults())
                 .withCroNumber(originDefendant.getCroNumber())
                 .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
                 .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)

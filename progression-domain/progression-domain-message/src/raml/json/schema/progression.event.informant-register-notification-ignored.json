@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/informant-register-notification-ignored.json",
+  "type": "object",
+  "properties": {
+    "fileId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionAuthorityId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "templateId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prosecutionAuthorityId"
+  ],
+  "additionalProperties": false
+}

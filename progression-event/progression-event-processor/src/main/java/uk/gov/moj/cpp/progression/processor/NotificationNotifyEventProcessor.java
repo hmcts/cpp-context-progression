@@ -5,6 +5,7 @@ import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.APPLICATION;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
+import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.MATERIAL;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -59,7 +60,15 @@ public class NotificationNotifyEventProcessor {
 
             } else {
 
-                logger.error(format("No Case or Application found for the given notification id: %s", notificationId));
+                final Optional<SystemIdMapping> materialSystemIdMapping = systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString());
+
+                if (materialSystemIdMapping.isPresent()) {
+
+                    notificationService.recordNotificationRequestFailure(event, materialSystemIdMapping.get().getTargetId(), MATERIAL);
+
+                } else {
+                    logger.info(format("No Case, Application or Material found for the given notification id: %s", notificationId));
+                }
             }
         }
     }
@@ -68,7 +77,6 @@ public class NotificationNotifyEventProcessor {
     //supressing Sonar warning of logger not being called conditionally
     @Handles("public.notificationnotify.events.notification-sent")
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
-
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
 
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
@@ -87,7 +95,15 @@ public class NotificationNotifyEventProcessor {
 
             } else {
 
-                logger.error(format("No Case or Application found for the given notification id: %s", notificationId));
+                final Optional<SystemIdMapping> materialSystemIdMapping = systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString());
+
+                if (materialSystemIdMapping.isPresent()) {
+
+                    notificationService.recordNotificationRequestSuccess(event, materialSystemIdMapping.get().getTargetId(), MATERIAL);
+
+                } else {
+                    logger.info(format("No Case, Application or Material found for the given notification id: %s", notificationId));
+                }
             }
         }
     }

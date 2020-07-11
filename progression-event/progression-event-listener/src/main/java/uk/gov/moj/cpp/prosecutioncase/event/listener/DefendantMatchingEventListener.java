@@ -193,7 +193,7 @@ public class DefendantMatchingEventListener {
                 .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
                 .withPncId(defendant.getPncId())
-                .withJudicialResults(defendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(defendant.getDefendantCaseJudicialResults())
                 .withAliases(defendant.getAliases())
                 .withIsYouth(defendant.getIsYouth())
                 .withCroNumber(defendant.getCroNumber())

@@ -19,7 +19,6 @@ import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
@@ -56,9 +55,9 @@ public class MaterialStatusHandler {
             LOGGER.debug("{} {}", PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS, envelope.toObfuscatedDebugString());
         }
         final UpdateNowsMaterialStatus update = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), UpdateNowsMaterialStatus.class);
-        final EventStream eventStream = eventSource.getStreamById(UUID.fromString(update.getMaterialId()));
+        final EventStream eventStream = eventSource.getStreamById(update.getMaterialId());
         final MaterialAggregate nowsAggregate = aggregateService.get(eventStream, MaterialAggregate.class);
-        final Stream<Object> events = nowsAggregate.nowsMaterialStatusUpdated(UUID.fromString(update.getMaterialId()), update.getStatus());
+        final Stream<Object> events = nowsAggregate.nowsMaterialStatusUpdated(update.getMaterialId(), update.getStatus());
         appendEventsToStream(envelope, eventStream, events);
     }
 

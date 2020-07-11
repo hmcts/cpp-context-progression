@@ -170,7 +170,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "name": {
           "type": "string"
@@ -193,7 +193,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "name": {
           "type": "string"
@@ -261,7 +261,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "name": {
           "type": "string"
@@ -280,7 +280,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "type": {
           "type": "string"
@@ -315,7 +315,7 @@
       "type": "object",
       "properties": {
         "defendantId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "defenceOrganisation": {
           "description": "The organisation details of the defence representation",
@@ -334,11 +334,11 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "offenceDefinitionId": {
           "description": "The identifier of the offence from reference data",
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "offenceCode": {
           "type": "string"

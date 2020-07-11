@@ -1,0 +1,301 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "The Court Building",
+          "address2": "Bricket Road",
+          "address3": "St. Albans",
+          "address4": "Herts.",
+          "address5": "",
+          "postcode": "AL1 3JW"
+        },
+        "id": "0e0bb700-0384-37bd-954e-da2645e55610",
+        "name": "St. Albans Crown Court",
+        "roomId": "3259d801-2ad9-392d-af3f-851bbe72fff2",
+        "roomName": "Courtroom 02",
+        "lja": {
+          "ljaCode": 1910
+        },
+        "code": "C41ST00"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-04-10"
+            }
+          ],
+          "defendantId": "16c47b08-9967-43d1-9ab4-7c65d73694e4"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-04-10T10:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "75976cae-ced0-41a5-bd0b-d2d984c1fe04",
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "defendants": [
+            {
+              "id": "16c47b08-9967-43d1-9ab4-7c65d73694e4",
+              "isYouth": false,
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-04-10",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "defe13ee-5fb6-4787-bffe-d145e751d18f",
+                    "originatingHearingId": "75976cae-ced0-41a5-bd0b-d2d984c1fe04",
+                    "sequenceNumber": 90
+                  },
+                  "convictionDate": "2020-04-10",
+                  "count": 0,
+                  "id": "defe13ee-5fb6-4787-bffe-d145e751d18f",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1116",
+                      "courtClerk": {
+                        "firstName": "Evan",
+                        "lastName": "Roberts",
+                        "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "04f17bb6-f746-4a78-83f8-4fa2e77577de",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                          "label": "End Date",
+                          "promptSequence": 100,
+                          "type": "DATE",
+                          "usergroups": [
+                          ],
+                          "value": "27 May 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptSequence": 200,
+                          "type": "FIXL",
+                          "usergroups": [
+                          ],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                          "label": "Supervising Court",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "Lavenar",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "73833869-1d5e-47d3-a2f5-dac8a39466b0",
+                          "label": "Persistent offender previously fined",
+                          "promptSequence": 400,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "yes",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "5dbfe1ce-0da9-47ab-9677-66c82ff079a7",
+                          "label": "Judge reserves breach proceedings",
+                          "promptSequence": 500,
+                          "type": "BOOLEAN",
+                          "usergroups": [
+                          ],
+                          "value": "false",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "e61aa161-8eb6-42c2-ac85-89682ba79b1f",
+                          "label": "Direction that a failure to comply be dealt with by magistrates' court",
+                          "promptSequence": 600,
+                          "type": "BOOLEAN",
+                          "usergroups": [
+                          ],
+                          "value": "true",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+                          "label": "Probation team to be notified",
+                          "promptSequence": 700,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "Prison",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                      "label": "Community order England / Wales",
+                      "lastSharedDateTime": "2020-04-10",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "75976cae-ced0-41a5-bd0b-d2d984c1fe04",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 2400,
+                      "resultText": "Community order England / Wales\nEnd Date 27 May 2020\nResponsible officer a probation officer\nSupervising Court Lavenar\nPersistent offender previously fined yes\nJudge reserves breach proceedings false\nDirection that a failure to comply be dealt with by magistrates' court true\nProbation team to be notified Prison",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ]
+                    },
+                    {
+                      "alwaysPublished": true,
+                      "category": "ANCILLARY",
+                      "cjsCode": "3101",
+                      "courtClerk": {
+                        "firstName": "Evan",
+                        "lastName": "Roberts",
+                        "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "54152047-b630-4935-b112-b6b43fc95805",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                          "label": "Number of hours",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [
+                          ],
+                          "value": "5 Hours",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "c40f4a15-6edd-416d-bee2-df838e5f6e0a",
+                          "label": "Additional information",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "Additional informationAdditional information Additional information",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                      "label": "Community requirement: Unpaid work",
+                      "lastSharedDateTime": "2020-04-10",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-17",
+                      "orderedHearingId": "75976cae-ced0-41a5-bd0b-d2d984c1fe04",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "rank": 2500,
+                      "resultDefinitionGroup": "Community Requirement",
+                      "resultText": "Community requirement: Unpaid work\nNumber of hours 5 Hours\nAdditional information Additional informationAdditional information Additional information",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "defe13ee-5fb6-4787-bffe-d145e751d18f",
+                    "originatingHearingId": "75976cae-ced0-41a5-bd0b-d2d984c1fe04",
+                    "pleaDate": "2020-04-10",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailConditions": "",
+                "bailReasons": "",
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Test",
+                  "gender": "MALE",
+                  "lastName": "Ormsby",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionAuthorityReference": "TFL",
+              "prosecutionCaseId": "82ba5c72-805e-4b17-a948-d6ea598ba82f",
+              "masterDefendantId": "1e963a01-423c-426d-b677-d5b8b84a54a2"
+            }
+          ],
+          "id": "82ba5c72-805e-4b17-a948-d6ea598ba82f",
+          "initiationCode": "S",
+          "originatingOrganisation": "B01BH00",
+          "prosecutionCaseIdentifier": {
+            "caseURN": "45GD8918520",
+            "prosecutionAuthorityCode": "SPI",
+            "prosecutionAuthorityId": "ecf4412d-5d9c-4f60-b064-f6ba503801d7"
+          }
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    },
+    "sharedTime": "2020-04-10T12:21:36.806Z"
+  }
+}

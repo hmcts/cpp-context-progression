@@ -1,10 +1,17 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
+import uk.gov.justice.core.courts.Personalisation;
+import uk.gov.justice.core.courts.UpdateNowsMaterialStatus;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.core.courts.nowdocument.EmailRenderingVocabulary;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
@@ -12,9 +19,9 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.activiti.common.JsonHelper;
-import uk.gov.moj.cpp.progression.processor.NowsTemplateNameNotFoundException;
+import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.InvalidHearingTimeException;
+import uk.gov.moj.cpp.progression.processor.NowsTemplateNameNotFoundException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
@@ -24,11 +31,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.transaction.Transactional;
 
@@ -38,8 +46,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S00107"})
 public class DocumentGeneratorService {
 
-    public static final String PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS = "progression.command.update-nows-material-status";
-    public static final String RESULTS_UPDATE_NOWS_MATERIAL_STATUS = "results.update-nows-material-status";
+    public static final String PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS = "progression.command.update-nows-material-status";
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentGeneratorService.class);
     private static final String FAILED = "failed";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -47,28 +54,36 @@ public class DocumentGeneratorService {
     public static final String NCES_DOCUMENT_TEMPLATE_NAME = "NCESNotification";
     public static final String NCES_DOCUMENT_ORDER = "NCESDocumentOrder";
 
-    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
+    private final DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    private FileStorer fileStorer;
+    private final FileStorer fileStorer;
 
-    private UploadMaterialService uploadMaterialService;
+    private final UploadMaterialService uploadMaterialService;
 
-    private SystemUserProvider systemUserProvider;
+    private final SystemUserProvider systemUserProvider;
+
+    private final MaterialUrlGenerator materialUrlGenerator;
+
+    private final ApplicationParameters applicationParameters;
 
     @Inject
     public DocumentGeneratorService(final SystemUserProvider systemUserProvider,
                                     final DocumentGeneratorClientProducer documentGeneratorClientProducer,
                                     final ObjectToJsonObjectConverter objectToJsonObjectConverter,
                                     final FileStorer fileStorer,
-                                    final UploadMaterialService uploadMaterialService
+                                    final UploadMaterialService uploadMaterialService,
+                                    final MaterialUrlGenerator materialUrlGenerator,
+                                    final ApplicationParameters applicationParameters
     ) {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
         this.objectToJsonObjectConverter = objectToJsonObjectConverter;
         this.fileStorer = fileStorer;
         this.uploadMaterialService = uploadMaterialService;
+        this.materialUrlGenerator = materialUrlGenerator;
+        this.applicationParameters = applicationParameters;
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
@@ -78,35 +93,29 @@ public class DocumentGeneratorService {
             final String orderName = nowDocumentRequest.getNowContent().getOrderName();
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
             final JsonObject nowsDocumentOrderJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
-            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), getSystemUserUuid());
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, getTemplateName(nowDocumentRequest), getSystemUserUuid());
             addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
                     new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
-                    nowDocumentRequest.getCaseId(),
-                    null,
-                    nowDocumentRequest.getIsRemotePrintingRequired(),
-                    nowDocumentRequest.getEmailNotifications());
+                    nowDocumentRequest.getNowDistribution());
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
-            updateStatus(sender, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId().toString(), userId.toString(), FAILED, PROGRESSION_UPDATE_NOWS_MATERIAL_STATUS);
-            updateStatus(sender, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId().toString(), userId.toString(), FAILED, RESULTS_UPDATE_NOWS_MATERIAL_STATUS);
+            updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
         }
     }
 
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void generateNcesDocument(final Sender sender, final JsonEnvelope originatingEnvelope,
-                            final UUID userId, final NcesNotificationRequested ncesNotificationRequested) {
+                                     final UUID userId, final NcesNotificationRequested ncesNotificationRequested) {
         try {
-            final String orderName = NCES_DOCUMENT_ORDER;
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
             final JsonObject nowsDocumentOrderJson = objectToJsonObjectConverter.convert(ncesNotificationRequested.getDocumentContent());
             final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, getSystemUserUuid());
-            addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
+            addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(NCES_DOCUMENT_ORDER),
                     new ByteArrayInputStream(resultOrderAsByteArray), userId, ncesNotificationRequested.getHearingId().toString(), ncesNotificationRequested.getMaterialId(),
                     ncesNotificationRequested.getCaseId(),
                     null,
-                    false,
-                    null);
+                    false);
 
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
@@ -132,8 +141,7 @@ public class DocumentGeneratorService {
                     materialId,
                     prosecutionCaseId,
                     applicationId,
-                    true,
-                    null);
+                    true);
 
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
@@ -147,8 +155,7 @@ public class DocumentGeneratorService {
                                        final UUID materialId,
                                        final UUID caseId,
                                        final UUID applicationId,
-                                       final boolean isRemotePrintingRequired,
-                                       final List<EmailChannel> emailNotifications) {
+                                       final boolean isRemotePrintingRequired) {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
@@ -162,8 +169,9 @@ public class DocumentGeneratorService {
                     .setFileId(fileId)
                     .setCaseId(caseId)
                     .setApplicationId(applicationId)
-                    .setIsRemotePrintingRequired(isRemotePrintingRequired)
-                    .setEmailNotifications(emailNotifications)
+                    .setFirstClassLetter(false)
+                    .setSecondClassLetter(isRemotePrintingRequired)
+                    .setEmailNotifications(null)
                     .build());
 
         } catch (final FileServiceException e) {
@@ -172,22 +180,115 @@ public class DocumentGeneratorService {
         }
     }
 
+    private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
+                                       final UUID userId, final String hearingId,
+                                       final UUID materialId,
+                                       final NowDistribution nowDistribution) {
+        try {
+
+            final UUID fileId = storeFile(fileContent, filename);
+
+            LOGGER.info("Stored material {} in file store {}", materialId, fileId);
+
+            final boolean firstClassLetter = isFirstClassLetter(nowDistribution);
+
+            final boolean secondClassLetter = isSecondClassLetter(nowDistribution);
+
+            final List<EmailChannel> emailNotifications = buildEmailChannel(materialId, nowDistribution);
+
+            final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder()
+                    .setSender(sender)
+                    .setOriginatingEnvelope(originatingEnvelope)
+                    .setUserId(userId)
+                    .setHearingId(fromString(hearingId))
+                    .setMaterialId(materialId)
+                    .setFileId(fileId)
+                    .setCaseId(null)
+                    .setApplicationId(null)
+                    .setFirstClassLetter(firstClassLetter)
+                    .setSecondClassLetter(secondClassLetter);
+
+            if(!emailNotifications.isEmpty()) {
+                uploadMaterialContextBuilder.setEmailNotifications(emailNotifications);
+            }
+
+            uploadMaterialService.uploadFile(uploadMaterialContextBuilder.build());
+
+        } catch (final FileServiceException e) {
+            LOGGER.error("Error while uploading file {}", filename);
+            throw new FileUploadException(e);
+        }
+    }
+
+    private List<EmailChannel> buildEmailChannel(final UUID materialId, NowDistribution nowDistribution) {
+        if (nonNull(nowDistribution) && nonNull(nowDistribution.getEmail()) && nowDistribution.getEmail()) {
+            final List<EmailChannel> emailNotifications = new ArrayList<>();
+            final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
+            final UUID templateId = getTemplateId(nowDistribution.getEmailTemplateName());
+            final EmailChannel emailNotification = EmailChannel.emailChannel()
+                    .withTemplateId(templateId)
+                    .withSendToAddress(nowDistribution.getEmailAddress())
+                    .withMaterialUrl(materialUrl)
+                    .withPersonalisation(buildPersonalisation(nowDistribution.getEmailContent()))
+                    .build();
+            if(nonNull(emailNotification.getSendToAddress())) {
+                emailNotifications.add(emailNotification);
+            }
+            return emailNotifications;
+        }
+        return Collections.emptyList();
+    }
+
+    @SuppressWarnings("squid:S1172")
+    private UUID getTemplateId(String emailTemplateName) {
+        return fromString(applicationParameters.getEmailTemplateId(emailTemplateName));
+    }
+
+    private String getTemplateName(NowDocumentRequest nowDocumentRequest) {
+
+        final Boolean isWelshCourtCentre = nowDocumentRequest.getNowContent().getOrderingCourt().getWelshCourtCentre();
+        if (nonNull(isWelshCourtCentre) && isWelshCourtCentre
+                && nonNull(nowDocumentRequest.getBilingualTemplateName())
+                && !nowDocumentRequest.getBilingualTemplateName().isEmpty()) {
+            return nowDocumentRequest.getBilingualTemplateName();
+        }
+        return nowDocumentRequest.getTemplateName();
+    }
+
+    private Personalisation buildPersonalisation(List<EmailRenderingVocabulary> emailContents) {
+
+        if(isNull(emailContents)) {
+            return null;
+        }
+
+        final Personalisation.Builder builder = Personalisation.personalisation();
+        emailContents.forEach(emailRenderingVocabulary -> builder.withAdditionalProperty(emailRenderingVocabulary.getLabel(), emailRenderingVocabulary.getValue()));
+        return builder.build();
+    }
+
+    private boolean isSecondClassLetter(NowDistribution nowDistribution) {
+        return nonNull(nowDistribution) && nonNull(nowDistribution.getSecondClassLetter()) && nowDistribution.getSecondClassLetter();
+    }
+
+    private boolean isFirstClassLetter(NowDistribution nowDistribution) {
+        return nonNull(nowDistribution) && nonNull(nowDistribution.getFirstClassLetter()) && nowDistribution.getFirstClassLetter();
+    }
+
     private UUID storeFile(final InputStream fileContent, final String fileName) throws FileServiceException {
         final JsonObject metadata = createObjectBuilder().add("fileName", fileName).build();
         return fileStorer.store(metadata, fileContent);
     }
 
-    private void updateStatus(Sender sender, String hearingId, String materialId,
-                              String userId, String status, String commandName) {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("hearing_id", hearingId)
-                .add("material_id", materialId)
-                .add("status", status).build();
+    private void updateMaterialStatusAsFailed(Sender sender, final JsonEnvelope originatingEnvelope, UUID materialId) {
 
-        final JsonEnvelope postRequestEnvelope = JsonHelper.assembleEnvelopeWithPayloadAndMetaDetails(payload,
-                commandName, materialId, userId);
+        final UpdateNowsMaterialStatus updateNowsMaterialStatusCommand = UpdateNowsMaterialStatus.updateNowsMaterialStatus()
+                .withStatus(FAILED)
+                .withMaterialId(materialId)
+                .build();
 
-        sender.send(postRequestEnvelope);
+        final JsonObject payload = this.objectToJsonObjectConverter.convert(updateNowsMaterialStatusCommand);
+
+        sender.send(envelop(payload).withName(PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS).withMetadataFrom(originatingEnvelope));
     }
 
     private String getTimeStampAmendedFileName(final String fileName) {

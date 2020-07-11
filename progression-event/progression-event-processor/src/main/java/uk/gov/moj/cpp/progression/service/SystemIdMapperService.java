@@ -27,6 +27,8 @@ public class SystemIdMapperService {
 
     protected static final String APPLICATION_TARGET_TYPE = "APPLICATION_ID";
 
+    protected static final String MATERIAL_TARGET_TYPE = "MATERIAL_ID";
+
     @Inject
     private SystemUserProvider systemUserProvider;
 
@@ -43,6 +45,9 @@ public class SystemIdMapperService {
         return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, APPLICATION_TARGET_TYPE, getSystemUserId());
     }
 
+    public Optional<SystemIdMapping> getCppMaterialIdForNotificationId(final String notificationId) {
+        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, MATERIAL_TARGET_TYPE, getSystemUserId());
+    }
 
     @SuppressWarnings("squid:S3655")
     public void mapNotificationIdToCaseId(final UUID caseId, final UUID notificationId) {
@@ -64,6 +69,17 @@ public class SystemIdMapperService {
 
         if (!response.isSuccess()) {
             throw new IllegalStateException(format("Failed to map case Id: %s to notification id %s", applicationId, notificationId));
+        }
+    }
+
+    public void mapNotificationIdToMaterialId(final UUID materialId, final UUID notificationId) {
+
+        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, materialId, MATERIAL_TARGET_TYPE);
+
+        final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
+
+        if (!response.isSuccess()) {
+            throw new IllegalStateException(format("Failed to map material Id: %s to notification id %s", materialId, notificationId));
         }
     }
 

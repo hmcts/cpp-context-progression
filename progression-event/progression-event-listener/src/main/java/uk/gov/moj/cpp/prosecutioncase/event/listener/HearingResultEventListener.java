@@ -1,12 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
@@ -23,7 +27,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -85,7 +91,7 @@ public class HearingResultEventListener {
         return Hearing.hearing()
                 .withIsBoxHearing(originalHearing.getIsBoxHearing())
                 .withId(originalHearing.getId())
-                .withProsecutionCases(getUpdatedProscutionCasesForNonResultedHearing(originalHearing, resultedHearing))
+                .withProsecutionCases(getUpdatedProsecutionCasesForNonResultedHearing(originalHearing, resultedHearing))
                 .withHearingDays(originalHearing.getHearingDays())
                 .withCourtCentre(originalHearing.getCourtCentre())
                 .withJurisdictionType(originalHearing.getJurisdictionType())
@@ -111,7 +117,7 @@ public class HearingResultEventListener {
                 .build();
     }
 
-    private List<ProsecutionCase> getUpdatedProscutionCasesForNonResultedHearing(final Hearing originalHearing,
+    private List<ProsecutionCase> getUpdatedProsecutionCasesForNonResultedHearing(final Hearing originalHearing,
                                                                                  final Hearing resultedHearing) {
         return originalHearing.getProsecutionCases().stream().map(prosecutionCase ->
                 getUpdatedProsecutionCaseForNonResultedHearing(prosecutionCase, resultedHearing)
@@ -148,6 +154,7 @@ public class HearingResultEventListener {
                 getUpdatedDefendantForNonResultedHearing(defendant, resultedCase)
         ).collect(toList());
     }
+
     private Defendant getUpdatedDefendantForNonResultedHearing(final Defendant originDefendant, final ProsecutionCase resultedCase) {
         final Optional<Defendant> optionalResultedDefendant = resultedCase.getDefendants().stream().filter(resultedDefendant -> resultedDefendant.getId().equals(originDefendant.getId()))
                 .findFirst();
@@ -174,7 +181,7 @@ public class HearingResultEventListener {
                     .withAliases(originDefendant.getAliases())
                     .withIsYouth(originDefendant.getIsYouth())
                     .withCroNumber(originDefendant.getCroNumber())
-                    .withJudicialResults(originDefendant.getJudicialResults())
+                    .withDefendantCaseJudicialResults(getNonNowsResults(originDefendant.getDefendantCaseJudicialResults()))
                     .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
                     .withProceedingsConcluded(resultedDefendant.getProceedingsConcluded())
                     .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
@@ -208,7 +215,7 @@ public class HearingResultEventListener {
                     .withIndicatedPlea(originalOffence.getIndicatedPlea())
                     .withIsDiscontinued(originalOffence.getIsDiscontinued())
                     .withIntroducedAfterInitialProceedings(originalOffence.getIntroducedAfterInitialProceedings())
-                    .withJudicialResults(originalOffence.getJudicialResults())
+                    .withJudicialResults(getNonNowsResults(originalOffence.getJudicialResults()))
                     .withLaaApplnReference(originalOffence.getLaaApplnReference())
                     .withModeOfTrial(originalOffence.getModeOfTrial())
                     .withNotifiedPlea(originalOffence.getNotifiedPlea())
@@ -246,7 +253,7 @@ public class HearingResultEventListener {
                 .withJurisdictionType(hearing.getJurisdictionType())
                 .withType(hearing.getType())
                 .withHearingLanguage(hearing.getHearingLanguage())
-                .withCourtApplications(hearing.getCourtApplications())
+                .withCourtApplications(getUpdateCourtApplications(hearing.getCourtApplications()))
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withJudiciary(hearing.getJudiciary())
                 .withDefendantAttendance(hearing.getDefendantAttendance())
@@ -264,6 +271,25 @@ public class HearingResultEventListener {
                 .withIntermediaries(hearing.getIntermediaries())
                 .withIsEffectiveTrial(hearing.getIsEffectiveTrial())
                 .build();
+    }
+
+    private List<CourtApplication> getUpdateCourtApplications(final List<CourtApplication> courtApplicationList) {
+        Optional.ofNullable(courtApplicationList).ifPresent(
+                courtApplications -> courtApplications.stream().filter(Objects::nonNull).forEach(HearingResultEventListener::getCourtApplicationJudResultsforNonNows
+                )
+        );
+
+        return courtApplicationList;
+    }
+
+    private static void getCourtApplicationJudResultsforNonNows(CourtApplication courtApplication) {
+        ofNullable(courtApplication.getJudicialResults()).ifPresent(
+                judicialResults -> {
+                    final List<JudicialResult> caJudicialResults = judicialResults.stream().filter(Objects::nonNull).filter(jr -> !jr.getPublishedForNows().equals(Boolean.TRUE)).collect(Collectors.toList());
+                    courtApplication.getJudicialResults().clear();
+                    courtApplication.getJudicialResults().addAll(caJudicialResults);
+                }
+        );
     }
 
     private List<ProsecutionCase> getUpdatedProsecutionCases(final Hearing hearing, final Hearing originalHearing) {
@@ -328,7 +354,7 @@ public class HearingResultEventListener {
                 .withAliases(originDefendant.getAliases())
                 .withIsYouth(originDefendant.getIsYouth())
                 .withCroNumber(originDefendant.getCroNumber())
-                .withJudicialResults(originDefendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(getNonNowsResults(originDefendant.getDefendantCaseJudicialResults()))
                 .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
                 .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
                 .build();
@@ -355,7 +381,7 @@ public class HearingResultEventListener {
                 .withIndicatedPlea(originOffence.getIndicatedPlea())
                 .withIsDiscontinued(originOffence.getIsDiscontinued())
                 .withIntroducedAfterInitialProceedings(originOffence.getIntroducedAfterInitialProceedings())
-                .withJudicialResults(originOffence.getJudicialResults())
+                .withJudicialResults(getNonNowsResults(originOffence.getJudicialResults()))
                 .withLaaApplnReference(originOffence.getLaaApplnReference())
                 .withModeOfTrial(originOffence.getModeOfTrial())
                 .withNotifiedPlea(originOffence.getNotifiedPlea())
@@ -385,5 +411,14 @@ public class HearingResultEventListener {
         return object;
     }
 
+    private List<JudicialResult> getNonNowsResults(final List<JudicialResult> judicialResults) {
+        if (isNull(judicialResults) || judicialResults.isEmpty()) {
+            return judicialResults;
+        }
 
+        return judicialResults.stream()
+                .filter(Objects::nonNull)
+                .filter(jr -> !Boolean.TRUE.equals(jr.getPublishedForNows()))
+                .collect(toList());
+    }
 }

@@ -1,0 +1,42 @@
+package uk.gov.moj.cpp.progression.query.api;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
+
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class NowDocumentRequestQueryApiTest {
+    private static final String NOW_DOCUMENT_TYPES_API = "progression.query.now-document-requests-by-request-id";
+    @Mock
+    private JsonEnvelope query;
+
+    @Mock
+    private Requester requester;
+
+    @Mock
+    private JsonEnvelope response;
+
+    @InjectMocks
+    private NowDocumentRequestQueryApi nowDocumentRequestQueryApi;
+
+    @Test
+    public void shouldHandleNowDocumentRequestsQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(nowDocumentRequestQueryApi.getNowDocumentRequests(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleNowDocumentRequestsByHearingQuery() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(nowDocumentRequestQueryApi.getNowDocumentRequestsByHearing(query), equalTo(response));
+    }
+}

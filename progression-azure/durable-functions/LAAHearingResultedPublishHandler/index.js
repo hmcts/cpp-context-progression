@@ -18,14 +18,13 @@ module.exports = df.orchestrator(function* (context) {
     var params = {};
     params.hearingId = inputs.hearingId;
     params.cjscppuid = inputs.cjscppuid;
+    params.payloadPrefix = "EXT_";
     params.redisClient = null;
-    
+
     const unfilteredJson = yield context.df.callActivity('HearingResultedCacheQuery', params);
 
     const filteredJson = yield context.df.callActivity('LAAHearingResultedFilter', unfilteredJson);
 
-    const result = yield context.df.callActivity('HearingResultedPublisher', filteredJson);
-
-    return result
+    return yield context.df.callActivity('HearingResultedPublisher', filteredJson);
 
 });

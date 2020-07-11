@@ -4,13 +4,13 @@
   "type": "object",
   "properties": {
     "applicationId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "caseId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "materialId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "notifications": {
       "type": "array",
@@ -24,10 +24,10 @@
     "notification": {
       "properties": {
         "notificationId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "templateId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "sendToAddress": {
           "type": "string"
@@ -49,18 +49,7 @@
       ]
     }
   },
-  "oneOf": [
-    {
-      "required": [
-        "caseId",
-        "notifications"
-      ]
-    },
-    {
-      "required": [
-        "applicationId",
-        "notifications"
-      ]
-    }
+  "required": [
+    "notifications"
   ]
 }

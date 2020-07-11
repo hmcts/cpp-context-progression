@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.listener.material;
 
-import static uk.gov.moj.cpp.progression.processor.NowsMaterialStatusEventProcessor.GENERATED_STATUS_VALUE;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.UpdateNowsMaterialStatus;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -12,17 +12,11 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.Originator;
 
+import javax.inject.Inject;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import static uk.gov.moj.cpp.progression.processor.NowsMaterialStatusEventProcessor.GENERATED_STATUS_VALUE;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- *
- *
- */
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class MaterialAddedListener {
 
@@ -46,14 +40,18 @@ public class MaterialAddedListener {
         LOGGER.info("Received MaterialAddedEvent {}", event);
         if (event.metadata().asJsonObject().containsKey(ORIGINATOR)
                 && ORIGINATOR_VALUE.equalsIgnoreCase(event.metadata().asJsonObject().getString(ORIGINATOR))) {
-            final UUID materialId = UUID.fromString(event.payloadAsJsonObject().getString(MATERIAL_ID));
-            final UpdateNowsMaterialStatus updateNowsMaterialStatusCommand = UpdateNowsMaterialStatus.updateNowsMaterialStatus()
-                    .withStatus(GENERATED_STATUS_VALUE)
-                    .withMaterialId(materialId.toString())
-                    .build();
-            this.sender.send(this.enveloper.withMetadataFrom(event, PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS)
-                    .apply(this.objectToJsonObjectConverter.convert(updateNowsMaterialStatusCommand)));
+            processNowsMaterialNotificationRequest(event);
         }
+    }
+
+    private void processNowsMaterialNotificationRequest(JsonEnvelope event) {
+        final UUID materialId = UUID.fromString(event.payloadAsJsonObject().getString(MATERIAL_ID));
+        final UpdateNowsMaterialStatus updateNowsMaterialStatusCommand = UpdateNowsMaterialStatus.updateNowsMaterialStatus()
+                .withStatus(GENERATED_STATUS_VALUE)
+                .withMaterialId(materialId)
+                .build();
+        this.sender.send(this.enveloper.withMetadataFrom(event, PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS)
+                .apply(this.objectToJsonObjectConverter.convert(updateNowsMaterialStatusCommand)));
     }
 
 }

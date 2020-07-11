@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "notificationId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "failedTime": {
       "type": "string",

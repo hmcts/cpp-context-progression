@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/add-court-register.json",
+  "type": "object",
+  "properties": {
+    "registerDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hearingDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hearingId": {
+      "description": "The hearing id of the hearing shared",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentreId": {
+      "description": "The court centre reference data identifier",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "fileName": {
+      "type": "string"
+    },
+    "hearingVenue": {
+      "description": "The venue of the court register",
+      "$ref": "http://justice.gov.uk/core/courts/courtRegisterDocument/courtRegisterHearingVenue.json"
+    },
+    "recipients": {
+      "description": "The recipients of the court register",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtRegisterDocument/courtRegisterRecipient.json"
+      }
+    },
+    "defendants": {
+      "description": "The defendants that are the subject of the court register",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtRegisterDocument/courtRegisterDefendant.json"
+      }
+    }
+  },
+  "required": [
+    "registerDate",
+    "hearingDate",
+    "hearingId",
+    "courtCentreId",
+    "fileName",
+    "hearingVenue",
+    "defendants"
+  ],
+  "additionalProperties": false
+}

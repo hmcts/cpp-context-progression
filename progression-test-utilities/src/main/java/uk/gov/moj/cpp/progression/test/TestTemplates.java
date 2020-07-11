@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.test;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -19,10 +20,10 @@ import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
 import uk.gov.justice.core.courts.nowdocument.NextHearingCourtDetails;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
-import uk.gov.justice.core.courts.nowdocument.NowResultDefinitionsText;
 import uk.gov.justice.core.courts.nowdocument.Nowaddress;
 import uk.gov.justice.core.courts.nowdocument.Nowdefendant;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.core.courts.nowdocument.OrderCourt;
 import uk.gov.justice.core.courts.nowdocument.Prompt;
 import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.core.courts.nowdocument.Result;
@@ -35,29 +36,34 @@ import java.util.UUID;
 @SuppressWarnings("squid:S1188")
 public class TestTemplates {
 
-    private final static String additional_property = "Additional_Property";
-    public static final String SAMPLE_OF_REPLY_TO_ADDRESS = "Sample of Reply to Address";
-    public static final String SAMPLE_OF_THE_SEND_TO_ADDRESS = "Sample of the send to address";
-
+    public static final String SAMPLE_OF_REPLY_TO_ADDRESS = "test.reply@hmcts.net";
+    public static final String SAMPLE_OF_THE_SEND_TO_ADDRESS = "test.sendTo@hmcts.net";
+    private static final List<String> VISIBLE_USER_GROUP_LIST = newArrayList("Defence");
+    private static final List<String> NON_VISIBLE_USER_GROUP_LIST = newArrayList("Defence", "Probation");
     private TestTemplates() {
     }
-
 
     public static NowDocumentRequest generateNowDocumentRequestTemplate(final UUID defendantId) {
         return generateNowDocumentRequestTemplate(defendantId, JurisdictionType.CROWN, false);
     }
 
-    public static NowDocumentRequest generateNowDocumentRequestTemplate(final UUID defendantId,
-                                                                        final JurisdictionType jurisdictionType, boolean convicted) {
-        return generateNowDocumentRequestTemplate(defendantId, jurisdictionType, convicted, false);
+    public static NowDocumentRequest generateNowDocumentRequestTemplateWithVisibleUserList(final UUID defendantId) {
+        return generateNowDocumentRequestTemplate(defendantId, JurisdictionType.CROWN, false, VISIBLE_USER_GROUP_LIST, null);
     }
 
-    public static NowDocumentRequest generateNowDocumentRequestTemplate(final UUID defendantId, final JurisdictionType jurisdictionType, boolean convicted, boolean remotePrintingRequired) {
+    public static NowDocumentRequest generateNowDocumentRequestTemplateWithNonVisibleUserList(final UUID defendantId) {
+        return generateNowDocumentRequestTemplate(defendantId, JurisdictionType.CROWN, false, null, NON_VISIBLE_USER_GROUP_LIST);
+    }
+
+    public static NowDocumentRequest generateNowDocumentRequestTemplate(final UUID defendantId, final JurisdictionType jurisdictionType, boolean convicted) {
+        return generateNowDocumentRequestTemplate(defendantId, jurisdictionType, convicted, null, null);
+    }
+
+    public static NowDocumentRequest generateNowDocumentRequestTemplate(final UUID defendantId, final JurisdictionType jurisdictionType, boolean convicted, List<String> visibleUserList, List<String> nonVisibleUserList) {
         final UUID caseId = UUID.randomUUID();
         final UUID offenceId = UUID.randomUUID();
         final UUID nowTypeId = UUID.randomUUID();
         final UUID materialId = UUID.randomUUID();
-        final UUID applicationId = UUID.randomUUID();
 
         final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
                 .setJurisdictionType(jurisdictionType)
@@ -68,16 +74,15 @@ public class TestTemplates {
         return NowDocumentRequest.nowDocumentRequest()
                 .withHearingId(hearing.getId())
                 .withMaterialId(materialId)
-                .withCaseId(caseId)
-                .withApplicationId(applicationId)
                 .withNowTypeId(nowTypeId)
                 .withNowContent(nowContentTemplate())
-                .withIsRemotePrintingRequired(remotePrintingRequired)
-                .withEmailNotifications(emailChannelTemplate())
-                .withDefendantId(defendantId)
-                .withUsergroups(userGroupsTemplate())
-                .withPriority("0.5 hours")
+                .withMasterDefendantId(defendantId)
                 .withTemplateName("TestTemplate")
+                .withBilingualTemplateName("BilingualTestTemplate")
+                .withCases(asList(caseId))
+                .withStorageRequired(true)
+                .withVisibleToUserGroups(visibleUserList)
+                .withNotVisibleToUserGroups(nonVisibleUserList)
                 .build();
 
     }
@@ -85,20 +90,14 @@ public class TestTemplates {
     public static NowDocumentContent nowContentTemplate() {
         return NowDocumentContent.nowDocumentContent()
                 .withCases(asList(prosecutionCaseTemplate(1), prosecutionCaseTemplate(2)))
-                .withCaseUrns(asList("URN_1", "URN_2"))
-                .withCourtCentreName("Sample Court Centre")
                 .withCourtClerkName("Sample Court Clerk")
                 .withDefendant(nowDefendantTemplate())
                 .withFinancialOrderDetails(financialOrderDetailsTemplate())
-                .withLjaCode("Sample LJA Code")
-                .withLjaName("Sample LJA Name")
                 .withNextHearingCourtDetails(nextHearingCourtDetailsTemplate())
-                .withNowResultDefinitionsText(nowResultDefinitionsTextTemplate())
-                .withNowText("Sample NOW Text")
                 .withOrderAddressee(orderAddresseeTemplate())
                 .withOrderDate(LocalDate.of(2019, 3, 21).toString())
                 .withOrderName("Now_Content_Template_Order_Name")
-                .withSubTemplateName("Now_Content_SubTemplate_Name")
+                .withOrderingCourt(OrderCourt.orderCourt().withWelshCourtCentre(true).build())
                 .build();
     }
 
@@ -107,7 +106,6 @@ public class TestTemplates {
                 .withAddress(nowAddressTemplate())
                 .withDateOfBirth(LocalDate.of(1970, 1, 1).toString())
                 .withName("Defendant_Name")
-                .withAdditionalProperty(additional_property, Boolean.FALSE)
                 .build();
     }
 
@@ -126,15 +124,13 @@ public class TestTemplates {
         return FinancialOrderDetails.financialOrderDetails()
                 .withBacsAccountNumber("BACS1234567")
                 .withAccountPaymentReference("Sample_Account_Payment_Reference")
-                .withAccountingDivisionCode("Sample_Division_Code")
+                .withAccountingDivisionCode(123)
                 .withTotalBalance("100.00")
                 .withTotalAmountImposed("95.00")
-                .withIsCrownCourt(Boolean.TRUE)
                 .withEnforcementPhoneNumber("1234567890")
                 .withEnforcementEmail("sample@sample.com")
                 .withBacsSortCode("12-34-56")
                 .withBacsBankName("45615975")
-                .withAccountingDivisionCode("Sample_Accounting_Division_Code")
                 .withEnforcementAddress(nowAddressTemplate())
                 .build();
     }
@@ -146,29 +142,6 @@ public class TestTemplates {
                 .withCourtName("Next_Hearing_Sample_Court_Name")
                 .withCourtAddress(nowAddressTemplate())
                 .build();
-    }
-
-    public static NowResultDefinitionsText nowResultDefinitionsTextTemplate() {
-        return NowResultDefinitionsText.nowResultDefinitionsText()
-                .withAdditionalProperty(additional_property, Boolean.FALSE)
-                .build();
-    }
-
-    public static List<EmailChannel> emailChannelTemplate() {
-        return asList(EmailChannel.emailChannel()
-                        .withReplyToAddress(SAMPLE_OF_REPLY_TO_ADDRESS)
-                        .withSendToAddress(SAMPLE_OF_THE_SEND_TO_ADDRESS)
-                        .withTemplateId(UUID.randomUUID())
-                        .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
-                        .build(),
-                EmailChannel.emailChannel()
-                        .withReplyToAddress(SAMPLE_OF_REPLY_TO_ADDRESS)
-                        .withSendToAddress(SAMPLE_OF_THE_SEND_TO_ADDRESS)
-                        .withTemplateId(UUID.randomUUID())
-                        .withPersonalisation(Personalisation.personalisation().withAdditionalProperty(STRING.next(), STRING.next()).build())
-                        .build()
-        );
-
     }
 
     public static OrderAddressee orderAddresseeTemplate() {
@@ -186,7 +159,7 @@ public class TestTemplates {
         return ProsecutionCase.prosecutionCase()
                 .withDefendantCaseOffences(asList(defendantCaseOffenceTemplate(1), defendantCaseOffenceTemplate(2)))
                 .withDefendantCaseResults(asList(resultTemplate(1), resultTemplate(2)))
-                .withUrn("URN_" + value)
+                .withReference("URN_" + value)
                 .build();
     }
 
@@ -202,7 +175,6 @@ public class TestTemplates {
     public static Result resultTemplate(final int value) {
         return Result.result()
                 .withLabel("Result_Label_" + value)
-                .withAdditionalProperty("Additional_Property", Boolean.FALSE)
                 .withPrompts(asList(promptTemplate(1), promptTemplate(2)))
                 .build();
     }
@@ -241,6 +213,4 @@ public class TestTemplates {
                 ))
                 .build();
     }
-
-
 }

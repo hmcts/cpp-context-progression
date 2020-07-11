@@ -4,34 +4,24 @@
   "id": "http://justice.gov.uk/core/courts/progression.command.record-notification-request-accepted.json",
   "properties": {
     "applicationId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "caseId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "notificationId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "acceptedTime": {
       "type": "string",
       "format": "date-time"
     }
   },
-  "oneOf": [
-    {
-      "required": [
-        "caseId",
-        "notificationId",
-        "acceptedTime"
-      ]
-    },
-    {
-      "required": [
-        "applicationId",
-        "notificationId",
-        "acceptedTime"
-      ]
-    }
+  "required": [
+    "notificationId"
   ],
   "additionalProperties": false
 }

@@ -74,7 +74,7 @@ public class DefendantHelper {
                 .withMitigationWelsh(defendant.getMitigationWelsh())
                 .withWitnessStatement(defendant.getWitnessStatement())
                 .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
-                .withJudicialResults(defendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(defendant.getDefendantCaseJudicialResults())
                 .withPncId(defendant.getPncId())
                 .withCroNumber(defendant.getCroNumber())
                 .withLegalAidStatus(defendant.getLegalAidStatus())

@@ -308,7 +308,7 @@ public class UnscheduledCourtHearingListTransformer {
                 .withCroNumber(defendant.getCroNumber())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
                 .withIsYouth(defendant.getIsYouth())
-                .withJudicialResults(defendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(defendant.getDefendantCaseJudicialResults())
                 .withLegalAidStatus(defendant.getLegalAidStatus())
                 .withMitigation(defendant.getMitigation())
                 .withMitigationWelsh(defendant.getMitigationWelsh())

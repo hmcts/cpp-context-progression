@@ -1,0 +1,59 @@
+[{
+    "registerDate":"2020-01-20",
+    "prosecutionAuthorityId":"31af405e-7b60-4dd8-a244-c24c2d3fa595",
+    "prosecutionAuthorityCode":"TFL",
+    "prosecutionAuthorityOUCode":"OUCode",
+    "matchedSubscriptions" : [
+        {
+            "recipient" : {
+                "organisationName" : "Fred Smith",
+                "emailTemplateName" : "ir_standard",
+                "emailAddress1" : "test@hmcst.net"
+            },
+            "forDistribution": true,
+            "emailDelivery": true
+        }
+    ],
+    "registerDefendants": [
+        {
+            "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+            "results": [
+                {
+                    "level": "C",
+                    "judicialResult": {
+                        "cjsResultCode": "cjsCode - defendant level",
+                        "resultText": "Pay by date"
+                    }
+                },
+                {
+                    "level": "O",
+                    "judicialResult": {
+                        "cjsResultCode": "cjsCode - defendant level",
+                        "resultText": "Pay by date"
+                    },
+                    "offenceId": "a154d828-1234-47f0-b8d5-e81227831d94"
+                }
+            ]
+        },
+        {
+            "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+            "results": [
+                {
+                    "level": "C",
+                    "judicialResult": {
+                        "cjsResultCode": "cjsCode - defendant level",
+                        "resultText": "Pay by date"
+                    }
+                },
+                {
+                    "level": "O",
+                    "judicialResult": {
+                        "cjsResultCode": "cjsCode - defendant level",
+                        "resultText": "Pay by date"
+                    },
+                    "offenceId": "offence-id-1"
+                }
+            ]
+        }
+    ]
+}]

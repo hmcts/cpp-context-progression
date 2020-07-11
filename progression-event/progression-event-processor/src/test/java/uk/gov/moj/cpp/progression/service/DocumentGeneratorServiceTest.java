@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,7 +29,6 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -74,65 +77,23 @@ public class DocumentGeneratorServiceTest {
     ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
 
     @Test
-    public void testGenerateNowNonRemote() throws Exception {
-        test(false);
-    }
+    public void shouldGenerateNow() throws Exception {
 
-    @Test
-    public void testGenerateNowRemote() throws Exception {
-        test(true);
-    }
+        final NowDocumentRequest nowDocumentRequest = TestTemplates.generateNowDocumentRequestTemplate(randomUUID(), JurisdictionType.CROWN, false);
 
-    @Test
-    public void testGenerateNces() throws Exception {
-        final NcesNotificationRequested ncesNotificationRequested = TestTemplates.generateNcesNotificationRequested();
-
-        final UUID systemUserId = UUID.randomUUID();
-        final byte[] documentData = {34, 56, 78, 90};
-        final JsonObject ncesDocumentOrderJson = mock(JsonObject.class);
-
-        when(objectToJsonObjectConverter.convert(ncesNotificationRequested.getDocumentContent())).thenReturn(ncesDocumentOrderJson);
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId))
-                .thenReturn(documentData);
-
-        final UUID userId = UUID.randomUUID();
-
-        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId)).thenReturn(documentData);
-
-        documentGeneratorService.generateNcesDocument(sender, originatingEnvelope, userId, ncesNotificationRequested);
-
-        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
-
-        byte datasent[] = new byte[documentData.length];
-        fileStorerInputStreamCaptor.getValue().read(datasent, 0, documentData.length);
-        Assert.assertArrayEquals(documentData, datasent);
-
-        verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
-        UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
-        Assert.assertEquals(uploadMaterialContext.getMaterialId(), ncesNotificationRequested.getMaterialId());
-        Assert.assertEquals(uploadMaterialContext.getCaseId(), ncesNotificationRequested.getCaseId());
-    }
-
-    private void test(final boolean isRemotePrintingRequired) throws Exception {
-        final NowDocumentRequest nowDocumentRequest = TestTemplates.generateNowDocumentRequestTemplate(UUID.randomUUID(),
-                JurisdictionType.CROWN, false, isRemotePrintingRequired);
-
-        final UUID systemUserId = UUID.randomUUID();
+        final UUID systemUserId = randomUUID();
         final byte[] documentData = {34, 56, 78, 90};
         final JsonObject nowsDocumentOrderJson = mock(JsonObject.class);
 
         when(objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent())).thenReturn(nowsDocumentOrderJson);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), systemUserId))
-                .thenReturn(documentData);
+        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
+        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
 
-        final UUID userId = UUID.randomUUID();
+        final UUID userId = randomUUID();
 
-        final NowsDocumentOrder nowsDocumentOrder = NowsDocumentOrder.nowsDocumentOrder()
-                .build();
+        final NowsDocumentOrder nowsDocumentOrder = NowsDocumentOrder.nowsDocumentOrder().build();
 
         when(objectToJsonObjectConverter.convert(nowsDocumentOrder)).thenReturn(nowsDocumentOrderJson);
 
@@ -142,17 +103,45 @@ public class DocumentGeneratorServiceTest {
 
         verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
 
-        byte datasent[] = new byte[documentData.length];
-        fileStorerInputStreamCaptor.getValue().read(datasent, 0, documentData.length);
-        Assert.assertArrayEquals(documentData, datasent);
+        byte[] dataSent = new byte[documentData.length];
+        fileStorerInputStreamCaptor.getValue().read(dataSent, 0, documentData.length);
+        assertThat(documentData, is(dataSent));
 
         verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
-        Assert.assertEquals(uploadMaterialContext.isRemotePrintingRequired(), isRemotePrintingRequired);
-        Assert.assertEquals(uploadMaterialContext.getMaterialId(), nowDocumentRequest.getMaterialId());
-        Assert.assertEquals(uploadMaterialContext.getCaseId(), nowDocumentRequest.getCaseId());
+        assertThat(uploadMaterialContext.getMaterialId(), is(nowDocumentRequest.getMaterialId()));
+    }
 
+    @Test
+    public void shouldGenerateNces() throws Exception {
+        final NcesNotificationRequested ncesNotificationRequested = TestTemplates.generateNcesNotificationRequested();
 
+        final UUID systemUserId = randomUUID();
+        final byte[] documentData = {34, 56, 78, 90};
+        final JsonObject ncesDocumentOrderJson = mock(JsonObject.class);
+
+        when(objectToJsonObjectConverter.convert(ncesNotificationRequested.getDocumentContent())).thenReturn(ncesDocumentOrderJson);
+        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId))
+                .thenReturn(documentData);
+
+        final UUID userId = randomUUID();
+
+        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId)).thenReturn(documentData);
+
+        documentGeneratorService.generateNcesDocument(sender, originatingEnvelope, userId, ncesNotificationRequested);
+
+        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
+
+        byte[] dataSent = new byte[documentData.length];
+        fileStorerInputStreamCaptor.getValue().read(dataSent, 0, documentData.length);
+        assertThat(documentData, is(dataSent));
+
+        verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
+        UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
+        assertThat(uploadMaterialContext.getMaterialId(), is(ncesNotificationRequested.getMaterialId()));
+        assertThat(uploadMaterialContext.getCaseId(), is(ncesNotificationRequested.getCaseId()));
     }
 
 }

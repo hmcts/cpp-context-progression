@@ -1,14 +1,16 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
-import org.apache.http.HeaderIterator;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -22,14 +24,22 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingApplicationLinkCreatedListenerTest {
@@ -37,12 +47,12 @@ public class HearingApplicationLinkCreatedListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Mock
+    @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-    
+
     @Mock
     private StringToJsonObjectConverter stringToJsonObjectConverter;
-    
+
     @Mock
     private HearingApplicationRepository repository;
 
@@ -80,6 +90,7 @@ public class HearingApplicationLinkCreatedListenerTest {
                 new ObjectMapperProducer().objectMapper());
         setField(this.jsonConverter, "stringToJsonObjectConverter",
                 new StringToJsonObjectConverter());
+        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
@@ -88,7 +99,7 @@ public class HearingApplicationLinkCreatedListenerTest {
         final Hearing hearing = Hearing.hearing().withId(HEARING_ID).build();
 
         HearingApplicationLinkCreated hearingApplicationLinkCreated
-                = HearingApplicationLinkCreated.hearingApplicationLinkCreated ()
+                = HearingApplicationLinkCreated.hearingApplicationLinkCreated()
                 .withApplicationId(APPLICATION_ID)
                 .withHearing(hearing)
                 .build();
@@ -101,8 +112,48 @@ public class HearingApplicationLinkCreatedListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, HearingApplicationLinkCreated.class))
                 .thenReturn(hearingApplicationLinkCreated);
         when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
+
+        eventListener.process(envelope);
+
+        verify(repository).save(argumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldRemoveNowsSpecificJudicialResultsBeforeSaving() {
+
+        List<JudicialResult> judicialResults = new ArrayList<>();
+        judicialResults.add(JudicialResult.judicialResult().withLabel("PublishedForNowsTrue").withPublishedForNows(Boolean.TRUE).build());
+        judicialResults.add(JudicialResult.judicialResult().withLabel("PublishedForNowsFalse").withPublishedForNows(Boolean.FALSE).build());
+
+        final Hearing hearing = Hearing.hearing().withCourtApplications(getCourtApplications(judicialResults)).withId(HEARING_ID).build();
+
+        HearingApplicationLinkCreated hearingApplicationLinkCreated
+                = HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                .withApplicationId(APPLICATION_ID)
+                .withHearing(hearing)
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(HEARING_ID);
+        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingApplicationLinkCreated.class))
+                .thenReturn(hearingApplicationLinkCreated);
+
         eventListener.process(envelope);
         verify(repository).save(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue().getHearing().getPayload().contains("PublishedForNowsTrue"), is(false));
+        assertThat(argumentCaptor.getValue().getHearing().getPayload().contains("PublishedForNowsFalse"), is(true));
+    }
+
+    private List<CourtApplication> getCourtApplications(final List<JudicialResult> judicialResults) {
+        List<CourtApplication> courtApplications = new ArrayList<>();
+        courtApplications.add(CourtApplication.courtApplication()
+                .withJudicialResults(judicialResults)
+                .build());
+
+        return courtApplications;
     }
 }

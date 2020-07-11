@@ -1,0 +1,8 @@
+node_modules/
+
+dump.rdb
+local.settings.json
+coverage/
+node/
+*.war
+.vscode/

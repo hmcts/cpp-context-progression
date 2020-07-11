@@ -6,7 +6,7 @@
   "properties": {
     "id": {
       "description": "The id of the application to be updated",
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "applicationStatus": {
       "description": "Indicates if the application is draft, listed or finalised",

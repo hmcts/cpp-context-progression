@@ -12,9 +12,11 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_ACCEPTED;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_FAILED;
+import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_NOT_SENT;
 import static uk.gov.moj.cpp.progression.domain.constant.NotificationStatus.NOTIFICATION_REQUEST_SUCCEEDED;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.NotificationListener;
@@ -32,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -47,6 +50,9 @@ public class NotificationListenerTest {
 
     @Mock
     private NotificationStatusRepository notificationStatusRepository;
+
+    @Spy
+    private UtcClock utcClock;
 
     @InjectMocks
     private NotificationListener notificationListener;
@@ -147,7 +153,40 @@ public class NotificationListenerTest {
     }
 
     @Test
-    public void shouldCreateNewStatusWithPrintRequestSucceededStatus() {
+    public void shouldCreateNewStatusWithPrintRequestFailedStatusForMaterialId() {
+        final UUID notificationId = randomUUID();
+        final ZonedDateTime failedTime = now;
+        final String errorMessage = "error message";
+        final int statusCode = SC_NOT_FOUND;
+
+        final JsonEnvelope printRequestedEvent = envelopeFrom(
+                metadataWithRandomUUID("progression.event.notification-request-failed").createdAt(now),
+                createObjectBuilder()
+                        .add("materialId", materialId.toString())
+                        .add("notificationId", notificationId.toString())
+                        .add("errorMessage", errorMessage)
+                        .add("statusCode", statusCode)
+                        .add("failedTime", ZonedDateTimes.toString(failedTime))
+                        .build());
+
+        when(notificationStatusRepository.findByNotificationId(notificationId)).thenReturn(Arrays
+                .asList(printStatus(notificationId, materialId, caseId, NOTIFICATION_REQUEST),
+                        printStatus(notificationId, materialId, caseId, NOTIFICATION_REQUEST_ACCEPTED)));
+        notificationListener.printRequestFailed(printRequestedEvent);
+
+        verify(notificationStatusRepository).save(notificationStatusCaptor.capture());
+
+        final NotificationStatusEntity actualStatus = notificationStatusCaptor.getValue();
+        assertThat(actualStatus.getMaterialId(), equalTo(materialId));
+        assertThat(actualStatus.getNotificationId(), equalTo(notificationId));
+        assertThat(actualStatus.getErrorMessage(), equalTo(errorMessage));
+        assertThat(actualStatus.getStatusCode(), equalTo(statusCode));
+        assertThat(actualStatus.getNotificationStatus(), equalTo(NOTIFICATION_REQUEST_FAILED));
+        assertThat(actualStatus.getUpdated().toInstant(), equalTo(failedTime.toInstant()));
+    }
+
+    @Test
+    public void shouldCreateNewStatusWithPrintRequestSucceededStatusForCase() {
         final UUID notificationId = randomUUID();
         final ZonedDateTime sentTime = now;
 
@@ -174,10 +213,64 @@ public class NotificationListenerTest {
         assertThat(actualStatus.getUpdated().toInstant(), equalTo(sentTime.toInstant()));
     }
 
+    @Test
+    public void shouldCreateNewStatusWithPrintRequestSucceededStatusForMaterial() {
+        final UUID notificationId = randomUUID();
+        final ZonedDateTime sentTime = now;
+
+        final JsonEnvelope printRequestedEvent = envelopeFrom(
+                metadataWithRandomUUID("progression.event.notification-request-succeeded").createdAt(now),
+                createObjectBuilder()
+                        .add("materialId", materialId.toString())
+                        .add("notificationId", notificationId.toString())
+                        .add("sentTime", ZonedDateTimes.toString(sentTime))
+                        .build());
+
+        when(notificationStatusRepository.findByNotificationId(notificationId)).thenReturn(Arrays
+                .asList(printStatus(notificationId, materialId, caseId, NOTIFICATION_REQUEST),
+                        printStatus(notificationId, materialId, caseId, NOTIFICATION_REQUEST_ACCEPTED)));
+
+        notificationListener.printRequestSucceeded(printRequestedEvent);
+
+        verify(notificationStatusRepository).save(notificationStatusCaptor.capture());
+
+        final NotificationStatusEntity actualStatus = notificationStatusCaptor.getValue();
+        assertThat(actualStatus.getMaterialId(), equalTo(materialId));
+        assertThat(actualStatus.getNotificationId(), equalTo(notificationId));
+        assertThat(actualStatus.getNotificationStatus(), equalTo(NOTIFICATION_REQUEST_SUCCEEDED));
+        assertThat(actualStatus.getUpdated().toInstant(), equalTo(sentTime.toInstant()));
+    }
+
+    @Test
+    public void shouldCreateNewStatusWithEmailNotSent() {
+        final UUID notificationId = randomUUID();
+        final JsonEnvelope emailNotSendEvent = envelopeFrom(
+                metadataWithRandomUUID("progression.event.email-request-not-sent").createdAt(now),
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("notificationId", notificationId.toString())
+                        .add("materialId", materialId.toString())
+                        .add("notification", createObjectBuilder().add("materialId", materialId.toString())
+                                .add("notificationId", notificationId.toString())
+                                .build())
+                        .build());
+
+        notificationListener.emailRequestNotSent(emailNotSendEvent);
+
+        verify(notificationStatusRepository).save(notificationStatusCaptor.capture());
+
+        final NotificationStatusEntity actualStatus = notificationStatusCaptor.getValue();
+        assertThat(actualStatus.getCaseId(), equalTo(caseId));
+        assertThat(actualStatus.getNotificationId(), equalTo(notificationId));
+        assertThat(actualStatus.getMaterialId(), equalTo(materialId));
+        assertThat(actualStatus.getNotificationStatus(), equalTo(NOTIFICATION_REQUEST_NOT_SENT));
+        assertThat(actualStatus.getUpdated().toInstant(), equalTo(now.toInstant()));
+    }
+
     private NotificationStatusEntity printStatus(final UUID notificationId,
-                                    final UUID materialId,
-                                    final UUID caseId,
-                                    final NotificationStatus printStatusType) {
+                                                 final UUID materialId,
+                                                 final UUID caseId,
+                                                 final NotificationStatus printStatusType) {
         final NotificationStatusEntity notificationStatus = new NotificationStatusEntity();
         notificationStatus.setNotificationStatus(printStatusType);
         notificationStatus.setCaseId(caseId);

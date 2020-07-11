@@ -1,7 +1,14 @@
 package uk.gov.moj.cpp.progression.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getCourtTime;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationSummonsRecipientType;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -29,11 +36,6 @@ import uk.gov.moj.cpp.progression.nows.Notification;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,15 +48,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getCourtTime;
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by satishkumar on 12/11/2018.
@@ -65,6 +66,7 @@ public class NotificationService {
     public static final String CASE_ID = "caseId";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String MATERIAL_ID = "materialId";
+    public static final String POSTAGE = "postage";
     public static final String MATERIAL_URL = "materialUrl";
     public static final String STATUS_CODE = "statusCode";
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class.getName());
@@ -123,7 +125,7 @@ public class NotificationService {
             final JsonArrayBuilder notificationBuilder = buildNotifications(notificationId, emailNotifications, materialUrl);
 
             final JsonObjectBuilder payloadBuilder = createObjectBuilder()
-                                                             .add(NOTIFICATIONS, notificationBuilder);
+                    .add(NOTIFICATIONS, notificationBuilder);
 
             Optional.ofNullable(caseId).ifPresent(id -> {
                 systemIdMapperService.mapNotificationIdToCaseId(caseId, notificationId);
@@ -135,7 +137,10 @@ public class NotificationService {
                 payloadBuilder.add(APPLICATION_ID, id.toString());
             });
 
-            Optional.ofNullable(materialId).ifPresent(id -> payloadBuilder.add(MATERIAL_ID, id.toString()));
+            Optional.ofNullable(materialId).ifPresent(id -> {
+                systemIdMapperService.mapNotificationIdToMaterialId(materialId, notificationId);
+                payloadBuilder.add(MATERIAL_ID, id.toString());
+            });
 
             final JsonObject emailPayload = payloadBuilder.build();
 
@@ -149,11 +154,12 @@ public class NotificationService {
         }
     }
 
-    public void print(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId) {
+    public void sendLetter(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final boolean postage) {
 
         final JsonObjectBuilder payloadBuilder = createObjectBuilder()
-                                                         .add(NOTIFICATION_ID, notificationId.toString())
-                                                         .add(MATERIAL_ID, materialId.toString());
+                .add(NOTIFICATION_ID, notificationId.toString())
+                .add(MATERIAL_ID, materialId.toString())
+                .add(POSTAGE, postage);
 
         Optional.ofNullable(caseId).ifPresent(id -> {
             systemIdMapperService.mapNotificationIdToCaseId(caseId, notificationId);
@@ -177,15 +183,10 @@ public class NotificationService {
         final JsonObject payload = sourceEnvelope.payloadAsJsonObject();
 
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                                                            .add(NOTIFICATION_ID, payload.getString(NOTIFICATION_ID))
-                                                            .add(FAILED_TIME, payload.getString(FAILED_TIME))
-                                                            .add(ERROR_MESSAGE, payload.getString(ERROR_MESSAGE));
-
-        if (partyType == CASE) {
-            jsonObjectBuilder.add(CASE_ID, targetId.toString());
-        } else {
-            jsonObjectBuilder.add(APPLICATION_ID, targetId.toString());
-        }
+                .add(NOTIFICATION_ID, payload.getString(NOTIFICATION_ID))
+                .add(getName(partyType), targetId.toString())
+                .add(FAILED_TIME, payload.getString(FAILED_TIME))
+                .add(ERROR_MESSAGE, payload.getString(ERROR_MESSAGE));
 
         if (payload.containsKey(STATUS_CODE)) {
             jsonObjectBuilder.add(STATUS_CODE, payload.getInt(STATUS_CODE));
@@ -196,7 +197,7 @@ public class NotificationService {
         LOGGER.info("sending notification failure - {}", notificationFailedPayload);
 
         sender.send(enveloper.withMetadataFrom(sourceEnvelope, "progression.command.record-notification-request-failure")
-                            .apply(notificationFailedPayload));
+                .apply(notificationFailedPayload));
     }
 
     public void recordNotificationRequestSuccess(final JsonEnvelope sourceEnvelope, final UUID targetId, final PartyType partyType) {
@@ -208,21 +209,16 @@ public class NotificationService {
         final String sentTime = payload.getString(SENT_TIME);
 
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                                                            .add(NOTIFICATION_ID, notificationId)
-                                                            .add(SENT_TIME, sentTime);
-
-        if (partyType == CASE) {
-            jsonObjectBuilder.add(CASE_ID, targetId.toString());
-        } else {
-            jsonObjectBuilder.add(APPLICATION_ID, targetId.toString());
-        }
+                .add(NOTIFICATION_ID, notificationId)
+                .add(getName(partyType), targetId.toString())
+                .add(SENT_TIME, sentTime);
 
         final JsonObject notificationSucceededPayload = jsonObjectBuilder.build();
 
         LOGGER.info("sending notification request success - {}", notificationSucceededPayload);
 
         sender.send(enveloper.withMetadataFrom(sourceEnvelope, "progression.command.record-notification-request-success")
-                            .apply(notificationSucceededPayload));
+                .apply(notificationSucceededPayload));
     }
 
     public void recordPrintRequestAccepted(final JsonEnvelope sourceEnvelope) {
@@ -230,8 +226,9 @@ public class NotificationService {
         final JsonObject payload = sourceEnvelope.payloadAsJsonObject();
 
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                                                            .add(NOTIFICATION_ID, payload.getString(NOTIFICATION_ID))
-                                                            .add(ACCEPTED_TIME, ZonedDateTimes.toString(sourceEnvelope.metadata().createdAt().orElse(ZonedDateTime.now())));
+                .add(NOTIFICATION_ID, payload.getString(NOTIFICATION_ID))
+                .add(MATERIAL_ID, payload.getString(MATERIAL_ID))
+                .add(ACCEPTED_TIME, ZonedDateTimes.toString(sourceEnvelope.metadata().createdAt().orElse(ZonedDateTime.now())));
 
         if (payload.containsKey(CASE_ID)) {
             final String caseId = payload.getString(CASE_ID);
@@ -261,8 +258,12 @@ public class NotificationService {
             final JsonObject payload = (JsonObject) notification;
 
             final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                                                                .add(NOTIFICATION_ID, payload.getString(NOTIFICATION_ID))
-                                                                .add(ACCEPTED_TIME, ZonedDateTimes.toString(sourceEnvelope.metadata().createdAt().get()));
+                    .add(NOTIFICATION_ID, payload.getString(NOTIFICATION_ID))
+                    .add(ACCEPTED_TIME, ZonedDateTimes.toString(sourceEnvelope.metadata().createdAt().get()));
+
+            if (jsonObject.containsKey(MATERIAL_ID)) {
+                jsonObjectBuilder.add(MATERIAL_ID, jsonObject.getString(MATERIAL_ID));
+            }
 
             if (jsonObject.containsKey(APPLICATION_ID)) {
                 jsonObjectBuilder.add(APPLICATION_ID, jsonObject.getString(APPLICATION_ID));
@@ -277,7 +278,7 @@ public class NotificationService {
             LOGGER.info("sending notification request accepted - {}", notificationSucceededPayload);
 
             sender.send(enveloper.withMetadataFrom(sourceEnvelope, "progression.command.record-notification-request-accepted")
-                                .apply(notificationSucceededPayload));
+                    .apply(notificationSucceededPayload));
 
         });
     }
@@ -309,8 +310,8 @@ public class NotificationService {
     public void sendCPSNotification(final JsonEnvelope event, final CPSNotificationVO cpsNotification) {
         Objects.requireNonNull(cpsNotification);
         cpsNotification.getCaseVO().ifPresent(caseVO ->
-                                                      sendEmail(event, randomUUID(), caseVO.getCaseId(), null, null,
-                                                              Collections.singletonList(buildEmailChannel(cpsNotification)), null)
+                sendEmail(event, randomUUID(), caseVO.getCaseId(), null, null,
+                        Collections.singletonList(buildEmailChannel(cpsNotification)), null)
         );
     }
 
@@ -590,9 +591,9 @@ public class NotificationService {
         notifications.forEach(notification -> {
 
             final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                                                                .add(NOTIFICATION_ID, notification.getNotificationId().toString())
-                                                                .add(TEMPLATE_ID, notification.getTemplateId().toString())
-                                                                .add(SEND_TO_ADDRESS, notification.getSendToAddress());
+                    .add(NOTIFICATION_ID, notification.getNotificationId().toString())
+                    .add(TEMPLATE_ID, notification.getTemplateId().toString())
+                    .add(SEND_TO_ADDRESS, notification.getSendToAddress());
 
             if (nonNull(notification.getReplyToAddress())) {
                 jsonObjectBuilder.add(REPLY_TO_ADDRESS, notification.getReplyToAddress());
@@ -617,5 +618,16 @@ public class NotificationService {
         });
 
         return jsonArrayBuilder;
+    }
+
+    private String getName(PartyType partyType) {
+        switch (partyType) {
+            case CASE:
+                return CASE_ID;
+            case APPLICATION:
+                return APPLICATION_ID;
+            default:
+                return MATERIAL_ID;
+        }
     }
 }

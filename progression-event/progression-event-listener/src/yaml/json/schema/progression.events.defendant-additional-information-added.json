@@ -7,7 +7,7 @@
       "type": "string"
     },
     "caseId": {
-      "$ref":"#/definitions/uuidPattern"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "sentenceHearingReviewDecision": {
       "type": "boolean"
@@ -97,12 +97,5 @@
     "caseId",
     "sentenceHearingReviewDecision",
     "sentenceHearingReviewDecisionDateTime"
-  ],
-  "definitions":{
-    "uuidPattern":{
-      "type":"string",
-      "pattern":"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
-
+  ]
 }

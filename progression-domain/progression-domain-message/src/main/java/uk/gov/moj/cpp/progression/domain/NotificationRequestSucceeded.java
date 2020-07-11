@@ -14,6 +14,7 @@ public class NotificationRequestSucceeded {
 
     private final UUID caseId;
     private final UUID applicationId;
+    private final UUID materialId;
     private final UUID notificationId;
     private final ZonedDateTime sentTime;
 
@@ -21,10 +22,12 @@ public class NotificationRequestSucceeded {
     public NotificationRequestSucceeded(
             @JsonProperty("caseId") final UUID caseId,
             @JsonProperty("applicationId") final UUID applicationId,
+            @JsonProperty("materialId") final UUID materialId,
             @JsonProperty("notificationId") final UUID notificationId,
             @JsonProperty("sentTime") final ZonedDateTime sentTime) {
         this.caseId = caseId;
         this.applicationId = applicationId;
+        this.materialId = materialId;
         this.notificationId = notificationId;
         this.sentTime = sentTime;
     }
@@ -45,21 +48,30 @@ public class NotificationRequestSucceeded {
         return applicationId;
     }
 
-    @SuppressWarnings({"squid:S00121", "squid:S00122",})
+    public UUID getMaterialId() {
+        return materialId;
+    }
+
+    @SuppressWarnings({"squid:S00121", "squid:S00122", "squid:S1067"})
     @Override
     public boolean equals(final Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         final NotificationRequestSucceeded that = (NotificationRequestSucceeded) o;
         return Objects.equals(caseId, that.caseId) &&
                 Objects.equals(applicationId, that.applicationId) &&
                 Objects.equals(notificationId, that.notificationId) &&
+                Objects.equals(materialId, that.materialId) &&
                 Objects.equals(sentTime, that.sentTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(caseId, notificationId, sentTime);
+        return Objects.hash(caseId, applicationId, notificationId, materialId, sentTime);
     }
 
     @Override
@@ -67,7 +79,10 @@ public class NotificationRequestSucceeded {
         return "PrintRequestSucceeded{" +
                 "caseId=" + caseId +
                 ", notificationId='" + notificationId +
+                ", applicationId='" + applicationId +
+                ", materialId='" + materialId +
                 ", sentTime='" + sentTime + "'" +
                 '}';
     }
+
 }

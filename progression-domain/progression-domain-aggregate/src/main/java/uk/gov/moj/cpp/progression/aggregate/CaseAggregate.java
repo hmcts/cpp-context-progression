@@ -720,8 +720,9 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> recordPrintRequest(final UUID caseId,
                                              final UUID notificationId,
-                                             final UUID materialId) {
-        return apply(Stream.of(new PrintRequested(notificationId, null, caseId, materialId)));
+                                             final UUID materialId,
+                                             boolean postage) {
+        return apply(Stream.of(new PrintRequested(notificationId, null, caseId, materialId, postage)));
     }
 
     public Stream<Object> recordEmailRequest(final UUID caseId,
@@ -735,19 +736,20 @@ public class CaseAggregate implements Aggregate {
                                                            final ZonedDateTime failedTime,
                                                            final String errorMessage,
                                                            final Optional<Integer> statusCode) {
-        return apply(Stream.of(new NotificationRequestFailed(caseId, null, notificationId, failedTime, errorMessage, statusCode)));
+        return apply(Stream.of(new NotificationRequestFailed(caseId, null, null, notificationId, failedTime, errorMessage, statusCode)));
     }
 
     public Stream<Object> recordNotificationRequestSuccess(final UUID caseId,
                                                            final UUID notificationId,
                                                            final ZonedDateTime sentTime) {
-        return apply(Stream.of(new NotificationRequestSucceeded(caseId, null, notificationId, sentTime)));
+        return apply(Stream.of(new NotificationRequestSucceeded(caseId, null, null, notificationId, sentTime)));
     }
 
     public Stream<Object> recordNotificationRequestAccepted(final UUID caseId,
+                                                            final UUID materialId,
                                                             final UUID notificationId,
                                                             final ZonedDateTime acceptedTime) {
-        return apply(Stream.of(new NotificationRequestAccepted(caseId, null, notificationId, acceptedTime)));
+        return apply(Stream.of(new NotificationRequestAccepted(caseId, null, materialId, notificationId, acceptedTime)));
     }
 
     public Stream<Object> addConvictionDate(final UUID prosecutionCaseId, final UUID offenceId, final LocalDate convictionDate) {
@@ -978,7 +980,7 @@ public class CaseAggregate implements Aggregate {
                                 .withProceedingsConcluded(defendant.getProceedingsConcluded())
                                 .withIsYouth(defendant.getIsYouth())
                                 .withOffences(updatedOffenceList)
-                                .withJudicialResults(defendant.getJudicialResults())
+                                .withJudicialResults(defendant.getDefendantCaseJudicialResults())
                                 .withCroNumber(defendant.getCroNumber())
                                 .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                                 .withWitnessStatement(defendant.getWitnessStatement())

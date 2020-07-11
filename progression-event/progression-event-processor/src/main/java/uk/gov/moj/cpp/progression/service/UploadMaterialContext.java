@@ -25,7 +25,9 @@ public class UploadMaterialContext {
 
     private  UUID applicationId;
 
-    private  boolean isRemotePrintingRequired;
+    private  boolean firstClassLetter;
+
+    private  boolean secondClassLetter;
 
     private List<EmailChannel> emailNotifications;
 
@@ -61,8 +63,12 @@ public class UploadMaterialContext {
         return applicationId;
     }
 
-    public boolean isRemotePrintingRequired() {
-        return isRemotePrintingRequired;
+    public boolean isFirstClassLetter() {
+        return firstClassLetter;
+    }
+
+    public boolean isSecondClassLetter() {
+        return secondClassLetter;
     }
 
     public void setSender(final Sender sender) {
@@ -97,8 +103,12 @@ public class UploadMaterialContext {
         this.applicationId = applicationId;
     }
 
-    public void setRemotePrintingRequired(final boolean remotePrintingRequired) {
-        isRemotePrintingRequired = remotePrintingRequired;
+    public void setFirstClassLetter(boolean firstClassLetter) {
+        this.firstClassLetter = firstClassLetter;
+    }
+
+    public void setSecondClassLetter(boolean secondClassLetter) {
+        this.secondClassLetter = secondClassLetter;
     }
 
     public List<EmailChannel> getEmailNotifications() {

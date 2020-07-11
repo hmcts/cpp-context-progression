@@ -4,13 +4,13 @@
   "type": "object",
   "properties": {
     "prosecutionCaseId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "defendantId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "hearingId": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "matchedDefendants": {
       "type": "array",
@@ -19,13 +19,13 @@
         "type": "object",
         "properties": {
           "defendantId": {
-            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           },
           "prosecutionCaseId": {
-            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           },
           "masterDefendantId": {
-            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           },
           "courtProceedingsInitiated": {
             "description": "The date and time when the defendant enters the platform",

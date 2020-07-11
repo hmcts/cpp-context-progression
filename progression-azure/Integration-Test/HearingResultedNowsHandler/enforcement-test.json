@@ -1,0 +1,978 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-05-23"
+            }
+          ],
+          "defendantId": "f34ae520-a03e-4b04-8e1e-94de8e536c51"
+        },
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-05-23"
+            }
+          ],
+          "defendantId": "692cbe22-9473-4b6f-a1d3-397211a5f1cf"
+        }
+      ],
+      "defendantJudicialResults": [
+        {
+          "judicialResult": {
+            "alwaysPublished": false,
+            "category": "ANCILLARY",
+            "cjsCode": "3117",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": true,
+            "judicialResultId": "e66459ff-5983-4d7a-bcdc-7ec5bcf0f6a8",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": true,
+                "judicialResultPromptTypeId": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+                "label": "Amount of surcharge",
+                "promptReference": "AOS",
+                "promptSequence": 100,
+                "type": "CURR",
+                "usergroups": [],
+                "value": "£55",
+                "welshLabel": ""
+              }
+            ],
+            "judicialResultTypeId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+            "label": "Surcharge",
+            "lastSharedDateTime": "2020-05-21",
+            "lifeDuration": false,
+            "orderedDate": "2020-05-23",
+            "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 10400,
+            "resultText": "Surcharge\nAmount of surcharge £55",
+            "rollUpPrompts": true,
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Gordal"
+          },
+          "masterDefendantId": "f34ae520-a03e-4b04-8e1e-94de8e536c51"
+        },
+        {
+          "judicialResult": {
+            "alwaysPublished": false,
+            "category": "ANCILLARY",
+            "cjsCode": "3117",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": true,
+            "judicialResultId": "d544edc8-ad0d-4a7c-aac1-62883c052043",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": true,
+                "judicialResultPromptTypeId": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+                "label": "Amount of surcharge",
+                "promptReference": "AOS",
+                "promptSequence": 100,
+                "type": "CURR",
+                "usergroups": [],
+                "value": "£55",
+                "welshLabel": ""
+              }
+            ],
+            "judicialResultTypeId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+            "label": "Surcharge",
+            "lastSharedDateTime": "2020-05-21",
+            "lifeDuration": false,
+            "orderedDate": "2020-05-23",
+            "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 10400,
+            "resultText": "Surcharge\nAmount of surcharge £55",
+            "rollUpPrompts": true,
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Gordal"
+          },
+          "masterDefendantId": "692cbe22-9473-4b6f-a1d3-397211a5f1cf"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 1,
+          "sittingDay": "2020-05-23T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-25T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 2,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-26T14:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-27T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-28T09:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+      "judiciary": [
+        {
+          "firstName": "Robert Stewart",
+          "isBenchChairman": true,
+          "isDeputy": true,
+          "judicialId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+          "judicialRoleType": {
+            "judicialRoleTypeId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+            "judiciaryType": "Magistrate"
+          },
+          "lastName": "Horton",
+          "title": ""
+        }
+      ],
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-05-21T11:04:18.380Z",
+              "defendantCaseJudicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "cjsCode": "3011",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": true,
+                  "judicialResultId": "68b5eb09-8ccf-4a62-9762-9002ed3cee2e",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": true,
+                      "judicialResultPromptTypeId": "f63b0bb5-7d93-4dab-bc3d-b4bd27152871",
+                      "label": "Amount of costs",
+                      "promptReference": "AOC",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£85",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "f5d492b8-a09b-4f70-9ceb-aa06c306a7dc",
+                  "label": "Costs to Crown Prosecution Service",
+                  "lastSharedDateTime": "2020-05-21",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-23",
+                  "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 10800,
+                  "resultText": "Costs to Crown Prosecution Service\nAmount of costs £85",
+                  "rollUpPrompts": true,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Costau i Wasanaeth Erlyn y Goron"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "judicialResultId": "3330834d-4591-4889-a709-6667c9f8f150",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "8e235a65-5ea2-4fff-ba3b-6cdb74195436",
+                      "label": "Lump sum amount",
+                      "promptReference": "LSA",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£280",
+                      "welshLabel": ""
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "1393acda-7a35-4d65-859d-6298e1470cf1",
+                      "label": "Instalment amount",
+                      "promptReference": "IAMT",
+                      "promptSequence": 200,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£30",
+                      "welshLabel": ""
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "b487696e-dfc9-4c89-80d3-337a4319e925",
+                      "label": "Instalment start date",
+                      "promptReference": "instalmentStartDate",
+                      "promptSequence": 300,
+                      "type": "DATE",
+                      "usergroups": [],
+                      "value": "23 Jul 2020",
+                      "welshLabel": ""
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+                      "label": "Payment frequency",
+                      "promptReference": "PF",
+                      "promptSequence": 400,
+                      "type": "FIXL",
+                      "usergroups": [],
+                      "value": "fortnightly",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "d6e93aae-5dd7-11e8-9c2d-fa7ae01bbebc",
+                  "label": "Reserve Terms Lump sum plus instalments",
+                  "lastSharedDateTime": "2020-05-21",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-23",
+                  "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 56900,
+                  "resultDefinitionGroup": "Payment terms",
+                  "resultText": "Reserve Terms Lump sum plus instalments\nLump sum amount £280\nInstalment amount £30\nInstalment start date 23 Jul 2020\nPayment frequency fortnightly",
+                  "rollUpPrompts": true,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Lwmp swm a rhandaliadau - Telerau Wrth Gefn"
+                }
+              ],
+              "id": "f34ae520-a03e-4b04-8e1e-94de8e536c51",
+              "masterDefendantId": "f34ae520-a03e-4b04-8e1e-94de8e536c51",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "968f3a13-1333-485f-8d4d-428d8786a60d",
+                    "originatingHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2005-11-19",
+                  "chargeDate": "2004-12-09",
+                  "convictionDate": "2020-05-23",
+                  "count": 0,
+                  "id": "968f3a13-1333-485f-8d4d-428d8786a60d",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1015",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "139e233a-a915-4ea0-b1ca-7611d44ac9ac",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                          "label": "Amount of fine",
+                          "promptReference": "AOF",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [],
+                          "value": "£75",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                      "label": "Fine",
+                      "lastSharedDateTime": "2020-05-21",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-23",
+                      "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 10700,
+                      "resultText": "Fine\nAmount of fine £75",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Dirwy"
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "3014",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "810373a9-85e5-447f-b9cf-40aa70113ea9",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "f7c7c088-f88e-4c28-917c-78571517aca1",
+                          "label": "Amount of back duty",
+                          "promptReference": "AOBD",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [],
+                          "value": "£65",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "5edd3a3a-8dc7-43e4-96c4-10fed16278ac",
+                      "label": "Vehicle Excise Back Duty",
+                      "lastSharedDateTime": "2020-05-21",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-23",
+                      "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 25000,
+                      "resultText": "Vehicle Excise Back Duty\nAmount of back duty £65",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Ôl-doll Treth Car"
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "968f3a13-1333-485f-8d4d-428d8786a60d",
+                    "originatingHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailConditions": "",
+                "bailReasons": "",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "test11",
+                  "gender": "MALE",
+                  "lastName": "Ormsby",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionCaseId": "b73216a9-958a-40dd-8ac2-c6a0e52349bc"
+            },
+            {
+              "courtProceedingsInitiated": "2020-05-21T11:04:24.965Z",
+              "defendantCaseJudicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "cjsCode": "3011",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": true,
+                  "judicialResultId": "abd5776b-e550-4b23-ac12-757c38778176",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": true,
+                      "judicialResultPromptTypeId": "f63b0bb5-7d93-4dab-bc3d-b4bd27152871",
+                      "label": "Amount of costs",
+                      "promptReference": "AOC",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£105",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "f5d492b8-a09b-4f70-9ceb-aa06c306a7dc",
+                  "label": "Costs to Crown Prosecution Service",
+                  "lastSharedDateTime": "2020-05-21",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-23",
+                  "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 10800,
+                  "resultText": "Costs to Crown Prosecution Service\nAmount of costs £105",
+                  "rollUpPrompts": true,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Costau i Wasanaeth Erlyn y Goron"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "judicialResultId": "738cf7ba-cb06-4e5c-a641-955f554d781a",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "1393acda-7a35-4d65-859d-6298e1470cf1",
+                      "label": "Instalment amount",
+                      "promptReference": "IAMT",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£575",
+                      "welshLabel": ""
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+                      "label": "Payment frequency",
+                      "promptReference": "PF",
+                      "promptSequence": 200,
+                      "type": "FIXL",
+                      "usergroups": [],
+                      "value": "monthly",
+                      "welshLabel": ""
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "b487696e-dfc9-4c89-80d3-337a4319e925",
+                      "label": "Instalment start date",
+                      "promptReference": "instalmentStartDate",
+                      "promptSequence": 300,
+                      "type": "DATE",
+                      "usergroups": [],
+                      "value": "04 Jul 2020",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+                  "label": "Instalments only",
+                  "lastSharedDateTime": "2020-05-21",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-23",
+                  "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 57200,
+                  "resultDefinitionGroup": "Payment terms",
+                  "resultText": "Instalments only\nInstalment amount £575\nPayment frequency monthly\nInstalment start date 04 Jul 2020",
+                  "rollUpPrompts": true,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Rhandaliadau yn unig"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "FINAL",
+                  "cjsCode": "3011",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": true,
+                  "judicialResultId": "3070c91b-32b3-441f-a13c-849fa88bb068",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": true,
+                      "judicialResultPromptTypeId": "f63b0bb5-7d93-4dab-bc3d-b4bd27152871",
+                      "label": "Amount of costs",
+                      "promptReference": "AOC",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£95",
+                      "welshLabel": ""
+                    }
+                  ],
+                  "judicialResultTypeId": "f5d492b8-a09b-4f70-9ceb-aa06c306a7dc",
+                  "label": "Costs to Crown Prosecution Service",
+                  "lastSharedDateTime": "2020-05-21",
+                  "lifeDuration": false,
+                  "orderedDate": "2020-05-23",
+                  "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 10800,
+                  "resultText": "Costs to Crown Prosecution Service\nAmount of costs £95",
+                  "rollUpPrompts": true,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Costau i Wasanaeth Erlyn y Goron"
+                }
+              ],
+              "id": "692cbe22-9473-4b6f-a1d3-397211a5f1cf",
+              "masterDefendantId": "692cbe22-9473-4b6f-a1d3-397211a5f1cf",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "6a1457d9-17c0-4ac6-b23e-43dce128ef23",
+                    "originatingHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2015-12-29",
+                  "chargeDate": "2004-12-09",
+                  "convictionDate": "2020-05-23",
+                  "count": 0,
+                  "id": "6a1457d9-17c0-4ac6-b23e-43dce128ef23",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1015",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "36db61fe-d38d-4ee6-818f-b5e5b5bd12eb",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                          "label": "Amount of fine",
+                          "promptReference": "AOF",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [],
+                          "value": "£85",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                      "label": "Fine",
+                      "lastSharedDateTime": "2020-05-21",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-23",
+                      "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 10700,
+                      "resultText": "Fine\nAmount of fine £85",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Dirwy"
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "3014",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "b0b3b2cc-fc5d-42b1-8fa4-10a5b4fb15d4",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "f7c7c088-f88e-4c28-917c-78571517aca1",
+                          "label": "Amount of back duty",
+                          "promptReference": "AOBD",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [],
+                          "value": "£75",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "5edd3a3a-8dc7-43e4-96c4-10fed16278ac",
+                      "label": "Vehicle Excise Back Duty",
+                      "lastSharedDateTime": "2020-05-21",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-23",
+                      "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 25000,
+                      "resultText": "Vehicle Excise Back Duty\nAmount of back duty £75",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Ôl-doll Treth Car"
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "6a1457d9-17c0-4ac6-b23e-43dce128ef23",
+                    "originatingHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                },
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-23",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "4dae597e-7593-41b5-beb7-4a4689ae7415",
+                    "originatingHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2015-11-19",
+                  "chargeDate": "2014-02-09",
+                  "convictionDate": "2020-05-23",
+                  "count": 0,
+                  "id": "4dae597e-7593-41b5-beb7-4a4689ae7415",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "3014",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "910bcfe1-0108-4293-9530-2621e0fcf675",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "f7c7c088-f88e-4c28-917c-78571517aca1",
+                          "label": "Amount of back duty",
+                          "promptReference": "AOBD",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [],
+                          "value": "£75",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "5edd3a3a-8dc7-43e4-96c4-10fed16278ac",
+                      "label": "Vehicle Excise Back Duty",
+                      "lastSharedDateTime": "2020-05-21",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-23",
+                      "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 25000,
+                      "resultText": "Vehicle Excise Back Duty\nAmount of back duty £75",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Ôl-doll Treth Car"
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1015",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": true,
+                      "judicialResultId": "a2831361-3e79-4122-9eb5-3b08b2315d61",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": true,
+                          "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                          "label": "Amount of fine",
+                          "promptReference": "AOF",
+                          "promptSequence": 100,
+                          "type": "CURR",
+                          "usergroups": [],
+                          "value": "£85",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                      "label": "Fine",
+                      "lastSharedDateTime": "2020-05-21",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-23",
+                      "orderedHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 10700,
+                      "resultText": "Fine\nAmount of fine £85",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Dirwy"
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01040",
+                  "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+                  "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                  "orderIndex": 503,
+                  "plea": {
+                    "offenceId": "4dae597e-7593-41b5-beb7-4a4689ae7415",
+                    "originatingHearingId": "33277222-b98d-4dfa-9d68-5a61b2b67d27",
+                    "pleaDate": "2020-05-23",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2018-02-19",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFLA",
+                "bailConditions": "",
+                "bailReasons": "",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "test4",
+                  "gender": "MALE",
+                  "lastName": "Ormsby1",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionCaseId": "b73216a9-958a-40dd-8ac2-c6a0e52349bc"
+            }
+          ],
+          "id": "b73216a9-958a-40dd-8ac2-c6a0e52349bc",
+          "initiationCode": "C",
+          "originatingOrganisation": "B01BH00",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "line1",
+              "address2": "line2",
+              "address3": "line3",
+              "postcode": "SL2 5FZ"
+            },
+            "contact": {},
+            "majorCreditorCode": "CDE04",
+            "prosecutionAuthorityCode": "SPI",
+            "prosecutionAuthorityId": "7f8c9993-53a6-44ae-936c-f1cd1033fe50",
+            "prosecutionAuthorityName": "SPI_TEST",
+            "prosecutionAuthorityOUCode": "B01BH00",
+            "caseURN": "11GD8610220"
+          }
+        }
+      ],
+      "type": {
+        "description": "First Hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      }
+    },
+    "sharedTime": "2020-05-21T11:14:51.829Z"
+  }
+}

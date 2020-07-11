@@ -200,22 +200,23 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(new EmailRequested(null, null, applicationId, notifications)));
     }
 
-    public Stream<Object> recordNotificationRequestAccepted(final UUID applicationId, final UUID notificationId, final ZonedDateTime acceptedTime) {
-        return apply(Stream.of(new NotificationRequestAccepted(null, applicationId, notificationId, acceptedTime)));
+    public Stream<Object> recordNotificationRequestAccepted(final UUID applicationId, final UUID materialId, final UUID notificationId, final ZonedDateTime acceptedTime) {
+        return apply(Stream.of(new NotificationRequestAccepted(null, applicationId, materialId, notificationId, acceptedTime)));
     }
 
     public Stream<Object> recordNotificationRequestFailure(final UUID applicationId, final UUID notificationId, final ZonedDateTime failedTime, final String errorMessage, final Optional<Integer> statusCode) {
-        return apply(Stream.of(new NotificationRequestFailed(null, applicationId, notificationId, failedTime, errorMessage, statusCode)));
+        return apply(Stream.of(new NotificationRequestFailed(null, applicationId, null, notificationId, failedTime, errorMessage, statusCode)));
     }
 
     public Stream<Object> recordNotificationRequestSuccess(final UUID applicationId, final UUID notificationId, final ZonedDateTime sentTime) {
-        return apply(Stream.of(new NotificationRequestSucceeded(null, applicationId, notificationId, sentTime)));
+        return apply(Stream.of(new NotificationRequestSucceeded(null, applicationId, null, notificationId, sentTime)));
     }
 
     public Stream<Object> recordPrintRequest(final UUID applicationId,
                                              final UUID notificationId,
-                                             final UUID materialId) {
-        return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId)));
+                                             final UUID materialId,
+                                             boolean postage) {
+        return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, postage)));
     }
 
     public Stream<Object> changeBoxWorkAssignment(final UUID applicationId, final UUID userId) {

@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "adjournedHearing": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "nextHearings": {
       "type": "array",

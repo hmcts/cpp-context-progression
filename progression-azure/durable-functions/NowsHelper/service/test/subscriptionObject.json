@@ -1,0 +1,115 @@
+{
+  "ouCode": "B01LY00",
+  "vocabulary": {
+    "custodyLocationIsPolice": false,
+    "custodyLocationIsPrison": false,
+    "atleastOneCustodialResult": false,
+    "allNonCustodialResults": true,
+    "atleastOneNonCustodialResult": true,
+    "appearedInPerson": false,
+    "appearedByVideoLink": false,
+    "anyAppearance": false,
+    "inCustody": false,
+    "youthDefendant": true,
+    "adultDefendant": false,
+    "adultOrYouthDefendant": true,
+    "welshCourtHearing": false,
+    "englishCourtHearing": true,
+    "anyCourtHearing": true
+  },
+  "subscriptions": [
+    {
+      "id": "46ca9c4f-5db3-4282-b6d5-89b34bc85fff",
+      "name": "Barnsley YOT Court Register Subscription",
+      "isNowSubscription": false,
+      "isEDTSubscription": false,
+      "isInformantRegisterSubscription": false,
+      "isCourtRegisterSubscription": true,
+      "isPrisonCourtRegisterSubscription": false,
+      "firstClassLetterDelivery": false,
+      "secondClassLetterDelivery": false,
+      "emailDelivery": true,
+      "forDistribution": true,
+      "applySubscriptionRules": true,
+      "yotsCode": "2",
+      "selectedCourtHouses": [
+        "B01LY00"
+      ],
+      "startDate": "2020-05-21",
+      "recipient": {
+        "emailAddress1": "grp.barnsleyyot@barnsley.cjsm.net",
+        "isApplyApplicantDetails": false,
+        "isApplyDefenceOrganisationDetails": false,
+        "isApplyDefendantCustodyDetails": false,
+        "isApplyDefendantDetails": false,
+        "isApplyParentGuardianDetails": false,
+        "isApplyProsecutionAuthorityDetails": false,
+        "isApplyRespondentDetails": false,
+        "nowSubscription": "46ca9c4f-5db3-4282-b6d5-89b34bc85fff",
+        "organisationName": "Barnsley YOT",
+        "recipientFromCase": false,
+        "recipientFromResults": false,
+        "recipientFromSubscription": false
+      },
+      "subscriptionVocabulary": {
+        "adultDefendant": false,
+        "adultOrYouthDefendant": true,
+        "allNonCustodialResults": false,
+        "anyAppearance": true,
+        "anyCourtHearing": true,
+        "appearedByVideoLink": false,
+        "appearedInPerson": false,
+        "atleastOneCustodialResult": false,
+        "atleastOneNonCustodialResult": false,
+        "custodyLocationIsPolice": false,
+        "custodyLocationIsPrison": false,
+        "englishCourtHearing": false,
+        "inCustody": false,
+        "welshCourtHearing": false,
+        "youthDefendant": false,
+        "ignoreCustody": true,
+        "ignoreResults": true
+      },
+      "emailTemplateName": "cr_standard"
+    }
+  ],
+  "judicialResults": [
+    {
+      "alwaysPublished": false,
+      "category": "FINAL",
+      "cjsCode": "1017",
+      "courtClerk": {
+        "firstName": "Erica",
+        "lastName": "Wilson",
+        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+      },
+      "d20": false,
+      "excludedFromResults": false,
+      "isAdjournmentResult": false,
+      "isAvailableForCourtExtract": true,
+      "isConvictedResult": true,
+      "isDeleted": false,
+      "isFinancialResult": false,
+      "judicialResultId": "ebf8512f-c06d-4d31-9cde-0f0869a07977",
+      "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+      "label": "Absolute discharge",
+      "lastSharedDateTime": "2020-05-25",
+      "lifeDuration": false,
+      "orderedDate": "2020-05-25",
+      "orderedHearingId": "04c715ea-6b00-460d-b751-d8309479dfe1",
+      "postHearingCustodyStatus": "A",
+      "publishedAsAPrompt": false,
+      "publishedForNows": false,
+      "rank": 11600,
+      "resultText": "Absolute discharge\n",
+      "rollUpPrompts": true,
+      "terminatesOffenceProceedings": false,
+      "urgent": false,
+      "usergroups": [
+
+      ],
+      "welshLabel": "Rhyddhad diamod",
+      "level": "O"
+    }
+  ]
+}

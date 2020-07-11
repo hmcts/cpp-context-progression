@@ -1,0 +1,18 @@
+{
+  "enforcingCourtCode": 2222,
+  "accountDivisionCode": 1111,
+  "email": "LCCCCollectionUnit@hmcts.gsi.gov.uk",
+  "phone": "020 7556 8500",
+  "address1": "LCCC Enforcement Unit",
+  "address2": "P.O. Box 31089",
+  "address3": "London",
+  "address4": null,
+  "postcode": "SW1P 3WT",
+  "ukInternal": 1,
+  "nationalPaymentPhone": "030 0790 9901",
+  "localJusticeArea": {
+    "nationalCourtCode": "1080",
+    "name": "Bedfordshire Magistrates' Court",
+    "welshName": "WELSH_NAME"
+  }
+}

@@ -1,0 +1,574 @@
+{
+  "hearing" : {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "BY_VIDEO",
+              "day": "2020-05-20"
+            }
+          ],
+          "defendantId": "9db24186-3e7f-4e1c-a000-2d15863e1059"
+        },
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "BY_VIDEO",
+              "day": "2020-05-20"
+            }
+          ],
+          "defendantId": "abd13740-9fee-440c-b866-16c626fa8964"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 1,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-20T08:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-21T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-22T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 20,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-24T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 2,
+          "listingSequence": 0,
+          "sittingDay": "2020-05-25T14:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+      "judiciary": [
+        {
+          "firstName": "Robert Stewart",
+          "isBenchChairman": true,
+          "isDeputy": true,
+          "judicialId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+          "judicialRoleType": {
+            "judicialRoleTypeId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+            "judiciaryType": "Magistrate"
+          },
+          "lastName": "Horton",
+          "title": ""
+        }
+      ],
+      "jurisdictionType": "CROWN",
+      "prosecutionCases": [
+        {
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-05-20T20:54:43.919Z",
+              "id": "9db24186-3e7f-4e1c-a000-2d15863e1059",
+              "masterDefendantId": "9db24186-3e7f-4e1c-a000-2d15863e1059",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-20",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "fd31e9ee-300b-4be8-993c-4b998736d24a",
+                    "originatingHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2005-11-19",
+                  "chargeDate": "2004-12-09",
+                  "convictionDate": "2020-05-20",
+                  "count": 0,
+                  "id": "fd31e9ee-300b-4be8-993c-4b998736d24a",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "3061b234-6acb-4d8c-ae91-abd8ec5cbe25",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "b17f9f16-20d4-4bb0-8872-5ab4878245c2",
+                          "label": "Legal / defendant's personal costs",
+                          "promptReference": "legalDefPersonalCosts",
+                          "promptSequence": 100,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "100",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "5609ef92-3d72-4106-915a-aa83401bcaa3",
+                          "label": "Percentage reduction ordered",
+                          "promptReference": "costsRedPercentOrdered",
+                          "promptSequence": 200,
+                          "type": "INT",
+                          "usergroups": [],
+                          "value": "3",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "b2fb2c0e-5c71-4a07-a870-506030f2d5ce",
+                      "label": "Defendant's costs payable from central funds  - sum to be assessed",
+                      "lastSharedDateTime": "2020-05-20",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-20",
+                      "orderedHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 28900,
+                      "resultText": "Defendant's costs payable from central funds  - sum to be assessed\nLegal / defendant's personal costs 100\nPercentage reduction ordered 3",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "fd31e9ee-300b-4be8-993c-4b998736d24a",
+                    "originatingHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                    "pleaDate": "2020-05-20",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailConditions": "",
+                "bailReasons": "",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Test1",
+                  "gender": "MALE",
+                  "lastName": "Ormsby",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionCaseId": "166463ff-b9e1-4c57-be36-96cfcec63d87"
+            },
+            {
+              "courtProceedingsInitiated": "2020-05-20T20:54:54.945Z",
+              "id": "abd13740-9fee-440c-b866-16c626fa8964",
+              "masterDefendantId": "abd13740-9fee-440c-b866-16c626fa8964",
+              "offences": [
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-20",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "5c7ff328-9225-42c7-a07d-9f78242ecd25",
+                    "originatingHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2015-12-29",
+                  "chargeDate": "2004-12-09",
+                  "convictionDate": "2020-05-20",
+                  "count": 0,
+                  "id": "5c7ff328-9225-42c7-a07d-9f78242ecd25",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "30da623c-4791-4902-8cbc-6e63f557c97b",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "b17f9f16-20d4-4bb0-8872-5ab4878245c2",
+                          "label": "Legal / defendant's personal costs",
+                          "promptReference": "legalDefPersonalCosts",
+                          "promptSequence": 100,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "200",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "b2fb2c0e-5c71-4a07-a870-506030f2d5ce",
+                      "label": "Defendant's costs payable from central funds  - sum to be assessed",
+                      "lastSharedDateTime": "2020-05-20",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-20",
+                      "orderedHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 28900,
+                      "resultText": "Defendant's costs payable from central funds  - sum to be assessed\nLegal / defendant's personal costs 200",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1116",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "cc9b86bc-499e-4f74-a0d3-cb53d95bd00e",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                          "label": "End Date",
+                          "promptReference": "endDate",
+                          "promptSequence": 100,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "22 Aug 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 200,
+                          "type": "FIXL",
+                          "usergroups": [],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                          "label": "Supervising Court",
+                          "promptReference": "supervisingCourt",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "Lavendar",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                      "label": "Community order England / Wales",
+                      "lastSharedDateTime": "2020-05-20",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-20",
+                      "orderedHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 5300,
+                      "resultText": "Community order England / Wales\nEnd Date 22 Aug 2020\nResponsible officer a probation officer\nSupervising Court Lavendar",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 500,
+                  "plea": {
+                    "offenceId": "5c7ff328-9225-42c7-a07d-9f78242ecd25",
+                    "originatingHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                    "pleaDate": "2020-05-20",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2004-12-09",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                },
+                {
+                  "allocationDecision": {
+                    "allocationDecisionDate": "2020-05-20",
+                    "motReasonCode": "01",
+                    "motReasonDescription": "Summary-only offence",
+                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                    "offenceId": "4076f7fe-72e3-4525-8700-16d44e6581e1",
+                    "originatingHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                    "sequenceNumber": 90
+                  },
+                  "arrestDate": "2015-11-19",
+                  "chargeDate": "2014-02-09",
+                  "convictionDate": "2020-05-20",
+                  "count": 0,
+                  "id": "4076f7fe-72e3-4525-8700-16d44e6581e1",
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "1116",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "096d473e-bcd7-4b44-aaa8-a21a0f02823a",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                          "label": "End Date",
+                          "promptReference": "endDate",
+                          "promptSequence": 100,
+                          "type": "DATE",
+                          "usergroups": [],
+                          "value": "25 Jun 2020",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                          "label": "Responsible officer",
+                          "promptReference": "responsibleOfficer",
+                          "promptSequence": 200,
+                          "type": "FIXL",
+                          "usergroups": [],
+                          "value": "a probation officer",
+                          "welshLabel": ""
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                          "label": "Supervising Court",
+                          "promptReference": "supervisingCourt",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "Lavendar",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                      "label": "Community order England / Wales",
+                      "lastSharedDateTime": "2020-05-20",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-20",
+                      "orderedHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 5300,
+                      "resultText": "Community order England / Wales\nEnd Date 25 Jun 2020\nResponsible officer a probation officer\nSupervising Court Lavendar",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    },
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "judicialResultId": "3ba1d1bc-fbcb-476d-a300-f0a64599a50f",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "b17f9f16-20d4-4bb0-8872-5ab4878245c2",
+                          "label": "Legal / defendant's personal costs",
+                          "promptReference": "legalDefPersonalCosts",
+                          "promptSequence": 100,
+                          "type": "TXT",
+                          "usergroups": [],
+                          "value": "50",
+                          "welshLabel": ""
+                        }
+                      ],
+                      "judicialResultTypeId": "b2fb2c0e-5c71-4a07-a870-506030f2d5ce",
+                      "label": "Defendant's costs payable from central funds  - sum to be assessed",
+                      "lastSharedDateTime": "2020-05-20",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-05-20",
+                      "orderedHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 28900,
+                      "resultText": "Defendant's costs payable from central funds  - sum to be assessed\nLegal / defendant's personal costs 50",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": []
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01040",
+                  "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+                  "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                  "orderIndex": 503,
+                  "plea": {
+                    "offenceId": "4076f7fe-72e3-4525-8700-16d44e6581e1",
+                    "originatingHearingId": "be33aacb-d1d0-4054-94fd-fc6f63173f77",
+                    "pleaDate": "2020-05-20",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2018-02-19",
+                  "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "TFLA",
+                "bailConditions": "",
+                "bailReasons": "",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "56Police House",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1985-01-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Test3",
+                  "gender": "MALE",
+                  "lastName": "Ormsby1",
+                  "nationalityDescription": "Unknown",
+                  "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+                }
+              },
+              "prosecutionCaseId": "166463ff-b9e1-4c57-be36-96cfcec63d87"
+            }
+          ],
+          "id": "166463ff-b9e1-4c57-be36-96cfcec63d87",
+          "initiationCode": "C",
+          "originatingOrganisation": "B01BH00",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "line1",
+              "address2": "line2",
+              "address3": "line3",
+              "postcode": "SL2 5fz"
+            },
+            "contact": {},
+            "majorCreditorCode": "CDE04",
+            "prosecutionAuthorityCode": "SPI",
+            "prosecutionAuthorityId": "0aeda16b-7912-4702-a61e-cbd57511caec",
+            "prosecutionAuthorityName": "SPI-TEST",
+            "prosecutionAuthorityOUCode": "B01BH00",
+            "caseURN": "12GD1809820"
+          }
+        }
+      ],
+      "type": {
+        "description": "First Hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      }
+    },
+    "sharedTime": "2020-05-20T22:18:29.093Z"
+  }
+}

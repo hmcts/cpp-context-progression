@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -19,6 +20,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 import uk.gov.moj.cpp.progression.domain.EmailNotification;
 
 import java.time.ZonedDateTime;
@@ -40,6 +42,7 @@ public class NotificationHandler {
     private static final String APPLICATION_ID = "applicationId";
     private static final String NOTIFICATION_ID = "notificationId";
     private static final String MATERIAL_ID = "materialId";
+    private static final String POSTAGE = "postage";
     private static final String FAILED_TIME = "failedTime";
     private static final String ERROR_MESSAGE = "errorMessage";
     private static final String STATUS_CODE = "statusCode";
@@ -65,17 +68,23 @@ public class NotificationHandler {
 
         final UUID notificationId = fromString(payload.getString(NOTIFICATION_ID));
         final UUID materialId = fromString(payload.getString(MATERIAL_ID));
+        final boolean postage = payload.containsKey(POSTAGE) && payload.getBoolean(POSTAGE);
 
         if (payload.containsKey(CASE_ID)) {
             final UUID caseId = fromString(payload.getString(CASE_ID));
             appendAggregateEvents(command, caseId, CaseAggregate.class,
-                    aggregate -> aggregate.recordPrintRequest(caseId, notificationId, materialId));
+                    aggregate -> aggregate.recordPrintRequest(caseId, notificationId, materialId, postage));
         }
 
-        if(payload.containsKey(APPLICATION_ID)) {
+        if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
             appendAggregateEvents(command, applicationId, ApplicationAggregate.class,
-                    aggregate -> aggregate.recordPrintRequest(applicationId, notificationId, materialId));
+                    aggregate -> aggregate.recordPrintRequest(applicationId, notificationId, materialId, postage));
+        }
+
+        if (!payload.containsKey(CASE_ID) && !payload.containsKey(APPLICATION_ID)) {
+            appendAggregateEvents(command, materialId, MaterialAggregate.class,
+                    aggregate -> aggregate.recordPrintRequest(materialId, notificationId, false));
         }
     }
 
@@ -83,18 +92,22 @@ public class NotificationHandler {
     public void email(final JsonEnvelope command) throws EventStreamException {
 
         final JsonObject payload = command.payloadAsJsonObject();
-
         final EmailNotification emailNotification = converter.convert(payload, EmailNotification.class);
 
         if (nonNull(emailNotification.getCaseId())) {
-
             appendAggregateEvents(command, emailNotification.getCaseId(), CaseAggregate.class,
                     aggregate -> aggregate.recordEmailRequest(emailNotification.getCaseId(), emailNotification.getMaterialId(), emailNotification.getNotifications()));
-        } else {
+        }
 
+        if (nonNull(emailNotification.getApplicationId())) {
             appendAggregateEvents(command, emailNotification.getApplicationId(), ApplicationAggregate.class,
                     aggregate -> aggregate.recordEmailRequest(emailNotification.getApplicationId(), emailNotification.getNotifications()));
+        }
 
+        if (!payload.containsKey(CASE_ID) && !payload.containsKey(APPLICATION_ID) && payload.containsKey(MATERIAL_ID)) {
+            final UUID materialId = fromString(payload.getString(MATERIAL_ID));
+            appendAggregateEvents(command, materialId, MaterialAggregate.class,
+                    aggregate -> aggregate.recordEmailRequest(materialId, emailNotification.getNotifications()));
         }
     }
 
@@ -112,18 +125,23 @@ public class NotificationHandler {
 
         final Optional<Integer> statusCode = payload.containsKey(STATUS_CODE) ? of(payload.getInt(STATUS_CODE)) : empty();
 
-        if(payload.containsKey(CASE_ID)) {
+        if (payload.containsKey(CASE_ID)) {
 
             final UUID caseId = fromString(payload.getString(CASE_ID));
 
             appendAggregateEvents(command, caseId, CaseAggregate.class,
                     aggregate -> aggregate.recordNotificationRequestFailure(caseId, notificationId, failedTime, errorMessage, statusCode));
-        } else {
+        } else if (payload.containsKey(APPLICATION_ID)) {
 
             final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
 
             appendAggregateEvents(command, applicationId, ApplicationAggregate.class,
                     aggregate -> aggregate.recordNotificationRequestFailure(applicationId, notificationId, failedTime, errorMessage, statusCode));
+        } else {
+            final UUID materialId = fromString(payload.getString(MATERIAL_ID));
+
+            appendAggregateEvents(command, materialId, MaterialAggregate.class,
+                    aggregate -> aggregate.recordNotificationRequestFailure(materialId, notificationId, failedTime, errorMessage, statusCode));
         }
 
     }
@@ -137,19 +155,24 @@ public class NotificationHandler {
 
         final UUID notificationId = fromString(payload.getString(NOTIFICATION_ID));
 
-        if(payload.containsKey(CASE_ID)) {
+        if (payload.containsKey(CASE_ID)) {
 
             final UUID caseId = fromString(payload.getString(CASE_ID));
 
             appendAggregateEvents(command, caseId, CaseAggregate.class,
                     aggregate -> aggregate.recordNotificationRequestSuccess(caseId, notificationId, sentTime));
 
-        } else {
+        } else if (payload.containsKey(APPLICATION_ID)) {
 
             final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
 
             appendAggregateEvents(command, applicationId, ApplicationAggregate.class,
                     aggregate -> aggregate.recordNotificationRequestSuccess(applicationId, notificationId, sentTime));
+        } else {
+            final UUID materialId = fromString(payload.getString(MATERIAL_ID));
+
+            appendAggregateEvents(command, materialId, MaterialAggregate.class,
+                    aggregate -> aggregate.recordNotificationRequestSuccess(materialId, notificationId, sentTime));
         }
     }
 
@@ -159,21 +182,26 @@ public class NotificationHandler {
         final JsonObject payload = command.payloadAsJsonObject();
 
         final UUID notificationId = fromString(payload.getString(NOTIFICATION_ID));
-
-        final ZonedDateTime acceptedTime = ZonedDateTimes.fromString(payload.getString(ACCEPTED_TIME));
+        final ZonedDateTime acceptedTime = payload.containsKey(ACCEPTED_TIME) ? ZonedDateTimes.fromString(payload.getString(ACCEPTED_TIME)) : ZonedDateTime.now(UTC);
 
         if (payload.containsKey(CASE_ID)) {
-
             final UUID caseId = fromString(payload.getString(CASE_ID));
-
+            final UUID materialId = payload.containsKey(MATERIAL_ID) ? fromString(payload.getString(MATERIAL_ID)) : null;
             appendAggregateEvents(command, caseId, CaseAggregate.class,
-                    aggregate -> aggregate.recordNotificationRequestAccepted(caseId, notificationId, acceptedTime));
-        } else {
+                    aggregate -> aggregate.recordNotificationRequestAccepted(caseId, materialId, notificationId, acceptedTime));
+        }
 
+        if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
-
+            final UUID materialId = payload.containsKey(MATERIAL_ID) ? fromString(payload.getString(MATERIAL_ID)) : null;
             appendAggregateEvents(command, applicationId, ApplicationAggregate.class,
-                    aggregate -> aggregate.recordNotificationRequestAccepted(applicationId, notificationId, acceptedTime));
+                    aggregate -> aggregate.recordNotificationRequestAccepted(applicationId, materialId, notificationId, acceptedTime));
+        }
+
+        if (!payload.containsKey(CASE_ID) && !payload.containsKey(APPLICATION_ID) && payload.containsKey(MATERIAL_ID)) {
+            final UUID materialId = fromString(payload.getString(MATERIAL_ID));
+            appendAggregateEvents(command, materialId, MaterialAggregate.class,
+                    aggregate -> aggregate.recordNotificationRequestAccepted(materialId, notificationId, acceptedTime));
         }
     }
 

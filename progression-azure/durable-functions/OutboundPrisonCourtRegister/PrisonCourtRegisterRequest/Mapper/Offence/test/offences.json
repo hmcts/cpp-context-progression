@@ -1,0 +1,164 @@
+{
+  "offences": [
+    {
+      "offenceCode": "OffCode1",
+      "offenceTitle": "Offence Title1",
+      "orderIndex": "1",
+      "pleaValue": "PleaValue1",
+      "indicatedPleaValue": "",
+      "allocationDecision": "Allocation Decision",
+      "convictionDate": "21/03/2020",
+      "pleaDate": "22/03/2020",
+      "verdictCode" : "Verdict Code",
+      "wording": "On 21/10/2018 at Euston Train Station, London robbed Alyssa Hill of her Mangalsutra.",
+      "judicialResults": [
+        {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+          "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "20-01-2020",
+          "category": "Fine",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "isUrgent": false,
+          "isD20": false
+        }
+      ],
+      "indicatedPlea": {
+        "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "indicatedPleaDate": "0000-01-01",
+        "indicatedPleaValue": "INDICATED_GUILTY",
+        "source": "ONLINE",
+        "allocationDecision": {
+          "courtDecision": "CONSENT_SUMMARY_TRIAL",
+          "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
+          "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
+          "indicationOfSentence": "a"
+        }
+      },
+      "plea": {
+        "delegatedPowers": {
+          "firstName": "FirstName",
+          "lastName": "LastName",
+          "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+        },
+        "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+        "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+        "pleaDate": "2019-11-14",
+        "pleaValue": "NOT_GUILTY"
+      },
+      "verdict": {
+        "jurors": {
+          "numberOfJurors": 12,
+          "numberOfSplitJurors": 0,
+          "unanimous": true
+        },
+        "lesserOrAlternativeOffence": {
+          "offenceCode": "PS90010",
+          "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+          "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+        },
+        "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+        "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+        "verdictDate": "2019-11-14",
+        "verdictType": {
+          "category": "Guilty",
+          "categoryType": "GUILTY_CONVICTED",
+          "id": "165f95b1-fc13-4d87-9685-3eff703c1039",
+          "description": "verdict desc1"
+        }
+      }
+    },
+    {
+      "offenceCode": "OffCode2",
+      "offenceTitle": "Offence Title2",
+      "orderIndex": "2",
+      "pleaValue": "PleaValue2",
+      "indicatedPleaValue": "",
+      "allocationDecision": "Allocation Decision 2",
+      "convictionDate": "",
+      "pleaDate": "",
+      "verdictCode" : "Verdict Code2",
+      "wording": "wordinggggggggg",
+      "judicialResults": [
+        {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+          "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "20-01-2020",
+          "category": "Fine",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "isUrgent": false,
+          "isD20": false
+        }
+      ],
+      "indicatedPlea": {
+        "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "indicatedPleaDate": "0000-01-01",
+        "indicatedPleaValue": "INDICATED_GUILTY",
+        "source": "ONLINE",
+        "allocationDecision": {
+          "courtDecision": "CONSENT_SUMMARY_TRIAL",
+          "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
+          "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
+          "indicationOfSentence": "a"
+        }
+      },
+      "plea": {
+        "delegatedPowers": {
+          "firstName": "FirstName",
+          "lastName": "LastName",
+          "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+        },
+        "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+        "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+        "pleaDate": "2019-11-14",
+        "pleaValue": "NOT_GUILTY"
+      },
+      "verdict": {
+        "jurors": {
+          "numberOfJurors": 12,
+          "numberOfSplitJurors": 0,
+          "unanimous": true
+        },
+        "lesserOrAlternativeOffence": {
+          "offenceCode": "PS90010",
+          "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+          "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+        },
+        "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+        "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+        "verdictDate": "2019-11-14",
+        "verdictType": {
+          "category": "Guilty",
+          "categoryType": "GUILTY_CONVICTED",
+          "id": "165f95b1-fc13-4d87-9685-3eff703c1039",
+          "description": "verdict desc2"
+        }
+      }
+    }
+  ]
+}

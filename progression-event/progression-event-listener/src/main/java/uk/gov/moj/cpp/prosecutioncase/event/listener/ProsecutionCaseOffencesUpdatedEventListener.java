@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
@@ -8,6 +9,7 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITH
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
@@ -26,6 +28,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,7 +40,6 @@ import javax.json.JsonReader;
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseOffencesUpdatedEventListener {
-
     private static final String EMPTY = "";
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -109,12 +111,12 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                     .withAssociatedPersons(defendant.getAssociatedPersons())
                     .withCroNumber(defendant.getCroNumber())
                     .withDefenceOrganisation(defendant.getDefenceOrganisation())
-                    .withJudicialResults(defendant.getJudicialResults())
+                    .withDefendantCaseJudicialResults(extractNonNowsResults(defendant.getDefendantCaseJudicialResults()))
                     .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                     .withMitigation(defendant.getMitigation())
                     .withMitigationWelsh(defendant.getMitigationWelsh())
                     .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                    .withOffences(defendant.getOffences())
+                    .withOffences(filterOffences(defendant.getOffences()))
                     .withPersonDefendant(defendant.getPersonDefendant())
                     .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
                     .withWitnessStatement(defendant.getWitnessStatement())
@@ -218,7 +220,31 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                     }
                 })
         );
+    }
 
+    private List<Offence> filterOffences(final List<Offence> offences) {
+        if (isNull(offences) || offences.isEmpty()) {
+            return offences;
+        }
+        offences.stream().filter(Objects::nonNull).forEach(offence -> {
+            final List<JudicialResult> judicialResults = extractNonNowsResults(offence.getJudicialResults());
+            if (nonNull(judicialResults) && !judicialResults.isEmpty()) {
+                offence.getJudicialResults().clear();
+                offence.getJudicialResults().addAll(judicialResults);
+            }
+        });
 
+        return offences;
+    }
+
+    private List<JudicialResult> extractNonNowsResults(final List<JudicialResult> judicialResults) {
+        if (isNull(judicialResults) || judicialResults.isEmpty()) {
+            return judicialResults;
+        }
+
+        return judicialResults.stream()
+                .filter(Objects::nonNull)
+                .filter(jr -> !Boolean.TRUE.equals(jr.getPublishedForNows()))
+                .collect(Collectors.toList());
     }
 }

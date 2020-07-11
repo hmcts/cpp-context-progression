@@ -9,7 +9,10 @@
 # IntelliJ
 .idea/
 *.iml
+*.bak
 
 # Misc.
 **/.DS_Store
 **/out/
+**/.vscode/
+dump.rdb

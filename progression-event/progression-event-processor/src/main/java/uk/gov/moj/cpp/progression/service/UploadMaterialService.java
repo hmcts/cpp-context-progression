@@ -27,7 +27,8 @@ public class UploadMaterialService {
                         .withUserId(uploadMaterialContext.getUserId())
                         .withCaseId(uploadMaterialContext.getCaseId())
                         .withApplicationId(uploadMaterialContext.getApplicationId())
-                        .withIsRemotePrintingRequired(uploadMaterialContext.isRemotePrintingRequired())
+                        .withFirstClassLetter(uploadMaterialContext.isFirstClassLetter())
+                        .withSecondClassLetter(uploadMaterialContext.isSecondClassLetter())
                         .withEmailNotifications(uploadMaterialContext.getEmailNotifications())
                         .build())
                 .build();

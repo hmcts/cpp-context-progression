@@ -46,7 +46,6 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-
 public class MaterialHandlerTest {
 
     @Spy
@@ -101,6 +100,7 @@ public class MaterialHandlerTest {
         final RecordNowsMaterialRequest commandObject = RecordNowsMaterialRequest.recordNowsMaterialRequest()
                 .withContext(MaterialDetails.materialDetails()
                         .withMaterialId(materialId)
+                        .withSecondClassLetter(true)
                         .build()
                 ).build();
 
@@ -113,7 +113,7 @@ public class MaterialHandlerTest {
         final UUID updateMaterialId = knownUpdate ? materialId : UUID.randomUUID();
 
         final UpdateNowsMaterialStatus statusCommandObject = UpdateNowsMaterialStatus.updateNowsMaterialStatus()
-                .withMaterialId(updateMaterialId.toString())
+                .withMaterialId(updateMaterialId)
                 .withStatus("GENERATED")
                 .build();
 

@@ -1,0 +1,243 @@
+[
+    {
+        "amendmentDate": "2019-06-24",
+        "storageRequired": false,
+        "complianceCorrelationId": "4b5f8fe2-c5a0-43f2-9b06-4db0293f1696",
+        "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+        "now": {
+            "id": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
+            "name": "Warrant for custodial sentence",
+            "templateName": "NoticeOrderWarrants",
+            "bilingualTemplateName": "BilingualNoticeOrderWarrants",
+            "jurisdiction": "B",
+            "rank": 10,
+            "nowTextList": [
+                {
+                    "nowReference": "orderText",
+                    "text": "<p><strong>Direction</strong></p><p>The authorised officers of the prisoner escort contractors shall take the defendant to the nominated prison establishment and deliver the defendant to the Governor who shall detain the defendant for the overall length of the sentence shown.</p><p><strong>Note: Prisoner Voting Rights</strong></p> <p><span>Convicted offenders sentenced to imprisonment lose the right to vote while they are detained in custody</span></p> <p><strong>Additional Note</strong></p> <p>Previous Convictions and Pre-Sentence Report available separately <span>&nbsp;</span></p>"
+                }
+            ],
+            "urgentTimeLimitInMinutes": 60,
+            "remotePrintingRequired": false,
+            "isEDT": false,
+            "includeCaseMarkers": false,
+            "includePNCID": false,
+            "includeConvictionStatus": false,
+            "includeNationality": false,
+            "includeDefendantASN": false,
+            "includeDefendantMobileNumber": false,
+            "includeDefendantLandlineNumber": false,
+            "includeDefendantNINO": false,
+            "includeDefendantEthnicity": false,
+            "includeDefendantGender": false,
+            "includeSolicitorsNameAddress": false,
+            "includeDVLAOffenceCode": false,
+            "includeDriverNumber": false,
+            "includePlea": false,
+            "includeVehicleRegistration": false,
+            "nowRequirements": [
+                {
+                    "id": "bf8f8559-281f-4ec2-baf4-c4fe2e66791c",
+                    "resultDefinitionId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                    "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
+                    "mandatory": true,
+                    "primary": true,
+                    "sequence": 3300,
+                    "prompts": [
+                        {
+                            "promptId": "8f2984fe-9270-4175-9f2e-79d1ec7d3a38",
+                            "variantData": true
+                        },
+                        {
+                            "promptId": "10ec0c03-a0a9-41fc-9314-1cec010e12cf",
+                            "variantData": false
+                        },
+                        {
+                            "promptId": "ddaa31d2-352a-47ca-95c4-6588faabf099",
+                            "variantData": false
+                        },
+                        {
+                            "promptId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                            "variantData": false
+                        },
+                        {
+                            "promptId": "bf3d1854-77ce-44ea-8bf7-e2afe595e45d",
+                            "variantData": false
+                        },
+                        {
+                            "promptId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                            "variantData": false
+                        },
+                        {
+                            "promptId": "cc398d5e-6a52-416d-8081-af8a5adf24f9",
+                            "variantData": false
+                        }
+                    ],
+                    "nowRequirements": [
+                        {
+                            "id": "49e27e5f-170b-446c-9109-739a225eff3c",
+                            "resultDefinitionId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                            "parentNowRequirementId": "bf8f8559-281f-4ec2-baf4-c4fe2e66791c",
+                            "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
+                            "mandatory": false,
+                            "primary": true,
+                            "sequence": 3400,
+                            "prompts": [
+                                {
+                                    "promptId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                                    "variantData": false
+                                },
+                                {
+                                    "promptId": "19d9d7b4-a55c-4f52-8cca-edf9c63e98e5",
+                                    "variantData": false
+                                },
+                                {
+                                    "promptId": "9dbe839c-3804-4c47-bf9e-5be6f9b9b3bb",
+                                    "variantData": false
+                                },
+                                {
+                                    "promptId": "21549bc3-5be9-4a91-abc7-57d8ed1b1676",
+                                    "variantData": false
+                                },
+                                {
+                                    "promptId": "3a0bf7f8-674f-4b5f-998d-aae0e2b2842e",
+                                    "variantData": false
+                                },
+                                {
+                                    "promptId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+                                    "variantData": false
+                                },
+                                {
+                                    "promptId": "52c9c1f5-2a00-45ee-bca3-024d43626773",
+                                    "variantData": false
+                                }
+                            ],
+                            "nowRequirements": [
+                                {
+                                    "id": "49e27e5f-170b-446c-9109-739a225eff3b",
+                                    "resultDefinitionId": "6cb15971-c945-4398-b7c9-3f8b743a4de3",
+                                    "parentNowRequirementId": "bf8f8559-281f-4ec2-baf4-c4fe2e66791c",
+                                    "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
+                                    "mandatory": false,
+                                    "primary": false,
+                                    "sequence": 3400,
+                                    "prompts": [
+                                        {
+                                            "promptId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                                            "variantData": false
+                                        },
+                                        {
+                                            "promptId": "19d9d7b4-a55c-4f52-8cca-edf9c63e98e5",
+                                            "variantData": false
+                                        },
+                                        {
+                                            "promptId": "9dbe839c-3804-4c47-bf9e-5be6f9b9b3bb",
+                                            "variantData": false
+                                        },
+                                        {
+                                            "promptId": "21549bc3-5be9-4a91-abc7-57d8ed1b1676",
+                                            "variantData": false
+                                        },
+                                        {
+                                            "promptId": "3a0bf7f8-674f-4b5f-998d-aae0e2b2842e",
+                                            "variantData": false
+                                        },
+                                        {
+                                            "promptId": "266a2bbe-b6b5-4b24-830d-70ceff3e2cac",
+                                            "variantData": false
+                                        },
+                                        {
+                                            "promptId": "52c9c1f5-2a00-45ee-bca3-024d43626773",
+                                            "variantData": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+                
+            ],
+            "startDate": "2020-01-19"
+        },
+        "results": [
+            {
+                "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+                "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+                "label": "Pay by date",
+                "isAdjournmentResult": false,
+                "isFinancialResult": true,
+                "isConvictedResult": false,
+                "isAvailableForCourtExtract": true,
+                "orderedDate": "2020-01-20",
+                "category": "Fine",
+                "resultText": "Pay by date",
+                "terminatesOffenceProceedings": "",
+                "isLifeDuration": false,
+                "isPublishedAsAPrompt": false,
+                "isExcludedFromResults": false,
+                "isAlwaysPublished": true,
+                "isUrgent": false,
+                "isD20": false,
+                "amendmentDate": "2019-06-24",
+                "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0",
+                "judicialResultPrompts": [
+                    {
+                        "judicialResultPromptTypeId": "8f2984fe-9270-4175-9f2e-79d1ec7d3a38",
+                        "value": "val1"
+                    }
+                ],
+                "primary": true,
+                "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
+                "usergroups": []
+            },
+            {
+                "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17002",
+                "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+                "label": "Pay by date",
+                "isAdjournmentResult": false,
+                "isFinancialResult": true,
+                "isConvictedResult": false,
+                "isAvailableForCourtExtract": true,
+                "orderedDate": "2020-01-20",
+                "category": "Fine",
+                "resultText": "Pay by date",
+                "terminatesOffenceProceedings": "",
+                "isLifeDuration": false,
+                "isPublishedAsAPrompt": false,
+                "isExcludedFromResults": false,
+                "isAlwaysPublished": true,
+                "isUrgent": false,
+                "isD20": false,
+                "amendmentDate": "2019-06-24",
+                "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0",
+                "judicialResultPrompts": [
+                    {
+                        "judicialResultPromptTypeId": "8f2984fe-9270-4175-9f2e-79d1ec7d3a38",
+                        "value": "val1"
+                    }
+                    
+                ],
+                "primary": true,
+                "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b"
+            }
+        ],
+        "vocabulary": {
+            "custodyLocationIsPolice": false,
+            "custodyLocationIsPrison": false,
+            "atLeastOneCustodialResult": false,
+            "allNonCustodialResults": true,
+            "atLeastOneNonCustodialResult": true,
+            "appearedInPerson": false,
+            "appearedByVideoLink": false
+        },
+        "userGroup": {
+            "userGroups": [
+                "Listing Officers"
+            ],
+            "type": "include"
+        }
+    }
+]

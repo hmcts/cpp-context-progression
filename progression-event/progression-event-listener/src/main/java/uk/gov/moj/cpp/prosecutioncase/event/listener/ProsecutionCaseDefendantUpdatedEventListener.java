@@ -1,14 +1,21 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -24,7 +31,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,6 +44,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +106,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     public void processProsecutionCaseUpdated(final JsonEnvelope event) {
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("received event  progression.event.prosecution-case-updated {} ", event.toObfuscatedDebugString());
+            LOGGER.info("received event progression.event.hearing-resulted-case-updated {} ", event.toObfuscatedDebugString());
         }
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedCaseUpdated.class);
@@ -143,11 +153,11 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withId(defendant.getId())
                 .withMasterDefendantId(defendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
-                .withOffences(defendant.getOffences())
+                .withOffences(getUpdatedOffencesWithNonNowsJudicialResults(defendant.getOffences()))
                 .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalAidStatus(defendant.getLegalAidStatus())
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())
-                .withJudicialResults(defendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(getNonNowsResults(defendant.getDefendantCaseJudicialResults()))
                 .withWitnessStatement(defendant.getWitnessStatement())
                 .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                 .withLegalEntityDefendant(originalDefendant.getLegalEntityDefendant())
@@ -165,6 +175,30 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withCroNumber(originalDefendant.getCroNumber())
                 .withAssociationLockedByRepOrder(originalDefendant.getAssociationLockedByRepOrder())
                 .build();
+    }
+
+    private List<Offence> getUpdatedOffencesWithNonNowsJudicialResults(final List<Offence> offences) {
+        Optional.ofNullable(offences).ifPresent(
+                offenceList -> offenceList.stream().filter(Objects::nonNull).forEach(offence -> {
+                    final List<JudicialResult> judicialResults = getNonNowsResults(offence.getJudicialResults());
+                    if (nonNull(judicialResults) && !judicialResults.isEmpty()) {
+                        offence.getJudicialResults().clear();
+                        offence.getJudicialResults().addAll(judicialResults);
+                    }
+                }));
+
+        return offences;
+    }
+
+    private List<JudicialResult> getNonNowsResults(final List<JudicialResult> judicialResultList) {
+        if (isNull(judicialResultList) || judicialResultList.isEmpty()) {
+            return judicialResultList;
+        }
+
+        return judicialResultList.stream()
+                .filter(Objects::nonNull)
+                .filter(jr -> !Boolean.TRUE.equals(jr.getPublishedForNows()))
+                .collect(Collectors.toList());
     }
 
     private void updateSearchable(final ProsecutionCase prosecutionCase) {
@@ -269,11 +303,20 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     private Defendant updateDefendant(final Defendant originDefendant, final DefendantUpdate defendant) {
 
+        // Due to the aggregate not containing all defendant information we have to do a manual merge
+        // with the original defendant to avoid losing data. See Jira GPE-14200 for details.
+        // Please read full description of method signature for more details.
+        final PersonDefendant updatedPersonDefendant = getUpdatedPersonDefendant(originDefendant, defendant);
+        final List<AssociatedPerson> updatedAssociatedPeople =
+                defendant.getAssociatedPersons() == null
+                        ? originDefendant.getAssociatedPersons()
+                        : getUpdatedAssociatedPeople(originDefendant.getAssociatedPersons(), defendant.getAssociatedPersons());
+
         return Defendant.defendant()
-                .withOffences(originDefendant.getOffences())
-                .withPersonDefendant(defendant.getPersonDefendant())
+                .withOffences(getUpdatedOffencesWithNonNowsJudicialResults(originDefendant.getOffences()))
+                .withPersonDefendant(updatedPersonDefendant)
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                .withAssociatedPersons(defendant.getAssociatedPersons())
+                .withAssociatedPersons(updatedAssociatedPeople)
                 .withId(defendant.getId())
                 .withMasterDefendantId(originDefendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
@@ -281,12 +324,12 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withMitigationWelsh(originDefendant.getMitigationWelsh())
                 .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
                 .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
-                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withProsecutionCaseId(originDefendant.getProsecutionCaseId())
                 .withWitnessStatement(originDefendant.getWitnessStatement())
                 .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
                 .withPncId(defendant.getPncId())
-                .withJudicialResults(originDefendant.getJudicialResults())
+                .withDefendantCaseJudicialResults(originDefendant.getDefendantCaseJudicialResults())
                 .withAliases(defendant.getAliases())
                 .withIsYouth(defendant.getIsYouth())
                 .withCroNumber(originDefendant.getCroNumber())
@@ -296,6 +339,158 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
                 .build();
 
+    }
+
+    /**
+     * Get the updated {@link PersonDefendant}. Takes all data from the new event (the updated
+     * defendant), except the occupation field. The occupation field is not visible on the UI so the
+     * JSON payload for the update does not include this field, therefore if will be null and
+     * override any existing value without this check.
+     *
+     * @param originDefendant - the original defendant from the viewstore
+     * @param defendant       - the updated defendant from the new defendant updated event
+     * @return the latest version of the defendant (i.e. the event version), but with the occupation
+     * field not overwritten.
+     */
+    private PersonDefendant getUpdatedPersonDefendant(final Defendant originDefendant, final DefendantUpdate defendant) {
+        final PersonDefendant updatedPersonDefendant;
+
+        if (defendant.getPersonDefendant() != null) {
+            final PersonDefendant personDefendant = defendant.getPersonDefendant();
+            final Person person = personDefendant.getPersonDetails();
+
+            final PersonDefendant originalPersonDefendant = originDefendant.getPersonDefendant();
+            final Person originalPerson = originalPersonDefendant.getPersonDetails();
+
+            final Person updatedPerson = getUpdatedPerson(originalPerson, person);
+
+            updatedPersonDefendant = PersonDefendant.personDefendant()
+                    .withPersonDetails(updatedPerson)
+                    .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
+                    .withCustodyTimeLimit(personDefendant.getCustodyTimeLimit())
+                    .withDriverNumber(personDefendant.getDriverNumber())
+                    .withDriverLicenseIssue(personDefendant.getDriverLicenseIssue())
+                    .withEmployerPayrollReference(personDefendant.getEmployerPayrollReference())
+                    .withPerceivedBirthYear(personDefendant.getPerceivedBirthYear())
+                    .withBailConditions(originalPersonDefendant.getBailConditions())
+                    .withBailReasons(personDefendant.getBailReasons())
+                    .withVehicleOperatorLicenceNumber(personDefendant.getVehicleOperatorLicenceNumber())
+                    .withDriverLicenceCode(personDefendant.getDriverLicenceCode())
+                    .withEmployerOrganisation(personDefendant.getEmployerOrganisation())
+                    .withCustodialEstablishment(personDefendant.getCustodialEstablishment())
+                    .withBailStatus(personDefendant.getBailStatus())
+                    .build();
+        } else {
+            updatedPersonDefendant = originDefendant.getPersonDefendant();
+        }
+        return updatedPersonDefendant;
+    }
+
+    /**
+     * Get the Updated {@link Person} with the original occupation field in-tact.
+     *
+     * @param originalPerson - the original person from the viewstore
+     * @param person         - the updated person from the new event (missing occupation)
+     * @return the latest version of the defendant with the original occupation field value.
+     */
+    private Person getUpdatedPerson(final Person originalPerson, final Person person) {
+
+        final Ethnicity updatedEthnicity = getUpdatedEthnicity(originalPerson.getEthnicity(), person.getEthnicity());
+
+        return Person.person()
+                .withLastName(person.getLastName())
+                .withFirstName(person.getFirstName())
+                .withMiddleName(person.getMiddleName())
+                .withTitle(person.getTitle())
+                .withOccupation(getUpdatedValue(originalPerson.getOccupation(), person.getOccupation()))
+                .withOccupationCode(getUpdatedValue(originalPerson.getOccupationCode(), person.getOccupationCode()))
+                .withDateOfBirth(person.getDateOfBirth())
+                .withEthnicity(updatedEthnicity)
+                .withGender(person.getGender())
+                .withAdditionalNationalityCode(person.getAdditionalNationalityCode())
+                .withAdditionalNationalityId(person.getAdditionalNationalityId())
+                .withAdditionalNationalityDescription(person.getAdditionalNationalityDescription())
+                .withDocumentationLanguageNeeds(person.getDocumentationLanguageNeeds())
+                .withInterpreterLanguageNeeds(person.getInterpreterLanguageNeeds())
+                .withNationalInsuranceNumber(person.getNationalInsuranceNumber())
+                .withNationalityCode(person.getNationalityCode())
+                .withNationalityDescription(person.getNationalityDescription())
+                .withNationalityId(person.getNationalityId())
+                .withSpecificRequirements(person.getSpecificRequirements())
+                .withAddress(person.getAddress())
+                .withContact(person.getContact())
+                .withDisabilityStatus(person.getDisabilityStatus())
+                .withPersonMarkers(person.getPersonMarkers())
+                .build();
+    }
+
+    private Ethnicity getUpdatedEthnicity(final Ethnicity originalEthnicity, final Ethnicity ethnicity) {
+        return ethnicity == null ? originalEthnicity : Ethnicity.ethnicity()
+                .withSelfDefinedEthnicityId(ethnicity.getSelfDefinedEthnicityId())
+                .withSelfDefinedEthnicityCode(ethnicity.getSelfDefinedEthnicityCode())
+                .withSelfDefinedEthnicityDescription(ethnicity.getSelfDefinedEthnicityDescription())
+                .withObservedEthnicityId(getUpdatedValue(originalEthnicity.getObservedEthnicityId(), ethnicity.getObservedEthnicityId()))
+                .withObservedEthnicityCode(getUpdatedValue(originalEthnicity.getObservedEthnicityCode(), ethnicity.getObservedEthnicityCode()))
+                .withObservedEthnicityDescription(getUpdatedValue(originalEthnicity.getObservedEthnicityDescription(), ethnicity.getObservedEthnicityCode()))
+                .build();
+    }
+
+    private List<AssociatedPerson> getUpdatedAssociatedPeople(final List<AssociatedPerson> originalAssociatedPeople, final List<AssociatedPerson> associatedPeople) {
+
+        final List<AssociatedPerson> updatedAssociatedPeople = new ArrayList<>();
+
+        for (final AssociatedPerson associatedPerson : associatedPeople) {
+
+            final Person person = associatedPerson.getPerson();
+            final Optional<Person> originPerson = getMatchingOriginAssociatedPerson(originalAssociatedPeople, person);
+
+            updatedAssociatedPeople.add(AssociatedPerson.associatedPerson()
+                    .withPerson(originPerson.isPresent() ? Person.person()
+                            .withLastName(person.getLastName())
+                            .withFirstName(person.getFirstName())
+                            .withPersonMarkers(person.getPersonMarkers())
+                            .withSpecificRequirements(person.getSpecificRequirements())
+                            .withNationalityId(person.getNationalityId())
+                            .withNationalityCode(person.getNationalityCode())
+                            .withNationalInsuranceNumber(person.getNationalInsuranceNumber())
+                            .withInterpreterLanguageNeeds(person.getInterpreterLanguageNeeds())
+                            .withDocumentationLanguageNeeds(person.getDocumentationLanguageNeeds())
+                            .withDisabilityStatus(person.getDisabilityStatus())
+                            .withAddress(person.getAddress())
+                            .withGender(person.getGender())
+                            .withAdditionalNationalityId(person.getAdditionalNationalityId())
+                            .withAdditionalNationalityCode(person.getAdditionalNationalityCode())
+                            .withAdditionalNationalityDescription(person.getAdditionalNationalityDescription())
+                            .withOccupation(person.getOccupation())
+                            .withOccupationCode(person.getOccupationCode())
+                            .withMiddleName(person.getMiddleName())
+                            .withContact(getUpdatedValue(originPerson.get().getContact(), person.getContact()))
+                            .withEthnicity(getUpdatedValue(originPerson.get().getEthnicity(), person.getEthnicity()))
+                            .withDateOfBirth(getUpdatedValue(originPerson.get().getDateOfBirth(), person.getDateOfBirth()))
+                            .withTitle(getUpdatedValue(originPerson.get().getTitle(), person.getTitle()))
+                            .build()
+                            : person)
+                    .withRole(associatedPerson.getRole())
+                    .build());
+        }
+
+        return updatedAssociatedPeople;
+    }
+
+    private Optional<Person> getMatchingOriginAssociatedPerson(final List<AssociatedPerson> originalAssociatedPeople, final Person person) {
+
+        if (CollectionUtils.isNotEmpty(originalAssociatedPeople)) {
+            return originalAssociatedPeople.stream().map(AssociatedPerson::getPerson)
+                    .filter(p -> StringUtils.equals(person.getLastName(), p.getLastName())
+                            && StringUtils.equals(person.getFirstName(), p.getFirstName())
+                            && (person.getDateOfBirth() == null || person.getDateOfBirth().equals(p.getDateOfBirth())))
+                    .findFirst();
+        }
+        return Optional.empty();
+    }
+
+    private <T extends Object> T getUpdatedValue(T originalValue, T newValue) {
+        return newValue != null ? newValue : originalValue;
     }
 
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
@@ -311,5 +506,4 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .filter(respondents -> respondents.getPartyDetails() != null && respondents.getPartyDetails().getDefendant() != null)
                 .map(filteredRespondents -> filteredRespondents.getPartyDetails().getDefendant().getId()).collect(Collectors.toList());
     }
-
 }

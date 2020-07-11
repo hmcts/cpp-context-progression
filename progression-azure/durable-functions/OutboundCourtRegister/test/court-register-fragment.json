@@ -1,0 +1,32 @@
+{
+    "courtCentreId": "853b1ff8-fc2a-44d1-a621-0cd16419f54a",
+    "registerDate": "2019-02-01",
+    "registerDefendants": [
+        {
+            "defendantIds": [],
+            "results": [],
+            "cases": [],
+            "applications": [],
+            "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+            "isYouthDefendant": true,
+            "vocabulary": {
+                "custodyLocationIsPolice": false,
+                "custodyLocationIsPrison": false,
+                "atLeastOneCustodialResult": false,
+                "allNonCustodialResults": true,
+                "atLeastOneNonCustodialResult": true,
+                "appearedInPerson": false,
+                "appearedByVideoLink": false
+            }
+        }
+    ],
+    "matchedSubscriptions": [
+        {
+        "recipient": {
+                "recipientName": "John Smith",
+                "emailAddress1": "johnS@hmcts.net",
+                "emailTemplateName": "some template name"
+            }
+        }
+    ]
+}
