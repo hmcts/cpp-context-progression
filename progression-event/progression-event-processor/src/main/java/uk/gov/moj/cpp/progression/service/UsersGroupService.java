@@ -115,11 +115,9 @@ public class UsersGroupService {
     public JsonObject getGroupsWithOrganisation(final JsonEnvelope event) {
         final JsonObject payload = Json.createObjectBuilder().build();
 
-        final JsonEnvelope requestEnvelope = requester.request(envelop(payload)
+        final Envelope<JsonObject> response = requester.requestAsAdmin(envelop(payload)
                 .withName("usersgroups.get-groups-with-organisation")
-                .withMetadataFrom(event));
-
-        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+                .withMetadataFrom(event), JsonObject.class);
 
         return response.payload();
     }

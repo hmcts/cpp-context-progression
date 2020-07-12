@@ -10,6 +10,7 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -158,6 +159,18 @@ public class UsersGroupServiceTest {
         assertThat(requestIds, containsString(id2));
         assertThat(emails, notNullValue());
         assertThat(emails.size(), is(0));
+    }
+
+    @Test
+    public void shouldGetGroupsWithOrganisation() {
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+
+        prepareResponseMock();
+
+        usersGroupService.getGroupsWithOrganisation(jsonEnvelope);
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
+        assertThat(envelopeArgumentCaptor.getValue(), notNullValue());
     }
 
     private void prepareResponseMock() {
