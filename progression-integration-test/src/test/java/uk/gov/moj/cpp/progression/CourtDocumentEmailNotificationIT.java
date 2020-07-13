@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -71,8 +72,8 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-
-    private final MessageConsumer publicEventConsumer = publicEvents
+    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
+    private static final MessageConsumer publicEventConsumer = publicEvents
             .createConsumer("public.progression.court-document-added");
 
 
@@ -90,6 +91,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         consumerForCourDocumentSendToCps.close();
         consumerForProgressionCommandEmail.close();
         messageProducerClientPublic.close();
+        publicEventConsumer.close();
     }
 
 
@@ -121,6 +123,9 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
                         .withUserId(userId)
                         .build());
 
+        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.id", Matchers.is(hearingId))
+        );
 
         Matcher[] caseUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
