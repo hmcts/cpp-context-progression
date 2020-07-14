@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -15,26 +16,22 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PartialHearingConfirmIT  extends AbstractIT{
+public class PartialHearingConfirmIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_PARTIAL_HEARING_CONFIRMED = "public.listing.partial-hearing-confirmed.json";
@@ -51,6 +48,7 @@ public class PartialHearingConfirmIT  extends AbstractIT{
 
     @Before
     public void setUp() {
+        DocumentGeneratorStub.stubDocumentCreate(STRING.next());
         HearingStub.stubInitiateHearing();
         ListingStub.stubListCourtHearing();
         IdMapperStub.setUp();
@@ -58,19 +56,13 @@ public class PartialHearingConfirmIT  extends AbstractIT{
 
     @Test
     public void shouldPartialHearingConfirm() throws IOException {
-
-        final List<String> caseIds = new ArrayList<>();
-        final List<String> defendantIds = new ArrayList<>();
-
         final String caseId1 = randomUUID().toString();
         final String defendantId1 = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();
         final String userId = randomUUID().toString();
-        caseIds.add(caseId1);
-        defendantIds.add(defendantId1);
 
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId1, defendantId1, defendantId2);
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId1, defendantId1,getProsecutionCaseMatchers(caseId1, defendantId1));
+        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId1, defendantId1, getProsecutionCaseMatchers(caseId1, defendantId1));
 
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
@@ -95,7 +87,6 @@ public class PartialHearingConfirmIT  extends AbstractIT{
 
         );
 
-        ListingStub.verifyPostListCourtHearing(caseId1,defendantId2);
+        ListingStub.verifyPostListCourtHearing(caseId1, defendantId2);
     }
-
 }
