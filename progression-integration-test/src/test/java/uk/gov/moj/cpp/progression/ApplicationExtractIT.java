@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
@@ -16,8 +15,8 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApp
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeAccessQueryData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
@@ -26,11 +25,14 @@ import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
@@ -47,7 +49,6 @@ public class ApplicationExtractIT extends AbstractIT {
     private String updatedDefendantId;
 
     private static final String DOCUMENT_TEXT = STRING.next();
-
     private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer("public.progression.court-application-created");
 
     @Before
@@ -58,7 +59,7 @@ public class ApplicationExtractIT extends AbstractIT {
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
-
+        stubQueryDocumentTypeAccessQueryData("/restResource/ref-data-document-type-for-standalone.json");
     }
 
     @AfterClass
@@ -82,42 +83,31 @@ public class ApplicationExtractIT extends AbstractIT {
     @Test
     public void shouldAddDocumentInStandAloneApplicationAndThenUpdateIt() throws Exception {
         // given
-
         addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         verifyInMessagingQueueForStandaloneCourtApplicationCreated();
         // when
         final String documentContentResponse = getApplicationExtractPdf(courtApplicationId, hearingId);
         // then
         assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
-
         verifyAddCourtDocument();
-
-        stubQueryDocumentTypeAccessQueryData("/restResource/ref-data-document-type-for-standalone.json");
-
         //Given
         final String bodyForUpdate = prepareUpdateCourtDocumentPayload();
-
         final Response writeResponseForUpdate = postCommand(getWriteUrl("/courtdocument"),
                 "application/vnd.progression.update-court-document+json",
                 bodyForUpdate);
-        assertThat(writeResponseForUpdate.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
+        assertThat(writeResponseForUpdate.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final String actualDocumentAfterUpdate = getCourtDocumentFor(docId, allOf(
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
                 withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false)),
                 withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications"))
         ));
-
-
         final String expectedPayloadAfterUpdate = getPayload("expected/expected.progression.court-document-updated-for-standalone.json")
                 .replace("COURT-DOCUMENT-ID", docId)
                 .replace("%RANDOM_APPLICATION_ID%", courtApplicationId.toString());
 
         assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
-
-
-
     }
 
     private void verifyAddCourtDocument() throws IOException {
@@ -140,8 +130,6 @@ public class ApplicationExtractIT extends AbstractIT {
                 .replace("%RANDOM_APPLICATION_ID%", courtApplicationId.toString());
 
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
-
-
     }
 
     private String prepareAddCourtDocumentPayload() {
@@ -169,9 +157,13 @@ public class ApplicationExtractIT extends AbstractIT {
     }
 
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
-        assertThat(message.isPresent(), is(true));
-        String arnResponse = message.get().getString("arn");
+        final AtomicReference<Optional<JsonObject>> message = new AtomicReference<>();
+        Awaitility.await().atMost(Duration.TEN_SECONDS).until(() -> {
+            message.set(QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated));
+            return message.get().isPresent();
+        }, is(true));
+
+        String arnResponse = message.get().get().getString("arn");
         assertThat(arnResponse.length(), is(10));
     }
 }
