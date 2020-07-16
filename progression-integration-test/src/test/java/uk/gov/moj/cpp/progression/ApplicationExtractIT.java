@@ -19,20 +19,17 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.moj.cpp.progression.helper.AwaitUtil;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
@@ -157,13 +154,9 @@ public class ApplicationExtractIT extends AbstractIT {
     }
 
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
-        final AtomicReference<Optional<JsonObject>> message = new AtomicReference<>();
-        Awaitility.await().atMost(Duration.TEN_SECONDS).until(() -> {
-            message.set(QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated));
-            return message.get().isPresent();
-        }, is(true));
+        final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
 
-        String arnResponse = message.get().get().getString("arn");
+        String arnResponse = message.get().getString("arn");
         assertThat(arnResponse.length(), is(10));
     }
 }
