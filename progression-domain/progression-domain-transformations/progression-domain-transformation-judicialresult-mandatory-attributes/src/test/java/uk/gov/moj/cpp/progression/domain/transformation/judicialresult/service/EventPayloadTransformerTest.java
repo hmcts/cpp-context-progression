@@ -34,6 +34,8 @@ import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.do
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_OFFENCES_UPDATED;
+import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.SLOTS_BOOKED_FOR_APPLICATION;
+import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.UNSCHEDULED_HEARING_LISTING_REQUESTED;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform;
@@ -88,7 +90,9 @@ public class EventPayloadTransformerTest {
                 {APPLICATION_REFERRED_TO_COURT.getEventName()},
                 {HEARING_APPLICATION_LINK_CREATED.getEventName()},
                 {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()},
-                {HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()}
+                {HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()},
+                {UNSCHEDULED_HEARING_LISTING_REQUESTED.getEventName()},
+                {SLOTS_BOOKED_FOR_APPLICATION.getEventName()}
         };
     }
 

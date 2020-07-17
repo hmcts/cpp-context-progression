@@ -18,7 +18,9 @@ public enum EventToTransform {
     APPLICATION_REFERRED_TO_COURT("progression.event.application-referred-to-court"),
     HEARING_APPLICATION_LINK_CREATED("progression.event.hearing-application-link-created"),
     PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED("progression.event.prosecutionCase-defendant-listing-status-changed"),
-    HEARING_CONFIRMED_CASE_STATUS_UPDATED("progression.event.hearing-confirmed-case-status-updated");
+    HEARING_CONFIRMED_CASE_STATUS_UPDATED("progression.event.hearing-confirmed-case-status-updated"),
+    UNSCHEDULED_HEARING_LISTING_REQUESTED("progression.event.unscheduled-hearing-listing-requested"),
+    SLOTS_BOOKED_FOR_APPLICATION("progression.event.slots-booked-for-application");
 
     private final String eventName;
 
