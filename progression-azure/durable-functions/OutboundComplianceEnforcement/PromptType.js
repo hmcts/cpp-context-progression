@@ -78,7 +78,7 @@ class PromptType {
 
     //Employer related
     static get EMPLOYER_ORGANISATION_NAME_PROMPT_REFERENCE(){
-        return "employerName";
+        return "employerOrganisationName";
     }
 
     static get EMPLOYER_ORGANISATION_ADDRESS1_PROMPT_REFERENCE(){

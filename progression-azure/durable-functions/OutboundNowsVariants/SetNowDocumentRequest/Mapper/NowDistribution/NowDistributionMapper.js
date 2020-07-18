@@ -16,22 +16,21 @@ class NowDistributionMapper extends Mapper {
 
     getNowDistribution(subscription) {
 
-        if(subscription.firstClassLetterDelivery) {
+        if(subscription.forDistribution && subscription.firstClassLetterDelivery) {
             const nowDistribution = new NowDistribution()
             nowDistribution.firstClassLetter = subscription.firstClassLetterDelivery;
             return nowDistribution;
         }
 
-        if(subscription.secondClassLetterDelivery) {
+        if(subscription.forDistribution && subscription.secondClassLetterDelivery) {
             const nowDistribution = new NowDistribution()
             nowDistribution.secondClassLetter = subscription.secondClassLetterDelivery;
             return nowDistribution;
         }
 
-        if(subscription.emailDelivery) {
+        if(subscription.forDistribution && subscription.emailDelivery) {
             const nowDistribution = new NowDistribution()
             nowDistribution.email = subscription.emailDelivery;
-            nowDistribution.emailAddress = this.getEmailAddress(subscription);
             nowDistribution.emailTemplateName = subscription.emailTemplateName ? subscription.emailTemplateName : 'defaultEmailTemplate';
             nowDistribution.bilingualEmailTemplateName = undefined;
             nowDistribution.emailContent = this.getEmailContent();
@@ -71,69 +70,6 @@ class NowDistributionMapper extends Mapper {
     getProsecutionCase(caseId) {
         return _(this.hearingJson.prosecutionCases).value()
             .find(pcase => pcase.id === caseId);
-    }
-
-    getEmailAddress(subscription) {
-        if(subscription.emailDelivery) {
-
-            if(subscription.recipient.recipientFromCase) {
-                if(subscription.recipient.isApplyDefenceOrganisationDetails) {
-                    const defenceOrganisation = this.getDefenceOrganisation();
-                    if(defenceOrganisation) {
-                        if(defenceOrganisation.contact) {
-                            return defenceOrganisation.contact.primaryEmail;
-                        }
-                    }
-                }
-
-                if(subscription.recipient.isApplyParentGuardianDetails) {
-                    const parentGuardian = this.getParentGuardianDetails();
-                    if(parentGuardian) {
-                        if(parentGuardian.contact) {
-                            return defenceOrganisation.contact.primaryEmail;
-                        }
-                    }
-                }
-
-                if(subscription.recipient.isApplyDefendantDetails) {
-                    const defendant = this.getDefendant();
-                    if(defendant) {
-                        return this.primaryEmailAddress(defendant);
-                    }
-                }
-
-                if(subscription.recipient.isApplyDefendantCustodyDetails) {
-                    //TODO:
-                }
-
-                if(subscription.recipient.isApplyApplicantDetails) {
-                    //TODO:
-                }
-
-                if(subscription.recipient.isApplyRespondentDetails) {
-                    //TODO:
-                }
-            }
-
-            if(subscription.recipient.recipientFromSubscription) {
-                return subscription.recipient.emailAddress1;
-            }
-
-            if(subscription.recipient.recipientFromResults) {
-                const emailAddress1Reference = subscription.recipient.emailAddress1ResultPromptReference;
-                console.log('emailAddress1Reference ========== ' + emailAddress1Reference + ' ' + this.nowVariant.results.length);
-                const allPromptsFromJudicialResults = [];
-                this.nowVariant.results.forEach(judicialResult => {
-                    if(judicialResult.judicialResultPrompts && judicialResult.judicialResultPrompts.length) {
-                        judicialResult.judicialResultPrompts.forEach(prompt => {
-                            allPromptsFromJudicialResults.push(prompt);
-                        });
-                    }
-                });
-                console.log('allPromptsFromJudicialResults ========== ' + JSON.stringify(allPromptsFromJudicialResults));
-                return this.getPromptValueByReference(allPromptsFromJudicialResults, emailAddress1Reference);
-            }
-        }
     }
 }
 

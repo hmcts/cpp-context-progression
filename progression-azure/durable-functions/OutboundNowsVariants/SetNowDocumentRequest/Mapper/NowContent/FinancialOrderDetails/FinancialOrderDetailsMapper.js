@@ -62,6 +62,7 @@ class FinancialOrderDetailsMapper extends Mapper {
         address.line3 = enforcementArea.address3;
         address.line4 = enforcementArea.address4;
         address.postCode = enforcementArea.postcode;
+        address.emailAddress1 = enforcementArea.email;
 
         const enforcementAreaBACS = organisationUnitsRefData.enforcementArea;
 

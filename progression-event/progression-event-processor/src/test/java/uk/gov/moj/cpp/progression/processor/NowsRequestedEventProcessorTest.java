@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -172,6 +173,8 @@ public class NowsRequestedEventProcessorTest {
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class)))
@@ -213,6 +216,8 @@ public class NowsRequestedEventProcessorTest {
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class))).thenReturn(fileId);
@@ -256,6 +261,8 @@ public class NowsRequestedEventProcessorTest {
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class))).thenReturn(fileId);

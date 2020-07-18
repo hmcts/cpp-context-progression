@@ -157,18 +157,9 @@ describe('Building Subscriptions Objects', () => {
         expect(response.length).toBe(0);
     });
 
-    test('Should return subscription where defence usergroup is excluded', async () => {
-
-        subscriptions[0].subscriptionVocabulary.anyAppearance = true;
-        subscriptions[0].subscriptionVocabulary.anyCourtHearing = true;
-        subscriptions[0].subscriptionVocabulary.adultOrYouthDefendant = true;
-        subscriptions[0].subscriptionVocabulary.ignoreCustody = true;
-        subscriptions[0].subscriptionVocabulary.ignoreResults = true;
-
+    test('Should not return subscription where defence user group is excluded', async () => {
+        const subscriptions = require('./SubscriptionWithUserGroup.json');
         const vocabulary = new VocabularyInfo();
-        vocabulary.anyCourtHearing = true;
-        vocabulary.adultOrYouthDefendant = true;
-
         const subscriptionObj = new SubscriptionObject();
         subscriptionObj.subscriptions = subscriptions;
         subscriptionObj.vocabulary = vocabulary;
@@ -181,10 +172,46 @@ describe('Building Subscriptions Objects', () => {
 
         const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
 
+        expect(response.length).toBe(0);
+    });
+
+    test('Should return subscription where Probation user group is excluded', async () => {
+        const subscriptions = require('./SubscriptionWithUserGroup.json');
+        const vocabulary = new VocabularyInfo();
+        const subscriptionObj = new SubscriptionObject();
+        subscriptionObj.subscriptions = subscriptions;
+        subscriptionObj.vocabulary = vocabulary;
+
+        const userGroup = new UserGroup();
+        userGroup.type = UserGroupType.EXCLUDE;
+        userGroup.userGroups.push('Probation');
+
+        subscriptionObj.userGroup = userGroup;
+
+        const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
+
         expect(response.length).toBe(1);
     });
 
-    test('Should not return subscription where defence usergroup is included', async () => {
+    test('Should not return subscription where Probation user group is included and Defence User group is Included in Subscription metadata', async () => {
+        const subscriptions = require('./SubscriptionWithUserGroup.json');
+        const vocabulary = new VocabularyInfo();
+        const subscriptionObj = new SubscriptionObject();
+        subscriptionObj.subscriptions = subscriptions;
+        subscriptionObj.vocabulary = vocabulary;
+
+        const userGroup = new UserGroup();
+        userGroup.type = UserGroupType.INCLUDE;
+        userGroup.userGroups.push('Probation');
+
+        subscriptionObj.userGroup = userGroup;
+
+        const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
+
+        expect(response.length).toBe(0);
+    });
+
+    test('Should return subscription where defence usergroup is included', async () => {
         const subscriptions = require('./SubscriptionWithUserGroup.json');
         const vocabulary = new VocabularyInfo();
         const subscriptionObj = new SubscriptionObject();
@@ -198,7 +225,71 @@ describe('Building Subscriptions Objects', () => {
 
         const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
 
-        expect(response.length).toBe(0);
+        expect(response.length).toBe(1);
+    });
+
+    test('Should return subscription where no usergroup is set in the variant', async () => {
+        const subscriptions = require('./SubscriptionWithUserGroup.json');
+        const vocabulary = new VocabularyInfo();
+        const subscriptionObj = new SubscriptionObject();
+        subscriptionObj.subscriptions = subscriptions;
+        subscriptionObj.vocabulary = vocabulary;
+
+        subscriptionObj.userGroup = undefined;
+
+        const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
+
+        expect(response.length).toBe(1);
+    });
+
+    test('Should return subscription where Defence usergroup is included in the variant and no userGroupVariant in Subscription metadata', async () => {
+        subscriptions[0].subscriptionVocabulary.anyAppearance = true;
+        subscriptions[0].subscriptionVocabulary.anyCourtHearing = true;
+        subscriptions[0].subscriptionVocabulary.adultOrYouthDefendant = true;
+        subscriptions[0].subscriptionVocabulary.ignoreCustody = true;
+        subscriptions[0].subscriptionVocabulary.ignoreResults = true;
+
+        const vocabulary = new VocabularyInfo();
+        vocabulary.anyCourtHearing = true;
+        vocabulary.adultOrYouthDefendant = true;
+
+        const userGroup = new UserGroup();
+        userGroup.type = UserGroupType.INCLUDE;
+        userGroup.userGroups.push('Defence');
+
+        const subscriptionObj = new SubscriptionObject();
+        subscriptionObj.vocabulary = vocabulary;
+        subscriptionObj.userGroup = userGroup;
+        subscriptionObj.subscriptions = subscriptions;
+
+        const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
+
+        expect(response.length).toBe(1);
+    });
+
+    test('Should return subscription where Defence usergroup is excluded in the variant and no userGroupVariant in Subscription metadata', async () => {
+        subscriptions[0].subscriptionVocabulary.anyAppearance = true;
+        subscriptions[0].subscriptionVocabulary.anyCourtHearing = true;
+        subscriptions[0].subscriptionVocabulary.adultOrYouthDefendant = true;
+        subscriptions[0].subscriptionVocabulary.ignoreCustody = true;
+        subscriptions[0].subscriptionVocabulary.ignoreResults = true;
+
+        const vocabulary = new VocabularyInfo();
+        vocabulary.anyCourtHearing = true;
+        vocabulary.adultOrYouthDefendant = true;
+
+        const userGroup = new UserGroup();
+        userGroup.type = UserGroupType.EXCLUDE;
+        userGroup.userGroups.push('Defence');
+
+        const subscriptionObj = new SubscriptionObject();
+        subscriptionObj.vocabulary = vocabulary;
+        subscriptionObj.userGroup = userGroup;
+        subscriptionObj.subscriptions = subscriptions;
+
+        const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
+
+        expect(response.length).toBe(1);
     });
 
     test('Should create a clone for child subscription', async () => {

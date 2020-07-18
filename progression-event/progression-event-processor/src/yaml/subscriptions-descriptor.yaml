@@ -95,7 +95,7 @@ subscriptions_descriptor:
         - name: progression.event.case-note-added
           schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
 
-        - name : progression.event.court-document-send-to-cps
+        - name: progression.event.court-document-send-to-cps
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.court-document-send-to-cps.json
 
         - name: progression.event.validate-link-cases
@@ -140,10 +140,10 @@ subscriptions_descriptor:
         - name: progression.event.defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
 
-        - name : progression.event.defendant-defence-organisation-associated
+        - name: progression.event.defendant-defence-organisation-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-associated.json
 
-        - name : progression.event.defendant-defence-organisation-disassociated
+        - name: progression.event.defendant-defence-organisation-disassociated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-disassociated.json
 
           ############  Association End ############
@@ -157,10 +157,10 @@ subscriptions_descriptor:
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
 
-        - name : progression.event.defendant-defence-association-locked
+        - name: progression.event.defendant-defence-association-locked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
 
-        - name : progression.event.defendant-laa-associated
+        - name: progression.event.defendant-laa-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
 
         - name: progression.event.defendant-matched
@@ -240,6 +240,12 @@ subscriptions_descriptor:
 
         - name: progression.event.duplicate-share-court-document-request-received
           schema_uri: http://justice.gov.uk/core/courts/duplicate-share-court-document-request-received.json
+
+        - name: progression.event.notification-request-failed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.notification-request-failed.json
+
+        - name: progression.event.notification-request-succeeded
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.notification-request-succeeded.json
 
           # Deprecated API  - End
       event_source_name: progression

@@ -13,6 +13,7 @@ import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.EmailRenderingVocabulary;
 import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -31,15 +32,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +99,7 @@ public class DocumentGeneratorService {
             final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, getTemplateName(nowDocumentRequest), getSystemUserUuid());
             addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
                     new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
-                    nowDocumentRequest.getNowDistribution());
+                    nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee());
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
             updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
@@ -121,6 +124,7 @@ public class DocumentGeneratorService {
             LOGGER.error(ERROR_MESSAGE, e);
         }
     }
+
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public UUID generateDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final Sender sender, final UUID prosecutionCaseId, final UUID applicationId) {
 
@@ -183,7 +187,8 @@ public class DocumentGeneratorService {
     private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
                                        final UUID userId, final String hearingId,
                                        final UUID materialId,
-                                       final NowDistribution nowDistribution) {
+                                       final NowDistribution nowDistribution,
+                                       final OrderAddressee orderAddressee) {
         try {
 
             final UUID fileId = storeFile(fileContent, filename);
@@ -194,7 +199,7 @@ public class DocumentGeneratorService {
 
             final boolean secondClassLetter = isSecondClassLetter(nowDistribution);
 
-            final List<EmailChannel> emailNotifications = buildEmailChannel(materialId, nowDistribution);
+            final List<EmailChannel> emailNotifications = buildEmailChannel(materialId, nowDistribution, orderAddressee);
 
             final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder()
                     .setSender(sender)
@@ -208,7 +213,7 @@ public class DocumentGeneratorService {
                     .setFirstClassLetter(firstClassLetter)
                     .setSecondClassLetter(secondClassLetter);
 
-            if(!emailNotifications.isEmpty()) {
+            if (!emailNotifications.isEmpty()) {
                 uploadMaterialContextBuilder.setEmailNotifications(emailNotifications);
             }
 
@@ -220,21 +225,16 @@ public class DocumentGeneratorService {
         }
     }
 
-    private List<EmailChannel> buildEmailChannel(final UUID materialId, NowDistribution nowDistribution) {
+    private List<EmailChannel> buildEmailChannel(final UUID materialId, final NowDistribution nowDistribution, final OrderAddressee orderAddressee) {
         if (nonNull(nowDistribution) && nonNull(nowDistribution.getEmail()) && nowDistribution.getEmail()) {
-            final List<EmailChannel> emailNotifications = new ArrayList<>();
-            final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
-            final UUID templateId = getTemplateId(nowDistribution.getEmailTemplateName());
-            final EmailChannel emailNotification = EmailChannel.emailChannel()
-                    .withTemplateId(templateId)
-                    .withSendToAddress(nowDistribution.getEmailAddress())
-                    .withMaterialUrl(materialUrl)
-                    .withPersonalisation(buildPersonalisation(nowDistribution.getEmailContent()))
-                    .build();
-            if(nonNull(emailNotification.getSendToAddress())) {
-                emailNotifications.add(emailNotification);
-            }
-            return emailNotifications;
+
+            final List<String> emailAddresses = Stream.of(orderAddressee.getAddress().getEmailAddress1(),
+                    orderAddressee.getAddress().getEmailAddress2())
+                    .filter(StringUtils::isNoneBlank)
+                    .collect(Collectors.toList());
+
+            return emailAddresses.stream().map(emailAddress -> buildEmailNotification(materialId, nowDistribution, emailAddress))
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
@@ -242,6 +242,17 @@ public class DocumentGeneratorService {
     @SuppressWarnings("squid:S1172")
     private UUID getTemplateId(String emailTemplateName) {
         return fromString(applicationParameters.getEmailTemplateId(emailTemplateName));
+    }
+
+    private EmailChannel buildEmailNotification(final UUID materialId, final NowDistribution nowDistribution, final String emailAddress) {
+        final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
+        final UUID templateId = getTemplateId(nowDistribution.getEmailTemplateName());
+        return EmailChannel.emailChannel()
+                .withTemplateId(templateId)
+                .withSendToAddress(emailAddress)
+                .withMaterialUrl(materialUrl)
+                .withPersonalisation(buildPersonalisation(nowDistribution.getEmailContent()))
+                .build();
     }
 
     private String getTemplateName(NowDocumentRequest nowDocumentRequest) {
@@ -257,7 +268,7 @@ public class DocumentGeneratorService {
 
     private Personalisation buildPersonalisation(List<EmailRenderingVocabulary> emailContents) {
 
-        if(isNull(emailContents)) {
+        if (isNull(emailContents)) {
             return null;
         }
 

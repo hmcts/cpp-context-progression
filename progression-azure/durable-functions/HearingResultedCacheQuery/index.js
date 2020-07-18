@@ -85,7 +85,7 @@ async function getHearing(hearingId, cjscppuid, payloadPrefix, context) {
             context.log(`Getting hearing result for ${hearingId}`);
             result = await getHearingResult(hearingId, cjscppuid, context);
         } else {
-            throw `Hearing ${hearingId} not found in cache and no CJSCPPUID supplied`;
+            context.log(`Hearing ${hearingId} not found in cache and no CJSCPPUID supplied`);
         }
 
     } else {

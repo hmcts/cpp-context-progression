@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,7 @@ import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
 import uk.gov.moj.cpp.progression.test.TestTemplates;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
@@ -51,6 +53,12 @@ public class DocumentGeneratorServiceTest {
 
     @Mock
     private UploadMaterialService uploadMaterialService;
+
+    @Mock
+    private MaterialUrlGenerator materialUrlGenerator;
+
+    @Mock
+    private ApplicationParameters applicationParameters;
 
     @Mock
     private SystemUserProvider systemUserProvider;
@@ -90,6 +98,8 @@ public class DocumentGeneratorServiceTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
         when(fileStorer.store(any(), any())).thenReturn(randomUUID());
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         final UUID userId = randomUUID();
 
@@ -110,6 +120,9 @@ public class DocumentGeneratorServiceTest {
         verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
         assertThat(uploadMaterialContext.getMaterialId(), is(nowDocumentRequest.getMaterialId()));
+        assertThat(uploadMaterialContext.getEmailNotifications().size(), is(2));
+        assertThat(uploadMaterialContext.getEmailNotifications().get(0).getSendToAddress(), is("emailAddress1@test.com"));
+        assertThat(uploadMaterialContext.getEmailNotifications().get(1).getSendToAddress(), is("emailAddress2@test.com"));
     }
 
     @Test

@@ -16,3 +16,4 @@
 **/out/
 **/.vscode/
 dump.rdb
+**/obj/

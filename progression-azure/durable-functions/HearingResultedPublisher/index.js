@@ -56,11 +56,12 @@ async function publishToAllSubscribers(laaSubscribers, publishPayload, context) 
 
             const result = await postWrapper(endpoint, publishPayload, certificates, context)
 
-            laaSubscriber.result = result
             if (result == null) {
                 context.log(`Failed to publish to ${endpoint}`);
+                laaSubscriber.result = 'failed'
             } else {
                 context.log(`Request to publish to ${endpoint} succeeded`);
+                laaSubscriber.result = 'succeeded'
             }
 
         }

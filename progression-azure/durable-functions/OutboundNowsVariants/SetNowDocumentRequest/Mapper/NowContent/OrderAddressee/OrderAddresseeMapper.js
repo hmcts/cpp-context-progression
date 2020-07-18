@@ -10,16 +10,18 @@ class OrderAddresseeMapper extends Mapper {
     }
 
     buildOrderAddressee() {
-        let orderAddressee = new OrderAddressee();
-        if (this.nowVariant.matchedSubscription.recipient.recipientFromSubscription) {
-            orderAddressee = this.recipientFromSubscription();
-        } else if (this.nowVariant.matchedSubscription.recipient.recipientFromResults) {
-            orderAddressee = this.recipientFromResults();
-        } else if (this.nowVariant.matchedSubscription.recipient.recipientFromCase) {
-            orderAddressee = this.recipientFromCase();
-        }
+        if(this.nowVariant.matchedSubscription.recipient) {
+            let orderAddressee = new OrderAddressee();
+            if (this.nowVariant.matchedSubscription.recipient.recipientFromSubscription) {
+                orderAddressee = this.recipientFromSubscription();
+            } else if (this.nowVariant.matchedSubscription.recipient.recipientFromResults) {
+                orderAddressee = this.recipientFromResults();
+            } else if (this.nowVariant.matchedSubscription.recipient.recipientFromCase) {
+                orderAddressee = this.recipientFromCase();
+            }
 
-        return this.validateOrderAddressee(orderAddressee);
+            return this.validateOrderAddressee(orderAddressee);
+        }
     }
 
     validateOrderAddressee(orderAddressee) {
@@ -31,37 +33,41 @@ class OrderAddresseeMapper extends Mapper {
     }
 
     recipientFromSubscription() {
+        const subscription = this.nowVariant.matchedSubscription;
         const orderAddressee = new OrderAddressee();
-        orderAddressee.name = this.nowVariant.matchedSubscription.recipient.organisationName;
         const address = new NowAddress();
-        address.line1 = this.nowVariant.matchedSubscription.recipient.address1;
-        address.line2 = this.nowVariant.matchedSubscription.recipient.address2;
-        address.line3 = this.nowVariant.matchedSubscription.recipient.address3;
-        address.line4 = this.nowVariant.matchedSubscription.recipient.address4;
-        address.line5 = this.nowVariant.matchedSubscription.recipient.address5;
-        address.postCode = this.nowVariant.matchedSubscription.recipient.postCode;
-        if (!address.line1) {
-            address.emailAddress1 = this.nowVariant.matchedSubscription.recipient.emailAddress1;
-            address.emailAddress2 = this.nowVariant.matchedSubscription.recipient.emailAddress2;
+        orderAddressee.name = subscription.recipient.organisationName;
+
+        address.line1 = subscription.recipient.address1;
+        address.line2 = subscription.recipient.address2;
+        address.line3 = subscription.recipient.address3;
+        address.line4 = subscription.recipient.address4;
+        address.line5 = subscription.recipient.address5;
+        address.postCode = subscription.recipient.postCode;
+        address.emailAddress1 = subscription.recipient.emailAddress1;
+        address.emailAddress2 = subscription.recipient.emailAddress2;
+
+        if(address.line1 || address.emailAddress1) {
+            orderAddressee.address = address;
         }
-        orderAddressee.address = address;
         return orderAddressee;
     }
 
     recipientFromResults() {
+        const subscription = this.nowVariant.matchedSubscription;
         const nameReference =
-            this.nowVariant.matchedSubscription.recipient.organisationNameResultPromptReference ?
-            this.nowVariant.matchedSubscription.recipient.organisationNameResultPromptReference :
-            this.nowVariant.matchedSubscription.recipient.lastNameResultPromptReference;
+            subscription.recipient.organisationNameResultPromptReference ?
+            subscription.recipient.organisationNameResultPromptReference :
+            subscription.recipient.lastNameResultPromptReference;
 
-        const address1Reference = this.nowVariant.matchedSubscription.recipient.address1ResultPromptReference;
-        const address2Reference = this.nowVariant.matchedSubscription.recipient.address2ResultPromptReference;
-        const address3Reference = this.nowVariant.matchedSubscription.recipient.address3ResultPromptReference;
-        const address4Reference = this.nowVariant.matchedSubscription.recipient.address4ResultPromptReference;
-        const address5Reference = this.nowVariant.matchedSubscription.recipient.address5ResultPromptReference;
-        const postCodeReference = this.nowVariant.matchedSubscription.recipient.postCodeResultPromptReference;
-        const emailAddress1Reference = this.nowVariant.matchedSubscription.recipient.emailAddress1ResultPromptReference;
-        const emailAddress2Reference = this.nowVariant.matchedSubscription.recipient.emailAddress2ResultPromptReference;
+        const address1Reference = subscription.recipient.address1ResultPromptReference;
+        const address2Reference = subscription.recipient.address2ResultPromptReference;
+        const address3Reference = subscription.recipient.address3ResultPromptReference;
+        const address4Reference = subscription.recipient.address4ResultPromptReference;
+        const address5Reference = subscription.recipient.address5ResultPromptReference;
+        const postCodeReference = subscription.recipient.postCodeResultPromptReference;
+        const emailAddress1Reference = subscription.recipient.emailAddress1ResultPromptReference;
+        const emailAddress2Reference = subscription.recipient.emailAddress2ResultPromptReference;
 
         const judicialResults = this.nowVariant.results;
 
@@ -76,7 +82,8 @@ class OrderAddresseeMapper extends Mapper {
 
         const orderAddressee = new OrderAddressee();
         orderAddressee.name = this.getPromptValueByReference(allPromptsFromJudicialResults, nameReference);
-        if(address1Reference) {
+        if(address1Reference || emailAddress1Reference) {
+
             const address = new NowAddress();
             address.line1 = this.getPromptValueByReference(allPromptsFromJudicialResults, address1Reference);
             address.line2 = this.getPromptValueByReference(allPromptsFromJudicialResults, address2Reference);
@@ -84,13 +91,10 @@ class OrderAddresseeMapper extends Mapper {
             address.line4 = this.getPromptValueByReference(allPromptsFromJudicialResults, address4Reference);
             address.line5 = this.getPromptValueByReference(allPromptsFromJudicialResults, address5Reference);
             address.postCode = this.getPromptValueByReference(allPromptsFromJudicialResults, postCodeReference);
+            address.emailAddress1 = this.getPromptValueByReference(allPromptsFromJudicialResults, emailAddress1Reference);
+            address.emailAddress2 = this.getPromptValueByReference(allPromptsFromJudicialResults, emailAddress2Reference);
 
-            if (!address.line1) {
-                address.emailAddress1 = this.getPromptValueByReference(allPromptsFromJudicialResults, emailAddress1Reference);
-                address.emailAddress2 = this.getPromptValueByReference(allPromptsFromJudicialResults, emailAddress2Reference);
-            }
-
-            if(address.line1) {
+            if(address.line1 || address.emailAddress1) {
                 orderAddressee.address = address;
             }
         }
@@ -98,10 +102,11 @@ class OrderAddresseeMapper extends Mapper {
     }
 
     recipientFromCase() {
+        const subscription = this.nowVariant.matchedSubscription;
         const orderAddressee = new OrderAddressee();
         const address = new NowAddress();
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyDefenceOrganisationDetails) {
+        if (subscription.recipient.isApplyDefenceOrganisationDetails) {
             const defenceOrganisation = this.getDefenceOrganisation();
             if (defenceOrganisation) {
                 orderAddressee.name = defenceOrganisation.name;
@@ -113,14 +118,14 @@ class OrderAddresseeMapper extends Mapper {
                     address.line5 = defenceOrganisation.address.address5;
                     address.postCode = defenceOrganisation.address.postcode;
                 }
-                if (!address.line1 && defenceOrganisation.contact) {
+                if (defenceOrganisation.contact) {
                     address.emailAddress1 = defenceOrganisation.contact.primaryEmail;
                     address.emailAddress2 = defenceOrganisation.contact.secondaryEmail;
                 }
             }
         }
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyParentGuardianDetails) {
+        if (subscription.recipient.isApplyParentGuardianDetails) {
             const parentGuardian = this.getParentGuardianDetails();
             if (parentGuardian) {
                 orderAddressee.name = parentGuardian.name;
@@ -130,14 +135,12 @@ class OrderAddresseeMapper extends Mapper {
                 address.line4 = parentGuardian.address4;
                 address.line5 = parentGuardian.address5;
                 address.postCode = parentGuardian.postCode;
-                if (!address.line1) {
-                    address.emailAddress1 = parentGuardian.emailAddress1;
-                    address.emailAddress2 = parentGuardian.emailAddress2;
-                }
+                address.emailAddress1 = parentGuardian.emailAddress1;
+                address.emailAddress2 = parentGuardian.emailAddress2;
             }
         }
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyDefendantDetails) {
+        if (subscription.recipient.isApplyDefendantDetails) {
             const defendant = this.getDefendant();
 
             if (defendant.personDefendant) {
@@ -152,13 +155,12 @@ class OrderAddresseeMapper extends Mapper {
             address.line4 = this.address4(defendant);
             address.line5 = this.address5(defendant);
             address.postCode = this.postcode(defendant);
-            if (!address.line1) {
-                address.emailAddress1 = this.primaryEmailAddress(defendant);
-                address.emailAddress2 = this.secondaryEmailAddress(defendant);
-            }
+
+            address.emailAddress1 = this.primaryEmailAddress(defendant);
+            address.emailAddress2 = this.secondaryEmailAddress(defendant);
         }
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyDefendantCustodyDetails) {
+        if (subscription.recipient.isApplyDefendantCustodyDetails) {
             //TODO: currently we don't have custody address
             /*const defendant = this.getDefendant();
             if (defendant.personDefendant
@@ -169,7 +171,7 @@ class OrderAddresseeMapper extends Mapper {
             }*/
         }
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyApplicantDetails) {
+        if (subscription.recipient.isApplyApplicantDetails) {
             const applicantFromHearingJson = this.getApplicantDetails();
             //Note:
             // 1. what happens if we have multiple court applications
@@ -212,30 +214,26 @@ class OrderAddresseeMapper extends Mapper {
                 const defendant = applicantFromHearingJson.defendant;
                 if (defendant && defendant.personDefendant) {
                     orderAddressee.name = this.getFullNameOfPerson(defendant.personDefendant);
-
                     address.line1 = this.address1(defendant);
                     address.line2 = this.address2(defendant);
                     address.line3 = this.address3(defendant);
                     address.line4 = this.address4(defendant);
                     address.line5 = this.address5(defendant);
                     address.postCode = this.postcode(defendant);
-
-                    if (!address.line1) {
-                        address.emailAddress1 = this.primaryEmailAddress(defendant);
-                        address.emailAddress2 = this.secondaryEmailAddress(defendant);
-                    }
+                    address.emailAddress1 = this.primaryEmailAddress(defendant);
+                    address.emailAddress2 = this.secondaryEmailAddress(defendant);
                 }
             }
         }
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyRespondentDetails) {
+        if (subscription.recipient.isApplyRespondentDetails) {
             //Note:
             // 1. what happens if we have multiple court applications
             // 2. Respondent can be [Empty, Person, Organisation, organisationPersons,
             // prosecutingAuthority, representationOrganisation or defendant] TODO
         }
 
-        if (this.nowVariant.matchedSubscription.recipient.isApplyProsecutionAuthorityDetails) {
+        if (subscription.recipient.isApplyProsecutionAuthorityDetails) {
             const prosecutionCase = this.getProsecutionCase();
             if(prosecutionCase) {
                 orderAddressee.name = prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityName;
@@ -247,14 +245,16 @@ class OrderAddresseeMapper extends Mapper {
                 address.line4 = prosecutionCase.prosecutionCaseIdentifier.address.address4;
                 address.line5 = prosecutionCase.prosecutionCaseIdentifier.address.address5;
                 address.postCode = prosecutionCase.prosecutionCaseIdentifier.address.postcode;
-                if (!address.line1 && prosecutionCase.prosecutionCaseIdentifier.contact) {
-                    address.emailAddress1 = prosecutionCase.prosecutionCaseIdentifier.contact.primaryEmail;
-                    address.emailAddress2 = prosecutionCase.prosecutionCaseIdentifier.contact.secondaryEmail;
-                }
+            }
+            if (prosecutionCase.prosecutionCaseIdentifier.contact) {
+                address.emailAddress1 = prosecutionCase.prosecutionCaseIdentifier.contact.primaryEmail;
+                address.emailAddress2 = prosecutionCase.prosecutionCaseIdentifier.contact.secondaryEmail;
             }
         }
 
-        orderAddressee.address = address;
+        if(address.line1 || address.emailAddress1) {
+            orderAddressee.address = address;
+        }
         return orderAddressee;
     }
 

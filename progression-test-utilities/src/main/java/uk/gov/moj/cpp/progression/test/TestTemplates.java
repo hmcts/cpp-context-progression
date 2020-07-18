@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.DefendantCaseOffence;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
 import uk.gov.justice.core.courts.nowdocument.NextHearingCourtDetails;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.Nowaddress;
@@ -83,8 +84,16 @@ public class TestTemplates {
                 .withStorageRequired(true)
                 .withVisibleToUserGroups(visibleUserList)
                 .withNotVisibleToUserGroups(nonVisibleUserList)
+                .withNowDistribution(nowDistribution())
                 .build();
 
+    }
+
+    public static NowDistribution nowDistribution() {
+        return NowDistribution.nowDistribution()
+                .withEmail(true)
+                .withBilingualEmailTemplateName("Email Template")
+                .build();
     }
 
     public static NowDocumentContent nowContentTemplate() {
@@ -117,6 +126,8 @@ public class TestTemplates {
                 .withLine4("Line_4")
                 .withLine5("Line_5")
                 .withPostCode("AB CD4")
+                .withEmailAddress1("emailAddress1@test.com")
+                .withEmailAddress2("emailAddress2@test.com")
                 .build();
     }
 

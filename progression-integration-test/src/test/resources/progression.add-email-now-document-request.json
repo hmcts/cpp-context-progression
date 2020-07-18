@@ -2,8 +2,7 @@
   "masterDefendantId": "%MATERIAL_ID%",
   "nowDistribution": {
     "email": true,
-    "emailTemplateName": "TestTemplate",
-    "emailAddress": "someone@email.com"
+    "emailTemplateName": "TestTemplate"
   },
   "nowContent": {
     "defendant": {
@@ -94,7 +93,8 @@
       "address": {
         "line1": "56Police House",
         "line2": "StreetDescription",
-        "line3": "Locality2O"
+        "line3": "Locality2O",
+        "emailAddress1": "someone@email.com"
       }
     }
   },

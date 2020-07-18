@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,9 @@ public class NotificationNotifyEventProcessorTest {
 
     @Mock
     private SystemIdMapperService systemIdMapperService;
+
+    @Mock
+    private FileStorer fileStorer;
 
     @Mock
     private Logger logger;
@@ -169,5 +173,44 @@ public class NotificationNotifyEventProcessorTest {
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
         verify(logger).info(format("No Case, Application or Material found for the given notification id: %s", notificationId));
+    }
+
+    @Test
+    public void shouldDeleteAssociatedFileWhenNotificationSendSucceeded() throws FileServiceException {
+        final UUID notificationId = randomUUID();
+        final JsonEnvelope notificationSucceededEvent = envelope()
+                .withPayloadOf(notificationId.toString(), "notificationId").build();
+
+        notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
+
+        verify(fileStorer).delete(notificationId);
+    }
+
+    @Test
+    public void shouldDeleteAssociatedFileWhenNotificationSendFailed() throws FileServiceException {
+        final UUID notificationId = randomUUID();
+        final JsonEnvelope notificationFailedEvent = envelope()
+                .withPayloadOf(notificationId.toString(), "notificationId").build();
+
+        notificationNotifyEventProcessor.handleNotificationRequestFailed(notificationFailedEvent);
+
+        verify(fileStorer).delete(notificationId);
+    }
+
+    @Test
+    public void shouldSilentlyFailAndLogWhenUnableToDeleteFileAssociatedWithNotification() throws FileServiceException {
+        final UUID notificationId = randomUUID();
+        final JsonEnvelope notificationFailedEvent = envelope()
+                .withPayloadOf(notificationId.toString(), "notificationId").build();
+
+        final FileServiceException exception = new FileServiceException("Delete from metadata table affected 0 rows!");
+        doThrow(exception).when(fileStorer).delete(notificationId);
+
+        notificationNotifyEventProcessor.handleNotificationRequestFailed(notificationFailedEvent);
+
+        verify(fileStorer).delete(notificationId);
+
+        verify(logger).debug(format("Failed to delete file for given notification id: '%s' from FileService. This could be due to the notification not having an associated file.", notificationId), exception);
+
     }
 }

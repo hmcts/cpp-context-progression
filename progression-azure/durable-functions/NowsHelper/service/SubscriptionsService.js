@@ -1,4 +1,5 @@
 const INCLUDE = 'include';
+const EXCLUDE = 'exclude';
 
 class SubscriptionsService {
 
@@ -48,7 +49,6 @@ function matchCourtHouse(subscription, ouCode) {
 
 function matchSubscriptionRules(subscriptionObject, subscription) {
     const nowId = subscriptionObject.nowId;
-    const userGroupObj = subscriptionObject.userGroup;
 
     if (nowId && (subscription.excludedNOWS || []).includes(nowId)) {
         return false;
@@ -58,14 +58,40 @@ function matchSubscriptionRules(subscriptionObject, subscription) {
         return false;
     }
 
-    // Check user groups blacklist
-    if (userGroupObj &&
-        userGroupObj.type === INCLUDE &&
-        userGroupObj.userGroups.some((userGroup) => (subscription.userGroupVariants || []).includes(userGroup))) {
+    // Check user groups whitelist
+    if (subscriptionObject.userGroup) {
+        return matchVariantUserGroupsWithSubscriptionMetadata(subscription, subscriptionObject);
+    } else {
+        return matchVocabularyRules(subscription, subscriptionObject);
+    }
+}
+
+function matchVariantUserGroupsWithSubscriptionMetadata(subscription, subscriptionObject) {
+    const userGroupObj = subscriptionObject.userGroup;
+    const failedToMatchIncludedUserGroups = checkIfIncludedUserGroupsAreNotMatchingWithSubscription(userGroupObj, subscription);
+
+    if(failedToMatchIncludedUserGroups) {
+        return false;
+    }
+    const matchedWithExcludedUserGroups = checkIfExcludedUserGroupAreMatchingWithSubscription(userGroupObj, subscription);
+
+    if(matchedWithExcludedUserGroups) {
         return false;
     }
 
     return matchVocabularyRules(subscription, subscriptionObject);
+}
+
+function checkIfIncludedUserGroupsAreNotMatchingWithSubscription(userGroupObj, subscription) {
+    if(userGroupObj.type === INCLUDE && subscription.userGroupVariants && subscription.userGroupVariants.length) {
+        return userGroupObj.userGroups.some((userGroup) => !(subscription.userGroupVariants).includes(userGroup));
+    }
+}
+
+function checkIfExcludedUserGroupAreMatchingWithSubscription(userGroupObj, subscription) {
+    if(userGroupObj.type === EXCLUDE && subscription.userGroupVariants && subscription.userGroupVariants.length) {
+        return userGroupObj.userGroups.some((userGroup) => (subscription.userGroupVariants || []).includes(userGroup));
+    }
 }
 
 function matchVocabularyRules(subscription, subscriptionObject) {

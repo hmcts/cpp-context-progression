@@ -15,18 +15,19 @@ module.exports = async function (context) {
     var json = context.bindings.unfilteredJson;
 
     if (!json || !json.hearing) {
-        throw 'Invalid hearing JSON';
+        context.log('Invalid hearing JSON')
+        return null;
+    } else {
+        context.log(`Ready to filter JSON`)
+        try {
+            let result = laaFilter(json, context);
+
+            if (result !== null) {
+                context.log(`JSON filtered successfully`);
+                return result;
+            }
+        } catch (err) {
+            context.log(`Unable to filter JSON - incorrect JSON structure`)
+        }
     }
-
-    context.log(`Ready to filter JSON`)
-    var result = laaFilter(json, context);
-
-    if (result == null) {
-        throw 'Unable to filter JSON - incorrect JSON structure';
-    }
-
-    context.log(`JSON filtered successfully`)
-
-    return result
-
 };

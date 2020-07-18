@@ -19,17 +19,17 @@ describe('filter hearing', () => {
 
         expect(response.published_to.length).toBe(2);
         expect(response.published_to[0].subscriber_endpoint_uri).toBe('https://2.laa.example.com');
-        expect(response.published_to[0].result).toBe(undefined);
+        expect(response.published_to[0].result).toBe('failed');
         expect(response.published_to[1].subscriber_endpoint_uri).toBe('https://4.laa.example.com');
-        expect(response.published_to[1].result).toBe(undefined);
+        expect(response.published_to[1].result).toBe('failed');
 
     });
-    
+
     test('Should filter on LAA subscribers', async () => {
 
         const subscriberJson = require('../testing/subscribers.json');
 
-        axios.post.mockImplementation(() => Promise.resolve({ data: true }));
+        axios.post.mockImplementation(() => Promise.resolve({data: true}));
 
         context.bindings = {
             hearingId: '52a96eb7-9523-4c50-af90-45ce21335456',
@@ -51,7 +51,7 @@ describe('filter hearing', () => {
 
         const subscriberJson = require('../testing/subscribers.json');
 
-        axios.mockImplementation(() => Promise.resolve({ data: true }));
+        axios.mockImplementation(() => Promise.resolve({data: true}));
 
         context.bindings = {
             hearingId: '52a96eb7-9523-4c50-af90-45ce21335456',
@@ -63,7 +63,6 @@ describe('filter hearing', () => {
 
         expect(response.published_to.length).toBe(0);
 
-
     });
-    
+
 });

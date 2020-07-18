@@ -77,7 +77,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
                         caseJson.add("nationality", defendant.getString("nationality", DASH));
                         caseJson.add("aliases", buildAliases(defendant));
                         caseJson.add("caseReference", pcoa.getString("caseOrApplicationReference", DASH));
-                        caseJson.add("dateOfHearing", formatHearingDate(prisonCourtRegisterRequest.getString("hearingDate")));
+                        caseJson.add("dateOfHearing", formatZonedDate(prisonCourtRegisterRequest.getString("hearingDate")));
                         caseJson.add("prosecutorName", pcoa.getString("prosecutorName", DASH));
                         caseJson.add("arrestSummonsNumber", pcoa.getString("arrestSummonsNumber", DASH));
 
@@ -136,7 +136,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
         return dateTime.format(OUT_DATE_FORMATTER);
     }
 
-    private String formatHearingDate(final String dateInString) {
+    private String formatZonedDate(final String dateInString) {
         return ZonedDateTimes.fromString(dateInString).format(OUT_DATE_FORMATTER);
     }
 

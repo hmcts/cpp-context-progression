@@ -64,4 +64,21 @@ describe('OrderAddressee mapper builds correctly', () => {
         expect(orderAddressee.address.line5).toBe('Town6');
         expect(orderAddressee.address.postCode).toBe('TW14 9XD');
     });
+
+    test('build Order Addressee with email details', () => {
+        const hearingJson = require('./hearing-with-legal-entity.json');
+        const nowVariantJson = require('./now-variant-with-email.json');
+        const orderAddresseeMapper = new OrderAddresseeMapper(nowVariantJson, hearingJson);
+        const orderAddressee = orderAddresseeMapper.buildOrderAddressee();
+
+        expect(orderAddressee.name).toBe('HMCTS');
+        expect(orderAddressee.address.line1).toBe('Yc0umNuhNh');
+        expect(orderAddressee.address.line2).toBe('56Police House');
+        expect(orderAddressee.address.line3).toBe('StreetDescription3');
+        expect(orderAddressee.address.line4).toBe('Locality3');
+        expect(orderAddressee.address.line5).toBe('Town6');
+        expect(orderAddressee.address.emailAddress1).toBe('test@test.com');
+        expect(orderAddressee.address.emailAddress1).toBe('test@test.com');
+
+    });
 });

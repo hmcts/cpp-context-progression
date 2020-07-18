@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.notification-request-failed.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "notificationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "errorMessage": {
+      "type": "string"
+    },
+    "failedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "statusCode": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "notificationId",
+    "errorMessage",
+    "failedTime"
+  ],
+  "additionalProperties": false
+}

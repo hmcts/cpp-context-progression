@@ -43,7 +43,7 @@ public class CourtRegisterPdfPayloadGenerator {
         final JsonObjectBuilder payloadForPdf = Json.createObjectBuilder();
         jsonObject.getJsonArray("courtRegisterDocumentRequests").stream().findAny().map(JsonObject.class::cast)
                 .ifPresent(json -> {
-                    payloadForPdf.add("registerDate", formatDate(json.getString("registerDate")));
+                    payloadForPdf.add("registerDate", formatZonedDate(json.getString("registerDate")));
                     Optional.ofNullable(json.getJsonObject("hearingVenue")).ifPresent(hearingVenue -> {
                         if (hearingVenue.containsKey("ljaName")) {
                             payloadForPdf.add("ljaName", hearingVenue.getString("ljaName"));
