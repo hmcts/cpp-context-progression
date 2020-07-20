@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_VERSION=7.0.6
+FRAMEWORK_VERSION=7.0.7
 CONTEXT_NAME="progression"
 USER_NAME="admin"
 PASSWORD="admin"
@@ -32,7 +32,7 @@ echo "Framework System Command Client for '$CONTEXT_NAME' context"
 if [ ! -f "$JAR" ]; then
     echo "Downloading artifacts..."
     echo
-    mvn --quiet org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice:framework-jmx-command-client:${FRAMEWORK_VERSION}:jar
+    mvn --quiet org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:framework-jmx-command-client:${FRAMEWORK_VERSION}:jar
 fi
 
 if [ -z "$1" ]; then
