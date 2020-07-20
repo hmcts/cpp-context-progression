@@ -7,11 +7,12 @@ import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
@@ -34,6 +35,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
+import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,7 +47,6 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application-embedded.json";
     private static final String UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.update-court-application-embedded.json";
-
 
     private String caseId;
     private String defendantId;
@@ -61,7 +62,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
     private String applicationReference;
 
     @Before
-    public void setup(){
+    public void setup() {
         caseId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
         materialIdActive = randomUUID().toString();
@@ -73,7 +74,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
-        applicationReference =  randomAlphanumeric(10).toUpperCase();
+        applicationReference = randomAlphanumeric(10).toUpperCase();
         deleteAndCreateIndex();
     }
 
@@ -85,13 +86,12 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateCourtApplicationAndGetConfirmation() throws Exception {
-
         final String applicationCreatedIndex = setUpCourtApplication();
-        updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
+                .then().assertThat().statusCode(is(HttpStatus.SC_ACCEPTED));
 
         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
-
                 final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
                 final String applicationUpdatedIndex = getJsonArray(jsonObject, "index").get().getString(0);
 
@@ -125,10 +125,10 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
 
     private String setUpCourtApplication() throws Exception {
         final String caseUrn = generateUrn();
-        addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
-
-        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-
+        addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION)
+                .then().assertThat().statusCode(is(HttpStatus.SC_ACCEPTED));
+        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
+                .then().assertThat().statusCode(is(HttpStatus.SC_ACCEPTED));
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
@@ -139,15 +139,12 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
             } catch (final IOException e) {
                 fail();
             }
-
             return empty();
         });
 
         assertTrue(prosecutionCaseResponseJsonObject.isPresent());
 
         final String applicationCreatedIndex = getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0);
-
-
         final String payloadStr = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .replaceAll("RANDOM_CASE_ID", caseId)
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId)
@@ -159,12 +156,10 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
 
 
         final JsonObject inputApplication = jsonFromString(payloadStr);
-
         final DocumentContext inputCourtApplication = parse(inputApplication);
-
         final JsonObject transformedJson = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0));
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
-        verifyCaseCreated(5l, inputProsecutionCase, transformedJson);
+        verifyCaseCreated(5, inputProsecutionCase, transformedJson);
         final String linkedCaseId = ((JsonString) inputCourtApplication.read("$.application.linkedCaseId")).getString();
         verifyEmbeddedApplication(linkedCaseId, transformedJson);
         verifyAddCourtApplication(inputCourtApplication, transformedJson, applicationId);
@@ -176,9 +171,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         return indexData.containsKey("parties") && (indexData.getJsonArray("parties").size() == partySize);
     }
 
-
     private DocumentContext documentContext(final String caseUrn) throws IOException {
-
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);
