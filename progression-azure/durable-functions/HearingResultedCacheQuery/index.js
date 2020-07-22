@@ -83,7 +83,13 @@ async function getResultFromCache(hearingId, payloadPrefix) {
     const cacheKey = getCacheKey(hearingId, payloadPrefix);
     const client = getRedisClient();
     const getAsync = promisify(client.get).bind(client);
-    return await getAsync(cacheKey);
+    const cachedResult = await getAsync(cacheKey);
+
+    if (cachedResult == null) {
+        return null;
+    }
+
+    return JSON.parse(cachedResult);
 }
 
 async function getHearing(hearingId, cjscppuid, payloadPrefix, context) {
