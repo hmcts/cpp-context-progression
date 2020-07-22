@@ -13,6 +13,11 @@ module.exports = async function (context, eventGridEvent) {
         cjscppuid: eventGridEvent.data.userId
     }
 
-    const instanceId = await client.startNew("HearingResultedNowsHandler", undefined, input);
-    context.log(`Started HearingResultedNowsHandler orchestration with ID = ${instanceId}.`);
+    if(eventGridEvent.data.hearingId){
+        context.log("Hearing id in the HearingResultedNowsEventGridTrigger -->> " + eventGridEvent.data.hearingId)
+        const instanceId = await client.startNew("HearingResultedNowsHandler", undefined, input);
+        context.log(`Started HearingResultedNowsHandler orchestration with ID = ${instanceId}.`);
+    }else{
+        context.log('Hearing id undefined, not executing HearingResultedNowsHandler orchestration');
+    }
 };

@@ -13,6 +13,11 @@ module.exports = async function (context, eventGridEvent) {
         cjscppuid: process.env.CJSCPPUID
     }
 
-    const instanceId = await client.startNew("LAAHearingResultedPublishHandler", undefined, input);
-    context.log(`Started orchestration with ID = ${instanceId}.`);
+    if(eventGridEvent.data.hearingId){
+        context.log("Hearing id in the LAAHearingResultedEventGridTrigger -->> " + eventGridEvent.data.hearingId)
+        const instanceId = await client.startNew("LAAHearingResultedPublishHandler", undefined, input);
+        context.log(`Started orchestration with ID = ${instanceId}.`);
+    }else{
+        context.log('Hearing id undefined, not executing LAAHearingResultedEventGridTrigger orchestration');
+    }
 };

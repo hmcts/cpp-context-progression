@@ -210,7 +210,7 @@ class OrderAddresseeMapper extends Mapper {
             }
             */
 
-            if (applicantFromHearingJson.defendant) {
+            if (applicantFromHearingJson && applicantFromHearingJson.defendant) {
                 const defendant = applicantFromHearingJson.defendant;
                 if (defendant && defendant.personDefendant) {
                     orderAddressee.name = this.getFullNameOfPerson(defendant.personDefendant);

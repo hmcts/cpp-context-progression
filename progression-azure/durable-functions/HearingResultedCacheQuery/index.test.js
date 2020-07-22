@@ -24,7 +24,8 @@ describe('hearing resulted cache query', () => {
             params: {
                 hearingId: '1828f356-f746-4f2d-932b-79ef2df95c80',
                 cjscppuid: 'dummy_key_value',
-                redisClient: redisClientFake
+                redisClient: redisClientFake,
+                payloadPrefix: 'INT_'
             }
         };
 
@@ -56,24 +57,20 @@ describe('hearing resulted cache query', () => {
          });
 
     test('should fetch hearing if it is in the cache', async () => {
-
         axios.get.mockImplementation(() => Promise.resolve({data: null}));
-
         var redisClientFake = {
             get: sinon.stub().callsArgWith(1, null, JSON.stringify(hearing)),
             on: sinon.stub().returns(true)
         };
-
         context.bindings = {
             params: {
                 hearingId: '1828f356-f746-4f2d-932b-79ef2df95c80',
-                redisClient: redisClientFake
+                redisClient: redisClientFake,
+                payloadPrefix: 'INT_'
             }
         };
-
         const response = await httpFunction(context);
-
-        expect(response.hearing.prosecutionCases[0].defendants[0].id)
+        expect(JSON.parse(response).hearing.prosecutionCases[0].defendants[0].id)
             .toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
     });
 

@@ -1,15 +1,9 @@
 {
   "version": "2.0",
-  "tracing": {
-    "consoleLevel": "Verbose"
-  },
-  "queues": {
-    "maxDequeueCount": 5,
-    "newBatchThreshold": 8
-  },
+  "functionTimeout": "00:05:00",
   "extensions": {
     "durableTask": {
-      "hubName": "TaskHub"
+      "hubName": "NOWsTaskHub"
     }
   }
 }

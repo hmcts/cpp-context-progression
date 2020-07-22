@@ -64,10 +64,14 @@ class SetInformantRegisterBuilder {
             informantRegisterFragment.majorCreditorCode = detail.majorCreditorCode;
             informantRegisterFragment.prosecutionAuthorityName = detail.prosecutionAuthorityName;
             informantRegisterFragment.registerDefendants = this.getDefendantsFromContext(defendantContextBaseList, detail.prosecutionAuthorityId);
-            informantRegisterFragments.push(informantRegisterFragment);
+            if(informantRegisterFragment.registerDefendants) {
+                informantRegisterFragments.push(informantRegisterFragment);
+            }
         });
 
-        return informantRegisterFragments;
+        if(informantRegisterFragments.length) {
+            return informantRegisterFragments;
+        }
     }
 
     getOrderedDates(defendantContextBaseList) {

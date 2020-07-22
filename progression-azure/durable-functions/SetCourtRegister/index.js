@@ -25,24 +25,27 @@ class CourtRegisterBuilder {
     build() {
 
         const defendantContextBaseList = new DefendantContextBaseService(this.hearingResultedObj).getDefendantContextBaseList();
-        const orderedDates = this.getOrderedDates(defendantContextBaseList);
 
-        const latestOrderedDate = getLatestOrderedDate(orderedDates);
+        if(defendantContextBaseList) {
+            const orderedDates = this.getOrderedDates(defendantContextBaseList);
 
-        filterResultsAvailableForCourtExtract(defendantContextBaseList);
+            const latestOrderedDate = getLatestOrderedDate(orderedDates);
 
-        this.setVocabulary(defendantContextBaseList);
+            filterResultsAvailableForCourtExtract(defendantContextBaseList);
 
-        const courtRegisterFragment = new CourtRegisterFragment();
+            this.setVocabulary(defendantContextBaseList);
 
-        courtRegisterFragment.registerDefendants = defendantContextBaseList;
-        courtRegisterFragment.courtCenterId = this.hearingResultedObj.courtCentre.id;
-        courtRegisterFragment.courtCentreOUCode = this.hearingResultedObj.courtCentre.code;
-        courtRegisterFragment.hearingDate = getHearingDate(latestOrderedDate, this.hearingResultedObj);
-        courtRegisterFragment.registerDate = dateService.getLocalDateTime(this.sharedTime);
-        courtRegisterFragment.hearingId = this.hearingResultedObj.id;
+            const courtRegisterFragment = new CourtRegisterFragment();
 
-        return courtRegisterFragment;
+            courtRegisterFragment.registerDefendants = defendantContextBaseList;
+            courtRegisterFragment.courtCenterId = this.hearingResultedObj.courtCentre.id;
+            courtRegisterFragment.courtCentreOUCode = this.hearingResultedObj.courtCentre.code;
+            courtRegisterFragment.hearingDate = getHearingDate(latestOrderedDate, this.hearingResultedObj);
+            courtRegisterFragment.registerDate = dateService.getLocalDateTime(this.sharedTime);
+            courtRegisterFragment.hearingId = this.hearingResultedObj.id;
+
+            return courtRegisterFragment;
+        }
     }
 
     setVocabulary(defendantContextBaseList) {

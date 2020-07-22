@@ -11,19 +11,21 @@ module.exports = df.orchestrator(function* (context) {
     params.hearingDate = inputs.hearingDate;
     params.cjscppuid = inputs.cjscppuid;
     params.redisClient = null;
-    
+
     context.log(`Calling HearingResultedCacheQuery`);
     const unfilteredJson = yield context.df.callActivity('HearingResultedCacheQuery', params);
 
-    context.log(`Calling LAAHearingResultedFilter`);
-    const filteredJson = yield context.df.callActivity('LAAHearingResultedFilter', unfilteredJson);
+    if (unfilteredJson) {
+        context.log(`Calling LAAHearingResultedFilter`);
+        const filteredJson = yield context.df.callActivity('LAAHearingResultedFilter', unfilteredJson);
 
-    params.filteredJson = filteredJson;
-    context.log(`Calling HearingEventLogQuery with params` + JSON.stringify(filteredJson.jurisdictionType));
-    const eventLog = yield context.df.callActivity('HearingEventLogQuery', params);
+        params.filteredJson = filteredJson;
+        context.log(`Calling HearingEventLogQuery with params` + JSON.stringify(filteredJson.jurisdictionType));
+        const eventLog = yield context.df.callActivity('HearingEventLogQuery', params);
 
-    context.log(`Event log returned from HearingEventLogQuery is ` + JSON.stringify(eventLog));
-    
-    return eventLog ? eventLog : {"error": "an unknown error occured"};
+        context.log(`Event log returned from HearingEventLogQuery is ` + JSON.stringify(eventLog));
+
+        return eventLog ? eventLog : {"error": "an unknown error occured"};
+    }
 
 });

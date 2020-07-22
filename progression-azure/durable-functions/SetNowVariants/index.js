@@ -203,9 +203,9 @@ module.exports = async (context) => {
 
     const orderedDate = resultWithOrderedDate ? resultWithOrderedDate.judicialResult.orderedDate
                                               : undefined;
-
+    console.time('getNowMetadata');
     const nowMetadata = await new ReferenceDataService().getNowMetadata(context, orderedDate);
-
+    console.timeEnd('getNowMetadata');
     return await new SetNowVariants(nowMetadata, hearingJson, defendantContextBaseList,
                                     context).buildNowVariants();
 };

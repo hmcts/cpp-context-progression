@@ -33,7 +33,7 @@ class InformantRegisterSubscriptions {
 
     buildSubscription(informantRegister, informantRegisterSubscriptions) {
         const subscriptionObj = new SubscriptionObject();
-        subscriptionObj.vocabulary = informantRegister.vocabulary;
+        subscriptionObj.vocabulary = informantRegister.registerDefendants[0].vocabulary;
         subscriptionObj.ouCode = informantRegister.majorCreditorCode;
         subscriptionObj.subscriptions = informantRegisterSubscriptions;
         subscriptionObj.judicialResults = this.collectJudicialResults(informantRegister);

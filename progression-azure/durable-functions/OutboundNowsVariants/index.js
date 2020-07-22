@@ -68,24 +68,38 @@ async function processMultiplePostcodes(defendantPostCodes, context) {
     return enforcementAreaByPostCodeMap;
 }
 
+function anyFinancialNows(nowsVariantsSubscriptions) {
+    const financialNows = nowsVariantsSubscriptions.find(nowVariant => nowVariant.now.financial)
+    if(financialNows) {
+        return true;
+    }
+}
+
 module.exports = async (context) => {
     const defendantPostCodes = new Set();
+    let enforcementAreaByLjaCode = undefined;
+    let organisationUnitsRefData = undefined;
+    let enforcementAreaByPostCodeMap = undefined;
+
     const hearingJson = context.bindings.params.hearingResultedObj;
     const courtCentre = hearingJson.courtCentre;
     const nowsVariantsSubscriptions = context.bindings.params.nowsVariantsSubscriptions;
-    const organisationUnitsRefData = await new ReferenceDataService().getOrganisationUnit(courtCentre.id, context);
+    const hasFinancialNows = anyFinancialNows(nowsVariantsSubscriptions);
 
-    let enforcementAreaByLjaCode = undefined;
-    if(courtCentre.lja) {
-        enforcementAreaByLjaCode = await new ReferenceDataService().getEnforcementAreaByLja(courtCentre.lja.ljaCode, context);
+    if(hasFinancialNows) {
+        organisationUnitsRefData = await new ReferenceDataService().getOrganisationUnit(courtCentre.id, context);
+
+        if(courtCentre.lja) {
+            enforcementAreaByLjaCode = await new ReferenceDataService().getEnforcementAreaByLja(courtCentre.lja.ljaCode, context);
+        }
+
+        enforcementAreaByPostCodeMap = await processMultiplePostcodes([...defendantPostCodes], context);
     }
 
     nowsVariantsSubscriptions.forEach(nowsVariantsSubscription => {
         const defendantPostCode = postcode(getDefendant(hearingJson, nowsVariantsSubscription));
         defendantPostCodes.add(defendantPostCode);
     });
-
-    const enforcementAreaByPostCodeMap = await processMultiplePostcodes([...defendantPostCodes], context);
 
     return await new OutboundNowsVariants(nowsVariantsSubscriptions, hearingJson, organisationUnitsRefData, enforcementAreaByLjaCode, enforcementAreaByPostCodeMap, context).buildNows();
 };
