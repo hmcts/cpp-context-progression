@@ -28,11 +28,11 @@ class MinorCreditorMapper {
 
                     minorCreditor.minorCreditorId = judicialResult.minorCreditorId;
                     minorCreditor.minorCreditorTitle = undefined;
-                    minorCreditor.minorCreditorAddressLine1 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS1);
-                    minorCreditor.minorCreditorAddressLine2 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS2);
-                    minorCreditor.minorCreditorAddressLine3 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS3);
-                    minorCreditor.minorCreditorAddressLine4 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS4);
-                    minorCreditor.minorCreditorAddressLine5 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS5);
+                    minorCreditor.minorCreditorAddress1 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS1);
+                    minorCreditor.minorCreditorAddress2 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS2);
+                    minorCreditor.minorCreditorAddress3 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS3);
+                    minorCreditor.minorCreditorAddress4 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS4);
+                    minorCreditor.minorCreditorAddress5 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS5);
                     minorCreditor.minorCreditorPostcode = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.POST_CODE);
 
                     minorCreditor.minorCreditorPayByBACS = 'N';
@@ -74,21 +74,21 @@ class MinorCreditorMapper {
         if(currentMinorCreditor.companyName) {
             matchingMinorCreditor = minorCreditors.find(creditor =>
                                                             creditor.companyName === currentMinorCreditor.companyName &&
-                                                            creditor.minorCreditorAddressLine1 === currentMinorCreditor.minorCreditorAddressLine1 &&
-                                                            creditor.minorCreditorAddressLine2 === currentMinorCreditor.minorCreditorAddressLine2 &&
-                                                            creditor.minorCreditorAddressLine3 === currentMinorCreditor.minorCreditorAddressLine3 &&
-                                                            creditor.minorCreditorAddressLine4 === currentMinorCreditor.minorCreditorAddressLine4 &&
-                                                            creditor.minorCreditorAddressLine5 === currentMinorCreditor.minorCreditorAddressLine5 &&
+                                                            creditor.minorCreditorAddress1 === currentMinorCreditor.minorCreditorAddress1 &&
+                                                            creditor.minorCreditorAddress2 === currentMinorCreditor.minorCreditorAddress2 &&
+                                                            creditor.minorCreditorAddress3 === currentMinorCreditor.minorCreditorAddress3 &&
+                                                            creditor.minorCreditorAddress4 === currentMinorCreditor.minorCreditorAddress4 &&
+                                                            creditor.minorCreditorAddress5 === currentMinorCreditor.minorCreditorAddress5 &&
                                                             creditor.minorCreditorPostcode === currentMinorCreditor.minorCreditorPostcode);
         } else {
             matchingMinorCreditor = minorCreditors.find(creditor =>
                                                             creditor.minorCreditorForenames === currentMinorCreditor.minorCreditorForenames &&
                                                             creditor.minorCreditorSurname === currentMinorCreditor.minorCreditorSurname &&
-                                                            creditor.minorCreditorAddressLine1 === currentMinorCreditor.minorCreditorAddressLine1 &&
-                                                            creditor.minorCreditorAddressLine2 === currentMinorCreditor.minorCreditorAddressLine2 &&
-                                                            creditor.minorCreditorAddressLine3 === currentMinorCreditor.minorCreditorAddressLine3 &&
-                                                            creditor.minorCreditorAddressLine4 === currentMinorCreditor.minorCreditorAddressLine4 &&
-                                                            creditor.minorCreditorAddressLine5 === currentMinorCreditor.minorCreditorAddressLine5 &&
+                                                            creditor.minorCreditorAddress1 === currentMinorCreditor.minorCreditorAddress1 &&
+                                                            creditor.minorCreditorAddress2 === currentMinorCreditor.minorCreditorAddress2 &&
+                                                            creditor.minorCreditorAddress3 === currentMinorCreditor.minorCreditorAddress3 &&
+                                                            creditor.minorCreditorAddress4 === currentMinorCreditor.minorCreditorAddress4 &&
+                                                            creditor.minorCreditorAddress5 === currentMinorCreditor.minorCreditorAddress5 &&
                                                             creditor.minorCreditorPostcode === currentMinorCreditor.minorCreditorPostcode);
         }
 
