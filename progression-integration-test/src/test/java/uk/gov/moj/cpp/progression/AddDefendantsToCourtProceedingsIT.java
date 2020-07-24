@@ -68,7 +68,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,6 +162,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         verifyDefendantsNotAddedInViewStore(caseId, defendantId2);
     }
 
+    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldListHearingRequestsInvokePublicMessage() throws Exception {
 

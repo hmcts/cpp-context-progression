@@ -44,6 +44,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -92,6 +93,8 @@ public class CourtExtractIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
     }
 
+
+    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
         // given
@@ -116,6 +119,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
+    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCertificateOfConviction() throws Exception {
         // given
@@ -140,6 +144,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
+    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenLinkedApplicationAdded() throws Exception {
         // given
@@ -166,6 +171,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
+    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenUnresultedCaseWithLikedApplicationIsEjected() throws Exception {
         // given
@@ -179,6 +185,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
+    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldExtractCrownCourtFromResultedHearingWithPlea() throws Exception {
         final String publicHearingResulted = "public.hearing.resulted";
