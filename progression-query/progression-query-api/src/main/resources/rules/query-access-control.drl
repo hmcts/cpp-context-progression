@@ -317,7 +317,7 @@ rule "Command - Access all case notes for progression.query.case-notes"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.case-notes");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC"));
   then
     $outcome.setSuccess(true);
 end

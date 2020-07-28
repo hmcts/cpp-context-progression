@@ -103,6 +103,11 @@ public class CourtApplicationUpdatedTransformer implements Transform {
 
     private void respondents(final CourtApplication courtApplication, final List<Party> parties) {
         final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
+
+        if (respondents == null) {
+            return;
+        }
+
         for (final CourtApplicationRespondent respondent : respondents) {
             final Organisation organisation = respondent.getPartyDetails().getOrganisation();
             final CourtApplicationParty respondentPartyDetails = respondent.getPartyDetails();

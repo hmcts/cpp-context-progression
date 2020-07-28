@@ -27,6 +27,7 @@ import java.util.UUID;
 
 public class DomainToIndexMapper {
     private static final String SPACE = " ";
+    private static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public Party party(final DefendantUpdate defendant) {
         final Party party = new Party();
@@ -71,7 +72,7 @@ public class DomainToIndexMapper {
         }
         final ZonedDateTime courtProceedingsInitiated = defendant.getCourtProceedingsInitiated();
         if (null != courtProceedingsInitiated) {
-            party.setCourtProceedingsInitiated(courtProceedingsInitiated.format(DateTimeFormatter.ISO_INSTANT));
+            party.setCourtProceedingsInitiated(courtProceedingsInitiated.format(ISO_8601_FORMATTER));
         }
         final UUID masterDefendantId = defendant.getMasterDefendantId();
         if (null != masterDefendantId) {

@@ -42,6 +42,7 @@ import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -55,8 +56,6 @@ public class CourtExtractIT extends AbstractIT {
     private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON = "progression.command.create-court-application-with-defendant.json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -70,7 +69,6 @@ public class CourtExtractIT extends AbstractIT {
     @AfterClass
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
-        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
     public static void verifyInMessagingQueueForCasesReferredToCourts() {
@@ -117,6 +115,7 @@ public class CourtExtractIT extends AbstractIT {
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
         // then
         assertThat(documentContentResponse, is(notNullValue()));
+        verifyProsecutingAuthrityExists();
     }
 
     @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
@@ -191,10 +190,15 @@ public class CourtExtractIT extends AbstractIT {
         final String publicHearingResulted = "public.hearing.resulted";
         final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+
+            addProsecutionCaseToCrownCourt(caseId, defendantId);
+            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+
 
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
@@ -236,7 +240,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(){
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged){
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
@@ -260,6 +264,11 @@ public class CourtExtractIT extends AbstractIT {
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
         return stringToJsonObjectConverter.convert(strPayload);
+    }
+
+    private void verifyProsecutingAuthrityExists() {
+        Optional<JSONObject> documentRequest = DocumentGeneratorStub.getCrownCourtExtractDocumentRequestByDefendant(defendantId);
+        assertTrue(documentRequest.isPresent() && documentRequest.get().has("prosecutingAuthority"));
     }
 }
 

@@ -6,10 +6,13 @@ import static java.lang.String.format;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.addressLines;
 
+import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
 import javax.json.JsonArray;
@@ -17,13 +20,22 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import net.minidev.json.JSONArray;
 
 public class BaseVerificationHelper extends BaseVerificationCountHelper {
     private static final Logger logger = Logger.getLogger(BaseVerificationHelper.class.getName());
 
     private static final String OUTPUT_PARTIES_JSON_PATH_FOR_SIZE = "$.parties[*]";
     private static final String INPUT_OFFENCES_JSON_PATH_FOR_SIZE = "$.defendants[%d].offences";
+    private static final String INPUT_OFFENCES_FOR_DEFENDANTS_UPDATED = "$.%s[%d].offences";
+    private static final String INPUT_OFFENCES_FOR_DEFENDANTS_ALL = "$.%s[%d].offences[%d].id";
+    private static final String INPUT_OFFENCE_ID = "";
+    private static final String OUTPUT_OFFENCE_EXP = "$.parties[0].offences[?(@.offenceId==";
+    private static final String INPUT_OFFENCE_EXP = "$.%s[%d].offences[?(@.id==";
+    private static final String INPUT_OFFENCE_DELETE_EXP = "$.deletedOffences";
+
 
     private static final String INPUT_DEFENDANTS_JSON_PATH = "$.defendants[%d]";
     private static final String INPUT_OFFENCES_JSON_PATH = "$.defendants[%d].offences[%d]";
@@ -65,6 +77,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
             logger.log(WARNING, format("Exception validating ProsecutionCase ", e.getMessage()));
         }
     }
+
     public void verifyApplication(final DocumentContext inputCourtApplication,
                                   final JsonObject outputCase,
                                   final String inputApplicationPath) {
@@ -96,7 +109,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
 
 
     public void verifyCasePartyCount(final JsonObject outputCase,
-                                        final int partyCount) {
+                                     final int partyCount) {
 
         try {
             final String outputPartiesIndexPathCreated = format(OUTPUT_PARTIES_JSON_PATH_FOR_SIZE);
@@ -145,6 +158,41 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
 
     }
 
+    protected void validateOffences(final JsonObject inputPartiesJsonObject,
+                                    final JsonObject outputParties,
+                                    final int inputPartyIndex,
+                                    final int outputPartyIndex,
+                                    final boolean refferedOffence,
+                                    final String inputPartyIdentifier) {
+
+        try {
+            final DocumentContext defendantChangedEventDocument = JsonPath.parse(inputPartiesJsonObject);
+            final String inputOffencePath = format(INPUT_OFFENCES_FOR_DEFENDANTS_UPDATED, inputPartyIdentifier, 0);
+            final JsonArray offenceCourt = defendantChangedEventDocument.read(inputOffencePath);
+
+            final int offenceSize = offenceCourt.size();
+
+            range(0, offenceSize)
+                    .forEach(offenceIndex -> {
+                        final String var1 = defendantChangedEventDocument.read(inputOffencePath + "[" + offenceIndex + "]" + (!inputOffencePath.contains("deletedOffences") ? ".id" : "")).toString();
+                        final String var2 = OUTPUT_OFFENCE_EXP + var1 + ")]";
+                        final String var3 = inputPartyIdentifier.contains("deletedOffences") ? format(INPUT_OFFENCE_DELETE_EXP) : format(INPUT_OFFENCE_EXP + var1 + ")]", inputPartyIdentifier, 0);
+                        final LinkedHashMap outputOffence = (LinkedHashMap) ((JSONArray) JsonPath.read(outputParties.toString(), var2)).get(0);
+                        final LinkedHashMap inputOffence = (LinkedHashMap) ((JSONArray) JsonPath.read(inputPartiesJsonObject.toString(), var3)).get(0);
+                        if (inputPartyIdentifier.contains("updatedOffences"))
+                            validateUpdatedOffence(inputOffence, outputOffence);
+                        if (inputPartyIdentifier.contains("addedOffences"))
+                            validateAddedOffence(inputOffence, outputOffence);
+                        if (inputPartyIdentifier.contains("deletedOffences"))
+                            validateDeletedOffence(inputOffence, outputOffence);
+                    });
+        } catch (final Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Offences", e.getMessage()));
+        }
+    }
+
+
     protected void validateOffences(final DocumentContext inputParties,
                                     final JsonObject outputParties,
                                     final int inputPartyIndex,
@@ -171,7 +219,6 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
         }
     }
 
-
     private void validateReferredOffence(final DocumentContext inputParties,
                                          final JsonObject outputParties,
                                          final String offenceInputIndexPath,
@@ -184,6 +231,53 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
                     .assertThat(offenceOutputIndexPath + ".chargeDate", equalTo(((JsonString) inputParties.read(offenceInputIndexPath + ".chargeDate")).getString()))
                     .assertThat(offenceOutputIndexPath + ".startDate", equalTo(((JsonString) inputParties.read(offenceInputIndexPath + ".startDate")).getString()))
                     .assertThat(offenceOutputIndexPath + ".orderIndex", equalTo(Integer.valueOf(inputParties.read(offenceInputIndexPath + ".orderIndex").toString())));
+            incrementOffencesCount();
+        } catch (Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Offence", e.getMessage()));
+        }
+    }
+
+
+    private void validateUpdatedOffence(final LinkedHashMap inputOffence,
+                                        final LinkedHashMap outputOffence
+    ) {
+        try {
+            assertThat(outputOffence.get("offenceId"), equalTo(inputOffence.get("id")));
+            assertThat(outputOffence.get("endDate"), not(equalTo(inputOffence.get("endDate"))));
+            assertThat(outputOffence.get("arrestDate"), not(equalTo(inputOffence.get("arrestDate"))));
+            assertThat(outputOffence.get("chargeDate"), not(equalTo(inputOffence.get("chargeDate"))));
+            assertThat(outputOffence.get("startDate"), not(equalTo(inputOffence.get("startDate"))));
+            assertThat(outputOffence.get("orderIndex"), not(equalTo(inputOffence.get("orderIndex"))));
+            incrementOffencesCount();
+        } catch (Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Offence", e.getMessage()));
+        }
+    }
+
+    private void validateAddedOffence(final LinkedHashMap inputOffence,
+                                      final LinkedHashMap outputOffence
+    ) {
+        try {
+            assertThat(outputOffence.get("offenceId"), equalTo(inputOffence.get("id")));
+            assertThat(outputOffence.get("endDate"), equalTo(inputOffence.get("endDate")));
+            assertThat(outputOffence.get("arrestDate"), equalTo(inputOffence.get("arrestDate")));
+            assertThat(outputOffence.get("chargeDate"), equalTo(inputOffence.get("chargeDate")));
+            assertThat(outputOffence.get("startDate"), equalTo(inputOffence.get("startDate")));
+            assertThat(outputOffence.get("orderIndex"), equalTo(inputOffence.get("orderIndex")));
+            incrementOffencesCount();
+        } catch (Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Offence", e.getMessage()));
+        }
+    }
+
+    private void validateDeletedOffence(final LinkedHashMap inputOffence,
+                                        final LinkedHashMap outputOffence
+    ) {
+        try {
+            assertThat(outputOffence.get("offenceId"), equalTo(((JSONArray) inputOffence.get("offences")).get(0)));
             incrementOffencesCount();
         } catch (Exception e) {
             incrementExceptionCount();
@@ -253,7 +347,7 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
         try {
             with(outputParties.toString())
                     .assertThat(partiesIndexPath + ".organisationName", equalTo(((JsonString) inputParties.read(defendantIndexPath + ".legalEntityDefendant.organisation.name")).getString()))
-            .assertThat(partiesIndexPath + ".organisationName", equalTo(((JsonString) inputParties.read(defendantIndexPath + ".legalEntityDefendant.organisation.name")).getString()));
+                    .assertThat(partiesIndexPath + ".organisationName", equalTo(((JsonString) inputParties.read(defendantIndexPath + ".legalEntityDefendant.organisation.name")).getString()));
             incrementLegalEntityCount();
         } catch (final PathNotFoundException e) {
             incrementExceptionCount();

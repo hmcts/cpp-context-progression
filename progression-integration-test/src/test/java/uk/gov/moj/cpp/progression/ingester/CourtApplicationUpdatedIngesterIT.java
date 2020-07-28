@@ -18,7 +18,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -29,19 +29,14 @@ import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
-
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.util.Optional;
 
 public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
     private static final String UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.update-court-application.json";
+    private static final String CREATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application-without-respondent.json";
+    private static final String UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.update-court-application-without-respondent.json";
+
     private String applicationId;
     private String caseId;
     private String applicantId;
@@ -72,35 +67,45 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     @Test
     public void shouldUpdateCourtApplication() throws Exception {
 
-        setUpCourtApplication();
+        setUpCourtApplication(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
                                            applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
 
-         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
+        final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
 
         assertTrue(courApplicationUpdatesResponseJsonObject.isPresent());
 
-        final String payloadUpdatedStr = getStringFromResource(UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
-                .replaceAll("RANDOM_APPLICATION_ID", applicationId)
-                .replaceAll("RANDOM_CASE_ID", caseId)
-                .replaceAll("RANDOM_APPLICANT_ID", applicantId)
-                .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
-                .replaceAll("RANDOM_REFERENCE", applicationReference);
-
-        final JsonObject updateJson = jsonFromString(payloadUpdatedStr);
-        final DocumentContext updatedInputCourtApplication = parse(updateJson);
+        final DocumentContext updatedInputCourtApplication = loadInputUpdatedApplicationPayload(UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         verifyStandaloneApplication(applicationId, courApplicationUpdatesResponseJsonObject.get());
         verifyUpdateCourtApplication(updatedInputCourtApplication, courApplicationUpdatesResponseJsonObject.get(), applicationId);
     }
 
-    private void setUpCourtApplication() throws IOException {
-        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+    @Test
+    public void shouldUpdateCourtApplicationWithoutRespondent() throws Exception {
+
+        setUpCourtApplication(CREATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
+
+        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
+                applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
+
+        final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
+
+        final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
+
+        assertTrue(courApplicationUpdatesResponseJsonObject.isPresent());
+
+        final DocumentContext updatedInputCourtApplication = loadInputUpdatedApplicationPayload(UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
+
+        verifyStandaloneApplication(applicationId, courApplicationUpdatesResponseJsonObject.get());
+        verifyUpdateCourtApplication(updatedInputCourtApplication, courApplicationUpdatesResponseJsonObject.get(), applicationId);
+    }
+
+    private void setUpCourtApplication(final String payloadPath) throws IOException {
+        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, payloadPath);
 
         final Matcher[] matchers = {withJsonPath("$.caseId", equalTo(applicationId))};
 
@@ -108,7 +113,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         assertTrue(courApplicationCreatedResponseJsonObject.isPresent());
 
-        final String payloadStr = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
+        final String payloadStr = getStringFromResource(payloadPath)
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
@@ -121,5 +126,19 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         final DocumentContext inputCourtApplication = parse(inputApplication);
 
         verifyAddCourtApplication(inputCourtApplication, courApplicationCreatedResponseJsonObject.get(), applicationId);
+    }
+
+    private DocumentContext loadInputUpdatedApplicationPayload(final String updateCourtApplicationCommandResourceLocation) {
+        final String payloadUpdatedStr = getStringFromResource(updateCourtApplicationCommandResourceLocation)
+                .replaceAll("RANDOM_APPLICATION_ID", applicationId)
+                .replaceAll("RANDOM_CASE_ID", caseId)
+                .replaceAll("RANDOM_APPLICANT_ID", applicantId)
+                .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
+                .replaceAll("RANDOM_REFERENCE", applicationReference);
+
+        final JsonObject updateJson = jsonFromString(payloadUpdatedStr);
+        return parse(updateJson);
     }
 }

@@ -70,4 +70,15 @@ public class CourtApplicationCaseUpdatedTransformationTest {
         verifyStandaloneApplication(inputCourtApplication, transformedJson);
         verifyUpdateApplication(inputCourtApplication, transformedJson);
     }
+
+    @Test
+    public void shouldTransformStandaloneCourtUpdatedApplicationWithoutRespondents() throws IOException {
+
+        final JsonObject inputJson = readJson("/progression.event.court-application-updated-without-respondent.json");
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-updated-spec.json");
+        final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        final DocumentContext inputCourtApplication = parse(inputJson);
+        verifyStandaloneApplication(inputCourtApplication, transformedJson);
+        verifyUpdateApplication(inputCourtApplication, transformedJson);
+    }
 }

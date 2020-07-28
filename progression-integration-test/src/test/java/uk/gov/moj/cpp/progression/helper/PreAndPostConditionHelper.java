@@ -24,6 +24,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
+
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -65,11 +66,22 @@ public class PreAndPostConditionHelper {
 
     public static Response addProsecutionCaseToCrownCourtForIngestion(final String caseId, final String defendantId, final String materialIdOne,
                                                                       final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                      final String caseReference, final String commandPayload,final String initialOffenceId1,final String initialOffenceId2,final String initialOffenceId3,final String initialOffenceId4) throws IOException {
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, caseReference, commandPayload,initialOffenceId1,initialOffenceId2,initialOffenceId3,initialOffenceId4
+                ));
+    }
+
+    public static Response addProsecutionCaseToCrownCourtForIngestion(final String caseId, final String defendantId, final String materialIdOne,
+                                                                      final String materialIdTwo, final String courtDocumentId, final String referralId,
                                                                       final String caseReference, final String commandPayload) throws IOException {
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
                 createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, caseReference, commandPayload));
     }
+
+
 
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String materialIdOne,
                                                           final String materialIdTwo, final String courtDocumentId, final String referralId) throws IOException {
@@ -319,6 +331,26 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId);
+    }
+
+    public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
+                                                                        final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                        final String caseUrn, final String filePath,final String initialOffenceId1,final String initialOffenceId2,final String initialOffenceId3,final String initialOffenceId4) throws IOException {
+        final URL resource = getResource(filePath);
+        return Resources.toString(resource, Charset.defaultCharset())
+                .replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                .replace("RANDOM_DOC_ID", courtDocumentId)
+                .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
+                .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
+                .replace("RANDOM_REFERRAL_ID", referralId)
+                .replace("INITIAL_OFFENCEID_1",initialOffenceId1)
+                .replace("INITIAL_OFFENCEID_2",initialOffenceId2)
+                .replace("INITIAL_OFFENCEID_3",initialOffenceId3)
+                .replace("INITIAL_OFFENCEID_4",initialOffenceId4)
+                ;
+
     }
 
     public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,

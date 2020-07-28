@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.domain;
 
 import uk.gov.justice.core.courts.Cases;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;

@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static java.util.Optional.empty;
-import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
@@ -54,7 +54,7 @@ public class UnifiedSearchIndexSearchHelper {
 
     private static boolean isJsonMatch(final Matcher[] matchers, final JsonString jsonString) {
         try {
-            assertThat(jsonString.getString(), isJson(anyOf(matchers)));
+            assertThat(jsonString.getString(), isJson(allOf(matchers)));
         } catch (final AssertionError error) {
             return false;
         }

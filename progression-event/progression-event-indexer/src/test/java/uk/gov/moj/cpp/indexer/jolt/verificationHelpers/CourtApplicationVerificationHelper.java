@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
+import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.greaterThan;
@@ -60,8 +61,12 @@ public class CourtApplicationVerificationHelper {
 
         final JsonArray outputCourtApplications = transformedJson.getJsonArray("applications");
         final JsonArray parties = transformedJson.getJsonArray("parties");
-        final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
-        final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");
+
+        final JsonObject inputApplication = inputCourtApplication.read("$.courtApplication");
+
+        final JsonObject applicant = inputApplication.getJsonObject("applicant");
+        final JsonArray respondents = inputApplication.containsKey("respondents") ? inputApplication.getJsonArray("respondents") : createArrayBuilder().build();
+
         verifyApplication(inputCourtApplication, outputCourtApplications, parties, applicant, respondents);
 
         final String sourceApplicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
@@ -69,7 +74,7 @@ public class CourtApplicationVerificationHelper {
         assertThat(transformedApplication, is(notNullValue()));
 
         final JsonString applicationReferenceValue = transformedApplication.getJsonString("applicationReference");
-        assertThat(applicationReferenceValue,  is(notNullValue()));
+        assertThat(applicationReferenceValue, is(notNullValue()));
 
         assertThat(sourceApplicationReference, is(applicationReferenceValue.getString()));
 
@@ -128,7 +133,7 @@ public class CourtApplicationVerificationHelper {
     }
 
 
-    private static void verifyApplicantTransformation(final JsonObject applicant, final JsonArray parties) {
+    private static void verifyApplicantTransformation(final JsonObject applicant, final JsonArray parties, final long expectedDefendantCount) {
         final String applicantId = applicant.getString("id");
 
         final JsonObject personDetails = applicant.getJsonObject("personDetails");
@@ -144,7 +149,7 @@ public class CourtApplicationVerificationHelper {
                 .filter(p -> p.getString("_party_type").equalsIgnoreCase("defendant"));
 
         final long defendantCount = defendantPartyStream.count();
-        assertThat(defendantCount, is(2l));
+        assertThat(defendantCount, is(expectedDefendantCount));
 
         verifyDefendant(applicantDefendant, parties);
 
@@ -259,13 +264,23 @@ public class CourtApplicationVerificationHelper {
                                           final JsonObject applicant,
                                           final JsonArray respondents) {
         assertThat(inputCourtApplication, is(notNullValue()));
-        assertThat(parties, hasSize(4));
+
+        int expectedPartyCount = 4;
+        int expectedDefendantCount = 2;
+        if (respondents.isEmpty()) {
+            expectedPartyCount = 2;
+            expectedDefendantCount = 1;
+        }
+
+        assertThat(parties, hasSize(expectedPartyCount));
 
         verifyApplication(inputCourtApplication, outputCourtApplications);
 
-        verifyApplicantTransformation(applicant, parties);
+        verifyApplicantTransformation(applicant, parties, expectedDefendantCount);
 
-        verifyRespondentsTransformation(respondents, parties);
+        if (!respondents.isEmpty()) {
+            verifyRespondentsTransformation(respondents, parties);
+        }
     }
 
     private static void verifyApplicationWithNoApplicantOrganisation(final DocumentContext inputCourtApplication,

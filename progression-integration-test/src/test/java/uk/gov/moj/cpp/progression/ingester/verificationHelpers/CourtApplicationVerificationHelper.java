@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
+import static javax.json.Json.createArrayBuilder;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;
@@ -69,8 +70,9 @@ public class CourtApplicationVerificationHelper {
         assertEquals(applicationReference, outputApplication.getString("applicationReference"));
         assertEquals(dueDate, outputApplication.getString("dueDate"));
 
-        final JsonObject applicant = inputCourtApplication.read("$.courtApplication.applicant");
-        final JsonArray respondents = inputCourtApplication.read("$.courtApplication.respondents");
+        final JsonObject inputApplication = inputCourtApplication.read("$.courtApplication");
+        final JsonObject applicant = inputApplication.getJsonObject("applicant");
+        final JsonArray respondents = getRespondents(inputApplication);
         verifyApplicationParties(transformedJson, applicant, respondents);
 
 
@@ -93,8 +95,12 @@ public class CourtApplicationVerificationHelper {
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
-        final JsonObject applicant = inputCourtApplication.read("$.application.applicant");
-        final JsonArray respondents = inputCourtApplication.read("$.application.respondents");
+
+        final JsonObject inputApplication = inputCourtApplication.read("$.application");
+
+        final JsonObject applicant = inputApplication.getJsonObject("applicant");
+        final JsonArray respondents = getRespondents(inputApplication);
+
         verifyApplicationParties(transformedJson, applicant, respondents);
         verifyArn(outputApplication);
     }
@@ -193,5 +199,8 @@ public class CourtApplicationVerificationHelper {
         assertDefendantDetails(defendant, defendantParty, organisationName);
     }
 
+    private static JsonArray getRespondents(final JsonObject inputApplication) {
+        return inputApplication.containsKey("respondents") ? inputApplication.getJsonArray("respondents") : createArrayBuilder().build();
+    }
 
 }

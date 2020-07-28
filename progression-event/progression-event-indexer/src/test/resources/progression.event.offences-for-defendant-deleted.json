@@ -1,0 +1,12 @@
+{
+  "modifiedDate": "2018-03-01",
+  "deletedOffences": [
+    {
+      "defendantId": "21888841-07ee-44bb-b402-875d73ce19ac",
+      "offences": [
+        "b7279524-dd83-4342-861e-fd99c4108203"
+      ],
+      "prosecutionCaseId": "6945f603-2f6d-4094-a9a9-f6f6b3b2f50b"
+    }
+  ]
+}

@@ -11,6 +11,10 @@
         <artemis.version>1.2.0</artemis.version>
         <rest-assured.version>2.5.0</rest-assured.version>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
+        <framework.version>7.0.4</framework.version>
+        <event-store.version>7.0.2</event-store.version>
+        <stream-transformation.version>7.0.0</stream-transformation.version>
+        <json-schema-catalog.version>1.7.6</json-schema-catalog.version>
     </properties>
     <artifactId>progression-integration-test</artifactId>
     <dependencies>
@@ -110,7 +114,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-test-utils</artifactId>
-            <version>${platform-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.json</groupId>
@@ -144,25 +147,98 @@
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>event-domain</artifactId>
-            <version>${event-store.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>event-store-management-commands</artifactId>
-            <version>${event-store.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-jmx</artifactId>
-            <version>${cpp.framework.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>test-utils-logging-simple</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>test-utils-event</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>test-utils-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>event-repository-jdbc</artifactId>
+        </dependency>
+
         <!-- added for framework 6-->
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>uk.gov.moj.cpp.progression</groupId>
+                            <artifactId>progression-domain-transformation-add-listings-status-for-missing-defendant-listing-status-changed</artifactId>
+                            <version>${project.version}</version>
+                            <type>jar</type>
+                            <overWrite>true</overWrite>
+                            <outputDirectory>${project.basedir}/target/test-classes
+                            </outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>uk.gov.justice</groupId>
+                            <artifactId>stream-transformations</artifactId>
+                            <version>${stream-transformation.version}</version>
+                            <type>jar</type>
+                            <overWrite>true</overWrite>
+                            <outputDirectory>${project.basedir}/target/test-classes
+                            </outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>uk.gov.justice</groupId>
+                            <artifactId>stream-transformation-tool-anonymise</artifactId>
+                            <version>${stream-transformation.version}</version>
+                            <type>jar</type>
+                            <overWrite>true</overWrite>
+                            <outputDirectory>${project.basedir}/target/test-classes
+                            </outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                            <artifactId>event-tool</artifactId>
+                            <groupId>uk.gov.justice</groupId>
+                            <version>${stream-transformation.version}</version>
+                            <type>jar</type>
+                            <classifier>swarm</classifier>
+                            <overWrite>true</overWrite>
+                            <outputDirectory>${project.basedir}/target/test-classes
+                            </outputDirectory>
+                        </artifactItem>
+                    </artifactItems>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>uk.gov.justice.generators</groupId>
                 <artifactId>pojo-generation-plugin</artifactId>

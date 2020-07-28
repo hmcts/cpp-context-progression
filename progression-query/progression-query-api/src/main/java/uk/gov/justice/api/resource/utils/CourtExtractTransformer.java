@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -108,7 +109,7 @@ public class CourtExtractTransformer {
         final List<Hearings> hearingsList = hearingsAtAGlance.getHearings().stream()
                 .filter(h -> hearingIds.contains(h.getId()))
                 .filter(COURT_EXTRACT.equals(extractType) ? h -> selectedHearingIdList.contains(h.getId().toString()) : h -> true)
-                .collect(toList());
+                .collect(Collectors.toList());
 
         extractHearingDetails(hearingsAtAGlance, defendantId, userId, courtExtract, defendantBuilder, hearingsList, caseDefendant.get());
 
@@ -132,7 +133,7 @@ public class CourtExtractTransformer {
                 .filter(dh -> dh.getDefendantId().toString().equals(defendantId)).findFirst().get();
 
         final List<Hearings> hearingsList = hearingsAtAGlance.getHearings().stream()
-                .filter(h -> defendantHearings.getHearingIds().contains(h.getId())).collect(toList());
+                .filter(h -> defendantHearings.getHearingIds().contains(h.getId())).collect(Collectors.toList());
 
         if (caseDefendant.isPresent()) {
             defendantBuilder.withId(caseDefendant.get().getId());
@@ -156,10 +157,11 @@ public class CourtExtractTransformer {
 
         LOGGER.info("Hearings {}", isNotEmpty(defendantHearings.getHearingIds()) ? defendantHearings.getHearingIds() : "No hearings present");
 
-        if (isNotEmpty(hearingsList)) {
+        if(isNotEmpty(hearingsList)) {
             extractHearingDetails(hearingsAtAGlance, defendantId, userId, ejectExtract, defendantBuilder, hearingsList, caseDefendant.get());
         } else {
             ejectExtract.withDefendant(transformDefendantWithoutHearingDetails(caseDefendant.get(), defendantBuilder));
+            ejectExtract.withProsecutingAuthority(transformationHelper.transformProsecutingAuthority(hearingsAtAGlance.getProsecutionCaseIdentifier(), userId));
         }
 
         if (isNotEmpty(hearingsAtAGlance.getCourtApplications())) {
@@ -204,7 +206,7 @@ public class CourtExtractTransformer {
                         .withResults(ca.getJudicialResults())
                         .withRepresentation(transformRepresentation(ca, hearingsList))
                         .withApplicationType(ca.getType().getApplicationType())
-                        .build()).collect(toList());
+                        .build()).collect(Collectors.toList());
     }
 
     private Optional<uk.gov.justice.progression.courts.CourtApplications> getResultedApplication(final UUID applicationId, final List<Hearings> hearingsList) {
@@ -302,7 +304,7 @@ public class CourtExtractTransformer {
                 .withRespondentCounsels(nonNull(hearingsList) ? hearingsList.stream()
                         .filter(hearings -> hearings.getRespondentCounsels() != null)
                         .flatMap(hearings -> hearings.getRespondentCounsels().stream())
-                        .collect(toList()) : null)
+                        .collect(Collectors.toList()) : null)
                 .build();
     }
 
@@ -316,7 +318,7 @@ public class CourtExtractTransformer {
                 .withApplicantCounsels(nonNull(hearingsList) ? hearingsList.stream()
                         .filter(hearings -> hearings.getApplicantCounsels() != null)
                         .flatMap(hearings -> hearings.getApplicantCounsels().stream())
-                        .collect(toList()) : null)
+                        .collect(Collectors.toList()) : null)
                 .build();
     }
 
@@ -345,7 +347,7 @@ public class CourtExtractTransformer {
                                                 .withName(transformationHelper.getName(j.getFirstName(), j.getMiddleName(), j.getLastName()))
                                                 .withIsBenchChairman(j.getIsBenchChairman())
                                                 .build()
-                                ).collect(toList()))
+                                ).collect(Collectors.toList()))
                         .withJudicialDisplayName(transformationHelper.transformJudicialDisplayName(h.getJudiciary()))
                         .withRoleDisplayName((!h.getJudiciary().isEmpty() && h.getJudiciary().get(0).getJudicialRoleType() != null) ? transformationHelper.getCamelCase(h.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType()) : null)
                         .build();
@@ -361,7 +363,7 @@ public class CourtExtractTransformer {
                 .withAttendanceDays(transformAttendanceDays(pc.getAttendanceDays()))
                 .withRole(pc.getStatus())
                 .build()
-        ).collect(toList());
+        ).collect(Collectors.toList());
     }
 
     private List<DefenceCounsels> transformDefenceCounsel(final List<DefenceCounsel> defenceCounselList) {
@@ -369,20 +371,20 @@ public class CourtExtractTransformer {
                 .withName(transformationHelper.getName(dc.getFirstName(), dc.getMiddleName(), dc.getLastName()))
                 .withAttendanceDays(dc.getAttendanceDays() != null ? transformAttendanceDays(dc.getAttendanceDays()) : new ArrayList<>())
                 .withRole(dc.getStatus())
-                .build()).collect(toList());
+                .build()).collect(Collectors.toList());
     }
 
     private List<AttendanceDays> transformAttendanceDays(final List<LocalDate> attendanceDaysList) {
         return attendanceDaysList.stream().distinct().map(ad -> AttendanceDays.attendanceDays()
                 .withDay(ad)
-                .build()).collect(toList());
+                .build()).collect(Collectors.toList());
     }
 
     private List<AttendanceDayAndType> transformAttendanceDayAndTypes(final List<AttendanceDayAndType> attendanceDaysList) {
         return attendanceDaysList.stream().distinct().map(ad -> AttendanceDayAndType.attendanceDayAndType()
                 .withDay(ad.getDay())
                 .withAttendanceType(ad.getAttendanceType())
-                .build()).collect(toList());
+                .build()).collect(Collectors.toList());
     }
 
     private PublishingCourt transformCourtCentre(final CourtCentre courtCentre, final UUID userId) {
@@ -534,7 +536,7 @@ public class CourtExtractTransformer {
 
         final List<Offences> defendantOffences = hearingsList.stream().map(Hearings::getDefendants)
                 .flatMap(d -> d.stream()).filter(Objects::nonNull).filter(d -> d.getId().toString().equals(defendantId))
-                .map(Defendants::getOffences).flatMap(Collection::stream).collect(toList());
+                .map(Defendants::getOffences).flatMap(Collection::stream).collect(Collectors.toList());
 
         if (isNotEmpty(defendantOffences)) {
             LOGGER.info("Defendant {} aggregated offences: {}", defendantId, defendantOffences.size());
@@ -556,7 +558,7 @@ public class CourtExtractTransformer {
                 .map(ad -> AttendanceDayAndType.attendanceDayAndType()
                         .withDay(ad.getDay())
                         .withAttendanceType(ad.getAttendanceType().toString().equals(AttendanceType.IN_PERSON.toString()) ? PRESENT_IN_PERSON : extractAttendanceType(defendant)).build())
-                .collect(toList());
+                .collect(Collectors.toList());
 
     }
 
@@ -629,7 +631,7 @@ public class CourtExtractTransformer {
                 .withVerdicts(getOffenceVerdicts(o.getVerdict()))
                 .withWordingWelsh(o.getWordingWelsh()).build()
 
-        ).collect(toList());
+        ).collect(Collectors.toList());
     }
 
     private List<uk.gov.justice.progression.courts.exract.Hearings> transformHearing(final List<Hearings> hearingsList) {
@@ -641,7 +643,7 @@ public class CourtExtractTransformer {
                         .withCourtCentre(transformCourtCenter(h.getCourtCentre()))
                         .withReportingRestrictionReason(h.getReportingRestrictionReason())
                         .withType(h.getType().getDescription()).build()
-        ).collect(toList());
+        ).collect(Collectors.toList());
     }
 
     private uk.gov.justice.progression.courts.exract.CourtCentre transformCourtCenter(final CourtCentre courtCentre) {
@@ -658,14 +660,14 @@ public class CourtExtractTransformer {
                 .withAttendanceDays(transformAttendanceDays(cr.getAttendanceDays()))
                 .withRole(cr.getPosition() != null ? cr.getPosition().toString() : EMPTY)
                 .build()
-        ).collect(toList());
+        ).collect(Collectors.toList());
     }
 
     private List<ProsecutionCounsels> transformProsecutionCounsels(final List<Hearings> hearingsList) {
         return hearingsList.stream()
                 .filter(hearing -> isNotEmpty(hearing.getProsecutionCounsels()))
                 .map(hearing -> transformProsecutionCounsel(hearing.getProsecutionCounsels()))
-                .flatMap(Collection::stream).collect(toList());
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     private List<DefenceCounsels> transformDefenceCounsels(final List<Hearings> hearingsList, final String defendantId) {
@@ -674,14 +676,14 @@ public class CourtExtractTransformer {
                 .flatMap((h -> h.getDefendants().stream()))
                 .filter(da -> da.getId().toString().equals(defendantId))
                 .map(da -> transformDefenceCounsel(da.getDefenceOrganisation().getDefenceCounsels()))
-                .flatMap(Collection::stream).collect(toList());
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     private List<CompanyRepresentatives> transformCompanyRepresentatives(final List<Hearings> hearingsList) {
         return hearingsList.stream()
                 .filter(hearing -> isNotEmpty(hearing.getCompanyRepresentatives()))
                 .map(hearing -> transformCompanyRepresentative(hearing.getCompanyRepresentatives()))
-                .flatMap(Collection::stream).collect(toList());
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     private static List<Verdict> getOffenceVerdicts(final Verdict verdict) {

@@ -250,6 +250,16 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
         return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, this.userAndGroupProvider).put(ProgressionProvider.class, this.progressionProvider).put(CourtDocumentProvider.class, this.caseDocumentProvider).put(RbacProvider.class, this.rbacProvider).build();
     }
 
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToGetAllCaseNotes() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC");
+    }
+
+    @Test
+    public void shouldNotAllowUserInAuthorisedGroupToGetAllCaseNotes() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC");
+    }
+
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);
         when(progressionProvider.getAllowedUserGroups(action)).thenReturn(ALLOWED_USER_GROUPS);

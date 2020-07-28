@@ -2,91 +2,67 @@
   "modifiedDate": "2018-03-01",
   "updatedOffences": [
     {
-      "defendantId": "0dc09439-b798-4125-88b4-612a16f6a3fc",
-      "prosecutionCaseId": "41a6443f-4906-42ce-8ace-a189b7f2f1b9",
+      "defendantId": "b913ee61-d716-486d-a287-2311a5e1c4d4",
       "offences": [
         {
-          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-          "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
-          "offenceCode": "AAA",
-          "offenceTitle": "a title",
-          "offenceTitleWelsh": "a title in Welsh",
-          "offenceLegislation": "legislation",
-          "offenceLegislationWelsh": "legislation in Welsh",
-          "wording": "No Travel Card",
+          "count": 1,
+          "endDate": "2019-06-29",
+          "id": "95e72a0b-c1c2-4e2a-93a5-45ceda834bda",
+          "offenceCode": "OF61016A",
+          "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+          "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+          "offenceTitle": "Section 18 - attempt    wounding with intent",
+          "startDate": "2018-12-29",
+          "wording": "Wound / inflict grievous bodily harm without intent",
+          "proceedingsConcluded": false,
+          "dateOfInformation": "2019-09-02",
           "wordingWelsh": "No Travel Card In Welsh",
-          "startDate": "2018-01-01",
-          "endDate": "2018-01-01",
+          "statementOfFacts": "You did it",
+          "statementOfFactsWelsh": "You did it in Welsh",
           "arrestDate": "2018-01-01",
           "chargeDate": "2018-01-01",
-          "dateOfInformation": "2018-01-01",
-          "modeOfTrial": "a",
+          "modeOfTrial": "CROWN",
           "orderIndex": 1,
-          "proceedingsConcluded" : true,
-          "count": 0,
-          "notifiedPlea": {
-            "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-            "notifiedPleaDate": "2018-04-01",
-            "notifiedPleaValue": "NOTIFIED_GUILTY"
-          },
-          "offenceFacts": {
-            "vehicleRegistration": "AA12345",
-            "alcoholReadingAmount": "111",
-            "alcoholReadingMethodCode": "2222"
-          },
           "laaApplnReference": {
-            "applicationReference": "LAA-API-TEST-1228",
-            "statusCode": "FM",
-            "statusDate": "1980-07-16",
-            "statusDescription": "Failed on Means",
-            "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+            "applicationReference": "LAA REF OFF 1",
+            "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+            "statusCode": "LAA STATUS CODE OFF 1",
+            "statusDescription": "LAA STATUS DESC OFF 1",
+            "effectiveStartDate": "2019-08-12",
+            "effectiveEndDate": "2019-10-12"
           }
         }
-      ]
+      ],
+      "prosecutionCaseId": "6945f603-2f6d-4094-a9a9-f6f6b3b2f50b"
     }
   ],
-  "deletedDefendantCaseOffences": [
+  "deletedOffences": [
     {
-      "defendantId": "6711d373-c416-426c-92f7-3cd37115f70b",
-      "prosecutionCaseId": "9e7b3014-2e9f-4c14-8f51-b471f64d52cf",
+      "defendantId": "21888841-07ee-44bb-b402-875d73ce19ac",
       "offences": [
-        "7e2f843e-d639-40b3-8611-8015f3a18958"
-      ]
+        "b7279524-dd83-4342-861e-fd99c4108203"
+      ],
+      "prosecutionCaseId": "6945f603-2f6d-4094-a9a9-f6f6b3b2f50b"
     }
   ],
   "addedOffences": [
     {
-      "defendantId": "6711d373-c416-426c-92f7-3cd37115f70b",
-      "prosecutionCaseId": "9e7b3014-2e9f-4c14-8f51-b471f64d52cf",
+      "defendantId": "c344c2ad-bee0-4f10-8b38-119b65cede68",
       "offences": [
         {
-          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-          "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
-          "offenceCode": "AAA",
-          "offenceTitle": "a title",
-          "offenceTitleWelsh": "a title in Welsh",
-          "offenceLegislation": "legislation",
-          "offenceLegislationWelsh": "legislation in Welsh",
-          "wording": "No Travel Card",
-          "wordingWelsh": "No Travel Card In Welsh",
-          "startDate": "2018-01-01",
-          "endDate": "2018-01-01",
-          "arrestDate": "2018-01-01",
-          "chargeDate": "2018-01-01",
-          "orderIndex": 1,
           "count": 0,
-          "notifiedPlea": {
-            "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-            "notifiedPleaDate": "2018-04-01",
-            "notifiedPleaValue": "NOTIFIED_GUILTY"
-          },
-          "offenceFacts": {
-            "vehicleRegistration": "AA12345",
-            "alcoholReadingAmount": "111",
-            "alcoholReadingMethodCode": "2222"
-          }
+          "id": "2a142c22-574e-409c-8f75-7871328fe69d",
+          "modeOfTrial": "Summary",
+          "offenceCode": "CA03012",
+          "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+          "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+          "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+          "orderIndex": 2,
+          "startDate": "2020-06-19",
+          "wording": "OK"
         }
-      ]
+      ],
+      "prosecutionCaseId": "6945f603-2f6d-4094-a9a9-f6f6b3b2f50b"
     }
   ]
 }

@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -818,7 +819,7 @@ public class CaseAggregateTest {
 
         final LaaReference laaReference1 = generateRecordLAAReferenceForOffence("WD", WITHDRAWN.getDescription());
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId1, laaReference1).collect(toList());
-        assertThat(eventStream.size(), is(5));
+        assertThat(eventStream.size(), is(6));
 
         final Object object1 = eventStream.get(0);
         assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
@@ -880,7 +881,7 @@ public class CaseAggregateTest {
 
         final LaaReference laaReference1 = generateRecordLAAReferenceForOffence("WD", WITHDRAWN.getDescription());
         final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId1, laaReference1).collect(toList());
-        assertThat(eventStream.size(), is(5));
+        assertThat(eventStream.size(), is(6));
 
         final Object object1 = eventStream.get(0);
         assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));

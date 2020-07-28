@@ -886,6 +886,11 @@ public class CaseAggregate implements Aggregate {
                             .withDefendantId(defendantId)
                             .build());
                     streamBuilder.add(defendantDefenceOrganisationDisassociated);
+                    streamBuilder.add(DefendantDefenceAssociationLocked.defendantDefenceAssociationLocked()
+                            .withDefendantId(defendantId)
+                            .withProsecutionCaseId(prosecutionCaseId)
+                            .withLockedByRepOrder(false)
+                            .build());
                 }
             }
         }

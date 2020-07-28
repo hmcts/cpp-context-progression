@@ -5,13 +5,17 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
@@ -28,6 +32,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -36,7 +41,6 @@ import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
@@ -75,17 +79,27 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         cleanViewStoreTables();
     }
 
+    private void verifyMessageReceived(final MessageConsumer messageConsumer) {
+        assertTrue(retrieveMessageAsJsonObject(messageConsumer).isPresent());
+    }
+
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmation() throws Exception {
 
 
-
-        final String caseUrn = generateUrn();
+        final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+            addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
-        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+            addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
         final String payloadStr1 = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .replaceAll("RANDOM_CASE_ID", caseId)
@@ -129,18 +143,26 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);
     }
 
-    @Ignore("Existing tests randomly failing on master. To be investigated under IFD-517")
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmationAndVerifyUpdate() throws Exception {
 
-        final String caseUrn = generateUrn();
+        final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+            addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
-        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+            addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
-        updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-updated")) {
+            updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
         final String payloadStr1 = getStringFromResource(UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .replaceAll("RANDOM_CASE_ID", caseId)
@@ -167,7 +189,9 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final Matcher[] caseMatchers = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),
                 withJsonPath("$.caseReference", equalTo(caseUrn)),
-                withJsonPath("$.parties.length()", equalTo(9)))};
+                withJsonPath("$.parties.length()", equalTo(9)),
+                withJsonPath("$.applications.length()", equalTo(2)),
+                withJsonPath("$.applications[*].applicationReference", hasItem(applicationReference)))};
 
         Optional<JsonObject> prosecutionCaseResponseJsonObject = findBy(caseMatchers);
         final JsonObject transformedJson = prosecutionCaseResponseJsonObject.get();
@@ -193,7 +217,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         return parse(prosecutionCaseEvent);
     }
 
-    private void initializeIds(){
+    private void initializeIds() {
         caseId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
         materialIdActive = randomUUID().toString();
