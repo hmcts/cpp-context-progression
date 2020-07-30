@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.rules.ExpectedException.none;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.atLeastOnce;
@@ -18,6 +19,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -132,6 +135,9 @@ public class HearingResultEventProcessorTest {
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
+
+    @Rule
+    public ExpectedException expectedException = none();
 
     @Test
     public void handleHearingResultWithoutApplicationOutcome() {
@@ -345,6 +351,78 @@ public class HearingResultEventProcessorTest {
         verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(3));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(commonUUID));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenResultedHearingDoesNotPresent() {
+
+        final UUID courtApplicationId = randomUUID();
+
+        final CourtApplicationOutcome courtApplicationOutcome = CourtApplicationOutcome.courtApplicationOutcome()
+                .withApplicationId(courtApplicationId)
+                .build();
+
+        final UUID commonUUID = randomUUID();
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(commonUUID)
+                .withOffences(asList(Offence.offence()
+                        .build()))
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(commonUUID)
+                .withOffences(asList(Offence.offence()
+                        .build()))
+                .build();
+        final Defendant defendant3 = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(asList(Offence.offence()
+                        .build()))
+                .build();
+
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(defendant1);
+        defendants.add(defendant2);
+        defendants.add(defendant3);
+
+        final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
+        prosecutionCases.add(prosecutionCase);
+
+        final List<CourtApplication> courtApplications = singletonList(CourtApplication.courtApplication()
+                .withApplicationOutcome(courtApplicationOutcome)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(Category.ANCILLARY).build()))
+                .withId(courtApplicationId)
+                .build());
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withId(randomUUID())
+                        .withDefendantAttendance(
+                                asList(DefendantAttendance.defendantAttendance()
+                                        .withDefendantId(randomUUID())
+                                        .withAttendanceDays(asList(
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.BY_VIDEO).withDay(LocalDate.now()).build(),
+                                                AttendanceDay.attendanceDay().withAttendanceType(AttendanceType.IN_PERSON).withDay(LocalDate.now().plusDays(7)).build()
+                                        ))
+                                        .build())
+                        )
+                        .withProsecutionCases(prosecutionCases)
+                        .withCourtApplications(courtApplications)
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.hearing.resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted));
+
+        final Optional<JsonObject> hearingJsonOptional = Optional.empty();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
+
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage("Hearing not found");
+
+        this.eventProcessor.handleHearingResultedPublicEvent(event);
     }
 
     @Test

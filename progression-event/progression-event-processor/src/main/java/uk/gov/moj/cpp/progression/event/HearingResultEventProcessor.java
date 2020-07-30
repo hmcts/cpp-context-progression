@@ -97,9 +97,6 @@ public class HearingResultEventProcessor {
 
     @Handles("public.hearing.resulted")
     public void handleHearingResultedPublicEvent(final JsonEnvelope event) {
-        this.sender.send(Enveloper.envelop(event.payloadAsJsonObject())
-                .withName("progression.command.hearing-result")
-                .withMetadataFrom(event));
 
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
         final Hearing hearing = hearingResulted.getHearing();
@@ -107,6 +104,10 @@ public class HearingResultEventProcessor {
         LOGGER.info("Hearing resulted for hearing id :: {}", hearing.getId());
 
         final Hearing hearingInProgression = retrieveHearing(event, hearing.getId());
+
+        this.sender.send(Enveloper.envelop(event.payloadAsJsonObject())
+                .withName("progression.command.hearing-result")
+                .withMetadataFrom(event));
 
         final boolean isHearingAdjournedAlreadyForProsecutionCases = hearingResultHelper.doProsecutionCasesContainNextHearingResults(hearingInProgression.getProsecutionCases());
         LOGGER.info("Hearing with hearing id :: {} already adjourned for prosecution cases :: {}", hearing.getId(), isHearingAdjournedAlreadyForProsecutionCases);
