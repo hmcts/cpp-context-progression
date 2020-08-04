@@ -14,6 +14,13 @@
     },
     "isPartiallyAllocated": {
       "type": "boolean"
+    },
+    "shadowListedOffences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
     }
   },
   "required": [

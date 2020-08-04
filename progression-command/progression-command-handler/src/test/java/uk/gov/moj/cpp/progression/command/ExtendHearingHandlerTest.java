@@ -35,8 +35,8 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.handler.ExtendHearingHandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -119,7 +119,7 @@ public class ExtendHearingHandlerTest {
     public void shouldProcessCommandForProsecutionCase() throws Exception {
 
         final ExtendHearing extendHearing  = createExtendHearingForProsecutionCase();
-        caseAggregate.extendHearing(extendHearing.getHearingRequest(), true, randomUUID(), false);
+        caseAggregate.extendHearing(extendHearing.getHearingRequest(), true, randomUUID(), false, Collections.emptyList());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

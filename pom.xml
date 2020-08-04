@@ -44,17 +44,17 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>7.0.5</referencedata.version>
-        <listing.version>7.0.2</listing.version>
-        <hearing.version>7.0.7</hearing.version>
+        <listing.version>7.0.4</listing.version>
+        <hearing.version>7.0.13</hearing.version>
         <usersgroups.version>7.0.6</usersgroups.version>
         <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>7.0.0</referencedata.offence.version>
-        <criminal-court-public-model.version>1.0.100</criminal-court-public-model.version>
-        <coredomain.version>1.0.100</coredomain.version>
+        <criminal-court-public-model.version>1.0.101</criminal-court-public-model.version>
+        <coredomain.version>1.0.101</coredomain.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
-        <results.version>7.0.6</results.version>
+        <results.version>7.0.8</results.version>
         <notification.notify.version>7.0.1</notification.notify.version>
         <unifiedsearch.version>7.0.0</unifiedsearch.version>
         <systemdocgenerator.version>7.0.1</systemdocgenerator.version>

@@ -100,6 +100,7 @@ public class HearingResultEventProcessor {
 
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
         final Hearing hearing = hearingResulted.getHearing();
+        final List<UUID> shadowListedOffences = hearingResulted.getShadowListedOffences();
 
         LOGGER.info("Hearing resulted for hearing id :: {}", hearing.getId());
 
@@ -113,15 +114,15 @@ public class HearingResultEventProcessor {
         LOGGER.info("Hearing with hearing id :: {} already adjourned for prosecution cases :: {}", hearing.getId(), isHearingAdjournedAlreadyForProsecutionCases);
         final boolean isHearingAdjournedAlreadyForCourtApplications = hearingResultHelper.doCourtApplicationsContainNextHearingResults(hearingInProgression.getCourtApplications());
         LOGGER.info("Hearing with hearing id :: {} already adjourned for court applications :: {}", hearing.getId(), isHearingAdjournedAlreadyForCourtApplications);
-        resultProsecutionCases(event, hearing, isHearingAdjournedAlreadyForProsecutionCases);
-        resultApplications(event, hearing, isHearingAdjournedAlreadyForCourtApplications);
+        resultProsecutionCases(event, hearing, isHearingAdjournedAlreadyForProsecutionCases, shadowListedOffences);
+        resultApplications(event, hearing, isHearingAdjournedAlreadyForCourtApplications, shadowListedOffences);
 
         if (hearingResultUnscheduledListingHelper.checksIfUnscheduledHearingNeedsToBeCreated(hearing)) {
             progressionService.listUnscheduledHearings(event, hearing);
         }
     }
 
-    private void resultProsecutionCases(final JsonEnvelope event, final Hearing hearing, final boolean isHearingAdjournedAlreadyForProsecutionCases) {
+    private void resultProsecutionCases(final JsonEnvelope event, final Hearing hearing, final boolean isHearingAdjournedAlreadyForProsecutionCases, final List<UUID> shadowListedOffences) {
         if (isNotEmpty(hearing.getProsecutionCases())) {
             LOGGER.info("Hearing contains prosecution cases resulted for hearing id :: {}", hearing.getId());
             hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
@@ -129,15 +130,15 @@ public class HearingResultEventProcessor {
             final boolean isHearingAdjournedForProsecutionCases = hearingResultHelper.doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
             LOGGER.info("Hearing with hearing id containing prosecution cases :: {} resulted with next hearing :: {}", hearing.getId(), isHearingAdjournedForProsecutionCases);
             if (!isHearingAdjournedAlreadyForProsecutionCases && isHearingAdjournedForProsecutionCases) {
-                adjournProsecutionCasesToExistingHearings(event, hearing);
-                adjournProsecutionCasesToNewHearings(event, hearing);
+                adjournProsecutionCasesToExistingHearings(event, hearing, shadowListedOffences);
+                adjournProsecutionCasesToNewHearings(event, hearing, shadowListedOffences);
             } else {
                 LOGGER.info("Hearing contains prosecution cases adjourned already or does not contain next hearing details for hearing id :: {}", hearing.getId());
             }
         }
     }
 
-    private void resultApplications(final JsonEnvelope event, final Hearing hearing, final boolean isHearingAdjournedAlreadyForCourtApplications) {
+    private void resultApplications(final JsonEnvelope event, final Hearing hearing, final boolean isHearingAdjournedAlreadyForCourtApplications, final List<UUID> shadowListedOffences) {
         if (isNotEmpty(hearing.getCourtApplications())) {
             LOGGER.info("Hearing contains court applications resulted for hearing id :: {}", hearing.getId());
             final List<UUID> applicationIdsResultCategoryFinal = new ArrayList<>();
@@ -156,20 +157,20 @@ public class HearingResultEventProcessor {
             LOGGER.info("Hearing with hearing id containing court applications :: {} resulted with next hearing :: {}", hearing.getId(), isHearingAdjournedForCourtApplications);
             if (!isHearingAdjournedAlreadyForCourtApplications && isHearingAdjournedForCourtApplications) {
                 // adjourn court applications
-                adjournCourtApplicationsToExistingHearing(event, hearing);
-                adjournCourtApplicationsToNewHearing(event, hearing);
+                adjournCourtApplicationsToExistingHearing(event, hearing, shadowListedOffences);
+                adjournCourtApplicationsToNewHearing(event, hearing, shadowListedOffences);
             } else {
                 LOGGER.info("Hearing contains court applications adjourned already or does not contain next hearing details for hearing id :: {}", hearing.getId());
             }
         }
     }
 
-    private void adjournProsecutionCasesToNewHearings(final JsonEnvelope event, final Hearing hearing) {
+    private void adjournProsecutionCasesToNewHearings(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
         LOGGER.info("Hearing adjourned to new hearing or hearings :: {}", hearing.getId());
-        listCourtHearings(event, hearingToHearingListingNeedsTransformer.transform(hearing));
+        listCourtHearings(event, hearingToHearingListingNeedsTransformer.transform(hearing), shadowListedOffences);
     }
 
-    private void adjournProsecutionCasesToExistingHearings(JsonEnvelope jsonEnvelope, final Hearing hearing) {
+    private void adjournProsecutionCasesToExistingHearings(JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> shadowListedOffences) {
         LOGGER.info("Hearing adjourned to exiting hearing or hearings :: {}", hearing.getId());
         final NextHearingDetails nextHearingDetails = nextHearingService.getNextHearingDetails(hearing);
 
@@ -177,6 +178,7 @@ public class HearingResultEventProcessor {
             final ExtendHearing extendHearing = ExtendHearing.extendHearing()
                     .withHearingRequest(hearingListingNeeds)
                     .withIsAdjourned(TRUE)
+                    .withShadowListedOffences(shadowListedOffences)
                     .build();
             sender.send(
                     envelop(objectToJsonObjectConverter.convert(extendHearing))
@@ -186,22 +188,18 @@ public class HearingResultEventProcessor {
         generateSummons(nextHearingDetails.getHearingsMap(), hearing, nextHearingDetails.getNextHearings(), jsonEnvelope);
     }
 
-    private void adjournCourtApplicationsToNewHearing(final JsonEnvelope event, final Hearing hearing) {
+    private void adjournCourtApplicationsToNewHearing(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
         LOGGER.info("Hearing containing court applications adjourned to new hearing or hearings :: {}", hearing.getId());
-        listCourtHearings(event, hearingListingNeedsTransformer.transform(hearing));
+        listCourtHearings(event, hearingListingNeedsTransformer.transform(hearing), shadowListedOffences);
     }
 
-    private void adjournCourtApplicationsToExistingHearing(JsonEnvelope event, Hearing hearing) {
+    private void adjournCourtApplicationsToExistingHearing(JsonEnvelope event, Hearing hearing, List<UUID> shadowListedOffences) {
         hearing.getCourtApplications().forEach(courtApplication -> {
             if (isNotEmpty(courtApplication.getJudicialResults())) {
                 courtApplication.getJudicialResults().forEach(judicialResult -> {
                     final NextHearing nextHearing = judicialResult.getNextHearing();
                     if (nonNull(nextHearing) && nonNull(nextHearing.getExistingHearingId())) {
-                        final HearingExtended hearingExtended = HearingExtended.hearingExtended()
-                                .withHearingId(nextHearing.getExistingHearingId())
-                                .withCourtApplication(courtApplication)
-                                .build();
-
+                        final HearingExtended hearingExtended = getHearingExtended(shadowListedOffences, courtApplication, nextHearing);
                         final Hearing existingHearing = retrieveHearing(event, nextHearing.getExistingHearingId());
 
                         progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), ApplicationStatus.LISTED);
@@ -216,11 +214,21 @@ public class HearingResultEventProcessor {
         });
     }
 
-    private void listCourtHearings(JsonEnvelope event, List<HearingListingNeeds> hearingListingNeeds) {
+    private HearingExtended getHearingExtended(final List<UUID> shadowListedOffences, final CourtApplication courtApplication, final NextHearing nextHearing) {
+        return HearingExtended.hearingExtended()
+                                    .withHearingId(nextHearing.getExistingHearingId())
+                                    .withCourtApplication(courtApplication)
+                                    .withShadowListedOffences(shadowListedOffences)
+                                    .build();
+    }
+
+
+    private void listCourtHearings(JsonEnvelope event, List<HearingListingNeeds> hearingListingNeeds, final List<UUID> shadowListedOffences) {
         if (isNotEmpty(hearingListingNeeds)) {
             final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
                     .withHearings(hearingListingNeeds)
                     .withAdjournedFromDate(LocalDate.now())
+                    .withShadowListedOffences(shadowListedOffences)
                     .build();
             listingService.listCourtHearing(event, listCourtHearing);
             progressionService.updateHearingListingStatusToSentForListing(event, listCourtHearing);
@@ -303,4 +311,4 @@ public class HearingResultEventProcessor {
         final JsonObject hearingJson = hearingPayloadOptional.orElseThrow(() -> new RuntimeException("Hearing not found")).getJsonObject("hearing");
         return jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
     }
- }
+}

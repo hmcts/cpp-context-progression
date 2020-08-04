@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,6 +35,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -72,6 +74,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultEventProcessorTest {
 
@@ -101,6 +104,9 @@ public class HearingResultEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<ListCourtHearing> listCourtHearingArgumentCaptor;
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -467,6 +473,53 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleHearingResultedPublicEvent(event);
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
         verify(progressionService, never()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldPassShadowListedOffencesToListingService() {
+        final UUID defendantUuid1 = randomUUID();
+
+        final List<ProsecutionCase> prosecutionCases = singletonList(ProsecutionCase.prosecutionCase()
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withId(defendantUuid1)
+                        .build()))
+                .build());
+
+        final UUID offenceUuid1 = UUID.randomUUID();
+        final UUID offenceUuid2 = UUID.randomUUID();
+        final List<UUID> shadowListedOffences = Arrays.asList(offenceUuid1, offenceUuid2);
+
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withId(randomUUID())
+                        .withProsecutionCases(prosecutionCases)
+                        .build())
+                .withShadowListedOffences(shadowListedOffences)
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.hearing.resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted));
+
+        List<HearingListingNeeds> hearingListingNeedsList = singletonList(HearingListingNeeds.hearingListingNeeds()
+                .withId(randomUUID())
+                .build());
+        final NextHearingDetails nextHearingDetails = new NextHearingDetails(null, hearingListingNeedsList, null);
+        List<HearingListingNeeds> hearingListingNeedsForNextHearings = singletonList(HearingListingNeeds.hearingListingNeeds().build());
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
+        when(nextHearingService.getNextHearingDetails(any())).thenReturn(nextHearingDetails);
+        when(hearingToHearingListingNeedsTransformer.transform(any())).thenReturn(hearingListingNeedsForNextHearings);
+        when(hearingResultHelper.doProsecutionCasesContainNextHearingResults(anyList())).thenReturn(false, true);
+        this.eventProcessor.handleHearingResultedPublicEvent(event);
+
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
+        verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
+        assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
+        assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUuid1));
+        assertThat(listCourtHearingArgumentCaptor.getValue().getShadowListedOffences().size(), is(2));
+        assertThat(listCourtHearingArgumentCaptor.getValue().getShadowListedOffences(), hasItems(offenceUuid1, offenceUuid2));
     }
 
     private Optional<JsonObject> getHearingJson() {

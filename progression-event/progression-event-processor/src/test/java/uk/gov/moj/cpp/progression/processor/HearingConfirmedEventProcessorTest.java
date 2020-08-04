@@ -43,8 +43,6 @@ import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SummonsService;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -377,7 +375,6 @@ public class HearingConfirmedEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class))
                 .thenReturn(hearingConfirmed);
         when(progressionService.getHearing(anyObject(), anyString())).thenReturn(Optional.empty());
-
         eventProcessor.processEvent(envelope);
 
         verify(sender, times(1)).send(finalEnvelope);

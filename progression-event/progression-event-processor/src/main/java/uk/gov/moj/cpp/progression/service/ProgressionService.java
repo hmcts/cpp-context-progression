@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.util.Optional.ofNullable;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -135,6 +135,9 @@ public class ProgressionService {
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
+
+    @Inject
+    private ListingService listingService;
 
     private static JsonArray transformProsecutionCases(final List<ConfirmedProsecutionCase> prosecutionCases) {
         final JsonArrayBuilder prosecutionCasesArrayBuilder = createArrayBuilder();
@@ -600,6 +603,7 @@ public class ProgressionService {
                 .withHasSharedResults(false)
                 .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope))
                 .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
+                .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
                 .build();
     }
 

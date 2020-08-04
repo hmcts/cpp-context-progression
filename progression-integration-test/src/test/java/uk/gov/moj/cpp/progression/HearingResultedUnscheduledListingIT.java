@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression;
 import com.jayway.restassured.path.json.JsonPath;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
@@ -91,7 +92,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         newCourtCentreName = "Narnia Magistrate's Court";
     }
-
 
     @Test
     public void shouldListUnscheduledHearings() throws Exception {

@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -299,19 +301,31 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
-					<dependency>
-						<groupId>uk.gov.moj.cpp.usersgroups</groupId>
-						<artifactId>usersgroups-query-api</artifactId>
-						<version>${usersgroups.version}</version>
-						<classifier>raml</classifier>
-						<exclusions>
-							<exclusion>
-								<groupId>*</groupId>
-								<artifactId>*</artifactId>
-							</exclusion>
-						</exclusions>
-					</dependency>
-				</dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.listing</groupId>
+                        <artifactId>listing-query-api</artifactId>
+                        <version>${listing.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>uk.gov.justice.framework-generators</groupId>

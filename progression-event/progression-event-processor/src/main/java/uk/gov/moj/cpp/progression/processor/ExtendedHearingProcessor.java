@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
@@ -17,9 +17,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +25,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:S1135"})
@@ -83,6 +85,7 @@ public class ExtendedHearingProcessor {
             // raising public event for listing and hearing
             final  uk.gov.justice.progression.courts.HearingExtended hearingExtendedEvent = uk.gov.justice.progression.courts.HearingExtended
                     .hearingExtended()
+                    .withShadowListedOffences(hearingExtended.getShadowListedOffences())
                     .withHearingId(hearingId)
                     .withProsecutionCases(prosecutionCases)
                     .build();

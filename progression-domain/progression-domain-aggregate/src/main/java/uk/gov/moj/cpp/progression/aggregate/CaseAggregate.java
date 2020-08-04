@@ -1309,7 +1309,7 @@ public class CaseAggregate implements Aggregate {
                 .build());
     }
 
-    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final Boolean isAdjourned, final UUID extendHearingFrom, final Boolean isPartiallyAllocated) {
+    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final Boolean isAdjourned, final UUID extendHearingFrom, final Boolean isPartiallyAllocated, final List<UUID> shadowListedOffences) {
         LOGGER.debug("hearing has been extended");
         return apply(Stream.of(
                 HearingExtended.hearingExtended()
@@ -1317,6 +1317,7 @@ public class CaseAggregate implements Aggregate {
                         .withHearingRequest(hearingListingNeeds)
                         .withIsAdjourned(isAdjourned)
                         .withIsPartiallyAllocated(isPartiallyAllocated)
+                        .withShadowListedOffences(shadowListedOffences)
                         .build()));
     }
 
