@@ -22,22 +22,17 @@ import org.slf4j.LoggerFactory;
 
 public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
 
+    public static final String OFFENCE_CODE = "TFL123";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateOffencesHelper.class);
-
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-offences-for-prosecution-case+json";
-
     private static final String TEMPLATE_UPDATE_OFFENCES_PAYLOAD = "progression.update-offences-for-prosecution-case.json";
     private final MessageConsumer publicEventsConsumerForOffencesUpdated =
             QueueUtil.publicEvents.createConsumer(
                     "public.progression.defendant-offences-changed");
-
-    private String request;
-
     private final String defendantId;
-
     private final String caseId;
-
     private final String offenceId;
+    private String request;
 
     public ProsecutionCaseUpdateOffencesHelper(final String caseId, final String defendantId, final String offenceId) {
         this.defendantId = defendantId;
@@ -48,15 +43,30 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
     }
 
     public void updateOffences() {
-        updateOffences(this.offenceId);
+        updateOffences(this.offenceId, OFFENCE_CODE);
     }
 
-    public void updateOffences(final String offenceId) {
+    public void updateOffences(final String offenceId, final String offenceCode) {
         final String jsonString = getPayload(TEMPLATE_UPDATE_OFFENCES_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendantCaseOffences").put("defendantId", defendantId);
         jsonObjectPayload.getJSONObject("defendantCaseOffences").put("prosecutionCaseId", caseId);
         jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("id", offenceId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("offenceCode", offenceCode);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void updateMultipleOffences(final String offenceId, final String secondOffenceId, final String offenceCode) {
+        final String jsonString = getPayload("progression.update-multiple-offences-for-prosecution-case.json");
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("defendantId", defendantId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("id", offenceId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("offenceCode", offenceCode);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(1).put("id", secondOffenceId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(1).put("offenceCode", offenceCode);
 
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);

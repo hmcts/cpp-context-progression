@@ -42,9 +42,8 @@ public class DefendantHelper {
         return prosecutionCase.getDefendants().stream().map(defendant -> {
             final List<Offence> udpatedOffences = new ArrayList<>();
             final boolean proceedingConcluded = defendant.getOffences().stream()
-                    .map(offence -> getUpdatedOffence(udpatedOffences, offence, offence.getJudicialResults() != null ?
-                            offence.getJudicialResults().stream()
-                                    .anyMatch(judicialResult -> judicialResult.getCategory().equals(Category.FINAL)) : false))
+                    .map(offence -> getUpdatedOffence(udpatedOffences, offence, offence.getJudicialResults() != null && offence.getJudicialResults().stream()
+                            .anyMatch(judicialResult -> judicialResult.getCategory().equals(Category.FINAL))))
                     .map(offence ->
                             offence.getProceedingsConcluded())
                     .collect(toList()).stream().allMatch(finalCategory -> finalCategory.equals(Boolean.TRUE));
@@ -166,6 +165,47 @@ public class DefendantHelper {
                 .append(nonNull(commandOffenceForDefendant.getOffenceLegislationWelsh()) ? commandOffenceForDefendant.getOffenceLegislationWelsh() : previousOffenceForDefendant.getOffenceLegislationWelsh(), previousOffenceForDefendant.getOffenceLegislationWelsh()).isEquals();
     }
 
+
+    public static Offence updateOrderIndex(Offence offence, int orderIndex) {
+
+        return Offence.offence()
+                .withAllocationDecision(offence.getAllocationDecision())
+                .withAquittalDate(offence.getAquittalDate())
+                .withArrestDate(offence.getArrestDate())
+                .withChargeDate(offence.getChargeDate())
+                .withConvictionDate(offence.getConvictionDate())
+                .withCount(offence.getCount())
+                .withCustodyTimeLimit(offence.getCustodyTimeLimit())
+                .withDateOfInformation(offence.getDateOfInformation())
+                .withEndDate(offence.getEndDate())
+                .withId(offence.getId())
+                .withIndicatedPlea(offence.getIndicatedPlea())
+                .withIsDiscontinued(offence.getIsDiscontinued())
+                .withIsDisposed(offence.getIsDisposed())
+                .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
+                .withJudicialResults(offence.getJudicialResults())
+                .withLaaApplnReference(offence.getLaaApplnReference())
+                .withLaidDate(offence.getLaidDate())
+                .withModeOfTrial(offence.getModeOfTrial())
+                .withNotifiedPlea(offence.getNotifiedPlea())
+                .withOffenceCode(offence.getOffenceCode())
+                .withOffenceDefinitionId(offence.getOffenceDefinitionId())
+                .withOffenceFacts(offence.getOffenceFacts())
+                .withOffenceLegislation(offence.getOffenceLegislation())
+                .withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh())
+                .withOffenceTitle(offence.getOffenceTitle())
+                .withOffenceTitleWelsh(offence.getOffenceTitleWelsh())
+                .withOrderIndex(orderIndex)
+                .withPlea(offence.getPlea())
+                .withProceedingsConcluded(offence.getProceedingsConcluded())
+                .withStartDate(offence.getStartDate())
+                .withVerdict(offence.getVerdict())
+                .withVictims(offence.getVictims())
+                .withWording(offence.getWording())
+                .withWordingWelsh(offence.getWordingWelsh())
+                .build();
+
+    }
 
     public static Optional<OffencesForDefendantChanged> getOffencesForDefendantChanged(final List<Offence> offences, final List<Offence> existingOffences, final UUID prosecutionCaseId, final UUID defendantId) {
         final List<Offence> offencesAddedList = DefendantHelper.getAddedOffences(offences, existingOffences);

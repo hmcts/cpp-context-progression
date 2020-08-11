@@ -39,6 +39,27 @@ public class DefendantHelperTest {
     ContactNumber contactDetails;
     Organisation organisation;
 
+    private static Offence createOffence(final UUID offenceId, final String offenceCode) {
+        return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).withOrderIndex(500).build();
+    }
+
+    private static Offence.Builder createOffenceWithDefaults(final UUID offenceId, final String offenceCode) {
+        return Offence.offence().
+                withId(offenceId)
+                .withOffenceCode(offenceCode)
+                .withStartDate(LocalDate.now())
+                .withArrestDate(LocalDate.now())
+                .withChargeDate(LocalDate.now())
+                .withConvictionDate(LocalDate.now())
+                .withEndDate(LocalDate.now())
+                .withOffenceTitle("title")
+                .withOffenceTitleWelsh("welsh title")
+                .withWording("wording")
+                .withOffenceLegislation("legisltation")
+                .withOffenceLegislationWelsh("welsh legisltation")
+                .withCount(1);
+    }
+
     @Before
     public void setUp() throws Exception {
         contactDetails = ContactNumber.contactNumber().withHome("0845123574").withWork("0334578522").withMobile("07896542875").withPrimaryEmail("john.smith@hmcts.net").withSecondaryEmail("john.smith@hmcts.net").withFax("0845123574").build();
@@ -82,6 +103,12 @@ public class DefendantHelperTest {
                 .withEmployerOrganisation(organisation).build();
     }
 
+    @Test
+    public void shouldUpdateOrderIndex() {
+        final Offence offenceOne = createOffence(randomUUID(), "first");
+        Offence offence = DefendantHelper.updateOrderIndex(offenceOne, 100);
+        assertThat(offence.getOrderIndex(), is(100));
+    }
 
     @Test
     public void testOffencesUpdatedWithNewOffence() {
@@ -175,26 +202,5 @@ public class DefendantHelperTest {
         final UUID defendantId = randomUUID();
         Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(offences, existingOffences, uuid, defendantId);
         assertFalse(offencesForDefendantUpdated.isPresent());
-    }
-
-    private static Offence createOffence(final UUID offenceId, final String offenceCode) {
-        return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).build();
-    }
-
-    private static Offence.Builder createOffenceWithDefaults(final UUID offenceId, final String offenceCode) {
-        return Offence.offence().
-                withId(offenceId)
-                .withOffenceCode(offenceCode)
-                .withStartDate(LocalDate.now())
-                .withArrestDate(LocalDate.now())
-                .withChargeDate(LocalDate.now())
-                .withConvictionDate(LocalDate.now())
-                .withEndDate(LocalDate.now())
-                .withOffenceTitle("title")
-                .withOffenceTitleWelsh("welsh title")
-                .withWording("wording")
-                .withOffenceLegislation("legisltation")
-                .withOffenceLegislationWelsh("welsh legisltation")
-                .withCount(1);
     }
 }

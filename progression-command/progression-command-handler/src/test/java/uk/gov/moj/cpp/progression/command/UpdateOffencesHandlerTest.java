@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -10,8 +12,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.is
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -38,18 +44,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateOffencesHandlerTest {
 
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class);
     @Mock
     private EventSource eventSource;
-
     @Mock
     private EventStream eventStream;
-
     @Mock
     private AggregateService aggregateService;
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class);
-
     @InjectMocks
     private UpdateOffencesHandler updateOffencesHandler;
 
@@ -73,24 +75,41 @@ public class UpdateOffencesHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
 
+        UUID caseId = randomUUID();
+        UUID defendantId = randomUUID();
         List<Offence> offences = new ArrayList<>();
-        Offence offence = Offence.offence().withId(UUID.randomUUID())
+        Offence offence = Offence.offence().withId(randomUUID())
                 .withOffenceCode("test")
                 .build();
         offences.add(offence);
         final DefendantCaseOffences defendantCaseOffences =
                 DefendantCaseOffences.defendantCaseOffences().withOffences(offences)
-                        .withProsecutionCaseId(UUID.randomUUID())
-                        .withDefendantId(UUID.randomUUID())
+                        .withProsecutionCaseId(caseId)
+                        .withDefendantId(defendantId)
                         .build();
         UpdateOffencesForProsecutionCase updateDefendantCaseOffences = UpdateOffencesForProsecutionCase.updateOffencesForProsecutionCase().withDefendantCaseOffences(defendantCaseOffences).build();
-        aggregate.updateOffences(offences, UUID.randomUUID(), UUID.randomUUID());
 
+        aggregate = new CaseAggregate() {{
+            apply(ProsecutionCaseCreated.prosecutionCaseCreated()
+                    .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                            .withId(caseId)
+                            .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                            .withDefendants(singletonList(Defendant.defendant()
+                                    .withId(defendantId)
+                                    .withOffences(singletonList(Offence.offence()
+                                            .withId(randomUUID())
+                                            .withOrderIndex(1)
+                                            .build()))
+                                    .build()))
+                            .build())
+                    .build());
+        }};
+        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.update-offences-for-prosecution-case")
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .build();
 
         final Envelope<UpdateOffencesForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendantCaseOffences);
