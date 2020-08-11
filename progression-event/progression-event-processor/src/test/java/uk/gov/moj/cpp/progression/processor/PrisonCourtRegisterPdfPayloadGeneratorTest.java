@@ -6,6 +6,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 
 import javax.inject.Inject;
@@ -27,6 +28,7 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
         assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterPdfPayload.json")
                 .toString().replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .replace("%AGE%", String.valueOf(Period.between(LocalDate.parse("2008-08-08"), LocalDate.now()).getYears()))
         ));
     }
 
