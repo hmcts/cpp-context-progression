@@ -45,8 +45,8 @@
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>7.0.7</referencedata.version>
         <listing.version>7.0.4</listing.version>
-        <hearing.version>7.0.13</hearing.version>
-        <usersgroups.version>7.0.6</usersgroups.version>
+        <hearing.version>7.0.17</hearing.version>
+        <usersgroups.version>7.0.10</usersgroups.version>
         <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>7.0.0</referencedata.offence.version>
         <criminal-court-public-model.version>1.0.103</criminal-court-public-model.version>

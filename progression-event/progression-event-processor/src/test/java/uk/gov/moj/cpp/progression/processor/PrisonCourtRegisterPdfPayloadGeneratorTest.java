@@ -27,8 +27,8 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
         assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterPdfPayload.json")
-                .toString().replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-                .replace("%AGE%", String.valueOf(Period.between(LocalDate.parse("2008-08-08"), LocalDate.now()).getYears()))
+                .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
+                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
         ));
     }
 

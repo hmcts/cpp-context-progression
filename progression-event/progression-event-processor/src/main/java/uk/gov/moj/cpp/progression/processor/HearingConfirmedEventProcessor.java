@@ -123,8 +123,6 @@ public class HearingConfirmedEventProcessor {
 
             }
 
-            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate);
-
             final List<UUID> applicationIds = confirmedHearing.getCourtApplicationIds();
             final List<ConfirmedProsecutionCase> confirmedProsecutionCases = confirmedHearing.getProsecutionCases();
 
@@ -160,6 +158,8 @@ public class HearingConfirmedEventProcessor {
 
 
             sender.send(hearingInitiateTransformedPayload);
+
+            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate);
         }
     }
 
