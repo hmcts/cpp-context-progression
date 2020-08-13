@@ -48,7 +48,8 @@ describe('hearing resulted cache query', () => {
              context.bindings = {
                  params: {
                      hearingId: '1828f356-f746-4f2d-932b-79ef2df95c80',
-                     redisClient: redisClientFake
+                     redisClient: redisClientFake,
+                     payloadPrefix: 'EXT_'
                  }
              };
 
@@ -68,7 +69,8 @@ describe('hearing resulted cache query', () => {
         context.bindings = {
             params: {
                 hearingId: '1828f356-f746-4f2d-932b-79ef2df95c80',
-                redisClient: redisClientFake
+                redisClient: redisClientFake,
+                payloadPrefix: 'EXT_'
             }
         };
 
@@ -76,6 +78,33 @@ describe('hearing resulted cache query', () => {
 
         expect(response.hearing.prosecutionCases[0].defendants[0].id)
             .toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
+    });
+
+    test('should throw an exception if payloadPrefix is not supplied', async () => {
+
+        axios.get.mockImplementation(() => Promise.resolve({data: null}));
+
+        var redisClientFake = {
+            get: sinon.stub().callsArgWith(1, null, JSON.stringify(hearing)),
+            on: sinon.stub().returns(true)
+        };
+
+        context.bindings = {
+            params: {
+                hearingId: '1828f356-f746-4f2d-932b-79ef2df95c80',
+                redisClient: redisClientFake
+            }
+        };
+
+        var exceptionCaught = false
+        try {
+            const response = await httpFunction(context);
+        } catch (e) {
+            exceptionCaught = true
+        }
+
+        expect(exceptionCaught).toBe(true)
+
     });
 
 });

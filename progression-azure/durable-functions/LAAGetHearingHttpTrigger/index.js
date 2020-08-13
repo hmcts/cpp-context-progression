@@ -11,7 +11,8 @@ module.exports = async function (context, req) {
             params:  {
                 hearingId: hearingId,
                 redisClient: null,
-                cjscppuid: req.headers.cjscppuid
+                cjscppuid: req.headers.cjscppuid,
+                payloadPrefix: "EXT_"
             }
         };
 

@@ -122,7 +122,11 @@ module.exports = async function (context) {
     const cjscppuid = context.bindings.params.cjscppuid;
     const payloadPrefix = context.bindings.params.payloadPrefix;
 
+    if (payloadPrefix == undefined) {
+        throw "payloadPrefix is undefined"
+    }
+
     redisClient = context.bindings.params.redisClient;
 
     return await getHearing(hearingId, cjscppuid, payloadPrefix, context);
-};
+};               
