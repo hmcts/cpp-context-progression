@@ -582,6 +582,10 @@ public class PreAndPostConditionHelper {
         return pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase+json", matchers);
     }
 
+    public static String pollProsecutionCasesProgressionForCAAG(final String caseId, final Matcher... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase.caag+json", matchers);
+    }
+
     public static String pollProsecutionCasesProgressionAndReturnHearingId(final String caseId, final String defendantId, final Matcher... matchers) {
         final JsonObject prosecutionCaseJson = getJsonObject(pollProsecutionCasesProgressionFor(caseId, matchers));
 

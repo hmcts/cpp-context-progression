@@ -84,6 +84,9 @@ public class ProsecutionCaseQuery {
     private ListToJsonArrayConverter<CaagDefendants> listToJsonArrayConverter;
 
     @Inject
+    private ListToJsonArrayConverter<Hearings> hearingListToJsonArrayConverter;
+
+    @Inject
     private GetHearingAtAGlanceService getHearingAtAGlanceService;
 
     @Inject
@@ -149,6 +152,10 @@ public class ProsecutionCaseQuery {
 
             final JsonArray caseDefendantsJsonArray = listToJsonArrayConverter.convert(caseAtAGlanceHelper.getDefendantsWithOffenceDetails());
             jsonObjectBuilder.add("defendants", caseDefendantsJsonArray);
+
+            final GetHearingsAtAGlance hearingsAtAGlance = getHearingAtAGlanceService.getHearingAtAGlance(caseId.get());
+            final JsonArray hearingJsonArray = hearingListToJsonArrayConverter.convert(hearingsAtAGlance.getHearings());
+            jsonObjectBuilder.add("hearings", hearingJsonArray);
 
             final List<CourtApplicationEntity> courtApplicationEntities = courtApplicationRepository.findByLinkedCaseId(caseId.get());
 

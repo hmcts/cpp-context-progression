@@ -1,37 +1,5 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.BailStatus;
-import uk.gov.justice.core.courts.DelegatedPowers;
-import uk.gov.justice.core.courts.InitiationCode;
-import uk.gov.justice.core.courts.JudicialResultPrompt;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.PleaValue;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.VerdictType;
-import uk.gov.justice.progression.courts.CaagDefendants;
-import uk.gov.justice.progression.courts.CaseDetails;
-import uk.gov.justice.progression.courts.Defendants;
-import uk.gov.justice.progression.courts.HearingListingStatus;
-import uk.gov.justice.progression.courts.Hearings;
-import uk.gov.justice.progression.courts.Offences;
-import uk.gov.justice.progression.courts.ProsecutorDetails;
-import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
-
-import javax.json.JsonObject;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -61,6 +29,40 @@ import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.ADDRESS_
 import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.ADDRESS_5;
 import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.POSTCODE;
 import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.YOUTH_MARKER_TYPE;
+
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.BailStatus;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.DelegatedPowers;
+import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PleaValue;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.VerdictType;
+import uk.gov.justice.progression.courts.CaagDefendants;
+import uk.gov.justice.progression.courts.CaseDetails;
+import uk.gov.justice.progression.courts.Defendants;
+import uk.gov.justice.progression.courts.HearingListingStatus;
+import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.courts.Offences;
+import uk.gov.justice.progression.courts.ProsecutorDetails;
+import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAtAGlanceHelperTest {
@@ -243,6 +245,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getEndDate(), notNullValue());
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().isEmpty(), is(false));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(1).getLabel(), is(LABEL));
+        assertThat(defendantSmith.getDefendantCaseJudicialResults().get(0).getLabel(), is(LABEL));
 
         final CaagDefendants defendantRambo = defendants.get(1);
         assertThat(defendantRambo.getCaagDefendantOffences().isEmpty(), is(false));
@@ -334,7 +337,7 @@ public class CaseAtAGlanceHelperTest {
                                                 .withAddress(ADDRESS)
                                                 .withInterpreterLanguageNeeds(INTERPRETER_LANGUAGE_NEEDS).build())
                                         .build())
-                                .withDefenceOrganisation(Organisation.organisation().withName(LEGAL_REP_NAME).build())
+                                .withDefenceOrganisation(organisation().withName(LEGAL_REP_NAME).build())
                                 .withOffences(asList(offence().withId(OFFENCE_ID)
                                                 .withOffenceCode(OFFENCE_CODE)
                                                 .withOffenceTitle(OFFENCE_TITLE)
@@ -349,6 +352,7 @@ public class CaseAtAGlanceHelperTest {
                                                 .build(),
                                         offence().withId(randomUUID()).build()))
                                 .withLegalAidStatus(LEGAL_AID_STATUS)
+                                .withDefendantCaseJudicialResults(singletonList(judicialResult().withLabel(LABEL).build()))
                                 .build(),
                         defendant().withId(JHON_RAMBO_ID)
                                 .withPersonDefendant(personDefendant().withPersonDetails(Person.person().withFirstName("Jhon").withLastName("Rambo").build()).build())
@@ -435,6 +439,11 @@ public class CaseAtAGlanceHelperTest {
                                                         .build()))
                                         .build()))
                                 .build()))
+                        .withDefendantJudicialResults(singletonList(DefendantJudicialResult.defendantJudicialResult()
+                            .withJudicialResult(judicialResult()
+                                    .withLabel(LABEL).build())
+                            .withMasterDefendantId(JHON_SMITH_ID)
+                            .build()))
                         .build(),
                 Hearings.hearings()
                         .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -8,9 +9,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -20,7 +23,6 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -30,10 +32,15 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class HearingAtAGlanceIT extends AbstractIT {
 
+    private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();;
+    private static final String BAIL_STATUS_CODE = "C";
+    private static final String BAIL_STATUS_DESCRIPTION = "Remanded into Custody";
+    private static final String BAIL_STATUS_ID = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
 
@@ -44,15 +51,16 @@ public class HearingAtAGlanceIT extends AbstractIT {
             .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private String userId;
-    private String hearingId;
-    private String caseId;
-    private String defendantId;
-    private String newCourtCentreId;
-    private String bailStatusCode;
-    private String bailStatusDescription;
-    private String bailStatusId;
+    private static String userId;
+    private static String hearingId;
+    private static String caseId;
+    private static String defendantId;
 
+
+    @BeforeClass
+    public static void setUpClass(){
+        HearingStub.stubInitiateHearing();
+    }
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -70,14 +78,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        HearingStub.stubInitiateHearing();
-        userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
-        bailStatusCode = "C";
-        bailStatusDescription = "Remanded into Custody";
-        bailStatusId = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
+        userId = randomUUID().toString();
     }
 
     @Test
@@ -89,7 +92,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
+                        hearingId, defendantId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED)
                         .withUserId(userId)
@@ -98,6 +101,30 @@ public class HearingAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
+
+
+
+    @Test
+    public void shouldSetDefendantLevelJudiciaryResultsAndQuery() throws Exception {
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
+                        hearingId, defendantId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED)
+                        .withUserId(userId)
+                        .build());
+
+        pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
+        verifyInMessagingQueueForHearingResultedCaseUpdated();
+    }
+
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
@@ -109,6 +136,16 @@ public class HearingAtAGlanceIT extends AbstractIT {
         return new Matcher[]{
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
+
+        };
+    }
+
+    private Matcher[] getCaseAtAGlanceMatchers() {
+        return new Matcher[]{
+                withJsonPath("$.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
+                withJsonPath("$.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue()),
+                withJsonPath("$.defendants[0].defendantCaseJudicialResults[0].label", equalTo("Costs to Crown Prosecution Service")),
+                withJsonPath("$.defendants[0].defendantCaseJudicialResults[0].judicialResultId", notNullValue())
 
         };
     }
