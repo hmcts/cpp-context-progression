@@ -178,7 +178,6 @@ public class HearingToHearingListingNeedsTransformer {
                 .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(offence.getIsDiscontinued())
                 .withIsDisposed(offence.getIsDisposed())
-                .withJudicialResults(offence.getJudicialResults())
                 .withLaaApplnReference(offence.getLaaApplnReference())
                 .withLaidDate(offence.getLaidDate())
                 .withModeOfTrial(offence.getModeOfTrial())

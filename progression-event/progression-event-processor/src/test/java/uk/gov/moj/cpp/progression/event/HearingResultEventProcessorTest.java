@@ -510,7 +510,7 @@ public class HearingResultEventProcessorTest {
         when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
         when(nextHearingService.getNextHearingDetails(any())).thenReturn(nextHearingDetails);
         when(hearingToHearingListingNeedsTransformer.transform(any())).thenReturn(hearingListingNeedsForNextHearings);
-        when(hearingResultHelper.doProsecutionCasesContainNextHearingResults(anyList())).thenReturn(false, true);
+        when(hearingResultHelper.doProsecutionCasesContainNextHearingResults(anyList())).thenReturn(true);
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());

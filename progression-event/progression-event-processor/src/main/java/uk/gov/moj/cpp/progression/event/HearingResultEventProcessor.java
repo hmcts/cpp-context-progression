@@ -110,11 +110,9 @@ public class HearingResultEventProcessor {
                 .withName("progression.command.hearing-result")
                 .withMetadataFrom(event));
 
-        final boolean isHearingAdjournedAlreadyForProsecutionCases = hearingResultHelper.doProsecutionCasesContainNextHearingResults(hearingInProgression.getProsecutionCases());
-        LOGGER.info("Hearing with hearing id :: {} already adjourned for prosecution cases :: {}", hearing.getId(), isHearingAdjournedAlreadyForProsecutionCases);
         final boolean isHearingAdjournedAlreadyForCourtApplications = hearingResultHelper.doCourtApplicationsContainNextHearingResults(hearingInProgression.getCourtApplications());
         LOGGER.info("Hearing with hearing id :: {} already adjourned for court applications :: {}", hearing.getId(), isHearingAdjournedAlreadyForCourtApplications);
-        resultProsecutionCases(event, hearing, isHearingAdjournedAlreadyForProsecutionCases, shadowListedOffences);
+        resultProsecutionCases(event, hearing, shadowListedOffences);
         resultApplications(event, hearing, isHearingAdjournedAlreadyForCourtApplications, shadowListedOffences);
 
         if (hearingResultUnscheduledListingHelper.checksIfUnscheduledHearingNeedsToBeCreated(hearing)) {
@@ -122,18 +120,18 @@ public class HearingResultEventProcessor {
         }
     }
 
-    private void resultProsecutionCases(final JsonEnvelope event, final Hearing hearing, final boolean isHearingAdjournedAlreadyForProsecutionCases, final List<UUID> shadowListedOffences) {
+    private void resultProsecutionCases(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
         if (isNotEmpty(hearing.getProsecutionCases())) {
             LOGGER.info("Hearing contains prosecution cases resulted for hearing id :: {}", hearing.getId());
             hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
 
             final boolean isHearingAdjournedForProsecutionCases = hearingResultHelper.doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
             LOGGER.info("Hearing with hearing id containing prosecution cases :: {} resulted with next hearing :: {}", hearing.getId(), isHearingAdjournedForProsecutionCases);
-            if (!isHearingAdjournedAlreadyForProsecutionCases && isHearingAdjournedForProsecutionCases) {
+            if (isHearingAdjournedForProsecutionCases) {
                 adjournProsecutionCasesToExistingHearings(event, hearing, shadowListedOffences);
                 adjournProsecutionCasesToNewHearings(event, hearing, shadowListedOffences);
             } else {
-                LOGGER.info("Hearing contains prosecution cases adjourned already or does not contain next hearing details for hearing id :: {}", hearing.getId());
+                LOGGER.info("Hearing contains prosecution cases does not contain next hearing details for hearing id :: {}", hearing.getId());
             }
         }
     }
