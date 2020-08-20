@@ -252,12 +252,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetAllCaseNotes() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetAllCaseNotes() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate");
     }
 
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
