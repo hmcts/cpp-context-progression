@@ -133,10 +133,11 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
                 GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
 
-        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(),any(), any())).thenReturn(listCourtHearing);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any())).thenReturn(listCourtHearing);
 
         //When
         eventProcessor.process(jsonEnvelope);
+
         verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
 
     }
@@ -161,7 +162,14 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build();
         hearingDays.add(hd);
 
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(hearingDays).build());
+        hearings.add(Hearings.hearings()
+                .withId(randomUUID())
+                .withHearingDays(hearingDays)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withRoomId(randomUUID())
+                        .build())
+                .build());
 
         List<HearingDay> hearingDays2 = new ArrayList<>();
 
@@ -170,10 +178,24 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         hearingDays2.add(hd);
 
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(hearingDays2).build());
+        hearings.add(Hearings.hearings()
+                .withId(UUID.randomUUID())
+                .withHearingDays(hearingDays2)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withRoomId(randomUUID())
+                        .build())
+                .build());
 
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(Collections.singletonList(
-                HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build())).build());
+        hearings.add(Hearings.hearings()
+                .withId(UUID.randomUUID())
+                .withHearingDays(Collections.singletonList(
+                        HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build()))
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withRoomId(randomUUID())
+                        .build())
+                .build());
 
         return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
 
@@ -243,6 +265,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withListDefendantRequests(Arrays.asList(listDefendantRequest))
+                .withListedStartDateTime(ZonedDateTime.now().plusWeeks(2))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
                 .withEstimateMinutes(new Integer(20))
                 .build();

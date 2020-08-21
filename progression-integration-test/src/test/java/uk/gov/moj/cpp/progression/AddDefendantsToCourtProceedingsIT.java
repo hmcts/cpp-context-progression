@@ -83,12 +83,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private MessageProducer messageProducerClientPublic;
     private static final String DOCUMENT_TEXT = STRING.next();
 
-    @After
-    public void tearDown() throws JMSException {
-        messageConsumerClientPublic.close();
-        messageProducerClientPublic.close();
-    }
-
     private static void verifyHearingInitialised(final String caseId, final String hearingId) {
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
                 .withHeader(USER_ID, randomUUID()))
@@ -99,6 +93,12 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                                 withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
                                 withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
                         )));
+    }
+
+    @After
+    public void tearDown() throws JMSException {
+        messageConsumerClientPublic.close();
+        messageProducerClientPublic.close();
     }
 
     @Before
@@ -134,6 +134,55 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         //Verify the defendants and check the duplicate is not added
         verifyDefendantsAddedInViewStore(caseId, defendantId2);
+
+        verifyPostListCourtHearing(caseId, defendantId2);
+    }
+
+    @Test
+    public void shouldInvokeDefendantsAddedToCaseWithoutListingRequests() throws Exception {
+
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+        final String offenceId = randomUUID().toString();
+        final String offenceId3 = randomUUID().toString();
+        final String defendantId2 = randomUUID().toString();
+        final String defendantId3 = randomUUID().toString();
+
+        //Create prosecution case
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        verifyPostListCourtHearing(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        //Create payload for
+        final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(2);
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
+                true, caseId, defendantId, defendantId2, offenceId, startDateTime);
+        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        //Post command progression.add-defendants-to-court-proceedings
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
+                addDefendantsToCourtProceedingsJson);
+
+        //Verify the defendants and check the duplicate is not added
+        verifyDefendantsAddedInViewStore(caseId, defendantId2);
+
+        verifyPostListCourtHearing(caseId, defendantId2);
+
+        //Create payload for
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings2 = buildAddDefendantsToCourtProceedings(
+                true, caseId, defendantId, defendantId3, offenceId3, startDateTime);
+        final String addDefendantsToCourtProceedingsJson2 = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings2);
+
+        //Post command progression.add-defendants-to-court-proceedings
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
+                addDefendantsToCourtProceedingsJson2);
+
+        //Verify the defendants and check the duplicate is not added
+        verifyDefendantsAddedInViewStore(caseId, defendantId3);
+
+        verifyPostListCourtHearing(caseId, defendantId3);
     }
 
     @Test
@@ -144,13 +193,16 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String offenceId = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();
 
+        final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(1);
+
+
         //Create prosecution case
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //Create payload for
         final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
-                false, caseId, defendantId, defendantId2, offenceId);
+                false, caseId, defendantId, defendantId2, offenceId, startDateTime);
         final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
 
         //Post command progression.add-defendants-to-court-proceedings
@@ -246,6 +298,12 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
             final boolean forAdded, final String caseId, final String defendantId, final String defendantId2, final String offenceId) {
+        return buildAddDefendantsToCourtProceedings(forAdded, caseId, defendantId, defendantId2, offenceId, ZonedDateTime.now().plusWeeks(1));
+    }
+
+    private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
+            final boolean forAdded, final String caseId, final String defendantId,
+            final String defendantId2, final String offenceId, final ZonedDateTime startDateTime) {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
@@ -309,6 +367,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withListDefendantRequests(Collections.singletonList(listDefendantRequest2))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
+                .withListedStartDateTime(startDateTime)
                 .withEstimateMinutes(20)
                 .build();
 
