@@ -81,4 +81,5 @@
     <include file="liquibase/alter-prison-court-register-file-id.xml"/>
     <include file="liquibase/alter-informant-register-hearing-id.xml"/>
     <include file="liquibase/alter-court-register-hearing-id.xml"/>
+    <include file="liquibase/alter-court-application-add-index.xml"/>
 </databaseChangeLog>

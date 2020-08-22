@@ -8,7 +8,6 @@ import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.HOST;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
-import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
@@ -94,7 +93,6 @@ public class AbstractIT {
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         mockMaterialUpload();
         setupUsersGroupQueryStub();
-        stubEnableAllCapabilities();
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
         stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");

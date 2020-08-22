@@ -28,4 +28,10 @@ public interface CourtDocumentRepository extends EntityRepository<CourtDocumentE
     @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id=:caseId and defendant_id=:defendantId ORDER BY cdi.courtDocument.seqNum ASC")
     List<CourtDocumentEntity> findByProsecutionCaseIdAndDefendantId(@QueryParam("caseId") final UUID caseId,
                                                                     @QueryParam("defendantId") final UUID defendantId);
+    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id in (:caseIds) ORDER BY cdi.courtDocument.seqNum ASC")
+    List<CourtDocumentEntity> findByProsecutionCaseIds(@QueryParam("caseIds") final List<UUID> caseIds);
+
+    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where application_id in(:applicationIds) ORDER BY cdi.courtDocument.seqNum ASC")
+    List<CourtDocumentEntity> findByApplicationIds(@QueryParam("applicationIds") final List<UUID> applicationIds);
+
 }

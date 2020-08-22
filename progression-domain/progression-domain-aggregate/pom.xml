@@ -79,6 +79,13 @@
             <version>3.2.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
+            <artifactId>cpp-platform-test-utils</artifactId>
+            <!--locking to this version of artefact as newer versions result in failing test-->
+            <version>7.0.10</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
     <build>

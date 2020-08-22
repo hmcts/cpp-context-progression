@@ -11,7 +11,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetEmptyOrganisationDetailForLAAContractNumber;
@@ -74,7 +73,6 @@ public class AssociateOrphanedDefendantsIT extends AbstractIT {
     @Before
     public void setUp() {
         ReferenceDataStub.stubLegalStatus("/restResource/ref-data-legal-statuses.json", statusCode);
-        stubEnableAllCapabilities();
         stubGetEmptyOrganisationDetailForLAAContractNumber(laaContractNumber);
         stubGetOrganisationQuery(userId, organisationId2, organisationName2);
         stubGetOrganisationDetails(organisationId2, organisationName2);

@@ -5,7 +5,6 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import uk.gov.justice.services.adapter.rest.interceptor.InputStreamFileInterceptor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainEntry;
 import uk.gov.justice.services.core.interceptor.InterceptorChainEntryProvider;
-import uk.gov.moj.cpp.authorisation.interceptor.SynchronousFeatureControlInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,6 @@ public class ProgressionCommandApiInterceptorChainProvider implements Intercepto
     @Override
     public List<InterceptorChainEntry> interceptorChainTypes() {
         final List<InterceptorChainEntry> interceptorChainEntries = new ArrayList<>();
-        interceptorChainEntries.add(new InterceptorChainEntry(5900, SynchronousFeatureControlInterceptor.class));
         interceptorChainEntries.add(new InterceptorChainEntry(6000, InputStreamFileInterceptor.class));
         return interceptorChainEntries;
     }

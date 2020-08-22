@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.query.api;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
-import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.removeProperty;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -58,7 +57,7 @@ public class ProsecutionCaseQueryApi {
                     caagDefendantsBuilder.add(caagDefendant);
                 }
             });
-            final JsonObject resultPayload = addProperty(removeProperty(payload, DEFENDANTS), DEFENDANTS, caagDefendantsBuilder.build());
+            final JsonObject resultPayload = addProperty(payload, DEFENDANTS, caagDefendantsBuilder.build());
             return envelopeFrom(query.metadata(), resultPayload);
         }
         return appQueryResponse;

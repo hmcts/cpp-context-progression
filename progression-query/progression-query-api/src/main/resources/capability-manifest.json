@@ -1,17 +1,4 @@
 {
   "capabilities": [
-    {
-      "name": "progression.query.defendants",
-      "type": "action",
-      "action": "progression.query.defendants"
-    },
-    {
-      "name": "progression.query.caseprogressiondetail",
-      "type": "action",
-      "action": "progression.query.caseprogressiondetail"
-    }
   ]
 }
-
-
-

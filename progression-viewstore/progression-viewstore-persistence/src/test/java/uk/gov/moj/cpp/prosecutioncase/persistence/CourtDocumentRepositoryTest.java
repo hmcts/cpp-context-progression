@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -63,6 +65,16 @@ public class CourtDocumentRepositoryTest {
     }
 
     @Test
+    public void shouldFindByCaseIds() throws Exception {
+        repository.save(getProsecutionCase(true));
+        final List<CourtDocumentEntity> actual = repository.findByProsecutionCaseIds(singletonList(CASE_ID));
+        assertNotNull("Should not be null", actual);
+        assertEquals(CASE_ID, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
+        assertEquals(COURT_DOCUMENT_ID, actual.get(0).getCourtDocumentId());
+        assertEquals(true, actual.get(0).getContainsFinancialMeans());
+    }
+
+    @Test
     public void testFindByApplicationId() {
         repository.save(getProsecutionCaseForApplication(null));
 
@@ -72,6 +84,18 @@ public class CourtDocumentRepositoryTest {
         assertEquals(DocumentCategoryEnum.APPLICATION_DOCUMENT.toString(), actual.get(0).getIndices().iterator().next().getDocumentCategory());
         assertEquals(false, actual.get(0).getContainsFinancialMeans());
     }
+
+    @Test
+    public void testFindByApplicationIds() {
+        repository.save(getProsecutionCaseForApplication(null));
+
+        final List<CourtDocumentEntity> actual = repository.findByApplicationIds(singletonList(APPLICATION_ID));
+        assertEquals(APPLICATION_ID, actual.get(0).getIndices().iterator().next().getApplicationId());
+        assertEquals(COURT_DOCUMENT_ID, actual.get(0).getCourtDocumentId());
+        assertEquals(DocumentCategoryEnum.APPLICATION_DOCUMENT.toString(), actual.get(0).getIndices().iterator().next().getDocumentCategory());
+        assertEquals(false, actual.get(0).getContainsFinancialMeans());
+    }
+
 
     @Test
     public void testFindByApplicationIdOrderingSeqNumASC() {

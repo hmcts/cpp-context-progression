@@ -53,7 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.QUERY_VIEW)
-@SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112"})
+@SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776"})
 public class CourtDocumentQuery {
 
     public static final String ID_PARAMETER = "courtDocumentId";
@@ -103,12 +103,12 @@ public class CourtDocumentQuery {
         CourtDocumentEntity courtDocumentEntity = null;
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
-         JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
+        JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
 
         if (id.isPresent()) {
             courtDocumentEntity = courtDocumentRepository.findBy(id.get());
             if (nonNull(courtDocumentEntity) && !courtDocumentEntity.isRemoved()) {
-                jsonEnvelope = envelopeFrom(envelope.metadata(),jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, jsonFromString(courtDocumentEntity.getPayload())).build());
+                jsonEnvelope = envelopeFrom(envelope.metadata(), jsonObjectBuilder.add(COURT_DOCUMENT_RESULT_FIELD, jsonFromString(courtDocumentEntity.getPayload())).build());
             }
         }
 
@@ -131,15 +131,17 @@ public class CourtDocumentQuery {
         boolean foundSearchParameter = false;
         if (isNotEmpty(strCaseIds)) {
             foundSearchParameter = true;
-            courtDocumentEntities.addAll(commaSeparatedUuidParam2UUIDs(strCaseIds).stream()
-                    .map(caseId -> courtDocumentRepository.findByProsecutionCaseId(caseId))
-                    .flatMap(List::stream).collect(Collectors.toList()));
+            final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository.findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
+            if (!byProsecutionCaseIds.isEmpty()) {
+                courtDocumentEntities.addAll(byProsecutionCaseIds);
+            }
         }
         if (isNotEmpty(strApplicationIds)) {
             foundSearchParameter = true;
-            courtDocumentEntities.addAll(commaSeparatedUuidParam2UUIDs(strApplicationIds).stream()
-                    .map(applicationId -> courtDocumentRepository.findByApplicationId(applicationId))
-                    .flatMap(List::stream).collect(Collectors.toList()));
+            final List<CourtDocumentEntity> byApplicationIds = courtDocumentRepository.findByApplicationIds(commaSeparatedUuidParam2UUIDs(strApplicationIds));
+            if (!byApplicationIds.isEmpty()) {
+                courtDocumentEntities.addAll(byApplicationIds);
+            }
         }
         if (isNotEmpty(defendantId)) {
             foundSearchParameter = true;
@@ -195,10 +197,11 @@ public class CourtDocumentQuery {
         return envelopeFrom(envelope.metadata(), resultJson);
     }
 
-    private boolean canCourtDocumentBeAccessed(final CourtDocument courtDocument, final JsonEnvelope envelope) {
+    private boolean canCourtDocumentBeAccessed(final CourtDocument courtDocument,
+                                               final JsonEnvelope envelope) {
         final Action action = new Action(envelopeFrom(envelope.metadata(), createObjectBuilder().add(COURT_DOCUMENT_RESULT_FIELD,
                 objectToJsonObjectConverter.convert(courtDocument)).build()));
-        return rbacProvider.isLoggedInUserAllowedToReadDocument(action) ;
+        return rbacProvider.isLoggedInUserAllowedToReadDocument(action);
     }
 
 
@@ -289,7 +292,8 @@ public class CourtDocumentQuery {
                 .build();
     }
 
-    private CourtDocument filterPermittedMaterial(final CourtDocument courtDocument, final Set<String> permittedGroups) {
+    private CourtDocument filterPermittedMaterial(final CourtDocument courtDocument,
+                                                  final Set<String> permittedGroups) {
         final List<Material> filteredMaterials =
                 courtDocument.getMaterials().stream().filter(
                         m -> CollectionUtils.isEmpty(m.getUserGroups()) || m.getUserGroups().stream().anyMatch(ug -> permittedGroups.contains(ug))
@@ -309,7 +313,8 @@ public class CourtDocumentQuery {
                 .build();
     }
 
-    private JsonEnvelope createJsonEnvelope(final JsonEnvelope envelope, final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
+    private JsonEnvelope createJsonEnvelope(final JsonEnvelope envelope,
+                                            final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
 
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
@@ -322,7 +327,8 @@ public class CourtDocumentQuery {
         return envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
-    private void prepareResponse(final NotificationStatusEntity notificationStatusEntity, final JsonArrayBuilder jsonArrayBuilder) {
+    private void prepareResponse(final NotificationStatusEntity notificationStatusEntity,
+                                 final JsonArrayBuilder jsonArrayBuilder) {
 
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
