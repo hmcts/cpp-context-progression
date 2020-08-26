@@ -33,8 +33,12 @@ class InstallmentMapper extends Mapper {
     }
 
     getInstallmentAmount(reserveTermsResultPrompts) {
-        return this.getPromptValueByReference(reserveTermsResultPrompts,
-                                              PromptType.INSTALMENT_AMOUNT);
+        const amount = this.getPromptValueByReference(reserveTermsResultPrompts,
+                                                      PromptType.INSTALMENT_AMOUNT);
+        if(amount) {
+            return Number(parseFloat(amount.startsWith('£') ? amount.substring(1)
+                                                            : amount).toFixed(2));
+        }
     }
 
     getInstallmentStartDate(reserveTermsResultPrompts) {

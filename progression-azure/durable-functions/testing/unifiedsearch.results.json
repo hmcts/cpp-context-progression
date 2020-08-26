@@ -1,0 +1,112 @@
+{
+  "totalResults": 1,
+  "cases": [
+    {
+      "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+      "prosecutionCaseReference": "TFL12345",
+      "caseStatus": "active",
+      "defendantSummary": [
+        {
+          "defendantId": "7377637b-a078-43f3-9215-d947f06356d2",
+          "defendantASN": "arrest123",
+          "defendantName": "Harry Jack Kane Junior",
+          "defendantDOB": "2010-01-01",
+          "defendantNINO": "NN763534D",
+          "dateOfNextHearing": "2019-01-22",
+          "proceedingsConcluded": true,
+          "representationOrder": {
+            "applicationReference": "LAA REF 1",
+            "effectiveFromDate": "2019-08-12",
+            "effectiveToDate": "2019-10-12",
+            "laaContractNumber": "LAA CONTRACT NO"
+          },
+          "offenceSummary": [
+            {
+              "offenceId": "e9cb3ddd-587e-44af-b849-9af2337f1422",
+              "offenceCode": "OFFENCE CODE 1",
+              "offenceTitle": "OFFENCE TITLE 1",
+              "offenceLegislation": "OFFENCE LEGISLATION 1",
+              "proceedingsConcluded": false,
+              "arrestDate": "2019-09-02",
+              "dateOfInformation": "2019-09-02",
+              "endDate": "2019-09-02",
+              "startDate": "2019-09-02",
+              "chargeDate": "2019-09-02",
+              "modeOfTrial": "CROWN",
+              "orderIndex": 1,
+              "wording": "OFFENCE WORDING 1",
+              "laaApplnReference": {
+                "applicationReference": "LAA REF OFF 1",
+                "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+                "statusCode": "LAA STATUS CODE OFF 1",
+                "statusDescription": "LAA STATUS DESC OFF 1"
+              }
+            },
+            {
+              "offenceId": "59bf6632-d6c7-476d-a280-41a736850441",
+              "offenceCode": "OFFENCE CODE 2",
+              "offenceTitle": "OFFENCE TITLE 2",
+              "offenceLegislation": "OFFENCE LEGISLATION 2",
+              "proceedingsConcluded": false,
+              "arrestDate": "2019-09-02",
+              "dateOfInformation": "2019-09-02",
+              "endDate": "2019-09-02",
+              "startDate": "2019-09-02",
+              "chargeDate": "2019-09-02",
+              "modeOfTrial": "CROWN",
+              "orderIndex": 2,
+              "wording": "OFFENCE WORDING 2",
+              "laaApplnReference": {
+                "applicationReference": "LAA REF OFF 2",
+                "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+                "statusCode": "LAA STATUS CODE OFF 2",
+                "statusDescription": "LAA STATUS DESC OFF 2"
+              }
+            }
+          ]
+        }
+      ],
+      "hearingSummary": [
+        {
+          "hearingId": "3a2b91f3-7e11-413e-a160-fc79b18a1866",
+          "jurisdictionType": "MAGISTRATES",
+          "defendantIds": [
+            "7377637b-a078-43f3-9215-d947f06356d2"
+          ],
+          "hearingType": {
+            "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+            "description": "Trial",
+            "code": "HEARING TYPE CODE 1"
+          },
+          "courtCentre": {
+            "id": "f93d22ee-e06b-48e1-8e50-133ff475d025",
+            "name": "LONDON CROWN COURT CENTRE",
+            "roomId": "4ab9c698-f559-48ee-beae-00fb5fe2483e",
+            "roomName": "WEST ROOM",
+            "welshName": "CANOLFAN LLYS CROWN LLUNDAIN",
+            "welshRoomName": "YSTAFELL GORLLEWIN",
+            "address": {
+              "address1": "123 JUSTICE SQUARE",
+              "address2": "LEGAL ROW",
+              "address3": "FARRINGDON",
+              "address4": "LONDON",
+              "postCode": "NE1 6FT"
+            }
+          },
+          "hearingDay": [
+            {
+              "sittingDay": "2019-01-22T10:00:00Z",
+              "listingSequence": 1,
+              "listedDurationMinutes": 60
+            },
+            {
+              "sittingDay": "2019-01-23T13:00:00Z",
+              "listingSequence": 2,
+              "listedDurationMinutes": 60
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

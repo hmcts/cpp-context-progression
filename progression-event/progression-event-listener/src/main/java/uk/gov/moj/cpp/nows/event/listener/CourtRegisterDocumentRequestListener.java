@@ -52,15 +52,21 @@ public class CourtRegisterDocumentRequestListener {
     public void generateCourtRegister(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         final CourtRegisterGenerated courtRegisterGenerated = jsonObjectConverter.convert(payload, CourtRegisterGenerated.class);
+        final ZonedDateTime currentDateTime = ZonedDateTime.now();
+
         final List<CourtRegisterRequestEntity> courtRegisters = repository.findByCourtCenterIdAndStatusRecorded(courtRegisterGenerated.getCourtRegisterDocumentRequests().get(0).getCourtCentreId());
         courtRegisters.forEach(courtRegisterRequestEntity -> {
-            final ZonedDateTime currentDateTime = ZonedDateTime.now();
             courtRegisterRequestEntity.setStatus(RegisterStatus.GENERATED);
             courtRegisterRequestEntity.setProcessedOn(currentDateTime);
             if(BooleanUtils.isTrue(courtRegisterGenerated.getSystemGenerated())) {
                 courtRegisterRequestEntity.setGeneratedDate(currentDateTime.toLocalDate());
                 courtRegisterRequestEntity.setGeneratedTime(currentDateTime);
             }
+        });
+
+        courtRegisterGenerated.getCourtRegisterDocumentRequests().stream().map(CourtRegisterDocumentRequest::getHearingId).forEach(hearingId -> {
+            final List<CourtRegisterRequestEntity> courtRegisterRequestEntities = repository.findByHearingIdAndStatusRecorded(hearingId);
+            courtRegisterRequestEntities.forEach(courtRegisterRequestEntity -> courtRegisterRequestEntity.setProcessedOn(currentDateTime));
         });
     }
 

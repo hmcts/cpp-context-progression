@@ -1,8 +1,6 @@
 const Mapper = require('../Mapper');
 const Defendant = require('../../Model/Defendant');
 const _ = require('lodash');
-const dateService = require('../../../../NowsHelper/service/DateService');
-
 
 const COMPANY_TITLE = "Co";
 
@@ -26,7 +24,7 @@ class DefendantMapper extends Mapper {
         defendant.benefitsTypes = undefined;
         defendant.companyName = this.companyName(defendantFromHearingJson);
         defendant.dateOfBirth = this.dateOfBirth(defendantFromHearingJson);
-        defendant.dateOfSentence = this.dateOfSentence(defendantFromHearingJson);
+        defendant.dateOfSentence = this.complianceEnforcement.orderedDate;
         defendant.documentLanguage = this.hearingLanguage();
         defendant.emailAddress1 = this.emailAddress1(defendantFromHearingJson);
         defendant.emailAddress2 = this.emailAddress2(defendantFromHearingJson);
@@ -116,14 +114,6 @@ class DefendantMapper extends Mapper {
         if (defendantFromHearingJson.personDefendant) {
             return defendantFromHearingJson.personDefendant.personDetails.dateOfBirth;
         }
-    }
-
-    dateOfSentence(defendantFromHearingJson) {
-        const allJudicialResultsForDefendant = _(defendantFromHearingJson.offences)
-            .flatMap('judicialResults').value();
-        return allJudicialResultsForDefendant.filter((result) => result).map((result)=> result.orderedDate).sort((a, b) => {
-            return dateService.parse(b).getTime() - dateService.parse(a).getTime();
-        })[0];
     }
 
     postHearingCustodyStatus(defendantFromHearingJson) {

@@ -17,8 +17,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntit
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -26,7 +28,6 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.transaction.Transactional;
 
-import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -234,7 +235,12 @@ public class NotificationListener {
     }
 
     private Map<NotificationStatus, NotificationStatusEntity> printStatuses(final UUID notificationId) {
-        return Maps.uniqueIndex(notificationStatusRepository.findByNotificationId(notificationId), NotificationStatusEntity::getNotificationStatus);
+        final List<NotificationStatusEntity> notificationStatusEntityList = notificationStatusRepository.findByNotificationId(notificationId);
+        return notificationStatusEntityList.stream()
+                .collect(Collectors.toMap(
+                        NotificationStatusEntity::getNotificationStatus,
+                        notificationStatus -> notificationStatus,
+                        (oldValue, newValue) -> oldValue));
     }
 
     private void createNotificationStatus(final JsonObject jsonObject, final JsonObject payload, final NotificationStatus notificationRequest, final ZonedDateTime updated) {

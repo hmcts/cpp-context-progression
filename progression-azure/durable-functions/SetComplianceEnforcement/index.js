@@ -21,6 +21,7 @@ class SetComplianceEnforcement {
                 let complianceEnforcement = new ComplianceEnforcement();
                 complianceEnforcement.masterDefendantId = defendantContextBase.masterDefendantId;
                 complianceEnforcement.complianceCorrelationId = uuidv4();
+                complianceEnforcement.orderedDate = defendantContextBase.orderedDate;
                 this.setProsecutionCaseDetails(defendantContextBase, complianceEnforcement);
                 this.setProsecutionCasePleaDetails(defendantContextBase, complianceEnforcement);
 
@@ -240,7 +241,8 @@ module.exports = async function (context) {
     const groupResultsByMasterDefendantId = defendantContextBaseList.map((defendantContextBase) => {
         return {
             masterDefendantId: defendantContextBase.masterDefendantId,
-            results: defendantContextBase.results
+            results: defendantContextBase.results,
+            orderedDate: defendantContextBase.orderedDate
         };
     });
     // context.log("SetCompliance -->> " + JSON.stringify(groupResultsByMasterDefendantId));

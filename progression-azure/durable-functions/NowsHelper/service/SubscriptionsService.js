@@ -33,8 +33,6 @@ class SubscriptionsService {
             }
         });
 
-        console.log('subscriptions -->>', JSON.stringify(subscriptions));
-
         return subscriptions;
     }
 }
@@ -68,11 +66,13 @@ function matchSubscriptionRules(subscriptionObject, subscription) {
 
 function matchVariantUserGroupsWithSubscriptionMetadata(subscription, subscriptionObject) {
     const userGroupObj = subscriptionObject.userGroup;
+
     const failedToMatchIncludedUserGroups = checkIfIncludedUserGroupsAreNotMatchingWithSubscription(userGroupObj, subscription);
 
     if(failedToMatchIncludedUserGroups) {
         return false;
     }
+
     const matchedWithExcludedUserGroups = checkIfExcludedUserGroupAreMatchingWithSubscription(userGroupObj, subscription);
 
     if(matchedWithExcludedUserGroups) {
@@ -85,6 +85,10 @@ function matchVariantUserGroupsWithSubscriptionMetadata(subscription, subscripti
 function checkIfIncludedUserGroupsAreNotMatchingWithSubscription(userGroupObj, subscription) {
     if(userGroupObj.type === INCLUDE && subscription.userGroupVariants && subscription.userGroupVariants.length) {
         return userGroupObj.userGroups.some((userGroup) => !(subscription.userGroupVariants).includes(userGroup));
+    }
+
+    if(userGroupObj.type === INCLUDE && subscription.userGroupVariants === undefined) {
+        return true;
     }
 }
 

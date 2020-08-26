@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.prosecutioncase.persistence;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 
 import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InformantRegisterEntity;
@@ -43,13 +42,6 @@ public class InformantRegisterRepositoryTest {
     public void tearDown() {
         List<InformantRegisterEntity> informantRegisterEntities = informantRegisterRepository.findAll();
         informantRegisterEntities.forEach(ir -> informantRegisterRepository.remove(ir));
-    }
-
-    @Test
-    public void shouldFindTheInformantRegisterRequestsByStatus() {
-        final List<InformantRegisterEntity> informantRegisterEntities =
-                informantRegisterRepository.findByProsecutionAuthorityIdAndStatusRecorded(PROSECUTION_AUTHORITY_ID);
-        assertThat(informantRegisterEntities.size(), is(1));
     }
 
 

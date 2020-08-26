@@ -15,7 +15,6 @@ describe('Now Content mapper builds correctly', () => {
         enforcementAreaByPostCodeMap.set('SW99 1AA', enforcementArea);
         const nowContentMapper = new NowContentMapper(uuidv4(), nowVariantJson, hearingJson, organisationUnitJson, enforcementArea, enforcementAreaByPostCodeMap, context);
         const nowContent = nowContentMapper.buildNowContent();
-
         expect(nowContent.orderName).toBe("Warrant for custodial sentence");
         expect(nowContent.welshOrderName).toBe(undefined);
         expect(nowContent.orderDate).toBe("2019-03-21");
@@ -61,6 +60,8 @@ describe('Now Content mapper builds correctly', () => {
         expect(nowContent.nowRequirementText[0].value).toBe("<h4>COLLECTION ORDER</h4> <p><strong>A collection order has been made, which means the court has powers to collect the money</strong></p> <p><strong>See above for how to pay</strong></p> <p>If you don&rsquo;t pay, we may:</p> <ul> <li>take money from your earnings or benefits</li> <li>increase your fine</li> <li>issue a warrant to seize your possessions which will mean extra costs</li> <li>log this in the Register of Judgements, Orders and Fines, making it harder for you to get credit</li> <li>apply to the court for a warrant for your arrest to bring you to court</li> </ul> <p><strong>If you still don’t pay, you could be sent to prison for non-payment.</strong></p>");
         expect(nowContent.nowRequirementText[1].label).toBe('collOrd2');
         expect(nowContent.nowRequirementText[1].value).toBe("TEXT");
+        expect(nowContent.defendant.solicitor.name).toBe('Sonja & Co LLP');
+        expect(nowContent.defendant.solicitor.address.line1).toBe('Legal House');
     });
 
     test('Test defendant with multi offences and multi result prompts', () => {
@@ -73,7 +74,6 @@ describe('Now Content mapper builds correctly', () => {
                                                       organisationUnitJson, enforcementArea,
                                                       enforcementAreaByPostCodeMap, context);
         const nowContent = nowContentMapper.buildNowContent();
-
         //RESULTS
         expect(nowContent.distinctResults.length).toBe(1);
         expect(nowContent.distinctResults[0].label).toBe("Interim criminal behaviour order made until further order");

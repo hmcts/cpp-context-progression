@@ -226,17 +226,27 @@ public class DocumentGeneratorService {
     }
 
     private List<EmailChannel> buildEmailChannel(final UUID materialId, final NowDistribution nowDistribution, final OrderAddressee orderAddressee) {
-        if (nonNull(nowDistribution) && nonNull(nowDistribution.getEmail()) && nowDistribution.getEmail()) {
 
-            final List<String> emailAddresses = Stream.of(orderAddressee.getAddress().getEmailAddress1(),
-                    orderAddressee.getAddress().getEmailAddress2())
-                    .filter(StringUtils::isNoneBlank)
-                    .collect(Collectors.toList());
-
-            return emailAddresses.stream().map(emailAddress -> buildEmailNotification(materialId, nowDistribution, emailAddress))
-                    .collect(Collectors.toList());
+        if(notValidNowDistribution(nowDistribution) || notValidOrderAddressee(orderAddressee)) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+
+        final List<String> emailAddresses = Stream.of(orderAddressee.getAddress().getEmailAddress1(),
+                orderAddressee.getAddress().getEmailAddress2())
+                .filter(StringUtils::isNoneBlank)
+                .collect(Collectors.toList());
+
+        return emailAddresses.stream()
+                .map(emailAddress -> buildEmailNotification(materialId, nowDistribution, emailAddress))
+                .collect(Collectors.toList());
+    }
+
+    private boolean notValidNowDistribution(final NowDistribution nowDistribution) {
+        return isNull(nowDistribution) || isNull(nowDistribution.getEmail()) || !nowDistribution.getEmail();
+    }
+
+    private boolean notValidOrderAddressee(final OrderAddressee orderAddressee) {
+        return isNull(orderAddressee) || isNull(orderAddressee.getAddress());
     }
 
     @SuppressWarnings("squid:S1172")

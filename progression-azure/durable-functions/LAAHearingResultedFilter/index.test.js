@@ -1,5 +1,8 @@
 const httpFunction = require('./index');
 const context = require('../testing/defaultContext');
+const axios = require('axios');
+
+jest.mock('axios');
 
 describe('filter offences', () => {
 
@@ -41,12 +44,17 @@ describe('filter offences', () => {
 
     test('should remove defendants that do not have an LAA reference (2)', async() => {
         const hearingJson = require('../testing/hearing.ee7b9c09-4a6e-49e3-a484-193dc93a4575.test.json');
+        const unifiedSearchResult = require('../testing/unifiedsearch.results.json');
 
         expect(hearingJson.hearing.prosecutionCases[0].defendants[0].offences.length).toBe(1);
         expect(hearingJson.hearing.prosecutionCases[0].defendants[0].id).toBe('ad03a626-d438-44a5-84b6-14111ec363fa');
 
+        axios.get.mockImplementation(() => Promise.resolve({data: unifiedSearchResult}));
         context.bindings = {
-            unfilteredJson: hearingJson
+            unfilteredJson: hearingJson,
+            params: {
+                cjscppuid: 'dummy_key_value'
+            }
         };
 
         const response = await httpFunction(context);
@@ -56,8 +64,30 @@ describe('filter offences', () => {
 
         expect(response.hearing.prosecutionCases[0].defendants[0].offences.length).toBe(1);
         expect(response.hearing.prosecutionCases[0].defendants[0].offences[0].id).toBe('7dc1b279-805f-4ba8-97ea-be635f5764a7');
+    });
 
+    test('should remove defendants that do not have an LAA reference (3)', async() => {
+        const hearingJson = require('../testing/hearing.multiple.defendants.with.no.laareference.test.json');
+        const unifiedSearchResult = require('../testing/unifiedsearch.multipledefendant.results.json');
 
+        expect(hearingJson.hearing.prosecutionCases[0].defendants[0].offences.length).toBe(4);
+        expect(hearingJson.hearing.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
+
+        axios.get.mockImplementation(() => Promise.resolve({data: unifiedSearchResult}));
+        context.bindings = {
+            unfilteredJson: hearingJson,
+            params: {
+                cjscppuid: 'dummy_key_value'
+            }
+        };
+
+        const response = await httpFunction(context);
+
+        expect(response.hearing.prosecutionCases[0].defendants.length).toBe(2);
+        expect(response.hearing.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
+
+        expect(response.hearing.prosecutionCases[0].defendants[0].offences.length).toBe(4);
+        expect(response.hearing.prosecutionCases[0].defendants[0].offences[0].id).toBe('a154d828-1234-47f0-b8d5-e81227831d94');
     });
 
 });

@@ -7,10 +7,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.moj.cpp.progression.helper.InformantRegisterDocumentRequestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
@@ -19,21 +19,26 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class InformantRegisterDocumentRequestIT extends AbstractIT {
     private MessageProducer producer;
-    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Before
     public void setup() {
         producer = QueueUtil.publicEvents.createProducer();
+    }
+
+    @After
+    public void tearDown() throws JMSException {
+        closeSilently(producer);
     }
 
     @Test
@@ -56,12 +61,73 @@ public class InformantRegisterDocumentRequestIT extends AbstractIT {
         helper.verifyInformantRegisterIsNotified(prosecutionAuthorityId);
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
+    @Test
+    public void shouldGenerateInformantRegisterForLatestHearingSharedRequest() throws IOException {
+        final UUID prosecutionAuthorityId = randomUUID();
+        final String prosecutionAuthorityCode = STRING.next();
+
+        final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
+
+        final ZonedDateTime registerDate1 = ZonedDateTime.now(UTC).minusMinutes(3);
+
+        final Response writeResponse1 = recordInformantRegister(prosecutionAuthorityId,
+                prosecutionAuthorityCode, registerDate1, hearingId, hearingDate,
+                "progression.add-informant-register-document-request.json");
+
+        assertThat(writeResponse1.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final ZonedDateTime registerDate2 = ZonedDateTime.now(UTC).minusMinutes(2);
+        final Response writeResponse2 = recordInformantRegister(prosecutionAuthorityId,
+                prosecutionAuthorityCode, registerDate2, hearingId, hearingDate,
+                "progression.add-informant-register-document-request.json");
+
+        assertThat(writeResponse2.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final ZonedDateTime registerDate3 = ZonedDateTime.now(UTC).minusMinutes(1);
+        final Response writeResponse3 = recordInformantRegister(prosecutionAuthorityId,
+                prosecutionAuthorityCode, registerDate3, hearingId, hearingDate,
+                "progression.add-informant-register-document-request.json");
+
+        assertThat(writeResponse3.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final Response writeResponse4 = recordInformantRegister(prosecutionAuthorityId,
+                prosecutionAuthorityCode, registerDate1, randomUUID(), hearingDate,
+                "progression.add-informant-register-document-request.json");
+
+        assertThat(writeResponse4.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final InformantRegisterDocumentRequestHelper helper = new InformantRegisterDocumentRequestHelper();
+        helper.verifyInformantRegisterRequestsExists(prosecutionAuthorityId);
+
+        generateInformantRegister();
+
+        helper.verifyInformantRegisterDocumentRequestNotifiedPrivateTopic(prosecutionAuthorityId.toString());
+        helper.verifyInformantRegisterIsNotified(prosecutionAuthorityId);
+
+
+        final ZonedDateTime registerDate5 = ZonedDateTime.now(UTC).minusMinutes(3);
+
+        final Response writeResponse5 = recordInformantRegister(prosecutionAuthorityId,
+                prosecutionAuthorityCode, registerDate5, hearingId, hearingDate,
+                "progression.add-informant-register-document-request.json");
+
+        assertThat(writeResponse5.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        helper.verifyInformantRegisterRequestsExists(prosecutionAuthorityId);
+        generateInformantRegister();
+
+        helper.verifyInformantRegisterDocumentRequestNotifiedPrivateTopic(prosecutionAuthorityId.toString());
+        helper.verifyInformantRegisterIsNotified(prosecutionAuthorityId);
+
+    }
+
     @Test
     public void shouldGenerateInformantRegistersByDateAndProsecutionAuthorities() throws IOException {
         final UUID prosecutionAuthorityId_1 = randomUUID();
         final UUID prosecutionAuthorityId_2 = randomUUID();
-        final UUID hearingId = randomUUID();
+        final UUID hearingId_1 = randomUUID();
+        final UUID hearingId_2 = randomUUID();
         final ZonedDateTime registerDate = ZonedDateTime.now(UTC);
         final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
         final String prosecutionAuthorityCode_1 = STRING.next();
@@ -70,17 +136,16 @@ public class InformantRegisterDocumentRequestIT extends AbstractIT {
 
         final InformantRegisterDocumentRequestHelper helper = new InformantRegisterDocumentRequestHelper();
 
-        recordInformantRegister(prosecutionAuthorityId_1, prosecutionAuthorityCode_1, registerDate, hearingId, hearingDate, fileName);
-        recordInformantRegister(prosecutionAuthorityId_2, prosecutionAuthorityCode_2, registerDate, hearingId, hearingDate, fileName);
-
-        helper.verifyInformantRegisterDocumentRequestRecordedPrivateTopic(prosecutionAuthorityId_1.toString());
-        helper.verifyInformantRegisterDocumentRequestRecordedPrivateTopic(prosecutionAuthorityId_2.toString());
+        recordInformantRegister(prosecutionAuthorityId_1, prosecutionAuthorityCode_1, registerDate, hearingId_1, hearingDate, fileName);
+        recordInformantRegister(prosecutionAuthorityId_2, prosecutionAuthorityCode_2, registerDate, hearingId_2, hearingDate, fileName);
 
         helper.verifyInformantRegisterRequestsExists(prosecutionAuthorityId_1);
         helper.verifyInformantRegisterRequestsExists(prosecutionAuthorityId_2);
 
         generateInformantRegister();
-        helper.verifyInformantRegisterDocumentRequestNotifiedPrivateTopic(prosecutionAuthorityId_1.toString());
+
+        helper.verifyInformantRegisterIsNotified(prosecutionAuthorityId_1);
+        helper.verifyInformantRegisterIsNotified(prosecutionAuthorityId_2);
 
         final String generateIRByDateCommandBody = getPayload("progression.generate-informant-register-by-date-and-prosecution.json")
                 .replaceAll("%REGISTER_DATE%", registerDate.toLocalDate().toString())
@@ -90,6 +155,7 @@ public class InformantRegisterDocumentRequestIT extends AbstractIT {
                 getWriteUrl("/informant-register/generate"),
                 "application/vnd.progression.generate-informant-register-by-date+json",
                 generateIRByDateCommandBody);
+
         assertThat(generateRegisterByDateAndProsecutionResponse.getStatusCode(), equalTo(SC_ACCEPTED));
 
         helper.verifyInformantRegisterIsNotified(prosecutionAuthorityId_1);
@@ -182,7 +248,7 @@ public class InformantRegisterDocumentRequestIT extends AbstractIT {
                 .replaceAll("%HEARING_ID%", hearingId.toString())
                 .replaceAll("%HEARING_DATE%", hearingDate.toString());
 
-        return postCommand(getWriteUrl(String.format("/informant-register")),
+        return postCommand(getWriteUrl("/informant-register"),
                 "application/vnd.progression.add-informant-register+json",
                 body);
     }

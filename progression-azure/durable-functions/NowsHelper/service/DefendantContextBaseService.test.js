@@ -25,7 +25,7 @@ describe('DefendantContextBaseService', () => {
                                             "isFinancialResult": "",
                                             "isConvictedResult": "",
                                             "isAvailableForCourtExtract": "",
-                                            "orderedDate": "",
+                                            "orderedDate": "2020-04-19",
                                             "category": "",
                                             "resultText": "",
                                             "terminatesOffenceProceedings": "",
@@ -59,7 +59,7 @@ describe('DefendantContextBaseService', () => {
                                             "isFinancialResult": "",
                                             "isConvictedResult": "",
                                             "isAvailableForCourtExtract": "",
-                                            "orderedDate": "",
+                                            "orderedDate": "2020-04-17",
                                             "category": "",
                                             "resultText": "",
                                             "terminatesOffenceProceedings": "",
@@ -78,7 +78,7 @@ describe('DefendantContextBaseService', () => {
                                             "isFinancialResult": "",
                                             "isConvictedResult": "",
                                             "isAvailableForCourtExtract": "",
-                                            "orderedDate": "",
+                                            "orderedDate": "2020-04-17",
                                             "category": "",
                                             "resultText": "",
                                             "terminatesOffenceProceedings": "",
@@ -117,7 +117,7 @@ describe('DefendantContextBaseService', () => {
                                             "isFinancialResult": "",
                                             "isConvictedResult": "",
                                             "isAvailableForCourtExtract": "",
-                                            "orderedDate": "",
+                                            "orderedDate": "2020-04-17",
                                             "category": "",
                                             "resultText": "",
                                             "terminatesOffenceProceedings": "",
@@ -150,7 +150,7 @@ describe('DefendantContextBaseService', () => {
                                             "isFinancialResult": "",
                                             "isConvictedResult": "",
                                             "isAvailableForCourtExtract": "",
-                                            "orderedDate": "",
+                                            "orderedDate": "2020-04-17",
                                             "category": "",
                                             "resultText": "",
                                             "terminatesOffenceProceedings": "",
@@ -169,7 +169,7 @@ describe('DefendantContextBaseService', () => {
                                             "isFinancialResult": "",
                                             "isConvictedResult": "",
                                             "isAvailableForCourtExtract": "",
-                                            "orderedDate": "",
+                                            "orderedDate": "2020-04-17",
                                             "category": "",
                                             "resultText": "",
                                             "terminatesOffenceProceedings": "",
@@ -202,6 +202,7 @@ describe('DefendantContextBaseService', () => {
         const defendantBaseList = service.getDefendantContextBaseList();
 
         expect(defendantBaseList.length).toBe(2);
+        expect(defendantBaseList[0].orderedDate).toBe('2020-04-19');
 
     });
 
@@ -211,6 +212,7 @@ describe('DefendantContextBaseService', () => {
             mockedHearingResulted).getDefendantContextBaseList();
         expect(defendantBaseList.length).toBe(1);
         expect(defendantBaseList[0].results.length).toBe(4);
+        expect(defendantBaseList[0].orderedDate).toBe('2020-04-12');
     });
 
     test('it should return DefendantContextBaseService with application judicial results', () => {
@@ -219,5 +221,6 @@ describe('DefendantContextBaseService', () => {
             mockedHearingResulted).getDefendantContextBaseList();
         expect(defendantBaseList.length).toBe(1);
         expect(defendantBaseList[0].results.length).toBe(1);
+        expect(defendantBaseList[0].orderedDate).toBe('2020-04-17');
     });
 });

@@ -67,7 +67,9 @@ import java.util.stream.Stream;
 @RunWith(MockitoJUnitRunner.class)
 public class MatchedDefendantLoadServiceTest {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final String SAMPLE_PNC_ID = "2099/1234567L";
+    private static final String SAMPLE_PNC_ID_WITH_SLASH = "2099/1234567L";
+    private static final String SAMPLE_PNC_ID_WITHOUT_SLASH = "20991234567L";
+    private static final String SAMPLE_PNC_ID_LESS_THAN_12_CHARS = "20991234";
     private static final String SAMPLE_CRO_NUMBER = "123456/20L";
     private static final String SAMPLE_POSTCODE = "HA1 1QF";
     private static final String SAMPLE_ADDRESS_LINE1 = "addressLine1";
@@ -188,7 +190,7 @@ public class MatchedDefendantLoadServiceTest {
 
     @Test
     public void shouldHandleException_whenCpSearchThrowsException() throws EventStreamException {
-        final Defendant defendant = getSampleDefendant("");
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
 
         when(requester.requestAsAdmin(any(), any())).thenThrow(new AccessControlViolationException(""));
@@ -203,19 +205,20 @@ public class MatchedDefendantLoadServiceTest {
 
     @Test
     public void shouldCallCpSearch() throws EventStreamException {
-        final Defendant defendant = getSampleDefendant("");
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_LESS_THAN_12_CHARS, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(cpSearchResponse); // exact - first&DOB&address
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(3)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(3)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(3));
 
         final JsonObject firstCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(0).payload();
         assertThat(firstCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
@@ -249,60 +252,131 @@ public class MatchedDefendantLoadServiceTest {
 
     @Test
     public void shouldNotCallCpSearchTwice_whenFirstCallReturnRecords() throws EventStreamException {
-        final Defendant defendant = getSampleDefendant("");
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_LESS_THAN_12_CHARS, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
-        when(cpSearchResponse.payload()).thenReturn(result);
+        when(cpSearchResponse.payload()).thenReturn(result); // exact - pncId
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class))).thenReturn(cpSearchResponse);
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(1));
     }
 
     @Test
-    public void shouldNotCallCpSearchThirdTimes_whenSecondCallReturnRecords() throws EventStreamException {
-        final Defendant defendant = getSampleDefendant("");
+    public void shouldNotCallCpSearchThirdTimes_whenFirstAndSecondCallReturnRecordsForPncId() throws EventStreamException {
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
-        when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), any()))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+        when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
+                .thenReturn(cpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(cpSearchResponse); // exact - pncId (without slash)
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(2)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(2)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(2));
     }
 
+    @Test
+    public void shouldNotCallCpSearchFourTimes_whenThirdCallReturnRecordsForCroNumber() throws EventStreamException {
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITHOUT_SLASH, SAMPLE_CRO_NUMBER, "");
+        final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
+        final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
+
+        when(cpSearchResponse.payload()).thenReturn(result);
+        when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(cpSearchResponse); // exact - croNumber
+
+        matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
+
+        verify(requester, times(3)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(3));
+    }
+
+    @Test
+    public void shouldNotCallCpSearchTwice_whenPncIdNullAndFirstCallReturnRecordsForCroNumber() throws EventStreamException {
+        final Defendant defendant = getSampleDefendant(null, SAMPLE_CRO_NUMBER, "");
+        final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
+        final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
+
+        when(cpSearchResponse.payload()).thenReturn(result); // exact - croNumber
+        when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class))).thenReturn(cpSearchResponse);
+
+        matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
+
+        verify(requester).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(1));
+    }
 
     @Test
     public void shouldCallMultipleTimesCpSearchForExact_whenExactSearchGreaterThanZero() throws EventStreamException {
-        final Defendant defendant = getSampleDefendant("");
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE * 3 - 1), MatchedDefendantsResult.class);
 
-        when(cpSearchResponse.payload()).thenReturn(result);
+        when(cpSearchResponse.payload()).thenReturn(result); // exact - pncId (with and without slash)
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class))).thenReturn(cpSearchResponse);
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(3)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(6)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(6));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getInt(START_FROM), is(0));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().entrySet().size(), is(6));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getInt(START_FROM), is(1));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().entrySet().size(), is(6));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getInt(START_FROM), is(2));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getString(PNC_ID), is(SAMPLE_PNC_ID));
-    }
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().entrySet().size(), is(6));
 
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getInt(START_FROM), is(0));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().entrySet().size(), is(6));
+
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getInt(START_FROM), is(1));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().entrySet().size(), is(6));
+
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getInt(START_FROM), is(2));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().entrySet().size(), is(6));
+    }
 
     @Test
     public void shouldCallPartialSearch_whenExactSearchReturnEmpty() throws Throwable {
@@ -316,40 +390,52 @@ public class MatchedDefendantLoadServiceTest {
 
         final Envelope<DefendantPartialMatchCreated> envelope = envelopeFrom(metadata, defendantPartialMatchCreated);
 
-        final Defendant defendant = getSampleDefendant("");
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(emptyCpSearchResponse) // exact - first&DOB&address
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // partial - croNumber
+                .thenReturn(emptyCpSearchResponse) // partial - DOB&address&last
+                .thenReturn(emptyCpSearchResponse) // partial - DOB&last
+                .thenReturn(cpSearchResponse); // partial - DOB&address
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(8)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(10)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(10));
         verify(eventStream, times(1)).append(persistEventCapture.capture());
 
         final JsonEnvelope persistEnvelope = persistEventCapture.getAllValues().get(0).findFirst().orElseThrow(RuntimeException::new);
         assertThat(persistEnvelope.metadata().name(), is("progression.event.partial-matched-defendant-search-result-stored"));
         assertThat(persistEnvelope.payloadAsJsonObject().getJsonArray("cases").size(), is(2));
 
-        final JsonObject firstCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(3).payload();
-        assertThat(firstCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
-        assertThat(firstCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
-        assertThat(firstCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
-        assertThat(firstCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
-        assertThat(firstCallUnifiedSearchQueryParam.getString(PNC_ID), is(SAMPLE_PNC_ID));
-        assertThat(firstCallUnifiedSearchQueryParam.entrySet().size(), is(5));
+        // partial search queries
+        final JsonObject firstCallFirstSubStepUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(4).payload();
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getInt(START_FROM), is(0));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.entrySet().size(), is(5));
 
-        final JsonObject secondCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(4).payload();
+        final JsonObject firstCallSecondSubStepUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(5).payload();
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getInt(START_FROM), is(0));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.entrySet().size(), is(5));
+
+        final JsonObject secondCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(6).payload();
         assertThat(secondCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(secondCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(secondCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
@@ -357,7 +443,7 @@ public class MatchedDefendantLoadServiceTest {
         assertThat(secondCallUnifiedSearchQueryParam.getString(CRO_NUMBER), is(SAMPLE_CRO_NUMBER));
         assertThat(secondCallUnifiedSearchQueryParam.entrySet().size(), is(5));
 
-        final JsonObject thirdCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(5).payload();
+        final JsonObject thirdCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(7).payload();
         assertThat(thirdCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(thirdCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(thirdCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
@@ -367,7 +453,7 @@ public class MatchedDefendantLoadServiceTest {
         assertThat(thirdCallUnifiedSearchQueryParam.getString(DATE_OF_BIRTH), is(FORMATTER.format(SAMPLE_DATE_OF_BIRTH)));
         assertThat(thirdCallUnifiedSearchQueryParam.entrySet().size(), is(7));
 
-        final JsonObject fourthCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(6).payload();
+        final JsonObject fourthCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(8).payload();
         assertThat(fourthCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(fourthCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(fourthCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
@@ -376,7 +462,7 @@ public class MatchedDefendantLoadServiceTest {
         assertThat(fourthCallUnifiedSearchQueryParam.getString(DATE_OF_BIRTH), is(FORMATTER.format(SAMPLE_DATE_OF_BIRTH)));
         assertThat(fourthCallUnifiedSearchQueryParam.entrySet().size(), is(6));
 
-        final JsonObject fifthCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(7).payload();
+        final JsonObject fifthCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(9).payload();
         assertThat(fifthCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(fifthCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(fifthCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
@@ -387,87 +473,99 @@ public class MatchedDefendantLoadServiceTest {
     }
 
     @Test
-    public void shouldNotSecondCallPartialSearch_whenExactSearchReturnEmptyAndFirstPartialCallReturnsRecord() throws Throwable {
-        final Defendant defendant = getSampleDefendant("");
+    public void shouldNotSecondCriteriaCallPartialSearch_whenExactSearchReturnEmptyAndFirstPartialCallReturnsRecord() throws Throwable {
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(emptyCpSearchResponse) // exact - first&DOB&address
+                .thenReturn(cpSearchResponse) // partial - pncId (with slash)
+                .thenReturn(cpSearchResponse); // partial - pncId (without slash)
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(4)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(6)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(6));
         verify(eventStream, times(1)).append(persistEventCapture.capture());
     }
 
     @Test
-    public void shouldNotThirdCallPartialSearch_whenExactSearchReturnEmptyAndSecondPartialCallReturnsRecord() throws Throwable {
-        final Defendant defendant = getSampleDefendant("");
+    public void shouldNotThirdCriteriaCallPartialSearch_whenExactSearchReturnEmptyAndSecondPartialCallReturnsRecord() throws Throwable {
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITHOUT_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(emptyCpSearchResponse) // exact - first&DOB&address
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (without slash)
+                .thenReturn(cpSearchResponse); // partial - croNumber
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(5)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(7)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(7));
         verify(eventStream, times(1)).append(persistEventCapture.capture());
     }
 
     @Test
-    public void shouldNotFourthCallPartialSearch_whenExactSearchReturnEmptyAndThirdPartialCallReturnsRecord() throws Throwable {
-        final Defendant defendant = getSampleDefendant("");
+    public void shouldNotFourthCriteriaCallPartialSearch_whenExactSearchReturnEmptyAndThirdPartialCallReturnsRecord() throws Throwable {
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(emptyCpSearchResponse) // exact - first&DOB&address
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // partial - croNumber
+                .thenReturn(cpSearchResponse); // partial - DOB&address&last
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(6)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(8)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(8));
         verify(eventStream, times(1)).append(persistEventCapture.capture());
     }
 
     @Test
-    public void shouldNotFifthCallPartialSearch_whenExactSearchReturnEmptyAndFourthPartialCallReturnsRecord() throws Throwable {
-        final Defendant defendant = getSampleDefendant("");
+    public void shouldNotFifthCriteriaCallPartialSearch_whenExactSearchReturnEmptyAndFourthPartialCallReturnsRecord() throws Throwable {
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(emptyCpSearchResponse) // exact - first&DOB&address
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // partial - croNumber
+                .thenReturn(emptyCpSearchResponse) // partial - DOB&address&last
+                .thenReturn(cpSearchResponse); // partial - DOB&last
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
-        verify(requester, times(7)).requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(9)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(9));
         verify(eventStream, times(1)).append(persistEventCapture.capture());
     }
 
@@ -483,31 +581,38 @@ public class MatchedDefendantLoadServiceTest {
                 .build();
         final Envelope<DefendantPartialMatchCreated> envelope = envelopeFrom(metadata, defendantPartialMatchCreated);
 
-        final Defendant defendant = getSampleDefendant(SAMPLE_MIDDLE_NAME);
+        final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, SAMPLE_MIDDLE_NAME);
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(null, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE + 1), MatchedDefendantsResult.class);
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(emptyCpSearchResponse)
-                .thenReturn(cpSearchResponse);
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // exact - pncId (without slash)
+                .thenReturn(emptyCpSearchResponse) // exact - croNumber
+                .thenReturn(emptyCpSearchResponse) // exact - first&DOB&address
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (with slash)
+                .thenReturn(emptyCpSearchResponse) // partial - pncId (without slash)
+                .thenReturn(cpSearchResponse) // partial - croNumber - page 1
+                .thenReturn(cpSearchResponse); // partial - croNumber - page 2
 
         //when
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
         //then
-        verify(requester, times(5)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        verify(requester, times(8)).requestAsAdmin(any(), eq(MatchedDefendantsResult.class));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().size(), is(8));
         verify(eventStream).append(persistEventCapture.capture());
 
         final JsonEnvelope persistEnvelope = persistEventCapture.getAllValues().get(0).findFirst().orElseThrow(RuntimeException::new);
         assertThat(persistEnvelope.metadata().name(), is("progression.event.partial-matched-defendant-search-result-stored"));
         assertThat(persistEnvelope.payloadAsJsonObject().getJsonArray("cases").size(), is(4));
 
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getInt(START_FROM), is(0));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getInt(START_FROM), is(1));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getInt(START_FROM), is(0));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(6).payload().getInt(START_FROM), is(0));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(7).payload().getInt(START_FROM), is(1));
+
     }
 
     private ProsecutionCase getSampleProsecutionCase(final String caseUrn, final String prosecutionAuthorityReference, Defendant defendant) {
@@ -521,12 +626,12 @@ public class MatchedDefendantLoadServiceTest {
                 .build();
     }
 
-    private Defendant getSampleDefendant(String middleName) {
+    private Defendant getSampleDefendant(String pncId, String croNumber, String middleName) {
         return Defendant.defendant()
                 .withId(UUID.randomUUID())
                 .withMasterDefendantId(UUID.randomUUID())
-                .withPncId(SAMPLE_PNC_ID)
-                .withCroNumber(SAMPLE_CRO_NUMBER)
+                .withPncId(pncId)
+                .withCroNumber(croNumber)
                 .withCourtProceedingsInitiated(SAMPLE_COURT_PROCEEDINGS_INITIATED)
                 .withProceedingsConcluded(true)
                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -546,6 +651,7 @@ public class MatchedDefendantLoadServiceTest {
                         .build())
                 .build();
     }
+
 
     private JsonObject getUnifiedSearchResult(final Integer totalCount) {
         return stringToJsonObjectConverter.convert("{\n" +

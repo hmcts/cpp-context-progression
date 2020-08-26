@@ -8,7 +8,7 @@ rule "Command - Rule for update court application"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.update-court-application");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Deputies", "DJMC", "Judge" ));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Court Associate" ));
   then
     $outcome.setSuccess(true);
 end

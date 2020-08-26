@@ -145,6 +145,7 @@
           "id": "ded76309-c912-436b-a21b-a4c4450bc052",
           "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
           "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+          "pncId": "123456",
           "prosecutionAuthorityReference": "TFL4359536",
           "numberOfPreviousConvictionsCited": 99,
           "offences": [
@@ -155,9 +156,10 @@
               "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
               "offenceTitleWelsh": "",
               "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
-              "offenceLegislationWelsh": "",
+              "offenceLegislationWelsh": "testOffenceLegislationWelsh",
               "modeOfTrial": "Summary",
               "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced.",
+              "wordingWelsh": "testWordingWelsh",
               "startDate": "2018-07-02",
               "chargeDate": "2018-08-01",
               "allocationDecision": {
@@ -287,30 +289,15 @@
               "nationalityDescription": "British",
               "nationalInsuranceNumber": "SG12345DC"
             },
-            "pncId": "123456",
             "driverNumber": "ABCD1234",
             "arrestSummonsNumber": "ASN2"
-          },
-          "defenceOrganisation": {
-            "name": "DEFENCE ORGANISATION",
-            "address": {
-              "address1": "Flat 1",
-              "address2": "1 Old Road",
-              "address3": "London",
-              "address4": "Merton",
-              "postcode": "SW99 1AA"
-            },
-            "contact": {
-              "primaryEmail": "abc@test.com",
-              "secondaryEmail": "xyz@test.com"
-            }
           },
           "associatedDefenceOrganisation": {
             "defenceOrganisation": {
               "organisation": {
-                "name": "DEFENCE ORGANISATION",
+                "name": "Sonja & Co LLP",
                 "address": {
-                  "address1": "Flat 1",
+                  "address1": "Legal House",
                   "address2": "1 Old Road",
                   "address3": "London",
                   "address4": "Merton",

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -7,32 +8,41 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForExactMatchDefendants;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForPartialMatchDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unmatchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unmatchDefendant;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForCJSSpec;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForSPISpec;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchForCJSSpec;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchForSPISpec;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.Optional;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class DefendantMatchIT extends AbstractIT {
@@ -224,6 +234,73 @@ public class DefendantMatchIT extends AbstractIT {
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
         return new StringToJsonObjectConverter().convert(strPayload);
+    }
+
+    @Test
+    public void shouldMatchDefendantForSPICase() throws IOException {
+        shouldMatchDefendantsExactlyForCase("SPI", "20160000233W");
+    }
+
+    @Test
+    public void shouldMatchDefendantForCPPICase() throws IOException {
+        shouldMatchDefendantsExactlyForCase("CPPI", "2016/0000233W");
+    }
+
+    private void shouldMatchDefendantsExactlyForCase(final String caseType, final String pncId) throws IOException {
+        stubUnifiedSearchQueryForExactDefendantMatching(prosecutionCaseId_1,defendantId_1);
+
+        final String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
+        initiateCourtProceedingsForExactMatchDefendants(prosecutionCaseId_1, defendantId_1,caseReceivedDate, caseType);
+        verifyInMessagingQueueForProsecutionCaseCreated();
+
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchersForExactMatch(pncId, "Louis");
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+    }
+
+    private Matcher[] getProsecutionCaseMatchersForExactMatch(final String pncId, final String lastName) {
+        final List<Matcher> matchers = newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].pncId", is(pncId)),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.lastName", is(lastName))
+        );
+        return matchers.toArray(new Matcher[0]);
+    }
+
+    private void stubUnifiedSearchQueryForExactDefendantMatching(final String caseId, final String defendantId) {
+        stubUnifiedSearchQueryExactMatchForSPISpec(caseId,defendantId);
+        stubUnifiedSearchQueryExactMatchForCJSSpec(caseId,defendantId);
+    }
+
+    @Test
+    public void shouldMatchDefendantPartiallyForSPICase() throws IOException {
+        shouldMatchDefendantsPartiallyForCase("SPI", "20160000234W");
+    }
+
+    @Test
+    public void shouldMatchDefendantPartiallyForCPPICase() throws IOException {
+        shouldMatchDefendantsPartiallyForCase("CPPI", "2016/0000234W");
+    }
+
+    private Matcher[] getProsecutionCaseMatchersForPartialMatch(final String pncId) {
+        final List<Matcher> matchers = newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].pncId", is(pncId))
+        );
+        return matchers.toArray(new Matcher[0]);
+    }
+
+    private void shouldMatchDefendantsPartiallyForCase(final String caseType, final String pncId) throws IOException {
+        stubUnifiedSearchQueryForPartialDefendantMatching(prosecutionCaseId_1,defendantId_1);
+
+        final String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
+        initiateCourtProceedingsForPartialMatchDefendants(prosecutionCaseId_1, defendantId_1,caseReceivedDate, caseType);
+        verifyInMessagingQueueForProsecutionCaseCreated();
+
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchersForPartialMatch(pncId);
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+    }
+
+    private void stubUnifiedSearchQueryForPartialDefendantMatching(final String caseId, final String defendantId) {
+        stubUnifiedSearchQueryPartialMatchForSPISpec(caseId,defendantId);
+        stubUnifiedSearchQueryPartialMatchForCJSSpec(caseId,defendantId);
     }
 }
 

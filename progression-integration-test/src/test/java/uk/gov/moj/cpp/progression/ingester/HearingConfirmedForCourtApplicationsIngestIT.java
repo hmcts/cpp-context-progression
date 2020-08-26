@@ -109,9 +109,11 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         courtCentreId = UUID.randomUUID().toString();
         applicationId = UUID.randomUUID().toString();
         initialCaseUrn = PreAndPostConditionHelper.generateUrn();
+        final String pncId = "2099/1234567L";
+        final String croNumber = "1234567";
         deleteAndCreateIndex();
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
-        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
+        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), pncId, croNumber);
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

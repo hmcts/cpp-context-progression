@@ -100,6 +100,8 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         final String matchedDefendant_1 = randomUUID().toString();
         final String matchedCaseId_2 = randomUUID().toString();
         final String matchedDefendant_2 = randomUUID().toString();
+        final String pncId = "2099/1234567L";
+        final String croNumber = "1234567";
 
         initiateCourtProceedingsWithoutCourtDocument(matchedCaseId_1, matchedDefendant_1, listedStartDateTime, earliestStartDateTime, defendantDOB);
         pollProsecutionCasesProgressionFor(matchedCaseId_1, getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1));
@@ -108,12 +110,12 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(matchedCaseId_2, getProsecutionCaseMatchers(matchedCaseId_2, matchedDefendant_2));
 
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
-        stubUnifiedSearchQueryPartialMatch(matchedCaseId_1, matchedCaseId_2, matchedDefendant_1, matchedDefendant_2);
+        stubUnifiedSearchQueryPartialMatch(matchedCaseId_1, matchedCaseId_2, matchedDefendant_1, matchedDefendant_2, pncId, croNumber);
         String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
 
         initiateCourtProceedingsForPartialOrExactMatchDefendants(caseId, defendantId, caseReceivedDate);
 
-        final Matcher[] partialMatchDefendantMatchers = getPartialMatchDefendantMatchers(caseId, defendantId);
+        final Matcher[] partialMatchDefendantMatchers = getPartialMatchDefendantMatchers(caseId, defendantId, pncId, croNumber);
         pollPartialMatchDefendantFor(partialMatchDefendantMatchers);
     }
 
@@ -124,6 +126,8 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         final String matchedDefendant_1 = randomUUID().toString();
         final String matchedCaseId_2 = randomUUID().toString();
         final String matchedDefendant_2 = randomUUID().toString();
+        final String pncId = "2099/1234567L";
+        final String croNumber = "1234567";
 
         initiateCourtProceedingsWithoutCourtDocument(matchedCaseId_1, matchedDefendant_1, listedStartDateTime, earliestStartDateTime, defendantDOB);
         pollProsecutionCasesProgressionFor(matchedCaseId_1, getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1));
@@ -131,8 +135,8 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         initiateCourtProceedingsWithoutCourtDocument(matchedCaseId_2, matchedDefendant_2, listedStartDateTime, earliestStartDateTime, defendantDOB);
         pollProsecutionCasesProgressionFor(matchedCaseId_2, getProsecutionCaseMatchers(matchedCaseId_2, matchedDefendant_2));
 
-        stubUnifiedSearchQueryExactMatchWithResults(matchedCaseId_1, matchedCaseId_2, matchedDefendant_1, matchedDefendant_2);
-        stubUnifiedSearchQueryPartialMatch(matchedCaseId_1, matchedCaseId_2, matchedDefendant_1, matchedDefendant_2);
+        stubUnifiedSearchQueryExactMatchWithResults(matchedCaseId_1, matchedCaseId_2, matchedDefendant_1, matchedDefendant_2, pncId, croNumber);
+        stubUnifiedSearchQueryPartialMatch(matchedCaseId_1, matchedCaseId_2, matchedDefendant_1, matchedDefendant_2, pncId, croNumber);
         String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
 
         initiateCourtProceedingsForPartialOrExactMatchDefendants(caseId, defendantId, caseReceivedDate);

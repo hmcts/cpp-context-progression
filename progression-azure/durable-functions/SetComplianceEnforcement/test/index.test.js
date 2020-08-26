@@ -149,6 +149,7 @@ describe('Set compliance Enforcement', function () {
         expect(complianceEnforcementResponse).toHaveLength(2);
         expect(complianceEnforcementResponse[0].masterDefendantId)
             .toBe("6647df67-a065-4d07-90ba-a8daa064ecc4");
+        expect(complianceEnforcementResponse[0].orderedDate).toBe('20-01-2020');
         expect(complianceEnforcementResponse[0].complianceCorrelationId).toBeDefined();
         expect(complianceEnforcementResponse[0].prosecutionCaseURNPRN).toBe("TFL4359536");
         expect(complianceEnforcementResponse[0].prosecutingAuthorityCode).toBe("TFL");
@@ -160,6 +161,7 @@ describe('Set compliance Enforcement', function () {
 
         expect(complianceEnforcementResponse[1].masterDefendantId)
             .toBe("ded76309-c912-436b-a21b-a4c4450bc052");
+        expect(complianceEnforcementResponse[1].orderedDate).toBe('20-01-2020');
         expect(complianceEnforcementResponse[1].complianceCorrelationId).toBeDefined();
         expect(complianceEnforcementResponse[1].prosecutionCaseURNPRN).toBe("TFL4359536");
         expect(complianceEnforcementResponse[1].prosecutingAuthorityCode).toBe("TFL");

@@ -1205,6 +1205,8 @@ public class CaseAggregate implements Aggregate {
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "middleName", defendant.getMiddleName());
             defendantJsonObjectBuilder.add("lastName", defendant.getLastName());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "dateOfBirth", defendant.getDateOfBirth());
+            addToJsonObjectNullSafe(defendantJsonObjectBuilder,"pncId", defendant.getPncId());
+            addToJsonObjectNullSafe(defendantJsonObjectBuilder,"croNumber", defendant.getCroNumber());
             if (nonNull(defendant.getAddress())) {
                 addAddress(defendant.getAddress(), defendantJsonObjectBuilder);
             }

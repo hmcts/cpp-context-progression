@@ -1,4 +1,5 @@
 const LEVEL_TYPE = require('./LevelTypeEnum');
+const dateService = require('../service/DateService');
 
 class DefendantContextBase {
     constructor() {
@@ -8,6 +9,7 @@ class DefendantContextBase {
         this.applications = [];
         this.masterDefendantId = undefined;
         this.isYouthDefendant = false;
+        this.orderedDate = undefined;
     }
 }
 
@@ -43,6 +45,7 @@ class DefendantContextService {
 
         Array.from(defendantMap.values()).forEach(defendantContextBase => {
             if(defendantContextBase.masterDefendantId) {
+                defendantContextBase.orderedDate = this.getOrderedDate(defendantContextBase);
                 defendantContextBaseList.push(defendantContextBase);
             }
         });
@@ -231,6 +234,12 @@ class DefendantContextService {
                 defendantBase.results = defendantBase.results.concat(defendantJudicialResults);
             });
         }
+    }
+
+    getOrderedDate(defendantContextBase) {
+        return defendantContextBase.results.filter((result) => result).map((result)=> result.judicialResult.orderedDate).sort((a, b) => {
+            return dateService.parse(b).getTime() - dateService.parse(a).getTime();
+        })[0];
     }
 }
 

@@ -51,8 +51,13 @@ public class InformantRegisterDocumentRequestQueryView {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         final String requestStatus = envelope.payloadAsJsonObject().getString(FIELD_REQUEST_STATUS);
         if (isNotBlank(requestStatus)) {
-            final List<InformantRegisterEntity> informantRegisterEntities = informantRegisterRepository.findByStatus(RegisterStatus.valueOf(requestStatus));
-            informantRegisterEntities.forEach(informantRegisterEntity -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(informantRegisterEntity)));
+            if(RegisterStatus.RECORDED.toString().equalsIgnoreCase(requestStatus)) {
+                final List<InformantRegisterEntity> informantRegisterEntities = informantRegisterRepository.findByStatusRecorded();
+                informantRegisterEntities.forEach(informantRegisterEntity -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(informantRegisterEntity)));
+            } else {
+                final List<InformantRegisterEntity> informantRegisterEntities = informantRegisterRepository.findByStatus(RegisterStatus.valueOf(requestStatus));
+                informantRegisterEntities.forEach(informantRegisterEntity -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(informantRegisterEntity)));
+            }
         }
         return envelopeFrom(envelope.metadata(),
                 jsonObjectBuilder.add(FIELD_INFORMANT_REGISTER_DOCUMENTS, jsonArrayBuilder.build()).build());
@@ -91,7 +96,8 @@ public class InformantRegisterDocumentRequestQueryView {
             if (prosecutionAuthorities.isEmpty()) {
                 informantRegisterEntities = informantRegisterRepository.findByRegisterDate(regDate);
             } else {
-                informantRegisterEntities = prosecutionAuthorities.stream().map(prosecutionAuthority -> informantRegisterRepository.findByRegisterDateAndProsecutionAuthorityCode(regDate, prosecutionAuthority))
+                informantRegisterEntities = prosecutionAuthorities.stream()
+                        .map(prosecutionAuthority -> informantRegisterRepository.findByRegisterDateAndProsecutionAuthorityCode(regDate, prosecutionAuthority))
                         .flatMap(List::stream)
                         .collect(Collectors.toList());
             }

@@ -85,8 +85,8 @@ class CaseMapper extends Mapper {
                     const results = this.getOffenceResults(offence);
                     if(results.length) {
                         const defendantCaseOffence = new DefendantCaseOffence();
-                        defendantCaseOffence.wording = offence.wording;
-                        defendantCaseOffence.welshWording = offence.wordingWelsh ? offence.wordingWelsh : undefined;
+                        defendantCaseOffence.wording = offence.wording + '\n'+ offence.offenceLegislation;
+                        defendantCaseOffence.welshWording = this.getOffenceWelshWording(offence);
                         defendantCaseOffence.title = offence.offenceTitle;
                         defendantCaseOffence.welshTitle = offence.welshTitle ? offence.welshTitle : undefined;
                         defendantCaseOffence.legislation = offence.offenceLegislation ? offence.offenceLegislation : undefined;
@@ -127,6 +127,14 @@ class CaseMapper extends Mapper {
         });
 
         return defendantCaseOffences;
+    }
+
+    getOffenceWelshWording(offence) {
+        if(offence.wordingWelsh && offence.offenceLegislationWelsh) {
+            return offence.wordingWelsh + '\n'+ offence.offenceLegislationWelsh;
+        } else if(offence.wordingWelsh) {
+            return offence.wordingWelsh;
+        }
     }
 
     getDvlaCode(offence) {

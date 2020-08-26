@@ -22,6 +22,7 @@ public final class RuleConstants {
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
     private static final String GROUP_NPS = "Probation Admin";
+    private static final String GROUP_COURT_ASSOCIATE = "Court Associate";
 
 
 
@@ -35,11 +36,11 @@ public final class RuleConstants {
     }
 
     public static List<String> getUpdateOffencesForDefendantActionGroups() {
-        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS, GROUP_COURT_CLERKS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_NPS);
+        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS, GROUP_COURT_CLERKS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_NPS, GROUP_COURT_ASSOCIATE);
     }
 
     public static List<String> getUpdateDefendantActionGroups() {
-        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS, GROUP_COURT_CLERKS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_NPS);
+        return Arrays.asList(GROUP_CROWN_COURT_ADMIN, GROUP_LISTING_OFFICERS, GROUP_COURT_CLERKS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_NPS, GROUP_COURT_ASSOCIATE);
     }
 
 

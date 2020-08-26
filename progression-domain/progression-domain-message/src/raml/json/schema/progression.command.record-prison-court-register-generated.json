@@ -11,6 +11,14 @@
     "fileId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "hearingDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hearingId": {
+      "description": "The hearing id of the hearing shared",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "hearingVenue": {
       "description": "The venue of the court register",
       "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterHearingVenue.json"
@@ -30,6 +38,8 @@
   },
   "required": [
     "courtCentreId",
+    "hearingId",
+    "hearingDate",
     "fileId",
     "recipients",
     "defendant"

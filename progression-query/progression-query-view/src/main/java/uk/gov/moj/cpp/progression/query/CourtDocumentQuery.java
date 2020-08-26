@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.progression.query;
 
-import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.CourtDocument;
@@ -16,9 +16,11 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
-import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -49,6 +51,7 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +59,8 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776"})
 public class CourtDocumentQuery {
 
+    private static final String GROUPS = "groups";
+    private static final String GROUP_NAME = "groupName";
     public static final String ID_PARAMETER = "courtDocumentId";
     public static final String DEFENDANT_ID_PARAMETER = "defendantId";
     public static final String HEARING_ID_PARAMETER = "hearingId";
@@ -89,13 +94,13 @@ public class CourtDocumentQuery {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
-    private UserAndGroupProvider userAndGroupProvider;
-
-    @Inject
     private NotificationStatusRepository notificationStatusRepository;
 
     @Inject
     private RbacProvider rbacProvider;
+
+    @Inject
+    private Requester requester;
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
@@ -163,17 +168,7 @@ public class CourtDocumentQuery {
                 .flatMap(cd -> cd.getMaterials() == null ? Stream.empty() : cd.getMaterials().stream())
                 .flatMap(m -> m.getUserGroups() == null ? Stream.empty() : m.getUserGroups().stream())
                 .collect(Collectors.toSet());
-        final Set<String> permittedGroups = usergroupsInDocuments.stream().filter(
-                userGroup -> {
-                    boolean isMember = userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(new Action(envelope),
-                            asList(userGroup));
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info(String.format("current user isMemberOf('%s') = %s", userGroup, isMember));
-                    }
-                    return isMember;
-                }
-
-        ).collect(Collectors.toSet());
+        final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, envelope);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format(DOCUMENT_USER_GROUP_LOGGER,
@@ -186,7 +181,7 @@ public class CourtDocumentQuery {
                 .collect(Collectors.toList());
 
         final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments.stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
-                .map(courtDocumentFiltered->courtDocumentTransform.transform(courtDocumentFiltered).build())
+                .map(courtDocumentFiltered -> courtDocumentTransform.transform(courtDocumentFiltered).build())
                 .filter(courtDocumentIndex -> isEmpty(defendantId) || courtDocumentIndex.getDefendantIds().isEmpty() || courtDocumentIndex.getDefendantIds().contains(UUID.fromString(defendantId)))
                 .collect(Collectors.toList());
 
@@ -229,10 +224,7 @@ public class CourtDocumentQuery {
                 .flatMap(cd -> cd.getMaterials() == null ? Stream.empty() : cd.getMaterials().stream())
                 .flatMap(m -> m.getUserGroups() == null ? Stream.empty() : m.getUserGroups().stream())
                 .collect(Collectors.toSet());
-        final Set<String> permittedGroups = usergroupsInDocuments.stream().filter(
-                userGroup -> userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(new Action(envelope),
-                        asList(userGroup))
-        ).collect(Collectors.toSet());
+        final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, envelope);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format(DOCUMENT_USER_GROUP_LOGGER,
@@ -346,4 +338,41 @@ public class CourtDocumentQuery {
 
         jsonArrayBuilder.add(jsonObjectBuilder);
     }
+
+    private Set<String> getPermittedGroups(final Set<String> userGroupsInDocuments, final JsonEnvelope envelope) {
+        final JsonObject userGroupsByUserId = getUserGroupsByUserId(new Action(envelope));
+        return userGroupsInDocuments.stream().filter(
+                userGroup -> isMemberInGroups(userGroupsByUserId, userGroup)
+        ).collect(Collectors.toSet());
+    }
+
+    private boolean isMemberInGroups(JsonObject userGroupsJson, final String userGroup) {
+        boolean isMember = false;
+        if (StringUtils.isNotEmpty(userGroup) && userGroupsJson != null && !userGroupsJson.getJsonArray(GROUPS).isEmpty()) {
+            isMember = userGroupsJson.getJsonArray(GROUPS).stream()
+                    .map(groupJson -> (JsonObject) groupJson)
+                    .anyMatch(groupJsonObj -> userGroup.equalsIgnoreCase(groupJsonObj.getString(GROUP_NAME, null)));
+        }
+        return isMember;
+    }
+
+    private JsonObject getUserGroupsByUserId(final Action action) {
+        JsonObject userGroups = null;
+        final Optional<String> userId = action.userId();
+        if (userId.isPresent()) {
+            final Metadata metadata = metadataFrom(action.envelope().metadata())
+                    .withName("usersgroups.get-groups-by-user")
+                    .build();
+            final JsonObject payload = Json.createObjectBuilder().add("userId", userId.get()).build();
+            final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
+
+            final Envelope<JsonObject> response = requester.requestAsAdmin(jsonEnvelope, JsonObject.class);
+            if (response.payload().getValueType() != JsonValue.ValueType.NULL) {
+                userGroups = response.payload();
+            }
+        }
+
+        return userGroups;
+    }
+
 }

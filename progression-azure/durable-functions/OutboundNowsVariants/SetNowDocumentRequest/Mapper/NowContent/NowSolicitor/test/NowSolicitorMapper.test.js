@@ -9,8 +9,8 @@ describe('Solicitor mapper builds correctly', () => {
         const solicitorMapper = new NowSolicitorMapper(nowVariantJson, hearingJson);
         const solicitor = solicitorMapper.buildNowSolicitor();
 
-        expect(solicitor.name).toBe('DEFENCE ORGANISATION');
-        expect(solicitor.address.line1).toBe('Flat 1');
+        expect(solicitor.name).toBe('Sonja & Co LLP');
+        expect(solicitor.address.line1).toBe('Legal House');
         expect(solicitor.address.line2).toBe('1 Old Road');
         expect(solicitor.address.line3).toBe('London');
         expect(solicitor.address.line4).toBe('Merton');

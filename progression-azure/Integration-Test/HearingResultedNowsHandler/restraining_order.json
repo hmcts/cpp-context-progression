@@ -1,0 +1,443 @@
+{
+  "hearing": {
+    "hearing": {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "NOT_PRESENT",
+              "day": "2020-07-27"
+            }
+          ],
+          "defendantId": "8721e906-9956-47f0-beb7-d6411f098174"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 1,
+          "listingSequence": 0,
+          "sittingDay": "2020-07-26T08:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 2,
+          "listingSequence": 0,
+          "sittingDay": "2020-07-31T14:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "5ee48b8d-f359-4c96-a90b-8870a4eb2bff",
+      "judiciary": [
+        {
+          "firstName": "Shamim (Sham)",
+          "isBenchChairman": true,
+          "isDeputy": true,
+          "judicialId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+          "judicialRoleType": {
+            "judicialRoleTypeId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+            "judiciaryType": "DJ"
+          },
+          "lastName": "Qureshi",
+          "title": "Mr",
+          "userId": "0a87257e-5308-397d-b432-30edf4ad1dae"
+        }
+      ],
+      "jurisdictionType": "MAGISTRATES",
+      "prosecutionCases": [
+        {
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-07-26T16:33:01.647Z",
+              "id": "8721e906-9956-47f0-beb7-d6411f098174",
+              "isYouth": false,
+              "masterDefendantId": "8721e906-9956-47f0-beb7-d6411f098174",
+              "offences": [
+                {
+                  "arrestDate": "2019-06-13",
+                  "chargeDate": "2019-06-12",
+                  "convictionDate": "2020-07-27",
+                  "count": 0,
+                  "id": "ebfc885a-556e-4ae9-82d3-161ef73309b7",
+                  "indicatedPlea": {
+                    "indicatedPleaDate": "2020-07-27",
+                    "indicatedPleaValue": "INDICATED_GUILTY",
+                    "offenceId": "ebfc885a-556e-4ae9-82d3-161ef73309b7",
+                    "originatingHearingId": "5ee48b8d-f359-4c96-a90b-8870a4eb2bff",
+                    "source": "IN_COURT"
+                  },
+                  "isDisposed": true,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "FINAL",
+                      "cjsCode": "3047",
+                      "courtClerk": {
+                        "firstName": "Emma",
+                        "lastName": "Cleaner",
+                        "userId": "676ae4c5-fdd9-469e-a528-dd5b12c90287"
+                      },
+                      "d20": false,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": false,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "isUnscheduled": false,
+                      "judicialResultId": "41b81ab7-d556-490f-9ccd-9855b78e6664",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "63388a8f-bc53-40cb-96d0-3ffd1ed96498",
+                          "label": "Protected person's name",
+                          "promptReference": "protectedPersonsName",
+                          "promptSequence": 100,
+                          "type": "TXT",
+                          "usergroups": [
+                            "CPS",
+                            "Defence",
+                            "Judiciary",
+                            "NCES",
+                            "Probation",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "ProtectedPersonName",
+                          "welshValue": "ProtectedPersonName"
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "8df0ec7e-5985-4998-af1a-5da293d9cb3c",
+                          "label": "Order details",
+                          "promptReference": "orderDetails",
+                          "promptSequence": 300,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "Some Order Details",
+                          "welshValue": "Some Order Details"
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "durationSequence": 1,
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "3b0c95d5-9595-4ddd-88b8-1a2e3e70d01f",
+                          "label": "This order lasts until",
+                          "promptReference": "thisOrderLastsUntil",
+                          "promptSequence": 400,
+                          "type": "DATE",
+                          "usergroups": [
+                          ],
+                          "value": "05/08/2020",
+                          "welshValue": "05/08/2020"
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "47337f1c-e343-4093-884f-035ba96c4db0",
+                          "label": "This order is made on",
+                          "promptReference": "thisOrderIsMadeOn",
+                          "promptSequence": 600,
+                          "type": "FIXL",
+                          "usergroups": [
+                          ],
+                          "value": "Conviction",
+                          "welshValue": "Conviction"
+                        },
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "ea26f773-0a91-4526-b4ad-84d07b5bf940",
+                          "label": "Reason",
+                          "promptReference": "reason",
+                          "promptSequence": 700,
+                          "type": "TXT",
+                          "usergroups": [
+                          ],
+                          "value": "Some Reason",
+                          "welshValue": "Some Reason"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address address line 1",
+                          "promptReference": "protectedpersonsaddressAddress1",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "AddressLine1",
+                          "welshValue": "AddressLine1"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address address line 2",
+                          "promptReference": "protectedpersonsaddressAddress2",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "AddressLine2",
+                          "welshValue": "AddressLine2"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address address line 3",
+                          "promptReference": "protectedpersonsaddressAddress3",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "AddressLine3",
+                          "welshValue": "AddressLine3"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address address line 4",
+                          "promptReference": "protectedpersonsaddressAddress4",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "AddressLine4",
+                          "welshValue": "AddressLine4"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address address line 5",
+                          "promptReference": "protectedpersonsaddressAddress5",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "AddressLine5",
+                          "welshValue": "AddressLine5"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address post code",
+                          "promptReference": "protectedpersonsaddressPostCode",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "ER4 5DF",
+                          "welshValue": "ER4 5DF"
+                        },
+                        {
+                          "courtExtract": "N",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "abc9bb61-cb5b-4cf7-be24-8866bcd2fc69",
+                          "label": "Protected person's address email address 1",
+                          "promptReference": "protectedpersonsaddressEmailAddress1",
+                          "promptSequence": 200,
+                          "type": "ADDRESS",
+                          "usergroups": [
+                            "Defence",
+                            "Probation",
+                            "CPS",
+                            "Judiciary",
+                            "NCES",
+                            "Prosecuting Authorities",
+                            "YOTs"
+                          ],
+                          "value": "df@asd.com",
+                          "welshValue": "df@asd.com"
+                        }
+                      ],
+                      "judicialResultTypeId": "2cda53d9-c8dd-4fa0-866c-a6a2cc16f461",
+                      "label": "Restraining order",
+                      "lastSharedDateTime": "2020-07-26",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-07-26",
+                      "orderedHearingId": "5ee48b8d-f359-4c96-a90b-8870a4eb2bff",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 9500,
+                      "resultDefinitionGroup": "Restraining order",
+                      "resultText": "Restraining order\nProtected person's name ProtectedPersonName\nOrder details Some Order Details\nThis order lasts until 05/08/2020\nThis order is made on Conviction\nReason Some Reason\nProtected person's address address line 1 AddressLine1\nProtected person's address address line 2 AddressLine2\nProtected person's address address line 3 AddressLine3\nProtected person's address address line 4 AddressLine4\nProtected person's address address line 5 AddressLine5\nProtected person's address post code ER4 5DF\nProtected person's address email address 1 df@asd.com",
+                      "rollUpPrompts": true,
+                      "terminatesOffenceProceedings": false,
+                      "urgent": true,
+                      "usergroups": [
+                      ]
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "offenceCode": "TW01046",
+                  "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                  "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                  "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                  "orderIndex": 1,
+                  "plea": {
+                    "delegatedPowers": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "offenceId": "ebfc885a-556e-4ae9-82d3-161ef73309b7",
+                    "originatingHearingId": "5ee48b8d-f359-4c96-a90b-8870a4eb2bff",
+                    "pleaDate": "2020-07-27",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2019-06-11",
+                  "verdict": {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "29a8e8fe-e47e-43b3-a58d-03e05fe3ffaf",
+                      "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+                      "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+                      "offenceTitle": "Section 18 - attempt    wounding with intent"
+                    },
+                    "offenceId": "ebfc885a-556e-4ae9-82d3-161ef73309b7",
+                    "originatingHearingId": "5ee48b8d-f359-4c96-a90b-8870a4eb2bff",
+                    "verdictDate": "2020-07-27",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY_CONVICTED",
+                      "id": "467b3401-ff82-42ba-b35e-fa4deaedc460"
+                    }
+                  },
+                  "wording": "Test Prosecution charge wording"
+                }
+              ],
+              "personDefendant": {
+                "bailConditions": "",
+                "bailStatus": {
+                  "code": "A",
+                  "description": "Not applicable",
+                  "id": "86009c70-759d-3308-8de4-194886ff9a77"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "v6rqPgRIGe"
+                  },
+                  "dateOfBirth": "1954-02-05",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "4",
+                    "observedEthnicityDescription": "Asian",
+                    "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Benedict",
+                  "gender": "MALE",
+                  "lastName": "Webster",
+                  "nationalityCode": "GBR",
+                  "nationalityDescription": "British",
+                  "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                  "title": "Mr"
+                }
+              },
+              "prosecutionAuthorityReference": "RrtMVsvIey5tQ6LqGsbQoOEo51OGlhBSax2G",
+              "prosecutionCaseId": "e846ac1a-301d-4cfe-b2e0-9e6cc99b8a99"
+            }
+          ],
+          "id": "e846ac1a-301d-4cfe-b2e0-9e6cc99b8a99",
+          "initiationCode": "C",
+          "originatingOrganisation": "GAAAA01",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "ARU",
+              "address2": "C1/West Morriston Swansea",
+              "address3": "Swansea",
+              "postcode": "SA6 7JL"
+            },
+            "majorCreditorCode": "DVL2",
+            "prosecutionAuthorityCode": "DVLA",
+            "prosecutionAuthorityId": "6ae4b163-658b-3ae2-a66d-43401cac2f96",
+            "prosecutionAuthorityName": "Driver and Vehicle Licensing Agency",
+            "prosecutionAuthorityOUCode": "GAAAA01",
+            "caseURN": "30GD9489920"
+          }
+        }
+      ],
+      "type": {
+        "description": "First Hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      }
+    },
+    "sharedTime": "2020-07-26T16:33:26.021Z"
+  }
+}

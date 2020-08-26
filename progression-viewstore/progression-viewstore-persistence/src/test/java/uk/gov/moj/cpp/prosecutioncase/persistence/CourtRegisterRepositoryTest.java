@@ -45,14 +45,6 @@ public class CourtRegisterRepositoryTest {
     }
 
     @Test
-    public void shouldFindTheCourtRegisterRequestsByStatus() {
-        final List<CourtRegisterRequestEntity> courtRegisterRequestEntities =
-                courtRegisterRequestRepository.findByCourtCenterIdAndStatusRecorded(COURT_CENTRE_ID);
-        assertThat(courtRegisterRequestEntities.size(), is(1));
-    }
-
-
-    @Test
     public void shouldFindTheCourtRegisterRequestsByDateAndProsecutionAuthority() {
         final List<CourtRegisterRequestEntity> courtRegisterRequestEntities =
                 courtRegisterRequestRepository.findByRequestDateAndCourtHouse(LocalDate.now(), "Lavender Hill");

@@ -20,7 +20,7 @@ describe('Offence Mapper', () => {
         expect(result[0].offenceCode).toBe(fakeOffences[0].offenceCode);
         expect(result[0].offenceTitle).toBe(fakeOffences[0].offenceTitle);
         expect(result[0].orderIndex).toBe(fakeOffences[0].orderIndex);
-
+        expect(result[0].wording).toBe(fakeOffences[0].wording +'####'+fakeOffences[0].offenceLegislation );
         expect(result[0].pleaValue).toBe(fakeOffences[0].plea.pleaValue);
         expect(result[0].verdictCode).toBe(fakeOffences[0].verdict.verdictType.description);
         expect(result[0].indicatedPleaValue).toBe(fakeOffences[0].indicatedPlea.indicatedPleaValue);

@@ -149,11 +149,23 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     }
 
     private Defendant getUpdatedDefendant(final Defendant originalDefendant, final Defendant defendant) {
+        final List<Offence> offences = nonNull(originalDefendant.getOffences()) ? new ArrayList<>(originalDefendant.getOffences()): new ArrayList<>();
+
+        if (nonNull(defendant.getOffences())) {
+            final List<Offence> updatedOffences = getUpdatedOffencesWithNonNowsJudicialResults(defendant.getOffences());
+
+            updatedOffences.forEach(updatedOffence -> {
+                if (offences.removeIf(offence -> offence.getId().equals(updatedOffence.getId()))) {
+                    offences.add(updatedOffence);
+                }
+            });
+        }
+
         return Defendant.defendant()
                 .withId(defendant.getId())
                 .withMasterDefendantId(defendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
-                .withOffences(getUpdatedOffencesWithNonNowsJudicialResults(defendant.getOffences()))
+                .withOffences(offences)
                 .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalAidStatus(defendant.getLegalAidStatus())
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())

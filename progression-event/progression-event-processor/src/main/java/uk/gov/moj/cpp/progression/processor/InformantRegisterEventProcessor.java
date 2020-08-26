@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -35,7 +36,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -132,16 +132,18 @@ public class InformantRegisterEventProcessor {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final JsonString fileId = payload.getJsonString(FILE_ID);
         final JsonString templateId = payload.getJsonString(FIELD_TEMPLATE_ID);
-        final Optional<JsonObject> recipient = payload.getJsonArray(FIELD_RECIPIENTS).getValuesAs(JsonObject.class).stream().findFirst();
-        recipient.ifPresent(rp -> {
-            final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
-            notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, fileId);
-            notifyObjectBuilder.add(FIELD_TEMPLATE_ID, templateId);
-            notifyObjectBuilder.add(SEND_TO_ADDRESS, rp.getJsonString(EMAIL_ADDRESS));
-            notifyObjectBuilder.add(FILE_ID, fileId);
-            notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder().add(RECIPIENT, rp.getString(RECIPIENT_NAME)).build());
-            this.notificationNotifyService.sendEmailNotification(envelope, notifyObjectBuilder.build());
-        });
+        final List<JsonObject> recipients = payload.getJsonArray(FIELD_RECIPIENTS).getValuesAs(JsonObject.class);
+        if(nonNull(recipients)) {
+            recipients.forEach(rp -> {
+                final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
+                notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, randomUUID().toString());
+                notifyObjectBuilder.add(FIELD_TEMPLATE_ID, templateId);
+                notifyObjectBuilder.add(SEND_TO_ADDRESS, rp.getJsonString(EMAIL_ADDRESS));
+                notifyObjectBuilder.add(FILE_ID, fileId);
+                notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder().add(RECIPIENT, rp.getString(RECIPIENT_NAME)).build());
+                this.notificationNotifyService.sendEmailNotification(envelope, notifyObjectBuilder.build());
+            });
+        }
     }
 
     private byte[] generateCsvDocument(final List<JsonObject> informantRegistersByRegisterDate) throws IOException {

@@ -22,10 +22,10 @@ public interface CourtRegisterRequestRepository extends EntityRepository<CourtRe
 
     @Query("select courtRegister from CourtRegisterRequestEntity courtRegister " +
             "where courtRegister.courtCentreId = :courtCentreId" +
-            " and courtRegister.status = 'RECORDED' and courtRegister.registerTime IN " +
-            "(select max(cr.registerTime) from CourtRegisterRequestEntity cr " +
+            " and courtRegister.status = 'RECORDED' and courtRegister.processedOn is null and (courtRegister.registerTime, courtRegister.hearingId) IN " +
+            "(select max(cr.registerTime), cr.hearingId from CourtRegisterRequestEntity cr " +
             "where cr.courtCentreId = :courtCentreId " +
-            "and cr.status = 'RECORDED' group by cr.hearingId)")
+            "and cr.status = 'RECORDED' and cr.processedOn is null group by cr.hearingId, cr.status)")
     List<CourtRegisterRequestEntity> findByCourtCenterIdAndStatusRecorded(@QueryParam("courtCentreId") final UUID courtCentreId);
 
     @Query("select courtRegister from CourtRegisterRequestEntity courtRegister " +
@@ -45,5 +45,14 @@ public interface CourtRegisterRequestRepository extends EntityRepository<CourtRe
 
     @Query("select courtRegister FROM CourtRegisterRequestEntity courtRegister where courtCentreId=:courtCentreId and status='GENERATED'")
     List<CourtRegisterRequestEntity> findByCourtCenterIdAndStatusGenerated(@QueryParam("courtCentreId") final UUID courtCentreId);
+
+    @Query("select courtRegister from CourtRegisterRequestEntity courtRegister " +
+            " where courtRegister.hearingId = :hearingId and courtRegister.status = 'RECORDED'")
+    List<CourtRegisterRequestEntity> findByHearingIdAndStatusRecorded(@QueryParam("hearingId") UUID hearingId);
+
+    @Query("select courtRegister from CourtRegisterRequestEntity courtRegister " +
+            "where courtRegister.status = 'RECORDED' and courtRegister.processedOn is null and (courtRegister.registerTime, courtRegister.hearingId) IN " +
+            "(select max(cr.registerTime), hearingId from CourtRegisterRequestEntity cr where cr.status = 'RECORDED' AND cr.processedOn is null group by cr.hearingId, cr.status)")
+    List<CourtRegisterRequestEntity> findByStatusRecorded();
 
 }

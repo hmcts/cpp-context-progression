@@ -77,6 +77,8 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         final String matchedDefendantId_1 = randomUUID().toString();
         final String matchedProsecutionCaseId_2 = randomUUID().toString();
         final String matchedDefendantId_2 = randomUUID().toString();
+        final String pncId = "2099/1234567L";
+        final String croNumber = "1234567";
 
         addProsecutionCaseToCrownCourt(matchedProsecutionCaseId_1, matchedDefendantId_1);
         Matcher[] matchers = getProsecutionCaseMatchers(matchedProsecutionCaseId_1, matchedDefendantId_1, emptyList());
@@ -87,7 +89,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(matchedProsecutionCaseId_2, matchers);
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
-        stubUnifiedSearchQueryExactMatchWithResults(matchedProsecutionCaseId_1, matchedProsecutionCaseId_1, matchedDefendantId_1, matchedDefendantId_2);
+        stubUnifiedSearchQueryExactMatchWithResults(matchedProsecutionCaseId_1, matchedProsecutionCaseId_1, matchedDefendantId_1, matchedDefendantId_2, pncId, croNumber);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);
 

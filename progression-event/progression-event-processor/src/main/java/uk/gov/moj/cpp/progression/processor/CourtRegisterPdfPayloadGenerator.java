@@ -96,7 +96,7 @@ public class CourtRegisterPdfPayloadGenerator {
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                        .add(RESULT_TEXT, clearEscapeCharacters(result.getString(RESULT_TEXT, "")));
+                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());
             });
         });
@@ -112,7 +112,7 @@ public class CourtRegisterPdfPayloadGenerator {
         Optional.ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
             final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                     .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                    .add(RESULT_TEXT, clearEscapeCharacters(result.getString(RESULT_TEXT, "")));
+                    .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
             jsonArrayBuilder.add(resultBuilder.build());
         }));
 
@@ -132,7 +132,7 @@ public class CourtRegisterPdfPayloadGenerator {
                     .add("decisionDate", formatDate(pcoaJson.getString("applicationDecisionDate", DASH)))
                     .add("response", pcoaJson.getString("applicationResponse", DASH))
                     .add("responseDate", formatDate(pcoaJson.getString("applicationResponseDate", DASH)))
-                    .add("result", clearEscapeCharacters(pcoaJson.getString("applicationResult", DASH)))
+                    .add("result", clearUndesiredCharacters(pcoaJson.getString("applicationResult", DASH)))
                     .build();
             jsonArrayBuilder.add(application);
         }
@@ -222,8 +222,8 @@ public class CourtRegisterPdfPayloadGenerator {
             final String convictionDate = formatDate(offenceJson.getString(CONVICTION_DATE, DASH));
             final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder()
                     .add("offenceCode", offenceJson.getString("offenceCode", DASH))
-                    .add("offenceTitle", clearEscapeCharacters(offenceJson.getString("offenceTitle", DASH)))
-                    .add("wording", clearEscapeCharacters(offenceJson.getString("wording", DASH)))
+                    .add("offenceTitle", clearUndesiredCharacters(offenceJson.getString("offenceTitle", DASH)))
+                    .add("wording", addNewLineIfDesired(clearUndesiredCharacters(offenceJson.getString("wording", DASH))))
                     .add("allocationDecision", offenceJson.getString("allocationDecision", DASH))
                     .add(CONVICTION_DATE, convictionDate)
                     .add("verdictCode", offenceJson.getString("verdictCode", DASH));
@@ -247,7 +247,7 @@ public class CourtRegisterPdfPayloadGenerator {
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                        .add(RESULT_TEXT, clearEscapeCharacters(result.getString(RESULT_TEXT, "")));
+                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());
             });
             offenceBuilder.add(RESULTS, jsonArrayBuilder);
@@ -324,8 +324,12 @@ public class CourtRegisterPdfPayloadGenerator {
         }
     }
 
-    private String clearEscapeCharacters(String input) {
+    private String clearUndesiredCharacters(final String input) {
         return input.replaceAll("\\s+", " ").trim();
+    }
+
+    private String addNewLineIfDesired(final String input) {
+        return input.replaceAll("####", "\n").trim();
     }
 
     private boolean isApplicationValid(JsonObject pcoaJson) {

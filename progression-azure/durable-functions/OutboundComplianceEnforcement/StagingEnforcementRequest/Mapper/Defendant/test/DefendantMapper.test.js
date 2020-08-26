@@ -32,5 +32,6 @@ describe('Defendant mapper works correctly', () => {
         expect(defendant.hearingLanguage).toBe('ENGLISH');
         expect(defendant.dateOfSentence).toBe('20-01-2020');
         expect(defendant.documentLanguage).toBe('ENGLISH');
+        expect(defendant.dateOfSentence).toBe('20-01-2020');
     })
 })

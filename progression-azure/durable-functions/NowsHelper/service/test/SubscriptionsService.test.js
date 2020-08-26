@@ -264,7 +264,7 @@ describe('Building Subscriptions Objects', () => {
 
         const response = await new SubscriptionsService().getSubscriptions(subscriptionObj);
 
-        expect(response.length).toBe(1);
+        expect(response.length).toBe(0);
     });
 
     test('Should return subscription where Defence usergroup is excluded in the variant and no userGroupVariant in Subscription metadata', async () => {

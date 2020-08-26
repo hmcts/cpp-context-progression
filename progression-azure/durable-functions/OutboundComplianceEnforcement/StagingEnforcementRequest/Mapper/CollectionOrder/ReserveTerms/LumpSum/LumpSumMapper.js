@@ -23,10 +23,17 @@ class LumpSumMapper extends Mapper {
             const allPromptsFromJudicialResults = this.collectPromptsFromJudicialResults(this.complianceEnforcement.reserveTermsResults);
             const lumpSum = new LumpSum();
             const reserveTermsAmount = this.getReserveTermsAmount(allPromptsFromJudicialResults, reserveTermType);
-            lumpSum.amount = reserveTermsAmount.outstandingBalance;
+            lumpSum.amount = this.getLumpSumAmount(reserveTermsAmount.outstandingBalance);
             lumpSum.amountImposed = reserveTermsAmount.total;
             // lumpSum.withinDays = null //Not sure yet.
             return lumpSum;
+        }
+    }
+
+    getLumpSumAmount(lumpSumAmount) {
+        if(lumpSumAmount) {
+            return Number(parseFloat(lumpSumAmount.startsWith('£') ? lumpSumAmount.substring(1)
+                                                                   : lumpSumAmount).toFixed(2));
         }
     }
 

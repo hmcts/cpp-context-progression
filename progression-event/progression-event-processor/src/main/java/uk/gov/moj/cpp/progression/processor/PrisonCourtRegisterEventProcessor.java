@@ -44,6 +44,8 @@ public class PrisonCourtRegisterEventProcessor {
     private static final String PERSONALISATION = "personalisation";
     private static final String DEFENDANT = "defendant";
     private static final String HEARING_VENUE = "hearingVenue";
+    private static final String HEARING_ID = "hearingId";
+    private static final String HEARING_DATE = "hearingDate";
 
     private static final String PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_GENERATED = "progression.command.record-prison-court-register-generated";
 
@@ -86,6 +88,8 @@ public class PrisonCourtRegisterEventProcessor {
                 .add("courtCentreId", prisonCourtRegister.getString("courtCentreId"))
                 .add(DEFENDANT, prisonCourtRegister.getJsonObject(DEFENDANT))
                 .add(HEARING_VENUE, prisonCourtRegister.getJsonObject(HEARING_VENUE))
+                .add(HEARING_ID, prisonCourtRegister.getString(HEARING_ID))
+                .add(HEARING_DATE, prisonCourtRegister.getString(HEARING_DATE))
                 .add(FILE_ID, fileId.toString())
                 .add(FIELD_RECIPIENTS, prisonCourtRegister.getJsonArray(FIELD_RECIPIENTS));
 

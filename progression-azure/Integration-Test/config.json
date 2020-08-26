@@ -1,5 +1,5 @@
 {
-  "AzureWebJobsStorage": "usedevelopmentstorage=true",
+  "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=sasteccp0102laafa;AccountKey=fxJxybGKvxFQDh0wLUH44T3d/rni5BEIcsDk4eM41uUB93q1c9x6xeGzYNN6G7s1LL+9G2jkcQIGTsQP3sTMtQ==;EndpointSuffix=core.windows.net",
   "REFERENCE_DATA_CONTEXT_API_BASE_URI": "http://localhost:8080",
   "ENFORCEMENT_CONTEXT_API_BASE_URI": "http://localhost:8080",
   "PROGRESSION_CONTEXT_API_BASE_URI": "http://localhost:8080",

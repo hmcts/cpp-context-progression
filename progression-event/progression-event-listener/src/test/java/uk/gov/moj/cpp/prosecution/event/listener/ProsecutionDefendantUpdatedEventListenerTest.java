@@ -45,9 +45,10 @@ import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -175,7 +176,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
         Defendant defendant3 = Defendant.defendant().withId(randomUUID()).build();
 
-        List<Defendant> defendantList = getDefendants(commonUUID, commonUUID, commonUUID, randomUUID());
+        List<Defendant> defendantList = getDefendants(commonUUID, commonUUID, commonUUID, randomUUID(), Arrays.asList(randomUUID()));
         defendantList.add(defendant1);
         defendantList.add(defendant2);
         defendantList.add(defendant3);
@@ -262,7 +263,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                                 .build())
                         .build()).build();
 
-        List<Defendant> defendantList = getDefendants(defendantId, defendantId, defendantId, randomUUID());
+        List<Defendant> defendantList = getDefendants(defendantId, defendantId, defendantId, randomUUID(), Arrays.asList(randomUUID()));
         defendantList.add(defendant1);
 
         List<Defendant> defendants = new ArrayList<>();
@@ -333,7 +334,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                                 .build())
                         .build()).build();
 
-        List<Defendant> defendantList = getDefendants(defendantId, defendantId, defendantId, randomUUID());
+        List<Defendant> defendantList = getDefendants(defendantId, defendantId, defendantId, randomUUID(), Arrays.asList(randomUUID()));
         defendantList.add(defendant1);
 
         List<Defendant> defendants = new ArrayList<>();
@@ -383,7 +384,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final UUID def3 = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
 
-        final List<Defendant> defsList = getDefendants(def1, def2, def3, prosecutionCaseId);
+        final UUID of1 = randomUUID();
+        final UUID of2= randomUUID();
+
+        final List<Defendant> defsList = getDefendants(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1));
 
         when(hearingResultedCaseUpdated.getProsecutionCase()).thenReturn(prosecutionCase);
         when(prosecutionCase.getDefendants()).thenReturn(defsList);
@@ -396,7 +400,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                         .build()).build();
 
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
-                .withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId))
+                .withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1, of2)))
                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
@@ -416,19 +420,19 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
         assertThat(prosecutionCase.getDefendants().get(0).getProceedingsConcluded(), equalTo(true));
         assertThat(prosecutionCase.getDefendants().get(0).getAssociationLockedByRepOrder(), equalTo(true));
-
-        assertThat(prosecutionCase.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), equalTo(true));
-
+        final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream().filter(def -> def.getId().equals(def1)).findFirst();
+        assertThat(defendant.isPresent(), is(true));
+        assertThat(defendant.get().getOffences().size(), is(2));
+        assertThat(defendant.get().getOffences().get(0).getProceedingsConcluded(), equalTo(true));
         assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
 
 
     }
 
-    private List<Defendant> getDefendants(final UUID defandantId1, final UUID defandantId2, final UUID defandantId3, final UUID prosecutionCaseId) {
-
-        final Offence offence1 = Offence.offence().withProceedingsConcluded(true).build();
+    private List<Defendant> getDefendants(final UUID defandantId1, final UUID defandantId2, final UUID defandantId3, final UUID prosecutionCaseId, final List<UUID> offenceIds) {
+        final List<Offence> offences = offenceIds.stream().map(id -> Offence.offence().withId(id).withProceedingsConcluded(true).build()).collect(Collectors.toList());
         final Defendant defendant1 = Defendant.defendant().withId(defandantId1).withProceedingsConcluded(true)
-                .withOffences(Collections.singletonList(offence1))
+                .withOffences(offences)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withAssociationLockedByRepOrder(true)
                 .build();

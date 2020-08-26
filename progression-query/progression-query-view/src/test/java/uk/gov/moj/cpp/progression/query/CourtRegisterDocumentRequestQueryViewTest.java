@@ -46,7 +46,7 @@ public class CourtRegisterDocumentRequestQueryViewTest {
         courtRegisterRequestEntity.setStatus(RegisterStatus.RECORDED);
         final JsonObject transformedJsonEntity = Json.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build();
         when(objectToJsonObjectConverter.convert(courtRegisterRequestEntity)).thenReturn(transformedJsonEntity);
-        when(courtRegisterRequestRepository.findByStatus(RegisterStatus.RECORDED)).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
+        when(courtRegisterRequestRepository.findByStatusRecorded()).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
         final JsonEnvelope courtRegisterRequests = courtRegisterDocumentRequestQueryView.getCourtRegisterRequests(envelope);
         assertThat(courtRegisterRequests.payloadAsJsonObject().getJsonArray("courtRegisterDocumentRequests").size(), is(1));
         assertThat(courtRegisterRequests.payloadAsJsonObject().getJsonArray("courtRegisterDocumentRequests")

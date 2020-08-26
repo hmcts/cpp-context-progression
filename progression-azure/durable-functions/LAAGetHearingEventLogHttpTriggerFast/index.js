@@ -48,7 +48,7 @@ module.exports = async function (context, req) {
 
     if (hearingJson) {
 
-        const filteredJson = laaFilter(hearingJson, context);
+        const filteredJson = await laaFilter(hearingJson, context);
 
         if (filteredJson == null) error(context, 'filtered JSON is null'); else
         if (Object.keys(filteredJson).length === 0) error(context, `No LAA reference found for hearing ${hearingId} with date ${hearingDate}`)

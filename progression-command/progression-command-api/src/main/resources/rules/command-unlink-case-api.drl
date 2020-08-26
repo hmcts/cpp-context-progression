@@ -8,7 +8,7 @@ rule "Command - Rule for unlink cases"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.unlink-cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate"));
   then
     $outcome.setSuccess(true);
 end

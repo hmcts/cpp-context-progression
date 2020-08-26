@@ -211,9 +211,8 @@ class NowDefendantMapper extends Mapper {
     }
 
     pncId(defendantFromHearingJson) {
-        if (defendantFromHearingJson.personDefendant
-            && defendantFromHearingJson.personDefendant.pncId) {
-            return defendantFromHearingJson.personDefendant.pncId;
+        if (defendantFromHearingJson.pncId) {
+            return defendantFromHearingJson.pncId;
         }
     }
 
@@ -330,7 +329,7 @@ class NowDefendantMapper extends Mapper {
     }
 
     getSolicitor(defendantFromHearingJson) {
-        if (this.nowVariant.now.includeSolicitorsNameAddress && defendantFromHearingJson.defenceOrganisation) {
+        if (this.nowVariant.now.includeSolicitorsNameAddress && defendantFromHearingJson.associatedDefenceOrganisation) {
             return this.getSolicitorMapper();
         }
     }

@@ -144,8 +144,13 @@ public class MatchedDefendantLoadService {
 
     private List<Cases> callUnifiedSearchQueryForExactMatch(final MatchedDefendantCriteria matchedDefendantCriteria, final Envelope<?> envelope) {
         final List<Cases> casesList = new ArrayList<>();
-        while (casesList.isEmpty() && matchedDefendantCriteria.nextExactCriteria()) {
-            casesList.addAll(callUnifiedSearchQuery(envelope, matchedDefendantCriteria.getExactCriteria().build()));
+        while (casesList.isEmpty() && matchedDefendantCriteria.hasMoreExactSteps()) {
+            final int lastExactStep = matchedDefendantCriteria.getCurrentExactStep();
+            while (lastExactStep == matchedDefendantCriteria.getCurrentExactStep() && matchedDefendantCriteria.hasMoreSubSteps()) {
+                if (matchedDefendantCriteria.nextExactCriteria()) {
+                    casesList.addAll(callUnifiedSearchQuery(envelope, matchedDefendantCriteria.getExactCriteria().build()));
+                }
+            }
         }
 
         return casesList;
@@ -153,8 +158,13 @@ public class MatchedDefendantLoadService {
 
     private List<Cases> callUnifiedSearchQueryForPartialMatch(final MatchedDefendantCriteria matchedDefendantCriteria, final Envelope<?> envelope) {
         final List<Cases> casesList = new ArrayList<>();
-        while (casesList.isEmpty() && matchedDefendantCriteria.nextPartialCriteria()) {
-            casesList.addAll(callUnifiedSearchQuery(envelope, matchedDefendantCriteria.getPartialCriteria().build()));
+        while (casesList.isEmpty() && matchedDefendantCriteria.hasMorePartialSteps()) {
+            final int lastPartialStep = matchedDefendantCriteria.getCurrentPartialStep();
+            while (lastPartialStep == matchedDefendantCriteria.getCurrentPartialStep() && matchedDefendantCriteria.hasMoreSubSteps()) {
+                if (matchedDefendantCriteria.nextPartialCriteria()) {
+                    casesList.addAll(callUnifiedSearchQuery(envelope, matchedDefendantCriteria.getPartialCriteria().build()));
+                }
+            }
         }
 
         return casesList;

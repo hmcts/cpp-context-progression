@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.anyString;
@@ -31,13 +32,12 @@ import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
-import uk.gov.moj.cpp.progression.service.UploadMaterialService;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,10 +71,7 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Mock
     private SystemUserProvider systemUserProvider;
 
-    @Mock
-    private UploadMaterialService uploadMaterialService;
-
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
 
     @Mock
     private DocumentGeneratorClient documentGeneratorClient;
@@ -110,7 +107,9 @@ public class PrisonCourtRegisterEventProcessorTest {
         final UUID courtCentreId = UUID.randomUUID();
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest()
                 .withCourtCentreId(courtCentreId)
-                .withRecipients(Arrays.asList(new PrisonCourtRegisterRecipient.Builder()
+                .withHearingId(UUID.randomUUID())
+                .withHearingDate(ZonedDateTime.now())
+                .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
                         .withEmailAddress1("test@hmcst.net")
                         .withEmailTemplateName("emailTemplateName").build()))
                 .withHearingVenue(new PrisonCourtRegisterHearingVenue.Builder().withCourtHouse("liverpool Crown Court").build())
@@ -118,7 +117,7 @@ public class PrisonCourtRegisterEventProcessorTest {
                         .withName("defendant-name")
                         .withDateOfBirth("dateOfBirth")
                         .withProsecutionCasesOrApplications(
-                                Arrays.asList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
+                                singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
                         ).build())
                 .build();
 
@@ -147,6 +146,8 @@ public class PrisonCourtRegisterEventProcessorTest {
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
+        verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserId));
+        verify(this.fileStorer).store(any(JsonObject.class), any(ByteArrayInputStream.class));
         final Envelope<JsonObject> command = envelopeArgumentCaptor.getValue();
 
         assertThat(command.metadata(),
@@ -162,17 +163,17 @@ public class PrisonCourtRegisterEventProcessorTest {
     }
 
     @Test
-    public void shouldSendPrisonCourtRegister() throws IOException, FileServiceException {
+    public void shouldSendPrisonCourtRegister() {
         final UUID fileId = UUID.randomUUID();
         final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated().withCourtCentreId(UUID.randomUUID())
-                .withRecipients(Arrays.asList(new PrisonCourtRegisterRecipient.Builder()
+                .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
                         .withEmailAddress1("test@hmcst.net")
                         .withEmailTemplateName("emailTemplateName").build()))
                 .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
                         .withName("defendant-name")
                         .withDateOfBirth("dateOfBirth")
                         .withProsecutionCasesOrApplications(
-                                Arrays.asList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
+                                singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
                         ).build())
                 .withHearingVenue(new PrisonCourtRegisterHearingVenue.Builder().withCourtHouse("liverpool Crown Court").build())
                 .withFileId(fileId)

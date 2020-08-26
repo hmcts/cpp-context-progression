@@ -22,7 +22,7 @@ module.exports = async function (context, req) {
         const json = await getHearing(context);
 
         context.log(`Returning details for hearing ${hearingId}`);
-        context.res.body = (!json) ? {} : laaFilter(json, context);
+        context.res.body = (!json) ? {} : await laaFilter(json, context);
     }
     else {
         context.log(`hearingId not provided`);

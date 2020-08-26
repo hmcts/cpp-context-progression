@@ -15,7 +15,7 @@ class NowsVariantsSubscriptions {
 
         const variantWithOrderDate = mdeVariants.find(variant => variant.orderDate);
         const orderDate = variantWithOrderDate.orderDate ? variantWithOrderDate.orderDate : undefined;
-        
+
         const subscriptionsMetaData = await new ReferenceDataService().getSubscriptionsMetadata(this.context, orderDate);
 
         if(subscriptionsMetaData && subscriptionsMetaData.nowSubscriptions) {
@@ -24,11 +24,9 @@ class NowsVariantsSubscriptions {
             const edtSubscriptions = subscriptionsMetaData.nowSubscriptions.filter((nowsRefDataSubscription) => nowsRefDataSubscription.isEDTSubscription);
 
             mdeVariants.forEach(objectVariant => {
-                const type = objectVariant.userGroup.type;
                 const subscriptionsToBuild = objectVariant.now.isEDT ? edtSubscriptions : nowSubscriptions;
 
                 if ((subscriptionsToBuild || []).length) {
-                    const usergroup = type === 'exclude' || type === undefined ? 'public' : objectVariant.userGroup.userGroups;
                     const subscriptionObj = this.buildSubscription(objectVariant, subscriptionsToBuild);
                     const subscriptions = new SubscriptionsService().getSubscriptions(subscriptionObj);
                     if(subscriptions) {

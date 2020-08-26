@@ -14,6 +14,8 @@ describe('Case mapper builds correctly', () => {
         expect(cases[0].defendantCaseOffences[0].title).toBe("Public service vehicle - passenger use altered / defaced   ticket");
         expect(cases[0].defendantCaseOffences[0].results[0].label).toBe("Financial Penalty");
         expect(cases[0].defendantCaseOffences[0].code).toBe("Offence Code");
+        expect(cases[0].defendantCaseOffences[0].wording).toBe("On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced.\nContrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.");
+        expect(cases[0].defendantCaseOffences[0].welshWording).toBe("testWordingWelsh\ntestOffenceLegislationWelsh");
         expect(cases[0].defendantCaseOffences[0].modeOfTrial).toBe("Summary");
         expect(cases[0].defendantCaseOffences[0].allocationDecision).toBe("Mot reason");
         expect(cases[0].defendantCaseOffences[0].verdictType).toBe("Verdict Type Description");

@@ -23,8 +23,8 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -35,6 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
+import javax.json.JsonObject;
 
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -46,15 +47,15 @@ import org.junit.Test;
 
 
 public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
-
     private static final String DOCUMENT_TEXT = STRING.next();
-
     protected MessageConsumer privateEventsConsumer;
     protected MessageConsumer privateEventsConsumer2;
-    String courtCentreId;
+    private String courtCentreId;
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Before
     public void setup() {
+        stringToJsonObjectConverter = new StringToJsonObjectConverter();
         courtCentreId = randomUUID().toString();
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
         privateEventsConsumer2 = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED);
@@ -69,7 +70,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final String body = getPayload("progression.prison-court-register-document-request.json")
                 .replace("%COURT_CENTRE_ID%", courtCentreId)
                 .replaceAll("%HEARING_DATE%", ZonedDateTime.now(UTC).toString())
-                .replaceAll("%HEARING_ID%", randomUUID().toString());
+                .replaceAll("%HEARING_ID%", hearingId.toString());
 
         final Response writeResponse = postCommand(getWriteUrl("/prison-court-register"),
                 "application/vnd.progression.add-prison-court-register+json",
@@ -82,14 +83,20 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final JsonPath jsonResponse2 = retrieveMessage(privateEventsConsumer2);
         assertThat(jsonResponse2.get("courtCentreId"), is(courtCentreId));
         assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
-        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId));
+        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId);
     }
 
-    public void verifyPrisonCourtRegisterRequestsExists(final UUID courtCentreId) {
-        getPrisonCourtRegisterDocumentRequests(courtCentreId, allOf(
+    public void verifyPrisonCourtRegisterRequestsExists(final UUID courtCentreId, final UUID hearingId) {
+        final String prisonCourtRegisterDocumentRequestPayload = getPrisonCourtRegisterDocumentRequests(courtCentreId, allOf(
                 withJsonPath("$.prisonCourtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString())),
                 withJsonPath("$.prisonCourtRegisterDocumentRequests[*].fileId", is(notNullValue()))
         ));
+
+        final JsonObject prisonCourtRegisterDocumentRequestJsonObject = stringToJsonObjectConverter.convert(prisonCourtRegisterDocumentRequestPayload);
+        final JsonObject prisonCourtRegisterDocumentRequest = prisonCourtRegisterDocumentRequestJsonObject.getJsonArray("prisonCourtRegisterDocumentRequests").getJsonObject(0);
+        final String payload = prisonCourtRegisterDocumentRequest.getString("payload");
+        final JsonObject payloadJsonObject = stringToJsonObjectConverter.convert(payload);
+        assertThat(payloadJsonObject.getString("hearingId"), is(hearingId.toString()));
     }
 
     private String getPrisonCourtRegisterDocumentRequests(final UUID courtCentreId, final Matcher... matchers) {

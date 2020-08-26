@@ -185,6 +185,26 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response initiateCourtProceedingsForExactMatchDefendants(final String caseId,
+                                                                                    final String defendantId,
+                                                                                    final String caseReceivedDate,
+                                                                                    final String channel) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getInitiateCourtProceedingsJsonBodyForExactMatching(caseId, defendantId, caseReceivedDate, channel));
+
+    }
+
+    public static Response initiateCourtProceedingsForPartialMatchDefendants(final String caseId,
+                                                                           final String defendantId,
+                                                                           final String caseReceivedDate,
+                                                                           final String channel) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getInitiateCourtProceedingsJsonBodyForPartialMatching(caseId, defendantId, caseReceivedDate, channel));
+
+    }
+
     public static Response initiateCourtProceedings(final String caseId, final String defendantId, final String materialIdOne,
                                                     final String materialIdTwo,
                                                     final String referralId,
@@ -521,6 +541,27 @@ public class PreAndPostConditionHelper {
     private static String getInitiateCourtProceedingsJsonBodyForPartialOrExactMatching(final String caseId, final String defendantId, final String caseReceivedDate) throws IOException {
         return getInitiateCourtProceedingsJsonFromResourceForPartialOrExactMatchDefendant("progression.command.initiate-court-proceedings-for-partial-or-exact-match-defendants.json",
                 caseId, defendantId, caseReceivedDate);
+    }
+
+    private static String getInitiateCourtProceedingsJsonBodyForExactMatching(final String caseId, final String defendantId, final String caseReceivedDate, final String channel) throws IOException {
+        String jsonString = getInitiateCourtProceedingsJsonFromResourceForPartialOrExactMatchDefendant("progression.command.initiate-court-proceedings-for-exact-match-defendants.json",
+                caseId, defendantId, caseReceivedDate);
+        if (channel.equalsIgnoreCase("CPPI")) {
+            jsonString = getInitiateCourtProceedingsJsonFromResourceForPartialOrExactMatchDefendant("progression.command.initiate-court-proceedings-for-exact-match-defendants-2.json",
+                    caseId, defendantId, caseReceivedDate);
+        }
+        return jsonString;
+    }
+
+
+    private static String getInitiateCourtProceedingsJsonBodyForPartialMatching(final String caseId, final String defendantId, final String caseReceivedDate, final String channel) throws IOException {
+        String jsonString = getInitiateCourtProceedingsJsonFromResourceForPartialOrExactMatchDefendant("progression.command.initiate-court-proceedings-for-partial-match-defendants.json",
+                caseId, defendantId, caseReceivedDate);
+        if (channel.equalsIgnoreCase("CPPI")) {
+            jsonString = getInitiateCourtProceedingsJsonFromResourceForPartialOrExactMatchDefendant("progression.command.initiate-court-proceedings-for-partial-match-defendants-2.json",
+                    caseId, defendantId, caseReceivedDate);
+        }
+        return jsonString;
     }
 
     private static String getReferProsecutionCaseToCrownCourtWithMinimumAttribute(final String caseId, final String defendantId, final String caseUrn) throws IOException {

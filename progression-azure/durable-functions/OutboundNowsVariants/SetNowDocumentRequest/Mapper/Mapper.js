@@ -134,16 +134,19 @@ class Mapper {
 
     getNowRequirementTextForResult(defendantResult, flattenNowRequirements) {
         const nowRequirementText = [];
+        const nowRequirementLabel = [];
         flattenNowRequirements.forEach(nowRequirement => {
             if (nowRequirement.resultDefinitionId === defendantResult.judicialResultTypeId
                 && nowRequirement.nowRequirementText && nowRequirement.nowRequirementText.length) {
                 nowRequirement.nowRequirementText.forEach(nowReqText => {
-                    const nowText = new NowText();
-                    nowText.label = nowReqText.nowReference;
-                    nowText.value = nowReqText.text;
-                    nowText.welshValue = nowReqText.welshText;
-
-                    nowRequirementText.push(nowText);
+                    if(!nowRequirementLabel.includes(nowReqText.nowReference)) {
+                        const nowText = new NowText();
+                        nowText.label = nowReqText.nowReference;
+                        nowText.value = nowReqText.text;
+                        nowText.welshValue = nowReqText.welshText;
+                        nowRequirementText.push(nowText);
+                        nowRequirementLabel.push(nowReqText.nowReference);
+                    }
                 });
                 return;
             }
@@ -155,12 +158,14 @@ class Mapper {
                         && nowRequirement.nowRequirementText
                         && nowRequirement.nowRequirementText.length) {
                         nowRequirement.nowRequirementText.forEach(nowReqText => {
-                            const nowText = new NowText();
-                            nowText.label = nowReqText.nowReference;
-                            nowText.value = nowReqText.text;
-                            nowText.welshValue = nowReqText.welshText;
-
-                            nowRequirementText.push(nowText);
+                            if(!nowRequirementLabel.includes(nowReqText.nowReference)) {
+                                const nowText = new NowText();
+                                nowText.label = nowReqText.nowReference;
+                                nowText.value = nowReqText.text;
+                                nowText.welshValue = nowReqText.welshText;
+                                nowRequirementText.push(nowText);
+                                nowRequirementLabel.push(nowReqText.nowReference);
+                            }
                         });
                     }
                 });

@@ -26,8 +26,8 @@ describe('Defendant mapper builds correctly', () => {
         expect(defendant.ethnicity).toBe('AAAA');
         expect(defendant.gender).toBe('MALE');
         expect(defendant.driverNumber).toBe('ABCD1234');
-        expect(defendant.solicitor.name).toBe('DEFENCE ORGANISATION');
-        expect(defendant.solicitor.address.line1).toBe('Flat 1');
+        expect(defendant.solicitor.name).toBe('Sonja & Co LLP');
+        expect(defendant.solicitor.address.line1).toBe('Legal House');
         expect(defendant.defendantResults.length).toBe(1);
         expect(defendant.defendantResults[0].label).toBe("Imprisonment");
         expect(defendant.defendantResults[0].nowRequirementText.length).toBe(1);

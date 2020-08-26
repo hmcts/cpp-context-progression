@@ -20,14 +20,14 @@ module.exports = async function (context) {
     } else {
         context.log(`Ready to filter JSON`)
         try {
-            let result = laaFilter(json, context);
+            let result = await laaFilter(json, context);
 
             if (result !== null) {
                 context.log(`JSON filtered successfully`);
                 return result;
             }
         } catch (err) {
-            context.log(`Unable to filter JSON - incorrect JSON structure`)
+            context.log(`Unable to filter JSON - incorrect JSON structure -->> ${JSON.stringify(err)}`)
         }
     }
 };

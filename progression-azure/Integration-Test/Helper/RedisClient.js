@@ -13,7 +13,9 @@ class RedisClient {
 
     getRedisClient() {
         if (redisClient == null) {
-            redisClient = createClient(this.redisPort, this.redisHost);
+            redisClient = createClient(this.redisPort, this.redisHost, {
+                auth_pass: this.redisAuthKey
+            });
         }
         return redisClient;
     }

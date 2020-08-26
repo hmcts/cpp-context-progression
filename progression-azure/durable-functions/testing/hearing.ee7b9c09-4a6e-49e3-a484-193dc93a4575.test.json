@@ -137,7 +137,7 @@
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityCode": "TFL",
           "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
-          "prosecutionAuthorityReference": "TFL23525RRT9G"
+          "caseURN": "TFL23525RRT9G"
         },
         "statementOfFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy"
       }

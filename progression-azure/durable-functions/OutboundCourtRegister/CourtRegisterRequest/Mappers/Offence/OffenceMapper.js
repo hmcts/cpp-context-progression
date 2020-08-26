@@ -14,6 +14,7 @@ class OffenceMapper {
             const offence = new Offence();
             offence.offenceCode = offenceInfo.offenceCode;
             offence.offenceTitle = offenceInfo.offenceTitle;
+            offence.wording = offenceInfo.wording + '####' + offenceInfo.offenceLegislation;
             offence.orderIndex = offenceInfo.orderIndex;
             offence.pleaValue =  (offenceInfo.plea || {}).pleaValue;
             offence.verdictCode = ((offenceInfo.verdict || {}).verdictType || {}).description;

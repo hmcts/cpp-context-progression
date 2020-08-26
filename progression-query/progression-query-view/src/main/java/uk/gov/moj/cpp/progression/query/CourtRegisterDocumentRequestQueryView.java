@@ -50,8 +50,14 @@ public class CourtRegisterDocumentRequestQueryView {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         final String requestStatus = envelope.payloadAsJsonObject().getString(FIELD_REQUEST_STATUS);
         if (isNotBlank(requestStatus)) {
-            final List<CourtRegisterRequestEntity> courtRegisterRequestEntity = courtRegisterRequestRepository.findByStatus(RegisterStatus.valueOf(requestStatus));
-            courtRegisterRequestEntity.forEach(i -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(i)));
+            if(RegisterStatus.RECORDED.toString().equalsIgnoreCase(requestStatus)) {
+                final List<CourtRegisterRequestEntity> courtRegisterRequestEntities = courtRegisterRequestRepository.findByStatusRecorded();
+                courtRegisterRequestEntities.forEach(courtRegisterRequestEntity -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(courtRegisterRequestEntity)));
+
+            } else {
+                final List<CourtRegisterRequestEntity> courtRegisterRequestEntity = courtRegisterRequestRepository.findByStatus(RegisterStatus.valueOf(requestStatus));
+                courtRegisterRequestEntity.forEach(i -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(i)));
+            }
         }
         return envelopeFrom(envelope.metadata(),
                 jsonObjectBuilder.add(FIELD_COURT_REGISTER_DOCUMENTS, jsonArrayBuilder.build()).build());

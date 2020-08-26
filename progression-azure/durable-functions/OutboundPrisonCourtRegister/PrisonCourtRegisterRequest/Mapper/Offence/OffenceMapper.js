@@ -20,7 +20,7 @@ class OffenceMapper {
             offence.allocationDecision = offenceInfo.allocationDecision ? offenceInfo.allocationDecision.motReasonDescription : undefined;
             offence.convictionDate = offenceInfo.convictionDate;
             offence.pleaDate = (offenceInfo.plea || {}).pleaDate;
-            offence.wording = offenceInfo.wording;
+            offence.wording = offenceInfo.wording + '####' + offenceInfo.offenceLegislation;
             const offenceJudicialResults = this.registerDefendant.results.filter(
                 r => r.level === LEVEL_TYPE.OFFENCE &&
                      r.offenceId === offenceInfo.id).map(r => r.judicialResult);

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -11,6 +12,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -38,6 +40,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
@@ -48,6 +51,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +62,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.jayway.restassured.response.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -75,12 +80,14 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String ORIGINATOR = "originator";
     private static final String ORIGINATOR_VALUE = "court";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private MessageProducer messageProducerClientPublic;
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
     private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter();
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Before
     public void setup() {
+        messageProducerClientPublic = publicEvents.createProducer();
         hearingId = randomUUID().toString();
         defendantId = randomUUID().toString();
         materialId = randomUUID().toString();
@@ -119,7 +126,7 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendPublicEventForMaterialAdded();
 
-        verifyCreateLetterRequested(Arrays.asList("letterUrl"));
+        verifyCreateLetterRequested(singletonList("letterUrl"));
     }
 
     @Test
@@ -138,11 +145,18 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
         verifyMaterialCreated();
 
         sendPublicEventForMaterialAdded();
 
         verifyCreateLetterRequested(Arrays.asList("letterUrl"));
+
+        final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray("nowDocumentRequests").getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString("materialId")));
     }
 
     @Test
@@ -161,8 +175,40 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
         sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
 
+        final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray("nowDocumentRequests").getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString("materialId")));
+    }
+
+    @Test
+    public void shouldNotSendEmailWithNoOrderAddresseeInNowDocumentRequest() throws IOException {
+        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
+        NotificationServiceStub.setUp();
+        IdMapperStub.setUp();
+
+        final String payload = prepareNoOrderAddresseeDocumentRequestPayload();
+        final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
+        final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
+
+        final Response writeResponse = postCommand(getWriteUrl("/nows"),
+                "application/vnd.progression.add-now-document-request+json",
+                payload);
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
+        sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
+
+        final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray("nowDocumentRequests").getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString("materialId")));
     }
 
     private void sendMaterialFileUploadedPublicEvent(final UUID materialId, final UUID userId) {
@@ -243,6 +289,14 @@ public class NowDocumentRequestIT extends AbstractIT {
         return body;
     }
 
+    private String prepareNoOrderAddresseeDocumentRequestPayload() {
+        String body = getPayload("progression.no-order-addressee-now-document-request.json");
+        body = body.replaceAll("%HEARING_ID%", hearingId)
+                .replaceAll("%MATERIAL_ID%", materialId)
+                .replaceAll("%DEFENDANT_ID%", defendantId);
+        return body;
+    }
+
     private JsonObject generateSuccessfulAcknowledgement(final String requestId) {
 
         final String EXPORT_STATUS = "exportStatus";
@@ -270,10 +324,21 @@ public class NowDocumentRequestIT extends AbstractIT {
         return randomNumeric(8) + randomAlphabetic(1).toUpperCase();
     }
 
-    public static String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl(join("", "/nows/request/", requestId)), "application/vnd.progression.query.now-document-requests-by-request-id+json").withHeader(USER_ID, UUID.randomUUID()))
+    private static String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl(join("", "/nows/request/", requestId)),
+                "application/vnd.progression.query.now-document-requests-by-request-id+json")
+                .withHeader(USER_ID, UUID.randomUUID()))
                 .timeout(40, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(allOf(matchers)))
                 .getPayload();
+    }
+
+    private String getNowDocumentRequest(final String hearingId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl(StringUtils.join("/nows/hearing/", hearingId)),
+                "application/vnd.progression.query.now-document-request-by-hearing+json")
+                .withHeader(HeaderConstants.USER_ID, USER_ID))
+                .timeout(40, TimeUnit.SECONDS)
+                .until(status().is(javax.ws.rs.core.Response.Status.OK),
+                        payload().isJson(allOf(matchers))).getPayload();
     }
 }

@@ -83,10 +83,12 @@ public class RecordLAAReferenceIT extends AbstractIT {
     @AfterClass
     public static void teardownOnce() throws JMSException {
         messageProducerClientPublic.close();
+        final String pncId = "2099/1234567L";
+        final String croNumber = "1234567";
 
         removeStub();
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
-        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
+        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), pncId, croNumber);
     }
 
     private static void verifyInMessagingQueueForDefendantOffenceUpdated(final MessageConsumer messageConsumerClientPublicForRecordLAAReference) {

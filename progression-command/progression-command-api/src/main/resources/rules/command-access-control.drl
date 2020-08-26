@@ -13,7 +13,7 @@ rule "Command - Access control for progression.command.sending-committal-hearing
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.sending-committal-hearing-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -23,7 +23,7 @@ rule "Command - Access control for progression.command.sentence-hearing-date"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.sentence-hearing-date");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -33,7 +33,7 @@ rule "Command - Access control for progression.command.add-case-to-crown-court"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.add-case-to-crown-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -43,7 +43,7 @@ rule "Command - Access control for progression.command.request-psr-for-defendant
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.request-psr-for-defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -62,7 +62,7 @@ rule "Command - Access control for progression.command.defendant-document"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.defendant-document");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -80,7 +80,7 @@ rule "Command - Access control for progression.command.complete-sending-sheet"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.complete-sending-sheet");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -89,7 +89,7 @@ rule "Command - API - Action - progression.generate-nows"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.generate-nows");
-   eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"Listing Officers", "Court Clerks", "Legal Advisers", "System Users"));
+   eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"Listing Officers", "Court Clerks", "Legal Advisers", "System Users", "Court Associate"));
   then
     $outcome.setSuccess(true);
 end

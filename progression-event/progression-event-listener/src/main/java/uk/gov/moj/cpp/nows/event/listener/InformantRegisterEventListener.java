@@ -38,12 +38,11 @@ public class InformantRegisterEventListener {
     @Handles("progression.event.informant-register-recorded")
     public void saveInformantRegister(final JsonEnvelope event) {
 
-        final JsonObject payload = event.payloadAsJsonObject();
-        final JsonObject informantRegisterDocumentRequestJson = payload.getJsonObject(INFORMANT_REGISTER_REQUEST_PARAM);
+        final JsonObject informantRegisterDocumentRequestJson = event.payloadAsJsonObject().getJsonObject(INFORMANT_REGISTER_REQUEST_PARAM);
 
         final InformantRegisterDocumentRequest informantRegisterDocumentRequest = jsonObjectToObjectConverter.convert(informantRegisterDocumentRequestJson, InformantRegisterDocumentRequest.class);
-        final InformantRegisterEntity informantRegisterEntity = new InformantRegisterEntity();
 
+        final InformantRegisterEntity informantRegisterEntity = new InformantRegisterEntity();
         informantRegisterEntity.setId(UUID.randomUUID());
         informantRegisterEntity.setRegisterDate(informantRegisterDocumentRequest.getRegisterDate().toLocalDate());
         informantRegisterEntity.setRegisterTime(informantRegisterDocumentRequest.getRegisterDate());
@@ -52,7 +51,6 @@ public class InformantRegisterEventListener {
         informantRegisterEntity.setProsecutionAuthorityCode(informantRegisterDocumentRequest.getProsecutionAuthorityCode());
         informantRegisterEntity.setPayload(informantRegisterDocumentRequestJson.toString());
         informantRegisterEntity.setStatus(RegisterStatus.RECORDED);
-
         informantRegisterRepository.save(informantRegisterEntity);
     }
 
@@ -60,9 +58,10 @@ public class InformantRegisterEventListener {
     public void generateInformantRegister(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         final InformantRegisterGenerated informantRegisterGenerated = jsonObjectToObjectConverter.convert(payload, InformantRegisterGenerated.class);
+        final ZonedDateTime currentDateTime = ZonedDateTime.now();
+
         final List<InformantRegisterEntity> informantRegisters = informantRegisterRepository.findByProsecutionAuthorityIdAndStatusRecorded(informantRegisterGenerated.getInformantRegisterDocumentRequests().get(0).getProsecutionAuthorityId());
         informantRegisters.forEach(informantRegisterEntity -> {
-            final ZonedDateTime currentDateTime = ZonedDateTime.now();
             informantRegisterEntity.setStatus(RegisterStatus.GENERATED);
             informantRegisterEntity.setProcessedOn(currentDateTime);
             if(BooleanUtils.isTrue(informantRegisterGenerated.getSystemGenerated())) {
@@ -70,6 +69,12 @@ public class InformantRegisterEventListener {
                 informantRegisterEntity.setGeneratedTime(currentDateTime);
             }
         });
+
+        informantRegisterGenerated.getInformantRegisterDocumentRequests().stream().map(InformantRegisterDocumentRequest::getHearingId).forEach(hearingId -> {
+            final List<InformantRegisterEntity> informantRegistersList = informantRegisterRepository.findByHearingIdAndStatusRecorded(hearingId);
+            informantRegistersList.forEach(informantRegisterEntity -> informantRegisterEntity.setProcessedOn(currentDateTime));
+        });
+
     }
 
     @Handles("progression.event.informant-register-notified")

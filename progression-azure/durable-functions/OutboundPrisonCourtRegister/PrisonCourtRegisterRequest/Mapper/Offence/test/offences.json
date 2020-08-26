@@ -2,6 +2,7 @@
   "offences": [
     {
       "offenceCode": "OffCode1",
+      "offenceLegislation" : "Offence Legislation 1",
       "offenceTitle": "Offence Title1",
       "orderIndex": "1",
       "pleaValue": "PleaValue1",
@@ -82,6 +83,7 @@
     },
     {
       "offenceCode": "OffCode2",
+      "offenceLegislation" : "Offence Legislation 2",
       "offenceTitle": "Offence Title2",
       "orderIndex": "2",
       "pleaValue": "PleaValue2",

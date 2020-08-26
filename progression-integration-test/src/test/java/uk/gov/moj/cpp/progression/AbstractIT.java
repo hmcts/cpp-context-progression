@@ -115,7 +115,7 @@ public class AbstractIT {
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL_OF_ISSUE),"stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_NON_TRIAL),"stub-data/hearing.get-hearing-of-type-non-trial.json");
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
-        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
+        stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), "2099/1234567L", "1234567");
     }
 
 }

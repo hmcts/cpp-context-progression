@@ -11,8 +11,10 @@ class OrderCourtMapper extends Mapper {
     buildOrderCourt() {
         const courtCentre = this.hearingJson.courtCentre;
         const orderCourt = new OrderCourt();
-        orderCourt.ljaCode = courtCentre.lja ? courtCentre.lja.ljaCode.toString() : undefined;
-        orderCourt.ljaName = courtCentre.lja ? courtCentre.lja.ljaName : undefined;
+        if(this.hearingJson.jurisdictionType === 'MAGISTRATES') {
+            orderCourt.ljaCode = courtCentre.lja ? courtCentre.lja.ljaCode.toString() : undefined;
+            orderCourt.ljaName = courtCentre.lja ? courtCentre.lja.ljaName : undefined;
+        }
         orderCourt.welshLjaName = this.welshLjaName(courtCentre);
         orderCourt.courtCentreName = courtCentre.name;
         orderCourt.welshCourtCentreName = courtCentre.welshName ? courtCentre.welshName : undefined;

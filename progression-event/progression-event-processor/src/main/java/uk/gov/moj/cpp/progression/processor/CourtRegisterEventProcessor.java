@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -19,7 +21,6 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -82,25 +83,25 @@ public class CourtRegisterEventProcessor {
     public void notifyCourt(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
         if (payload.containsKey(FIELD_RECIPIENTS)) {
-            final Optional<JsonObject> recipient = payload.getJsonArray(FIELD_RECIPIENTS).getValuesAs(JsonObject.class).stream().findFirst();
-            recipient.ifPresent(rp -> {
-                final String templateId = applicationParameters.getEmailTemplateId(rp.getString(EMAIL_TEMPLATE_NAME));
-                if (isNotBlank(templateId)) {
-                    final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
-                    final JsonString fileId = payload.getJsonString("systemDocGeneratorId");
-                    notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, fileId);
-                    notifyObjectBuilder.add(FIELD_TEMPLATE_ID, templateId);
-                    notifyObjectBuilder.add(SEND_TO_ADDRESS, rp.getJsonString(EMAIL_ADDRESS));
-                    notifyObjectBuilder.add(FILE_ID, fileId);
-                    notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder().add(RECIPIENT, rp.getString(RECIPIENT_NAME)).build());
-                    this.notificationNotifyService.sendEmailNotification(envelope, notifyObjectBuilder.build());
-                } else {
-                    LOGGER.info("Court register notification is not sent due to missing template Id");
-                }
-
-            });
+            final List<JsonObject> recipients = payload.getJsonArray(FIELD_RECIPIENTS).getValuesAs(JsonObject.class);
+            if(nonNull(recipients)) {
+                recipients.forEach(rp -> {
+                    final String templateId = applicationParameters.getEmailTemplateId(rp.getString(EMAIL_TEMPLATE_NAME));
+                    if (isNotBlank(templateId)) {
+                        final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
+                        final JsonString fileId = payload.getJsonString("systemDocGeneratorId");
+                        notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, randomUUID().toString());
+                        notifyObjectBuilder.add(FIELD_TEMPLATE_ID, templateId);
+                        notifyObjectBuilder.add(SEND_TO_ADDRESS, rp.getJsonString(EMAIL_ADDRESS));
+                        notifyObjectBuilder.add(FILE_ID, fileId);
+                        notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder().add(RECIPIENT, rp.getString(RECIPIENT_NAME)).build());
+                        this.notificationNotifyService.sendEmailNotification(envelope, notifyObjectBuilder.build());
+                    } else {
+                        LOGGER.info("Court register notification is not sent due to missing template Id");
+                    }
+                });
+            }
         }
-
     }
 
     public static byte[] jsonObjectAsByteArray(final JsonObject jsonObject) {

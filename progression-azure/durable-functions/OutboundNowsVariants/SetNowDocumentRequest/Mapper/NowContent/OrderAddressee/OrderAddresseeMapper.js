@@ -55,10 +55,7 @@ class OrderAddresseeMapper extends Mapper {
 
     recipientFromResults() {
         const subscription = this.nowVariant.matchedSubscription;
-        const nameReference =
-            subscription.recipient.organisationNameResultPromptReference ?
-            subscription.recipient.organisationNameResultPromptReference :
-            subscription.recipient.lastNameResultPromptReference;
+
 
         const address1Reference = subscription.recipient.address1ResultPromptReference;
         const address2Reference = subscription.recipient.address2ResultPromptReference;
@@ -81,7 +78,19 @@ class OrderAddresseeMapper extends Mapper {
         });
 
         const orderAddressee = new OrderAddressee();
-        orderAddressee.name = this.getPromptValueByReference(allPromptsFromJudicialResults, nameReference);
+
+        let name = this.getPromptValueByReference(allPromptsFromJudicialResults, subscription.recipient.organisationNameResultPromptReference);
+
+        if (name) {
+            orderAddressee.name = name;
+        } else {
+            orderAddressee.name =
+                [this.getPromptValueByReference(allPromptsFromJudicialResults, subscription.recipient.firstNameResultPromptReference),
+                 this.getPromptValueByReference(allPromptsFromJudicialResults, subscription.recipient.middleNameResultPromptReference),
+                 this.getPromptValueByReference(allPromptsFromJudicialResults, subscription.recipient.lastNameResultPromptReference)]
+                    .filter(item => item).join(' ').trim();
+        }
+
         if(address1Reference || emailAddress1Reference) {
 
             const address = new NowAddress();

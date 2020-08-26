@@ -13,8 +13,21 @@ describe('Installment mapper works correctly', () => {
         const installmentMapper = new InstallmentMapper(complianceEnforcementReserveTermsJson,
                                                         hearingJson);
         const installment = installmentMapper.getInstallments(ReserveTermsType.INSTALMENTS_ONLY);
-        expect(installment.amount).toBe("40");
+        expect(installment.amount).toBe(40);
         expect(installment.frequency).toBe("WEEKLY");
         expect(installment.startDate).toBe("2020-12-12");
-    })
+    });
+
+    test('build installment object with amounts', () => {
+        const hearingJson = require(
+            '../../../../../../test/case-level-judicial-results-hearing.json');
+        const complianceEnforcementReserveTermsJson = require(
+            './compliance-enforcement-with-reserve-terms.json');
+        const installmentMapper = new InstallmentMapper(complianceEnforcementReserveTermsJson,
+                                                        hearingJson);
+        const installment = installmentMapper.getInstallments(ReserveTermsType.INSTALMENTS_ONLY);
+        expect(installment.amount).toBe(30.00);
+        expect(installment.frequency).toBe("WEEKLY");
+        expect(installment.startDate).toBe("2020-12-12");
+    });
 });

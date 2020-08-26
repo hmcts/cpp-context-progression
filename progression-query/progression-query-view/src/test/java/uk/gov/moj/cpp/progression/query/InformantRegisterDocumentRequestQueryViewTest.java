@@ -52,7 +52,7 @@ public class InformantRegisterDocumentRequestQueryViewTest {
 
         final JsonObject transformedJsonEntity = Json.createObjectBuilder().add("prosecutionAuthorityId", prosecutionAuthorityId.toString()).build();
         when(objectToJsonObjectConverter.convert(informantRegisterEntity)).thenReturn(transformedJsonEntity);
-        when(informantRegisterRepository.findByStatus(RegisterStatus.RECORDED)).thenReturn(Collections.singletonList(informantRegisterEntity));
+        when(informantRegisterRepository.findByStatusRecorded()).thenReturn(Collections.singletonList(informantRegisterEntity));
 
         final JsonEnvelope informantRegisterRequests = informantRegisterDocumentRequestQueryView.getInformantRegisterRequests(envelope);
         assertThat(informantRegisterRequests.payloadAsJsonObject().getJsonArray("informantRegisterDocumentRequests").size(), is(1));

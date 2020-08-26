@@ -99,6 +99,8 @@ public class CourtCentreAggregate implements Aggregate {
                 .withDefendant(prisonCourtRegisterDocumentGenerated.getDefendant())
                 .withFileId(prisonCourtRegisterDocumentGenerated.getFileId())
                 .withHearingVenue(prisonCourtRegisterDocumentGenerated.getHearingVenue())
+                .withHearingDate(prisonCourtRegisterDocumentGenerated.getHearingDate())
+                .withHearingId(prisonCourtRegisterDocumentGenerated.getHearingId())
                 .withCourtCentreId(courtCentreId).build()));
     }
 }

@@ -271,11 +271,15 @@ class NowContentMapper extends Mapper {
 
     getNowRequirementText(nowContent) {
         const allNowRequirementText = [];
+        const nowRequirementLabel = [];
         if(nowContent.defendant.defendantResults) {
             nowContent.defendant.defendantResults.forEach(defendantResult => {
                 if(defendantResult.nowRequirementText && defendantResult.nowRequirementText.length) {
                     defendantResult.nowRequirementText.forEach(text => {
-                        allNowRequirementText.push(text);
+                        if(!nowRequirementLabel.includes(text.label)) {
+                            allNowRequirementText.push(text);
+                            nowRequirementLabel.push(text.label);
+                        }
                     });
                 }
             });
@@ -285,7 +289,10 @@ class NowContentMapper extends Mapper {
                 caze.defendantCaseResults.forEach(defendantCaseResult => {
                     if(defendantCaseResult.nowRequirementText && defendantCaseResult.nowRequirementText.length) {
                         defendantCaseResult.nowRequirementText.forEach(text => {
-                            allNowRequirementText.push(text);
+                            if(!nowRequirementLabel.includes(text.label)) {
+                                allNowRequirementText.push(text);
+                                nowRequirementLabel.push(text.label);
+                            }
                         });
                     }
                 });
@@ -297,7 +304,10 @@ class NowContentMapper extends Mapper {
                         defendantCaseOffence.results.forEach(result => {
                             if(result.nowRequirementText && result.nowRequirementText.length) {
                                 result.nowRequirementText.forEach(text => {
-                                    allNowRequirementText.push(text);
+                                    if(!nowRequirementLabel.includes(text.label)) {
+                                        allNowRequirementText.push(text);
+                                        nowRequirementLabel.push(text.label);
+                                    }
                                 });
                             }
                         });

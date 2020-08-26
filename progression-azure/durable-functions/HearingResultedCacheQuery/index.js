@@ -32,6 +32,7 @@ async function getPrefixHearing(resultsEndpoint, contentType, cjscppuid, context
             return response.data;
         }
     } catch (err) {
+        context.log("Exception querying results context "+JSON.stringify(err));
         return null;
     }
 }
@@ -64,24 +65,41 @@ function getCacheKey(hearingId, payloadPrefix) {
     return payloadPrefix + hearingId + '_result_';
 }
 
-function getRedisClient() {
+function getRedisClient(context) {
 
     if (redisClient == null) {
         const {createClient} = require('redis');
-        redisClient = createClient(process.env.REDIS_PORT, process.env.REDIS_HOST,
-                                   {
+        redisClient = createClient({
+                                       host: process.env.REDIS_HOST,
+                                       port: process.env.REDIS_PORT,
                                        auth_pass: process.env.REDIS_KEY,
-                                       tls: {servername: process.env.REDIS_HOST}
+                                       tls: {servername: process.env.REDIS_HOST},
+                                       connect_timeout: process.env.REDIS_CONNECTION_TIMEOUT_IN_MS,
+                                       retry_strategy: (options) => {
+                                           context.log("Error code encountered -------------->>>>" + options.error);
+                                           if (options.error) {
+                                               return new Error("The server refused the connection");
+                                           }
+                                           if (options.total_retry_time > process.env.REDIS_TOTAL_RETRY_TIME_IN_MS) {
+                                               return new Error("Retry time exhausted");
+                                           }
+                                           if (options.attempt > process.env.REDIS_NUMBER_OF_ATTEMPTS) {
+                                               return new Error("Retry attempt exhausted");;
+                                           }
+                                           return Math.min(options.attempt * 100, 3000);
+                                       }
                                    });
     }
 
     return redisClient;
 }
 
-async function getResultFromCache(hearingId, payloadPrefix) {
+async function getResultFromCache(hearingId, payloadPrefix, context) {
     const {promisify} = require('util');
     const cacheKey = getCacheKey(hearingId, payloadPrefix);
-    const client = getRedisClient();
+    const client = getRedisClient(context);
+    context.log("got the redis client --->>>");
+
     const getAsync = promisify(client.get).bind(client);
     const cachedResult = await getAsync(cacheKey);
 
@@ -93,8 +111,8 @@ async function getResultFromCache(hearingId, payloadPrefix) {
 }
 
 async function getHearing(hearingId, cjscppuid, payloadPrefix, context) {
-    context.log('1. About to query redis cache -->'+hearingId);
-    let result = await getResultFromCache(hearingId, payloadPrefix);
+    context.log('1. About to query redis cache -->' + hearingId);
+    let result = await getResultFromCache(hearingId, payloadPrefix, context);
     context.log('2. redis cache queried');
 
     if (result == null) {
@@ -104,7 +122,7 @@ async function getHearing(hearingId, cjscppuid, payloadPrefix, context) {
         if (cjscppuid && hearingId) {
             context.log(`4. Getting hearing result for ${hearingId}`);
             result = await getHearingResult(hearingId, cjscppuid, context, payloadPrefix);
-            context.log('5. Queried result context for hearing id -->'+hearingId +" "+ JSON.stringify(result));
+            context.log('5. Queried result context for hearing id -->' + hearingId + " " + JSON.stringify(result));
         } else {
             context.log(`3.3 Hearing ${hearingId} not found in cache and no CJSCPPUID supplied`);
         }
