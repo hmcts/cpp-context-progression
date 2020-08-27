@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinic
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithResults;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchersWithOffence;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
 import java.util.List;
@@ -126,7 +127,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
     @Test
     public void shouldGetProsecutionCaseWithoutDocuments() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final Matcher[] prosecutionCaseMatchersWithNoDocuments = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
+        final Matcher[] prosecutionCaseMatchersWithNoDocuments = getProsecutionCaseMatchersWithOffence(caseId, defendantId, emptyList());
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchersWithNoDocuments);
     }
 

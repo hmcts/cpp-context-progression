@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
-import org.apache.commons.collections.CollectionUtils;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
@@ -14,6 +13,7 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 
 @SuppressWarnings("squid:S1188")
 public class NextHearingService {
@@ -217,6 +219,7 @@ public class NextHearingService {
                 .withVictims(offence.getVictims())
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
+                .withOffenceDateCode(offence.getOffenceDateCode())
                 .build();
     }
 

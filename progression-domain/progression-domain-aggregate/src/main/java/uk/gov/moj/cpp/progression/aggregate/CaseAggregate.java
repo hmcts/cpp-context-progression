@@ -867,6 +867,7 @@ public class CaseAggregate implements Aggregate {
                         .withCount(matchingOffence.getCount())
                         .withStartDate(matchingOffence.getStartDate())
                         .withLaaApplnReference(laaReference)
+                        .withOffenceDateCode(matchingOffence.getOffenceDateCode())
                         .build();
                 updatedOffenceList.add(updatedOffence);
                 final String legalAidStatus = getDefendantLevelLegalStatus(updatedOffenceList);
@@ -958,6 +959,7 @@ public class CaseAggregate implements Aggregate {
                         .withCount(matchingOffence.getCount())
                         .withStartDate(matchingOffence.getStartDate())
                         .withLaaApplnReference(laaReference)
+                        .withOffenceDateCode(matchingOffence.getOffenceDateCode())
                         .build();
                 updatedOffenceList.add(updatedOffence);
             }

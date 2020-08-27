@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.management.j2ee.statistics.JCAConnectionStats;
-
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsCollectionWithSize;
 
@@ -18,6 +16,49 @@ public class ReferProsecutionCaseToCrownCourtHelper {
     public static Matcher[] getProsecutionCaseMatchers(final String caseId, final String defendantId) {
         return getProsecutionCaseMatchers(caseId, defendantId, Collections.emptyList());
 
+    }
+
+    public static Matcher[] getProsecutionCaseMatchersWithOffence(final String caseId, final String defendantId, List<Matcher> additionalMatchers) {
+        List<Matcher> matchers = newArrayList(
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
+                withJsonPath("$.prosecutionCase.initiationCode", is("J")),
+                withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
+                withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
+
+        );
+
+        matchers.addAll(getDefendantMatchers(caseId, defendantId));
+        matchers.addAll(getDefendantOffenceMatchersWithOffenceDateCode());
+        matchers.addAll(getOffenceFactMatchers());
+        matchers.addAll(getNotifyPleatMatchers());
+        matchers.addAll(getPersonMatchers());
+        matchers.addAll(getPersonAddressMatchers());
+        matchers.addAll(getPersonContactDetailsMatchers());
+        matchers.addAll(getPersonDefendantMatchers());
+
+        matchers.addAll(additionalMatchers);
+
+        return matchers.toArray(new Matcher[0]);
+
+    }
+
+    public static ArrayList<Matcher> getDefendantOffenceMatchersWithOffenceDateCode() {
+        return newArrayList(
+                // defendant offence assertion
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDefinitionId", is("490dce00-8591-49af-b2d0-1e161e7d0c36")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].wording", is("No Travel Card")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].wordingWelsh", is("No Travel Card In Welsh")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].startDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].endDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].arrestDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].chargeDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].orderIndex", is(1)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(0)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY"))
+        );
     }
 
     public static Matcher[] getProsecutionCaseMatchers(final String caseId, final String defendantId, List<Matcher> additionalMatchers) {

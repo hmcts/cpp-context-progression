@@ -97,7 +97,11 @@ public class DefendantMatchIT extends AbstractIT {
         // initiation of first case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
-        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
+        List<Matcher> customMatchers = newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4))
+        );
+
+        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, customMatchers);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
         // initiation of second case

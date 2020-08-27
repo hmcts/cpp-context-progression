@@ -14,15 +14,17 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 
 @SuppressWarnings({"squid:S3655", "squid:S1602"})
@@ -112,6 +114,7 @@ public class ConvictionDateEventListener {
                 .withProceedingsConcluded(offence.getProceedingsConcluded())
                 .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(offence.getIsDiscontinued())
+                .withOffenceDateCode(offence.getOffenceDateCode())
                 .build();
     }
 

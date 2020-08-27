@@ -15,7 +15,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
-import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 public class HearingToHearingListingNeedsTransformer {
 
@@ -196,6 +198,7 @@ public class HearingToHearingListingNeedsTransformer {
                 .withVictims(offence.getVictims())
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
+                .withOffenceDateCode(offence.getOffenceDateCode())
                 .build();
 
         defendantInNeeds.getOffences().add(offenceInNeeds);

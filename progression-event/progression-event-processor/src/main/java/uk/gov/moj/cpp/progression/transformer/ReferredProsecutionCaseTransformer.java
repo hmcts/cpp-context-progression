@@ -210,6 +210,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withStartDate(referredOffence.getStartDate())
                 .withWording(referredOffence.getWording())
                 .withWordingWelsh(referredOffence.getWordingWelsh())
+                .withOffenceDateCode(referredOffence.getOffenceDateCode())
                 .build();
         if ((initiationCode == InitiationCode.J || initiationCode == InitiationCode.Z)
                 && nonNull(offence.getModeOfTrial())

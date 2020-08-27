@@ -191,6 +191,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withProceedingsConcluded(persistedOffence.getProceedingsConcluded())
                 .withIntroducedAfterInitialProceedings(persistedOffence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(persistedOffence.getIsDiscontinued())
+                .withOffenceDateCode(updatedOffence.getOffenceDateCode())
                 .build();
     }
 

@@ -308,6 +308,7 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getId(), is(hearingId));
         assertThat(savedHearing1.getProsecutionCases(), notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getOffenceDateCode(), is(4));
     }
 
     @Test
@@ -384,10 +385,20 @@ public class HearingResultEventListenerTest {
                 .withProceedingsConcluded(true)
                 .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
                         JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
-                .withOffences(singletonList(Offence.offence()
+                .withOffences(singletonList(
+                        Offence.offence()
                         .withId(randomUUID())
-                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
-                                JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
+                        .withJudicialResults(
+                                Arrays.asList(JudicialResult.judicialResult()
+                                        .withLabel("PublishedForNowsTRUE")
+                                        .withPublishedForNows(Boolean.TRUE)
+                                        .build(),
+                                JudicialResult.judicialResult()
+                                        .withLabel("PublishedForNowsFALSE")
+                                        .withPublishedForNows(Boolean.FALSE)
+                                        .build())
+                        )
+                        .withOffenceDateCode(4)
                         .build()))
                 .build();
         return ProsecutionCase.prosecutionCase()

@@ -67,6 +67,7 @@
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
                 },
+                "offenceDateCode":4,
                 "judicialResults": [
                   {
                     "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",

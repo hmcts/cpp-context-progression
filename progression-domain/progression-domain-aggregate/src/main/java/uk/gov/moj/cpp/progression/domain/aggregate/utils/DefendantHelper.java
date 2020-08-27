@@ -116,6 +116,7 @@ public class DefendantHelper {
                 .withVictims(offence.getVictims())
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
+                .withOffenceDateCode(offence.getOffenceDateCode())
                 .build();
         udpatedOffences.add(updatedOffence);
         return updatedOffence;
@@ -159,6 +160,7 @@ public class DefendantHelper {
                 .append(commandOffenceForDefendant.getStartDate(), previousOffenceForDefendant.getStartDate())
                 .append(commandOffenceForDefendant.getOffenceTitle(), previousOffenceForDefendant.getOffenceTitle())
                 .append(commandOffenceForDefendant.getCount(), previousOffenceForDefendant.getCount())
+                .append(commandOffenceForDefendant.getOffenceDateCode(), previousOffenceForDefendant.getOffenceDateCode())
                 .append(nonNull(commandOffenceForDefendant.getOffenceTitleWelsh()) ? commandOffenceForDefendant.getOffenceTitleWelsh() : previousOffenceForDefendant.getOffenceTitleWelsh(), previousOffenceForDefendant.getOffenceTitleWelsh())
                 .append(nonNull(commandOffenceForDefendant.getOffenceLegislation()) ? commandOffenceForDefendant.getOffenceLegislation() : previousOffenceForDefendant.getOffenceLegislation(), previousOffenceForDefendant.getOffenceLegislation())
                 .append(nonNull(commandOffenceForDefendant.getLaaApplnReference()) ? commandOffenceForDefendant.getLaaApplnReference() : previousOffenceForDefendant.getLaaApplnReference(), previousOffenceForDefendant.getLaaApplnReference())
@@ -203,6 +205,7 @@ public class DefendantHelper {
                 .withVictims(offence.getVictims())
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
+                .withOffenceDateCode(offence.getOffenceDateCode())
                 .build();
 
     }
