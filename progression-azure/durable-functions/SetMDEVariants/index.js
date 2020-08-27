@@ -118,23 +118,28 @@ class MDEVariants {
 
         for (let judicialResultIdArray of uniqueJudicialResultIdArray) {
 
-            if (judicialResultIdArray.length !== judicialResultIds.length) {
+            const ids = this.getIds(judicialResultIdArray);
+
+            if (ids.length !== judicialResultIds.length) {
                 continue;
             }
-
+            console.log('judicialResultIdArray === ' + JSON.stringify(ids));
             const exists = [];
             for (let judicialResultId of judicialResultIds) {
-                exists.push(judicialResultIdArray.indexOf(judicialResultId) === -1);
+                console.log('judicialResultId === ' + JSON.stringify(judicialResultId.judicialResultId));
+                exists.push(ids.indexOf(judicialResultId.judicialResultId) !== -1);
             }
 
-            const allEqual = arr => arr.every(v => v === arr[0]);
+            console.log(JSON.stringify(exists));
+            const allEqual = arr => arr.every(v => v);
 
             if (allEqual(exists)) {
-                isExist = true
+                isExist = true;
                 break;
             }
-        }
 
+
+        }
         return isExist;
     }
 
@@ -242,8 +247,6 @@ class MDEVariants {
         groupedJudicialResultsByType.forEach(groupedJudicialResultByType => {
             const uniquePromptReferences = this.getUniquePromptReference(
                 groupedJudicialResultByType.judicialResults);
-            console.log(groupedJudicialResultByType.judicialResultTypeId + ' ' + JSON.stringify(
-                uniquePromptReferences));
             uniqueReferencePerResults.set(groupedJudicialResultByType.judicialResultTypeId,
                                           uniquePromptReferences);
         });
@@ -499,6 +502,14 @@ class MDEVariants {
     reset() {
         uniqueResultsByType = new Map();
         allResults = [];
+    }
+
+    getIds(judicialResultIdArray) {
+        const ids = [];
+        judicialResultIdArray.forEach(idArray => {
+            ids.push(idArray.judicialResultId);
+        });
+        return ids;
     }
 }
 

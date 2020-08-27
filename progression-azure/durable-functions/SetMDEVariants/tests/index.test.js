@@ -13,6 +13,7 @@ const SIX_RESULTS_DIFFERENT_RESULT_TYPE_DIFFERENT_VALUES = require('./six_result
 const MULTIPLE_USERGROUPS_MULTIPLE_RESULTS_DIFFERENT_VALUES = require('./multiple_usergroups_multiple_results_different_values.json');
 const NEXT_HEARING = require('./nextHearing.json');
 const NEXT_HEARING_2 = require('./next-hearing-2.json');
+const NEXT_HEARING_3 = require('./next-hearing-3.json');
 
 describe('Set MDE Variants', () => {
 
@@ -38,8 +39,9 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants.length).toBe(2);
         expect(mdeVariants[0].results.length).toBe(1);
+        expect(mdeVariants[1].results.length).toBe(1);
     });
 
     test('should return the correct MDE Variants when prompts values are the same', async () => {
@@ -66,8 +68,9 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants.length).toBe(2);
         expect(mdeVariants[0].results.length).toBe(2);
+        expect(mdeVariants[1].results.length).toBe(2);
     });
 
     test('should return the correct MDE Variants when a group of results have the same prompts', async () => {
@@ -142,9 +145,11 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(2);
+        expect(mdeVariants.length).toBe(4);
         expect(mdeVariants[0].results.length).toBe(3);
         expect(mdeVariants[1].results.length).toBe(1);
+        expect(mdeVariants[2].results.length).toBe(1);
+        expect(mdeVariants[3].results.length).toBe(1);
     });
 
     test('should return the correct MDE Variants with multiple UserGroupVariants containing different result definitions and different values', async () => {
@@ -157,11 +162,15 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(4);
+        expect(mdeVariants.length).toBe(8);
         expect(mdeVariants[0].results.length).toBe(3);
         expect(mdeVariants[1].results.length).toBe(1);
-        expect(mdeVariants[2].results.length).toBe(3);
+        expect(mdeVariants[2].results.length).toBe(1);
         expect(mdeVariants[3].results.length).toBe(1);
+        expect(mdeVariants[4].results.length).toBe(3);
+        expect(mdeVariants[5].results.length).toBe(1);
+        expect(mdeVariants[6].results.length).toBe(1);
+        expect(mdeVariants[7].results.length).toBe(1);
     });
 
     test('should return the correct MDE Variants for next Hearing', async () => {
@@ -196,6 +205,25 @@ describe('Set MDE Variants', () => {
         expect(mdeVariants[3].results.length).toBe(3);
         expect(mdeVariants[4].results.length).toBe(3);
         expect(mdeVariants[5].results.length).toBe(3);
+    });
+
+    test('should return the correct MDE Variants for next Hearing 3', async () => {
+
+        context.bindings = {
+            params: {
+                userGroupsNowVariants: NEXT_HEARING_3
+            }
+        };
+
+        const mdeVariants = await setMdeVariants(context);
+
+        expect(mdeVariants.length).toBe(16);
+        expect(mdeVariants[0].results.length).toBe(1);
+        expect(mdeVariants[1].results.length).toBe(1);
+        expect(mdeVariants[2].results.length).toBe(1);
+        expect(mdeVariants[3].results.length).toBe(1);
+        expect(mdeVariants[4].results.length).toBe(1);
+        expect(mdeVariants[5].results.length).toBe(1);
     });
 
 });
