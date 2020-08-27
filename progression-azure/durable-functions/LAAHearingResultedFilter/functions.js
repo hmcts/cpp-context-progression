@@ -11,26 +11,6 @@ const laaFilter = async function (json, context) {
     }
 
     let defendantIdWithLaaReference = [];
-
-    defendantIdWithLaaReference = (json.hearing.prosecutionCases.map((value) => {
-        return (value.defendants.filter((value) => {
-            return value.offences.filter(function (element) {
-                return LAA_APPLICATION_REFERENCE_KEY in element;
-            }).length > 0;
-        }))
-    }));
-
-    defendantIdWithLaaReference = [].concat.apply([], defendantIdWithLaaReference).map(defendant => defendant.id);
-    context.log(`Found ${JSON.stringify(defendantIdWithLaaReference)} defendants with LAA reference against one or more offences`)
-    if (defendantIdWithLaaReference.length > 0) {
-        json.hearing.prosecutionCases = json.hearing.prosecutionCases.map(prosecutionCase => {
-            prosecutionCase.defendants = prosecutionCase.defendants.filter((value) => {
-                return defendantIdWithLaaReference.includes(value.id);
-            });
-            return prosecutionCase;
-        });
-        return json;
-    } else {
         for (const prosecutionCase of json.hearing.prosecutionCases) {
             defendantIdWithLaaReference = [];
             if (prosecutionCase.prosecutionCaseIdentifier) {
@@ -55,8 +35,6 @@ const laaFilter = async function (json, context) {
             });
         }
         return defendantIdWithLaaReference.length > 0 ? json : {};
-    }
-
 };
 
 async function queryUnifiedSearchForUrn(context, urn, cjscppuid) {

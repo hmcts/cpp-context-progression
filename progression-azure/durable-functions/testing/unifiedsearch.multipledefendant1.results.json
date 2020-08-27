@@ -7,7 +7,66 @@
       "caseStatus": "active",
       "defendantSummary": [
         {
-          "defendantId": "ad03a626-d438-44a5-84b6-14111ec363fa",
+          "defendantId": "e06f1327-0a23-4749-b61e-d4e901365fe2",
+          "defendantASN": "arrest123",
+          "defendantName": "Harry Jack Kane Junior",
+          "defendantDOB": "2010-01-01",
+          "defendantNINO": "NN763534D",
+          "dateOfNextHearing": "2019-01-22",
+          "proceedingsConcluded": true,
+          "representationOrder": {
+            "applicationReference": "LAA REF 1",
+            "effectiveFromDate": "2019-08-12",
+            "effectiveToDate": "2019-10-12",
+            "laaContractNumber": "LAA CONTRACT NO"
+          },
+          "offenceSummary": [
+            {
+              "offenceId": "e9cb3ddd-587e-44af-b849-9af2337f1422",
+              "offenceCode": "OFFENCE CODE 1",
+              "offenceTitle": "OFFENCE TITLE 1",
+              "offenceLegislation": "OFFENCE LEGISLATION 1",
+              "proceedingsConcluded": false,
+              "arrestDate": "2019-09-02",
+              "dateOfInformation": "2019-09-02",
+              "endDate": "2019-09-02",
+              "startDate": "2019-09-02",
+              "chargeDate": "2019-09-02",
+              "modeOfTrial": "CROWN",
+              "orderIndex": 1,
+              "wording": "OFFENCE WORDING 1",
+              "laaApplnReference": {
+                "applicationReference": "LAA REF OFF 1",
+                "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+                "statusCode": "LAA STATUS CODE OFF 1",
+                "statusDescription": "LAA STATUS DESC OFF 1"
+              }
+            },
+            {
+              "offenceId": "59bf6632-d6c7-476d-a280-41a736850441",
+              "offenceCode": "OFFENCE CODE 2",
+              "offenceTitle": "OFFENCE TITLE 2",
+              "offenceLegislation": "OFFENCE LEGISLATION 2",
+              "proceedingsConcluded": false,
+              "arrestDate": "2019-09-02",
+              "dateOfInformation": "2019-09-02",
+              "endDate": "2019-09-02",
+              "startDate": "2019-09-02",
+              "chargeDate": "2019-09-02",
+              "modeOfTrial": "CROWN",
+              "orderIndex": 2,
+              "wording": "OFFENCE WORDING 2",
+              "laaApplnReference": {
+                "applicationReference": "LAA REF OFF 2",
+                "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+                "statusCode": "LAA STATUS CODE OFF 2",
+                "statusDescription": "LAA STATUS DESC OFF 2"
+              }
+            }
+          ]
+        },
+        {
+          "defendantId": "aeb6328d-19d4-49e8-8426-290f096b81dc",
           "defendantASN": "arrest123",
           "defendantName": "Harry Jack Kane Junior",
           "defendantDOB": "2010-01-01",

@@ -1,6 +1,8 @@
 const httpFunction = require('./index');
 const context = require('../testing/defaultContext')
 const getHearing = require('../HearingResultedCacheQuery/index');
+const axios = require('axios');
+jest.mock('axios');
 
 jest.mock('../HearingResultedCacheQuery/index')
 
@@ -11,6 +13,8 @@ describe('Test get hearing trigger', () => {
     });
 
     test('Http trigger should return hearing json', async () => {
+        const unifiedSearchResult = require('../testing/unifiedsearch.multipledefendant1.results.json');
+        axios.get.mockImplementation(() => Promise.resolve({data: unifiedSearchResult}));
 
         getHearing.mockImplementation(() => hearing);
     
@@ -20,6 +24,11 @@ describe('Test get hearing trigger', () => {
             },
             headers: {
                 cjscppuid: '996cbb52-b703-4a03-b2e1-7ebda9fd0b4b'
+            }
+        };
+        context.bindings = {
+            params: {
+                cjscppuid: 'dummy_key_value'
             }
         };
 

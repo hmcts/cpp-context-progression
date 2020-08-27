@@ -8,6 +8,7 @@ describe('filter offences', () => {
 
     test('should remove defendants that do not have an LAA reference', async() => {
         const hearingJson = require('../testing/hearing.1828f356-f746-4f2d-932b-79ef2df95c80.test.json');
+        const unifiedSearchResult = require('../testing/unifiedsearch.multipledefendant1.results.json');
 
         expect(hearingJson.hearing.prosecutionCases[0].defendants.length).toBe(3);
         expect(hearingJson.hearing.prosecutionCases[0].defendants[0].id).toBe('6647df67-a065-4d07-90ba-a8daa064ecc4');
@@ -17,9 +18,13 @@ describe('filter offences', () => {
         expect(hearingJson.hearing.prosecutionCases[0].defendants[0].offences.length).toBe(4);
         expect(hearingJson.hearing.prosecutionCases[0].defendants[1].offences.length).toBe(4);
         expect(hearingJson.hearing.prosecutionCases[0].defendants[2].offences.length).toBe(4);
+        axios.get.mockImplementation(() => Promise.resolve({data: unifiedSearchResult}));
 
         context.bindings = {
-            unfilteredJson: hearingJson
+            unfilteredJson: hearingJson,
+            params: {
+                cjscppuid: 'dummy_key_value'
+            }
         };
 
         const response = await httpFunction(context);
