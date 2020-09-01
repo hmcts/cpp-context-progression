@@ -14,8 +14,8 @@ const laaFilter = async function (json, context) {
         for (const prosecutionCase of json.hearing.prosecutionCases) {
             defendantIdWithLaaReference = [];
             if (prosecutionCase.prosecutionCaseIdentifier) {
-                const queriedCase = await queryUnifiedSearchForUrn(context, prosecutionCase.prosecutionCaseIdentifier.caseURN,
-                                                                   context.bindings.params.cjscppuid);
+                context.log("querying URN against unified search "+ prosecutionCase.prosecutionCaseIdentifier.caseURN);
+                const queriedCase = await queryUnifiedSearchForUrn(context, prosecutionCase.prosecutionCaseIdentifier.caseURN);
                 if (queriedCase && queriedCase.defendantSummary) {
                     defendantIdWithLaaReference = queriedCase.defendantSummary.filter(defendantSum => {
                         return defendantSum.offenceSummary && defendantSum.offenceSummary.filter(offenceSum => {
@@ -37,7 +37,7 @@ const laaFilter = async function (json, context) {
         return defendantIdWithLaaReference.length > 0 ? json : {};
 };
 
-async function queryUnifiedSearchForUrn(context, urn, cjscppuid) {
+async function queryUnifiedSearchForUrn(context, urn) {
     context.log(`Querying unified search ${urn}`);
     const resultsEndpoint = process.env.UNIFIED_SEARCH_CONTEXT +
                             `/unifiedsearchquery-query-api/query/api/rest/unifiedsearchquery/laa-cases?prosecutionCaseReference=${urn}`;

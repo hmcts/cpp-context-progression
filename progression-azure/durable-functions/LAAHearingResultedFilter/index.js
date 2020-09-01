@@ -12,7 +12,7 @@ const {laaFilter} = require('./functions.js');
 
 module.exports = async function (context) {
 
-    var json = context.bindings.unfilteredJson;
+    let json = context.bindings.unfilteredJson;
 
     if (!json || !json.hearing) {
         context.log('Invalid hearing JSON')

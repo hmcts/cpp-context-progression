@@ -74,7 +74,7 @@ module.exports = async function (context) {
 
     const publishPayload = context.bindings.filteredJson;
 
-    context.log(`Preparing to publish to LAA endpoints`)
+    context.log(`Preparing to publish to LAA endpoints --->> ${JSON.stringify(publishPayload)}`);
 
     if (!publishPayload || Object.keys(publishPayload).length == 0) {
         context.log(`Not publishing empty payload`)
