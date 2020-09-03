@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -94,6 +95,7 @@ public class ExtendedHearingProcessorTest {
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         this.eventProcessor.process(jsonEnvelope);
         verify(sender).send(finalEnvelope);
+        verify(progressionService).updateDefendantYouthForProsecutionCase(any(), anyList());
     }
 
     @Test
@@ -115,6 +117,7 @@ public class ExtendedHearingProcessorTest {
         this.eventProcessor.process(jsonEnvelope);
         verify(sender).send(finalEnvelope);
         verify(progressionService, times(1)).linkProsecutionCasesToHearing(any(JsonEnvelope.class),any(UUID.class),any(List.class));
+        verify(progressionService).updateDefendantYouthForProsecutionCase(any(), anyList());
     }
 
 }

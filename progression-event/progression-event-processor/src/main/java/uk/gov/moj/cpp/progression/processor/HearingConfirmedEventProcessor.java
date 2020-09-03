@@ -234,7 +234,6 @@ public class HearingConfirmedEventProcessor {
         }
 
         sender.send(hearingExtendTransformedPayload);
-        progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, incomingHearing.getProsecutionCases());
     }
 
     @Handles("progression.event.extend-hearing-defendant-request-created")

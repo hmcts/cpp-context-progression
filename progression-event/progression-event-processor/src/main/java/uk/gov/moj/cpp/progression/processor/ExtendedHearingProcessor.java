@@ -76,6 +76,7 @@ public class ExtendedHearingProcessor {
           final Hearing updatedHearing = updateHearingWithApplication(hearing, courtApplication);
           progressionService.linkApplicationsToHearing(jsonEnvelope, updatedHearing, Arrays.asList(courtApplication.getId()), HearingListingStatus.SENT_FOR_LISTING);
           sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).apply(hearingCourtApplication));
+          progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
         } else if (Objects.nonNull(prosecutionCases) && hearingIdFromQuery.isPresent()){
             LOGGER.info("extending hearing {} for prosecution cases",hearingExtended.getHearingRequest().getId() );
 
@@ -92,6 +93,7 @@ public class ExtendedHearingProcessor {
 
             final JsonObject hearingProsecutionCases =  objectToJsonObjectConverter.convert(hearingExtendedEvent);
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).apply(hearingProsecutionCases));
+            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
         }
         else {
             LOGGER.info("Court Application / Prosecution Case not found for hearing: {}", hearingId);

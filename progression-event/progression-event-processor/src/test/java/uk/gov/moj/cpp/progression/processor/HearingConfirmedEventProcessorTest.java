@@ -278,7 +278,6 @@ public class HearingConfirmedEventProcessorTest {
         eventProcessor.processEvent(envelope);
 
         verify(sender,times(2)).send(any(JsonEnvelope.class));
-        verify(progressionService, times(1)).updateDefendantYouthForProsecutionCase(any(), anyList());
         verify(objectToJsonObjectConverter,times(2)).convert(any());
         verify(progressionService, times(1)).transformHearingToHearingListingNeeds(any(), any());
     }
