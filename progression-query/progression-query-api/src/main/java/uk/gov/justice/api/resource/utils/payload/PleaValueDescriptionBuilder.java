@@ -44,6 +44,14 @@ public class PleaValueDescriptionBuilder {
 
         NOT_GUILTY("NOT_GUILTY", "Not Guilty"),
 
+        ADMITS("ADMITS","Admits"),
+
+        DENIES("DENIES","Denies"),
+
+        GUILTY_TO_A_LESSER_OFFENCE_NAMELY("GUILTY_TO_A_LESSER_OFFENCE_NAMELY", "Guilty to a lesser offence namely"),
+
+        GUILTY_TO_AN_ALTERNATIVE_OFFENCE_NOT_CHARGED_NAMELY("GUILTY_TO_AN_ALTERNATIVE_OFFENCE_NOT_CHARGED_NAMELY","Guilty to an alternative offence not charged namely"),
+
         GUILTY("GUILTY", "Guilty"),
 
         CHANGE_TO_GUILTY_AFTER_SWORN_IN("CHANGE_TO_GUILTY_AFTER_SWORN_IN", "Change of Plea: Not Guilty to Guilty (After Jury sworn in)"),
