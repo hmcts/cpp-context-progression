@@ -279,7 +279,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/conviction-date-removed.json
 
         - name: public.hearing.resulted
-          schema_uri: http://justice.gov.uk/hearing/courts/hearing-resulted.json
+          schema_uri: http://justice.gov.uk/hearing/courts/public.hearing-resulted.json
 
         - name: public.hearing.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/nowdocument/now-document-requested.json
