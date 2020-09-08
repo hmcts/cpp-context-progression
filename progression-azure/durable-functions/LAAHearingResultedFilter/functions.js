@@ -14,8 +14,9 @@ const laaFilter = async function (json, context) {
         for (const prosecutionCase of json.hearing.prosecutionCases) {
             defendantIdWithLaaReference = [];
             if (prosecutionCase.prosecutionCaseIdentifier) {
-                context.log("querying URN against unified search "+ prosecutionCase.prosecutionCaseIdentifier.caseURN);
-                const queriedCase = await queryUnifiedSearchForUrn(context, prosecutionCase.prosecutionCaseIdentifier.caseURN);
+                const caseUrn = prosecutionCase.prosecutionCaseIdentifier.caseURN || prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityReference;
+                context.log("querying URN against unified search "+ caseUrn);
+                const queriedCase = await queryUnifiedSearchForUrn(context, caseUrn);
                 if (queriedCase && queriedCase.defendantSummary) {
                     defendantIdWithLaaReference = queriedCase.defendantSummary.filter(defendantSum => {
                         return defendantSum.offenceSummary && defendantSum.offenceSummary.filter(offenceSum => {

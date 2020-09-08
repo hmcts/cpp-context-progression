@@ -18,7 +18,11 @@ describe('filter offences', () => {
         expect(hearingJson.hearing.prosecutionCases[0].defendants[0].offences.length).toBe(4);
         expect(hearingJson.hearing.prosecutionCases[0].defendants[1].offences.length).toBe(4);
         expect(hearingJson.hearing.prosecutionCases[0].defendants[2].offences.length).toBe(4);
-        axios.get.mockImplementation(() => Promise.resolve({data: unifiedSearchResult}));
+        axios.get.mockImplementation((caseUrn) => {
+            if(caseUrn.includes(hearingJson.hearing.prosecutionCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference)){
+                return Promise.resolve({data: unifiedSearchResult})
+            }
+        });
 
         context.bindings = {
             unfilteredJson: hearingJson,
