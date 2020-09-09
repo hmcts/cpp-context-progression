@@ -43,6 +43,7 @@ import com.google.common.collect.Lists;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -83,6 +84,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         messageProducerClientPublic.close();
     }
 
+    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldEjectStandaloneCourtApplicationAndGetConfirmation() throws Exception {
 

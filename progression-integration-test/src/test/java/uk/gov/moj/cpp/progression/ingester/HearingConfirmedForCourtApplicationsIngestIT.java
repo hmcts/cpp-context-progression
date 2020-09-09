@@ -61,6 +61,7 @@ import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
@@ -128,6 +129,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
+    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearings() throws Exception {
 

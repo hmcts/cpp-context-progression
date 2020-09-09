@@ -50,6 +50,7 @@ import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -108,6 +109,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         userId = randomUUID().toString();
     }
 
+    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldGenerateNotificationEventWhenCourtDocumentAdded() throws IOException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);

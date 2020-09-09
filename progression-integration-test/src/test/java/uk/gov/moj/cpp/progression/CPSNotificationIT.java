@@ -50,6 +50,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +96,7 @@ public class CPSNotificationIT extends AbstractIT {
         stubGetOrganisationDetails(ORGANISATION_ID, ORGANISATION_NAME);
     }
 
+    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldNotifyCPS() throws Exception {
 
