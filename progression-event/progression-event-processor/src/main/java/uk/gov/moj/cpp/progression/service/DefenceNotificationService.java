@@ -87,7 +87,7 @@ public class DefenceNotificationService {
     private void sendNotificationToEmailsForCase(final JsonEnvelope jsonEnvelope, final List<String> emailsList, final String caseId, final String urn, final UUID materialId){
         final String linkToMaterialPage = applicationParameters.getEndClientHost().concat(format(URI_TO_MATERIAL, caseId, materialId));
         final List<EmailChannel> emailChannelList = emailsList.stream().map(x  -> buildEmailChannel(x, urn, linkToMaterialPage)).collect(Collectors.toList());
-        notificationService.sendEmail(jsonEnvelope, randomUUID(), fromString(caseId),  null,  null, emailChannelList,  null);
+        notificationService.sendEmail(jsonEnvelope, randomUUID(), fromString(caseId),  null,  null, emailChannelList);
     }
 
     private EmailChannel buildEmailChannel(final String emailAddress, final String urn, final String url){

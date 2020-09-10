@@ -69,6 +69,7 @@ public class NCESNotificationRequestedEventProcessor {
                                                                         .withTemplateId(UUID.fromString(applicationParameters.getNcesEmailTemplateId()))
                                                                         .withSendToAddress(s.getSendToAddress())
                                                                         .withReplyToAddress(s.getReplyToAddress())
+                                                              .withMaterialUrl(materialUrl)
                                                                         .withPersonalisation(Personalisation.personalisation()
                                                                                 .withAdditionalProperty("subject",
                                                                                         ncesNotificationRequested.getDocumentContent().getAmendmentType())
@@ -79,7 +80,7 @@ public class NCESNotificationRequestedEventProcessor {
         documentGeneratorService.generateNcesDocument(sender, event, userId, ncesNotificationRequested);
         notificationService.sendEmail(event, UUID.randomUUID(), ncesNotificationRequested.getCaseId(), null,
                 ncesNotificationRequested.getMaterialId(),
-                emailChannelList,materialUrl );
+                emailChannelList);
 
     }
 

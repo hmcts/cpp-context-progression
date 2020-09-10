@@ -124,7 +124,7 @@ public class CourtDocumentNotifiedProcessor {
                     .cpsEmailAddress(cpsEmailAddress.get())
                     .templateType(templateType)
                     .build();
-            notificationService.sendEmail(jsonEnvelope, notificationId, prosecutionCaseId, null, materialId, Collections.singletonList(buildEmailChannel(cpsNotificationVO)), materialUrl);
+            notificationService.sendEmail(jsonEnvelope, notificationId, prosecutionCaseId, null, materialId, Collections.singletonList(buildEmailChannel(cpsNotificationVO, materialUrl)));
         }else{
             if(LOGGER.isErrorEnabled()) {
                 LOGGER.error("CPS notification email not found");
@@ -132,10 +132,11 @@ public class CourtDocumentNotifiedProcessor {
         }
     }
 
-    private EmailChannel buildEmailChannel(final CPSNotificationVO cpsNotification) {
+    private EmailChannel buildEmailChannel(final CPSNotificationVO cpsNotification, String materialUrl) {
         final EmailChannel.Builder emailChannelBuilder = EmailChannel.emailChannel();
         final Map<String, Object> personalisation = new HashMap<>();
         emailChannelBuilder.withSendToAddress(cpsNotification.getCpsEmailAddress());
+        emailChannelBuilder.withMaterialUrl(materialUrl);
         cpsNotification.getCaseVO().ifPresent(caseVO -> {
             personalisation.put(URN, caseVO.getCaseURN());
             if(nonNull(caseVO.getDefendantList())){

@@ -93,7 +93,7 @@ public class NCESNotificationRequestedEventProcessorTest {
         when(applicationParameters.getNcesEmailTemplateId()).thenReturn(UUID.randomUUID().toString());
         this.eventProcessor.processPublicNCESNotificationRequested(eventEnvelope);
         verify(documentGeneratorService).generateNcesDocument(any(),any(),any(),any());
-        verify(notificationService).sendEmail(any(),any(),any(),any(),any(),any(), any());
+        verify(notificationService).sendEmail(any(),any(),any(),any(),any(),any());
     }
 
 

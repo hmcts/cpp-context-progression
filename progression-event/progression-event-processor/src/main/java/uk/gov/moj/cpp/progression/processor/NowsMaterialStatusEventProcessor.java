@@ -39,8 +39,7 @@ public class NowsMaterialStatusEventProcessor {
 
         ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                 .filter(materialDetails -> nonNull(materialDetails.getEmailNotifications()))
-                .ifPresent(materialDetails ->
-                        notificationService.sendEmail(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), materialDetails.getEmailNotifications(), null));
+                .ifPresent(materialDetails -> notificationService.sendEmail(event, materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), materialDetails.getEmailNotifications()));
 
         ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                 .filter(MaterialDetails::getSecondClassLetter)

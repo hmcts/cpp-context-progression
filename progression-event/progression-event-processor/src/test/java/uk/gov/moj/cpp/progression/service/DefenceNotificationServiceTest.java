@@ -4,6 +4,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -96,9 +97,6 @@ public class DefenceNotificationServiceTest {
     @Captor
     private ArgumentCaptor<List<EmailChannel>> emailNotificationsCaptor;
 
-    @Captor
-    private ArgumentCaptor<String> materialUrlCaptor;
-
     @Before
     public void setUp() {
     }
@@ -137,7 +135,7 @@ public class DefenceNotificationServiceTest {
         verify(notificationService, times(1)).sendEmail(
                 sourceEnvelopeCaptor.capture(), notificationIdCaptor.capture(),
                 caseIdCaptor.capture(), applicationIdCaptor.capture(), materialIdCaptor.capture(),
-                emailNotificationsCaptor.capture(), materialUrlCaptor.capture());
+                emailNotificationsCaptor.capture());
 
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
         assertThat(applicationIdCaptor.getValue(), Matchers.nullValue());
@@ -145,7 +143,7 @@ public class DefenceNotificationServiceTest {
         assertThat(emailNotificationsCaptor.getValue(), Matchers.notNullValue());
         assertThat(emailNotificationsCaptor.getValue().size(), is(1));
         assertThat(emailNotificationsCaptor.getValue().get(0).getSendToAddress(), is("email@abc.com"));
-        assertThat(materialUrlCaptor.getValue(), Matchers.nullValue());
+        assertThat(emailNotificationsCaptor.getValue().get(0).getMaterialUrl(), nullValue());
     }
 
     @Test
@@ -182,7 +180,7 @@ public class DefenceNotificationServiceTest {
         verify(notificationService, times(1)).sendEmail(
                 sourceEnvelopeCaptor.capture(), notificationIdCaptor.capture(),
                 caseIdCaptor.capture(), applicationIdCaptor.capture(), materialIdCaptor.capture(),
-                emailNotificationsCaptor.capture(), materialUrlCaptor.capture());
+                emailNotificationsCaptor.capture());
 
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
         assertThat(applicationIdCaptor.getValue(), Matchers.nullValue());
@@ -190,8 +188,9 @@ public class DefenceNotificationServiceTest {
         assertThat(emailNotificationsCaptor.getValue(), Matchers.notNullValue());
         assertThat(emailNotificationsCaptor.getValue().size(), is(2));
         assertThat(emailNotificationsCaptor.getValue().get(0).getSendToAddress(), is("email1@abc.com"));
+        assertThat(emailNotificationsCaptor.getValue().get(0).getMaterialUrl(), nullValue());
         assertThat(emailNotificationsCaptor.getValue().get(1).getSendToAddress(), is("email2@abc.com"));
-        assertThat(materialUrlCaptor.getValue(), Matchers.nullValue());
+        assertThat(emailNotificationsCaptor.getValue().get(0).getMaterialUrl(), nullValue());
     }
 
     @Test
@@ -220,7 +219,7 @@ public class DefenceNotificationServiceTest {
 
         defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
         verify(usersGroupService, never()).getEmailsForOrganisationIds(Mockito.any(), Mockito.anyListOf(String.class));
-        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyListOf(EmailChannel.class), Mockito.any());
+        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyListOf(EmailChannel.class));
     }
 
     private static JsonObject buildDefendantDocument() {

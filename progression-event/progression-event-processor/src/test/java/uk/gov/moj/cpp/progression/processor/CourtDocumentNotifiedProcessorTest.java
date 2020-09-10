@@ -264,6 +264,7 @@ public class CourtDocumentNotifiedProcessorTest {
         JsonObject prosecutionCaseJsonObject = prosecutionCaseJsonOptional.get().getJsonObject("prosecutionCase");
         ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJsonObject, ProsecutionCase.class);
         final String defendantCourtDocumentTemplateId = randomUUID().toString();
+        final String materialUrl = randomUUID().toString();
         when(applicationParameters.getCpsDefendantCourtDocumentTemplateId()).thenReturn(defendantCourtDocumentTemplateId);
 
         final UUID courtCenterId = randomUUID();
@@ -285,7 +286,7 @@ public class CourtDocumentNotifiedProcessorTest {
                 .build();
 
         final EmailChannel emailChannel = Whitebox
-                .invokeMethod(courtDocumentNotifiedProcessor, "buildEmailChannel", cpsNotificationVO);
+                .invokeMethod(courtDocumentNotifiedProcessor, "buildEmailChannel", cpsNotificationVO, materialUrl);
 
         assertThat("Mismatch Case URN", "FGR4567", is(emailChannel.getPersonalisation().getAdditionalProperties().get("URN")));
         assertThat("Mismatch Defendant List", "Norman Blogg, Henry Smith", is(emailChannel.getPersonalisation().getAdditionalProperties().get("defendant_list")));

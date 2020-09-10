@@ -8,6 +8,8 @@ public class Notification {
     private UUID templateId;
     private String sendToAddress;
     private String replyToAddress;
+    private String materialUrl;
+
     private Map<String, String> personalisation;
 
     public UUID getTemplateId() {
@@ -42,6 +44,13 @@ public class Notification {
         this.personalisation = personalisation;
     }
 
+    public String getMaterialUrl() {
+        return materialUrl;
+    }
+
+    public void setMaterialUrl(String materialUrl) {
+        this.materialUrl = materialUrl;
+    }
 
     public UUID getNotificationId() {
         return notificationId;

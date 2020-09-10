@@ -118,26 +118,26 @@ public class NotificationService {
     @Inject
     private PostalService postalService;
 
-    public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications, final String materialUrl) {
+    public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications) {
 
         if (nonNull(emailNotifications)) {
 
-            final JsonArrayBuilder notificationBuilder = buildNotifications(notificationId, emailNotifications, materialUrl);
+            final JsonArrayBuilder notificationBuilder = buildNotifications(notificationId, emailNotifications);
 
             final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                     .add(NOTIFICATIONS, notificationBuilder);
 
-            Optional.ofNullable(caseId).ifPresent(id -> {
+            ofNullable(caseId).ifPresent(id -> {
                 systemIdMapperService.mapNotificationIdToCaseId(caseId, notificationId);
                 payloadBuilder.add(CASE_ID, id.toString());
             });
 
-            Optional.ofNullable(applicationId).ifPresent(id -> {
+            ofNullable(applicationId).ifPresent(id -> {
                 systemIdMapperService.mapNotificationIdToApplicationId(applicationId, notificationId);
                 payloadBuilder.add(APPLICATION_ID, id.toString());
             });
 
-            Optional.ofNullable(materialId).ifPresent(id -> {
+            ofNullable(materialId).ifPresent(id -> {
                 systemIdMapperService.mapNotificationIdToMaterialId(materialId, notificationId);
                 payloadBuilder.add(MATERIAL_ID, id.toString());
             });
@@ -154,6 +154,73 @@ public class NotificationService {
         }
     }
 
+    public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications) {
+
+        if (nonNull(emailNotifications)) {
+
+            final List<Notification> notifications = emailNotifications.stream().map(emailChannel -> createNotification(randomUUID(), emailChannel)).collect(Collectors.toList());
+
+            final JsonArrayBuilder notificationBuilder = createArrayBuilder();
+
+            notifications.forEach(notification -> {
+
+                notificationBuilder.add(createNotificationJsonObject(notification));
+
+                ofNullable(caseId).ifPresent(id -> systemIdMapperService.mapNotificationIdToCaseId(caseId, notification.getNotificationId()));
+
+                ofNullable(applicationId).ifPresent(id -> systemIdMapperService.mapNotificationIdToApplicationId(applicationId, notification.getNotificationId()));
+
+                ofNullable(materialId).ifPresent(id -> systemIdMapperService.mapNotificationIdToMaterialId(materialId, notification.getNotificationId()));
+
+            });
+
+            final JsonObjectBuilder payloadBuilder = createObjectBuilder()
+                    .add(NOTIFICATIONS, notificationBuilder);
+
+            ofNullable(caseId).ifPresent(id -> payloadBuilder.add(CASE_ID, id.toString()));
+
+            ofNullable(applicationId).ifPresent(id -> payloadBuilder.add(APPLICATION_ID, id.toString()));
+
+            ofNullable(materialId).ifPresent(id -> payloadBuilder.add(MATERIAL_ID, id.toString()));
+
+            final JsonObject emailPayload = payloadBuilder.build();
+
+            LOGGER.info("sending email payload - {}", emailPayload);
+
+            sender.send(enveloper.withMetadataFrom(sourceEnvelope, "progression.command.email").apply(emailPayload));
+
+        } else {
+
+            LOGGER.warn("No Email was sent.");
+        }
+    }
+
+    private JsonObjectBuilder createNotificationJsonObject(Notification notification) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
+                .add(NOTIFICATION_ID, notification.getNotificationId().toString())
+                .add(TEMPLATE_ID, notification.getTemplateId().toString())
+                .add(SEND_TO_ADDRESS, notification.getSendToAddress());
+
+        if (nonNull(notification.getReplyToAddress())) {
+            jsonObjectBuilder.add(REPLY_TO_ADDRESS, notification.getReplyToAddress());
+        } else {
+            jsonObjectBuilder.addNull(REPLY_TO_ADDRESS);
+        }
+
+        if (nonNull(notification.getMaterialUrl())) {
+            jsonObjectBuilder.add(MATERIAL_URL, notification.getMaterialUrl());
+        }
+
+        final Map<String, String> additionalProperties = notification.getPersonalisation();
+
+        final JsonObjectBuilder personalisation = createObjectBuilder();
+
+        additionalProperties.forEach(personalisation::add);
+
+        jsonObjectBuilder.add(PERSONALISATION, personalisation);
+        return jsonObjectBuilder;
+    }
+
     public void sendLetter(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final boolean postage) {
 
         final JsonObjectBuilder payloadBuilder = createObjectBuilder()
@@ -161,12 +228,12 @@ public class NotificationService {
                 .add(MATERIAL_ID, materialId.toString())
                 .add(POSTAGE, postage);
 
-        Optional.ofNullable(caseId).ifPresent(id -> {
+        ofNullable(caseId).ifPresent(id -> {
             systemIdMapperService.mapNotificationIdToCaseId(caseId, notificationId);
             payloadBuilder.add(CASE_ID, id.toString());
         });
 
-        Optional.ofNullable(applicationId).ifPresent(id -> {
+        ofNullable(applicationId).ifPresent(id -> {
             systemIdMapperService.mapNotificationIdToApplicationId(applicationId, notificationId);
             payloadBuilder.add(APPLICATION_ID, id.toString());
         });
@@ -311,7 +378,7 @@ public class NotificationService {
         Objects.requireNonNull(cpsNotification);
         cpsNotification.getCaseVO().ifPresent(caseVO ->
                 sendEmail(event, randomUUID(), caseVO.getCaseId(), null, null,
-                        Collections.singletonList(buildEmailChannel(cpsNotification)), null)
+                        Collections.singletonList(buildEmailChannel(cpsNotification)))
         );
     }
 
@@ -391,7 +458,7 @@ public class NotificationService {
                 hearingDate,
                 hearingTime,
                 ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY),
-                ofNullable(courtCentre).map(CourtCentre::getAddress).orElse(null))), null));
+                ofNullable(courtCentre).map(CourtCentre::getAddress).orElse(null)))));
 
         addressOptional.ifPresent(address -> {
             if (!emailAddressOptional.isPresent()) { // send postal notification only if email notification was not sent.
@@ -565,6 +632,8 @@ public class NotificationService {
 
         emailNotification.setNotificationId(notificationId);
 
+        emailNotification.setMaterialUrl(emailChannel.getMaterialUrl());
+
         emailNotification.setSendToAddress(emailChannel.getSendToAddress());
 
         emailNotification.setTemplateId(emailChannel.getTemplateId());
@@ -582,40 +651,13 @@ public class NotificationService {
         return emailNotification;
     }
 
-    private JsonArrayBuilder buildNotifications(final UUID notificationId, final List<EmailChannel> emailNotifications, final String materialUrl) {
+    private JsonArrayBuilder buildNotifications(final UUID notificationId, final List<EmailChannel> emailNotifications) {
 
         final List<Notification> notifications = emailNotifications.stream().map(emailChannel -> createNotification(notificationId, emailChannel)).collect(Collectors.toList());
 
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
 
-        notifications.forEach(notification -> {
-
-            final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
-                    .add(NOTIFICATION_ID, notification.getNotificationId().toString())
-                    .add(TEMPLATE_ID, notification.getTemplateId().toString())
-                    .add(SEND_TO_ADDRESS, notification.getSendToAddress());
-
-            if (nonNull(notification.getReplyToAddress())) {
-                jsonObjectBuilder.add(REPLY_TO_ADDRESS, notification.getReplyToAddress());
-            } else {
-                jsonObjectBuilder.addNull(REPLY_TO_ADDRESS);
-            }
-
-            if (nonNull(materialUrl)) {
-                jsonObjectBuilder.add(MATERIAL_URL, materialUrl);
-            }
-
-            final Map<String, String> additionalProperties = notification.getPersonalisation();
-
-            final JsonObjectBuilder personalisation = createObjectBuilder();
-
-            additionalProperties.forEach(personalisation::add);
-
-            jsonObjectBuilder.add(PERSONALISATION, personalisation);
-
-            jsonArrayBuilder.add(jsonObjectBuilder);
-
-        });
+        notifications.forEach(notification -> jsonArrayBuilder.add(createNotificationJsonObject(notification)));
 
         return jsonArrayBuilder;
     }

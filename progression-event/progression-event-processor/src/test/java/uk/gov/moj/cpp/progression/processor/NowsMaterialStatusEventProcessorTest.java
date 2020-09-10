@@ -75,7 +75,7 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendEmail(Mockito.eq(event), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.any(), Mockito.eq(null));
+        verify(notificationService).sendEmail(Mockito.eq(event), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.any());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class NowsMaterialStatusEventProcessorTest {
         eventProcessor.processStatusUpdated(event);
 
         verify(notificationService).sendLetter(Mockito.eq(event), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
-        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -129,7 +129,7 @@ public class NowsMaterialStatusEventProcessorTest {
         eventProcessor.processStatusUpdated(event);
 
         verify(notificationService).sendLetter(Mockito.eq(event), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(false));
-        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     @Test
