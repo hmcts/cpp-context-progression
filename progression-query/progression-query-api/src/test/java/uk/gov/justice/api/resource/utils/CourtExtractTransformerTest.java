@@ -44,7 +44,6 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.Position;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -128,6 +127,7 @@ public class CourtExtractTransformerTest {
     private static final String LAST_NAME_2 = " Last name 2";
     private static final String PROMPT_VALUE = "10";
     private static final String COURT_EXTRACT = "Y";
+    private static final String PLEA_GUILTY = "GUILTY";
     private static final LocalDate CONVICTION_DATE = LocalDate.of(2018, 04, 04);
     private static final LocalDate PLEA_DATE = LocalDate.of(2018, 01, 01);
     private static final String DEFENDANT_AGE = "30";
@@ -401,7 +401,7 @@ public class CourtExtractTransformerTest {
             assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getPleas().get(0).getDelegatedPowers().getFirstName(), is(FIRST_NAME));
             assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getPleas().get(0).getDelegatedPowers().getLastName(), is(LAST_NAME));
             assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getPleas().get(0).getPleaDate(), is(PLEA_DATE));
-            assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getPleas().get(0).getPleaValue(), is(PleaValue.GUILTY));
+            assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getPleas().get(0).getPleaValue(), is(PLEA_GUILTY));
             assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getIndicatedPlea().getIndicatedPleaValue(), is(IndicatedPleaValue.INDICATED_GUILTY));
             assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getAllocationDecision().getOffenceId(), is(OFFENCE_ID));
             assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getAllocationDecision().getMotReasonCode(), is("4"));
@@ -882,7 +882,7 @@ public class CourtExtractTransformerTest {
                                 .withLastName(LAST_NAME)
                                 .build())
                         .withPleaDate(PLEA_DATE)
-                        .withPleaValue(PleaValue.GUILTY)
+                        .withPleaValue(PLEA_GUILTY)
                         .build());
     }
 

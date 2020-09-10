@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
 import uk.gov.justice.api.resource.utils.TransformationHelper;
 import uk.gov.justice.api.resource.utils.payload.PleaValueDescriptionBuilder;
@@ -32,6 +33,8 @@ import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Named;
@@ -91,7 +94,13 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     @Mock
     private TransformationHelper transformationHelper;
-    
+
+    @Spy
+    private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
     @InjectMocks
     private DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource;
 
@@ -109,7 +118,8 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.courtExtractTransformer, "transformationHelper", transformationHelper);
-        setField(this.defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource, "pleaValueDescriptionBuilder", new PleaValueDescriptionBuilder());
+        setField(this.pleaValueDescriptionBuilder, "referenceDataService", referenceDataService);
+        setField(this.defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource, "pleaValueDescriptionBuilder", pleaValueDescriptionBuilder);
 
         final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
         final DocumentGeneratorClient documentGeneratorClient = mock(DocumentGeneratorClient.class);
@@ -124,10 +134,17 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             when(documentGeneratorClient.generatePdfDocument(any(), anyString(), any())).thenReturn(newPayload.getBytes());
             when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
             when(interceptorChainProcessor.process(any())).thenReturn(of(jsonEnvelope));
-
+            when(referenceDataService.retrievePleaTypeDescriptions()).thenReturn(buildPleaStatusTypeDescriptions());
             defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.getCourtExtractByCaseIdContent(caseId, defendantId, template, hearingIds, userId);
             verify(documentGeneratorClient).generatePdfDocument(jsonObjectArgumentCaptor.capture(), anyString(), any());
             assertThat(newPayload, is(jsonObjectArgumentCaptor.getValue().toString()));
         }
+    }
+
+    private Map<String, String> buildPleaStatusTypeDescriptions(){
+        final Map<String, String> pleaStatusTypeDescriptions = new HashMap<>();
+        pleaStatusTypeDescriptions.put("CHANGE_TO_GUILTY_AFTER_SWORN_IN", "Change of Plea: Not Guilty to Guilty (After Jury sworn in)");
+        pleaStatusTypeDescriptions.put("CHANGE_TO_GUILTY_NO_SWORN_IN", "Change of Plea: Not Guilty to Guilty (No Jury sworn in)");
+        return pleaStatusTypeDescriptions;
     }
 }

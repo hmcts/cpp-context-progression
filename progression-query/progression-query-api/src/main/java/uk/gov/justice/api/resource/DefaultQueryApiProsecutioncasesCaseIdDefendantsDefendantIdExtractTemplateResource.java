@@ -104,9 +104,10 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
-    CourtExtractTransformer courtExtractTransformer;
+    private CourtExtractTransformer courtExtractTransformer;
 
-    private PleaValueDescriptionBuilder pleaValueDescriptionBuilder = new PleaValueDescriptionBuilder();
+    @Inject
+    private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
 
     private UUID userId;
 

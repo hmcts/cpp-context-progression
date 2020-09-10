@@ -1,7 +1,9 @@
 package uk.gov.justice.api.resource.service;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
+import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -10,6 +12,7 @@ import uk.gov.justice.progression.courts.exract.ProsecutingAuthority;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -17,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -24,6 +28,7 @@ import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 
 @SuppressWarnings({"squid:S1067", "squid:S1192"})
 public class ReferenceDataService {
@@ -39,13 +44,32 @@ public class ReferenceDataService {
     private static final String ADDRESS_5 = "address5";
     private static final String POSTCODE = "postcode";
 
+    private static final String REFERENCEDATA_QUERY_PLEA_TYPES = "referencedata.query.plea-types";
+    private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
+    private static final String FIELD_PLEA_TYPE_DESCRIPTION = "pleaTypeDescription";
+    private static final String FIELD_PLEA_VALUE = "pleaValue";
+
     @Inject
-    @ServiceComponent(EVENT_PROCESSOR)
+    @ServiceComponent(QUERY_API)
     private Requester requester;
 
     @Inject
     private Enveloper enveloper;
 
+    public Map<String, String> retrievePleaTypeDescriptions() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCEDATA_QUERY_PLEA_TYPES);
+
+        final Envelope<JsonObject> pleaTypes = requester.requestAsAdmin(envelopeFrom(metadataBuilder, createObjectBuilder()), JsonObject.class);
+        final JsonArray pleaStatusTypes = pleaTypes.payload().getJsonArray(FIELD_PLEA_STATUS_TYPES);
+
+        return pleaStatusTypes.stream()
+                .collect(Collectors.toMap(
+                        jsonValue -> ((JsonObject)jsonValue).getString(FIELD_PLEA_VALUE),
+                        jsonValue -> ((JsonObject)jsonValue).getString(FIELD_PLEA_TYPE_DESCRIPTION)
+                ));
+    }
 
     public Optional<JsonObject> getOrganisationUnitById(final JsonEnvelope event, final UUID courtCentreId) {
         final JsonObject payload = createObjectBuilder().add("id", courtCentreId.toString()).build();

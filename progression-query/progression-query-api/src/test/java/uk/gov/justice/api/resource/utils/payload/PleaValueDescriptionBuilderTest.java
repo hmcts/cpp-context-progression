@@ -4,10 +4,11 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-
-import uk.gov.justice.core.courts.PleaValue;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -15,16 +16,26 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.api.resource.service.ReferenceDataService;
 
+@RunWith(MockitoJUnitRunner.class)
 public class PleaValueDescriptionBuilderTest {
 
-    @Test
-    public void shouldHavePleaDescriptionForAllPleaValues() {
-        //test to check that PleaValueDescription has all values in PleaValue
-        for (final PleaValue pleaValue : PleaValue.values()) {
-            assertThat(PleaValueDescriptionBuilder.PleaValueDescription.descriptionFor(pleaValue.toString()).isPresent(), is(true));
-        }
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @InjectMocks
+    private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
+
+    @Before
+    public void setUp(){
+        when(referenceDataService.retrievePleaTypeDescriptions()).thenReturn(buildPleaTypeDescriptions());
     }
 
     @Test
@@ -36,7 +47,6 @@ public class PleaValueDescriptionBuilderTest {
              final JsonReader jsonResultReader = Json.createReader(streamResult)) {
             final JsonObject payload = jsonReader.readObject();
             final JsonObject result = jsonResultReader.readObject();
-            final PleaValueDescriptionBuilder pleaValueDescriptionBuilder = new PleaValueDescriptionBuilder();
             final JsonObject newPayload = pleaValueDescriptionBuilder.rebuildWithPleaValueDescription(payload);
             assertThat(newPayload, is(result));
         }
@@ -51,8 +61,15 @@ public class PleaValueDescriptionBuilderTest {
         array.add("2");
         target.add("array", array.build());
         final JsonObject payload = target.build();
-        final PleaValueDescriptionBuilder pleaValueDescriptionBuilder = new PleaValueDescriptionBuilder();
         final JsonObject newPayload = pleaValueDescriptionBuilder.rebuildWithPleaValueDescription(payload);
         assertThat(newPayload, is(payload));
     }
+
+    private Map<String, String> buildPleaTypeDescriptions(){
+        final Map<String, String> pleaStatusTypeDescriptions = new HashMap<>();
+        pleaStatusTypeDescriptions.put("CHANGE_TO_GUILTY_AFTER_SWORN_IN", "Change of Plea: Not Guilty to Guilty (After Jury sworn in)");
+        pleaStatusTypeDescriptions.put("CHANGE_TO_GUILTY_NO_SWORN_IN", "Change of Plea: Not Guilty to Guilty (No Jury sworn in)");
+        return pleaStatusTypeDescriptions;
+    }
+
 }

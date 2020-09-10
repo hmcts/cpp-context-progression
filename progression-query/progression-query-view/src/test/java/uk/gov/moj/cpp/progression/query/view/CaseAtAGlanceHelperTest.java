@@ -38,7 +38,6 @@ import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.VerdictType;
@@ -78,6 +77,7 @@ public class CaseAtAGlanceHelperTest {
     private static final String OFFENCE_CODE = "CJSCODEGAPS";
     private static final String OFFENCE_TITLE = "Offence Title";
     private static final String OFFENCE_TITLE_WELSH = "Offence Title Welsh";
+    private static final String PLEA_GUILTY = "GUILTY";
     private static final String GUILTY = "Guilty";
     private static final String OFFENCE_LEGISLATION = "OffenceLegislation";
     private static final String LEGAL_REP_NAME = "Legal Rep name";
@@ -238,7 +238,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceTitle(), is(OFFENCE_TITLE));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceTitleWelsh(), is(OFFENCE_TITLE_WELSH));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCount(), is(2));
-        assertThat(defendantSmith.getCaagDefendantOffences().get(0).getPlea().getPleaValue(), is(PleaValue.GUILTY));
+        assertThat(defendantSmith.getCaagDefendantOffences().get(0).getPlea().getPleaValue(), is(PLEA_GUILTY));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getVerdict().getVerdictType().getCategory(), is(GUILTY));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceLegislation(), is(OFFENCE_LEGISLATION));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getStartDate(), notNullValue());
@@ -343,7 +343,7 @@ public class CaseAtAGlanceHelperTest {
                                                 .withOffenceTitle(OFFENCE_TITLE)
                                                 .withOffenceTitleWelsh(OFFENCE_TITLE_WELSH)
                                                 .withCount(2)
-                                                .withPlea(Plea.plea().withPleaValue(PleaValue.GUILTY).build())
+                                                .withPlea(Plea.plea().withPleaValue(PLEA_GUILTY).build())
                                                 .withVerdict(verdict().withVerdictType(VerdictType.verdictType().withCategory(GUILTY).build()).build())
                                                 .withOffenceLegislation(OFFENCE_LEGISLATION)
                                                 .withStartDate(LocalDate.now())

@@ -8,7 +8,6 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
-import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -44,6 +43,7 @@ public class ProgressionEventProcessor {
 
     public static final String CASE_ID = "caseId";
     public static final String COURT_CENTRE_ID = "courtCentreId";
+    public static final String GUILTY = "GUILTY";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionEventProcessor.class.getCanonicalName());
     private static final String PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_DATE_ADDED = "public.progression.events.sentence-hearing-date-added";
     private static final String PUBLIC_PROGRESSION_EVENTS_CASE_ADDED_TO_CROWN_COURT = "public.progression.events.case-added-to-crown-court";
@@ -109,7 +109,7 @@ public class ProgressionEventProcessor {
 
         final boolean allGuiltyPlea =prosecutionCase.getDefendants().stream().flatMap(defendant -> defendant.getOffences().stream())
                 .map(offence -> offence.getPlea())
-                .allMatch(plea -> Objects.nonNull(plea) && plea.getPleaValue().equals(PleaValue.GUILTY));
+                .allMatch(plea -> Objects.nonNull(plea) && plea.getPleaValue().equals(GUILTY));
 
         HearingType hearingType= HearingType.hearingType()
                 .withId(UUID.fromString("06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"))

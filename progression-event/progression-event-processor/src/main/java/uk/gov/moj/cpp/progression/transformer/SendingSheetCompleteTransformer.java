@@ -24,7 +24,6 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.PleaValue;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.Source;
@@ -151,7 +150,7 @@ public class SendingSheetCompleteTransformer {
 
     private Plea getPlea(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence) {
         return offence.getPlea() == null ? null : Plea.plea()
-                .withPleaValue(PleaValue.valueFor(offence.getPlea().getValue()).get())
+                .withPleaValue(offence.getPlea().getValue())
                 .withPleaDate(offence.getPlea().getPleaDate())
                 .withOffenceId(offence.getId())
                 .withOriginatingHearingId(ORIGINATING_HEARING_ID)
