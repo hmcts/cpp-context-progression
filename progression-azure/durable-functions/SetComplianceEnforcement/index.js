@@ -170,8 +170,7 @@ class SetComplianceEnforcement {
 
     setPaymentTermsResults(results, complianceEnforcement) {
         results.forEach(result => {
-            if (this.isResultDefinitionHasPaymentTerms(
-                result.judicialResult.judicialResultTypeId)) {
+            if (this.isResultDefinitionHasPaymentTerms(result.judicialResult.judicialResultTypeId)) {
                 complianceEnforcement.paymentTermsResults =
                     complianceEnforcement.paymentTermsResults || [];
                 complianceEnforcement.paymentTermsResults.push(result.judicialResult);
@@ -192,12 +191,12 @@ class SetComplianceEnforcement {
 
     setCollectionOrderResults(results, complianceEnforcement) {
         results.forEach(result => {
-            if (result.judicialResult.judicialResultTypeId
-                === ResultDefinitionConstants.COLLECTION_ORDER
-                || result.judicialResult.judicialResultTypeId
-                === ResultDefinitionConstants.ATTACHMENT_OF_EARNINGS
-                || result.judicialResult.judicialResultTypeId
-                === ResultDefinitionConstants.APPLICATION_FOR_BENEFITS_DEDUCTION) {
+            if ([
+                ResultDefinitionConstants.COLLECTION_ORDER,
+                ResultDefinitionConstants.ATTACHMENT_OF_EARNINGS,
+                ResultDefinitionConstants.APPLICATION_FOR_BENEFITS_DEDUCTION,
+                ResultDefinitionConstants.PAYMENT_TERMS_ON_RELEASE
+            ].includes(result.judicialResult.judicialResultTypeId)) {
                 complianceEnforcement.collectionOrderResults =
                     complianceEnforcement.collectionOrderResults || [];
                 complianceEnforcement.collectionOrderResults.push(result.judicialResult);
@@ -206,9 +205,13 @@ class SetComplianceEnforcement {
     }
 
     isResultDefinitionHasPaymentTerms(resultDefinition) {
-        return resultDefinition === ResultDefinitionConstants.PAY_BY_DATE || resultDefinition
-               === ResultDefinitionConstants.INSTALLMENTS_ONLY || resultDefinition
-               === ResultDefinitionConstants.LUMP_SUM_PLUS_INSTALLMENTS;
+        return [
+            ResultDefinitionConstants.PAY_BY_DATE,
+            ResultDefinitionConstants.INSTALLMENTS_ONLY,
+            ResultDefinitionConstants.LUMP_SUM_PLUS_INSTALLMENTS,
+            ResultDefinitionConstants.PAYMENT_TERMS_ON_RELEASE
+
+        ].includes(resultDefinition)
     }
 
     isResultDefinitionHasReserveTerms(resultDefinition) {

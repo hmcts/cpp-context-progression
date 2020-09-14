@@ -8,6 +8,10 @@ class ResultDefinitionConstants {
         return "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1";
     }
 
+    static get PAYMENT_TERMS_ON_RELEASE() { // PTFOR
+        return "a0b426c1-74b8-43cd-9885-f0f31625352e";
+    }
+
     static get LUMP_SUM_PLUS_INSTALLMENTS() {
         return "272d1ec2-634b-11e8-adc0-fa7ae01bbebc";
     }

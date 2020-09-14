@@ -29,4 +29,20 @@ describe('Collection order mapper works correctly', () => {
         expect(collectionOrder.isAttachmentOfEarnings).toBe(false);
         expect(collectionOrder.reserveTerms).toEqual(reserveTerms);
     })
+
+    test('build collection order ptfor', () => {
+        const hearingJson = require(
+            '../../../../test/case-level-judicial-results-hearing.json');
+        const complianceEnforcementPtforJson = require(
+            './compliance-enforcement-ptfor.json');
+        const collectionOrderMapper = new CollectionOrderMapper(
+            complianceEnforcementPtforJson,
+            hearingJson);
+        const collectionOrder = collectionOrderMapper.buildCollectionOrder();
+        expect(collectionOrder.isCollectionOrderMade).toBe(false);
+        expect(collectionOrder.isApplicationForBenefitsDeduction).toBe(false);
+        expect(collectionOrder.isAttachmentOfEarnings).toBe(false);
+        expect(collectionOrder.isPaymentTermsOnRelease).toBe(true);
+        expect(collectionOrder.reserveTerms).toBeUndefined();
+    })
 })

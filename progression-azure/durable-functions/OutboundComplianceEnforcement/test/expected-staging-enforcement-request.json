@@ -13,6 +13,7 @@
       "isApplicationForBenefitsDeduction": false,
       "isAttachmentOfEarnings": false,
       "isCollectionOrderMade": true,
+      "isPaymentTermsOnRelease": false,
       "reserveTerms": {
         "reserveTermsType": "INSTALMENTS_ONLY",
         "installments": {}

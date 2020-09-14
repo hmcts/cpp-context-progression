@@ -4,6 +4,7 @@ class CollectionOrder {
         this.isApplicationForBenefitsDeduction = false;
         this.isAttachmentOfEarnings = false;
         this.isCollectionOrderMade = false;
+        this.isPaymentTermsOnRelease = false;
         this.reserveTerms = undefined;
     }
 }

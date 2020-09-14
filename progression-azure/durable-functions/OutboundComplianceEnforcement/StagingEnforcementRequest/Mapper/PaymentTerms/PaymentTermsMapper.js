@@ -107,6 +107,8 @@ class PaymentTermsMapper extends Mapper {
                     return this.getPaymentTypeForInstallmentOnly(paymentTermsResult.judicialResultPrompts);
                 }else if(paymentTermsResult.judicialResultTypeId === ResultDefinitions.LUMP_SUM_PLUS_INSTALLMENTS){
                     return this.getPaymentTypeForLumpSumInstallments(paymentTermsResult.judicialResultPrompts);
+                }else if(paymentTermsResult.judicialResultTypeId === ResultDefinitions.PAYMENT_TERMS_ON_RELEASE){
+                    return PaymentTermsType.BY_DATE;
                 }
             }
         }

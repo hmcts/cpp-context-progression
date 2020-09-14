@@ -17,6 +17,7 @@ class CollectionOrderMapper extends Mapper {
         collectionOrder.isApplicationForBenefitsDeduction =
             this.isApplicationForBenefitsDeduction();
         collectionOrder.isAttachmentOfEarnings = this.isAttachmentOfEarnings();
+        collectionOrder.isPaymentTermsOnRelease = this.isPaymentTermsOnRelease();
         const reserveTerms = this.getReserveTermsMapper().getReserveTerms();
         collectionOrder.reserveTerms = reserveTerms ? reserveTerms : undefined;
         return collectionOrder;
@@ -42,6 +43,12 @@ class CollectionOrderMapper extends Mapper {
         return this.complianceEnforcement.collectionOrderResults &&
                this.complianceEnforcement.collectionOrderResults.some(collectionOrder => {
                    return collectionOrder.judicialResultTypeId === ResultDefinition.COLLECTION_ORDER
+               });
+    }
+    isPaymentTermsOnRelease() {
+        return this.complianceEnforcement.collectionOrderResults &&
+               this.complianceEnforcement.collectionOrderResults.some(collectionOrder => {
+                   return collectionOrder.judicialResultTypeId === ResultDefinition.PAYMENT_TERMS_ON_RELEASE
                });
     }
 

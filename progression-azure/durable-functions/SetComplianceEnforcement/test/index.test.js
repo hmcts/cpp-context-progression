@@ -16,6 +16,18 @@ describe('Set compliance Enforcement', function () {
         assertComplianceEnforcementForSingleCaseMultipleDefendant(complianceEnforcementResponse, hearingJson);
     });
 
+    test('single case multiple defendants with Ptfor', async function () {
+        const hearingJson = require(
+            './single-case-multiple-defendants-with-ptfor-hearing.json');
+        context.bindings = {
+            params: {
+                hearingResultedObj: hearingJson
+            }
+        };
+        const complianceEnforcementResponse = await setComplianceEnforcement(context);
+        assertComplianceEnforcementForSingleCaseMultipleDefendantPtfor(complianceEnforcementResponse, hearingJson);
+    });
+
     test('multiple cases multiple defendants ', async function () {
         const hearingJson = require(
             './multiple-case-multiple-defendants-hearing.json');
@@ -162,6 +174,35 @@ describe('Set compliance Enforcement', function () {
         expect(complianceEnforcementResponse[1].masterDefendantId)
             .toBe("ded76309-c912-436b-a21b-a4c4450bc052");
         expect(complianceEnforcementResponse[1].orderedDate).toBe('20-01-2020');
+        expect(complianceEnforcementResponse[1].complianceCorrelationId).toBeDefined();
+        expect(complianceEnforcementResponse[1].prosecutionCaseURNPRN).toBe("TFL4359536");
+        expect(complianceEnforcementResponse[1].prosecutingAuthorityCode).toBe("TFL");
+        expect(complianceEnforcementResponse[1].includesGuiltyPlea).toBe(true);
+        expect(complianceEnforcementResponse[1].employerResults).toHaveLength(1);
+        expect(complianceEnforcementResponse[1].employerResults[0])
+            .toEqual(hearingJson.prosecutionCases[0].defendants[1].offences[0].judicialResults[1])
+        expect(complianceEnforcementResponse[1].paymentTermsResults).toBeUndefined();
+    }
+
+    function assertComplianceEnforcementForSingleCaseMultipleDefendantPtfor(complianceEnforcementResponse,
+                                                                       hearingJson) {
+        expect(complianceEnforcementResponse).toHaveLength(2);
+        expect(complianceEnforcementResponse[0].masterDefendantId)
+            .toBe("6647df67-a065-4d07-90ba-a8daa064ecc4");
+        expect(complianceEnforcementResponse[0].complianceCorrelationId).toBeDefined();
+        expect(complianceEnforcementResponse[0].prosecutionCaseURNPRN).toBe("TFL4359536");
+        expect(complianceEnforcementResponse[0].prosecutingAuthorityCode).toBe("TFL");
+        expect(complianceEnforcementResponse[0].includesGuiltyPlea).toBe(false);
+        expect(complianceEnforcementResponse[0].employerResults).toBeUndefined();
+        expect(complianceEnforcementResponse[0].collectionOrderResults).toHaveLength(1);
+        expect(complianceEnforcementResponse[0].collectionOrderResults[0])
+            .toEqual(hearingJson.prosecutionCases[0].defendants[0].offences[0].judicialResults[0]);
+        expect(complianceEnforcementResponse[0].paymentTermsResults).toHaveLength(1);
+        expect(complianceEnforcementResponse[0].paymentTermsResults[0])
+            .toEqual(hearingJson.prosecutionCases[0].defendants[0].offences[0].judicialResults[0]);
+
+        expect(complianceEnforcementResponse[1].masterDefendantId)
+            .toBe("ded76309-c912-436b-a21b-a4c4450bc052");
         expect(complianceEnforcementResponse[1].complianceCorrelationId).toBeDefined();
         expect(complianceEnforcementResponse[1].prosecutionCaseURNPRN).toBe("TFL4359536");
         expect(complianceEnforcementResponse[1].prosecutingAuthorityCode).toBe("TFL");
