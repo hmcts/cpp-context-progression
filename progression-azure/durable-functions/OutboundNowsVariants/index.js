@@ -86,6 +86,11 @@ module.exports = async (context) => {
     const nowsVariantsSubscriptions = context.bindings.params.nowsVariantsSubscriptions;
     const hasFinancialNows = anyFinancialNows(nowsVariantsSubscriptions);
 
+    nowsVariantsSubscriptions.forEach(nowsVariantsSubscription => {
+        const defendantPostCode = postcode(getDefendant(hearingJson, nowsVariantsSubscription));
+        defendantPostCodes.add(defendantPostCode);
+    });
+
     if(hasFinancialNows) {
         organisationUnitsRefData = await new ReferenceDataService().getOrganisationUnit(courtCentre.id, context);
 
@@ -95,11 +100,6 @@ module.exports = async (context) => {
 
         enforcementAreaByPostCodeMap = await processMultiplePostcodes([...defendantPostCodes], context);
     }
-
-    nowsVariantsSubscriptions.forEach(nowsVariantsSubscription => {
-        const defendantPostCode = postcode(getDefendant(hearingJson, nowsVariantsSubscription));
-        defendantPostCodes.add(defendantPostCode);
-    });
 
     return await new OutboundNowsVariants(nowsVariantsSubscriptions, hearingJson, organisationUnitsRefData, enforcementAreaByLjaCode, enforcementAreaByPostCodeMap, context).buildNows();
 };

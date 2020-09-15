@@ -105,6 +105,8 @@ class MDEVariants {
             this.reset();
         });
 
+        this.reset();
+
         return mdeVariants;
     }
 

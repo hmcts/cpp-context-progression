@@ -15,7 +15,23 @@ describe('Now Document mapper builds correctly', () => {
                     return Promise.resolve({});
                 },
                 getEnforcementAreaByPostcode: () => {
-                    return Promise.resolve({});
+                    return Promise.resolve({
+                                               "enforcingCourtCode": 105,
+                                               "accountDivisionCode": 10,
+                                               "email": "derbyenforcement@justice.gov.uk",
+                                               "phone": "01332 333180",
+                                               "address1": "Derbyshire Central Finance Office",
+                                               "address2": "Derbyshire Magistrates Court",
+                                               "address3": "St. Mary's Gate",
+                                               "postcode": "DE1 3JR",
+                                               "ukInternal": 1,
+                                               "nationalPaymentPhone": "030 0790 9901",
+                                               "localJusticeArea": {
+                                                   "nationalCourtCode": "1428",
+                                                   "name": "Southern Derbyshire Magistrates' Court"
+                                               },
+                                               "address4": "Derby"
+                                           });
                 },
                 getEnforcementAreaByLja: () => {
                     return Promise.resolve({});
@@ -53,7 +69,25 @@ describe('Now Document mapper builds correctly', () => {
         expect(nows[0].nowContent.orderDate).toBe("2019-03-21");
         expect(nows[0].nowContent.orderingCourt.ljaCode).toBe("1800");
         expect(nows[0].nowContent.orderingCourt.ljaName).toBe("East Hampshire Magistrates' Court");
-        expect(nows[0].nowContent.financialOrderDetails.paymentTerms).toBe("Instalments only with instalment amount 20, monthly, instalment start date "+(moment().add(90, 'd').format('YYYY-MM-DD')));
+        expect(nows[0].nowContent.financialOrderDetails.paymentTerms).toBe(
+            "Instalments only with instalment amount 20, monthly, instalment start date "
+            + (moment().add(90, 'd').format('YYYY-MM-DD')));
+        expect(nows[0].nowContent.financialOrderDetails.accountingDivisionCode).toBe(10);
+        expect(nows[0].nowContent.financialOrderDetails.enforcementPhoneNumber)
+            .toBe("01332 333180");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementEmail)
+            .toBe("derbyenforcement@justice.gov.uk");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementAddress.line1)
+            .toBe("Derbyshire Central Finance Office");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementAddress.line2)
+            .toBe("Derbyshire Magistrates Court");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementAddress.line3)
+            .toBe("St. Mary's Gate");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementAddress.line4).toBe("Derby");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementAddress.postCode)
+            .toBe("DE1 3JR");
+        expect(nows[0].nowContent.financialOrderDetails.enforcementAddress.emailAddress1)
+            .toBe("derbyenforcement@justice.gov.uk");
         expect(nows[0].nowContent.defendant.prosecutingAuthorityReference).toBe("ASN2,ASN3,ASN4");
     });
 

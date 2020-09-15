@@ -24,7 +24,7 @@ class FinancialOrderDetailsMapper extends Mapper {
         if(amount) {
             const financialOrderDetails = new FinancialOrderDetails();
             if(this.organisationUnitsRefData) {
-                this.getEnforcementAreaBacs(this.organisationUnitsRefData, financialOrderDetails)
+                this.getEnforcementAreaBacs(this.organisationUnitsRefData, financialOrderDetails);
             }
 
             if (defendantPostCode && enforcementAreaByPostCode) {
