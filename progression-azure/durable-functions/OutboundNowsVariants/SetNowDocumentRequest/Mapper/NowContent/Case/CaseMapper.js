@@ -95,7 +95,7 @@ class CaseMapper extends Mapper {
                         defendantCaseOffence.endDate =  offence.endDate ? offence.endDate : undefined;
                         defendantCaseOffence.convictionDate = offence.convictionDate ? offence.convictionDate : undefined;
                         defendantCaseOffence.results = results;
-                        defendantCaseOffence.code = offence.code;
+                        defendantCaseOffence.code = offence.offenceCode;
                         defendantCaseOffence.modeOfTrial = offence.modeOfTrial;
                         defendantCaseOffence.allocationDecision = offence.allocationDecision ? offence.allocationDecision.motReasonDescription : undefined;
                         defendantCaseOffence.verdictType = offence.verdict ? offence.verdict.verdictType.description : undefined;

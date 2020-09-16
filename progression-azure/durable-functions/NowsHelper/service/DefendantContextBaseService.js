@@ -75,6 +75,7 @@ class DefendantContextService {
                                 defendantCaseJudicialResult => {
                                     if(!defendantCaseJudicialResult.isDeleted) {
                                         defendantCaseJudicialResult.level = LEVEL_TYPE.CASE;
+                                        defendantCaseJudicialResult.prosecutionCaseId = prosecutionCase.id;
                                         const result = new Result();
                                         result.prosecutionCaseId = prosecutionCase.id;
                                         result.defendantId = defendant.id;
@@ -91,6 +92,7 @@ class DefendantContextService {
                                 judicialResult => {
                                     if(!judicialResult.isDeleted) {
                                         judicialResult.level = LEVEL_TYPE.CASE;
+                                        judicialResult.prosecutionCaseId = prosecutionCase.id;
                                         const result = new Result();
                                         result.prosecutionCaseId = prosecutionCase.id;
                                         result.defendantId = defendant.id;
@@ -109,6 +111,8 @@ class DefendantContextService {
                         if (offence.judicialResults) {
                             offence.judicialResults.forEach(judicialResult => {
                                 if(!judicialResult.isDeleted) {
+                                    judicialResult.prosecutionCaseId = prosecutionCase.id;
+                                    judicialResult.offenceId = offence.id;
                                     judicialResult.level = LEVEL_TYPE.OFFENCE;
                                     const result = new Result();
                                     result.prosecutionCaseId = prosecutionCase.id;

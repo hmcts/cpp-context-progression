@@ -66,7 +66,7 @@ class MDEVariants {
                 numberOfTypes.push(uniqueJudicialResultsMap.size);
             });
 
-            const numberOfClones = this.getNumberOfClones(uniqueResultsByType);
+            const numberOfClones = this.getNumberOfClones();
             console.log('number Of Clones to be created ' + numberOfClones);
 
             this.generateUniqueResults(numberOfTypes, this.reshuffleResults);
@@ -94,8 +94,26 @@ class MDEVariants {
 
             for (let clone = 0; clone < finalJudicialResults.length; clone++) {
                 const clonedUserGroupVariant = _.cloneDeep(userGroupVariant);
-                let results = [].concat(...finalJudicialResults[clone]);
-                clonedUserGroupVariant.results = [...nonMdeResults, ...results];
+                const results = [].concat(...finalJudicialResults[clone]);
+
+                const offenceLevelOffenceIds = this.extractCommonOffenceIdsByLevel(results, 'O');
+                const offenceLevelMdeResults = this.filterResultsByOffenceIds(results, offenceLevelOffenceIds);
+                const offenceLevelNonMdeResults = this.filterResultsByOffenceIds(nonMdeResults, offenceLevelOffenceIds);
+
+                const defendantLevelMdeResults = this.filterResultsByLevel(results, 'D');
+                const defendantLevelNonMdeResults = this.filterResultsByLevel(nonMdeResults, 'D');
+
+                const defendantCaseLevelMdeResults = this.filterResultsByLevel(results, 'C');
+                const defendantCaseLevelNonMdeResults = this.filterResultsByLevel(nonMdeResults, 'C');
+
+                clonedUserGroupVariant.results = [
+                    ...offenceLevelMdeResults,
+                    ...offenceLevelNonMdeResults,
+                    ...defendantCaseLevelMdeResults,
+                    ...defendantCaseLevelNonMdeResults,
+                    ...defendantLevelMdeResults,
+                    ...defendantLevelNonMdeResults];
+
                 mdeVariants.push(clonedUserGroupVariant);
             }
 
@@ -106,7 +124,7 @@ class MDEVariants {
         });
 
         this.reset();
-
+        
         return mdeVariants;
     }
 
@@ -120,28 +138,23 @@ class MDEVariants {
 
         for (let judicialResultIdArray of uniqueJudicialResultIdArray) {
 
-            const ids = this.getIds(judicialResultIdArray);
-
-            if (ids.length !== judicialResultIds.length) {
+            if (judicialResultIdArray.length !== judicialResultIds.length) {
                 continue;
             }
-            console.log('judicialResultIdArray === ' + JSON.stringify(ids));
+
             const exists = [];
             for (let judicialResultId of judicialResultIds) {
-                console.log('judicialResultId === ' + JSON.stringify(judicialResultId.judicialResultId));
-                exists.push(ids.indexOf(judicialResultId.judicialResultId) !== -1);
+                exists.push(judicialResultIdArray.indexOf(judicialResultId) === -1);
             }
 
-            console.log(JSON.stringify(exists));
-            const allEqual = arr => arr.every(v => v);
+            const allEqual = arr => arr.every(v => v === arr[0]);
 
             if (allEqual(exists)) {
                 isExist = true;
                 break;
             }
-
-
         }
+
         return isExist;
     }
 
@@ -271,13 +284,12 @@ class MDEVariants {
         return [...promptReferences];
     }
 
-    getNumberOfClones(uniqueResultsByType) {
+    getNumberOfClones() {
         let numberOfGroups = [];
 
         for (let judicialResultTypeId of uniqueResultsByType.keys()) {
             numberOfGroups.push(uniqueResultsByType.get(judicialResultTypeId).size);
         }
-
         return numberOfGroups.reduce((a, b) => a * b);
     }
 
@@ -506,12 +518,52 @@ class MDEVariants {
         allResults = [];
     }
 
-    getIds(judicialResultIdArray) {
-        const ids = [];
-        judicialResultIdArray.forEach(idArray => {
-            ids.push(idArray.judicialResultId);
+    filterResultsByOffenceIds(results, offenceIds) {
+        return results.filter(result => offenceIds.includes(result.offenceId));
+    }
+
+    extractCommonOffenceIdsByLevel(results, level) {
+        let groupOffenceIds = [];
+        const resultsByLevel = this.filterResultsByLevel(results, level);
+        const groupedJudicialResultsByType = this.groupByJudicialResultTypeId(resultsByLevel);
+        groupedJudicialResultsByType.forEach(type => {
+            const offenceIdByResults = this.extractUniqueOffenceByLevel(type, level);
+            groupOffenceIds = groupOffenceIds.concat(offenceIdByResults);
         });
-        return ids;
+
+        if(groupedJudicialResultsByType.length === 1) {
+            return groupOffenceIds;
+        }
+
+        return this.findDuplicates(groupOffenceIds);
+    }
+
+    findDuplicates(arr) {
+        let sorted_arr = arr.slice().sort(); // You can define the comparing function here.
+        // JS by default uses a crappy string compare.
+        // (we use slice to clone the array so the
+        // original array won't be modified)
+        let results = [];
+        for (let i = 0; i < sorted_arr.length - 1; i++) {
+            if (sorted_arr[i + 1] === sorted_arr[i]) {
+                results.push(sorted_arr[i]);
+            }
+        }
+        return results;
+    }
+
+    extractUniqueOffenceByLevel(type, level) {
+        const offenceIdByResults = new Set();
+        for (const result of type.judicialResults) {
+            if (result.level === level) {
+                offenceIdByResults.add(result.offenceId);
+            }
+        }
+        return [...offenceIdByResults];
+    }
+
+    filterResultsByLevel(results, level) {
+        return results.filter(result => result.level === level);
     }
 }
 
