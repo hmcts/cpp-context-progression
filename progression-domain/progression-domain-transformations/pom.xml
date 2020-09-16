@@ -14,6 +14,7 @@
         <module>progression-domain-transformation-spiresults</module>
         <module>progression-domain-transformation-add-listings-status-for-missing-defendant-listing-status-changed</module>
         <module>progression-domain-transformation-judicialresult-mandatory-attributes</module>
+        <module>progression-domain-transformations-deactivate-stream</module>
     </modules>
 
 
