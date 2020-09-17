@@ -27,6 +27,7 @@ class ProcessOutboundPrisonCourtRegister {
         for(let prisonCourtRegister of this.outboundPrisonCourtRegisters) {
             await this.sendToProgression(prisonCourtRegister);
         }
+        this.outboundPrisonCourtRegisters = {};
         return this.outboundPrisonCourtRegisters;
     }
 }

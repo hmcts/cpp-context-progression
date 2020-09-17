@@ -28,6 +28,7 @@ class OutboundInformantRegister {
                 informantRegisterRequestArray.push(informantRegisterRequest);
             }
         });
+        this.informantRegisterSubscriptions = {};
         return informantRegisterRequestArray;
     }
 

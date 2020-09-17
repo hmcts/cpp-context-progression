@@ -31,6 +31,7 @@ class OutboundCourtRegisterRequestBuilder {
         courtRegisterAggregation.hearingVenue = this.getHearingVenueMapper();
         courtRegisterAggregation.recipients = this.getRecipientMapper();
         courtRegisterAggregation.defendants = this.getYouthDefendantMapper(youthDefendants);
+        this.courtRegisterFragment = {};
         return courtRegisterAggregation;
     }
 

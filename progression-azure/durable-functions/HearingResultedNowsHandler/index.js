@@ -20,7 +20,7 @@ module.exports = df.orchestrator(function* (context) {
                     hearingResultedObj: hearingResultedObj.hearing
                 });
 
-            const nowsVariants = yield context.df.callActivity('SetNowVariants', {
+            let nowsVariants = yield context.df.callActivity('SetNowVariants', {
                 cjscppuid: inputs.cjscppuid,
                 complianceEnforcements: complianceEnforcementArray,
                 hearingResultedJson: hearingResultedObj.hearing
@@ -28,32 +28,32 @@ module.exports = df.orchestrator(function* (context) {
 
              if (nowsVariants.length) {
 
-                const userGroupsNowVariants = yield context.df.callActivity(
+                let userGroupsNowVariants = yield context.df.callActivity(
                     'CloneNowsForUserGroupVariants', {
                         nowsVariants: nowsVariants
                     });
-
-                const mdeVariants = yield context.df.callActivity('SetMDEVariants', {
+                nowsVariants = {};
+                let mdeVariants = yield context.df.callActivity('SetMDEVariants', {
                     userGroupsNowVariants: userGroupsNowVariants
                 });
-
-                const nowsVariantsSubscriptions = yield context.df.callActivity(
+                 userGroupsNowVariants = {};
+                let nowsVariantsSubscriptions = yield context.df.callActivity(
                     'NowsVariantsSubscriptions', {
                         cjscppuid: inputs.cjscppuid,
                         mdeVariants: mdeVariants
                     });
-
-                const outboundNowsVariants = yield context.df.callActivity('OutboundNowsVariants', {
+                 mdeVariants = {};
+                let outboundNowsVariants = yield context.df.callActivity('OutboundNowsVariants', {
                     cjscppuid: inputs.cjscppuid,
                     hearingResultedObj: hearingResultedObj.hearing,
                     nowsVariantsSubscriptions: nowsVariantsSubscriptions
                 });
-
+                 nowsVariantsSubscriptions = {};
                 yield context.df.callActivity('ProcessOutboundNowVariants', {
                     cjscppuid: inputs.cjscppuid,
                     outboundNowsVariants: outboundNowsVariants
                 });
-
+                 outboundNowsVariants = {};
                 if (complianceEnforcementArray.length) {
 
                     const stagingEnforcementRequests = yield context.df.callActivity(
@@ -141,7 +141,6 @@ module.exports = df.orchestrator(function* (context) {
                     outboundPrisonCourtRegisters: outboundPrisonCourtRegisters
                 });
             }
-
         }
         return {
             Success: true,

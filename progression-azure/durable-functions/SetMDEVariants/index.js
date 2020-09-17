@@ -104,9 +104,8 @@ class MDEVariants {
 
             this.reset();
         });
-
+        this.userGroupsNowVariants = {};
         this.reset();
-        
         return mdeVariants;
     }
 

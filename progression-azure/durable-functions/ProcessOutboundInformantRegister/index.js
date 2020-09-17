@@ -26,12 +26,12 @@ class ProcessOutboundInformantRegister {
     }
 
     async processRequests() {
-        const outboundInformantRegisters = this.context.bindings.params.outboundInformantRegisters;
+        let outboundInformantRegisters = this.context.bindings.params.outboundInformantRegisters;
 
         for (let outboundInformantRegister of outboundInformantRegisters) {
             await this.sendToInformantRegister(outboundInformantRegister);
         }
-
+        outboundInformantRegisters = {};
         return outboundInformantRegisters;
     }
 }

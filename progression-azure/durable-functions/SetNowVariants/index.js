@@ -68,7 +68,7 @@ class SetNowVariants {
                                                                       : 'non-financial nows ')
                 + 'and has ' + nowVariant.results.length + ' results.');
         });
-
+        this.nowMetadata = {};
         return nowVariants;
     }
 

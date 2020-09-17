@@ -7,7 +7,7 @@ class ProcessOutboundCourtRegister {
     }
 
     async processRequests() {
-        const outboundCourtRegister = this.context.bindings.params.outboundCourtRegister;
+        let outboundCourtRegister = this.context.bindings.params.outboundCourtRegister;
         try {
             const endPoint = process.env.PROGRESSION_CONTEXT_API_BASE_URI + '/progression-command-api/command/api/rest/progression/court-register';
             this.context.log(`Calling command ${endPoint}`);
@@ -20,6 +20,7 @@ class ProcessOutboundCourtRegister {
         } catch (err) {
             this.context.log.error('Unexpected error occurred invoking progression court-register', err);
         }
+        outboundCourtRegister = {};
         return outboundCourtRegister;
     }
 }

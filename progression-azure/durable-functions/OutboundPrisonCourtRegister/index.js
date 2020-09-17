@@ -35,7 +35,7 @@ class PrisonCourtRegisterRequestBuilder {
                 outboundPrisonCourtRegisterRequests.push(prisonCourtRegisterRequest);
             });
         }
-
+        this.prisonCourtRegisters = {};
         return outboundPrisonCourtRegisterRequests;
     }
 

@@ -19,7 +19,7 @@ class OutboundNowsVariants {
             const nowDocumentRequest = this.getNowDocumentRequestMapper(nowVariant);
             nowDocumentRequests.push(nowDocumentRequest);
         });
-
+        this.nowsVariantsSubscriptions = {};
         return nowDocumentRequests;
     }
 

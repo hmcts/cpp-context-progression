@@ -31,6 +31,7 @@ class ProcessOutboundNowVariants {
             // this.context.log('outboundNowsVariant --> ' + JSON.stringify(outboundNowsVariant));
             await this.sendToProgression(outboundNowsVariant);
         }
+        this.outboundNowsVariants = {};
         return this.outboundNowsVariants;
     }
 }

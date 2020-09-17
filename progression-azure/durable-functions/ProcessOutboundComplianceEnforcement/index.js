@@ -27,7 +27,7 @@ class ProcessOutboundComplianceEnforcement {
         for(let stagingEnforcementRequest of this.stagingEnforcementRequests){
             await this.sendToEnforcement(stagingEnforcementRequest);
         }
-
+        this.stagingEnforcementRequests = {};
         return this.stagingEnforcementRequests;
     }
 }

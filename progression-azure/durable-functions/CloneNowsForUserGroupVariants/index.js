@@ -45,6 +45,7 @@ class UserGroupVariants {
         });
 
         this.context.log.warn('Total Number of User Group Variants created : ' + clonedUserGroupVariants.length);
+        this.nowsVariants = {}
         return clonedUserGroupVariants;
     }
 
