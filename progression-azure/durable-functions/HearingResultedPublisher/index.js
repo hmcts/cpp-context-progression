@@ -12,6 +12,7 @@
 const { default: axiosStatic } = require('axios');
 const https = require('https');
 const ca = require ('win-ca');
+const fs = require ('fs');
 const { Agent } = require('http');
 
 function filterOnSubscriberKey(subscriberKey, subscriberJson) {
@@ -21,32 +22,47 @@ function filterOnSubscriberKey(subscriberKey, subscriberJson) {
     return filteredSubscribers;
 }
 
-function getCertificates(context) {
+function getHttpsAgent(context) {
     let certificates = []
+    context.log(`process.platform = ${process.platform}`)
 
-    ca({
-        format: ca.der2.pem,
-        store: ['My'],
-        ondata: crt => certificates.push(crt)
-    })
-
-    context.log("Certificate count under 'My' store is " + certificates.length);
-    return certificates;
+    if (process.platform == 'win32') {
+        context.log("Windows OS detected");
+        ca({
+            format: ca.der2.pem,
+            store: ['My'],
+            ondata: crt => certificates.push(crt)
+        })
+        context.log(`Certificate count under 'My' store is ${certificates.length}`);
+        return new https.Agent({ca: certificates})
+    } else {
+        let certificateLocation = `/var/ssl/certs/${process.env.WEBSITE_LOAD_CERTIFICATES}.der`
+        context.log(`Non-Windows OS detected. Looking for certificate in ${certificateLocation}`)
+        fs.stat(certificateLocation, function(err, stat) {
+            if (err == null) {
+                console.log(`Certificate file ${certificateLocation} found. Returning HTTPS agent.`)
+                return https.Agent({cert: fs.readFileSync(certificateLocation)})
+            } else {
+                console.log(`Certificate file ${certificateLocation} not found. Returning null as HTTPS agent.`)
+                return null
+            }
+        })
+    }
 }
 
-async function postWrapper(endpoint, publishPayload, certificates, context) {
+async function postWrapper(endpoint, publishPayload, httpsAgent, context) {
 
     return axiosStatic.post(endpoint, publishPayload, {
         headers: {
             'Ocp-Apim-Subscription-Key': process.env.LAA_PUBLISH_RESULTS_API_KEY
         },
-        httpsAgent: new https.Agent({ca: certificates})
+        httpsAgent: httpsAgent
     })
 }
 
 async function publishToAllSubscribers(laaSubscribers, publishPayload, context) {
 
-    let certificates = getCertificates(context);
+    let httpsAgent = getHttpsAgent(context);
 
     try {
         for (i=0; i<laaSubscribers.length; i++) {
@@ -54,7 +70,7 @@ async function publishToAllSubscribers(laaSubscribers, publishPayload, context) 
             let endpoint = laaSubscriber.subscriber_endpoint_uri
             context.log(`Publishing to ${endpoint}`);
 
-            const result = await postWrapper(endpoint, publishPayload, certificates, context)
+            const result = await postWrapper(endpoint, publishPayload, httpsAgent, context)
 
             if (result == null) {
                 context.log(`Failed to publish to ${endpoint}`);
