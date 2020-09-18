@@ -94,26 +94,8 @@ class MDEVariants {
 
             for (let clone = 0; clone < finalJudicialResults.length; clone++) {
                 const clonedUserGroupVariant = _.cloneDeep(userGroupVariant);
-                const results = [].concat(...finalJudicialResults[clone]);
-
-                const offenceLevelOffenceIds = this.extractCommonOffenceIdsByLevel(results, 'O');
-                const offenceLevelMdeResults = this.filterResultsByOffenceIds(results, offenceLevelOffenceIds);
-                const offenceLevelNonMdeResults = this.filterResultsByOffenceIds(nonMdeResults, offenceLevelOffenceIds);
-
-                const defendantLevelMdeResults = this.filterResultsByLevel(results, 'D');
-                const defendantLevelNonMdeResults = this.filterResultsByLevel(nonMdeResults, 'D');
-
-                const defendantCaseLevelMdeResults = this.filterResultsByLevel(results, 'C');
-                const defendantCaseLevelNonMdeResults = this.filterResultsByLevel(nonMdeResults, 'C');
-
-                clonedUserGroupVariant.results = [
-                    ...offenceLevelMdeResults,
-                    ...offenceLevelNonMdeResults,
-                    ...defendantCaseLevelMdeResults,
-                    ...defendantCaseLevelNonMdeResults,
-                    ...defendantLevelMdeResults,
-                    ...defendantLevelNonMdeResults];
-
+                let results = [].concat(...finalJudicialResults[clone]);
+                clonedUserGroupVariant.results = [...nonMdeResults, ...results];
                 mdeVariants.push(clonedUserGroupVariant);
             }
 

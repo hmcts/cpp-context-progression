@@ -212,8 +212,8 @@ describe('Set MDE Variants', () => {
         const mdeVariants = await setMdeVariants(context);
 
         expect(mdeVariants.length).toBe(2);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(3);
+        expect(mdeVariants[0].results.length).toBe(5);
+        expect(mdeVariants[1].results.length).toBe(5);
     });
 
     test('should return the correct MDE Variants for next Hearing 4', async () => {
@@ -241,8 +241,8 @@ describe('Set MDE Variants', () => {
         const mdeVariants = await setMdeVariants(context);
 
         expect(mdeVariants.length).toBe(2);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(3);
+        expect(mdeVariants[0].results.length).toBe(5);
+        expect(mdeVariants[1].results.length).toBe(5);
     });
 
 });
