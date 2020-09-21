@@ -4,8 +4,8 @@ const getEventLog = require('../HearingEventLogQuery/index');
 
 function error(context, logMessage) {
     context.log(`An error occured while filtering the hearing result: ${logMessage}`);
-    context.res.body = {'error': `An unknown error has occured while filtering the hearing result`};
-    context.res.status = 503
+    context.res.body = {};
+    context.res.status = 200
 }
 
 module.exports = async function (context, req) {
