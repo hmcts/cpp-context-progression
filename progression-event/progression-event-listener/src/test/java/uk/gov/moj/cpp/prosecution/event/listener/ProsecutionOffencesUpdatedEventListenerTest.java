@@ -12,13 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantCaseOffences;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -150,6 +144,10 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                                         .withLaaContractNumber("LAA1234")
                                         .withStatusDate(LocalDate.now())
                                         .build())
+                                .withJudicialResults(Stream.of(JudicialResult.judicialResult()
+                                        .withJudicialResultId(randomUUID())
+                                        .withResultText("Some Text")
+                                        .build()).collect(Collectors.toList()))
 
                         .build()).collect(Collectors.toList()))
                         .build()).collect(Collectors.toList()))
@@ -203,7 +201,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         final JsonNode prosecutionCaseNode = mapper.valueToTree(JSONValue.parse(prosecutionCaseEntity.getPayload()));
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("legalAidStatus").asText(), is(""));
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("proceedingsConcluded").asBoolean(), is(true));
-
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("judicialResults").get(0).path("resultText").asText(), is("Some Text"));
 
     }
 }
