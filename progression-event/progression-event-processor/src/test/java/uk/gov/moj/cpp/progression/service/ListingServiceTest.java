@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
+import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_ANY_ALLOCATION_SEARCH_HEARINGS;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_SEARCH_HEARING;
 
@@ -32,6 +33,7 @@ import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
@@ -40,12 +42,16 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.listing.domain.Defendant;
 import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.listing.domain.HearingDay;
 import uk.gov.moj.cpp.listing.domain.ListedCase;
 import uk.gov.moj.cpp.listing.domain.Offence;
+import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -94,6 +100,8 @@ public class ListingServiceTest {
     private Function<Object, JsonEnvelope> objectJsonEnvelopeFunction;
     @Mock
     private Requester requester;
+    @Spy
+    private UtcClock utcClock;
     @Mock
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
@@ -190,6 +198,58 @@ public class ListingServiceTest {
         verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(Hearing.class));
         assertThat(shadowListedOffenceIds.size(), is(2));
         assertThat(shadowListedOffenceIds, containsInAnyOrder(offenceId1, offenceId2));
+    }
+
+    @Test
+    public void shouldGetFutureHearingsForCaseUrn() {
+        final UUID hearingId = UUID.randomUUID();
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
+
+        final Hearing hearing1 = Hearing.hearing()
+                .withHearingDays(Arrays.asList(
+                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().minusDays(2)).build(),
+                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().plusDays(2)).build()
+                ))
+                .build();
+        final Hearing hearing2 = Hearing.hearing()
+                .withHearingDays(Collections.singletonList(
+                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().plusDays(5)).build()
+                ))
+                .build();
+        final Hearing hearing3 = Hearing.hearing()
+                .withHearingDays(Collections.singletonList(
+                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().minusWeeks(1)).build()
+                ))
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(HearingList.class))).thenReturn(Envelope.envelopeFrom(metadata, new HearingList(
+                Arrays.asList(
+                        hearing1,
+                        hearing2,
+                        hearing3
+                )
+        )));
+        final List<Hearing> futureHearings = listingService.getFutureHearings(envelope, "caseUrnValue");
+
+        verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(HearingList.class));
+        assertThat(futureHearings.size(), is(2));
+        assertThat(futureHearings, containsInAnyOrder(hearing1,hearing2));
+    }
+
+    @Test
+    public void shouldGetFutureHearingsForCaseUrnWithNoResults() {
+        final UUID hearingId = UUID.randomUUID();
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(HearingList.class))).thenReturn(Envelope.envelopeFrom(metadata, new HearingList(        )));
+        final List<Hearing> futureHearings = listingService.getFutureHearings(envelope, "caseUrnValue");
+
+        verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(HearingList.class));
+        assertThat(futureHearings.size(), is(0));
     }
 
     private List<ListedCase> getListedCases(List<UUID> offenceIds) {

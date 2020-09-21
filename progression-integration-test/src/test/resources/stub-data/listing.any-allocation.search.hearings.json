@@ -1,0 +1,150 @@
+{
+  "hearings": [
+    {
+      "id": "03f45004-3b67-4181-91dd-7bcfbf983b65",
+      "type": {
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+        "description": "First hearing"
+      },
+      "endDate": "2020-09-06",
+      "allocated": true,
+      "judiciary": [],
+      "startDate": "2020-09-06",
+      "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "hearingDays": [
+        {
+          "endTime": "2020-09-06T09:21:01.001Z",
+          "sequence": 0,
+          "startTime": "2020-09-06T09:01:01.001Z",
+          "hearingDate": "2020-09-06",
+          "durationMinutes": 20
+        }
+      ],
+      "listedCases": [
+        {
+          "id": "69fa4837-30de-4d6d-99fb-6514a9a60d2a",
+          "markers": [],
+          "defendants": [
+            {
+              "id": "c2b27333-5f91-46f6-9f05-e5f8c34b98ee",
+              "address": {
+                "address1": "nAjG8RosxH",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "lastName": "Ormsby",
+              "offences": [
+                {
+                  "id": "c12e2132-ceb5-46e4-afa6-fd582e7af394",
+                  "startDate": "2004-12-09",
+                  "offenceCode": "TW01046",
+                  "shadowListed": false,
+                  "offenceWording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                  "statementOfOffence": {
+                    "title": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                    "welshTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                    "legislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973."
+                  },
+                  "restrictFromCourtList": false
+                }
+              ],
+              "bailStatus": {
+                "id": "12e69486-4d01-3403-a50a-7419ca040635",
+                "code": "C",
+                "description": "Custody or remanded into custody"
+              },
+              "masterDefendantId": "c2b27333-5f91-46f6-9f05-e5f8c34b98ee",
+              "hearingLanguageNeeds": "ENGLISH",
+              "restrictFromCourtList": false,
+              "courtProceedingsInitiated": "2020-09-02T10:32:21.152Z"
+            },
+            {
+              "id": "20dbba35-705e-4c55-b46e-5ed9b268f450",
+              "lastName": "Ormsby2_2",
+              "offences": [
+                {
+                  "id": "11aad86b-eb3c-458d-bbbc-ca76ace9cdcf",
+                  "startDate": "2004-12-09",
+                  "offenceCode": "TW01046",
+                  "offenceWording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                  "statementOfOffence": {
+                    "title": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                    "welshTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                    "legislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973."
+                  },
+                  "restrictFromCourtList": false
+                },
+                {
+                  "id": "5b094a64-800f-433a-b00b-d758e168aaad",
+                  "startDate": "2018-02-19",
+                  "offenceCode": "TW01040",
+                  "offenceWording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                  "statementOfOffence": {
+                    "title": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                    "welshTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                    "legislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973."
+                  },
+                  "restrictFromCourtList": false
+                }
+              ],
+              "bailStatus": {
+                "id": "12e69486-4d01-3403-a50a-7419ca040635",
+                "code": "C",
+                "description": "Custody or remanded into custody"
+              },
+              "masterDefendantId": "20dbba35-705e-4c55-b46e-5ed9b268f450",
+              "restrictFromCourtList": false,
+              "courtProceedingsInitiated": "2020-09-02T10:32:28.617Z"
+            },
+            {
+              "id": "266606a2-1b47-473a-8e79-c7459b806c5e",
+              "offences": [
+                {
+                  "id": "b427070f-cf4e-49a2-a890-997276ec8a1a",
+                  "startDate": "2004-12-09",
+                  "offenceCode": "TW01040",
+                  "offenceWording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                  "statementOfOffence": {
+                    "title": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                    "welshTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                    "legislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973."
+                  },
+                  "restrictFromCourtList": false
+                }
+              ],
+              "organisationName": "OrganisationName0",
+              "masterDefendantId": "266606a2-1b47-473a-8e79-c7459b806c5e",
+              "restrictFromCourtList": false,
+              "courtProceedingsInitiated": "2020-09-02T10:32:28.617Z"
+            }
+          ],
+          "shadowListed": false,
+          "caseIdentifier": {
+            "authorityId": "bcdca7df-ab21-45f6-bc19-f883cf3d407e",
+            "authorityCode": "DVL2",
+            "caseReference": "52GD2139720"
+          },
+          "restrictFromCourtList": false
+        }
+      ],
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "isSlotsBooked": false,
+      "nonDefaultDays": [
+        {
+          "duration": 20,
+          "startTime": "2020-09-06T09:01:01.001Z"
+        }
+      ],
+      "nonSittingDays": [],
+      "hearingLanguage": "ENGLISH",
+      "estimatedMinutes": 20,
+      "jurisdictionType": "MAGISTRATES",
+      "courtApplications": [],
+      "courtCentreDetails": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "defaultDuration": 420,
+        "defaultStartTime": "10:00:00"
+      }
+    }
+  ]
+}

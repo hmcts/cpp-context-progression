@@ -10,9 +10,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static java.text.MessageFormat.format;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
+import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
+import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
@@ -22,6 +29,7 @@ import java.util.stream.Stream;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Duration;
+import org.apache.http.HttpHeaders;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,6 +39,7 @@ public class ListingStub {
     private static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
 
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE = "application/vnd.listing.command.list-unscheduled-court-hearing+json";
+    private static final String LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
 
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -178,5 +187,18 @@ public class ListingStub {
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
                 .map(JSONObject::new);
+    }
+
+    public static void setupListingAnyAllocationQuery(final String caseUrn, String resource) {
+        stubPingFor("hearing-service");
+
+        final String urlPath = format("/listing-service/query/api/rest/listing/{0}", caseUrn);
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resource))));
+
+        waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }
 }

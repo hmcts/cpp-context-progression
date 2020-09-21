@@ -6,18 +6,20 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
-import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.courts.HearingListingStatus;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
@@ -75,33 +77,57 @@ public class DefendantsAddedToCourtProceedingsProcessor {
             ));
 
 
-            final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
-                    GetHearingsAtAGlance.class);
+            final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
+                    ProsecutionCase.class);
 
-            final List<Hearings> futureHearings = hearingsAtAGlance.getHearings().stream()
-                    .filter(hearing -> hearing.getHearingDays().stream()
-                            .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0))
-                    .collect(Collectors.toList());
+            final List<Hearing> futureHearings = getFutureHearings(jsonEnvelope, prosecutionCase, prosecutionCaseJsonObject.get());
 
-            sender.send(envelopeFrom(
-                    metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-court-proceedings"),
-                    payload
-            ));
+            final ListHearingRequestByFutureAndNewHearings listHearingRequestByFutureAndNewHearings =
+                    separateAddDefendantsCourtProceedingsWithFutureHearings(futureHearings, defendantsAddedToCourtProceedings);
 
-            final List<ListHearingRequest> newListHearingRequests = findDefendantListHearingRequest(futureHearings, defendantsAddedToCourtProceedings);
 
-            if (!newListHearingRequests.isEmpty()) {
+            if (!listHearingRequestByFutureAndNewHearings.getNewDefendantsAddedToExistingHearings().getListHearingRequests().isEmpty()) {
+                sender.send(envelopeFrom(
+                        metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-court-proceedings"),
+                        payload
+                ));
+            }
+
+            if (!listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests().isEmpty()) {
                 final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(jsonEnvelope,
-                        Collections.singletonList(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
-                                ProsecutionCase.class)), newListHearingRequests);
+                        Collections.singletonList(prosecutionCase), listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests());
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
             }
         }
     }
 
-    private List<ListHearingRequest> findDefendantListHearingRequest(final List<Hearings> futureHearings, final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
+    public List<Hearing> getFutureHearings(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final JsonObject prosecutionCaseJsonObject) {
+        final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance"),
+                GetHearingsAtAGlance.class);
+        final String caseURN = getCaseUrn(prosecutionCase);
+        final List<Hearing> futureHearings = listingService.getFutureHearings(jsonEnvelope, caseURN);
+        if (hearingsAtAGlance == null || hearingsAtAGlance.getHearings() == null) {
+            return futureHearings;
+        } else {
+            return futureHearings.stream().filter(futureHearing ->
+                    hearingsAtAGlance.getHearings().stream()
+                            .noneMatch(hearings -> Objects.equals(futureHearing.getId(), hearings.getId())
+                                    && hearings.getHearingListingStatus() == HearingListingStatus.HEARING_RESULTED)
 
+            ).collect(Collectors.toList());
+        }
+    }
+
+    public String getCaseUrn(final ProsecutionCase prosecutionCase) {
+        return prosecutionCase.getProsecutionCaseIdentifier().getCaseURN() != null ?
+                prosecutionCase.getProsecutionCaseIdentifier().getCaseURN() :
+                prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
+    }
+
+    private ListHearingRequestByFutureAndNewHearings separateAddDefendantsCourtProceedingsWithFutureHearings(final List<Hearing> futureHearings, final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
         final ArrayList<ListHearingRequest> newListHearingRequests = new ArrayList<>();
+        final ArrayList<ListHearingRequest> existingListHearingRequests = new ArrayList<>();
+
         for (final ListHearingRequest listHearingRequest : defendantsAddedToCourtProceedings.getListHearingRequests()) {
 
             final ZonedDateTime startDateTime = nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
@@ -113,21 +139,65 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                         );
                 if (!anyMatchedHearing) {
                     newListHearingRequests.add(listHearingRequest);
+                } else {
+                    existingListHearingRequests.add(listHearingRequest);
                 }
             }
         }
-        return newListHearingRequests;
+        final DefendantsAddedToCourtProceedings newDefendantsAddedToExistingHearings = DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withListHearingRequests(existingListHearingRequests)
+                .withDefendants(getMatchingDefendants(defendantsAddedToCourtProceedings, existingListHearingRequests))
+                .build();
+        final DefendantsAddedToCourtProceedings newDefendantsToCreateNewHearings = DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withListHearingRequests(newListHearingRequests)
+                .withDefendants(getMatchingDefendants(defendantsAddedToCourtProceedings, newListHearingRequests))
+                .build();
+
+        return new ListHearingRequestByFutureAndNewHearings(newDefendantsAddedToExistingHearings, newDefendantsToCreateNewHearings);
     }
 
-    private boolean checkForSameCourtCentre(final ListHearingRequest listHearingRequest, final Hearings hearing) {
-        return nonNull(hearing.getCourtCentre()) && nonNull(listHearingRequest.getCourtCentre()) &&
-                Objects.equals(hearing.getCourtCentre().getId(), listHearingRequest.getCourtCentre().getId()) &&
-                Objects.equals(hearing.getCourtCentre().getRoomId(), listHearingRequest.getCourtCentre().getRoomId());
+    private List<Defendant> getMatchingDefendants(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings, final ArrayList<ListHearingRequest> existingListHearingRequests) {
+        return defendantsAddedToCourtProceedings.getDefendants().stream()
+                .filter(defendant -> existingListHearingRequests.stream()
+                        .flatMap(listHearingRequest -> listHearingRequest.getListDefendantRequests().stream())
+                        .anyMatch(listDefendantRequest -> Objects.equals(defendant.getId(), listDefendantRequest.getDefendantId()))
+                ).collect(Collectors.toList());
     }
 
-    private boolean checkForSameHearingDateTime(final ListHearingRequest listHearingRequest, final Hearings hearing) {
+    private boolean checkForSameCourtCentre(final ListHearingRequest listHearingRequest, final Hearing hearing) {
+        return nonNull(hearing.getCourtCentreId()) && nonNull(listHearingRequest.getCourtCentre()) &&
+                Objects.equals(hearing.getCourtCentreId(), listHearingRequest.getCourtCentre().getId());
+    }
+
+    private boolean checkForSameHearingDateTime(final ListHearingRequest listHearingRequest, final Hearing hearing) {
         return nonNull(hearing.getHearingDays()) &&
                 hearing.getHearingDays().stream()
-                        .anyMatch(hearingDay -> hearingDay.getSittingDay().compareTo(listHearingRequest.getListedStartDateTime()) == 0);
+                        .anyMatch(hearingDay -> hearingDay.getStartTime().compareTo(listHearingRequest.getListedStartDateTime()) == 0);
+    }
+
+    private class ListHearingRequestByFutureAndNewHearings {
+        DefendantsAddedToCourtProceedings newDefendantsAddedToExistingHearings;
+        DefendantsAddedToCourtProceedings newDefendantsToCreateNewHearings;
+
+        public ListHearingRequestByFutureAndNewHearings(final DefendantsAddedToCourtProceedings newDefendantsAddedToExistingHearings, final DefendantsAddedToCourtProceedings newDefendantsToCreateNewHearings) {
+            this.newDefendantsAddedToExistingHearings = newDefendantsAddedToExistingHearings;
+            this.newDefendantsToCreateNewHearings = newDefendantsToCreateNewHearings;
+        }
+
+        public DefendantsAddedToCourtProceedings getNewDefendantsAddedToExistingHearings() {
+            return newDefendantsAddedToExistingHearings;
+        }
+
+        public void setNewDefendantsAddedToExistingHearings(final DefendantsAddedToCourtProceedings newDefendantsAddedToExistingHearings) {
+            this.newDefendantsAddedToExistingHearings = newDefendantsAddedToExistingHearings;
+        }
+
+        public DefendantsAddedToCourtProceedings getNewDefendantsToCreateNewHearings() {
+            return newDefendantsToCreateNewHearings;
+        }
+
+        public void setNewDefendantsToCreateNewHearings(final DefendantsAddedToCourtProceedings newDefendantsToCreateNewHearings) {
+            this.newDefendantsToCreateNewHearings = newDefendantsToCreateNewHearings;
+        }
     }
 }

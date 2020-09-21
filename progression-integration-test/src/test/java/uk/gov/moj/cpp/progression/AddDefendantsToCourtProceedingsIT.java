@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -44,6 +45,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
+import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.time.LocalDate;
@@ -77,6 +79,7 @@ import org.slf4j.LoggerFactory;
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
+    static final String PUBLIC_LISTING_COMMAND_LIST_COURT_HEARING = "listing.command.list-court-hearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
     private MessageConsumer messageConsumerClientPublic;
@@ -116,9 +119,13 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String defendantId = randomUUID().toString();
         final String offenceId = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();
+        final String caseUrn = generateUrn();
+
+        ListingStub.setupListingAnyAllocationQuery(caseUrn,"stub-data/listing.any-allocation.search.hearings.json");
+
 
         //Create prosecution case
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -147,9 +154,13 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String offenceId3 = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();
         final String defendantId3 = randomUUID().toString();
+        final String caseUrn = generateUrn();
+
+        ListingStub.setupListingAnyAllocationQuery(caseUrn,"stub-data/listing.any-allocation.search.hearings.json");
+
 
         //Create prosecution case
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -194,10 +205,13 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String defendantId2 = randomUUID().toString();
 
         final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(1);
+        final String caseUrn = generateUrn();
+
+        ListingStub.setupListingAnyAllocationQuery(caseUrn,"stub-data/listing.any-allocation.search.hearings.json");
 
 
         //Create prosecution case
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //Create payload for
