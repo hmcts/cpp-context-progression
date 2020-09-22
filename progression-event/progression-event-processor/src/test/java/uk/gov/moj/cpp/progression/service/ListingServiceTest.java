@@ -5,7 +5,9 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -17,9 +19,11 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_ANY_ALLOCATION_SEARCH_HEARINGS;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
+import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_SEARCH_HEARING;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
@@ -43,6 +47,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.listing.domain.Defendant;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.HearingDay;
+import uk.gov.moj.cpp.listing.domain.JurisdictionType;
 import uk.gov.moj.cpp.listing.domain.ListedCase;
 import uk.gov.moj.cpp.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
@@ -53,20 +58,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -82,7 +77,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-@SuppressWarnings({"squid:S1607","unused"})
+@SuppressWarnings({"squid:S1607", "unused"})
 @RunWith(MockitoJUnitRunner.class)
 public class ListingServiceTest {
 
@@ -131,7 +126,7 @@ public class ListingServiceTest {
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
-        listingService.listCourtHearing(jsonEnvelope,listCourtHearing);
+        listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
 
         when(enveloper.withMetadataFrom(envelopeReferral, LISTING_COMMAND_SEND_CASE_FOR_LISTING)).thenReturn(objectJsonEnvelopeFunction);
         when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelopeListCourtHearing);
@@ -145,7 +140,7 @@ public class ListingServiceTest {
     }
 
     @Test
-    public void shouldListUnscheduledHearings(){
+    public void shouldListUnscheduledHearings() {
         //given
         ListUnscheduledCourtHearing listCourtHearing = getListUnscheduledCourtHearing();
 
@@ -188,7 +183,7 @@ public class ListingServiceTest {
         final UUID offenceId3 = UUID.randomUUID();
 
         final Hearing hearing = Hearing.hearing()
-                .withListedCases(getListedCases(Stream.of(offenceId1, offenceId2, offenceId3).collect(toList())))
+                .withListedCases(getListedCases(Stream.of(offenceId1, offenceId2, offenceId3).collect(toList()), null))
                 .build();
 
         when(envelope.metadata()).thenReturn(metadata);
@@ -235,7 +230,7 @@ public class ListingServiceTest {
 
         verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(HearingList.class));
         assertThat(futureHearings.size(), is(2));
-        assertThat(futureHearings, containsInAnyOrder(hearing1,hearing2));
+        assertThat(futureHearings, containsInAnyOrder(hearing1, hearing2));
     }
 
     @Test
@@ -245,14 +240,15 @@ public class ListingServiceTest {
         final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
 
         when(envelope.metadata()).thenReturn(metadata);
-        when(requester.requestAsAdmin(any(Envelope.class), eq(HearingList.class))).thenReturn(Envelope.envelopeFrom(metadata, new HearingList(        )));
+        when(requester.requestAsAdmin(any(Envelope.class), eq(HearingList.class))).thenReturn(Envelope.envelopeFrom(metadata, new HearingList()));
         final List<Hearing> futureHearings = listingService.getFutureHearings(envelope, "caseUrnValue");
 
         verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(HearingList.class));
         assertThat(futureHearings.size(), is(0));
     }
 
-    private List<ListedCase> getListedCases(List<UUID> offenceIds) {
+    private List<ListedCase> getListedCases(List<UUID> offenceIds, uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt) {
+
         final List<ListedCase> listedCases = Stream.of(ListedCase.listedCase()
                 .withDefendants(Stream.of(Defendant.defendant()
                         .withOffences(Stream.of(Offence.offence()
@@ -264,7 +260,9 @@ public class ListingServiceTest {
                 .withShadowListed(of(Boolean.TRUE))
                 .withDefendants(Stream.of(Defendant.defendant()
                         .withOffences(Stream.of(Offence.offence()
-                                .withId(offenceIds.get(1)).build())
+                                .withId(offenceIds.get(1))
+                                .withCommittingCourt(Optional.ofNullable(committingCourt))
+                                .build())
                                 .collect(toList())).build())
                         .collect(toList())).build());
 
@@ -364,5 +362,56 @@ public class ListingServiceTest {
 
                         .build()))
                 .build();
+    }
+
+    @Test
+    public void shouldNotReturnACommittingCourtIfNotAvailableInPreviousHearing() {
+        final UUID hearingId = UUID.randomUUID();
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_SEARCH_HEARING).build();
+
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+        final UUID offenceId3 = UUID.randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withListedCases(getListedCases(Stream.of(offenceId1, offenceId2, offenceId3).collect(toList()), null))
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(Hearing.class))).thenReturn(Envelope.envelopeFrom(metadata, hearing));
+        final Optional<CommittingCourt> committingCourt = listingService.getCommittingCourt(envelope, hearingId);
+
+        assertFalse(committingCourt.isPresent());
+
+    }
+
+    @Test
+    public void shouldReturnACommittingCourtIfAvailableInPreviousHearing() {
+        final UUID hearingId = UUID.randomUUID();
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_SEARCH_HEARING).build();
+
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+        final UUID offenceId3 = UUID.randomUUID();
+
+        final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = uk.gov.moj.cpp.listing.domain.CommittingCourt.committingCourt()
+                .withCourtCentreId(UUID.randomUUID())
+                .withCourtHouseName("CourtHouseName")
+                .withCourtHouseType(JurisdictionType.MAGISTRATES)
+                .withCourtHouseShortName("CourtHouseShortName")
+                .withCourtHouseCode("CourtHouseShortCode")
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withListedCases(getListedCases(Stream.of(offenceId1, offenceId2, offenceId3).collect(toList()), committingCourt))
+                .build();
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(Hearing.class))).thenReturn(Envelope.envelopeFrom(metadata, hearing));
+        final Optional<CommittingCourt> committingCourtToCheck = listingService.getCommittingCourt(envelope, hearingId);
+
+        assertTrue(committingCourtToCheck.isPresent());
+
     }
 }

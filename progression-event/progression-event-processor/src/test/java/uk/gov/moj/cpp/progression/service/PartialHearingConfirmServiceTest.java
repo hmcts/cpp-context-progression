@@ -136,7 +136,7 @@ public class PartialHearingConfirmServiceTest {
         when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(buildSampleHearing(sampleMap));
 
-        List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(envelope, buildSampleHearingConfirmed(sampleMap));
+        List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(buildSampleHearingConfirmed(sampleMap), buildSampleHearing(sampleMap));
 
         assertThat(delta.isEmpty(), is(true));
     }
@@ -157,7 +157,7 @@ public class PartialHearingConfirmServiceTest {
 
         when(progressionService.getHearing(envelope, HEARING_ID.toString())).thenReturn(Optional.empty());
 
-        List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(envelope, buildSampleHearingConfirmed(sampleMap));
+        List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(buildSampleHearingConfirmed(sampleMap), buildSampleHearing(sampleMap));
 
         assertThat(delta.isEmpty(), is(true));
     }
@@ -198,7 +198,7 @@ public class PartialHearingConfirmServiceTest {
         when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(buildSampleHearing(sampleHearingMap));
 
-        List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(envelope, buildSampleHearingConfirmed(sampleConfirmMap));
+        List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(buildSampleHearingConfirmed(sampleConfirmMap), buildSampleHearing(sampleHearingMap));
 
         assertThat(delta.isEmpty(), is(false));
         assertThat(delta.size(), equalTo(2));
@@ -265,10 +265,13 @@ public class PartialHearingConfirmServiceTest {
     public void shouldTransformToListCourtHearing() {
         final UUID courtApplicationId = randomUUID();
         final UUID courtCentreId = randomUUID();
+        final UUID courtCentreIdInProgression = randomUUID();
         final UUID hearingTypeId = randomUUID();
         final String reportRestrictionReason = "reportRestrictionReason";
         final String courtCentreName = "courtCentreName";
+        final String courtCentreNameInProgression = "Lavender Hill";
         final ZonedDateTime sittingDay = ZonedDateTime.now();
+        final ZonedDateTime sittingDayInProgression = ZonedDateTime.now().plusDays(2);
         final Hearing hearing = Hearing.hearing()
                 .withId(HEARING_ID)
                 .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(courtApplicationId).build()))
@@ -278,18 +281,27 @@ public class PartialHearingConfirmServiceTest {
                 .withReportingRestrictionReason(reportRestrictionReason)
                 .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
                 .build();
-        final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(buildDeltaProsecutionCases(), hearing);
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(courtApplicationId).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreIdInProgression).withName(courtCentreNameInProgression).build())
+                .withType(HearingType.hearingType().withId(hearingTypeId).build())
+                .withJurisdictionType(CROWN)
+                .withReportingRestrictionReason(reportRestrictionReason)
+                .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(sittingDayInProgression).build()))
+                .build();
+        final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(buildDeltaProsecutionCases(), hearing, hearingInProgression);
 
         final HearingListingNeeds hearingListingNeeds = listCourtHearing.getHearings().get(0);
         assertThat(hearingListingNeeds.getId(), notNullValue());
         assertThat(hearingListingNeeds.getCourtApplications().get(0).getId(), equalTo(courtApplicationId));
-        assertThat(hearingListingNeeds.getCourtCentre().getId(), equalTo(courtCentreId));
-        assertThat(hearingListingNeeds.getCourtCentre().getName(), equalTo(courtCentreName));
+        assertThat(hearingListingNeeds.getCourtCentre().getId(), equalTo(hearingInProgression.getCourtCentre().getId()));
+        assertThat(hearingListingNeeds.getCourtCentre().getName(), equalTo(hearingInProgression.getCourtCentre().getName()));
         assertThat(hearingListingNeeds.getType().getId(), equalTo(hearingTypeId));
         assertThat(hearingListingNeeds.getJurisdictionType(), equalTo(CROWN));
         assertThat(hearingListingNeeds.getReportingRestrictionReason(), equalTo(reportRestrictionReason));
         assertThat(hearingListingNeeds.getEstimatedMinutes(), equalTo(30));
-        assertThat(hearingListingNeeds.getEarliestStartDateTime(), equalTo(sittingDay));
+        assertThat(hearingListingNeeds.getEarliestStartDateTime(), equalTo(sittingDayInProgression));
 
         final List<ProsecutionCase> prosecutionCases = hearingListingNeeds.getProsecutionCases();
         assertThat(prosecutionCases.size(), equalTo(1));

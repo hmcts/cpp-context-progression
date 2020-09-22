@@ -9,7 +9,6 @@ import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
-import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
@@ -20,18 +19,12 @@ import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.json.JsonObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -43,19 +36,9 @@ public class PartialHearingConfirmService {
 
     private static final Integer ESTIMATED_MINUTES = 30;
 
-    @Inject
-    private ProgressionService progressionService;
+    public List<ProsecutionCase> getDifferences(final ConfirmedHearing confirmedHearing, final Hearing hearing) {
 
-    @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-
-    public List<ProsecutionCase> getDifferences(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
-
-        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(jsonEnvelope, confirmedHearing.getId().toString());
-
-        if(hearingPayloadOptional.isPresent() && isNotEmpty(confirmedHearing.getProsecutionCases())){
-            final Hearing hearingInProgression = jsonObjectToObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
+        if (isNotEmpty(confirmedHearing.getProsecutionCases())) {
 
             final List<UUID> confirmedOffences = confirmedHearing.getProsecutionCases().stream()
                     .map(ConfirmedProsecutionCase::getDefendants)
@@ -65,7 +48,7 @@ public class PartialHearingConfirmService {
                     .map(ConfirmedOffence::getId)
                     .collect(toList());
 
-            final List<ProsecutionCase> deltaProsecutionCases = removeConfirmedCaseDefendantsOffences(hearingInProgression, confirmedOffences);
+            final List<ProsecutionCase> deltaProsecutionCases = removeConfirmedCaseDefendantsOffences(hearing, confirmedOffences);
 
             LOGGER.info("Delta ProsecutionCases is calculated for Partial Hearing. Delta is : {}",  CollectionUtils.isEmpty(deltaProsecutionCases) ? "empty" : deltaProsecutionCases);
 
@@ -77,23 +60,19 @@ public class PartialHearingConfirmService {
     }
 
 
-    public ListCourtHearing transformToListCourtHearing(List<ProsecutionCase> deltaProsecutionCases, final Hearing hearing) {
+    public ListCourtHearing transformToListCourtHearing(List<ProsecutionCase> deltaProsecutionCases, final Hearing hearing, final Hearing hearingInProgression) {
 
         return  ListCourtHearing.listCourtHearing()
                 .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
                         .withId(randomUUID())
                         .withCourtApplications(hearing.getCourtApplications())
-                        .withCourtCentre(CourtCentre.courtCentre()
-                                .withId(hearing.getCourtCentre().getId())
-                                .withName(hearing.getCourtCentre().getName())
-                                        .build()
-                                )
+                        .withCourtCentre(hearingInProgression.getCourtCentre())
                         .withEstimatedMinutes(ESTIMATED_MINUTES)
                         .withProsecutionCases(deltaProsecutionCases)
                         .withType(hearing.getType())
                         .withJurisdictionType(hearing.getJurisdictionType())
                         .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                        .withEarliestStartDateTime(hearing.getHearingDays().get(0).getSittingDay())
+                        .withEarliestStartDateTime(hearingInProgression.getHearingDays().get(0).getSittingDay())
                         .build()))
                 .build();
 

@@ -1,10 +1,14 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
+import uk.gov.justice.core.courts.CommittingCourt;
+import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -17,12 +21,14 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.ListedCase;
+import uk.gov.moj.cpp.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -119,5 +125,56 @@ public class ListingService {
                 .filter(hearing -> hearing.getHearingDays() != null && hearing.getHearingDays().stream()
                         .anyMatch(hearingDay -> hearingDay.getStartTime().compareTo(utcClock.now()) >= 0))
                 .collect(Collectors.toList());
+    }
+
+    public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
+
+        final Hearing hearingListed = searchHearing(jsonEnvelope, hearingId);
+
+        final CommittingCourt.Builder builder = CommittingCourt.committingCourt();
+
+        if (nonNull(hearingListed) && nonNull(hearingListed.getListedCases())) {
+            extractCommittingCourt(hearingListed, builder);
+        }
+
+        final CommittingCourt committingCourt = builder.build();
+
+        if (nonNull(committingCourt.getCourtCentreId())) {
+            LOGGER.info("Committing court found with ID: {}", committingCourt.getCourtCentreId());
+        }
+        return nonNull(committingCourt.getCourtHouseCode()) ? Optional.of(committingCourt) : empty();
+    }
+
+    private Hearing searchHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
+        final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING);
+        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+                .add("id", hearingId.toString())
+                .build();
+        return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();
+    }
+
+    @SuppressWarnings("squid:S3655")
+    private void extractCommittingCourt(final Hearing hearingListed, final CommittingCourt.Builder builder) {
+
+        if (nonNull(hearingListed)) {
+            hearingListed.getListedCases().forEach(lc ->
+                    lc.getDefendants().forEach(ld -> {
+                        final Offence offence = ld.getOffences()
+                                .stream()
+                                .filter(lo -> nonNull(lo.getCommittingCourt()) && lo.getCommittingCourt().isPresent())
+                                .findFirst()
+                                .orElse(null);
+
+                        if (nonNull(offence) && offence.getCommittingCourt().isPresent()) {
+                            final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = offence.getCommittingCourt().get();
+                            builder.withCourtCentreId(committingCourt.getCourtCentreId())
+                                    .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                                    .withCourtHouseShortName(committingCourt.getCourtHouseShortName().get())
+                                    .withCourtHouseCode(committingCourt.getCourtHouseCode().get())
+                                    .withCourtHouseName(committingCourt.getCourtHouseName());
+                        }
+
+                    }));
+        }
     }
 }

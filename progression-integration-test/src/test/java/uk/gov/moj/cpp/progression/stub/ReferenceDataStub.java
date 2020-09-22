@@ -103,6 +103,22 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.organisationunits+json");
     }
 
+    public static void stubQueryAllResultDefinitions(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/result-definitions";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(documentType.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.get-all-result-definitions+json");
+    }
+
     public static void stubQueryDocumentTypeData(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject documentType = Json.createReader(ReferenceDataStub.class
@@ -298,7 +314,7 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.enforcement-area+json");
     }
 
-    public static void stubLegalStatus(final String resourceName,  final String statusCode) {
+    public static void stubLegalStatus(final String resourceName, final String statusCode) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName))
@@ -311,10 +327,10 @@ public class ReferenceDataStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(legalStatuses.toString().replace("STATUS_CODE", statusCode))));
 
-        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.legal-statuses+json");
     }
 
-    public static void stubLegalStatusWithStatusDescription(final String resourceName,  final String statusCode, final String statusDescription) {
+    public static void stubLegalStatusWithStatusDescription(final String resourceName, final String statusCode, final String statusDescription) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName))
@@ -327,7 +343,7 @@ public class ReferenceDataStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(legalStatuses.toString().replace("LAA_STATUS_CODE", statusCode).replace("LAA_STATUS_DESC", statusDescription))));
 
-        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.legal-statuses+json");
     }
 
 
@@ -344,7 +360,7 @@ public class ReferenceDataStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(legalStatuses.toString().replace("STATUS_CODE", statusCode))));
 
-        waitForStubToBeReady(urlPath  , "application/vnd.referencedata.legal-statuses+json");
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.legal-statuses+json");
     }
 
     public static void stubGetOrganisationById(final String resourceName) {

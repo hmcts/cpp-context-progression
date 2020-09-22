@@ -2,9 +2,11 @@ package uk.gov.moj.cpp.progression.service;
 
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.common.converter.LocalDates.to;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -43,6 +45,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_COURT_ROOM = "referencedata.query.courtroom";
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
+    public static final String REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS = "referencedata.get-all-result-definitions";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -262,7 +265,7 @@ public class ReferenceDataService {
                 .build();
     }
 
-    public CourtCentre getCourtCentre(final String oucode, final JsonEnvelope jsonEnvelope, final Requester requester ){
+    public CourtCentre getCourtCentre(final String oucode, final JsonEnvelope jsonEnvelope, final Requester requester) {
         final JsonObject jsonObject = getCourtsOrganisationUnitsByOuCode(jsonEnvelope, oucode, requester).orElseThrow(RuntimeException::new);
         final JsonObject orgUnit = (JsonObject) jsonObject.getJsonArray("organisationunits").get(0);
 
@@ -380,4 +383,17 @@ public class ReferenceDataService {
 
         return envelope.payloadAsJsonObject();
     }
+
+    public JsonEnvelope getAllResultDefinitions(final JsonEnvelope envelope, final LocalDate orderedDate, final Requester requester) {
+
+        final JsonObject payload = createObjectBuilder()
+                .add("on", to(orderedDate))
+                .build();
+
+        return requester.request(Enveloper.envelop(payload)
+                .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS)
+                .withMetadataFrom(envelope));
+
+    }
+
 }

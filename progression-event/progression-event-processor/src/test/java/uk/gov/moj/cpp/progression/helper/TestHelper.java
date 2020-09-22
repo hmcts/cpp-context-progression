@@ -3,15 +3,18 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
@@ -28,6 +31,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class TestHelper {
+
+    private final static String COMMITTING_COURT_CODE = "CCCODE";
+    private final static String COMMITTING_COURT_NAME = "Committing Court";
 
     private TestHelper() {
 
@@ -109,6 +115,28 @@ public class TestHelper {
                 .build();
     }
 
+    public static ProsecutionCase buildProsecutionCaseWithCommittingCourt(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing){
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withId(offenceId)
+                                .withCommittingCourt(CommittingCourt.committingCourt()
+                                        .withCourtCentreId(UUID.randomUUID())
+                                        .withCourtHouseShortName(COMMITTING_COURT_CODE)
+                                        .withCourtHouseName(COMMITTING_COURT_NAME)
+                                        .withCourtHouseCode(COMMITTING_COURT_CODE)
+                                        .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                                        .build())
+                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                        .withNextHearing(nextHearing)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+    }
+
     public static ProsecutionCase buildProsecutionCaseWithoutJudicialResult(final UUID caseId, final UUID defendantId, final UUID offenceId){
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
@@ -129,16 +157,25 @@ public class TestHelper {
                         .build())
                 .withBookingReference(bookingReference)
                 .withEstimatedMinutes(60)
-                .withCourtCentre(CourtCentre.courtCentre().withCourtHearingLocation(courtLocation).build())
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withCourtHearingLocation(courtLocation)
+                        .withCode(COMMITTING_COURT_CODE)
+                        .withName(COMMITTING_COURT_NAME)
+                        .build())
                 .withWeekCommencingDate(weekCommencingDate)
                 .withListedStartDateTime(listedStartDateTime)
                 .withHearingLanguage(HearingLanguage.ENGLISH)
+                .withJurisdictionType(JurisdictionType.CROWN)
                 .build();
     }
 
     public static NextHearing buildNextHearing(final UUID existingHearingId) {
         return NextHearing.nextHearing()
                 .withExistingHearingId(existingHearingId)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withCode(COMMITTING_COURT_CODE)
+                        .withName(COMMITTING_COURT_NAME)
+                        .build())
                 .build();
     }
 
@@ -171,6 +208,16 @@ public class TestHelper {
         return ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
                 .withDefendants(defendants)
+                .build();
+    }
+
+    public static CommittingCourt buildCommittingCourt() {
+        return CommittingCourt.committingCourt()
+                .withCourtHouseName(COMMITTING_COURT_NAME)
+                .withCourtHouseCode(COMMITTING_COURT_CODE)
+                .withCourtHouseShortName(COMMITTING_COURT_CODE)
+                .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                .withCourtCentreId(UUID.randomUUID())
                 .build();
     }
 

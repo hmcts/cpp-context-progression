@@ -1,11 +1,19 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
+
+import uk.gov.justice.core.courts.CommittingCourt;
+import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -13,7 +21,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
-import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
+import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -26,14 +34,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
-import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingToHearingListingNeedsTransformerTest {
@@ -72,9 +78,14 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Mock
     private ProvisionalBookingServiceAdapter provisionalBookingServiceAdapter;
 
+    @Mock
+    private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
+
     @Test
     public void shouldReturnOneHearingNeedsWhenTwoHearingMatch() {
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
@@ -105,6 +116,8 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnTwoHearingNeedsWhenTwoHearingTypeNotMatch() {
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
@@ -140,6 +153,8 @@ public class HearingToHearingListingNeedsTransformerTest {
 
     @Test
     public void shouldReturnTwoHearingNeedsWhenTwoHearingWeekCommenceDateNotMatch() {
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION, WEEK_COMMENCING_DATE_2, null))
@@ -152,6 +167,8 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnTwoHearingNeedsWhenTwoHearingListedStartDateNotMatch() {
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION,null,  LISTED_START_DATETIME_1)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION,null, LISTED_START_DATETIME_2))
@@ -164,6 +181,8 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnTwoHearingNeedsWhenTwoHearingDatesNotMatch() {
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION,null, LISTED_START_DATETIME_1))
@@ -176,11 +195,13 @@ public class HearingToHearingListingNeedsTransformerTest {
 
     @Test
     public void shouldIntoSameHearingWhenSlotsAreSame() {
-        Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
         slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
         slotsMap.put(BOOKING_REFERENCE_2, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
 
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_1, COURT_LOCATION,null, LISTED_START_DATETIME_1)),
@@ -190,8 +211,8 @@ public class HearingToHearingListingNeedsTransformerTest {
         final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
         assertThat(hearingListingNeedsList.size(), is(2));
 
-        Optional<HearingListingNeeds> optionalHearingListingNeeds1 = hearingListingNeedsList.stream().filter(x -> x.getProsecutionCases().size() == 1).findFirst();
-        Optional<HearingListingNeeds> optionalHearingListingNeeds2 = hearingListingNeedsList.stream().filter(x -> x.getProsecutionCases().size() == 2).findFirst();
+        final Optional<HearingListingNeeds> optionalHearingListingNeeds1 = hearingListingNeedsList.stream().filter(x -> x.getProsecutionCases().size() == 1).findFirst();
+        final Optional<HearingListingNeeds> optionalHearingListingNeeds2 = hearingListingNeedsList.stream().filter(x -> x.getProsecutionCases().size() == 2).findFirst();
         assertThat(optionalHearingListingNeeds1.isPresent(), is(true));
         assertThat(optionalHearingListingNeeds2.isPresent(), is(true));
 
@@ -203,11 +224,13 @@ public class HearingToHearingListingNeedsTransformerTest {
 
     @Test
     public void shouldIntoDifferentHearingWhenSlotsAreDifferent() {
-        Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
         slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
         slotsMap.put(BOOKING_REFERENCE_2, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_2)));
 
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_1, COURT_LOCATION,null, LISTED_START_DATETIME_1)),
@@ -219,6 +242,63 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(hearingListingNeedsList.get(0).getProsecutionCases().size(), is(1));
         assertThat(hearingListingNeedsList.get(1).getProsecutionCases().size(), is(1));
         assertThat(hearingListingNeedsList.get(2).getProsecutionCases().size(), is(1));
+
+    }
+
+    @Test
+    public void shouldPopulateCommittingCourtDetails() {
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
+        final Optional<CommittingCourt> committingCourtOptional = Optional.of(committingCourt);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(committingCourtOptional);
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing, true, null);
+        assertThat(hearingListingNeedsList.size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().size(), is(2));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().size(), is(1));
+
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        final Defendant defendant2 = hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().get(0);
+        assertThat(defendant1.getOffences().size(), is(1));
+        assertThat(defendant2.getOffences().size(), is(1));
+        assertThat(defendant1.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
+        assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
+        assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
+        assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+        assertThat(defendant2.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
+        assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
+        assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
+        assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+
+    }
+
+    @Test
+    public void shouldNotPopulateCommittingCourtDetails() {
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing, false, null);
+        assertThat(hearingListingNeedsList.size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().size(), is(2));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().size(), is(1));
+
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        final Defendant defendant2 = hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().get(0);
+        assertThat(defendant1.getOffences().size(), is(1));
+        assertThat(defendant2.getOffences().size(), is(1));
+        assertThat(defendant1.getOffences().get(0).getCommittingCourt(), is(nullValue()));
+        assertThat(defendant2.getOffences().get(0).getCommittingCourt(), is(nullValue()));
 
     }
 

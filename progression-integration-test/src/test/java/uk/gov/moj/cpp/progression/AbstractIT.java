@@ -13,6 +13,7 @@ import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFil
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryAllResultDefinitions;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtOURoom;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtsCodeData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -96,6 +97,7 @@ public class AbstractIT {
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
         stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");
+        stubQueryAllResultDefinitions("/restResource/referencedata.get-all-result-definitions.json");
         stubListCourtHearing();
         stubReferenceDataOffencesGetOffenceById("/restResource/referencedataoffences.get-offences-by-id.json");
         stubReferenceDataOffencesGetOffenceByOffenceCode("/restResource/referencedataoffences.get-offences-by-offence-code.json");

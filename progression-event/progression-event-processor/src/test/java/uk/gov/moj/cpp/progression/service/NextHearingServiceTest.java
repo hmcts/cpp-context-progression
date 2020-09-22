@@ -6,6 +6,8 @@ import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildDefendant;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJudicialResult;
@@ -13,24 +15,33 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildOffence;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.hamcrest.MatcherAssert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NextHearingServiceTest {
@@ -50,6 +61,9 @@ public class NextHearingServiceTest {
     @InjectMocks
     private NextHearingService service;
 
+    @Mock
+    private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
+
     @Test
     public void shouldReturnOneHearingWhenOneNextHearingAvailableForOneOffenceForOneDefendantInOneProsecutionCase() {
         final Hearing hearing = buildHearing(
@@ -59,6 +73,8 @@ public class NextHearingServiceTest {
                                         asList(buildJudicialResult(buildNextHearing(HEARING_ID_1)))))
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))));
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
@@ -84,6 +100,8 @@ public class NextHearingServiceTest {
                                 )
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))));
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
@@ -112,6 +130,8 @@ public class NextHearingServiceTest {
                                                 buildOffence(OFFENCE_ID_2, asList(buildJudicialResult(buildNextHearing(HEARING_ID_1))))
                                         ).collect(Collectors.toList()))
                         ).collect(Collectors.toList()))));
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
@@ -150,6 +170,8 @@ public class NextHearingServiceTest {
                 ).collect(Collectors.toList())
         );
 
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
 
@@ -180,6 +202,8 @@ public class NextHearingServiceTest {
                                 )
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))));
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(2));
@@ -217,6 +241,8 @@ public class NextHearingServiceTest {
                                                 buildOffence(OFFENCE_ID_2, asList(buildJudicialResult(buildNextHearing(HEARING_ID_2))))
                                         ).collect(Collectors.toList()))
                         ).collect(Collectors.toList()))));
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(2));
@@ -261,6 +287,8 @@ public class NextHearingServiceTest {
                                 ).collect(Collectors.toList()))
                 ).collect(Collectors.toList())
         );
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(2));
@@ -343,6 +371,39 @@ public class NextHearingServiceTest {
         final ConfirmedOffence confirmedOffence = confirmedDefendant.getOffences().get(0);
         assertThat(confirmedOffence, is(notNullValue()));
         assertThat(confirmedOffence.getId(), is(OFFENCE_ID_1));
+    }
+
+    @Test
+    public void shouldPopulateCommittingCourt() {
+        final Hearing hearing = buildHearing(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResult(buildNextHearing(HEARING_ID_1)))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))));
+
+        final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
+        final Optional<CommittingCourt> committingCourtOptional = Optional.of(committingCourt);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(committingCourtOptional);
+
+        final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing, true, null);
+        assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
+
+        final HearingListingNeeds hearingListingNeeds = nextHearingDetails.getHearingListingNeedsList().get(0);
+        assertHearing(hearingListingNeeds, HEARING_ID_1, 1);
+
+        final ProsecutionCase prosecutionCase = hearingListingNeeds.getProsecutionCases().get(0);
+        assertProsecutionCase(prosecutionCase, PROSECUTION_CASE_ID_1, 1);
+
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        assertDefendant(defendant, DEFENDANT_ID_1, 1);
+
+        MatcherAssert.assertThat(defendant.getOffences().size(), is(1));
+        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
+        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
+        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
+        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
     }
 
     private void assertHearing(final HearingListingNeeds hearingListingNeeds, final UUID hearingId, final int size) {

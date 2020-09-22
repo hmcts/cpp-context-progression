@@ -49,7 +49,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,26 +100,27 @@ public class HearingConfirmedEventProcessor {
 
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
+        final Hearing hearingInProgression = retrieveHearing(jsonEnvelope, confirmedHearing.getId());
 
         if (nonNull(confirmedHearing.getExistingHearingId())) {
             final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(jsonEnvelope, confirmedHearing.getExistingHearingId().toString());
             if (isHearingInitialised(hearingIdFromQuery)) {
-                processExtendHearing(jsonEnvelope, confirmedHearing);
+                processExtendHearing(jsonEnvelope, confirmedHearing, hearingInProgression);
             }
         } else {
 
             final Initiate hearingInitiate = Initiate.initiate()
                     .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope))
                     .build();
-            final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDifferences(jsonEnvelope, confirmedHearing);
 
-            if(CollectionUtils.isNotEmpty(deltaProsecutionCases)){
+            final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
+
+            if (isNotEmpty(deltaProsecutionCases)) {
                 final UpdateHearingForPartialAllocation updateHearingForPartialAllocation=partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(confirmedHearing.getId(), deltaProsecutionCases);
                 progressionService.updateHearingForPartialAllocation(jsonEnvelope, updateHearingForPartialAllocation);
-                final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing());
+                final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
                 progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
-
             }
 
             final List<UUID> applicationIds = confirmedHearing.getCourtApplicationIds();
@@ -199,7 +199,7 @@ public class HearingConfirmedEventProcessor {
                 .orElseThrow(IllegalArgumentException::new);
     }
 
-    private void processExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
+    private void processExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
 
         LOGGER.info(" processing extend hearing for hearing id {}", confirmedHearing.getExistingHearingId());
 
@@ -210,7 +210,7 @@ public class HearingConfirmedEventProcessor {
         final HearingListingNeeds hearingListingNeeds =
                 progressionService.transformHearingToHearingListingNeeds(incomingHearing, confirmedHearing.getExistingHearingId());
 
-        final boolean isPartiallyAllocated = !partialHearingConfirmService.getDifferences(jsonEnvelope, confirmedHearing).isEmpty();
+        final boolean isPartiallyAllocated = !partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression).isEmpty();
 
         if (isPartiallyAllocated) {
             final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = partialHearingConfirmService.transformConfirmProsecutionCasesToUpdateHearingForPartialAllocation(confirmedHearing.getId(), confirmedHearing.getProsecutionCases());
@@ -305,6 +305,14 @@ public class HearingConfirmedEventProcessor {
         }
         LOGGER.info(" hearing is not found ");
         return false;
+    }
+
+    private Hearing retrieveHearing(final JsonEnvelope event, final UUID hearingId) {
+        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(event, hearingId.toString());
+        if (hearingPayloadOptional.isPresent()) {
+            return jsonObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
+        }
+        throw new IllegalStateException("Hearing not found for hearingId:" + hearingId.toString());
     }
 
 }

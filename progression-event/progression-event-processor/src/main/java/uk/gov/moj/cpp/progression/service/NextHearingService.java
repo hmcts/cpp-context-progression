@@ -3,9 +3,11 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -13,22 +15,34 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import org.apache.commons.collections.CollectionUtils;
+
 
 @SuppressWarnings("squid:S1188")
 public class NextHearingService {
 
+    @Inject
+    private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
+
     public NextHearingDetails getNextHearingDetails(final Hearing hearing) {
+       return getNextHearingDetails(hearing, false, null);
+    }
+
+    public NextHearingDetails getNextHearingDetails(final Hearing hearing, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
         final List<ProsecutionCase> prosecutionCases = hearing.getProsecutionCases();
         final Set<UUID> hearingIds = getAllocatedHearingIds(prosecutionCases);
         final Map<UUID, ProsecutionCase> prosecutionCaseMap = getProsecutionCasesMap(prosecutionCases);
@@ -72,7 +86,7 @@ public class NextHearingService {
                     final List<Offence> offencesToBeAdded = new ArrayList<>();
                     offenceIds.forEach(offenceId -> {
                         final Offence offence = getOffence(defendant, offenceId);
-                        final Offence offenceToBeAdded = createOffence(offence);
+                        final Offence offenceToBeAdded = createOffence(offence, hearing.getCourtCentre(), shouldPopulateCommittingCourt, committingCourt);
                         offencesToBeAdded.add(offenceToBeAdded);
                     });
                     defendantToBeAdded.getOffences().addAll(offencesToBeAdded);
@@ -86,7 +100,7 @@ public class NextHearingService {
         return new NextHearingDetails(hearingsMap, hearingListingNeedsList, nextHearings);
     }
 
-    private void addToHearingListingNeeds(Map<UUID, NextHearing> nextHearings, List<HearingListingNeeds> hearingListingNeedsList, UUID hearingId, List<ProsecutionCase> prosecutionCasesToBeAdded) {
+    private void addToHearingListingNeeds(final Map<UUID, NextHearing> nextHearings, final List<HearingListingNeeds> hearingListingNeedsList, final UUID hearingId, final List<ProsecutionCase> prosecutionCasesToBeAdded) {
         final NextHearing nextHearing = nextHearings.get(hearingId);
         hearingListingNeedsList.add(HearingListingNeeds.hearingListingNeeds()
                 .withCourtCentre(nextHearing.getCourtCentre())
@@ -184,7 +198,10 @@ public class NextHearingService {
                 .build();
     }
 
-    private Offence createOffence(final Offence offence) {
+    private Offence createOffence(final Offence offence, final CourtCentre courtCentre, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> existingCommittingCourt) {
+
+        final CommittingCourt committingCourt = (nonNull(existingCommittingCourt) && existingCommittingCourt.isPresent()) ? existingCommittingCourt.get() : offenceToCommittingCourtConverter.convert(offence, courtCentre, shouldPopulateCommittingCourt).orElse(null);
+
         return Offence.offence()
                 .withProceedingsConcluded(offence.getProceedingsConcluded())
                 .withAllocationDecision(offence.getAllocationDecision())
@@ -219,6 +236,7 @@ public class NextHearingService {
                 .withVictims(offence.getVictims())
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
+                .withCommittingCourt(committingCourt)
                 .withOffenceDateCode(offence.getOffenceDateCode())
                 .build();
     }
@@ -261,5 +279,4 @@ public class NextHearingService {
     private static boolean doesExistingHearingIdPresent(final NextHearing nextHearing) {
         return nonNull(nextHearing) && nonNull(nextHearing.getExistingHearingId());
     }
-
 }

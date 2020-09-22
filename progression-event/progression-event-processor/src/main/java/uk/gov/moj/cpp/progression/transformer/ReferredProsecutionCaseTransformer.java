@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
@@ -114,8 +113,8 @@ public class ReferredProsecutionCaseTransformer {
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final
     InitiationCode initiationCode) {
         String pnCid = null;
-        if(nonNull(referredDefendant.getPersonDefendant())) {
-            pnCid =  referredDefendant.getPersonDefendant().getPncId();
+        if (nonNull(referredDefendant.getPersonDefendant())) {
+            pnCid = referredDefendant.getPersonDefendant().getPncId();
         }
         return Defendant.defendant()
                 .withOffences(referredDefendant

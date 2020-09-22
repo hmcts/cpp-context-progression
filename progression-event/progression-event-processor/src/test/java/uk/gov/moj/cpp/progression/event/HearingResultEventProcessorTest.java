@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.event;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,12 +19,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
 import uk.gov.justice.core.courts.Category;
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationOutcome;
 import uk.gov.justice.core.courts.Defendant;
@@ -41,15 +45,22 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
+import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +72,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -126,6 +138,9 @@ public class HearingResultEventProcessorTest {
     private ListingService listingService;
 
     @Mock
+    private ReferenceDataService referenceDataService;
+
+    @Mock
     private NextHearingService nextHearingService;
 
     @Mock
@@ -136,6 +151,9 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private HearingResultHelper hearingResultHelper;
+
+    @Mock
+    private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
 
     @Before
     public void initMocks() {
@@ -221,7 +239,7 @@ public class HearingResultEventProcessorTest {
 
         final List allValues = envelopeArgumentCaptor.getAllValues();
         assertThat(allValues.size(), is(1));
-        assertThat(((DefaultEnvelope)allValues.get(0)).metadata().name(), equalTo("progression.command.hearing-result"));
+        assertThat(((DefaultEnvelope) allValues.get(0)).metadata().name(), equalTo("progression.command.hearing-result"));
 
     }
 
@@ -342,11 +360,11 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
 
-        List<HearingListingNeeds> hearingListingNeedsList = asList(HearingListingNeeds.hearingListingNeeds()
+        final List<HearingListingNeeds> hearingListingNeedsList = asList(HearingListingNeeds.hearingListingNeeds()
                 .withId(randomUUID())
                 .build());
         final NextHearingDetails nextHearingDetails = new NextHearingDetails(null, hearingListingNeedsList, null);
-        List<HearingListingNeeds> hearingListingNeedsForNextHearings = new ArrayList<>();
+        final List<HearingListingNeeds> hearingListingNeedsForNextHearings = new ArrayList<>();
         final Optional<JsonObject> hearingJsonOptional = getHearingJson();
         when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
         when(nextHearingService.getNextHearingDetails(any())).thenReturn(nextHearingDetails);
@@ -476,7 +494,7 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void shouldPassShadowListedOffencesToListingService() {
+    public void shouldPassShadowListedOffencesToListingService() throws IOException {
         final UUID defendantUuid1 = randomUUID();
 
         final List<ProsecutionCase> prosecutionCases = singletonList(ProsecutionCase.prosecutionCase()
@@ -501,15 +519,16 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
 
-        List<HearingListingNeeds> hearingListingNeedsList = singletonList(HearingListingNeeds.hearingListingNeeds()
+        final List<HearingListingNeeds> hearingListingNeedsList = singletonList(HearingListingNeeds.hearingListingNeeds()
                 .withId(randomUUID())
                 .build());
         final NextHearingDetails nextHearingDetails = new NextHearingDetails(null, hearingListingNeedsList, null);
-        List<HearingListingNeeds> hearingListingNeedsForNextHearings = singletonList(HearingListingNeeds.hearingListingNeeds().build());
+        final List<HearingListingNeeds> hearingListingNeedsForNextHearings = singletonList(HearingListingNeeds.hearingListingNeeds().build());
         final Optional<JsonObject> hearingJsonOptional = getHearingJson();
         when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
-        when(nextHearingService.getNextHearingDetails(any())).thenReturn(nextHearingDetails);
-        when(hearingToHearingListingNeedsTransformer.transform(any())).thenReturn(hearingListingNeedsForNextHearings);
+        when(nextHearingService.getNextHearingDetails(any(), any(), any())).thenReturn(nextHearingDetails);
+        when(referenceDataService.getAllResultDefinitions(any(), any(), any())).thenReturn(generateResultDefinitionsJson());
+        when(hearingToHearingListingNeedsTransformer.transform(any(), any(), any())).thenReturn(hearingListingNeedsForNextHearings);
         when(hearingResultHelper.doProsecutionCasesContainNextHearingResults(anyList())).thenReturn(true);
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -522,14 +541,110 @@ public class HearingResultEventProcessorTest {
         assertThat(listCourtHearingArgumentCaptor.getValue().getShadowListedOffences(), hasItems(offenceUuid1, offenceUuid2));
     }
 
+    @Test
+    public void shouldPassCommittingCourtIsMagsAndSentToCC() throws IOException {
+        final UUID defendantUUUID = randomUUID();
+        final UUID offenceUUID = UUID.randomUUID();
+        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCSC");
+
+        sendToCrownCourt(prosecutionCases, defendantUUUID);
+    }
+
+    @Test
+    public void shouldPassCommittingCourtIsMagsAndCommittedToCC() throws IOException {
+        final UUID defendantUUUID = randomUUID();
+        final UUID offenceUUID = UUID.randomUUID();
+        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCIC");
+
+        sendToCrownCourt(prosecutionCases, defendantUUUID);
+    }
+
+    private void sendToCrownCourt(final List<ProsecutionCase> prosecutionCases, final UUID defendantUUUID) throws IOException {
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withId(randomUUID())
+                        .withProsecutionCases(prosecutionCases)
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.hearing.resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = singletonList(HearingListingNeeds.hearingListingNeeds()
+                .withId(randomUUID())
+                .build());
+        final NextHearingDetails nextHearingDetails = new NextHearingDetails(null, hearingListingNeedsList, null);
+        final List<HearingListingNeeds> hearingListingNeedsForNextHearings = singletonList(HearingListingNeeds.hearingListingNeeds().build());
+        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
+        final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
+        final Optional<CommittingCourt> committingCourtOptional = Optional.of(committingCourt);
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any()))
+                .thenReturn(committingCourtOptional);
+        when(progressionService.getHearing(any(), any()))
+                .thenReturn(hearingJsonOptional);
+        when(nextHearingService.getNextHearingDetails(any(), any(), any()))
+                .thenReturn(nextHearingDetails);
+        when(referenceDataService.getAllResultDefinitions(any(), any(), any()))
+                .thenReturn(generateResultDefinitionsJson());
+        when(hearingToHearingListingNeedsTransformer.transform(any(), any(), any()))
+                .thenReturn(hearingListingNeedsForNextHearings);
+        when(hearingResultHelper.doProsecutionCasesContainNextHearingResults(anyList()))
+                .thenReturn(true);
+
+
+        this.eventProcessor.handleHearingResultedPublicEvent(event);
+
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
+        verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
+
+        assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
+        assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUUUID));
+    }
+
+    private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode) {
+
+        return singletonList(ProsecutionCase.prosecutionCase()
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withId(defendantUUUID)
+                        .withOffences(singletonList(Offence.offence()
+                                .withId(offenceUUID)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCjsCode(cjsCode)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build());
+
+    }
+
     private Optional<JsonObject> getHearingJson() {
-        Hearing hearing = Hearing.hearing()
+        final Hearing hearing = Hearing.hearing()
                 .withId(randomUUID())
                 .withHasSharedResults(false)
                 .build();
-        final JsonObject hearingJson = Json.createObjectBuilder()
+        final JsonObject hearingJson = createObjectBuilder()
                 .add("hearing", objectToJsonObjectConverter.convert(hearing))
                 .build();
         return Optional.of(hearingJson);
     }
+
+    private JsonEnvelope generateResultDefinitionsJson() throws IOException {
+
+        final String jsonString = Resources.toString(Resources.getResource("referencedata.get-all-result-definitions.json"), Charset.defaultCharset());
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
+
+        final JsonObject payload = Json.createReader(
+                new ByteArrayInputStream(jsonString.getBytes()))
+                .readObject();
+
+        return envelopeFrom(metadataBuilder, payload);
+
+
+    }
+
 }

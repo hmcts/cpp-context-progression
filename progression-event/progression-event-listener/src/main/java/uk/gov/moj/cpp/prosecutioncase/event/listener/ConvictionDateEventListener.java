@@ -115,6 +115,7 @@ public class ConvictionDateEventListener {
                 .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
                 .withIsDiscontinued(offence.getIsDiscontinued())
                 .withOffenceDateCode(offence.getOffenceDateCode())
+                .withCommittingCourt(offence.getCommittingCourt())
                 .build();
     }
 

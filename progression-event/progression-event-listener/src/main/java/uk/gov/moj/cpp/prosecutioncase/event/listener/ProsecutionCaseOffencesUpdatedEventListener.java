@@ -193,6 +193,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withIsDiscontinued(persistedOffence.getIsDiscontinued())
                 .withOffenceDateCode(updatedOffence.getOffenceDateCode())
                 .withJudicialResults(persistedOffence.getJudicialResults())
+                .withCommittingCourt(updatedOffence.getCommittingCourt())
                 .build();
     }
 

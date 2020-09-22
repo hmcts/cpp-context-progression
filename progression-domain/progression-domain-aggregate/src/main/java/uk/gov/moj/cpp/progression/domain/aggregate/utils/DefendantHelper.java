@@ -117,6 +117,7 @@ public class DefendantHelper {
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
                 .withOffenceDateCode(offence.getOffenceDateCode())
+                .withCommittingCourt(offence.getCommittingCourt())
                 .build();
         udpatedOffences.add(updatedOffence);
         return updatedOffence;
@@ -206,6 +207,7 @@ public class DefendantHelper {
                 .withWording(offence.getWording())
                 .withWordingWelsh(offence.getWordingWelsh())
                 .withOffenceDateCode(offence.getOffenceDateCode())
+                .withCommittingCourt(offence.getCommittingCourt())
                 .build();
 
     }

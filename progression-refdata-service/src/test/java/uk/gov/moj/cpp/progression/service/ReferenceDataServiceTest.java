@@ -15,14 +15,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_COURTCENTER;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_DOCUMENT_ACCESS;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_OUCODE;
@@ -45,12 +41,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
@@ -353,12 +351,31 @@ public class ReferenceDataServiceTest {
         when(requester.request(any()))
                 .thenReturn(responseEnvelope);
 
-        final Optional<JsonObject> result = referenceDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE,requester);
+        final Optional<JsonObject> result = referenceDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE, requester);
 
         verify(requester).request(welshEnvelopeArgumentCaptor.capture());
 
         assertThat(welshEnvelopeArgumentCaptor.getValue().metadata(), metadata().withName(REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS));
         assertThat(welshEnvelopeArgumentCaptor.getValue().payload(), payload().isJson(withJsonPath("$.nationalCourtCode", equalTo(NATIONAL_COURT_CODE))));
+    }
+
+    @Test
+    public void shouldGetAllResultDefinitions() throws IOException {
+        final JsonEnvelope jsonEnvelope = generateResultDefinitionsJson();
+
+        when(requester.request(any())).thenReturn(jsonEnvelope);
+
+        final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
+        final JsonObject responseJson = referenceDataService.getAllResultDefinitions(envelope, LocalDate.now(), requester).payloadAsJsonObject();
+
+        final JsonArray resultDefinitionsArray = responseJson.getJsonArray("resultDefinitions");
+
+        verify(requester).request(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue().metadata(), metadata().withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS));
+        assertThat(envelopeArgumentCaptor.getValue().payload(), Matchers.notNullValue());
+
+        assertThat(resultDefinitionsArray.size(), Matchers.greaterThan(0));
     }
 
     @Test
@@ -494,7 +511,7 @@ public class ReferenceDataServiceTest {
     }
 
     private JsonObject returnAsJson(final String jsonString) {
-        try (JsonReader jsonReader = createReader(new StringReader(jsonString))) {
+        try (final JsonReader jsonReader = createReader(new StringReader(jsonString))) {
             return jsonReader.readObject();
         }
     }
@@ -659,5 +676,20 @@ public class ReferenceDataServiceTest {
                 .build();
         return JsonEnvelope.envelopeFrom(
                 metadataBuilder, payload);
+    }
+
+    private JsonEnvelope generateResultDefinitionsJson() throws IOException {
+
+        final String jsonString = Resources.toString(Resources.getResource("referencedata.get-all-result-definitions.json"), Charset.defaultCharset());
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
+
+        final JsonObject payload = Json.createReader(
+                new ByteArrayInputStream(jsonString.getBytes()))
+                .readObject();
+
+        return envelopeFrom(metadataBuilder, payload);
+
     }
 }
