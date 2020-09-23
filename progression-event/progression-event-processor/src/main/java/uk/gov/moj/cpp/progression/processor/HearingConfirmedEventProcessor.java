@@ -159,7 +159,7 @@ public class HearingConfirmedEventProcessor {
 
             sender.send(hearingInitiateTransformedPayload);
 
-            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate);
+            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate, deltaProsecutionCases);
         }
     }
 

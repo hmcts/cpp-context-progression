@@ -2,12 +2,15 @@ package uk.gov.moj.cpp.progression.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -23,6 +26,7 @@ import uk.gov.justice.core.courts.BoxworkApplicationReferred;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
+import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -40,10 +44,13 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
+import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -115,6 +122,8 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
     public static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
+    public static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -122,6 +131,9 @@ public class ProgressionServiceTest {
     @Spy
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    @Spy
+    @InjectMocks
+    private JsonObjectToObjectConverter jsonObjectConverter =  new JsonObjectToObjectConverter();
     @Mock
     private Sender sender;
     @Spy
@@ -144,6 +156,7 @@ public class ProgressionServiceTest {
     @Before
     public void initMocks() {
         setField(this.listToJsonArrayConverter, "mapper", objectMapper);
+        setField(this.jsonObjectConverter, "objectMapper", objectMapper);
         setField(this.listToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
     }
 
@@ -670,6 +683,217 @@ public class ProgressionServiceTest {
                 )
                 )
         );
+    }
+
+    @Test
+    public void shouldTransformProsecutionCaseWhenProsecutionCaseQueryGetDifferentResult() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+        final UUID defendant1sOffence2 = randomUUID();
+        final UUID defendant2sOffence1 = randomUUID();
+        final UUID defendant2sOffence2 = randomUUID();
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
+                        .withId(defendant2)
+                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
+                                .withId(defendant2sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+
+        List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope);
+
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
+        assertThat(defendant2, is(prosecutionCases.get(0).getDefendants().get(0).getId()));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
+        assertThat(defendant2sOffence1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getId()));
+    }
+
+    @Test
+    public void shouldCallOnlyUpdateDefendantYouthForProsecutionCaseForAllocatedWhenOneOfDefendantsAllOffencesNotAllocated() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+        final UUID defendant1sOffence2 = randomUUID();
+        final UUID defendant2sOffence1 = randomUUID();
+        final UUID defendant2sOffence2 = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendant2)
+                        .withIsYouth(true)
+                        .withOffences(asList(Offence.offence()
+                                .withId(defendant2sOffence1)
+                                .build()))
+                        .build())
+                )
+                .build();
+
+        final Initiate hearingInitiate = Initiate.initiate()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .build())
+                .build();
+
+        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendant2)
+                        .withIsYouth(true)
+                        .withOffences(asList(
+                                Offence.offence()
+                                        .withId(defendant2sOffence2)
+                                        .build()))
+                        .build()))
+                .build());
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+
+
+        progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldCallUpdateDefendantYouthForProsecutionCaseWhenOneOfDefendantsAtLeastOneOffencesAllocated() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+        final UUID defendant1sOffence2 = randomUUID();
+        final UUID defendant2sOffence1 = randomUUID();
+        final UUID defendant2sOffence2 = randomUUID();
+        final ProsecutionCase prosecutionCase = buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, true);
+
+        final Initiate hearingInitiate = Initiate.initiate()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .build())
+                .build();
+        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendant2)
+                        .withIsYouth(true)
+                        .withOffences(asList(Offence.offence()
+                                .withId(defendant2sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+
+
+        progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
+
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+
+
+    }
+
+    @Test
+    public void shouldCallUpdateDefendantYouthForProsecutionCaseWhenFullAllocated() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+        final UUID defendant1sOffence2 = randomUUID();
+        final UUID defendant2sOffence1 = randomUUID();
+        final UUID defendant2sOffence2 = randomUUID();
+        final ProsecutionCase prosecutionCase = buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, true);
+
+        final Initiate hearingInitiate = Initiate.initiate()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .build())
+                .build();
+        final List<ProsecutionCase> deltaProsecutionCases = emptyList();
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+
+
+        progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
+
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+
+
+    }
+
+    private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, boolean youth) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(Defendant.defendant()
+                                .withId(defendant1)
+                                .withIsYouth(youth)
+                                .withOffences(asList(Offence.offence()
+                                                .withId(defendant1sOffence1)
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(defendant1sOffence2)
+                                                .build()))
+                                .build(),
+                        Defendant.defendant()
+                                .withId(defendant2)
+                                .withIsYouth(youth)
+                                .withOffences(asList(Offence.offence()
+                                                .withId(defendant2sOffence1)
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(defendant2sOffence2)
+                                                .build()))
+                                .build()))
+                .build();
     }
 
 }

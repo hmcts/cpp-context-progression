@@ -53,6 +53,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,6 +67,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -291,7 +293,7 @@ public class ProgressionService {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA).apply(casesConfirmedPayload));
     }
 
-    public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
+    public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate, final List<ProsecutionCase> deltaProsecutionCases) {
         final List<ProsecutionCase> prosecutionCases = hearingInitiate.getHearing().getProsecutionCases();
         if (isNotEmpty(prosecutionCases)) {
             prosecutionCases.stream().forEach(pc -> {
@@ -303,7 +305,7 @@ public class ProgressionService {
                                 .filter(defEnt -> defEnt.getId().equals(confirmedDefendantConsumer.getId()) && isYouthUpdated(confirmedDefendantConsumer, defEnt))
                                 .findFirst();
 
-                        if (matchedDefendant.isPresent()) {
+                        if (matchedDefendant.isPresent() && isMatchedDefendantsAllOffenceNotInDelta(matchedDefendant.get(), deltaProsecutionCases)) {
                             final JsonObject updateYouthPayload = createObjectBuilder()
                                     .add("defendant", objectToJsonObjectConverter.convert(transformDefendantFromEntity(matchedDefendant.get(), confirmedDefendantConsumer.getIsYouth(), pc.getId())))
                                     .add("id", confirmedDefendantConsumer.getId().toString())
@@ -317,6 +319,35 @@ public class ProgressionService {
             });
         }
     }
+
+    /**
+     * Checks any defendant's->offences not exists in delta cases regarding partial allocation
+     *
+     * @param defendant
+     * @param deltaProsecutionCases
+     * @return
+     * */
+    private boolean isMatchedDefendantsAllOffenceNotInDelta(final Defendant defendant, final List<ProsecutionCase> deltaProsecutionCases) {
+        if (deltaProsecutionCases.isEmpty()) {
+            return true;
+        }
+
+        final List<UUID> deltaOffenceIds = deltaProsecutionCases.stream()
+                .map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .filter(d -> defendant.getId().equals(d.getId()))
+                .map(Defendant::getOffences)
+                .flatMap(Collection::stream)
+                .map(Offence::getId)
+                .collect(Collectors.toList());
+
+        final List<UUID> offenceIds = defendant.getOffences().stream()
+                .map(Offence::getId)
+                .collect(Collectors.toList());
+
+        return !CollectionUtils.isEqualCollection(deltaOffenceIds, offenceIds);
+    }
+
 
     public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases) {
         if (isNotEmpty(prosecutionCases)) {
