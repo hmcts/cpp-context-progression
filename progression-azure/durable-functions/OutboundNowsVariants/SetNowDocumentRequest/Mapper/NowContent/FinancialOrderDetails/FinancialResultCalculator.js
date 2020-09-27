@@ -23,7 +23,8 @@ class FinancialResultCalculator {
         const total = judicialResultPrompts.filter(
             prompt => prompt.promptReference && FINANCIAL_TOTAL_AMOUNT_IMPOSED_PROMPT_REFERENCES.includes(
                 prompt.promptReference)).map(prompt => prompt.value ? prompt.value : "0")
-            .reduce((acc, value) => parseFloat(acc) + parseFloat(value.replace("£", "")), 0).toString();
+            .reduce((acc, value) => (parseFloat(acc) + parseFloat(value.replace("£", ""))), 0.00)
+            .toFixed(2);
 
         const promptWithTotalAmountEnforced = judicialResultPrompts.find(
             prompt => PromptType.TOTAL_AMOUNT_ENFORCED_PROMPT_REFERENCE
@@ -31,7 +32,7 @@ class FinancialResultCalculator {
 
         const alreadyPaid = promptWithTotalAmountEnforced && promptWithTotalAmountEnforced.value ? promptWithTotalAmountEnforced.value.replace("£", "") : 0.0;
 
-        const outstandingBalance = (parseFloat(total) - parseFloat(alreadyPaid)).toString();
+        const outstandingBalance = (parseFloat(total) - parseFloat(alreadyPaid)).toFixed(2);
 
         return {total, outstandingBalance};
     }

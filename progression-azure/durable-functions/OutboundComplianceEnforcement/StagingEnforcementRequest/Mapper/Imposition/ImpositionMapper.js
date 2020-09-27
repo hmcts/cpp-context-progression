@@ -34,8 +34,7 @@ class ImpositionMapper extends Mapper {
                 imposition.impositionResultCode = impositionCode;
                 const impositionAmount = this.getImpositionAmount(impositionCode, impositionResult);
                 imposition.impositionAmount =
-                    Number(parseFloat(impositionAmount.startsWith('£') ? impositionAmount.substring(1)
-                                                                : impositionAmount).toFixed(2));
+                    Number(parseFloat(impositionAmount.startsWith('£') ? impositionAmount.substring(1) : impositionAmount).toFixed(2));
                 if(minorCreditorImpositionResult) {
                     imposition.minorCreditorId = minorCreditorImpositionResult.minorCreditorId;
                 } else {

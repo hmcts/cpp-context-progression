@@ -17,6 +17,7 @@ class MinorCreditorMapper {
                     const organisationName = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ORGANISATION_NAME);
 
                     if(organisationName) {
+                        minorCreditor.minorCreditorTitle = 'CO';
                         minorCreditor.companyName = organisationName;
                     } else {
                         const firstName = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.FIRST_NAME);
@@ -24,10 +25,10 @@ class MinorCreditorMapper {
                         minorCreditor.minorCreditorSurname = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.LAST_NAME);
                         minorCreditor.minorCreditorForenames = this.foreNames(firstName, middleName);
                         minorCreditor.minorCreditorInitials = undefined;
+                        minorCreditor.minorCreditorTitle = undefined;
                     }
 
                     minorCreditor.minorCreditorId = judicialResult.minorCreditorId;
-                    minorCreditor.minorCreditorTitle = undefined;
                     minorCreditor.minorCreditorAddress1 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS1);
                     minorCreditor.minorCreditorAddress2 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS2);
                     minorCreditor.minorCreditorAddress3 = this.getPromptValue(judicialResultPrompts, MinorCreditorConstants.ADDRESS3);
