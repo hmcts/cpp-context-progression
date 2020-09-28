@@ -436,6 +436,7 @@
       "isD20": false,
       "level": "D",
       "primary": true,
+      "sequence": 100,
       "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
       "nextHearing": {
         "listedStartDateTime": "2020-08-18T09:00:00.000Z",
@@ -484,6 +485,7 @@
       "isD20": false,
       "level": "O",
       "primary": true,
+      "sequence": 200,
       "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
       "judicialResultPrompts": [
         {
@@ -542,6 +544,7 @@
       "isD20": false,
       "level": "C",
       "primary": true,
+      "sequence": 300,
       "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
       "judicialResultPrompts": [
         {

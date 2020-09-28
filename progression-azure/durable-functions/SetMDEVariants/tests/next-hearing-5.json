@@ -37,6 +37,7 @@
       "includeDriverNumber": false,
       "includePlea": false,
       "includeVehicleRegistration": false,
+      "applyMDEOffenceFiltering": true,
       "nowRequirements": [
         {
           "id": "33d24e28-eb43-43e6-b6d1-b4dea5fa0993",
@@ -1270,6 +1271,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "40de9011-71de-4a65-9de8-c3355e7bf7c4",
         "judicialResultId": "40de9011-71de-4a65-9de8-c3355e7bf7c4",
         "judicialResultPrompts": [
           {
@@ -1391,6 +1393,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "40de9011-71de-4a65-9de8-c3355e7bf7c4",
         "judicialResultId": "81b3e63f-99f9-40c5-974e-aec0dd7ad884",
         "judicialResultPrompts": [
           {
@@ -1519,6 +1522,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "40de9011-71de-4a65-9de8-c3355e7bf7c4",
         "judicialResultId": "a30db523-f750-4d99-b4f8-1459a844b557",
         "judicialResultPrompts": [
           {
@@ -1820,6 +1824,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "8367cdbe-058f-4a14-92d2-9b6720a1db2d",
         "judicialResultId": "8367cdbe-058f-4a14-92d2-9b6720a1db2d",
         "judicialResultPrompts": [
           {
@@ -1941,6 +1946,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "8367cdbe-058f-4a14-92d2-9b6720a1db2d",
         "judicialResultId": "1d852f40-3f74-490a-a3bf-e39e152db912",
         "judicialResultPrompts": [
           {
@@ -2069,6 +2075,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "8367cdbe-058f-4a14-92d2-9b6720a1db2d",
         "judicialResultId": "6c1f9ea4-cc10-498c-9194-0587246d8210",
         "judicialResultPrompts": [
           {

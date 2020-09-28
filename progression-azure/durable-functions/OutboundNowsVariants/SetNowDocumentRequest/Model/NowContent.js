@@ -18,6 +18,7 @@ class NowContent {
         this.nowText = undefined;
         this.orderingCourt = undefined;
         this.nowRequirementText = undefined;
+        this.sequence = undefined;
     }
 }
 

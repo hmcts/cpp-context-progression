@@ -14,7 +14,7 @@ class NowsVariantsSubscriptions {
         const objectVariantsSubscriptions = [];
 
         const variantWithOrderDate = mdeVariants.find(variant => variant.orderDate);
-        const orderDate = variantWithOrderDate.orderDate ? variantWithOrderDate.orderDate : undefined;
+        const orderDate = variantWithOrderDate ? variantWithOrderDate.orderDate : undefined;
 
         const subscriptionsMetaData = await new ReferenceDataService().getSubscriptionsMetadata(this.context, orderDate);
 

@@ -774,6 +774,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "0732478a-fe77-4441-accd-9a845b1b89a1",
         "judicialResultId": "0732478a-fe77-4441-accd-9a845b1b89a1",
         "judicialResultPrompts": [
           {
@@ -912,6 +913,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "0732478a-fe77-4441-accd-9a845b1b89a1",
         "judicialResultId": "dcdae81a-8937-44c2-8335-7a3666d86176",
         "judicialResultPrompts": [
           {
@@ -1209,6 +1211,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "0732478a-fe77-4441-accd-9a845b1b89a1",
         "judicialResultId": "7d19fe9e-e0fe-4904-b942-4dfea89dcc53",
         "judicialResultTypeId": "4958de15-8a0a-4d2b-9f7e-56e037cf03da",
         "label": "For the trial to take place",
@@ -1304,6 +1307,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "29fa4812-2762-4456-8ac8-ca0c14c7ec30",
         "judicialResultId": "29fa4812-2762-4456-8ac8-ca0c14c7ec30",
         "judicialResultPrompts": [
           {
@@ -1442,6 +1446,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "29fa4812-2762-4456-8ac8-ca0c14c7ec30",
         "judicialResultId": "fbb7e9d2-ddde-4218-a223-d8bfdb24e935",
         "judicialResultPrompts": [
           {
@@ -1739,6 +1744,7 @@
         "isDeleted": false,
         "isFinancialResult": false,
         "isUnscheduled": false,
+        "rootJudicialResultId": "29fa4812-2762-4456-8ac8-ca0c14c7ec30",
         "judicialResultId": "4831bbdc-e14b-483d-b9e6-aa7939bf92e4",
         "judicialResultTypeId": "4958de15-8a0a-4d2b-9f7e-56e037cf03da",
         "label": "For the trial to take place",

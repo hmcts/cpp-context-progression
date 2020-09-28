@@ -1,0 +1,288 @@
+{
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantAttendance": [
+        {
+          "attendanceDays": [
+            {
+              "attendanceType": "IN_PERSON",
+              "day": "2020-10-13"
+            }
+          ],
+          "defendantId": "f47b1e40-06d5-407d-9a96-3ed84880b48d"
+        }
+      ],
+      "defendantReferralReasons": [
+        {
+          "defendantId": "f47b1e40-06d5-407d-9a96-3ed84880b48d",
+          "description": "Defence request",
+          "id": "798e3d82-44fa-40e6-a93d-4c8f5322fa66"
+        }
+      ],
+      "hasSharedResults": true,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 1,
+          "listingSequence": 0,
+          "sittingDay": "2020-10-13T09:00:00.000Z"
+        }
+      ],
+      "hearingLanguage": "ENGLISH",
+      "id": "073eda0b-603a-4a5b-9c69-5101c1bd71a1",
+      "jurisdictionType": "MAGISTRATES",
+      "prosecutionCases": [
+        {
+          "caseStatus": "SJP_REFERRAL",
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2020-09-26T09:50:19.123Z",
+              "id": "f47b1e40-06d5-407d-9a96-3ed84880b48d",
+              "isYouth": false,
+              "masterDefendantId": "df5790ab-f9fa-4c06-9e09-908012599416",
+              "numberOfPreviousConvictionsCited": 3,
+              "offences": [
+                {
+                  "chargeDate": "2018-01-02",
+                  "count": 1,
+                  "id": "32365142-10f5-4e22-9b08-8a3362081a2c",
+                  "isDisposed": false,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "ANCILLARY",
+                      "cjsCode": "3008",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": true,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "isUnscheduled": false,
+                      "judicialResultId": "a4e15db7-9bdc-4757-95de-2f44a3f245d2",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "a8719de4-7783-448a-b792-e3f94e670ad0",
+                          "label": "Penalty points for this offence",
+                          "promptReference": "PENPT",
+                          "promptSequence": 100,
+                          "totalPenaltyPoints": 5,
+                          "type": "INT",
+                          "usergroups": [],
+                          "value": "5",
+                          "welshLabel": "Pwyntiau cosb ar gyfer y trosedd hwn",
+                          "welshValue": "5"
+                        }
+                      ],
+                      "judicialResultTypeId": "cee54856-4450-4f28-a8a9-72b688726201",
+                      "label": "Driving record endorsed with penalty points",
+                      "lastSharedDateTime": "2020-09-26",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-10-13",
+                      "orderedHearingId": "073eda0b-603a-4a5b-9c69-5101c1bd71a1",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 28400,
+                      "resultText": "Driving record endorsed with penalty points\nPenalty points for this offence 5",
+                      "rollUpPrompts": true,
+                      "rootJudicialResultId": "a4e15db7-9bdc-4757-95de-2f44a3f245d2",
+                      "rootJudicialResultTypeId": "cee54856-4450-4f28-a8a9-72b688726201",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": false,
+                      "usergroups": [],
+                      "welshLabel": "Cofnod gyrru wedi’i ardystio â phwyntiau cosb"
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-09-26",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "32365142-10f5-4e22-9b08-8a3362081a2c"
+                  },
+                  "offenceCode": "CA03014",
+                  "offenceDateCode": 1,
+                  "offenceDefinitionId": "5d6226b1-2aae-42a8-903f-0b859bd232bc",
+                  "offenceLegislation": "Contrary to section 366(8)(b) and    (9) of the Communications Act 2003.",
+                  "offenceLegislationWelsh": "Yn groes i adran 366(8)(b) a (9) Deddf Cyfathrebu 2003.",
+                  "offenceTitle": "Fail    / refuse give assistance to person executing Communications Act search warrant",
+                  "offenceTitleWelsh": "Methu / gwrthod rhoi cymorth i unigolyn sy'n gweithredu gwarant chwilio dan y Ddeddf Cyfathrebu",
+                  "orderIndex": 1,
+                  "startDate": "2018-01-01",
+                  "wording": "On 12/07/2018 at London Victoria Leaving by entrance on the Transport for London regional railway network",
+                  "wordingWelsh": "On 12/07/2018 at London Victoria Leaving by entrance on the Transport for London regional railway network"
+                },
+                {
+                  "chargeDate": "2016-01-01",
+                  "count": 1,
+                  "id": "e533b882-6370-4cde-a118-8257c443d796",
+                  "isDisposed": false,
+                  "judicialResults": [
+                    {
+                      "alwaysPublished": false,
+                      "category": "ANCILLARY",
+                      "cjsCode": "3071",
+                      "courtClerk": {
+                        "firstName": "Erica",
+                        "lastName": "Wilson",
+                        "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                      },
+                      "d20": true,
+                      "excludedFromResults": false,
+                      "isAdjournmentResult": false,
+                      "isAvailableForCourtExtract": true,
+                      "isConvictedResult": true,
+                      "isDeleted": false,
+                      "isFinancialResult": false,
+                      "isUnscheduled": false,
+                      "judicialResultId": "58facbc4-5738-455e-a2f7-7055293710c5",
+                      "judicialResultPrompts": [
+                        {
+                          "courtExtract": "Y",
+                          "isFinancialImposition": false,
+                          "judicialResultPromptTypeId": "2bf54447-328c-4c1b-a123-341adbd52172",
+                          "label": "Disqualification period",
+                          "promptReference": "disqualificationPeriod",
+                          "promptSequence": 100,
+                          "type": "INT",
+                          "usergroups": [],
+                          "value": "1 Years",
+                          "welshLabel": "Cyfnod gwahardd",
+                          "welshValue": "1 Flynedd"
+                        }
+                      ],
+                      "judicialResultTypeId": "ccfc452e-ebe4-4cd7-b8a0-4f90768447b4",
+                      "label": "Discretionary with ordinary disqualification",
+                      "lastSharedDateTime": "2020-09-26",
+                      "lifeDuration": false,
+                      "orderedDate": "2020-10-13",
+                      "orderedHearingId": "073eda0b-603a-4a5b-9c69-5101c1bd71a1",
+                      "postHearingCustodyStatus": "A",
+                      "publishedAsAPrompt": false,
+                      "publishedForNows": false,
+                      "rank": 26200,
+                      "resultText": "Discretionary with ordinary disqualification\nDisqualification period 1 Years",
+                      "resultWording": "Disqualified for holding or obtaining a driving licence. Discretionary disqualification. Driving record endorsed. Section 34(2) Road Traffic Offenders Act 1988",
+                      "rollUpPrompts": true,
+                      "rootJudicialResultId": "58facbc4-5738-455e-a2f7-7055293710c5",
+                      "rootJudicialResultTypeId": "ccfc452e-ebe4-4cd7-b8a0-4f90768447b4",
+                      "terminatesOffenceProceedings": false,
+                      "urgent": true,
+                      "usergroups": [],
+                      "welshResultWording": "Gwahardd rhag dal neu gael trwydded yrru. Gwahardd yn ôl disgresiwn. Cofnod gyrru wedi’i ardystio. Adran 34(2) Deddf Troseddwyr Traffig Ffyrdd 1988"
+                    }
+                  ],
+                  "modeOfTrial": "Summary",
+                  "notifiedPlea": {
+                    "notifiedPleaDate": "2020-09-26",
+                    "notifiedPleaValue": "NO_NOTIFICATION",
+                    "offenceId": "e533b882-6370-4cde-a118-8257c443d796"
+                  },
+                  "offenceCode": "PS90010",
+                  "offenceDateCode": 1,
+                  "offenceDefinitionId": "6c7a0ad5-f769-43fc-957c-3fc447aa893a",
+                  "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                  "offenceLegislationWelsh": "",
+                  "offenceTitle": "Public service vehicle - passenger use altered / defaced travel mandate",
+                  "offenceTitleWelsh": "",
+                  "orderIndex": 2,
+                  "startDate": "2015-07-02",
+                  "wording": "On 12/07/2018 at Brighton, without reasonable excuse, failed to give assistance that you were under a duty to give to a person authorised to execute a search warrant granted under section 366 of the Communications Act 2003 by the Liverpool Magistrates' Court on 02/07/2018",
+                  "wordingWelsh": "On 12/07/2018 at Brighton, without reasonable excuse, failed to give assistance that you were under a duty to give to a person authorised to execute a search warrant granted under section 366 of the Communications Act 2003 by the Liverpool Magistrates' Court on 02/07/2018"
+                }
+              ],
+              "personDefendant": {
+                "arrestSummonsNumber": "arrest/summons",
+                "bailConditions": "",
+                "bailStatus": {
+                  "code": "A",
+                  "description": "Not applicable",
+                  "id": "86009c70-759d-3308-8de4-194886ff9a77"
+                },
+                "driverNumber": "MORGA657054SM9BF",
+                "personDetails": {
+                  "address": {
+                    "address1": "Flat 43",
+                    "address2": "Cathays Park",
+                    "address3": "Cardiff",
+                    "address4": "Wales",
+                    "address5": "UK",
+                    "postcode": "CF10 3NP"
+                  },
+                  "contact": {
+                    "home": "1231231230",
+                    "mobile": "07852463924",
+                    "primaryEmail": "SAM.SMITH@EMAIL.COM"
+                  },
+                  "dateOfBirth": "1965-12-27",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Fred",
+                  "gender": "MALE",
+                  "lastName": "Smith",
+                  "nationalInsuranceNumber": "AB123456C",
+                  "nationalityCode": "POL",
+                  "nationalityDescription": "Pole",
+                  "nationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
+                  "occupation": "TA",
+                  "occupationCode": "666",
+                  "specificRequirements": "no special needs",
+                  "title": "MR"
+                }
+              },
+              "prosecutionCaseId": "c7b6113f-a2da-4326-ae1e-e74e017ab690"
+            }
+          ],
+          "id": "c7b6113f-a2da-4326-ae1e-e74e017ab690",
+          "initiationCode": "J",
+          "originatingOrganisation": "GAEAA01",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Barton House",
+              "address2": "Bond Street",
+              "address3": "Bristol",
+              "postcode": "BS98 1TL"
+            },
+            "majorCreditorCode": "TVL3",
+            "prosecutionAuthorityCode": "TVL",
+            "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+            "prosecutionAuthorityName": "TV Licensing",
+            "prosecutionAuthorityOUCode": "GAEAA01",
+            "prosecutionAuthorityReference": "TVL7884882"
+          },
+          "statementOfFacts": "Prosecution Facts"
+        }
+      ],
+      "type": {
+        "description": "Plea and Trial Preparation",
+        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+      }
+    }

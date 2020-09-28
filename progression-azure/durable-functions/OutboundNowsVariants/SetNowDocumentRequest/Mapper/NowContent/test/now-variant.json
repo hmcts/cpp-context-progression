@@ -435,6 +435,7 @@
       "isD20": false,
       "level": "D",
       "primary": true,
+      "sequence": 200,
       "publishedForNows": false,
       "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
       "judicialResultPrompts": [
@@ -492,6 +493,7 @@
       "isD20": false,
       "level": "O",
       "primary": true,
+      "sequence": 100,
       "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
       "judicialResultPrompts": [
         {
@@ -521,7 +523,7 @@
       "judicialResultId": "b8f91621-135a-4c26-8b38-e83dbeda0b3d",
       "judicialResultTypeId": "3f608dba-20ad-4710-bebc-d78b4b3ff08d",
       "orderedHearingId": "7669d6a3-ef75-40c7-ac13-8be3a9875c62",
-      "label": "Imprisonment",
+      "label": "Imprisonment 2",
       "isAdjournmentResult": false,
       "isFinancialResult": true,
       "isConvictedResult": false,
@@ -538,6 +540,7 @@
       "isD20": false,
       "level": "C",
       "primary": true,
+      "sequence": 300,
       "nowId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
       "judicialResultPrompts": [
         {

@@ -182,6 +182,7 @@ class NowContentMapper extends Mapper {
                     result.publishedForNows = results[0].publishedForNows;
                     result.resultWording = results[0].resultWording;
                     result.welshResultWording = results[0].welshResultWording;
+                    result.sequence = results[0].sequence;
                     result.nowRequirementText = this.getNowRequirementTextForResult(results[0], flattenNowRequirements);
                     if (results[0].judicialResultPrompts) {
                         result.prompts = this.getResultPrompts(results[0]);
@@ -192,7 +193,7 @@ class NowContentMapper extends Mapper {
             });
 
             if(distinctResults.length) {
-                return distinctResults;
+                return distinctResults.sort((a, b) => a.sequence - b.sequence);
             }
         }
     }

@@ -742,6 +742,7 @@
         "isConvictedResult": false,
         "isDeleted": false,
         "isFinancialResult": false,
+        "rootJudicialResultId": "ef5b3c71-5c0c-47e8-af32-e068f52ba2aa",
         "judicialResultId": "ef5b3c71-5c0c-47e8-af32-e068f52ba2aa",
         "judicialResultPrompts": [
           {
@@ -794,6 +795,7 @@
         "isConvictedResult": false,
         "isDeleted": false,
         "isFinancialResult": false,
+        "rootJudicialResultId": "ef5b3c71-5c0c-47e8-af32-e068f52ba2aa",
         "judicialResultId": "6b0ae14d-2784-4dde-bac8-16c70a34aa0d",
         "judicialResultPrompts": [
           {
@@ -1097,6 +1099,7 @@
         "isConvictedResult": false,
         "isDeleted": false,
         "isFinancialResult": false,
+        "rootJudicialResultId": "943189ff-2fee-4d61-8eb0-eb41da3d9e9d",
         "judicialResultId": "943189ff-2fee-4d61-8eb0-eb41da3d9e9d",
         "judicialResultPrompts": [
           {
@@ -1149,6 +1152,7 @@
         "isConvictedResult": false,
         "isDeleted": false,
         "isFinancialResult": false,
+        "rootJudicialResultId": "943189ff-2fee-4d61-8eb0-eb41da3d9e9d",
         "judicialResultId": "7d38ccb9-5deb-47e6-8be7-086cde15ced3",
         "judicialResultPrompts": [
           {
@@ -1451,6 +1455,7 @@
         "isConvictedResult": false,
         "isDeleted": false,
         "isFinancialResult": false,
+        "rootJudicialResultId": "6796b01f-a44f-456a-996e-6ddd67a56dde",
         "judicialResultId": "6796b01f-a44f-456a-996e-6ddd67a56dde",
         "judicialResultPrompts": [
           {
@@ -1682,6 +1687,7 @@
         "isConvictedResult": false,
         "isDeleted": false,
         "isFinancialResult": false,
+        "rootJudicialResultId": "6796b01f-a44f-456a-996e-6ddd67a56dde",
         "judicialResultId": "d8c0dd14-cf6c-445d-b0ba-55eae9e3fcb0",
         "judicialResultPrompts": [
           {

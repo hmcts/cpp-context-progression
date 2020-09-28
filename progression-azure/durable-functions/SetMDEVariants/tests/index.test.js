@@ -16,6 +16,10 @@ const NEXT_HEARING_2 = require('./next-hearing-2.json');
 const NEXT_HEARING_3 = require('./next-hearing-3.json');
 const NEXT_HEARING_4 = require('./next-hearing-4.json');
 const NEXT_HEARING_5 = require('./next-hearing-5.json');
+const NEXT_HEARING_7 = require('./next-hearing-7.json');
+const NEXT_HEARING_8 = require('./next-hearing-9.json');
+
+const DDD = require('./ddd.json');
 
 describe('Set MDE Variants', () => {
 
@@ -41,8 +45,9 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants.length).toBe(2);
         expect(mdeVariants[0].results.length).toBe(1);
+        expect(mdeVariants[1].results.length).toBe(1);
     });
 
     test('should return the correct MDE Variants when prompts values are the same', async () => {
@@ -69,8 +74,9 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants.length).toBe(2);
         expect(mdeVariants[0].results.length).toBe(2);
+        expect(mdeVariants[1].results.length).toBe(2);
     });
 
     test('should return the correct MDE Variants when a group of results have the same prompts', async () => {
@@ -112,10 +118,9 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(3);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(1);
-        expect(mdeVariants[2].results.length).toBe(2);
+        expect(mdeVariants.length).toBe(2);
+        expect(mdeVariants[0].results.length).toBe(4);
+        expect(mdeVariants[1].results.length).toBe(3);
     });
 
     test('should return the correct MDE Variants when UserGroupVariant contains different prompt definitions', async () => {
@@ -128,10 +133,8 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(3);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(2);
-        expect(mdeVariants[2].results.length).toBe(1);
+        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants[0].results.length).toBe(6);
 
     });
 
@@ -146,8 +149,8 @@ describe('Set MDE Variants', () => {
         const mdeVariants = await setMdeVariants(context);
 
         expect(mdeVariants.length).toBe(2);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(1);
+        expect(mdeVariants[0].results.length).toBe(5);
+        expect(mdeVariants[1].results.length).toBe(5);
     });
 
     test('should return the correct MDE Variants with multiple UserGroupVariants containing different result definitions and different values', async () => {
@@ -161,10 +164,10 @@ describe('Set MDE Variants', () => {
         const mdeVariants = await setMdeVariants(context);
 
         expect(mdeVariants.length).toBe(4);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(1);
-        expect(mdeVariants[2].results.length).toBe(3);
-        expect(mdeVariants[3].results.length).toBe(1);
+        expect(mdeVariants[0].results.length).toBe(5);
+        expect(mdeVariants[1].results.length).toBe(5);
+        expect(mdeVariants[2].results.length).toBe(5);
+        expect(mdeVariants[3].results.length).toBe(5);
     });
 
     test('should return the correct MDE Variants for next Hearing', async () => {
@@ -177,9 +180,8 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(2);
-        expect(mdeVariants[0].results.length).toBe(3);
-        expect(mdeVariants[1].results.length).toBe(3);
+        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants[0].results.length).toBe(4);
     });
 
     test('should return the correct MDE Variants for next Hearing 2', async () => {
@@ -192,13 +194,11 @@ describe('Set MDE Variants', () => {
 
         const mdeVariants = await setMdeVariants(context);
 
-        expect(mdeVariants.length).toBe(6);
-        expect(mdeVariants[0].results.length).toBe(2);
-        expect(mdeVariants[1].results.length).toBe(2);
-        expect(mdeVariants[2].results.length).toBe(2);
-        expect(mdeVariants[3].results.length).toBe(3);
-        expect(mdeVariants[4].results.length).toBe(3);
-        expect(mdeVariants[5].results.length).toBe(3);
+        expect(mdeVariants.length).toBe(4);
+        expect(mdeVariants[0].results.length).toBe(3);
+        expect(mdeVariants[1].results.length).toBe(3);
+        expect(mdeVariants[2].results.length).toBe(4);
+        expect(mdeVariants[3].results.length).toBe(4);
     });
 
     test('should return the correct MDE Variants for next Hearing 3', async () => {
@@ -241,8 +241,36 @@ describe('Set MDE Variants', () => {
         const mdeVariants = await setMdeVariants(context);
 
         expect(mdeVariants.length).toBe(2);
-        expect(mdeVariants[0].results.length).toBe(5);
-        expect(mdeVariants[1].results.length).toBe(5);
+        expect(mdeVariants[0].results.length).toBe(3);
+        expect(mdeVariants[1].results.length).toBe(3);
+    });
+
+    test('should return the correct MDE Variants for next Hearing 7', async () => {
+
+        context.bindings = {
+            params: {
+                userGroupsNowVariants: NEXT_HEARING_8
+            }
+        };
+
+        const mdeVariants = await setMdeVariants(context);
+
+        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants[0].results.length).toBe(12);
+    });
+
+    test('should return the correct MDE Variants for ddd', async () => {
+
+        context.bindings = {
+            params: {
+                userGroupsNowVariants: DDD
+            }
+        };
+
+        const mdeVariants = await setMdeVariants(context);
+
+        expect(mdeVariants.length).toBe(1);
+        expect(mdeVariants[0].results.length).toBe(2);
     });
 
 });

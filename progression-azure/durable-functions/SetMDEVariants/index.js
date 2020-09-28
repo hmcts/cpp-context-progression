@@ -1,5 +1,5 @@
 const _ = require('lodash');
-
+const uuidv4 = require('uuid/v4');
 /** The idea here is to take the UserGroupsNowVariants
  * For each UserGroupsNowVariant, get all the MDE prompts.
  * For each MDE prompt, work out the MDE variants.
@@ -20,19 +20,23 @@ class MDEVariants {
         const mdeVariants = [];
 
         this.userGroupsNowVariants.forEach((userGroupVariant) => {
-
             //Collecting MDE prompts for the given Now
-            const resultDefinitionsWithPrompts = this.getResultDefinitionWithPrompts(
-                userGroupVariant.now);
+            const resultDefinitionsWithPrompts = this.getResultDefinitionWithPrompts(userGroupVariant.now);
 
             if (resultDefinitionsWithPrompts.size === 0) {
                 mdeVariants.push(userGroupVariant);
                 return;
             }
 
+            console.log(JSON.stringify(userGroupVariant.now.name) + ' NOW has ' + [...resultDefinitionsWithPrompts].length + ' MDE prompts in Now definitions.');
+
+            //Filter non MDE Judicial results
+            const nonMdeResults = this.getNonMdeResults(resultDefinitionsWithPrompts, userGroupVariant);
+            console.log(nonMdeResults.length + ' Non-MDE results added to '+ JSON.stringify(userGroupVariant.now.name) + ' NOW.');
+
             //Filter MDE Judicial results
             const mdeResults = this.getMdeResults(resultDefinitionsWithPrompts, userGroupVariant);
-            console.log(userGroupVariant.now.name + ' has ' + mdeResults.length + ' MDE results.');
+            console.log(mdeResults.length + ' MDE results added to '+ JSON.stringify(userGroupVariant.now.name) + ' NOW.');
 
             // Check if we have any Judicial results to process
             if (mdeResults.length === 0) {
@@ -40,71 +44,97 @@ class MDEVariants {
                 return;
             }
 
-            //Filter non MDE Judicial results
-            const nonMdeResults = this.getNonMdeResults(resultDefinitionsWithPrompts,
-                                                        userGroupVariant);
-            console.log(
-                userGroupVariant.now.name + ' has ' + nonMdeResults.length + ' NON-MDE results.');
+            if(userGroupVariant.now.applyMDEOffenceFiltering) {
+                //Group Results by root Judicial Results
+                const variantResultsMap = new Map();
 
-            // Group MDE Judicial results by JudicialResultTypeId
-            const groupedJudicialResultsByType = this.groupByJudicialResultTypeId(mdeResults);
-            groupedJudicialResultsByType.forEach(type => {
-                console.log(type.judicialResultTypeId + ' has ' + type.judicialResults.length + ' '
-                            + type.judicialResults[0].label + ' results.');
-            });
+                const rootJudicialResultIds = this.getRootJudicialResultIds(mdeResults);
 
-            let numberOfTypes = [];
+                rootJudicialResultIds.forEach(rootJudicialResultId => {
+                    const mdeResultsByRoot = this.getResultsByRoot(mdeResults, rootJudicialResultId);
+                    const nonMdeResultsByRoot = this.getResultsByRoot(nonMdeResults, rootJudicialResultId);
+                    const variants = this.generateMDE(userGroupVariant, mdeResultsByRoot, nonMdeResultsByRoot, resultDefinitionsWithPrompts);
+                    variants.forEach(variant => {
+                        //Check if the variant already created. If created then copy the results from variant to created variant.
+                        const newVariant = this.findVariant(mdeVariants, variant);
+                        if(newVariant) {
+                            let results = variantResultsMap.get(newVariant.id);
+                            variantResultsMap.set(newVariant.id, results.concat(variant.results));
+                        } else {
+                            variant.id = uuidv4();
+                            variantResultsMap.set(variant.id, [].concat(variant.results));
+                            mdeVariants.push(variant);
+                        }
+                    });
+                });
 
-            //Iterate each JudicialResultType and sort out unique judicial results
-            groupedJudicialResultsByType.forEach(groupedJudicialResultByType => {
-                const uniqueJudicialResultsMap = this.groupJudicialResultsByMdePrompts(
-                    resultDefinitionsWithPrompts, groupedJudicialResultByType);
-                uniqueResultsByType.set(groupedJudicialResultByType.judicialResultTypeId,
-                                        uniqueJudicialResultsMap);
-                console.log(groupedJudicialResultByType.judicialResultTypeId + ' has '
-                            + uniqueJudicialResultsMap.size + ' unique prompt value.');
-                numberOfTypes.push(uniqueJudicialResultsMap.size);
-            });
-
-            const numberOfClones = this.getNumberOfClones();
-            console.log('number Of Clones to be created ' + numberOfClones);
-
-            this.generateUniqueResults(numberOfTypes, this.reshuffleResults);
-
-            if (numberOfClones !== allResults.length) {
-                console.log(
-                    'Something went wrong !!!' + numberOfClones + ' : ' + allResults.length);
-            }
-
-            userGroupVariant.results = []; //reset userGroupVariants with empty results
-
-            const finalJudicialResults = [];
-            for (let clone = 0; clone < numberOfClones; clone++) {
-                let groupResults = [].concat(...allResults[clone]);
-                const resultsArray = this.divideResults(groupResults);
-                resultsArray.forEach(results => {
-                    const judicialResults = [...results];
-                    const judicialResultsExist = this.isExistJudicialResultIds(finalJudicialResults,
-                                                                               judicialResults);
-                    if (!judicialResultsExist) {
-                        finalJudicialResults.push(judicialResults);
+                mdeVariants.forEach(variant => {
+                    const results = variantResultsMap.get(variant.id);
+                    if(results) {
+                        variant.results = results;
                     }
                 });
             }
-
-            for (let clone = 0; clone < finalJudicialResults.length; clone++) {
-                const clonedUserGroupVariant = _.cloneDeep(userGroupVariant);
-                let results = [].concat(...finalJudicialResults[clone]);
-                clonedUserGroupVariant.results = [...nonMdeResults, ...results];
-                mdeVariants.push(clonedUserGroupVariant);
+            else {
+                console.log('applyMDEOffenceFiltering is false');
+                const variants = this.generateMDE(userGroupVariant, mdeResults, nonMdeResults, resultDefinitionsWithPrompts);
+                variants.forEach(variant => mdeVariants.push(variant));
             }
-
-            console.log(userGroupVariant.now.name + ' has ' + finalJudicialResults.length
-                        + ' MDE variants.');
-
             this.reset();
         });
-        this.userGroupsNowVariants = {};
+
+        this.print(mdeVariants);
+        return mdeVariants;
+    }
+
+    print(mdeVariants) {
+        for (const variant of mdeVariants) {
+            let texts = variant.now.name + ' has ' + variant.results.length + ' results.' + '\n';
+            for (let result of variant.results) {
+                texts =
+                    texts + variant.now.name + ' === ' + result.label + ' ==== ' + result.offenceId
+                    + ' ==== ' + result.publishedForNows + '\n';
+            }
+            console.log(texts);
+        }
+    }
+
+    generateMDE(userGroupVariant, mdeResults, nonMdeResults, resultDefinitionsWithPrompts) {
+
+        const mdeVariants = [];
+
+        // Group MDE Judicial results by JudicialResultTypeId
+        const groupedJudicialResultsByType = this.groupByJudicialResultTypeId(mdeResults);
+
+        let numberOfTypes = [];
+
+        //Iterate each JudicialResultType and sort out unique judicial results
+        groupedJudicialResultsByType.forEach(groupedJudicialResultByType => {
+            console.log(groupedJudicialResultByType.judicialResults.length + ' results from ' + JSON.stringify(groupedJudicialResultByType.judicialResults[0].label));
+            const uniqueJudicialResultsMap = this.groupJudicialResultsByMdePrompts(resultDefinitionsWithPrompts, groupedJudicialResultByType);
+            uniqueResultsByType.set(groupedJudicialResultByType.judicialResultTypeId, uniqueJudicialResultsMap);
+            console.log(JSON.stringify(groupedJudicialResultByType.judicialResults[0].label) + ' has ' + uniqueJudicialResultsMap.size + ' unique prompt value.');
+            numberOfTypes.push(uniqueJudicialResultsMap.size);
+        });
+
+        const numberOfClones = this.getNumberOfClones();
+        console.log('number Of Clones to be created ' + numberOfClones);
+
+        this.generateUniqueResults(numberOfTypes, this.reshuffleResults);
+
+        if (numberOfClones !== allResults.length) {
+            console.log('Something went wrong !!!' + numberOfClones + ' : ' + allResults.length);
+        }
+
+        userGroupVariant.results = []; //reset userGroupVariants with empty results
+
+        for (let clone = 0; clone < allResults.length; clone++) {
+            const clonedUserGroupVariant = _.cloneDeep(userGroupVariant);
+            const results = [].concat(...allResults[clone]);
+            clonedUserGroupVariant.results = [...nonMdeResults, ...results];
+            mdeVariants.push(clonedUserGroupVariant);
+        }
+
         this.reset();
         return mdeVariants;
     }
@@ -170,8 +200,7 @@ class MDEVariants {
 
             resultTypes.push(key);
 
-            const referencesForOtherTypesMap = this.getUniqueReferencesForOtherTypes(key,
-                                                                                     uniqueReferencesPerResults);
+            const referencesForOtherTypesMap = this.getUniqueReferencesForOtherTypes(key, uniqueReferencesPerResults);
 
             for (let [typeId, promptReferences] of referencesForOtherTypesMap) {
 
@@ -241,10 +270,8 @@ class MDEVariants {
 
         //Iterate each JudicialResultType and sort out unique judicial results
         groupedJudicialResultsByType.forEach(groupedJudicialResultByType => {
-            const uniquePromptReferences = this.getUniquePromptReference(
-                groupedJudicialResultByType.judicialResults);
-            uniqueReferencePerResults.set(groupedJudicialResultByType.judicialResultTypeId,
-                                          uniquePromptReferences);
+            const uniquePromptReferences = this.getUniquePromptReference(groupedJudicialResultByType.judicialResults);
+            uniqueReferencePerResults.set(groupedJudicialResultByType.judicialResultTypeId, uniquePromptReferences);
         });
 
         return uniqueReferencePerResults;
@@ -301,11 +328,11 @@ class MDEVariants {
 
             const index = args[param];
 
-            let types = [...uniqueResultsByType.keys()];
+            const types = [...uniqueResultsByType.keys()];
 
             const uniquePrompt = uniqueResultsByType.get(types[param]);
 
-            let keys = [...uniquePrompt.keys()];
+            const keys = [...uniquePrompt.keys()];
 
             const result = uniquePrompt.get(keys[index]);
 
@@ -318,9 +345,7 @@ class MDEVariants {
     groupJudicialResultsByMdePrompts(resultDefinitionsWithPrompts, groupedJudicialResultByType) {
 
         //Get Judicial Result's prompt values
-        const judicialResultsByMdePromptsMap = this.getJudicialResultsByMdePrompts(
-            resultDefinitionsWithPrompts, groupedJudicialResultByType);
-
+        const judicialResultsByMdePromptsMap = this.getJudicialResultsByMdePrompts(resultDefinitionsWithPrompts, groupedJudicialResultByType);
         const judicialResultIdKeys = judicialResultsByMdePromptsMap.keys();
 
         const uniqueJudicialResultsMap = new Map();
@@ -330,17 +355,19 @@ class MDEVariants {
             const promptValues = judicialResultsByMdePromptsMap.get(judicialResultId);
 
             const key = this.joinPromptValues(promptValues);
-            console.log('prompt values : ' + key);
+            console.log(key);
 
             if (uniqueJudicialResultsMap.has(key)) {
                 const resultsArray = uniqueJudicialResultsMap.get(key);
                 const judicialResult = groupedJudicialResultByType.judicialResults.find(
                     result => result.judicialResultId === judicialResultId);
+                judicialResult.key = key;
                 resultsArray.push(judicialResult);
             } else {
                 const resultsArray = [];
                 const judicialResult = groupedJudicialResultByType.judicialResults.find(
                     result => result.judicialResultId === judicialResultId);
+                judicialResult.key = key;
                 resultsArray.push(judicialResult);
                 uniqueJudicialResultsMap.set(key, resultsArray);
             }
@@ -402,7 +429,8 @@ class MDEVariants {
         const mdeResults = [];
 
         userGroupVariant.results.forEach(result => {
-            if (resultDefinitionsWithPrompts.has(result.judicialResultTypeId)) {
+            if (resultDefinitionsWithPrompts.has(result.judicialResultTypeId) && !result.excludeFromMDE) {
+                result.mde = true;
                 mdeResults.push(result);
             }
         });
@@ -420,7 +448,8 @@ class MDEVariants {
                 isIncluded = true;
             }
 
-            if (!isIncluded) {
+            if (!isIncluded || result.excludeFromMDE) {
+                result.mde = false;
                 nonMdeResults.push(result);
             }
         });
@@ -450,8 +479,7 @@ class MDEVariants {
             if (nowRequirement.prompts) {
                 const mdePrompts = nowRequirement.prompts.filter(prompt => prompt.variantData);
                 if (mdePrompts.length) {
-                    resultDefinitionWithPromptsMap.set(nowRequirement.resultDefinitionId,
-                                                       mdePrompts);
+                    resultDefinitionWithPromptsMap.set(nowRequirement.resultDefinitionId, mdePrompts);
                 }
             }
         });
@@ -464,8 +492,7 @@ class MDEVariants {
     extractFlattenNowRequirements(nowRequirements, flattenNowRequirements) {
         nowRequirements.forEach(nowRequirement => {
             if (nowRequirement.nowRequirements) {
-                this.extractFlattenNowRequirements(nowRequirement.nowRequirements,
-                                                   flattenNowRequirements);
+                this.extractFlattenNowRequirements(nowRequirement.nowRequirements, flattenNowRequirements);
             }
             flattenNowRequirements.push(nowRequirement);
         });
@@ -503,22 +530,6 @@ class MDEVariants {
         return results.filter(result => offenceIds.includes(result.offenceId));
     }
 
-    extractCommonOffenceIdsByLevel(results, level) {
-        let groupOffenceIds = [];
-        const resultsByLevel = this.filterResultsByLevel(results, level);
-        const groupedJudicialResultsByType = this.groupByJudicialResultTypeId(resultsByLevel);
-        groupedJudicialResultsByType.forEach(type => {
-            const offenceIdByResults = this.extractUniqueOffenceByLevel(type, level);
-            groupOffenceIds = groupOffenceIds.concat(offenceIdByResults);
-        });
-
-        if(groupedJudicialResultsByType.length === 1) {
-            return groupOffenceIds;
-        }
-
-        return this.findDuplicates(groupOffenceIds);
-    }
-
     findDuplicates(arr) {
         let sorted_arr = arr.slice().sort(); // You can define the comparing function here.
         // JS by default uses a crappy string compare.
@@ -533,18 +544,83 @@ class MDEVariants {
         return results;
     }
 
-    extractUniqueOffenceByLevel(type, level) {
-        const offenceIdByResults = new Set();
-        for (const result of type.judicialResults) {
-            if (result.level === level) {
-                offenceIdByResults.add(result.offenceId);
-            }
-        }
-        return [...offenceIdByResults];
-    }
-
     filterResultsByLevel(results, level) {
         return results.filter(result => result.level === level);
+    }
+
+    getRootJudicialResultIds(mdeResults) {
+        const rootJudicialResultIds = new Set();
+        mdeResults.forEach(mdeResult => {
+            rootJudicialResultIds.add(mdeResult.rootJudicialResultId);
+        });
+        return [...rootJudicialResultIds];
+    }
+
+    getResultsByRoot(mdeResults, rootJudicialResultId) {
+        const judicialResults = [];
+        mdeResults.forEach(mdeResult => {
+            if(mdeResult.rootJudicialResultId === rootJudicialResultId) {
+                judicialResults.push(mdeResult);
+            }
+        });
+        return judicialResults;
+    }
+
+    findVariant(mdeVariants, variant) {
+        for(const mdeVariant of mdeVariants) {
+            if(this.identicalVariant(mdeVariant, variant)) {
+                return mdeVariant;
+            }
+        }
+        return undefined;
+    }
+
+    identicalVariant(mdeVariant, variant) {
+        if(mdeVariant.now.id !== variant.now.id) {
+            return false;
+        }
+
+        const mdeResults = mdeVariant.results.filter(result => result.mde);
+        const variantResults = variant.results.filter(result => result.mde);
+
+        if(mdeResults.length !== variantResults.length) {
+            return false;
+        }
+
+        const groupMdeJudicialResultsByType1 = this.groupByResults(mdeResults);
+        const groupMdeJudicialResultsByType2 = this.groupByResults(variantResults);
+
+        if(groupMdeJudicialResultsByType1.size !== groupMdeJudicialResultsByType2.size) {
+            return false;
+        }
+
+        const keys = groupMdeJudicialResultsByType1.keys();
+
+        for (const key of keys) {
+            const results1 = groupMdeJudicialResultsByType1.get(key);
+            const results2 = groupMdeJudicialResultsByType2.get(key);
+
+            if(results1[0].key !== results2[0].key) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    groupByResults(results) {
+        const uniqueJudicialResultsMap = new Map();
+        for (let result of results) {
+            if (uniqueJudicialResultsMap.has(result.judicialResultTypeId)) {
+                const resultsArray = uniqueJudicialResultsMap.get(result.judicialResultTypeId);
+                resultsArray.push(result);
+            } else {
+                const resultsArray = [];
+                resultsArray.push(result);
+                uniqueJudicialResultsMap.set(result.judicialResultTypeId, resultsArray);
+            }
+        }
+        return uniqueJudicialResultsMap;
     }
 }
 

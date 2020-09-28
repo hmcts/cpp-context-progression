@@ -48,7 +48,9 @@ class SetNowVariants {
                             if (!nowIds.has(nowDefinition.id)) {
                                 nowIds.add(nowDefinition.id);
                                 nows.push(nowDefinition);
+                                nowDefinition.primaryResultDefinitionIds = [];
                             }
+                            nowDefinition.primaryResultDefinitionIds.push(resultId);
                         }
                     });
                 });
@@ -66,24 +68,22 @@ class SetNowVariants {
                 ' (' + nowVariant.now.id + ') ' + JSON.stringify(nowVariant.now.name) + ' is a '
                 + ((nowVariant.complianceCorrelationId !== undefined) ? 'financial nows '
                                                                       : 'non-financial nows ')
-                + 'and has ' + nowVariant.results.length + ' results.');
+                + 'and has ' + nowVariant.results.length + ' results.' + ((nowVariant.now.includeAllResults) ? 'Incldues all results.' : ''));
         });
-        this.nowMetadata = {};
         return nowVariants;
     }
 
     enrichResultWithPrimaryFlag(result, primaryResultDefinitionIds) {
-        result.nowId = [];
         this.nowMetadata.nows.forEach(nowDefinition => {
             const originalNowRequirements = nowDefinition.nowRequirements;
             const flattenNowRequirements = [];
             this.extractFlattenNowRequirements(originalNowRequirements, flattenNowRequirements);
             flattenNowRequirements.forEach(nowRequirement => {
                 //check for results
-                if (result.judicialResultTypeId === nowRequirement.resultDefinitionId) {
+                if (result.judicialResultTypeId === nowRequirement.resultDefinitionId && nowRequirement.primary && nowRequirement.rootResultDefinitionId === undefined) {
                     result.primary = nowRequirement.primary;
-                    result.nowId.push(nowDefinition.id);
                     if (result.primary) {
+                        result.rootResultDefinitionId = result.judicialResultTypeId;
                         primaryResultDefinitionIds.add(result.judicialResultTypeId);
                     }
                 }
@@ -91,11 +91,10 @@ class SetNowVariants {
                 //check for result prompts
                 if (!result.primary && result.judicialResultPrompts) {
                     result.judicialResultPrompts.forEach(prompt => {
-                        if (prompt.judicialResultPromptTypeId
-                            === nowRequirement.resultDefinitionId) {
+                        if (prompt.judicialResultPromptTypeId === nowRequirement.resultDefinitionId && nowRequirement.primary && nowRequirement.rootResultDefinitionId === undefined) {
                             result.primary = nowRequirement.primary;
-                            result.nowId.push(nowDefinition.id);
                             if (result.primary) {
+                                result.rootResultDefinitionId = prompt.judicialResultPromptTypeId;
                                 primaryResultDefinitionIds.add(prompt.judicialResultPromptTypeId);
                             }
                         }
@@ -108,10 +107,26 @@ class SetNowVariants {
     extractFlattenNowRequirements(nowRequirements, flattenNowRequirements) {
         nowRequirements.forEach(nowRequirement => {
             if (nowRequirement.nowRequirements) {
-                this.extractFlattenNowRequirements(nowRequirement.nowRequirements,
-                                                   flattenNowRequirements);
+                this.extractFlattenNowRequirements(nowRequirement.nowRequirements, flattenNowRequirements);
             }
-            flattenNowRequirements.push(nowRequirement);
+            const requirement = _.cloneDeep(nowRequirement);
+            flattenNowRequirements.push(requirement);
+        });
+    }
+
+    flattenNowRequirements(nowRequirements, flattenNowRequirements) {
+        nowRequirements.forEach(nowRequirement => {
+            if (nowRequirement.nowRequirements) {
+                this.extractFlattenNowRequirements(nowRequirement.nowRequirements, flattenNowRequirements);
+            }
+            const requirement = _.cloneDeep(nowRequirement);
+            flattenNowRequirements.push(requirement);
+        });
+
+        flattenNowRequirements.forEach(flattenNowRequirement => {
+            if(flattenNowRequirement.nowRequirements) {
+                flattenNowRequirement.nowRequirements = undefined;
+            }
         });
     }
 
@@ -127,35 +142,132 @@ class SetNowVariants {
         // Set the vocabulary
         const vocabularyService = new VocabularyService(this.hearingJson, defendantContextBase);
         nowVariant.vocabulary = vocabularyService.getVocabularyInfo();
+        nowVariant.orderDate = this.getOrderDate(defendantContextBase.results);
 
-        defendantContextBase.results.forEach((r) => {
-            const result = r.judicialResult;
-            if (result.nowId.includes(now.id)) {
-                if (result.isFinancialResult && defendantContextBase.complianceCorrelationId) {
-                    nowVariant.complianceCorrelationId =
-                        defendantContextBase.complianceCorrelationId;
-                }
-                if (!now.includeAllResults) {
-                    nowVariant.results.push(result);
-                }
-            }
+        if (now.includeAllResults) {
+            this.includeAllResults(nowVariant, defendantContextBase);
+        } else {
+            this.filterResults(nowVariant, defendantContextBase);
+        }
 
-            // Set the amendment date
+        // Set Amendment date
+        // Set Sequence
+        // Set Compliance Correlation Id
+        nowVariant.results.forEach(result => {
             if (result.amendmentDate) {
                 nowVariant.amendmentDate = result.amendmentDate;
             }
+
+            if (result.isFinancialResult && defendantContextBase.complianceCorrelationId) {
+                nowVariant.complianceCorrelationId = defendantContextBase.complianceCorrelationId;
+            }
+
+            const originalNowRequirements = nowVariant.now.nowRequirements;
+            const flattenNowRequirements = [];
+            this.extractFlattenNowRequirements(originalNowRequirements, flattenNowRequirements);
+
+            flattenNowRequirements.forEach(nowRequirement => {
+                if (result.judicialResultTypeId === nowRequirement.resultDefinitionId) {
+                    result.sequence = nowRequirement.sequence;
+                }
+            });
         });
 
-        if (now.includeAllResults) {
-            defendantContextBase.results.forEach((r) => {
-                const result = r.judicialResult;
-                nowVariant.results.push(result);
-            });
-        }
-
-        nowVariant.orderDate = this.getOrderDate(defendantContextBase.results);
-
         return nowVariant;
+    }
+
+    filterResults(nowVariant, defendantContextBase) {
+        const originalNowRequirements = nowVariant.now.nowRequirements;
+        const flattenNowRequirements = [];
+        const judicialResultIds = [];
+        this.flattenNowRequirements(originalNowRequirements, flattenNowRequirements);
+        const primaryResultDefinitionIds = nowVariant.now.primaryResultDefinitionIds;
+        defendantContextBase.results.forEach((r) => {
+
+            const result = _.cloneDeep(r.judicialResult);
+
+            flattenNowRequirements.forEach(nowRequirement => {
+
+                if(result.judicialResultTypeId === nowRequirement.resultDefinitionId) {
+                    if (nowRequirement.primary && nowRequirement.rootResultDefinitionId === undefined) {
+                        if ((judicialResultIds.indexOf(result.judicialResultId)) === -1) {
+                            result.excludeFromMDE = nowRequirement.excludeFromMDE;
+                            judicialResultIds.push(result.judicialResultId);
+                            nowVariant.results.push(result);
+                        }
+                    }
+
+                    if (!nowRequirement.primary && primaryResultDefinitionIds.indexOf(nowRequirement.rootResultDefinitionId) !== -1 && primaryResultDefinitionIds.indexOf(result.rootJudicialResultTypeId) !== -1) {
+                        if ((judicialResultIds.indexOf(result.judicialResultId)) === -1) {
+                            result.excludeFromMDE = nowRequirement.excludeFromMDE;
+                            judicialResultIds.push(result.judicialResultId);
+                            nowVariant.results.push(result);
+                        }
+                    }
+
+                    if (!nowRequirement.primary && nowRequirement.rootResultDefinitionId === undefined) {
+                        if ((judicialResultIds.indexOf(result.judicialResultId)) === -1) {
+                            result.excludeFromMDE = nowRequirement.excludeFromMDE;
+                            judicialResultIds.push(result.judicialResultId);
+                            nowVariant.results.push(result);
+                        }
+                    }
+                }
+
+                //TODO:
+                /*if (result.isFinancialResult && defendantContextBase.complianceCorrelationId) {
+                    nowVariant.complianceCorrelationId = defendantContextBase.complianceCorrelationId;
+                }*/
+
+                /*if (result.judicialResultTypeId === nowRequirement.resultDefinitionId) {
+                    if (nowRequirement.primary && nowRequirement.rootResultDefinitionId === undefined) {
+                        result.excludeFromMDE = nowRequirement.excludeFromMDE;
+                        if ((judicialResultIds.indexOf(result.judicialResultId)) === -1) {
+                            judicialResultIds.push(result.judicialResultId);
+                            nowVariant.results.push(result);
+                        }
+                    }*/
+
+                /*if (!nowRequirement.primary && primaryResultDefinitionIds.indexOf(nowRequirement.rootResultDefinitionId) !== -1
+                    && primaryResultDefinitionIds.indexOf(result.rootJudicialResultTypeId) !== -1) {
+                    result.excludeFromMDE = nowRequirement.excludeFromMDE;
+                    if ((judicialResultIds.indexOf(result.judicialResultId)) === -1) {
+                        judicialResultIds.push(result.judicialResultId);
+                        nowVariant.results.push(result);
+                    }
+                }*/
+                // }
+            });
+        });
+    }
+
+    getNowRequirements(defendantContextBase, flattenNowRequirements) {
+        let requirements = [];
+        const requirementIds = [];
+        defendantContextBase.results.forEach((r) => {
+            const result = r.judicialResult;
+            const nowRequirements = flattenNowRequirements.filter(flattenNowRequirement =>
+                                                                      flattenNowRequirement.resultDefinitionId
+                                                                      === result.judicialResultTypeId
+                                                                      && flattenNowRequirement.rootResultDefinitionId
+                                                                      === undefined);
+            nowRequirements.forEach(nowRequirement => {
+                if (requirementIds.indexOf(nowRequirement.id) === -1) {
+                    requirements = requirements.concat(nowRequirements);
+                    requirementIds.push(nowRequirement.id);
+                }
+            });
+        });
+        const nowRequirements = [];
+        this.flattenNowRequirements(requirements, nowRequirements);
+        return nowRequirements;
+    }
+
+    includeAllResults(nowVariant, defendantContextBase) {
+        defendantContextBase.results.forEach((r) => {
+            const result = _.cloneDeep(r.judicialResult);
+            nowVariant.results.push(result);
+        });
     }
 
     getOrderDate(results) {
@@ -200,7 +312,6 @@ module.exports = async (context) => {
         resultWithOrderedDate =
             defendantContextBase.results.find(result => result.judicialResult.orderedDate);
     });
-
     const orderedDate = resultWithOrderedDate ? resultWithOrderedDate.judicialResult.orderedDate
                                               : undefined;
     console.time('getNowMetadata');

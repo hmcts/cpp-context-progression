@@ -186,7 +186,7 @@ class Mapper {
             defendantResults = this.enrichResultWithPrompts(allDefendantResults);
         }
         if (defendantResults.length) {
-            return defendantResults;
+            return defendantResults.sort((a, b) => a.sequence - b.sequence);
         }
     }
 
@@ -197,7 +197,7 @@ class Mapper {
         if (filteredResults && filteredResults.length) {
             defendantResults = this.enrichResultWithPrompts(filteredResults);
         }
-        return defendantResults;
+        return defendantResults.sort((a, b) => a.sequence - b.sequence);
     }
 
     getDefendantCaseResults(prosecutionCaseJson) {
@@ -220,7 +220,7 @@ class Mapper {
         }
 
         if (defendantCaseResults.length) {
-            return defendantCaseResults;
+            return defendantCaseResults.sort((a, b) => a.sequence - b.sequence );
         }
     }
 
@@ -281,6 +281,7 @@ class Mapper {
             result.resultWording = defendantResult.resultWording;
             result.welshResultWording = defendantResult.welshResultWording;
             result.resultDefinitionGroup = defendantResult.resultDefinitionGroup;
+            result.sequence = defendantResult.sequence;
             defendantResults.push(result);
         });
 
