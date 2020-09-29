@@ -30,7 +30,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>criminal-court-public-model</artifactId>
-            <version>${criminal-court-public-model.version}</version>
+            <version>${coredomain.version}</version>
         </dependency>
 
     </dependencies>
@@ -109,7 +109,7 @@
                     <dependency>
                         <groupId>uk.gov.moj.cpp.core.domain</groupId>
                         <artifactId>criminal-court-public-model</artifactId>
-                        <version>${criminal-court-public-model.version}</version>
+                        <version>${coredomain.version}</version>
                     </dependency>
 
                 </dependencies>
