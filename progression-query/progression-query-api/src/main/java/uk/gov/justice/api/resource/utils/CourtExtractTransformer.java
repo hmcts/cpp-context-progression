@@ -157,7 +157,7 @@ public class CourtExtractTransformer {
 
         LOGGER.info("Hearings {}", isNotEmpty(defendantHearings.getHearingIds()) ? defendantHearings.getHearingIds() : "No hearings present");
 
-        if(isNotEmpty(hearingsList)) {
+        if (isNotEmpty(hearingsList)) {
             extractHearingDetails(hearingsAtAGlance, defendantId, userId, ejectExtract, defendantBuilder, hearingsList, caseDefendant.get());
         } else {
             ejectExtract.withDefendant(transformDefendantWithoutHearingDetails(caseDefendant.get(), defendantBuilder));
@@ -419,11 +419,15 @@ public class CourtExtractTransformer {
             }
             if (nonNull(caseDefendant.getAssociatedDefenceOrganisation())) {
                 defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, caseDefendant.getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation(), defendantId));
-            } else if (nonNull(caseDefendant.getDefenceOrganisation())) {
-                defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, caseDefendant.getDefenceOrganisation(), defendantId));
-                if (nonNull(defendant.getDefenceOrganisation())) {
+            } else {
+                if (nonNull(caseDefendant.getDefenceOrganisation())) {
+                    defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, caseDefendant.getDefenceOrganisation(), defendantId));
+                } else if (nonNull(defendant.getDefenceOrganisation())) {
                     defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, defendant.getDefenceOrganisation().getDefenceOrganisation(), defendantId));
+                } else {
+                    defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, null, defendantId));
                 }
+
             }
 
         }
