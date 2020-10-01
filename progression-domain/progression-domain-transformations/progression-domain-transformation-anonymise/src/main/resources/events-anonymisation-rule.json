@@ -121,7 +121,8 @@
     {
       "eventName": "progression.event.hearing-resulted",
       "fieldsToBeIgnored": [
-        "$.hearing.defendantAttendance[*].attendanceDays[*].attendanceType"
+        "$.hearing.defendantAttendance[*].attendanceDays[*].attendanceType",
+        "$.hearing.defendantJudicialResults[*].judicialResult.category"
       ]
     }
   ]
