@@ -22,20 +22,7 @@ import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_SEARCH_HEARING;
 
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.CommittingCourt;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.HearingListingNeeds;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
-import uk.gov.justice.core.courts.JudicialRole;
-import uk.gov.justice.core.courts.ListCourtHearing;
-import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
-import uk.gov.justice.core.courts.ProsecutingAuthority;
-import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -47,7 +34,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.listing.domain.Defendant;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.HearingDay;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
+import uk.gov.moj.cpp.listing.domain.CourtHouseType;
 import uk.gov.moj.cpp.listing.domain.ListedCase;
 import uk.gov.moj.cpp.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
@@ -399,7 +386,7 @@ public class ListingServiceTest {
         final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = uk.gov.moj.cpp.listing.domain.CommittingCourt.committingCourt()
                 .withCourtCentreId(UUID.randomUUID())
                 .withCourtHouseName("CourtHouseName")
-                .withCourtHouseType(JurisdictionType.MAGISTRATES)
+                .withCourtHouseType(CourtHouseType.MAGISTRATES)
                 .withCourtHouseShortName("CourtHouseShortName")
                 .withCourtHouseCode("CourtHouseShortCode")
                 .build();
