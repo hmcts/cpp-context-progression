@@ -48,6 +48,10 @@ class ResultDefinitionConstants {
         return "ae89b99c-e0e3-47b5-b218-24d4fca3ca53";
     }
 
+    static get STRO() {
+        return "7b2ac1e1-a802-41e3-a8e7-20661330a9e3";
+    }
+
     static get MINOR_CREDITOR() {
         return "minorcreditor";
     }

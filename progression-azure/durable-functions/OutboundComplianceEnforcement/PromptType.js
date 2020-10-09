@@ -1,4 +1,7 @@
 class PromptType {
+    static get AMOUNT_OF_REPARATION_COMPENSATION() {
+        return "COMREP"
+    }
     static get AMOUNT_OF_FINE() {
         return "AOF"
     }

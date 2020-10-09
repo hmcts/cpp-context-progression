@@ -1,0 +1,59 @@
+{
+  "requestId": "743be56d-91da-4986-a062-ae4b5aa601e1",
+  "prosecutionAuthorityCode": "SURTEST9",
+  "prosecutionCaseReference": "94GD9964420",
+  "originator": "Courts",
+  "imposingCourt": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+  "plea": {
+    "includesOnline": false,
+    "includesGuilty": false
+  },
+  "collectionOrder": {
+    "isApplicationForBenefitsDeduction": false,
+    "isAttachmentOfEarnings": false
+  },
+  "paymentTerms": {
+    "paymentTermsType": "MONTHLY_INSTALMENTS",
+    "instalmentAmount": 20,
+    "instalmentStartDate": "2021-01-07"
+  },
+  "imposition": [
+    {
+      "offenceCode": "PS90010",
+      "impositionResultCode": "STRO",
+      "impositionAmount": 100,
+      "minorCreditorId": "ddcb238f-2054-4b4d-b9b3-53e9535cb27d"
+    }
+  ],
+  "defendant": {
+    "address1": "DzZ68vzUBa",
+    "address2": "56Police House",
+    "address3": "StreetDescription1",
+    "address4": "Locality1",
+    "address5": "Town2",
+    "dateOfBirth": "1964-06-09",
+    "dateOfSentence": "2020-10-21",
+    "documentLanguage": "ENGLISH",
+    "emailAddress1": "robert@gmail.com",
+    "emailAddress2": "ormsby@gmail.com",
+    "forenames": "Robert6 PersonGivenName20A PersonGivenName30A",
+    "hearingLanguage": "ENGLISH",
+    "postcode": "TW14 9XD",
+    "surname": "Ormsby6",
+    "telephoneNumberBusiness": "0917894278022",
+    "telephoneNumberHome": "09998021888",
+    "telephoneNumberMobile": "09998021889",
+    "title": "YR"
+  },
+  "minorCreditor": [
+    {
+      "minorCreditorSurname": "adaadda",
+      "minorCreditorForenames": "fadadaad",
+      "minorCreditorId": "ddcb238f-2054-4b4d-b9b3-53e9535cb27d",
+      "minorCreditorAddress1": "line1",
+      "minorCreditorAddress2": "line2",
+      "minorCreditorPostcode": "SL2 5FZ",
+      "minorCreditorPayByBACS": "N"
+    }
+  ]
+}

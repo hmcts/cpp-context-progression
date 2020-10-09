@@ -53,7 +53,8 @@ class SetComplianceEnforcement {
         results.forEach(result => {
             if ((result.judicialResult.judicialResultTypeId
                  === ResultDefinitionConstants.FCOST) || (result.judicialResult.judicialResultTypeId
-                                                          === ResultDefinitionConstants.FCOMP)) {
+                                                          === ResultDefinitionConstants.FCOMP) || (result.judicialResult.judicialResultTypeId
+                                                                                                   === ResultDefinitionConstants.STRO)) {
                 const judicialResultPrompts = result.judicialResult.judicialResultPrompts;
                 if (judicialResultPrompts && judicialResultPrompts.length && this.isMinorCreditor(
                     judicialResultPrompts)) {

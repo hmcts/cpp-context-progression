@@ -22,6 +22,10 @@ class ImpositionResultCode {
     static get FCOMP() {
         return "FCOMP";
     }
+
+    static get STRO() {
+        return "STRO";
+    }
 }
 
 module.exports = ImpositionResultCode;

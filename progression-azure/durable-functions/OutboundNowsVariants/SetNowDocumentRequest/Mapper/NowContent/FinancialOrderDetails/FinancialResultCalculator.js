@@ -5,7 +5,8 @@ const FINANCIAL_TOTAL_AMOUNT_IMPOSED_PROMPT_REFERENCES = [PromptType.AMOUNT_OF_S
                                                           PromptType.AMOUNT_OF_COMPENSATION,
                                                           PromptType.AMOUNT_OF_BACK_DUTY,
                                                           PromptType.COSTS_TO_CROWN_PROSECUTION_SERVICE_AMOUNT_PROMPT_REFERENCE,
-                                                          PromptType.AMOUNT_OF_COSTS];
+                                                          PromptType.AMOUNT_OF_COSTS,
+                                                          PromptType.AMOUNT_OF_REPARATION_COMPENSATION];
 
 class FinancialResultCalculator {
     constructor(judicialResults) {

@@ -17,6 +17,8 @@ class ImpositionAmountPromptReferences {
                                                   PromptType.AMOUNT_OF_COSTS);
         this.impositionAmountPromptReferences.set(ImpositionResultCode.FCOMP,
                                                   PromptType.AMOUNT_OF_COMPENSATION);
+        this.impositionAmountPromptReferences.set(ImpositionResultCode.STRO,
+                                                  PromptType.AMOUNT_OF_REPARATION_COMPENSATION);
     }
 
 }
