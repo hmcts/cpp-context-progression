@@ -54,10 +54,10 @@ public class ConvictionDateEventListener {
             for (Offence offence : defendant.getOffences()) {
                 if (offence.getId().equals(offenceIdToBeUpdated)) {
                     isConvictionDateUpdated = true;
-                    updatedOffence = updateOffence(offence, convictionDateAdded.getConvictionDate());
+                    updatedOffence = updateOffenceConvictionDate(offence, convictionDateAdded.getConvictionDate());
                 }
             }
-            updateOffenceWithConvictionDate(offenceIdToBeUpdated, defendant, updatedOffence, isConvictionDateUpdated);
+            updateDefendantOffences(offenceIdToBeUpdated, defendant, updatedOffence, isConvictionDateUpdated);
         }
         repository.save(getProsecutionCaseEntity(prosecutionCase));
     }
@@ -76,50 +76,54 @@ public class ConvictionDateEventListener {
             for (Offence offence : defendant.getOffences()) {
                 if (offence.getId().equals(offenceIdToBeUpdated)) {
                     isConvictionDateUpdated = true;
-                    updatedOffence = updateOffence(offence, null);
+                    updatedOffence = updateOffenceConvictionDate(offence, null);
                 }
             }
-            updateOffenceWithConvictionDate(offenceIdToBeUpdated, defendant, updatedOffence, isConvictionDateUpdated);
+            this.updateDefendantOffences(offenceIdToBeUpdated, defendant, updatedOffence, isConvictionDateUpdated);
         }
         repository.save(getProsecutionCaseEntity(prosecutionCase));
     }
 
-    private Offence updateOffence(Offence offence, LocalDate convictionDate) {
-        return Offence.offence()
-                .withArrestDate(offence.getArrestDate())
-                .withChargeDate(offence.getChargeDate())
-                .withConvictionDate(convictionDate)
-                .withCount(offence.getCount())
-                .withDateOfInformation(offence.getDateOfInformation())
-                .withEndDate(offence.getEndDate())
-                .withId(offence.getId())
-                .withIndicatedPlea(offence.getIndicatedPlea())
-                .withAllocationDecision(offence.getAllocationDecision())
-                .withModeOfTrial(offence.getModeOfTrial())
-                .withNotifiedPlea(offence.getNotifiedPlea())
-                .withOffenceCode(offence.getOffenceCode())
-                .withOffenceDefinitionId(offence.getOffenceDefinitionId())
-                .withOffenceFacts(offence.getOffenceFacts())
-                .withOffenceLegislation(offence.getOffenceLegislation())
-                .withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh())
-                .withOffenceTitle(offence.getOffenceTitle())
-                .withOffenceTitleWelsh(offence.getOffenceTitleWelsh())
-                .withOrderIndex(offence.getOrderIndex())
-                .withPlea(offence.getPlea())
-                .withStartDate(offence.getStartDate())
-                .withVerdict(offence.getVerdict())
-                .withWording(offence.getWording())
-                .withWordingWelsh(offence.getWordingWelsh())
-                .withLaaApplnReference(offence.getLaaApplnReference())
-                .withProceedingsConcluded(offence.getProceedingsConcluded())
-                .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
-                .withIsDiscontinued(offence.getIsDiscontinued())
-                .withOffenceDateCode(offence.getOffenceDateCode())
-                .withCommittingCourt(offence.getCommittingCourt())
-                .build();
+    private Offence updateOffenceConvictionDate(Offence offence, LocalDate convictionDate) {
+        return new Offence(offence.getAllocationDecision(),
+                offence.getAquittalDate(),
+                offence.getArrestDate(),
+                offence.getChargeDate(),
+                offence.getCommittingCourt(),
+                convictionDate,
+                offence.getCount(),
+                offence.getCustodyTimeLimit(),
+                offence.getDateOfInformation(),
+                offence.getEndDate(),
+                offence.getId(),
+                offence.getIndicatedPlea(),
+                offence.getIntroducedAfterInitialProceedings(),
+                offence.getIsDiscontinued(),
+                offence.getIsDisposed(),
+                offence.getJudicialResults(),
+                offence.getLaaApplnReference(),
+                offence.getLaidDate(),
+                offence.getModeOfTrial(),
+                offence.getNotifiedPlea(),
+                offence.getOffenceCode(),
+                offence.getOffenceDateCode(),
+                offence.getOffenceDefinitionId(),
+                offence.getOffenceFacts(),
+                offence.getOffenceLegislation(),
+                offence.getOffenceLegislationWelsh(),
+                offence.getOffenceTitle(),
+                offence.getOffenceTitleWelsh(),
+                offence.getOrderIndex(),
+                offence.getPlea(),
+                offence.getProceedingsConcluded(),
+                offence.getStartDate(),
+                offence.getVerdict(),
+                offence.getVictims(),
+                offence.getWording(),
+                offence.getWordingWelsh());
     }
 
-    private void updateOffenceWithConvictionDate(UUID offenceIdToBeUpdated, Defendant defendant, Offence updatedOffence, boolean isConvictionDateUpdated) {
+    private void updateDefendantOffences(UUID offenceIdToBeUpdated, Defendant defendant, Offence updatedOffence, boolean isConvictionDateUpdated) {
         if (isConvictionDateUpdated) {
             List<Offence> testOffences = defendant.getOffences().stream()
                     .filter(offence -> !offence.getId().equals(offenceIdToBeUpdated))

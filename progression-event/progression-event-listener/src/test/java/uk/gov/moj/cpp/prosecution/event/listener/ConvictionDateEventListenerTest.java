@@ -7,11 +7,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.firstMethodOf;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -25,6 +27,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -74,10 +78,12 @@ public class ConvictionDateEventListenerTest {
                 .withConvictionDate(convictionDate)
                 .build();
 
+        final List<JudicialResult> judicialResults = Collections.singletonList(JudicialResult.judicialResult().withApprovedDate(LocalDate.now()).build());
+
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
-                .withDefendants(Arrays.asList(Defendant.defendant()
-                        .withOffences(Arrays.asList(Offence.offence()
+                .withDefendants(Collections.singletonList(Defendant.defendant()
+                        .withOffences(Collections.singletonList(Offence.offence()
                                 .withId(offenceId)
                                 .withLaaApplnReference(LaaReference
                                         .laaReference()
@@ -85,7 +91,7 @@ public class ConvictionDateEventListenerTest {
                                         .withStatusCode("statusCode")
                                         .withStatusId(randomUUID())
                                         .withStatusDescription("description")
-                                .build())
+                                        .build()).withJudicialResults(judicialResults)
                                 .build()))
                         .build()))
                 .build();
@@ -111,6 +117,7 @@ public class ConvictionDateEventListenerTest {
         assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is("ABC123"));
         assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getStatusCode(), is("statusCode"));
         assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is("description"));
+        assertThat(prosecutionCaseResponse.getDefendants().get(0).getOffences().get(0).getJudicialResults().size(), is(1));
 
     }
 

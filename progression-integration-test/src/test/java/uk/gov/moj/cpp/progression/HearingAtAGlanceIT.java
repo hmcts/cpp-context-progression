@@ -37,7 +37,8 @@ import org.junit.Test;
 
 public class HearingAtAGlanceIT extends AbstractIT {
 
-    private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();;
+    private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
+    ;
     private static final String BAIL_STATUS_CODE = "C";
     private static final String BAIL_STATUS_DESCRIPTION = "Remanded into Custody";
     private static final String BAIL_STATUS_ID = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
@@ -58,7 +59,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
 
     @BeforeClass
-    public static void setUpClass(){
+    public static void setUpClass() {
         HearingStub.stubInitiateHearing();
     }
 
@@ -74,6 +75,19 @@ public class HearingAtAGlanceIT extends AbstractIT {
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
+
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("judicialResultId"), equalTo("94d6e18a-4114-11ea-b77f-2e728ce88125"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("category"), equalTo("FINAL"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("category"), equalTo("FINAL"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getBoolean("alwaysPublished"), equalTo(false));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getBoolean("urgent"), equalTo(false));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("resultText"));
     }
 
     @Before
@@ -101,7 +115,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
-
 
 
     @Test
