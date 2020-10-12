@@ -917,3 +917,26 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+
+/hearing/{hearingId}:
+  uriParameters:
+    hearingId:
+      description: The hearing ID
+      type: string
+  post:
+      description:  |
+        Request Update Defendant Listing Status
+        ...
+        (mapping):
+            requestType: application/vnd.progression.update-defendant-listing-status+json
+            name: progression.update-defendant-listing-status
+        ...
+      body:
+        application/vnd.progression.update-defendant-listing-status+json:
+            example:
+             !include json/progression.update-defendant-listing-status.json
+            schema:
+             !include json/schema/progression.update-defendant-listing-status.json
+      responses:
+            202:
+                description: OK

@@ -24,7 +24,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
-
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -146,6 +145,14 @@ public class PreAndPostConditionHelper {
                 "application/vnd.progression.refer-cases-to-court+json",
                 jsonPayload.toString());
     }
+
+    public static Response updateDefendantListingStatusChanged(final String hearingId, final String filePath) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createUpdateDefendantListingStatusJsonBody(hearingId, filePath));
+        return postCommand(getWriteUrl("/hearing/" + hearingId),
+                "application/vnd.progression.update-defendant-listing-status+json",
+                jsonPayload.toString());
+    }
+
 
     public static Response addProsecutionCaseToCrownCourtNullPostCode(final String caseId, final String defendantId, final String caseUrn) throws IOException {
         final JSONObject jsonPayload = new JSONObject(
@@ -385,6 +392,13 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId);
+    }
+
+    public static String createUpdateDefendantListingStatusJsonBody(final String hearingId,
+                                                                    final String filePath) throws IOException {
+        final URL resource = getResource(filePath);
+        return Resources.toString(resource, Charset.defaultCharset())
+                .replace("RANDOM_HEARING_ID", hearingId);
     }
 
     public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId1, final String caseId2, final String defendantId1, final String defendantId2,
