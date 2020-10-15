@@ -30,6 +30,8 @@ public class CaseNotesQueryView {
     private static final String AUTHOR = "author";
     private static final String FIRST_NAME = "firstName";
     private static final String LAST_NAME = "lastName";
+    private static final String IS_PINNED = "isPinned";
+    private static final String ID = "id";
 
     @Inject
     private CaseNoteRepository caseNoteRepository;
@@ -42,6 +44,8 @@ public class CaseNotesQueryView {
         final JsonObjectBuilder caseNoteJsonBuilder = createObjectBuilder()
                 .add(NOTE, caseNote.getNote())
                 .add(CREATED_DATE_TIME, ZonedDateTimes.toString(caseNote.getCreatedDateTime()))
+                .add(IS_PINNED, caseNote.getPinned())
+                .add(ID, caseNote.getId().toString())
                 .add(AUTHOR, authorBuilder.build());
 
         return caseNoteJsonBuilder.build();

@@ -18,6 +18,9 @@
     "createdDateTime": {
       "type": "string",
       "format": "date-time"
+    },
+    "isPinned": {
+      "type": "boolean"
     }
   },
   "required": [

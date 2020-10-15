@@ -460,6 +460,34 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             500:
                 description: Internal Server Error
 
+/cases/{caseId}/notes/{caseNoteId}:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+    caseNoteId:
+      description: The ID of the case note
+      type: string
+  post:
+      description:  |
+        update a note to a case
+        ...
+        (mapping):
+            requestType: application/vnd.progression.edit-case-note+json
+            name: progression.edit-case-note
+        ...
+      body:
+        application/vnd.progression.edit-case-note+json:
+          example:
+            !include json/progression.edit-case-note.json
+          schema:
+            !include json/schema/progression.edit-case-note.json
+      responses:
+            202:
+                description: OK
+            500:
+                description: Internal Server Error
+
 /laaReference/cases/{caseId}/defendants/{defendantId}/offences/{offenceId}:
   uriParameters:
     caseId:

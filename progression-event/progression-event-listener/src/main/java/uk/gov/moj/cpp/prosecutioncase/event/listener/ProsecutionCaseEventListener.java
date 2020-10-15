@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -76,7 +78,7 @@ public class ProsecutionCaseEventListener {
         makeSearchable(prosecutionCase);
     }
     @Handles("progression.event.case-ejected")
-    public void processProsecutionCaseEjected(final JsonEnvelope event){
+    public void processProsecutionCaseEjected(final JsonEnvelope event) {
         final CaseEjected caseEjected = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseEjected.class);
         final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(caseEjected.getProsecutionCaseId());
         final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
@@ -85,7 +87,7 @@ public class ProsecutionCaseEventListener {
         repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
         updateLinkedApplications(caseEjected);
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseEjected.getProsecutionCaseId());
-        caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity ->{
+        caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
             final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
             final UUID caseId = caseDefendantHearingEntity.getId().getCaseId();
             final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
@@ -168,8 +170,17 @@ public class ProsecutionCaseEventListener {
     public void caseNoteAdded(final JsonEnvelope event) {
         final CaseNoteAdded caseNoteAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteAdded.class);
         final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(caseNoteAdded.getCaseId(),
-                caseNoteAdded.getNote(), caseNoteAdded.getFirstName(), caseNoteAdded.getLastName(), caseNoteAdded.getCreatedDateTime());
+                caseNoteAdded.getNote(), caseNoteAdded.getFirstName(), caseNoteAdded.getLastName(), caseNoteAdded.getCreatedDateTime(), toBoolean(caseNoteAdded.getIsPinned()));
         caseNoteRepository.save(caseNoteEntity);
+    }
+
+    @Handles("progression.event.case-note-edited")
+    public void caseNoteEdited(final JsonEnvelope event) {
+        final CaseNoteEdited caseNotePinned = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteEdited.class);
+        final CaseNoteEntity caseNoteEntity = caseNoteRepository.findBy(caseNotePinned.getCaseNoteId());
+        caseNoteEntity.setPinned(caseNotePinned.getIsPinned());
+        caseNoteRepository.save(caseNoteEntity);
+
     }
 
 }

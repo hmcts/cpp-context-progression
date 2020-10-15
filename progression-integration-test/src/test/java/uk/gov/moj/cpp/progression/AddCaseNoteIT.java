@@ -68,7 +68,8 @@ public class AddCaseNoteIT extends AbstractIT {
                         payload().isJson(allOf(
                                 withJsonPath("$.caseNotes[0].author.firstName", equalTo("testy")),
                                 withJsonPath("$.caseNotes[0].author.lastName", equalTo("testx")),
-                                withJsonPath("$.caseNotes[0].note", equalTo("test note"))
+                                withJsonPath("$.caseNotes[0].note", equalTo("test note")),
+                                withJsonPath("$.caseNotes[0].isPinned", equalTo(false))
                         ))).getPayload();
     }
 

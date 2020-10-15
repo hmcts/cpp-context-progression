@@ -96,6 +96,16 @@ public class AddCaseNoteHandlerTest {
         verifyAddCaseNoteHandlerResults();
     }
 
+    @Test
+    public void shouldProcessAddCaseNoteWithCaseIdAndIsPinned() throws Exception {
+
+        final Envelope<AddCaseNote> envelope = createAddCaseNoteWithIsPinnedHandlerEnvelope();
+
+        addCaseNoteHandler.handle(envelope);
+
+        verifyAddCaseNoteWithIsPinnedHandlerResults();
+    }
+
     private void verifyAddCaseNoteHandlerResults() throws EventStreamException {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
@@ -105,7 +115,26 @@ public class AddCaseNoteHandlerTest {
                                 .withName("progression.event.case-note-added"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.caseId", is(CASE_ID.toString())),
-                                withJsonPath("$.note", is("Test Note Added"))
+                                withJsonPath("$.note", is("Test Note Added")),
+                                withJsonPath("$.isPinned", is(false))
+                                )
+                        ))
+
+                )
+        );
+    }
+
+    private void verifyAddCaseNoteWithIsPinnedHandlerResults() throws EventStreamException {
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.case-note-added"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.caseId", is(CASE_ID.toString())),
+                                withJsonPath("$.note", is("Test Note Added")),
+                                withJsonPath("$.isPinned", is(true))
                                 )
                         ))
 
@@ -115,6 +144,18 @@ public class AddCaseNoteHandlerTest {
 
     private Envelope<AddCaseNote> createAddCaseNoteHandlerEnvelope() {
         AddCaseNote addCaseNote = AddCaseNote.addCaseNote().withCaseId(CASE_ID).withNote("Test Note Added").build();
+
+        final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
+                metadataWithRandomUUID("usersgroups.get-user-details").withUserId(USER_ID.toString()),
+                createObjectBuilder().build());
+
+
+        return Enveloper.envelop(addCaseNote)
+                .withName("usersgroups.get-user-details")
+                .withMetadataFrom(requestEnvelope);
+    }
+  private Envelope<AddCaseNote> createAddCaseNoteWithIsPinnedHandlerEnvelope() {
+        AddCaseNote addCaseNote = AddCaseNote.addCaseNote().withCaseId(CASE_ID).withNote("Test Note Added").withIsPinned(true).build();
 
         final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithRandomUUID("usersgroups.get-user-details").withUserId(USER_ID.toString()),

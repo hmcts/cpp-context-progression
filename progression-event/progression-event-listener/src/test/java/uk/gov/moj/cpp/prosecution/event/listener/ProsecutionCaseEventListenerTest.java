@@ -14,6 +14,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -72,82 +73,56 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCaseEventListenerTest {
 
-    @Mock
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Mock
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
-
-    @Mock
-    private ProsecutionCaseRepository repository;
-
-    @Mock
-    private CaseNoteRepository caseNoteRepository;
-
-    @Mock
-    private CaseDefendantHearingRepository caseDefendantHearingRepository;
-
-    @Mock
-    private CourtApplicationRepository courtApplicationRepository;
-
-    @Mock
-    private HearingRepository hearingRepository;
-
-    @Mock
-    private JsonEnvelope envelope;
-
-    @Mock
-    private JsonObject jsonObject;
-
-    @Mock
-    private ProsecutionCaseCreated prosecutionCaseCreated;
-
-    @Mock
-    private CaseEjected caseEjected;
-
-    @Mock
-    private ProsecutionCase prosecutionCase;
-
-    @Mock
-    private Defendant defendant;
-
-    @Captor
-    private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<CourtApplicationEntity> courtApplicationEntityArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<CaseNoteEntity> caseNoteArgumentCaptor;
-
-    @Mock
-    private JsonObject payload;
-
-    @Mock
-    private Metadata metadata;
-
-    @InjectMocks
-    private ProsecutionCaseEventListener eventListener;
-
-    @Spy
-    private ListToJsonArrayConverter jsonConverter;
-
-    @Mock
-    private SearchProsecutionCase searchCase;
-
     private static final String APPLICATION_STATUS = "applicationStatus";
     private static final String PROSECUTION_CASES = "prosecutionCases";
     private static final String CASE_STATUS = "caseStatus";
     private static final String CASE_STATUS_EJECTED = "EJECTED";
-
-
-
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Mock
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Mock
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    @Mock
+    private ProsecutionCaseRepository repository;
+    @Mock
+    private CaseNoteRepository caseNoteRepository;
+    @Mock
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
+    @Mock
+    private CourtApplicationRepository courtApplicationRepository;
+    @Mock
+    private HearingRepository hearingRepository;
+    @Mock
+    private JsonEnvelope envelope;
+    @Mock
+    private JsonObject jsonObject;
+    @Mock
+    private ProsecutionCaseCreated prosecutionCaseCreated;
+    @Mock
+    private CaseEjected caseEjected;
+    @Mock
+    private ProsecutionCase prosecutionCase;
+    @Mock
+    private Defendant defendant;
+    @Captor
+    private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
+    @Captor
+    private ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<CourtApplicationEntity> courtApplicationEntityArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<CaseNoteEntity> caseNoteArgumentCaptor;
+    @Mock
+    private JsonObject payload;
+    @Mock
+    private Metadata metadata;
+    @InjectMocks
+    private ProsecutionCaseEventListener eventListener;
+    @Spy
+    private ListToJsonArrayConverter jsonConverter;
+    @Mock
+    private SearchProsecutionCase searchCase;
 
     @Before
     public void initMocks() {
@@ -191,8 +166,8 @@ public class ProsecutionCaseEventListenerTest {
         courtApplicationEntity.setLinkedCaseId(caseId);
         courtApplicationEntity.setPayload(createPayload("/json/courtApplicationData.json"));
 
-        when(courtApplicationRepository.findByLinkedCaseId(caseId)). thenReturn(singletonList(courtApplicationEntity));
-        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload().toString())).thenReturn(jsonObject);
+        when(courtApplicationRepository.findByLinkedCaseId(caseId)).thenReturn(singletonList(courtApplicationEntity));
+        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         final CourtApplication courtApplication =
                 CourtApplication.courtApplication().withLinkedCaseId(caseId)
                         .withId(UUID.randomUUID())
@@ -273,6 +248,21 @@ public class ProsecutionCaseEventListenerTest {
         verifyCaseNoteAddedEventResults(caseNoteAdded);
     }
 
+    @Test
+    public void shouldHandleCaseNoteEditedEvent() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        //Given
+        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(prosecutionCase.getId(), "note", "firstName", "lastName", ZonedDateTime.now(), false);
+        final CaseNoteEdited caseNoteEdited = buildCaseNoteEdited(caseNoteEntity.getId());
+        when(jsonObjectToObjectConverter.convert(payload, CaseNoteEdited.class)).thenReturn(caseNoteEdited);
+        when(caseNoteRepository.findBy(caseNoteEntity.getId())).thenReturn(caseNoteEntity);
+        //When
+        eventListener.caseNoteEdited(envelope);
+        //Then
+        verifyCaseNoteEditedEventResults(caseNoteEdited);
+    }
+
     private void verifyCaseNoteAddedEventResults(final CaseNoteAdded caseNoteAdded) {
         verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
 
@@ -282,6 +272,15 @@ public class ProsecutionCaseEventListenerTest {
         assertThat(caseNoteEntity.getCreatedDateTime(), equalTo(caseNoteAdded.getCreatedDateTime()));
         assertThat(caseNoteEntity.getFirstName(), equalTo(caseNoteAdded.getFirstName()));
         assertThat(caseNoteEntity.getLastName(), equalTo(caseNoteAdded.getLastName()));
+    }
+
+    private void verifyCaseNoteEditedEventResults(final CaseNoteEdited caseNoteEdited) {
+        verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
+
+        final CaseNoteEntity caseNoteEntity = caseNoteArgumentCaptor.getValue();
+        assertThat(caseNoteEntity.getCaseId(), equalTo(caseNoteEdited.getCaseId()));
+        assertThat(caseNoteEntity.getId(), equalTo(caseNoteEdited.getCaseNoteId()));
+        assertThat(caseNoteEntity.getPinned(), equalTo(caseNoteEdited.getIsPinned()));
     }
 
     private CaseNoteAdded createCaseNoteAddedEvent() {
@@ -296,6 +295,16 @@ public class ProsecutionCaseEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CaseNoteAdded.class))
                 .thenReturn(caseNoteAdded);
         return caseNoteAdded;
+    }
+
+    private CaseNoteEdited buildCaseNoteEdited(final UUID caseNoteId) {
+
+        return CaseNoteEdited.caseNoteEdited()
+                .withCaseId(prosecutionCase.getId())
+                .withCaseNoteId(caseNoteId)
+                .withIsPinned(true)
+                .build();
+
     }
 
     private String createPayload(final String payloadPath) throws IOException {

@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITH
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -990,7 +991,7 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldAddCaseNote() {
-        final List<Object> eventStream = caseAggregate.addNote(randomUUID(), "This is a Note", "Bob", "Marley").collect(toList());
+        final List<Object> eventStream = caseAggregate.addNote(randomUUID(), "This is a Note", false,"Bob", "Marley").collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -1098,6 +1099,13 @@ public class CaseAggregateTest {
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(SJP_REFERRAL.getDescription()));
 
+    }
+
+    @Test
+    public void shouldEditCaseNote() {
+        final List<Object> eventStream = caseAggregate.editNote(randomUUID(), randomUUID(),false).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0), instanceOf(CaseNoteEdited.class));
     }
 }
 

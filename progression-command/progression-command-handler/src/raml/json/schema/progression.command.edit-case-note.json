@@ -1,13 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/add-case-note.json",
+  "id": "http://justice.gov.uk/core/courts/edit-case-note.json",
   "type": "object",
   "properties": {
     "caseId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "note": {
-      "type": "string"
+    "caseNoteId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "isPinned": {
       "type": "boolean"
@@ -15,6 +15,7 @@
   },
   "required": [
     "caseId",
-    "note"
+    "caseNoteId",
+    "isPinned"
   ]
 }

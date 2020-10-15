@@ -8,6 +8,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
@@ -30,7 +31,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CaseNoteAddedProcessorTest {
+public class CaseNoteProcessorTest {
 
     @Mock
     private Sender sender;
@@ -39,9 +40,9 @@ public class CaseNoteAddedProcessorTest {
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
     @InjectMocks
-    private CaseNoteAddedProcessor processor;
+    private CaseNoteProcessor processor;
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
 
     @Before
     public void setup() {
@@ -77,6 +78,35 @@ public class CaseNoteAddedProcessorTest {
         assertThat(actualPayload.getString("firstName"), equalTo(caseNoteAdded.getFirstName()));
         assertThat(actualPayload.getString("lastName"), equalTo(caseNoteAdded.getLastName()));
         assertThat(actualPayload.getString("createdDateTime"), equalTo(caseNoteAddedPayload.getString("createdDateTime")));
+
+    }
+
+
+    @Test
+    public void processCaseNotesEdited() {
+        final CaseNoteEdited caseNoteEdited = CaseNoteEdited.caseNoteEdited()
+                .withCaseId(UUID.randomUUID())
+                .withCaseNoteId(UUID.randomUUID())
+                .withIsPinned(true)
+                .build();
+
+        final JsonObject caseNoteEditedPayload = objectToJsonObjectConverter.convert(caseNoteEdited);
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.case-note-edited"),
+                caseNoteEditedPayload);
+
+        processor.processCaseNoteEdited(requestMessage);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
+        assertThat(publicEvent.metadata(),
+                withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-edited"));
+        JsonObject actualPayload = publicEvent.payload();
+        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteEdited.getCaseId().toString()));
+        assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteEdited.getCaseNoteId().toString()));
+        assertThat(actualPayload.getBoolean("isPinned"), equalTo(caseNoteEdited.getIsPinned()));
 
     }
 

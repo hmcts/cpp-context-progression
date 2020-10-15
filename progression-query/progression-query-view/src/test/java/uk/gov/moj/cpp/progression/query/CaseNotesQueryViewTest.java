@@ -36,6 +36,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseNotesQueryViewTest {
 
+    private static final UUID ID = randomUUID();
+
     @Mock
     private CaseNoteRepository caseNoteRepository;
 
@@ -69,6 +71,7 @@ public class CaseNotesQueryViewTest {
         Assert.assertThat(envelope, jsonEnvelope(metadata().withName("progression.query.case-notes"),
                 payload().isJson(allOf(
                         withJsonPath("$.caseNotes[0].author.firstName", Matchers.equalTo("Bob")),
+                        withJsonPath("$.caseNotes[0].id", Matchers.equalTo(ID.toString())),
                         withJsonPath("$.caseNotes[0].author.lastName", Matchers.equalTo("Marley")),
                         withJsonPath("$.caseNotes[0].note", Matchers.equalTo("Test Note")),
                         withJsonPath("$.caseNotes[0].createdDateTime", Matchers.equalTo(ZonedDateTimes.toString(createdDateTime)))
@@ -93,6 +96,8 @@ public class CaseNotesQueryViewTest {
         caseNoteEntity.setFirstName("Bob");
         caseNoteEntity.setLastName("Marley");
         caseNoteEntity.setNote("Test Note");
+        caseNoteEntity.setPinned(true);
+        caseNoteEntity.setId(ID);
         caseNoteEntity.setCreatedDateTime(createdDateTime);
         when(caseNoteRepository.findByCaseIdOrderByCreatedDateTimeDesc(caseId)).thenReturn(Arrays.asList(caseNoteEntity));
         return jsonEnvelope;

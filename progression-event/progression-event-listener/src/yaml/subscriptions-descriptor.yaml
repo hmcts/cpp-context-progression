@@ -92,6 +92,9 @@ subscriptions_descriptor:
         - name: progression.event.case-note-added
           schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
 
+        - name: progression.event.case-note-edited
+          schema_uri: http://justice.gov.uk/core/courts/case-note-edited.json
+
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
 

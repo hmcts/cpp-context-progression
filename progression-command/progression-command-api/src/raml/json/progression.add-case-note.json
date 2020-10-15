@@ -1,3 +1,4 @@
 {
-  "note": "test note"
+  "note": "test note",
+  "isPinned": true
 }

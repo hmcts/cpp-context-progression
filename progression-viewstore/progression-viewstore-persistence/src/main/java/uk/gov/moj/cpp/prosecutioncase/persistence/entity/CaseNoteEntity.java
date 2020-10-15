@@ -11,6 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "case_note")
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class CaseNoteEntity implements Serializable {
 
     private static final long serialVersionUID = 2441781778236204986L;
@@ -34,13 +35,17 @@ public class CaseNoteEntity implements Serializable {
     @Column(name = "created_date_time", nullable = false)
     private ZonedDateTime createdDateTime;
 
-    public CaseNoteEntity(final UUID caseId, final String note, final String firstName, final String lastName, final ZonedDateTime createdDateTime) {
+    @Column(name = "is_pinned", nullable = false)
+    private Boolean isPinned;
+
+    public CaseNoteEntity(final UUID caseId, final String note, final String firstName, final String lastName, final ZonedDateTime createdDateTime, final Boolean isPinned) {
         this.id = UUID.randomUUID();
         this.caseId = caseId;
         this.note = note;
         this.firstName = firstName;
         this.lastName = lastName;
         this.createdDateTime = createdDateTime;
+        this.isPinned = isPinned;
     }
 
     public CaseNoteEntity() {
@@ -92,5 +97,13 @@ public class CaseNoteEntity implements Serializable {
 
     public void setCreatedDateTime(final ZonedDateTime createdDateTime) {
         this.createdDateTime = createdDateTime;
+    }
+
+    public Boolean getPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(final Boolean pinned) {
+        isPinned = pinned;
     }
 }

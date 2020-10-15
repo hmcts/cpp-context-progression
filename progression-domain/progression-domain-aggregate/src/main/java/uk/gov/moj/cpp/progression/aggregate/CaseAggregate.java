@@ -30,6 +30,7 @@ import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -159,7 +160,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 6499998429732699958L;
+    private static final long serialVersionUID = 6644269354919757994L;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
@@ -1098,13 +1099,22 @@ public class CaseAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> addNote(final UUID caseId, final String note, final String firstName, final String lastName) {
+    public Stream<Object> addNote(final UUID caseId, final String note,final boolean isPinned, final String firstName, final String lastName) {
         return apply(Stream.of(CaseNoteAdded.caseNoteAdded()
                 .withCaseId(caseId)
                 .withNote(note)
+                .withIsPinned(isPinned)
                 .withFirstName(firstName)
                 .withLastName(lastName)
                 .withCreatedDateTime(ZonedDateTime.now())
+                .build()));
+    }
+
+    public Stream<Object> editNote(final UUID caseId, final UUID caseNoteId, final Boolean isPinned) {
+        return apply(Stream.of(CaseNoteEdited.caseNoteEdited()
+                .withCaseId(caseId)
+                .withCaseNoteId(caseNoteId)
+                .withIsPinned(isPinned)
                 .build()));
     }
 
@@ -1209,8 +1219,8 @@ public class CaseAggregate implements Aggregate {
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "middleName", defendant.getMiddleName());
             defendantJsonObjectBuilder.add("lastName", defendant.getLastName());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "dateOfBirth", defendant.getDateOfBirth());
-            addToJsonObjectNullSafe(defendantJsonObjectBuilder,"pncId", defendant.getPncId());
-            addToJsonObjectNullSafe(defendantJsonObjectBuilder,"croNumber", defendant.getCroNumber());
+            addToJsonObjectNullSafe(defendantJsonObjectBuilder, "pncId", defendant.getPncId());
+            addToJsonObjectNullSafe(defendantJsonObjectBuilder, "croNumber", defendant.getCroNumber());
             if (nonNull(defendant.getAddress())) {
                 addAddress(defendant.getAddress(), defendantJsonObjectBuilder);
             }

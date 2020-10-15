@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
-public class CaseNoteAddedProcessor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CaseNoteAddedProcessor.class);
+public class CaseNoteProcessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseNoteProcessor.class);
 
     @Inject
     private Sender sender;
@@ -28,6 +28,18 @@ public class CaseNoteAddedProcessor {
         sender.send(
                 envelop(event.payloadAsJsonObject())
                         .withName("public.progression.case-note-added")
+                        .withMetadataFrom(event));
+
+    }
+
+    @Handles("progression.event.case-note-edited")
+    public void processCaseNoteEdited(final JsonEnvelope event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Received '{}' event with payload {}", "progression.event.case-note-edited", event.toObfuscatedDebugString());
+        }
+        sender.send(
+                envelop(event.payloadAsJsonObject())
+                        .withName("public.progression.case-note-edited")
                         .withMetadataFrom(event));
 
     }

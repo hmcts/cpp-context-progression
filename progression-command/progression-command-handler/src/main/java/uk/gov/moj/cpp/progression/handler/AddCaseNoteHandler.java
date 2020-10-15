@@ -53,7 +53,11 @@ public class AddCaseNoteHandler {
         final AddCaseNote addCaseNote = addCaseNoteEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(addCaseNote.getCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.addNote(addCaseNote.getCaseId(), addCaseNote.getNote(), userDetails.getFirstName(), userDetails.getLastName());
+        boolean isPinned = false;
+        if (addCaseNote.getIsPinned() != null) {
+            isPinned = addCaseNote.getIsPinned();
+        }
+        final Stream<Object> events = caseAggregate.addNote(addCaseNote.getCaseId(), addCaseNote.getNote(), isPinned, userDetails.getFirstName(), userDetails.getLastName());
 
         appendEventsToStream(addCaseNoteEnvelope, eventStream, events);
     }
