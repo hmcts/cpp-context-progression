@@ -180,6 +180,9 @@ subscriptions_descriptor:
         - name: progression.event.prison-court-register-generated
           schema_uri: http://justice.gov.uk/core/courts/prison-court-register-generated.json
 
+        - name: progression.events.hearing-days-without-court-centre-corrected
+          schema_uri: http://justice.gov.uk/progression/events/progression.events.hearing-days-without-court-centre-corrected.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

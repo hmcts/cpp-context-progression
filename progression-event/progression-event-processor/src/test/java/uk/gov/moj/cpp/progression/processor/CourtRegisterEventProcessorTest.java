@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.sun.mail.iap.Argument;
 import org.apache.commons.validator.Arg;
@@ -72,7 +73,9 @@ public class CourtRegisterEventProcessorTest {
     @Mock
     private NotificationNotifyService notificationNotifyService;
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Mock
     private DocumentGeneratorClient documentGeneratorClient;

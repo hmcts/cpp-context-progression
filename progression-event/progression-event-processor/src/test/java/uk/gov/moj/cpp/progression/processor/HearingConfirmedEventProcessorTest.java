@@ -75,7 +75,7 @@ public class HearingConfirmedEventProcessorTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
     @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @InjectMocks
     private HearingConfirmedEventProcessor eventProcessor;
     @Mock

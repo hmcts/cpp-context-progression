@@ -105,7 +105,7 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearingListingStatus", is("HEARING_RESULTED")),
-                withJsonPath("$.hearinggit st.jurisdictionType", is("CROWN"))
+                withJsonPath("$.hearing.jurisdictionType", is("CROWN"))
         );
     }
 

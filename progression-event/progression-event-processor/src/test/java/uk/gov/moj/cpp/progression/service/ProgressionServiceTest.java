@@ -130,10 +130,10 @@ public class ProgressionServiceTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
     @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Spy
     @InjectMocks
-    private JsonObjectToObjectConverter jsonObjectConverter =  new JsonObjectToObjectConverter();
+    private JsonObjectToObjectConverter jsonObjectConverter =  new JsonObjectToObjectConverter(objectMapper);
     @Mock
     private Sender sender;
     @Spy

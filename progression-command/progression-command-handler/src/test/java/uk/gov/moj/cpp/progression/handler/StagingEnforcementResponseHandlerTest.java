@@ -49,7 +49,7 @@ public class StagingEnforcementResponseHandlerTest {
 
     @Spy
     @InjectMocks
-    protected JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+    protected JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @InjectMocks
     private StagingEnforcementResponseHandler commandHandler;

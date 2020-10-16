@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,10 +82,12 @@ public class CourtRegisterHandlerTest {
     private Requester requester;
     private CourtCentreAggregate aggregate;
     @Spy
-    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @Spy
+    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Spy
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();

@@ -114,7 +114,7 @@ public class ApplicationExtractTransformerTest {
 
     @Spy
     @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @InjectMocks
     TransformationHelper transformationHelper;

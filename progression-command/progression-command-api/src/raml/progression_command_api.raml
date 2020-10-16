@@ -940,3 +940,20 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
+/correct-hearing-days-without-court-centre:
+   post:
+      description: |
+        Update HearingDays without CourtCentre
+        ...
+        (mapping):
+          requestType: application/vnd.progression.correct-hearing-days-without-court-centre+json
+          name: progression.correct-hearing-days-without-court-centre
+        ...
+      body:
+        application/vnd.progression.correct-hearing-days-without-court-centre+json:
+            schema: !include json/schema/progression.correct-hearing-days-without-court-centre.json
+            example: !include json/progression.correct-hearing-days-without-court-centre.json
+
+      responses:
+        202:
+          description: Request accepted

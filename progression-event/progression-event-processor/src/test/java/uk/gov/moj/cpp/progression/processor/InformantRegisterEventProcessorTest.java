@@ -37,6 +37,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -58,7 +59,9 @@ public class InformantRegisterEventProcessorTest {
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Spy
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @Spy
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Mock
     private MaterialService materialService;
     @Mock

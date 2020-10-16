@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,13 +47,16 @@ public class PrisonCourtRegisterEventListenerTest {
     private PrisonCourtRegisterRepository prisonCourtRegisterRepository;
 
     @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @InjectMocks
     private PrisonCourtRegisterEventListener prisonCourtRegisterEventListener;
 
     @Spy
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Captor
     private ArgumentCaptor<PrisonCourtRegisterEntity> prisonCourtRegisterEntityArgumentCaptor;

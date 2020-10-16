@@ -11,7 +11,7 @@
         <artemis.version>1.2.0</artemis.version>
         <rest-assured.version>2.5.0</rest-assured.version>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
-        <framework.version>7.0.4</framework.version>
+        <framework.version>7.1.1</framework.version>
         <event-store.version>7.0.2</event-store.version>
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <json-schema-catalog.version>1.7.6</json-schema-catalog.version>
@@ -114,7 +114,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-test-utils</artifactId>
-            <version>${platform-libraries.version}</version>
+            <version>${cpp.platform-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.json</groupId>

@@ -3,12 +3,14 @@ package uk.gov.justice.services;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValidator;
 import uk.gov.moj.cpp.indexer.jolt.verificationHelpers.HearingVerificationHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.bazaarvoice.jolt.JsonUtils;
@@ -36,6 +38,9 @@ public class DefendantsListingStatusChangedTransformerTest {
 
     final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
+    @Inject
+    private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
+
     @Before
     public void setUp() {
         hearingVerificationHelper.resetCounts();
@@ -48,6 +53,8 @@ public class DefendantsListingStatusChangedTransformerTest {
         final DocumentContext inputDC = JsonPath.parse(inputJson);
         final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
         final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
+
+        jsonValidator.validate(output, "/json/schema/crime-case-index-schema.json");
 
         hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 0, "$.hearing.prosecutionCases[0]");
         hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 3, "$.hearing.prosecutionCases[1]");
@@ -63,6 +70,29 @@ public class DefendantsListingStatusChangedTransformerTest {
     }
 
     @Test
+    public void shouldTransformDefendantsListingStatusChangedTransformerWithoutCourtCentreInHearingDays() {
+
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-defendant-listing-status-changed-without-court-centre.json");
+        final DocumentContext inputDC = JsonPath.parse(inputJson);
+        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
+        final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
+
+        jsonValidator.validate(output, "/json/schema/crime-case-index-schema.json");
+
+        hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 0, "$.hearing.prosecutionCases[0]");
+        hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 3, "$.hearing.prosecutionCases[1]");
+        hearingVerificationHelper.verifyApplication(inputDC, output, 1, "$.hearing.courtApplications[0]");
+        hearingVerificationHelper.verifyApplication(inputDC, output, 2, "$.hearing.courtApplications[1]");
+
+        hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 0, 0);
+        hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 1, 0);
+        hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 2, 0);
+        hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 3, 0);
+
+        hearingVerificationHelper.verifyCounts(4, 4, 0);
+    }
+
+    @Test
     public void shouldTransformDefendantsListingStatusChangedTransformerNPEBug() throws IOException {
 
         final JsonObject inputJson = readJson("/progression.event.prosecution-case-defendant-listing-status-changed-npe-bug.json");
@@ -71,7 +101,7 @@ public class DefendantsListingStatusChangedTransformerTest {
         final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
 
         hearingVerificationHelper.verifyApplication(inputDC, output, 0, "$.hearing.courtApplications[0]");
-        hearingVerificationHelper.verifyHearings(inputDC, output, 0, 0);
+        hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 0, 0);
         hearingVerificationHelper.verifyCounts(1, 1, 0);
     }
 }

@@ -16,6 +16,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -31,6 +32,7 @@ import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
 import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 import java.time.ZonedDateTime;
@@ -42,6 +44,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +87,7 @@ public class HearingAggregate implements Aggregate {
                 when(UnscheduledHearingListingRequested.class).apply(e ->
                    this.unscheduledHearingListedFromThisHearing = true
                 ),
+                when(HearingDaysWithoutCourtCentreCorrected.class).apply(this::onHearingDaysWithoutCourtCentreCorrected),
                 otherwiseDoNothing());
     }
 
@@ -321,6 +325,31 @@ public class HearingAggregate implements Aggregate {
                                        .withHearingId(hearingId)
                                        .withUnscheduledHearingIds(uuidList)
                                        .build()));
+    }
+
+    private void onHearingDaysWithoutCourtCentreCorrected(final HearingDaysWithoutCourtCentreCorrected hearingDaysWithoutCourtCentreCorrected) {
+        if (CollectionUtils.isNotEmpty(hearingDaysWithoutCourtCentreCorrected.getHearingDays())) {
+            final UUID courtCentreId = hearingDaysWithoutCourtCentreCorrected.getHearingDays().get(0).getCourtCentreId();
+            final UUID courtRoomId = hearingDaysWithoutCourtCentreCorrected.getHearingDays().get(0).getCourtRoomId();
+            final List<HearingDay> hearingDaysToBeReplaced = createHearingDaysToBeReplaced(courtCentreId, courtRoomId);
+            hearing.getHearingDays().clear();
+            hearing.getHearingDays().addAll(hearingDaysToBeReplaced);
+        } else {
+            LOGGER.info("hearingDays send for hearingDaysWithoutCourtCentreCorrected is empty with this hearing id {}", hearingDaysWithoutCourtCentreCorrected.getId());
+        }
+    }
+
+    private List<HearingDay> createHearingDaysToBeReplaced(final UUID courtCentreId, final UUID courtRoomId) {
+        final List<HearingDay> hearingDayListToBeReplaced = new ArrayList<>();
+        hearing.getHearingDays().forEach(hearingDay ->
+                hearingDayListToBeReplaced.add(HearingDay.hearingDay()
+                        .withListedDurationMinutes(hearingDay.getListedDurationMinutes())
+                        .withListingSequence(hearingDay.getListingSequence())
+                        .withSittingDay(hearingDay.getSittingDay())
+                        .withCourtCentreId(courtCentreId)
+                        .withCourtRoomId(courtRoomId).build())
+        );
+        return hearingDayListToBeReplaced;
     }
 
 }

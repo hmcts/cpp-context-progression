@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.nows.event.listener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,12 +44,15 @@ public class CourtRegisterDocumentRequestListenerTest {
     private CourtRegisterRequestRepository courtRegisterRequestRepository;
 
     @Spy
-    private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @InjectMocks
     private CourtRegisterDocumentRequestListener courtRegisterDocumentRequestListener;
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Captor
     private ArgumentCaptor<CourtRegisterRequestEntity> courtRegisterRequestEntityArgumentCaptor;

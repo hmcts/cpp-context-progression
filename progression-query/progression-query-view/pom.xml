@@ -107,7 +107,7 @@
        <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-refdata-providers</artifactId>
-            <version>${platform-libraries.version}</version>
+            <version>${cpp.platform-libraries.version}</version>
         </dependency>
 
     </dependencies>

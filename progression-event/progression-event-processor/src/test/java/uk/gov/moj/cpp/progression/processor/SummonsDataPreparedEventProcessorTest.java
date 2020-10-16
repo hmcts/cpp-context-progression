@@ -88,7 +88,7 @@ public class SummonsDataPreparedEventProcessorTest {
 
     @Spy
     @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Spy
     private final Enveloper enveloper = createEnveloper();

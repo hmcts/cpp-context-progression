@@ -1,5 +1,9 @@
 package uk.gov.justice.services;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 
@@ -7,29 +11,46 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
-import static java.util.Optional.ofNullable;
-
+@SuppressWarnings("squid:S3776")
 public class HearingDaysMapper {
 
     public List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> extractHearingDays(final Hearing hearing) {
-        final List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> hearingDays = new ArrayList<>();
+        final List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> hearingDayIndexes = new ArrayList<>();
         for (final HearingDay hearingDay : ofNullable(hearing.getHearingDays()).orElse(Collections.emptyList())) {
-            final uk.gov.justice.services.unifiedsearch.client.domain.HearingDay hearingDayIndex
-                    = new uk.gov.justice.services.unifiedsearch.client.domain.HearingDay();
-            if (hearingDay != null) {
-                if (hearingDay.getListingSequence() != null) {
-                    hearingDayIndex.setListingSequence(hearingDay.getListingSequence());
-                }
-                if (hearingDay.getListedDurationMinutes() != null) {
-                    hearingDayIndex.setListedDurationMinutes(hearingDay.getListedDurationMinutes());
-                }
-                if (hearingDay.getSittingDay() != null) {
-                    hearingDayIndex.setSittingDay(hearingDay.getSittingDay().format(DateTimeFormatter.ISO_INSTANT));
-                }
-                hearingDays.add(hearingDayIndex);
+
+            if (nonNull(hearingDay)) {
+                hearingDayIndexes.add(generateHearingIndex(hearing, hearingDay));
             }
         }
-        return hearingDays;
+        return hearingDayIndexes;
     }
+
+    private uk.gov.justice.services.unifiedsearch.client.domain.HearingDay generateHearingIndex(final Hearing hearing, final HearingDay hearingDay) {
+
+        final uk.gov.justice.services.unifiedsearch.client.domain.HearingDay hearingDayIndex = new uk.gov.justice.services.unifiedsearch.client.domain.HearingDay();
+        //if old event format, get courtCentre info from parent
+        final UUID courtRoomId = isNull(hearingDay.getCourtRoomId()) ? hearing.getCourtCentre().getRoomId() : hearingDay.getCourtRoomId();
+        final UUID courtCentreId = isNull(hearingDay.getCourtCentreId()) ? hearing.getCourtCentre().getId() : hearingDay.getCourtCentreId();
+
+        if (nonNull(hearingDay.getListingSequence())) {
+            hearingDayIndex.setListingSequence(hearingDay.getListingSequence());
+        }
+        if (nonNull(hearingDay.getListedDurationMinutes())) {
+            hearingDayIndex.setListedDurationMinutes(hearingDay.getListedDurationMinutes());
+        }
+        if (nonNull(hearingDay.getSittingDay())) {
+            hearingDayIndex.setSittingDay(hearingDay.getSittingDay().format(DateTimeFormatter.ISO_INSTANT));
+        }
+        if(nonNull(courtCentreId)) {
+            hearingDayIndex.setCourtCentreId(courtCentreId.toString());
+        }
+        if(nonNull(courtRoomId)) {
+            hearingDayIndex.setCourtRoomId(courtRoomId.toString());
+        }
+
+        return hearingDayIndex;
+    }
+
 }

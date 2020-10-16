@@ -36,7 +36,15 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
         validateJudiciaryTypes(inputHearing, outputCase, outputHearingIndex);
     }
 
-    private void validateJudiciaryTypes(final DocumentContext inputHearing,
+    public void verifyHearingsWithoutCourtCentre(final DocumentContext inputHearing,
+                                                 final JsonObject outputCase,
+                                                 final int outputHearingIndex) {
+        verifyHearing(inputHearing, outputCase,  outputHearingIndex);
+        validateHearingDaysAndDatesWithoutCourCentre(inputHearing, outputCase,  outputHearingIndex);
+        validateJudiciaryTypes(inputHearing, outputCase, outputHearingIndex);
+    }
+
+    public void validateJudiciaryTypes(final DocumentContext inputHearing,
                                         final JsonObject outputCases,
                                         final int outputHearingIndex) {
         try {
@@ -74,6 +82,38 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
         }
     }
 
+    private void validateHearingDaysAndDatesWithoutCourCentre(final DocumentContext inputHearing,
+                                             final JsonObject outputCases,
+                                             final int outputHearingIndex) {
+        try {
+            final JsonArray hearingDaysInput = inputHearing.read(format(INPUT_HEARING_DAYS_JSON_PATH));
+            final int hearingDaysSize = hearingDaysInput.size();
+            range(0, hearingDaysSize)
+                    .forEach(hearingDayIndex -> {
+                        final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH,  outputHearingIndex);
+                        validateHearingDayAndDatesWithoutCourtCentreInHearingDays(inputHearing, outputCases, hearingOutputIndexPath, hearingDayIndex);
+                    });
+        } catch (final Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Hearing Days", e.getMessage()));
+        }
+    }
+
+    public void validateHearingDayAndDatesWithoutCourtCentreInHearingDays(final DocumentContext inputParties,
+                                                                           final JsonObject outputCases,
+                                                                           final String hearingOutputIndexPath,
+                                                                           final int hearingDayIndex) {
+        final LocalDate date = ZonedDateTimes.fromString(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].sittingDay")).getString()).toLocalDate();
+
+        with(outputCases.toString())
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes")).intValue()))
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listingSequence", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listingSequence")).intValue()))
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].sittingDay", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].sittingDay")).getString()))
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtCentreId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".courtCentre.id")).getString()))
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtRoomId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".courtCentre.roomId")).getString()))
+                .assertThat(hearingOutputIndexPath + ".hearingDates[" + hearingDayIndex + "]", is(date.toString()));
+    }
+
     private void validateHearingDayAndDates(final DocumentContext inputParties,
                                             final JsonObject outputCases,
                                             final String hearingOutputIndexPath,
@@ -84,6 +124,8 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                 .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes")).intValue()))
                 .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listingSequence", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listingSequence")).intValue()))
                 .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].sittingDay", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].sittingDay")).getString()))
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtCentreId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].courtCentreId")).getString()))
+                .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtRoomId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].courtRoomId")).getString()))
                 .assertThat(hearingOutputIndexPath + ".hearingDates[" + hearingDayIndex + "]", is(date.toString()));
     }
 
@@ -113,6 +155,10 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                     .assertThat(hearingOutputIndexPath + ".jurisdictionType", is(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".jurisdictionType")).getString()))
                     .assertThat(hearingOutputIndexPath + ".courtId", is(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.id")).getString()))
                     .assertThat(hearingOutputIndexPath + ".courtCentreName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.name")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtCentreRoomId", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.roomId")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtCentreRoomName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.roomName")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtCentreWelshName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.welshName")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtCentreRoomWelshName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.welshRoomName")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingTypeId", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.id")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingTypeLabel", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.description")).getString()))
                     .assertThat(hearingOutputIndexPath + ".isBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isBoxHearing").toString()).booleanValue()));

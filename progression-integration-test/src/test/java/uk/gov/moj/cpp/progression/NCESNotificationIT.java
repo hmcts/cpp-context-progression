@@ -26,6 +26,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,7 +42,8 @@ public class NCESNotificationIT extends AbstractIT {
     public static final String PROGRESSION_QUERY_API_QUERY_API_REST_PROGRESSION = "/progression-query-api/query/api/rest/progression";
     public static final String APPLICATION_VND_PROGRESSION_QUERY_PROSECUTION_NOTIFICATION_STATUS_JSON = "application/vnd.progression.query.prosecution.notification-status+json";
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     private static final String PUBLIC_HEARING_EVENT_NCES_NOTIFICATION_REQUESTED = "public.hearing.event.nces-notification-requested";
 

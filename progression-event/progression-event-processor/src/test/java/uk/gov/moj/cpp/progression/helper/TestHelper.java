@@ -23,12 +23,13 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.Json;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import javax.json.Json;
 
 public class TestHelper {
 

@@ -412,7 +412,8 @@ public class ListCourtHearingTransformer {
                 .withEstimatedMinutes(hearingRequest.getEstimatedMinutes())
                 .withReportingRestrictionReason(hearingRequest.getReportingRestrictionReason())
                 .withListingDirections(hearingRequest.getListingDirections())
-                .withDefendantListingNeeds(hearingRequest.getDefendantListingNeeds());
+                .withDefendantListingNeeds(hearingRequest.getDefendantListingNeeds())
+                .withBookedSlots(hearingRequest.getBookedSlots());
 
         final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsList = hearingRequest.getCourtApplicationPartyListingNeeds();
 

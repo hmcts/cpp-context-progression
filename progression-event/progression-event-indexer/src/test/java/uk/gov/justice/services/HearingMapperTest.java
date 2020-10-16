@@ -17,6 +17,7 @@ import org.junit.Test;
 
 public class HearingMapperTest {
 
+    private static String COURT_CODE = "COURT CENTRE CODE 1";
     private HearingMapper hearingMapper;
     private List<HearingDay> defaultHearingDays;
     private CourtCentre defaultCourtCentre;
@@ -26,7 +27,7 @@ public class HearingMapperTest {
     public void before() {
         hearingMapper = new HearingMapper();
         defaultHearingDays = Collections.emptyList();
-        defaultCourtCentre = CourtCentre.courtCentre().build();
+        defaultCourtCentre = CourtCentre.courtCentre().withCode(COURT_CODE).build();
         defaultDefendantIds = Collections.emptyList();
     }
 

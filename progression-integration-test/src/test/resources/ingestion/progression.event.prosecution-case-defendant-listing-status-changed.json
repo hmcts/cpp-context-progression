@@ -6,10 +6,13 @@
       "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
       "roomName": "JK2Y7hu0Tc",
       "welshName": "3IpJDfdfhS",
-      "welshRoomName": "hm60SAXokc"
+      "welshRoomName": "hm60SAXokc",
+      "code": "CODE 1"
     },
     "hearingDays": [
       {
+        "courtCentreId": "COURT_ID",
+        "courtRoomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
         "listedDurationMinutes": 1531791578,
         "listingSequence": 810249414,
         "sittingDay": "2015-01-12T05:27:17.210Z"

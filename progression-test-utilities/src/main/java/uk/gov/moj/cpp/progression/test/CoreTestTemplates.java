@@ -12,7 +12,6 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.NI_
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
@@ -54,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings({"squid:ClassVariableVisibilityCheck", "squid:S1067", "pmd:NullAssignment","squid:CommentedOutCodeLine","squid:S1135"})
 public class CoreTestTemplates {
@@ -447,7 +447,7 @@ public class CoreTestTemplates {
                 .withHearingLanguage((HearingLanguage.WELSH))
                 .withJurisdictionType(args.jurisdictionType)
                 .withReportingRestrictionReason((STRING.next()))
-                .withHearingDays(asList(hearingDay().build()))
+                .withHearingDays(Stream.of(hearingDay().build()).collect(toList()))
                 .withCourtCentre(courtCentre().build())
                 .withJudiciary(singletonList(judiciaryRole(args).build()))
                 .withDefendantReferralReasons(singletonList(referralReason().build()))

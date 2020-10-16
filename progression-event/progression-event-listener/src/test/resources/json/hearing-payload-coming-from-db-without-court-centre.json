@@ -1,0 +1,56 @@
+{
+  "courtApplications": [
+    {
+      "applicant": {
+        "id": "004244db-f4f9-44b3-b626-ef5ca017be18",
+        "personDetails": {
+          "gender": "MALE",
+          "lastName": "Barton"
+        }
+      },
+      "applicationReceivedDate": "2020-10-06",
+      "applicationReference": "LCBFRBKYDI",
+      "applicationStatus": "UN_ALLOCATED",
+      "id": "3b825fa9-9e3c-46a2-865f-75c0b56acd80",
+      "type": {
+        "applicationCategory": "VP",
+        "applicationCode": "SX03531",
+        "applicationJurisdictionType": "EITHER",
+        "applicationLegislation": "In accordance with section 104(5) of the Sexual Offences Act 2003.",
+        "applicationType": "Application for a sexual offences prevention order",
+        "id": "0826fc90-6c49-3a1f-9fc6-b0547679f348",
+        "linkType": "STANDALONE"
+      }
+    }
+  ],
+  "courtCentre": {
+    "address": {
+      "address1": "176A Lavender Hill",
+      "address2": "London",
+      "address3": "",
+      "address4": "",
+      "address5": "",
+      "postcode": "SW11 1JU"
+    },
+    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "name": "Lavender Hill Magistrates\u0027 Court",
+    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+    "roomName": "Courtroom 01"
+  },
+  "hasSharedResults": false,
+  "hearingDays": [
+    {
+      "listedDurationMinutes": "LISTED_DURATION_MINUTES",
+      "listingSequence": "LISTING_SEQUENCE",
+      "sittingDay": "SITTING_DAY"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "ea436b88-43a9-4134-87d0-d590fbf9f38b",
+  "jurisdictionType": "MAGISTRATES",
+  "shadowListedOffences": [],
+  "type": {
+    "description": "Application",
+    "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+  }
+}

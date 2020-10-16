@@ -43,6 +43,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,7 +72,9 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Mock
     private SystemUserProvider systemUserProvider;
 
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Mock
     private DocumentGeneratorClient documentGeneratorClient;

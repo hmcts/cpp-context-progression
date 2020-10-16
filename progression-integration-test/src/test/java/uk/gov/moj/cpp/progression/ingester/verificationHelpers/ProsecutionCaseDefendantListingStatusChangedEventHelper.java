@@ -25,12 +25,14 @@ public class ProsecutionCaseDefendantListingStatusChangedEventHelper {
         assertThat(outputCase.getBoolean("_is_crown"), is(true));
     }
 
-    public static void assertHearing(final JsonObject outputHearing, final JsonObject inputHearing, final JsonObject prosecutionCaseDefendantListingStatusChangedEvent) {
+    public static void assertHearing(final JsonObject outputHearing, final JsonObject inputHearing, final JsonObject prosecutionCaseDefendantListingStatusChangedEvent, boolean withoutCourtCentreInHearingDays) {
         assertThat(outputHearing.getString("courtCentreName"), is(inputHearing.getJsonObject("courtCentre").getString("name")));
         assertThat(outputHearing.getString("hearingTypeId"), is(inputHearing.getJsonObject("type").getString("id")));
         assertThat(outputHearing.getString("hearingTypeLabel"), is(inputHearing.getJsonObject("type").getString("description")));
         assertThat(outputHearing.getJsonArray("hearingDates").getString(0), is(inputHearing.getJsonArray(HEARING_DAYS).getJsonObject(0).getString("sittingDay").substring(0, 10)));
-        assertThat(outputHearing.getJsonArray(HEARING_DAYS).getJsonObject(0), is(inputHearing.getJsonArray(HEARING_DAYS).getJsonObject(0)));
+        if (!withoutCourtCentreInHearingDays) {
+            assertThat(outputHearing.getJsonArray(HEARING_DAYS).getJsonObject(0), is(inputHearing.getJsonArray(HEARING_DAYS).getJsonObject(0)));
+        }
         assertThat(outputHearing.getString(JURISDICTION_TYPE), is(inputHearing.getString(JURISDICTION_TYPE)));
         assertThat(outputHearing.getString("courtId"), is(inputHearing.getJsonObject("courtCentre").getString("id")));
 

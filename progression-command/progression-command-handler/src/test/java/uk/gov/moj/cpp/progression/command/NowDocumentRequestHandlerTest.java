@@ -40,6 +40,7 @@ import uk.gov.moj.cpp.progression.handler.NowDocumentRequestHandler;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,7 +67,10 @@ public class NowDocumentRequestHandlerTest {
     private NowDocumentRequestHandler nowDocumentRequestHandler;
 
     @Spy
-    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(NowDocumentRequested.class);

@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.ReferredPerson;
 import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
 import uk.gov.justice.core.courts.ReferringJudicialDecision;
+import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.core.courts.SjpReferral;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -398,7 +399,7 @@ public class ListCourtHearingTransformerTest {
                                 .withId(UUID.randomUUID())
                                 .withDescription("SENTENCING")
                                 .build())
-
+                        .withBookedSlots(createRotaSlot())
                         .build())
                 .build();
 
@@ -809,6 +810,20 @@ public class ListCourtHearingTransformerTest {
         return JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
+    }
+
+    private List<RotaSlot> createRotaSlot() {
+        final RotaSlot slot1 = RotaSlot.rotaSlot()
+                .withCourtCentreId(UUID.randomUUID().toString())
+                .withRoomId(UUID.randomUUID().toString())
+                .build();
+
+        final RotaSlot slot2 = RotaSlot.rotaSlot()
+                .withCourtCentreId(UUID.randomUUID().toString())
+                .withRoomId(UUID.randomUUID().toString())
+                .build();
+
+        return Arrays.asList(slot1, slot2);
     }
 
 }

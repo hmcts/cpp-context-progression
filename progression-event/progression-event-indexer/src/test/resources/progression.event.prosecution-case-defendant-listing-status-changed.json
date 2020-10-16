@@ -70,11 +70,15 @@
     ],
     "hearingDays": [
       {
+        "courtCentreId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "courtRoomId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
         "listedDurationMinutes": 1531791578,
         "listingSequence": 810249414,
         "sittingDay": "2015-01-12T05:27:17.210Z"
       },
       {
+        "courtCentreId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "courtRoomId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
         "listedDurationMinutes": 15317889,
         "listingSequence": 810249419,
         "sittingDay": "2015-02-23T08:27:17.210Z"

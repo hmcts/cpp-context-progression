@@ -36,7 +36,7 @@ public class DocumentTypeAccessConverterTest {
     @Spy
     @InjectMocks
     @SuppressWarnings("unused")
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @InjectMocks
     private DocumentTypeAccessConverter documentTypeAccessConverter;
