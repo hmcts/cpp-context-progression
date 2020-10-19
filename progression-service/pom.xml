@@ -84,6 +84,11 @@
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>service-component-config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
+            <artifactId>unifiedsearch-client</artifactId>
+            <version>${cpp.platform-libraries.version}</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>

@@ -43,7 +43,9 @@ public class CaseNoteProcessorTest {
     @InjectMocks
     private CaseNoteProcessor processor;
 
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Before
     public void setup() {

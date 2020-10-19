@@ -47,5 +47,6 @@ public class HearingMapperTest {
 
         assertThat(actual, is(notNullValue()));
         assertThat(actual.isIsBoxHearing(), is(false));
+        assertThat(actual.getCourtCentreCode(), is(COURT_CODE));
     }
 }

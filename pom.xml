@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>10.2.3</version>
+        <version>10.2.4</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -85,7 +85,6 @@
                 <scope>test</scope>
                 <version>${cpp.framework.version}</version>
             </dependency>
-            <!-- TODO junit4-dataprovider should come from test utils once moved -->
             <dependency>
                 <groupId>com.tngtech.junit.dataprovider</groupId>
                 <artifactId>junit4-dataprovider</artifactId>
@@ -94,5 +93,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
 </project>

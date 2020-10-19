@@ -159,6 +159,7 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                     .assertThat(hearingOutputIndexPath + ".courtCentreRoomName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.roomName")).getString()))
                     .assertThat(hearingOutputIndexPath + ".courtCentreWelshName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.welshName")).getString()))
                     .assertThat(hearingOutputIndexPath + ".courtCentreRoomWelshName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.welshRoomName")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtCentreCode", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.code")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingTypeId", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.id")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingTypeLabel", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.description")).getString()))
                     .assertThat(hearingOutputIndexPath + ".isBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isBoxHearing").toString()).booleanValue()));

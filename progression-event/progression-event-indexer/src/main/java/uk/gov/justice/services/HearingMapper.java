@@ -1,5 +1,7 @@
 package uk.gov.justice.services;
 
+import static java.util.Optional.ofNullable;
+
 import uk.gov.justice.core.courts.BoxWorkTaskStatus;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
@@ -84,10 +86,11 @@ public class HearingMapper {
 
     public uk.gov.justice.services.unifiedsearch.client.domain.Hearing populateCourtCentre(final CourtCentre courtCentre,
                                                                                            final uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearingIndex) {
-        hearingIndex.setCourtCentreName(courtCentre.getName());
-        hearingIndex.setCourtCentreRoomName(courtCentre.getRoomName());
-        hearingIndex.setCourtCentreWelshName(courtCentre.getWelshName());
-        hearingIndex.setCourtCentreRoomWelshName(courtCentre.getWelshRoomName());
+        ofNullable(courtCentre.getName()).ifPresent(hearingIndex::setCourtCentreName);
+        ofNullable(courtCentre.getRoomName()).ifPresent(hearingIndex::setCourtCentreRoomName);
+        ofNullable(courtCentre.getWelshName()).ifPresent(hearingIndex::setCourtCentreWelshName);
+        ofNullable(courtCentre.getWelshRoomName()).ifPresent(hearingIndex::setCourtCentreRoomWelshName);
+        ofNullable(courtCentre.getCode()).ifPresent(hearingIndex::setCourtCentreCode);
 
         if (courtCentre.getId() != null) {
             hearingIndex.setCourtId(courtCentre.getId().toString());
