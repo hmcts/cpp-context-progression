@@ -6,10 +6,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
@@ -37,6 +39,20 @@ public class ReferenceDataStub {
                         .withBody(offences.toString())));
 
         waitForStubToBeReady(urlPath + "?cjsoffencecode", "application/vnd.referencedata.query.offences+json");
+    }
+
+    public static void stubPleaTypes() {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final String payload = getPayload("restResource/referencedata.query.plea-types.json");
+
+        stubFor(get(urlPathMatching("/referencedata-service/query/api/rest/referencedata/plea-types"))
+                .willReturn(aResponse()
+                        .withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/vnd.referencedata.plea-types+json")
+                        .withBody(payload)));
+
+        waitForStubToBeReady("/referencedata-service/query/api/rest/referencedata/plea-types", "application/vnd.referencedata.plea-types+json");
     }
 
     public static void stubQueryLocalJusticeArea(final String resourceName) {

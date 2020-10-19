@@ -207,6 +207,10 @@
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
+        "arrestSummonsNumber": {
+          "description": "defendant Arrest/Summons Number",
+          "type": "string"
+        },
         "hearings": {
           "type": "array",
           "minItems": 1,

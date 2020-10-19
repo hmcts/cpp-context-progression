@@ -607,7 +607,6 @@ public class PreAndPostConditionHelper {
 
     public static String pollProsecutionCasesProgressionFor(final String caseId) {
         return pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)));
-
     }
 
     public static String getCaseLsmInfoFor(final String caseId, final Matcher[] matchers) {

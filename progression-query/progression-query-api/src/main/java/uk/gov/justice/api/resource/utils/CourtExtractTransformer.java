@@ -427,9 +427,11 @@ public class CourtExtractTransformer {
                 } else {
                     defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(hearingsList, null, defendantId));
                 }
-
             }
 
+            if (nonNull(caseDefendant.getPersonDefendant()) && nonNull(caseDefendant.getPersonDefendant().getArrestSummonsNumber())) {
+                defendantBuilder.withArrestSummonsNumber(caseDefendant.getPersonDefendant().getArrestSummonsNumber());
+            }
         }
 
         return defendantBuilder.build();

@@ -106,8 +106,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
 
-        final String response = pollProsecutionCasesProgressionFor(caseId);
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
 
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -125,12 +124,12 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("Granted")),
                         withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
-
                 ));
 
-        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
 
-        final String hearingId = prosecutioncasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
+        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
                 .getJsonObject(0).getJsonArray("hearingIds").getString(0);
         final String hearingResponse = getHearingForDefendant(hearingId);
         final JsonObject hearingJsonObject = getJsonObject(hearingResponse);
@@ -164,8 +163,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
 
-        final String response = pollProsecutionCasesProgressionFor(caseId);
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId);
 
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -184,9 +182,10 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
                 ));
 
-        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
 
-        final String hearingId = prosecutioncasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
+        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
                 .getJsonObject(0).getJsonArray("hearingIds").getString(0);
         final String hearingResponse = getHearingForDefendant(hearingId);
         final JsonObject hearingJsonObject = getJsonObject(hearingResponse);
@@ -220,8 +219,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
 
-        final String response = pollProsecutionCasesProgressionFor(caseId);
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
 
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -257,13 +255,12 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.organisation.name", equalTo("Smith Ltd")),
                         withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", equalTo("REPRESENTATION_ORDER")),
                         withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.isAssociatedByLAA", equalTo(true))
-
-
                 ));
 
-        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
 
-        final String hearingId = prosecutioncasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
+        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
                 .getJsonObject(0).getJsonArray("hearingIds").getString(0);
         final String hearingResponse = getHearingForDefendant(hearingId);
         final JsonObject hearingJsonObject = getJsonObject(hearingResponse);
@@ -297,8 +294,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
 
-        final String response = pollProsecutionCasesProgressionFor(caseId);
-        final JsonObject prosecutioncasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId);
 
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -318,9 +314,10 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
                 ));
 
-        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
 
-        final String hearingId = prosecutioncasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
+        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
                 .getJsonObject(0).getJsonArray("hearingIds").getString(0);
         final String hearingResponse = getHearingForDefendant(hearingId);
         final JsonObject hearingJsonObject = getJsonObject(hearingResponse);

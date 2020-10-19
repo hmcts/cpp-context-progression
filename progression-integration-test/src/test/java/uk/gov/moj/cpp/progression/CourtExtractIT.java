@@ -20,17 +20,19 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getCrownCourtExtractDocumentRequestByDefendant;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubPleaTypes;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -75,7 +77,7 @@ public class CourtExtractIT extends AbstractIT {
         final String referredToCourt = "public.progression.prosecution-cases-referred-to-court";
         final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createConsumer(referredToCourt);
 
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }
 
@@ -87,12 +89,11 @@ public class CourtExtractIT extends AbstractIT {
         courtCentreId = randomUUID().toString();
         courtApplicationId = randomUUID().toString();
 
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
+        stubDocumentCreate(DOCUMENT_TEXT);
+        stubInitiateHearing();
+        stubPleaTypes();
     }
 
-
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
         // given
@@ -115,11 +116,11 @@ public class CourtExtractIT extends AbstractIT {
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
         // then
         assertThat(documentContentResponse, is(notNullValue()));
-        verifyProsecutingAuthrityExists();
+        verifyContentsInCrownCourtExtractPayloadUsedForPdfGeneration();
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
+    @Ignore("Ignoring for now as it's been investigated for flakiness. Planning to have a fix shortly.")
     public void shouldGetCourtExtract_whenExtractTypeIsCertificateOfConviction() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -143,7 +144,6 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenLinkedApplicationAdded() throws Exception {
         // given
@@ -170,7 +170,6 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldGetCourtExtract_whenUnresultedCaseWithLikedApplicationIsEjected() throws Exception {
         // given
@@ -184,7 +183,6 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldExtractCrownCourtFromResultedHearingWithPlea() throws Exception {
         final String publicHearingResulted = "public.hearing.resulted";
@@ -241,7 +239,7 @@ public class CourtExtractIT extends AbstractIT {
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged){
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
@@ -266,9 +264,13 @@ public class CourtExtractIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private void verifyProsecutingAuthrityExists() {
-        Optional<JSONObject> documentRequest = DocumentGeneratorStub.getCrownCourtExtractDocumentRequestByDefendant(defendantId);
-        assertTrue(documentRequest.isPresent() && documentRequest.get().has("prosecutingAuthority"));
+    private void verifyContentsInCrownCourtExtractPayloadUsedForPdfGeneration() {
+        final Optional<JSONObject> documentRequest = getCrownCourtExtractDocumentRequestByDefendant(defendantId);
+        assertThat(documentRequest.isPresent(), is(true));
+        final JSONObject crownCourtExtractPayload = documentRequest.get();
+
+        assertThat(crownCourtExtractPayload.has("prosecutingAuthority"), is(true));
+        assertThat(crownCourtExtractPayload.getJSONObject("defendant").getString("arrestSummonsNumber"), is("arrest123"));
     }
 }
 

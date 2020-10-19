@@ -228,6 +228,24 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    public void testTransformToCourtExtract_shouldUseArrestSummonsNumber_whenPresent() {
+        defendant = Defendant.defendant().withId(DEFENDANT_ID)
+                .withOffences(Arrays.asList())
+                .withPersonDefendant(createPersonDefendant(DEFENDANT_ID))
+                .build();
+        final String extractType = "CrownCourtExtract";
+        //given
+        final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlance();
+        final List<String> selectedHearingIds = Arrays.asList(HEARING_ID.toString(), HEARING_ID_2.toString());
+
+        //when
+        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        // then
+        assertThat(courtExtractRequested.getDefendant().getArrestSummonsNumber(), is("Arrest123"));
+    }
+
+    @Test
     public void testTransformToCourtExtract_shouldShowDefenceRepresentation_whenDefenceOrganisationIsNotPresentInProsecutionCaseDefendant() {
 
 
@@ -757,7 +775,8 @@ public class CourtExtractTransformerTest {
                         .withFirstName("Harry")
                         .withMiddleName("JackKane")
                         .withLastName("Junior")
-                        .build()).build();
+                        .build()).
+                        withArrestSummonsNumber("Arrest123").build();
 
     }
 
