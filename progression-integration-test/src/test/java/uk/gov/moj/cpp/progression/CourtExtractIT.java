@@ -1,9 +1,13 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.ArrayUtils.addAll;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -34,6 +38,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,7 +52,6 @@ import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -98,7 +102,7 @@ public class CourtExtractIT extends AbstractIT {
     public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
         hearingId = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
@@ -120,11 +124,10 @@ public class CourtExtractIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("Ignoring for now as it's been investigated for flakiness. Planning to have a fix shortly.")
     public void shouldGetCourtExtract_whenExtractTypeIsCertificateOfConviction() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
         hearingId = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
@@ -148,9 +151,9 @@ public class CourtExtractIT extends AbstractIT {
     public void shouldGetCourtExtract_whenLinkedApplicationAdded() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
-        hearingId=extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject,defendantId);
+        hearingId = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -238,7 +241,7 @@ public class CourtExtractIT extends AbstractIT {
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged){
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
@@ -271,6 +274,13 @@ public class CourtExtractIT extends AbstractIT {
 
         assertThat(crownCourtExtractPayload.has("prosecutingAuthority"), is(true));
         assertThat(crownCourtExtractPayload.getJSONObject("defendant").getString("arrestSummonsNumber"), is("arrest123"));
+    }
+
+    private Matcher[] getHearingsAtAGlanceMatchers(final String defendantId) {
+        final List<Matcher> newMatchers = newArrayList();
+        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].defendantId", is(defendantId)));
+        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds", hasSize(greaterThan(0))));
+        return newMatchers.toArray(new Matcher[0]);
     }
 }
 
