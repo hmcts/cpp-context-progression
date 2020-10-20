@@ -114,13 +114,6 @@
             "type": "string"
           }
         },
-        "caagDefendantOffences": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "#/definitions/caagDefendantOffence"
-          }
-        },
         "representation": {
           "description": "The organisation details of the defence representation",
           "$ref": "http://justice.gov.uk/core/courts/organisation.json"
@@ -131,6 +124,29 @@
         "legalEntityDefendant": {
           "description": "When the defendant is a legal entity the additional legal entity specific details for the defendant",
           "$ref": "#/definitions/caagOrganisation"
+        },
+        "caagDefendantOffences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/caagDefendantOffence"
+          }
+        },
+        "defendantJudicialResults": {
+          "description": "defendant level results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+          }
+        },
+        "defendantCaseJudicialResults": {
+          "description": "A record of any judicial decisions and results made against the defendant on a given case i.e. defendantCase results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+          }
         }
       },
       "required": [

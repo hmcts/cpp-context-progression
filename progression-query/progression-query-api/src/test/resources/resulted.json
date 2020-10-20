@@ -48,6 +48,7 @@
           "name": "defence Organisation abc"
         },
         "id": "5f080fe7-7020-4c38-ac9a-88681ad05a5e",
+        "masterDefendantId": "5f080fe7-7020-4c38-ac9a-88681ad05a5e",
         "isYouth": true,
         "mitigation": "I was not there",
         "mitigationWelsh": "I was not there in Welsh",

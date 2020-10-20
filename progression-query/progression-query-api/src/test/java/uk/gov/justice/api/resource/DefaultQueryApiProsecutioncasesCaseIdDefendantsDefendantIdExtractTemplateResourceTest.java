@@ -1,5 +1,6 @@
 package uk.gov.justice.api.resource;
 
+import static com.google.common.io.Resources.getResource;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static org.hamcrest.CoreMatchers.is;
@@ -9,7 +10,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
@@ -127,7 +127,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         try (final InputStream stream = loader.getResourceAsStream("resulted.json");
              final JsonReader jsonReader = Json.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
-            final String newPayload = Resources.toString(Resources.getResource("payload-with-description.json"), Charset.defaultCharset());
+            final String newPayload = Resources.toString(getResource("payload-with-description.json"), Charset.defaultCharset());
 
             when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
             when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);

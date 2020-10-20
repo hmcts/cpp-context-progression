@@ -4,34 +4,43 @@ import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.time.Period.between;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static uk.gov.justice.progression.courts.CaagDefendants.caagDefendants;
+import static uk.gov.justice.progression.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntityDefendant;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.CaagDefendantOffences;
 import uk.gov.justice.progression.courts.CaagDefendants;
+import uk.gov.justice.progression.courts.CaagDefendants.Builder;
 import uk.gov.justice.progression.courts.CaagResultPrompts;
 import uk.gov.justice.progression.courts.CaagResults;
 import uk.gov.justice.progression.courts.CaseDetails;
-import uk.gov.justice.progression.courts.HearingListingStatus;
+import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.ProsecutorDetails;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 
@@ -46,26 +55,24 @@ public class CaseAtAGlanceHelper {
     static final String YOUTH_MARKER_TYPE = "Youth";
 
     private final ProsecutionCase prosecutionCase;
-    private final List<Hearings> caseHearings;
+    private final List<Hearings> hearingsList;
     private final ReferenceDataService referenceDataService;
 
-    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> caseHearings, final ReferenceDataService referenceDataService) {
+    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> hearingsList, final ReferenceDataService referenceDataService) {
         this.prosecutionCase = prosecutionCase;
-        this.caseHearings = caseHearings;
+        this.hearingsList = new ArrayList<>(hearingsList);
         this.referenceDataService = referenceDataService;
     }
 
     public CaseDetails getCaseDetails() {
-
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
-
         final CaseDetails.Builder caseDetailsBuilder = CaseDetails.caseDetails();
+
         if (nonNull(prosecutionCaseIdentifier) && nonNull(prosecutionCaseIdentifier.getCaseURN())) {
             caseDetailsBuilder.withCaseURN(prosecutionCaseIdentifier.getCaseURN());
         }
-
         if (nonNull(prosecutionCase.getCaseMarkers()) && !prosecutionCase.getCaseMarkers().isEmpty()) {
-            caseDetailsBuilder.withCaseMarkers(prosecutionCase.getCaseMarkers().stream().map(Marker::getMarkerTypeDescription).collect(Collectors.toList()));
+            caseDetailsBuilder.withCaseMarkers(prosecutionCase.getCaseMarkers().stream().map(Marker::getMarkerTypeDescription).collect(toList()));
         }
 
         caseDetailsBuilder.withCaseStatus(prosecutionCase.getCaseStatus());
@@ -75,14 +82,13 @@ public class CaseAtAGlanceHelper {
             caseDetailsBuilder.withInitiationCode(
                     prosecutionCase.getInitiationCode().toString());
         }
-
         return caseDetailsBuilder.build();
     }
 
     public ProsecutorDetails getProsecutorDetails() {
         final ProsecutorDetails.Builder prosecutorDetailsBuilder = ProsecutorDetails.prosecutorDetails();
-
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+
         if (nonNull(prosecutionCaseIdentifier)) {
             prosecutorDetailsBuilder.withProsecutionAuthorityReference(prosecutionCaseIdentifier.getProsecutionAuthorityReference());
             prosecutorDetailsBuilder.withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode());
@@ -91,72 +97,94 @@ public class CaseAtAGlanceHelper {
             prosecutorDetailsBuilder.withProsecutionAuthorityId(prosecutionAuthorityId);
             prosecutorDetailsBuilder.withAddress(getProsecutorAddress(prosecutionAuthorityId));
         }
-
         return prosecutorDetailsBuilder.build();
     }
 
-    public List<CaagDefendants> getDefendantsWithOffenceDetails() {
-        final List<CaagDefendants> defendantList = new ArrayList<>();
+    public List<CaagDefendants> getCaagDefendantsList() {
+        final List<CaagDefendants> caagDefendantsList = new ArrayList<>();
+        final List<Defendant> defendantList = prosecutionCase.getDefendants();
 
-        if (nonNull(prosecutionCase.getDefendants())) {
+        for (final Defendant defendant : defendantList) {
+            final Builder caagDefendantBuilder = caagDefendants();
+            setDefendantPersonalDetails(defendant, caagDefendantBuilder);
+            final List<CaagDefendantOffences> caagDefendantOffencesList = getCaagDefendantOffencesList(defendant);
+            final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults(defendant.getMasterDefendantId());
+            final List<JudicialResult> defendantCaseJudicialResultList = getCaseLevelJudicialResults();
 
-            prosecutionCase.getDefendants().forEach(defendant -> {
-                final CaagDefendants.Builder caagDefendant = CaagDefendants.caagDefendants()
-                        .withId(defendant.getId())
-                        .withMasterDefendantId(defendant.getMasterDefendantId());
-                setDefendantPersonalDetails(defendant, caagDefendant);
-
-                if (nonNull(defendant.getOffences())) {
-                    final List<CaagDefendantOffences> caagDefendantOffenceList = new ArrayList<>();
-
-                    defendant.getOffences().forEach(offence -> {
-                        final CaagDefendantOffences.Builder caagDefendantOffenceBuilder = CaagDefendantOffences.caagDefendantOffences();
-                        setDefendantOffenceDetails(defendant.getId(), offence, caagDefendantOffenceBuilder);
-                        caagDefendantOffenceList.add(caagDefendantOffenceBuilder.build());
-                    });
-
-                    caagDefendant.withCaagDefendantOffences(caagDefendantOffenceList);
-                    caagDefendant.withLegalAidStatus(defendant.getLegalAidStatus());
-                }
-
-                caagDefendant.withDefendantCaseJudicialResults(defendant.getDefendantCaseJudicialResults());
-
-                defendantList.add(caagDefendant.build());
-            });
+            if (!isEmpty(caagDefendantOffencesList)) {
+                caagDefendantBuilder.withCaagDefendantOffences(caagDefendantOffencesList);
+            }
+            if (!isEmpty(defendantCaseJudicialResultList)) {
+                caagDefendantBuilder.withDefendantCaseJudicialResults(defendantCaseJudicialResultList);
+            }
+            if (!isEmpty(defendantJudicialResultList)) {
+                caagDefendantBuilder.withDefendantJudicialResults(defendantJudicialResultList);
+            }
+            caagDefendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
+            caagDefendantsList.add(caagDefendantBuilder.build());
         }
-
-        return defendantList;
+        return caagDefendantsList;
     }
 
-    private void setDefendantOffenceDetails(final UUID defendantId, final Offence offence, final CaagDefendantOffences.Builder caagDefendantOffenceBuilder) {
+    private List<JudicialResult> getDefendantLevelJudicialResults(final UUID masterDefendantId) {
+        return hearingsList.stream().map(Hearings::getDefendantJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
+                .map(DefendantJudicialResult::getJudicialResult)
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
 
-        caagDefendantOffenceBuilder.withId(offence.getId());
-        caagDefendantOffenceBuilder.withOffenceCode(offence.getOffenceCode());
-        caagDefendantOffenceBuilder.withCount(offence.getCount());
+    private List<JudicialResult> getCaseLevelJudicialResults() {
+        return hearingsList.stream().map(Hearings::getDefendants)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .map(Defendants::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(toList());
+    }
 
-        caagDefendantOffenceBuilder.withOffenceTitle(offence.getOffenceTitle());
-        caagDefendantOffenceBuilder.withOffenceTitleWelsh(offence.getOffenceTitleWelsh());
-        caagDefendantOffenceBuilder.withWording(offence.getWording());
-        caagDefendantOffenceBuilder.withWordingWelsh(offence.getWordingWelsh());
-        caagDefendantOffenceBuilder.withOffenceLegislation(offence.getOffenceLegislation());
-        caagDefendantOffenceBuilder.withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh());
+    private List<CaagDefendantOffences> getCaagDefendantOffencesList(final Defendant defendant) {
+        final List<CaagDefendantOffences> caagDefendantOffenceList = new ArrayList<>();
+        final List<Offence> offenceList = defendant.getOffences();
 
-        caagDefendantOffenceBuilder.withStartDate(offence.getStartDate());
-        caagDefendantOffenceBuilder.withEndDate(offence.getEndDate());
+        if (nonNull(offenceList)) {
+            for (final Offence offence : offenceList) {
+                final CaagDefendantOffences.Builder caagDefendantOffenceBuilder = CaagDefendantOffences.caagDefendantOffences();
+                caagDefendantOffenceBuilder.withId(offence.getId());
+                caagDefendantOffenceBuilder.withOffenceCode(offence.getOffenceCode());
+                caagDefendantOffenceBuilder.withCount(offence.getCount());
+                caagDefendantOffenceBuilder.withOffenceTitle(offence.getOffenceTitle());
+                caagDefendantOffenceBuilder.withOffenceTitleWelsh(offence.getOffenceTitleWelsh());
+                caagDefendantOffenceBuilder.withWording(offence.getWording());
+                caagDefendantOffenceBuilder.withWordingWelsh(offence.getWordingWelsh());
+                caagDefendantOffenceBuilder.withOffenceLegislation(offence.getOffenceLegislation());
+                caagDefendantOffenceBuilder.withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh());
+                caagDefendantOffenceBuilder.withStartDate(offence.getStartDate());
+                caagDefendantOffenceBuilder.withEndDate(offence.getEndDate());
+                caagDefendantOffenceBuilder.withAllocationDecision(offence.getAllocationDecision());
+                caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
 
-        caagDefendantOffenceBuilder.withAllocationDecision(offence.getAllocationDecision());
-        caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
+                if (nonNull(offence.getJudicialResults())) {
+                    final List<JudicialResult> resultsFromAllHearings = getResultsFromAllHearings(defendant.getId(), offence.getId());
+                    final List<CaagResults> caagResultsList = extractResults(resultsFromAllHearings);
+                    caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
+                }
 
-        if (nonNull(offence.getJudicialResults())) {
-            caagDefendantOffenceBuilder.withCaagResults(extractResults(getResultsFromAllHearings(defendantId, offence.getId())));
+                caagDefendantOffenceBuilder.withPlea(offence.getPlea());
+                caagDefendantOffenceBuilder.withVerdict(offence.getVerdict());
+                caagDefendantOffenceList.add(caagDefendantOffenceBuilder.build());
+            }
         }
-        caagDefendantOffenceBuilder.withPlea(offence.getPlea());
-        caagDefendantOffenceBuilder.withVerdict(offence.getVerdict());
+
+        return caagDefendantOffenceList;
     }
 
     private List<CaagResults> extractResults(final List<JudicialResult> judicialResults) {
         return judicialResults.stream()
-                .filter(jr -> !Boolean.TRUE.equals(jr.getIsDeleted()))
+                .filter(jr -> !ofNullable(jr.getIsDeleted()).orElse(false))
                 .map(jr -> {
                     final CaagResults.Builder caagResultsBuilder = CaagResults.caagResults()
                             .withId(jr.getJudicialResultId())
@@ -175,7 +203,7 @@ public class CaseAtAGlanceHelper {
                     return caagResultsBuilder.build();
                 })
                 .sorted(Comparator.comparing(CaagResults::getOrderedDate).reversed())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private List<CaagResultPrompts> extractResultPrompts(final List<JudicialResultPrompt> judicialResultPrompts) {
@@ -184,42 +212,46 @@ public class CaseAtAGlanceHelper {
                         .withLabel(jrp.getLabel())
                         .withValue(jrp.getValue())
                         .build())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
-    private void setDefendantPersonalDetails(final Defendant defendant, final CaagDefendants.Builder caagDefendant) {
-
+    private void setDefendantPersonalDetails(final Defendant defendant, final Builder caagDefendantBuilder) {
         final List<String> defendantMarkers = new ArrayList<>();
-        if (Boolean.TRUE.equals(defendant.getIsYouth())) {
+        final PersonDefendant personDefendant = defendant.getPersonDefendant();
+
+        if (ofNullable(defendant.getIsYouth()).orElse(false)) {
             defendantMarkers.add(YOUTH_MARKER_TYPE);
         }
 
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails())) {
-            caagDefendant.withFirstName(defendant.getPersonDefendant().getPersonDetails().getFirstName())
-                    .withLastName(defendant.getPersonDefendant().getPersonDetails().getLastName())
-                    .withDateOfBirth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth())
-                    .withAge(calculateAge(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()))
-                    .withAddress(defendant.getPersonDefendant().getPersonDetails().getAddress())
-                    .withInterpreterLanguageNeeds(defendant.getPersonDefendant().getPersonDetails().getInterpreterLanguageNeeds())
-                    .withNationality(getNationalityDescription(defendant.getPersonDefendant().getPersonDetails()));
+        caagDefendantBuilder.withId(defendant.getId());
 
-            if (nonNull(defendant.getPersonDefendant().getBailStatus())) {
-                caagDefendant.withRemandStatus(defendant.getPersonDefendant().getBailStatus().getDescription());
+        if (nonNull(personDefendant) && nonNull(personDefendant.getPersonDetails())) {
+            final Person personDetails = personDefendant.getPersonDetails();
+            caagDefendantBuilder.withFirstName(personDetails.getFirstName())
+                    .withLastName(personDetails.getLastName())
+                    .withDateOfBirth(personDetails.getDateOfBirth())
+                    .withAge(getAge(personDetails.getDateOfBirth()))
+                    .withAddress(personDetails.getAddress())
+                    .withInterpreterLanguageNeeds(personDetails.getInterpreterLanguageNeeds())
+                    .withNationality(getNationalityDescription(personDetails));
+
+            if (nonNull(personDefendant.getBailStatus())) {
+                caagDefendantBuilder.withRemandStatus(personDefendant.getBailStatus().getDescription());
             }
 
-            if (nonNull(defendant.getPersonDefendant().getPersonDetails().getPersonMarkers())) {
-                defendantMarkers.addAll(defendant.getPersonDefendant().getPersonDetails().getPersonMarkers().stream()
+            if (nonNull(personDetails.getPersonMarkers())) {
+                defendantMarkers.addAll(personDetails.getPersonMarkers().stream()
                         .map(Marker::getMarkerTypeDescription)
-                        .collect(Collectors.toList()));
+                        .collect(toList()));
             }
         }
 
         if (!defendantMarkers.isEmpty()) {
-            caagDefendant.withDefendantMarkers(defendantMarkers);
+            caagDefendantBuilder.withDefendantMarkers(defendantMarkers);
         }
 
         if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation())) {
-            caagDefendant.withLegalEntityDefendant(legalEntityDefendant()
+            caagDefendantBuilder.withLegalEntityDefendant(legalEntityDefendant()
                     .withName(defendant.getLegalEntityDefendant().getOrganisation().getName())
                     .withAddress(defendant.getLegalEntityDefendant().getOrganisation().getAddress())
                     .build());
@@ -232,7 +264,7 @@ public class CaseAtAGlanceHelper {
                 : person.getNationalityDescription();
     }
 
-    static Integer calculateAge(final LocalDate dateOfBirth) {
+    static Integer getAge(final LocalDate dateOfBirth) {
         return nonNull(dateOfBirth) ? between(dateOfBirth, now()).getYears() : null;
     }
 
@@ -254,18 +286,13 @@ public class CaseAtAGlanceHelper {
     }
 
     private List<JudicialResult> getResultsFromAllHearings(final UUID defendantId, final UUID offenceId) {
-        final List<JudicialResult> defendantJRs = new ArrayList<>();
-
-        caseHearings.stream()
-                .filter(hearings -> hearings.getHearingListingStatus() == HearingListingStatus.HEARING_RESULTED)
-                .forEach(hearings -> hearings.getDefendants().stream()
-                        .filter(d -> d.getId().equals(defendantId))
-
-                        .forEach(d -> d.getOffences().stream()
-                                .filter(o -> o.getId().equals(offenceId))
-                                .forEach(o -> defendantJRs.addAll(o.getJudicialResults()))));
-
-        return defendantJRs;
+        return hearingsList.stream()
+                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()))
+                .flatMap(hearings -> hearings.getDefendants().stream())
+                .filter(defendants -> defendantId.equals(defendants.getId()))
+                .flatMap(defendants -> defendants.getOffences().stream())
+                .filter(offences -> offenceId.equals(offences.getId()))
+                .flatMap(offences -> offences.getJudicialResults().stream())
+                .collect(toList());
     }
-
 }

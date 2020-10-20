@@ -155,8 +155,8 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     private Matcher[] getCaseAtAGlanceMatchers() {
         return new Matcher[]{
-                withJsonPath("$.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
-                withJsonPath("$.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue()),
+                withJsonPath("$.defendants[0].defendantJudicialResults[0].label", equalTo("Surcharge")),
+                withJsonPath("$.defendants[0].defendantJudicialResults[0].judicialResultId", notNullValue()),
                 withJsonPath("$.defendants[0].defendantCaseJudicialResults[0].label", equalTo("Costs to Crown Prosecution Service")),
                 withJsonPath("$.defendants[0].defendantCaseJudicialResults[0].judicialResultId", notNullValue())
 

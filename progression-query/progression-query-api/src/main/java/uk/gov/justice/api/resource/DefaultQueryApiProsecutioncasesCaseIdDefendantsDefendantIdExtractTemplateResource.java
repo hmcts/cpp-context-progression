@@ -2,6 +2,7 @@ package uk.gov.justice.api.resource;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static javax.json.JsonValue.NULL;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
@@ -41,7 +42,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -139,10 +139,8 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         return getDocumentContent(document, defendantId, template, hearingIdList);
     }
 
-
     private Response getDocumentContent(final JsonEnvelope document, final String defendantId, final String extractType, final List<String> hearingIdList) {
-
-        if (JsonValue.NULL.equals(document.payload())) {
+        if (NULL.equals(document.payload())) {
             return null;
         } else {
             final UUID systemUser = serviceContextSystemUserProvider.getContextSystemUserId()

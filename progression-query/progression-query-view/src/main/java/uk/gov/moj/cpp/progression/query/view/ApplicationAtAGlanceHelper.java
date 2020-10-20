@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import static java.lang.Boolean.FALSE;
-import static java.util.Objects.*;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -10,7 +9,6 @@ import static uk.gov.justice.progression.courts.ApplicantDetails.applicantDetail
 import static uk.gov.justice.progression.courts.ApplicationDetails.Builder;
 import static uk.gov.justice.progression.courts.ApplicationDetails.applicationDetails;
 import static uk.gov.justice.progression.courts.RespondentDetails.respondentDetails;
-import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.calculateAge;
 
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.BailStatus;
@@ -31,7 +29,6 @@ import uk.gov.justice.progression.courts.RespondentRepresentatives;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

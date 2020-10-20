@@ -207,7 +207,6 @@ public class SendingSheetCompleteTransformerTest {
         assertThat(offence.getOffenceLegislation(), equalTo(LEGISLATION));
         assertThat(offence.getOrderIndex(), equalTo(ORDER_INDEX));
         assertThat(offence.getPlea().getPleaDate(), equalTo(PLEA_DATE));
-        assertThat(offence.getPlea().getPleaValue().toString(), equalTo(PLEA_GUILTY));
         assertThat(offence.getIndicatedPlea().getIndicatedPleaDate(), equalTo(CONVICTION_DATE));
         assertThat(offence.getIndicatedPlea().getIndicatedPleaValue().toString(), equalTo(INDICATED_PLEA));
         assertThat(offence.getAllocationDecision().getMotReasonCode(), equalTo("4"));

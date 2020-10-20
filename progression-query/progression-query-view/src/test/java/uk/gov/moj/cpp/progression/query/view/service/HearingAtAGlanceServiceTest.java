@@ -6,10 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
-import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
+import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -84,7 +84,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetHearingAtAGlanceServiceTest {
+public class HearingAtAGlanceServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
     private static final String HEARING_PAYLOAD = "{\"courtCentre\":{\"address\":{\"address1\":\"176A Lavender Hill\",\"address2\":\"London\",\"address3\":\"\",\"address4\":\"\",\"address5\":\"\",\"postcode\":\"SW11 1JU\"},\"id\":\"f8254db1-1683-483e-afb3-b87fde5a0a26\",\"name\":\"Lavender Hill Magistrates' Court\",\"roomId\":\"9e4932f7-97b2-3010-b942-ddd2624e4dd8\",\"roomName\":\"Courtroom 01\"},\"hasSharedResults\":false,\"hearingDays\":[{\"listedDurationMinutes\":1," +
@@ -125,7 +125,7 @@ public class GetHearingAtAGlanceServiceTest {
     private HearingApplicationRepository hearingApplicationRepository;
 
     @InjectMocks
-    private GetHearingAtAGlanceService getHearingAtAGlanceService;
+    private HearingAtAGlanceService hearingAtAGlanceService;
 
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -171,7 +171,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -261,7 +261,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -353,7 +353,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
 
@@ -448,7 +448,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -573,7 +573,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -664,7 +664,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -755,7 +755,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -819,7 +819,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD);
         when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
 
-        List<Hearings> caseHearings = this.getHearingAtAGlanceService.getCaseHearings(CASE_ID);
+        List<Hearings> caseHearings = this.hearingAtAGlanceService.getCaseHearings(CASE_ID);
 
         assertThat(caseHearings.isEmpty(), is(false));
     }
@@ -833,7 +833,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD_WITH_NO_HEARING_DAYS);
         when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
 
-        List<Hearings> caseHearings = this.getHearingAtAGlanceService.getCaseHearings(CASE_ID);
+        List<Hearings> caseHearings = this.hearingAtAGlanceService.getCaseHearings(CASE_ID);
         assertThat(caseHearings.isEmpty(), is(false));
         assertThat(caseHearings.get(0).getDefendants().get(0).getAge(), is (EMPTY_STRING));
     }
@@ -870,7 +870,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
-        GetHearingsAtAGlance response = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
 
         // Prosecution Case Id assertion
         assertThat(response.getId(), is(CASE_ID));
@@ -902,7 +902,7 @@ public class GetHearingAtAGlanceServiceTest {
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
-        final GetHearingsAtAGlance hearingAtAGlance = this.getHearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        final GetHearingsAtAGlance hearingAtAGlance = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
         assertThat(hearingAtAGlance.getHearings().isEmpty(), is(false));
         final Hearings hearings = hearingAtAGlance.getHearings().get(0);
         assertThat(hearings.getDefendantJudicialResults().isEmpty(), is(false));
