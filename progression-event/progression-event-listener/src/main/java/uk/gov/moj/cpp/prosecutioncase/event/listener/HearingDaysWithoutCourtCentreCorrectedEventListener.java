@@ -77,11 +77,9 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListener {
         final List<HearingDay> hearingDayListToBeReplaced = new ArrayList<>();
         hearingDays.forEach(hearingDay ->
             hearingDayListToBeReplaced.add(HearingDay.hearingDay()
-            .withListedDurationMinutes(hearingDay.getListedDurationMinutes())
-            .withListingSequence(hearingDay.getListingSequence())
-            .withSittingDay(hearingDay.getSittingDay())
-            .withCourtCentreId(courtCentreId)
-            .withCourtRoomId(courtRoomId).build())
+                    .withValuesFrom(hearingDay)
+                    .withCourtCentreId(courtCentreId)
+                    .withCourtRoomId(courtRoomId).build())
         );
         return hearingDayListToBeReplaced;
     }

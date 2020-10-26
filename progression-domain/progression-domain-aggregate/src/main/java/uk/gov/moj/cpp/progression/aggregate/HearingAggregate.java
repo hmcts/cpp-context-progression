@@ -343,9 +343,7 @@ public class HearingAggregate implements Aggregate {
         final List<HearingDay> hearingDayListToBeReplaced = new ArrayList<>();
         hearing.getHearingDays().forEach(hearingDay ->
                 hearingDayListToBeReplaced.add(HearingDay.hearingDay()
-                        .withListedDurationMinutes(hearingDay.getListedDurationMinutes())
-                        .withListingSequence(hearingDay.getListingSequence())
-                        .withSittingDay(hearingDay.getSittingDay())
+                        .withValuesFrom(hearingDay)
                         .withCourtCentreId(courtCentreId)
                         .withCourtRoomId(courtRoomId).build())
         );
