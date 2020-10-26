@@ -47,8 +47,8 @@ import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
@@ -75,6 +75,7 @@ import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociat
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -991,7 +992,7 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldAddCaseNote() {
-        final List<Object> eventStream = caseAggregate.addNote(randomUUID(), "This is a Note", false,"Bob", "Marley").collect(toList());
+        final List<Object> eventStream = caseAggregate.addNote(randomUUID(), "This is a Note", false, "Bob", "Marley").collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -1103,9 +1104,25 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldEditCaseNote() {
-        final List<Object> eventStream = caseAggregate.editNote(randomUUID(), randomUUID(),false).collect(toList());
+        final List<Object> eventStream = caseAggregate.editNote(randomUUID(), randomUUID(), false).collect(toList());
         assertThat(eventStream.size(), is(1));
         assertThat(eventStream.get(0), instanceOf(CaseNoteEdited.class));
+    }
+
+    @Test
+    public void shouldMarkHearingsDuplicate() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final List<UUID> defendantIds = Arrays.asList(randomUUID(), randomUUID());
+
+        final List<Object> eventStream = caseAggregate.markHearingAsDuplicate(hearingId, caseId, defendantIds).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = (HearingMarkedAsDuplicateForCase) eventStream.get(0);
+        assertThat(hearingMarkedAsDuplicateForCase.getHearingId(), is(hearingId));
+        assertThat(hearingMarkedAsDuplicateForCase.getCaseId(), is(caseId));
+        assertThat(hearingMarkedAsDuplicateForCase.getDefendantIds(), is(defendantIds));
+
     }
 }
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
@@ -31,4 +32,9 @@ public interface CaseDefendantHearingRepository extends EntityRepository<CaseDef
     public abstract CaseDefendantHearingEntity findByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
                                                                                       @QueryParam("caseId") UUID caseId,
                                                                                       @QueryParam("defendantId") UUID defendantId);
+    @Modifying
+    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.caseId in (:caseId) and entity.id.defendantId in (:defendantId)")
+    void removeByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
+                                                  @QueryParam("caseId") UUID caseId,
+                                                  @QueryParam("defendantId") UUID defendantId);
 }

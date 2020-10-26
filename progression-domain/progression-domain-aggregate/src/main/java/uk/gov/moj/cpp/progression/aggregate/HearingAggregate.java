@@ -32,6 +32,7 @@ import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
 import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 202L;
+    private static final long serialVersionUID = 203L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private UUID boxWorkAssignedUserId;
     private String boxWorkTaskId;
@@ -59,6 +60,7 @@ public class HearingAggregate implements Aggregate {
     private Hearing hearing;
     private HearingListingStatus hearingListingStatus;
     private Boolean unscheduledHearingListedFromThisHearing;
+    private boolean duplicate;
 
     @Override
     public Object apply(final Object event) {
@@ -85,9 +87,12 @@ public class HearingAggregate implements Aggregate {
                     }
                 }),
                 when(UnscheduledHearingListingRequested.class).apply(e ->
-                   this.unscheduledHearingListedFromThisHearing = true
+                        this.unscheduledHearingListedFromThisHearing = true
                 ),
                 when(HearingDaysWithoutCourtCentreCorrected.class).apply(this::onHearingDaysWithoutCourtCentreCorrected),
+                when(HearingMarkedAsDuplicate.class).apply(e ->
+                        this.duplicate = true
+                ),
                 otherwiseDoNothing());
     }
 
@@ -307,7 +312,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> listUnscheduledHearing(final Hearing hearing) {
-        if (Boolean.TRUE.equals(this.unscheduledHearingListedFromThisHearing)){
+        if (Boolean.TRUE.equals(this.unscheduledHearingListedFromThisHearing)) {
             LOGGER.info("Unscheduled hearing has been listing from this hearing with id {}", hearing.getId());
             return empty();
         }
@@ -321,10 +326,22 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> recordUnscheduledHearing(final UUID hearingId, final List<UUID> uuidList) {
 
         return apply(Stream.of(UnscheduledHearingRecorded
-                                       .unscheduledHearingRecorded()
-                                       .withHearingId(hearingId)
-                                       .withUnscheduledHearingIds(uuidList)
-                                       .build()));
+                .unscheduledHearingRecorded()
+                .withHearingId(hearingId)
+                .withUnscheduledHearingIds(uuidList)
+                .build()));
+    }
+
+    public Stream<Object> markAsDuplicate(final UUID hearingId, final List<UUID> prosecutionCaseIds, final List<UUID> defendantIds) {
+        if (this.duplicate) {
+            return empty();
+        }
+
+        return apply(Stream.of(HearingMarkedAsDuplicate.hearingMarkedAsDuplicate()
+                .withHearingId(hearingId)
+                .withCaseIds(prosecutionCaseIds)
+                .withDefendantIds(defendantIds)
+                .build()));
     }
 
     private void onHearingDaysWithoutCourtCentreCorrected(final HearingDaysWithoutCourtCentreCorrected hearingDaysWithoutCourtCentreCorrected) {
@@ -349,5 +366,4 @@ public class HearingAggregate implements Aggregate {
         );
         return hearingDayListToBeReplaced;
     }
-
 }

@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.moj.cpp.listing.domain.CourtHouseType.MAGISTRATES;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_ANY_ALLOCATION_SEARCH_HEARINGS;
 import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
@@ -44,7 +45,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.listing.domain.CourtHouseType;
 import uk.gov.moj.cpp.listing.domain.Defendant;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.HearingDay;
@@ -399,7 +399,7 @@ public class ListingServiceTest {
         final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = uk.gov.moj.cpp.listing.domain.CommittingCourt.committingCourt()
                 .withCourtCentreId(UUID.randomUUID())
                 .withCourtHouseName("CourtHouseName")
-                .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                .withCourtHouseType(MAGISTRATES)
                 .withCourtHouseShortName("CourtHouseShortName")
                 .withCourtHouseCode("CourtHouseShortCode")
                 .build();

@@ -71,6 +71,7 @@ import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
@@ -316,6 +317,7 @@ public class CaseAggregate implements Aggregate {
                 when(DefendantDefenceOrganisationDisassociated.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
                 when(DefenceOrganisationDissociatedByDefenceContext.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
                 when(DefenceOrganisationAssociatedByDefenceContext.class).apply(this::updateDefendantAssociatedDefenceOrganisation),
+                when(HearingMarkedAsDuplicateForCase.class).apply(this::onHearingMarkedAsDuplicateForCase),
                 when(DefendantMatched.class).apply(
                         e -> this.matchedDefendantIds.add(e.getDefendantId())
                 ),
@@ -1361,6 +1363,14 @@ public class CaseAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> markHearingAsDuplicate(final UUID hearingId, final UUID caseId, final List<UUID> defendantIds) {
+        return apply(Stream.of(HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .withDefendantIds(defendantIds)
+                .build()));
+    }
+
     private List<MatchedDefendants> transform(final List<MatchedDefendant> matchedDefendants) {
         return matchedDefendants.stream()
                 .map(matchedDefendant -> MatchedDefendants.matchedDefendants()
@@ -1504,6 +1514,10 @@ public class CaseAggregate implements Aggregate {
 
     private void updateDefendantAssociatedDefenceOrganisation(final DefenceOrganisationAssociatedByDefenceContext defenceOrganisationAssociatedByDefenceContext) {
         this.defendantAssociatedDefenceOrganisation.put(defenceOrganisationAssociatedByDefenceContext.getDefendantId(), defenceOrganisationAssociatedByDefenceContext.getOrganisationId());
+    }
+
+    private void onHearingMarkedAsDuplicateForCase(final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase) {
+        this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
     }
 
     private boolean isAlreadyAssociated(final UUID defendantId) {

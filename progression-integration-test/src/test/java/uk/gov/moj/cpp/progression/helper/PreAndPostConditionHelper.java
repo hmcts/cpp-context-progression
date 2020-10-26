@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.helper;
 
 import static com.google.common.io.Resources.getResource;
+import static com.jayway.jsonassert.JsonAssert.emptyCollection;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -631,6 +632,17 @@ public class PreAndPostConditionHelper {
                                 matchers
                         ))).getPayload();
     }
+
+    public static void verifyHearingIsEmpty(final String hearingId) {
+        poll(requestParams(getReadUrl("/hearingSearch/" + hearingId), "application/vnd.progression.query.hearing+json").withHeader(USER_ID, UUID.randomUUID()))
+                .until(
+                        status().is(OK),
+                        payload().isJson(
+                                withJsonPath(".$", emptyCollection())
+                        ));
+    }
+
+
 
     public static String pollProsecutionCasesProgressionFor(final String caseId, final Matcher... matchers) {
         return pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase+json", matchers);

@@ -231,6 +231,12 @@ subscriptions_descriptor:
         - name: progression.event.conviction-date-removed
           schema_uri: http://justice.gov.uk/core/courts/conviction-date-removed.json
 
+        - name: progression.event.hearing-marked-as-duplicate
+          schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate.json
+
+        - name: progression.event.hearing-marked-as-duplicate-for-case
+          schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate-for-case.json
+
           # Deprecated API  - End
 
       event_source_name: progression

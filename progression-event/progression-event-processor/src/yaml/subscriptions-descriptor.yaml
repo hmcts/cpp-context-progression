@@ -190,6 +190,9 @@ subscriptions_descriptor:
         - name: progression.event.unscheduled-hearing-listing-requested
           schema_uri: http://justice.gov.uk/core/courts/progression.event.unscheduled-hearing-listing-requested.json
 
+        - name: progression.event.hearing-marked-as-duplicate
+          schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -289,6 +292,9 @@ subscriptions_descriptor:
 
         - name: public.hearing.event.nces-notification-requested
           schema_uri: http://justice.gov.uk/core/courts/nces-notification-requested.json
+
+        - name: public.events.hearing.marked-as-duplicate
+          schema_uri: http://justice.gov.uk/hearing/courts/hearing.events.marked-as-duplicate.json
 
         # Notification notify
         - name: public.notificationnotify.events.notification-failed
