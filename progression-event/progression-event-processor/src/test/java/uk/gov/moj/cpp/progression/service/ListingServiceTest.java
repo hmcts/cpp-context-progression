@@ -45,6 +45,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.listing.domain.CourtHouseType;
 import uk.gov.moj.cpp.listing.domain.Defendant;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.HearingDay;

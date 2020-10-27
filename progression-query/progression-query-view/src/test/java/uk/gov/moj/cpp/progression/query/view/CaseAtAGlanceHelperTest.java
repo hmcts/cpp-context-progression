@@ -45,6 +45,7 @@ import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.VerdictType;
+import uk.gov.justice.progression.courts.CaagDefendantOffences;
 import uk.gov.justice.progression.courts.CaagDefendants;
 import uk.gov.justice.progression.courts.CaagResults;
 import uk.gov.justice.progression.courts.CaseDetails;
@@ -76,7 +77,8 @@ public class CaseAtAGlanceHelperTest {
     private static final String ADD_NATIONALITY_DESCRIPTION = "Australian";
     private static final Address ADDRESS = Address.address().withAddress1("line1").withAddress2("line2").build();
     private static final String REMAND_STATUS = "Conditional bail";
-    private static final String OFFENCE_CODE = "CJSCODEGAPS";
+    private static final String OFFENCE_CODE = "CJSCODEGAPS1";
+    private static final String OTHER_OFFENCE_CODE = "CJSCODEGAPS2";
     private static final String OFFENCE_TITLE = "Offence Title";
     private static final String OFFENCE_TITLE_WELSH = "Offence Title Welsh";
     private static final String PLEA_GUILTY = "GUILTY";
@@ -330,11 +332,29 @@ public class CaseAtAGlanceHelperTest {
         assertThat(firstDefendant.getDefendantJudicialResults().get(0).getJudicialResultId(), is(JUDICIAL_RESULT_ID));
         assertThat(firstDefendant.getDefendantCaseJudicialResults(), hasSize(1));
 
-        assertThat(secondDefendant.getCaagDefendantOffences(), hasSize(1));
+        final List<CaagDefendantOffences> firstDefendantOffences = firstDefendant.getCaagDefendantOffences();
+        assertThat(firstDefendantOffences, hasSize(2));
+        assertThat(firstDefendantOffences.get(1).getOffenceCode(), is(OTHER_OFFENCE_CODE));
+        assertThat(firstDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
+
+        final List<CaagResults> firstCaagResults = firstDefendantOffences.get(0).getCaagResults();
+        assertThat(firstCaagResults, hasSize(2));
+        assertThat(firstCaagResults.get(0).getAmendmentReason(), is(OTHER_AMEND_REASON));
+        assertThat(firstCaagResults.get(1).getAmendmentReason(), is(AMEND_REASON));
+
+        final List<CaagDefendantOffences> secondDefendantOffences = secondDefendant.getCaagDefendantOffences();
+        assertThat(secondDefendantOffences, hasSize(1));
+        assertThat(secondDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
+        final List<CaagResults> secondCaagResults = secondDefendantOffences.get(0).getCaagResults();
+        assertThat(secondCaagResults, hasSize(0));
         assertThat(secondDefendant.getDefendantJudicialResults(), nullValue());
         assertThat(secondDefendant.getDefendantCaseJudicialResults(), hasSize(1));
 
-        assertThat(thirdDefendant.getCaagDefendantOffences(), hasSize(1));
+        final List<CaagDefendantOffences> thirdDefendantOffences = thirdDefendant.getCaagDefendantOffences();
+        assertThat(thirdDefendantOffences, hasSize(1));
+        assertThat(thirdDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
+        final List<CaagResults> thirdCaagResults = thirdDefendantOffences.get(0).getCaagResults();
+        assertThat(thirdCaagResults, hasSize(0));
         assertThat(thirdDefendant.getDefendantJudicialResults(), nullValue());
         assertThat(thirdDefendant.getDefendantCaseJudicialResults(), hasSize(1));
     }
@@ -375,7 +395,7 @@ public class CaseAtAGlanceHelperTest {
                                                 .withEndDate(LocalDate.now())
                                                 .withJudicialResults(emptyList())
                                                 .build(),
-                                        offence().withId(randomUUID()).build()))
+                                        offence().withId(randomUUID()).withOffenceCode(OTHER_OFFENCE_CODE).build()))
                                 .withLegalAidStatus(LEGAL_AID_STATUS)
                                 .withDefendantCaseJudicialResults(singletonList(judicialResult().withLabel(LABEL).build()))
                                 .build(),

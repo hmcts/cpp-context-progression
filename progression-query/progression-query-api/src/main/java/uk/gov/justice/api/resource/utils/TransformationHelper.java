@@ -37,21 +37,25 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
 
 import com.google.common.base.CaseFormat;
 
 @SuppressWarnings({"squid:S3655", "squid:S1067"})
 public class TransformationHelper {
 
+    private static final String CHAIR = "Chair:";
+    private static final String WINGER = "Winger";
     @Inject
     ReferenceDataService referenceDataService;
-
-    private int winger = 1;
+    @Inject
+    private RequestedNameMapper requestedNameMapper;
 
     public String getName(final String firstName, final String middleName, final String lastName) {
         final StringBuilder sb = new StringBuilder();
@@ -69,27 +73,31 @@ public class TransformationHelper {
         return sb.toString().trim();
     }
 
-    public Address getAddress(final String address1, final String address2, final String address3, final String address4, final String address5, final String postCode){
+    public Address getAddress(final String address1, final String address2, final String address3, final String address4, final String address5, final String postCode) {
         return Address.address()
                 .withAddress1(address1)
                 .withAddress2(isNotEmpty(address3)
-                        && isNotEmpty(address2)? address2
-                        +SPACE+address3 : address2)
+                        && isNotEmpty(address2) ? address2
+                        + SPACE + address3 : address2)
                 .withAddress3(isNotEmpty(address5)
-                        && isNotEmpty(address4)? address4
-                        +SPACE+address5 : address4)
+                        && isNotEmpty(address4) ? address4
+                        + SPACE + address5 : address4)
                 .withPostCode(postCode)
                 .build();
     }
+
     public Hearings getLatestHearings(final List<Hearings> hearingsList) {
         return hearingsList.stream().sorted(comparing(h -> getSittingDay(h.getHearingDays()))).reduce((first, second) -> second).orElse(null);
     }
+
     public Hearing getLatestHearing(final List<Hearing> hearingsList) {
         return hearingsList.stream().sorted(comparing(h -> getSittingDay(h.getHearingDays()))).reduce((first, second) -> second).orElse(null);
     }
+
     private ZonedDateTime getSittingDay(final List<HearingDay> hearingDays) {
         return hearingDays.stream().sorted(comparing(HearingDay::getSittingDay).reversed()).findFirst().get().getSittingDay();
     }
+
     public List<Dates> transformDates(final List<HearingDay> hearingDaysList) {
         if (hearingDaysList.size() > 2) {
             return getToAndFromDays(hearingDaysList);
@@ -99,36 +107,40 @@ public class TransformationHelper {
         ).collect(toList());
 
     }
+
     public List<Dates> transformDates(final List<HearingDay> hearingDaysList, boolean sorted) {
-        if(sorted){
+        if (sorted) {
             return transformDates(hearingDaysList.stream().sorted(Comparator.comparing(HearingDay::getSittingDay)).collect(toList()));
         }
         return transformDates(hearingDaysList);
     }
+
     //   If isBenchChairman= true then display name should be Chair: name, if isDeputy= true then Winger1: name
     //   i.e. "judicialDisplayName": "Chair: Elizabeth Cole, Winger1: Sharon Reed-Jones, Winger2: Greg Walsh"
     public String transformJudicialDisplayName(final List<JudicialRole> judicialRoles) {
         final StringBuilder sb = new StringBuilder();
-        winger = 1;
-        judicialRoles.forEach(j -> {
-
-            if (nonNull(j.getIsBenchChairman()) && j.getIsBenchChairman()) {
-                sb.append("Chair: ");
-            } else if (nonNull(j.getIsDeputy()) && j.getIsDeputy()) {
-                sb.append("Winger");
-                sb.append(getWingerAndIncrement());
+        int winger = 1;
+        for (final JudicialRole judicialRole : judicialRoles) {
+            if (nonNull(judicialRole.getIsBenchChairman()) && judicialRole.getIsBenchChairman()) {
+                sb.append(CHAIR + " ");
+            } else if (nonNull(judicialRole.getIsDeputy()) && judicialRole.getIsDeputy()) {
+                sb.append(WINGER);
+                sb.append(winger++);
                 sb.append(": ");
             }
-            sb.append(getName(j.getFirstName(), j.getMiddleName(), j.getLastName()));
+
+            final Optional<JsonObject> jsonObject = referenceDataService.getJudiciary(judicialRole.getJudicialId());
+            jsonObject.ifPresent(judiciary -> sb.append(requestedNameMapper.getRequestedJudgeName(judiciary)));
             sb.append(" ");
 
-        });
+        }
         return sb.toString().trim();
     }
 
     public String getCamelCase(final String value) {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, value);
     }
+
     public String transformApplicationResponse(final List<CourtApplicationRespondent> respondents) {
         return respondents.stream()
                 .filter(Objects::nonNull)
@@ -141,10 +153,11 @@ public class TransformationHelper {
 
     }
 
-    public boolean isApplicationResponseAvailable(final List<CourtApplicationRespondent> respondents ){
+    public boolean isApplicationResponseAvailable(final List<CourtApplicationRespondent> respondents) {
         return nonNull(respondents) && respondents.stream().
                 anyMatch(r -> nonNull(r.getApplicationResponse()));
     }
+
     public LocalDate transformApplicationResponseDate(final List<CourtApplicationRespondent> respondents) {
         return respondents.stream()
                 .filter(Objects::nonNull)
@@ -156,6 +169,7 @@ public class TransformationHelper {
                 .orElse(null);
 
     }
+
     public uk.gov.justice.core.courts.Address getCourtAddress(final UUID userId, final UUID courtCentreId) {
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 metadataBuilder()
@@ -184,9 +198,6 @@ public class TransformationHelper {
         return referenceDataService.getProsecutor(jsonEnvelope, prosecutionCaseIdentifier.getProsecutionAuthorityId().toString());
     }
 
-    private int getWingerAndIncrement() {
-        return winger++;
-    }
     private List<Dates> getToAndFromDays(final List<HearingDay> hearingDaysList) {
         final List<Dates> dates = new ArrayList<>();
         dates.add(Dates.dates()
@@ -252,7 +263,7 @@ public class TransformationHelper {
                 .filter(ca -> ca.getType().getIsAppealApplication() != null)
                 .filter(ca -> ca.getType().getIsAppealApplication())
                 .map(CourtApplication::getApplicationStatus)
-                .anyMatch(applicationStatus -> applicationStatus.equals(ApplicationStatus.DRAFT) ||  applicationStatus.equals(ApplicationStatus.LISTED )
+                .anyMatch(applicationStatus -> applicationStatus.equals(ApplicationStatus.DRAFT) || applicationStatus.equals(ApplicationStatus.LISTED)
                         || applicationStatus.equals(ApplicationStatus.EJECTED));
     }
 }

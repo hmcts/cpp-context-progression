@@ -153,6 +153,10 @@ public class CaseAtAGlanceHelper {
         if (nonNull(offenceList)) {
             for (final Offence offence : offenceList) {
                 final CaagDefendantOffences.Builder caagDefendantOffenceBuilder = CaagDefendantOffences.caagDefendantOffences();
+                final List<JudicialResult> resultsFromAllHearings = getResultsFromAllHearings(defendant.getId(), offence.getId());
+                final List<CaagResults> caagResultsList = extractResults(resultsFromAllHearings);
+
+                caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
                 caagDefendantOffenceBuilder.withId(offence.getId());
                 caagDefendantOffenceBuilder.withOffenceCode(offence.getOffenceCode());
                 caagDefendantOffenceBuilder.withCount(offence.getCount());
@@ -166,13 +170,6 @@ public class CaseAtAGlanceHelper {
                 caagDefendantOffenceBuilder.withEndDate(offence.getEndDate());
                 caagDefendantOffenceBuilder.withAllocationDecision(offence.getAllocationDecision());
                 caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
-
-                if (nonNull(offence.getJudicialResults())) {
-                    final List<JudicialResult> resultsFromAllHearings = getResultsFromAllHearings(defendant.getId(), offence.getId());
-                    final List<CaagResults> caagResultsList = extractResults(resultsFromAllHearings);
-                    caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
-                }
-
                 caagDefendantOffenceBuilder.withPlea(offence.getPlea());
                 caagDefendantOffenceBuilder.withVerdict(offence.getVerdict());
                 caagDefendantOffenceList.add(caagDefendantOffenceBuilder.build());

@@ -1,5 +1,8 @@
 package uk.gov.justice.api.resource.service;
 
+import static java.util.Objects.isNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
@@ -15,6 +18,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +32,6 @@ import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.messaging.MetadataBuilder;
 
 @SuppressWarnings({"squid:S1067", "squid:S1192"})
 public class ReferenceDataService {
@@ -37,6 +40,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit.v2";
     public static final String REFERENCEDATA_GET_PROSECUTOR = "referencedata.query.prosecutor";
     public static final String REFERENCEDATA_GET_HEARINGTYPES = "referencedata.query.hearing-types";
+    private static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
     private static final String ADDRESS_3 = "address3";
@@ -48,6 +52,7 @@ public class ReferenceDataService {
     private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
     private static final String FIELD_PLEA_TYPE_DESCRIPTION = "pleaTypeDescription";
     private static final String FIELD_PLEA_VALUE = "pleaValue";
+    private static final String FIELD_JUDICIARIES = "judiciaries";
 
     @Inject
     @ServiceComponent(QUERY_API)
@@ -66,10 +71,11 @@ public class ReferenceDataService {
 
         return pleaStatusTypes.stream()
                 .collect(Collectors.toMap(
-                        jsonValue -> ((JsonObject)jsonValue).getString(FIELD_PLEA_VALUE),
-                        jsonValue -> ((JsonObject)jsonValue).getString(FIELD_PLEA_TYPE_DESCRIPTION)
+                        jsonValue -> ((JsonObject) jsonValue).getString(FIELD_PLEA_VALUE),
+                        jsonValue -> ((JsonObject) jsonValue).getString(FIELD_PLEA_TYPE_DESCRIPTION)
                 ));
     }
+
 
     public Optional<JsonObject> getOrganisationUnitById(final JsonEnvelope event, final UUID courtCentreId) {
         final JsonObject payload = createObjectBuilder().add("id", courtCentreId.toString()).build();
@@ -119,7 +125,7 @@ public class ReferenceDataService {
                 .build();
     }
 
-    public Map<UUID, ReferenceHearingDetails>  getHearingTypes(final JsonEnvelope event) {
+    public Map<UUID, ReferenceHearingDetails> getHearingTypes(final JsonEnvelope event) {
         final JsonObject payload = createObjectBuilder().build();
 
         final Metadata metadata = metadataFrom(event.metadata())
@@ -131,7 +137,7 @@ public class ReferenceDataService {
         final JsonObject hearingTypes = jsonEnvelop.payloadAsJsonObject();
         final JsonArray arryayOfObjects = hearingTypes.getJsonArray("hearingTypes");
         final Map<UUID, ReferenceHearingDetails> referenceHearingTypeDetails = new HashMap<>();
-        for(int count = 0; count < arryayOfObjects.size(); count++) {
+        for (int count = 0; count < arryayOfObjects.size(); count++) {
             final ReferenceHearingDetails referenceHearingDetails = convertToHearingDetais(arryayOfObjects.getJsonObject(count));
             referenceHearingTypeDetails.put(referenceHearingDetails.getHearingTypeId(), referenceHearingDetails);
         }
@@ -154,6 +160,18 @@ public class ReferenceDataService {
         return Optional.ofNullable(jsonEnvelop.payloadAsJsonObject());
     }
 
+    public Optional<JsonObject> getJudiciary(final UUID judiciaryId) {
+        final JsonObject queryParameters = createObjectBuilder().add("ids", judiciaryId.toString()).build();
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(judiciaryId)
+                .withName(REFERENCEDATA_QUERY_JUDICIARIES);
+
+        final Envelope<JsonObject> jsonEnvelop = requester.requestAsAdmin(envelopeFrom(metadataBuilder, queryParameters), JsonObject.class);
+        final JsonArray judiciaries = jsonEnvelop.payload().getJsonArray(FIELD_JUDICIARIES);
+        LOGGER.info("'referencedata.query.judiciaries {} received with payload {}", judiciaryId, jsonEnvelop.payload());
+        return isNull(judiciaries) ? empty() : of(judiciaries.getJsonObject(0));
+    }
 
     public static class ReferenceHearingDetails {
         private final UUID hearingTypeId;

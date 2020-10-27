@@ -10,6 +10,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.api.resource.DefaultQueryApiApplicationsApplicationIdExtractResource.STANDALONE_APPLICATION;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
@@ -55,11 +57,16 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +89,7 @@ public class ApplicationExtractTransformerTest {
     private static final String ADDRESS_5 = "BERKSHIRE";
     private static final String APPLICATION_REFERENCE = "APP-1";
     private static final String ORG_NAME = "ABC Corp";
-    private static final String JUDICIAL_DISPLAY_NAME = "Chair: Jack Denial Winger1: Jack Denial Winger2: Jack Denial";
+    private static final String JUDICIAL_DISPLAY_NAME = "Chair: Denial Winger1: Denial Winger2: Denial";
     private static final String ROLE_DISPLAY_NAME = "District judge";
     private static final String RESPONSE_ADMITTED = "Admitted";
     private static final String REPORTING_RESTRICTION_REASON = "Suspect is minor";
@@ -121,6 +128,8 @@ public class ApplicationExtractTransformerTest {
 
     @Mock
     private ReferenceDataService referenceDataService;
+    @Mock
+    private RequestedNameMapper requestedNameMapper;
 
     @Before
     public void init() {
@@ -134,6 +143,9 @@ public class ApplicationExtractTransformerTest {
         //given
         final CourtApplication courtApplication = createCourtApplication();
         List<Hearing> hearingsForApplication = createHearingsForApplication();
+
+        when(requestedNameMapper.getRequestedJudgeName(argThat(Matchers.any(JsonObject.class)))).thenReturn("Denial");
+        when(referenceDataService.getJudiciary(argThat(Matchers.any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
 
         //when
         final ApplicationCourtExtractRequested applicationCourtExtractRequested = applicationExtractTransformer
@@ -539,5 +551,11 @@ public class ApplicationExtractTransformerTest {
                 .withName(ORG_NAME)
                 .withContact(createContact())
                 .build();
+    }
+
+    private JsonObject createJudiciaryJsonObject() {
+        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        judiciaryBuilder.add("value", "desc");
+        return judiciaryBuilder.build();
     }
 }
