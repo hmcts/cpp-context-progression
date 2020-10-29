@@ -105,7 +105,7 @@ public class CaseAtAGlanceHelper {
         final List<Defendant> defendantList = prosecutionCase.getDefendants();
 
         for (final Defendant defendant : defendantList) {
-            final Builder caagDefendantBuilder = caagDefendants();
+            final Builder caagDefendantBuilder = caagDefendants().withMasterDefendantId(defendant.getMasterDefendantId());
             setDefendantPersonalDetails(defendant, caagDefendantBuilder);
             final List<CaagDefendantOffences> caagDefendantOffencesList = getCaagDefendantOffencesList(defendant);
             final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults(defendant.getMasterDefendantId());

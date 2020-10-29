@@ -174,10 +174,11 @@ public class CaseAtAGlanceHelperTest {
     public void shouldGetDefendantPersonalDetails() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
-
-        final CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
+
+        final CaagDefendants defendantSmith = defendants.get(0);
+        assertThat(defendantSmith.getMasterDefendantId(), is(JOHN_SMITH_MASTER_ID));
         assertThat(defendantSmith.getFirstName(), is("John"));
         assertThat(defendantSmith.getLastName(), is("Smith"));
         assertThat(defendantSmith.getDateOfBirth(), is(DATE_OF_BIRTH));
@@ -188,6 +189,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getRemandStatus(), is(REMAND_STATUS));
 
         final CaagDefendants defendantRambo = defendants.get(1);
+        assertThat(defendantRambo.getMasterDefendantId(), is(JOHN_RAMBO_ID));
         assertThat(defendantRambo.getFirstName(), is("John"));
         assertThat(defendantRambo.getLastName(), is("Rambo"));
         assertThat(defendantRambo.getDateOfBirth(), nullValue());
