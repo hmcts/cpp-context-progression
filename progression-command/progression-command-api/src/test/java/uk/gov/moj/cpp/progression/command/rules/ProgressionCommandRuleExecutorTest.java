@@ -86,9 +86,10 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         UpdateCaseMarkersApiTest("progression.update-case-markers", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Court Associate"),
         RecordLAAReference("progression.command.record-laareference-for-offence","System Users"),
         EjectCaseOrApplication("progression.eject-case-or-application", "Eject Case Group"),
-        ReceiveRepresentationOrder("progression.command.receive-representationorder-for-defendant", "System Users"),
+        ReceiveRepresentationOrder("progression.command.receive-representationorder-for-defendant","System Users"),
         UpdateDefendantListingStatus("progression.update-defendant-listing-status", "System Users"),
-        EditCaseNote("progression.edit-case-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate");
+        EditCaseNote("progression.edit-case-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate"),
+        UpdateCpsProsecutor("progression.update-cps-prosecutor-details", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate");
 
         private final String actionName;
         private final String[] allowedUserGroups;

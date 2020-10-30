@@ -13,6 +13,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+import static javax.ws.rs.core.Response.Status.fromStatusCode;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
@@ -296,6 +297,21 @@ public class ReferenceDataStub {
                         .withBody(documentType.toString())));
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.prosecutor+json");
+    }
+
+    public static void stubQueryCpsProsecutorData(final String resourceName, final UUID id, int returnStatus) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName)).readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors.*oucode.*";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(returnStatus)
+                        .withHeader("CPPID", id.toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(documentType.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.get.prosecutor+json", fromStatusCode(returnStatus));
     }
 
     public static void stubQueryCourtOURoom(final String resourceName) {

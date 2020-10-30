@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Objects.nonNull;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -20,12 +22,14 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.CourtApplicationSummary;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.SearchCaseBuilder;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseCpsProsecutorRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
@@ -54,10 +58,14 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.QUERY_VIEW)
 public class ProsecutionCaseQuery {
 
+    public static final String PROSECUTION_CASE_IDENTIFIER = "prosecutionCaseIdentifier";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseQuery.class);
     private static final String ID = "caseId";
     private static final String FIELD_QUERY = "q";
     private static final String SEARCH_RESULT = "searchResults";
+    public static final String OLD_PROSECUTION_AUTHORITY_CODE = "oldProsecutionAuthorityCode";
+    public static final String HEARINGS_AT_A_GLANCE = "hearingsAtAGlance";
+    public static final String PROSECUTION_CASE = "prosecutionCase";
 
     @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
@@ -95,6 +103,8 @@ public class ProsecutionCaseQuery {
     @Inject
     private ReferenceDataService referenceDataService;
 
+    @Inject
+    private CaseCpsProsecutorRepository caseCpsProsecutorRepository;
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
@@ -102,7 +112,7 @@ public class ProsecutionCaseQuery {
         try {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
             final JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-            jsonObjectBuilder.add("prosecutionCase", prosecutionCase);
+            jsonObjectBuilder.add(PROSECUTION_CASE, prosecutionCase);
 
             final GetHearingsAtAGlance hearingsAtAGlance = hearingAtAGlanceService.getHearingAtAGlance(caseId.get());
             final List<CourtApplicationEntity> courtApplicationEntities = courtApplicationRepository.findByLinkedCaseId(caseId.get());
@@ -115,7 +125,18 @@ public class ProsecutionCaseQuery {
             }
 
             final JsonObject getCaseAtAGlanceJson = objectToJsonObjectConverter.convert(hearingsAtAGlance);
-            jsonObjectBuilder.add("hearingsAtAGlance", getCaseAtAGlanceJson);
+            jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE, getCaseAtAGlanceJson);
+
+
+            final CaseCpsProsecutorEntity caseCpsProsecutorEntity = caseCpsProsecutorRepository.findBy(caseId.get());
+            if (nonNull(caseCpsProsecutorEntity) && StringUtils.isNotEmpty(caseCpsProsecutorEntity.getOldCpsProsecutor())) {
+                final String oldCpsProsecutor = caseCpsProsecutorEntity.getOldCpsProsecutor();
+                JsonObject prosecutionCaseIdentifier = addProperty(prosecutionCase.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
+                jsonObjectBuilder.add(PROSECUTION_CASE,  addProperty(prosecutionCase, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
+
+                prosecutionCaseIdentifier = addProperty(getCaseAtAGlanceJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
+                jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE,  addProperty(getCaseAtAGlanceJson, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
+            }
 
         } catch (final NoResultException e) {
             LOGGER.info("# No case found yet for caseId '{}'", caseId.get());
@@ -153,8 +174,13 @@ public class ProsecutionCaseQuery {
                 courtApplicationEntities.forEach(courtApplicationEntity -> buildApplicationSummary(courtApplicationEntity.getPayload(), jsonApplicationBuilder));
                 jsonObjectBuilder.add("linkedApplications", jsonApplicationBuilder.build());
             }
-        }
-        catch (final NoResultException e) {
+
+            final CaseCpsProsecutorEntity caseCpsProsecutorEntity = caseCpsProsecutorRepository.findBy(caseId.get());
+            if (nonNull(caseCpsProsecutorEntity) && StringUtils.isNotEmpty(caseCpsProsecutorEntity.getOldCpsProsecutor())) {
+                jsonObjectBuilder.add("prosecutorDetails", addProperty(prosecutorDetailsJson, OLD_PROSECUTION_AUTHORITY_CODE, caseCpsProsecutorEntity.getOldCpsProsecutor()));
+            }
+
+        } catch (final NoResultException e) {
             LOGGER.warn("# No case found yet for caseId '{}'", caseId.get());
         }
 

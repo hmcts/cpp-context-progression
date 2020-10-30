@@ -8,6 +8,9 @@
     },
     "courtDocument": {
       "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "isCpsCase": {
+      "type": "boolean"
     }
   },
   "required": [

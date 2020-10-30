@@ -66,11 +66,17 @@
         "prosecutionAuthorityCode": {
           "type": "string"
         },
+        "oldProsecutionAuthorityCode": {
+          "type": "string"
+        },
         "prosecutionAuthorityId": {
           "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "isCpsOrgVerifyError": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

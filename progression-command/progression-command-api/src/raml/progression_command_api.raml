@@ -274,6 +274,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       (mapping):
           requestType: application/vnd.progression.update-case-markers+json
           name: progression.update-case-markers
+      (mapping):
+          requestType: application/vnd.progression.update-cps-prosecutor-details+json
+          name: progression.update-cps-prosecutor-details
 
       ...
     body:
@@ -282,6 +285,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.update-case-markers.json
         schema:
           !include json/schema/progression.update-case-markers.json
+      application/vnd.progression.update-cps-prosecutor-details+json:
+        example: !include json/progression.update-cps-prosecutor-details.json
+        schema:  !include json/schema/progression.update-cps-prosecutor-details.json
 
     responses:
           202:

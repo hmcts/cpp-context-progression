@@ -63,6 +63,7 @@ public class UnscheduledCourtHearingListTransformerTest {
         assertThat(unscheduledListingNeeds.getTypeOfList().getDescription(), is(WOFN_LABEL));
         assertThat(unscheduledListingNeeds.getCourtApplications(), is(nullValue()));
         validateOffencesInUnscheduledListingNeeds(unscheduledListingNeeds, asList(offence));
+        assertThat(unscheduledListingNeeds.getProsecutionCases().get(0).getCpsOrganisation(), is("A01"));
     }
 
     /***
@@ -350,6 +351,7 @@ public class UnscheduledCourtHearingListTransformerTest {
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
                         .withId(UUID.randomUUID())
+                        .withCpsOrganisation("A01")
                         .withDefendants(asList(Defendant.defendant()
                                 .withId(UUID.randomUUID())
                                 .withOffences(offences)

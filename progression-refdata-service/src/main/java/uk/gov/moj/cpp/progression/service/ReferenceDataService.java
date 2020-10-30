@@ -5,6 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.common.converter.LocalDates.to;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
+import javax.json.JsonValue;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -42,6 +43,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_NATIONALITIES = "referencedata.query.country-nationality";
     public static final String REFERENCEDATA_GET_REFERRAL_REASONS = "referencedata.query.referral-reasons";
     public static final String REFERENCEDATA_QUERY_PROSECUTOR = "referencedata.query.prosecutor";
+    public static final String REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE = "referencedata.query.get.prosecutor.by.oucode";
     public static final String REFERENCEDATA_QUERY_COURT_ROOM = "referencedata.query.courtroom";
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
@@ -55,6 +57,7 @@ public class ReferenceDataService {
     public static final String COUNTRY_NATIONALITY = "countryNationality";
     public static final String ID = "id";
     public static final String IDS = "ids";
+    public static final String OUCODE = "oucode";
     public static final String HEARING_TYPES = "hearingTypes";
     public static final String ETHNICITIES = "ethnicities";
     public static final String ORGANISATIONUNITS = "organisationunits";
@@ -353,7 +356,25 @@ public class ReferenceDataService {
         final JsonEnvelope response = requester.request(request);
 
         if (response.payload() == null) {
-            Optional.empty();
+            return Optional.empty();
+        }
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getProsecutorByOuCode(final JsonEnvelope event, final String id, final Requester requester) {
+
+        LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE, id);
+
+        final JsonObject payload = Json.createObjectBuilder().add(OUCODE, id).build();
+
+
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE)
+                .withMetadataFrom(event));
+
+        if (JsonValue.NULL.equals(response.payload())) {
+            return Optional.empty();
         }
 
         return Optional.of(response.payloadAsJsonObject());

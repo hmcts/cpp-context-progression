@@ -782,6 +782,8 @@ public class ProgressionService {
                             .withDefendants(filterDefendants(pc, prosecutionCaseEntity, earliestHearingDate))
                             .withInitiationCode(prosecutionCaseEntity.getInitiationCode())
                             .withOriginatingOrganisation(prosecutionCaseEntity.getOriginatingOrganisation())
+                            .withCpsOrganisation(prosecutionCaseEntity.getCpsOrganisation())
+                            .withIsCpsOrgVerifyError(prosecutionCaseEntity.getIsCpsOrgVerifyError())
                             .withProsecutionCaseIdentifier(prosecutionCaseEntity.getProsecutionCaseIdentifier())
                             .withStatementOfFacts(prosecutionCaseEntity.getStatementOfFacts())
                             .withStatementOfFactsWelsh(prosecutionCaseEntity.getStatementOfFactsWelsh())

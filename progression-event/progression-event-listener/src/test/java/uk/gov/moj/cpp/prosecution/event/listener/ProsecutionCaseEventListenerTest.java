@@ -6,6 +6,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,6 +78,9 @@ public class ProsecutionCaseEventListenerTest {
     private static final String PROSECUTION_CASES = "prosecutionCases";
     private static final String CASE_STATUS = "caseStatus";
     private static final String CASE_STATUS_EJECTED = "EJECTED";
+    private static final String CPS_ORGANISATION = "cpsOrganisation";
+    private static final String CPS_ORGANISATION_VALUE = "A01";
+
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Mock
@@ -212,6 +216,7 @@ public class ProsecutionCaseEventListenerTest {
                 .add("prosecutionCases", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
                                 .add("id", randomUUID().toString())
+                                .add(CPS_ORGANISATION, CPS_ORGANISATION_VALUE)
                                 .add("caseStatus", CASE_STATUS_EJECTED)))
                 .add("linkedCaseId", caseId.toString())
                 .add(APPLICATION_STATUS, ApplicationStatus.EJECTED.name()).build());
@@ -232,7 +237,7 @@ public class ProsecutionCaseEventListenerTest {
 
         final JsonNode hearingNode = mapper.valueToTree(JSONValue.parse(updatedHearingEntity.getPayload()));
         Assert.assertEquals("Check if the application status is ejected", CASE_STATUS_EJECTED, hearingNode.path(PROSECUTION_CASES).get(0).path(CASE_STATUS).asText());
-
+        assertThat(hearingNode.path(PROSECUTION_CASES).get(0).path(CPS_ORGANISATION).asText(), is(CPS_ORGANISATION_VALUE));
     }
 
     @Test

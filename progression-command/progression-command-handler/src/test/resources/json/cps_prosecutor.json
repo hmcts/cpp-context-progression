@@ -1,0 +1,16 @@
+{
+  "address" : {
+    "address1" : "6th Floor Windsor House",
+    "address2" : "42-50 Victoria Street",
+    "address3" : "London",
+    "postcode" : "SW1H 0TL"
+  },
+  "contact" : {
+      "primaryEmail" : "tfl.enforcement@tfl.cjsm.net"
+  },
+  "majorCreditorCode" : "TFL2",
+  "prosecutionAuthorityCode" : "TFL",
+  "prosecutionAuthorityId" : "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+  "prosecutionAuthorityName" : "Transport for London",
+  "prosecutionAuthorityOUCode" : "GAFTL00"
+}

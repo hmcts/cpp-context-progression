@@ -183,6 +183,12 @@ subscriptions_descriptor:
         - name: progression.events.hearing-days-without-court-centre-corrected
           schema_uri: http://justice.gov.uk/progression/events/progression.events.hearing-days-without-court-centre-corrected.json
 
+        - name: progression.event.cps-prosecutor-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.cps-prosecutor-updated.json
+
+        - name: progression.event.case-cps-prosecutor-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

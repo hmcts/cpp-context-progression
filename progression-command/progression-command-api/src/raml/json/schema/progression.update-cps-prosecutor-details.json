@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-cps-prosecutor-details.json",
+  "type": "object",
+  "properties": {
+    "prosecutionAuthorityReference": {
+      "type": "string"
+    },
+    "prosecutionAuthorityCode": {
+      "type": "string"
+    },
+    "prosecutionAuthorityId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "prosecutionAuthorityName": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/core/courts/address.json#"
+    },
+    "caseURN": {
+      "type": "string"
+    },
+    "oldCpsProsecutor": {
+      "description": "Old CPS Prosecutor for the case",
+      "type": "string"
+    },
+    "majorCreditorCode": {
+      "type": "string"
+    },
+    "prosecutionAuthorityOUCode": {
+      "type": "string"
+    },
+    "contact": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prosecutionAuthorityCode"
+  ],
+  "additionalProperties": false
+}

@@ -104,6 +104,7 @@ public class TestHelper {
     public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing){
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
+                .withCpsOrganisation("A01")
                 .withDefendants(Arrays.asList(Defendant.defendant()
                         .withId(defendantId)
                         .withOffences(Arrays.asList(Offence.offence()
@@ -208,6 +209,7 @@ public class TestHelper {
     public static ProsecutionCase buildProsecutionCase(final UUID prosecutionCaseId, final List<Defendant> defendants) {
         return ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
+                .withCpsOrganisation("A01")
                 .withDefendants(defendants)
                 .build();
     }

@@ -36,7 +36,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-@SuppressWarnings({"squid:S3655", "squid:S1135"})
+@SuppressWarnings({"squid:S3655", "squid:S1135","squid:S1612"})
 @ServiceComponent(EVENT_LISTENER)
 public class HearingResultEventListener {
 
@@ -137,6 +137,8 @@ public class HearingResultEventListener {
                     .withDefendants(getUpdatedDefendantsForNonResultedHearing(prosecutionCase, resultedCase))
                     .withInitiationCode(prosecutionCase.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                    .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                    .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                     .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
                     .withCaseMarkers(prosecutionCase.getCaseMarkers())
@@ -200,7 +202,7 @@ public class HearingResultEventListener {
         final Optional<Offence> optionalResultedOffence = resultedDefendant.getOffences().stream().filter(offence -> offence.getId().equals(originalOffence.getId()))
                 .findFirst();
         if (optionalResultedOffence.isPresent()) {
-            Offence resultedOffence = optionalResultedOffence.get();
+            final Offence resultedOffence = optionalResultedOffence.get();
             return Offence.offence()
                     .withAllocationDecision(originalOffence.getAllocationDecision())
                     .withAquittalDate(originalOffence.getAquittalDate())
@@ -314,6 +316,8 @@ public class HearingResultEventListener {
                     .withDefendants(getUpdatedDefendants(prosecutionCase))
                     .withInitiationCode(prosecutionCase.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                    .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                    .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                     .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
                     .withCaseMarkers(prosecutionCase.getCaseMarkers())

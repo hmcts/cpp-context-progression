@@ -17,6 +17,7 @@
           "prosecutionAuthorityReference": "RANDOM_REFERENCE"
         },
         "originatingOrganisation": "G01FT01AB",
+        "cpsOrganisation": "A01",
         "initiationCode": "J",
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",

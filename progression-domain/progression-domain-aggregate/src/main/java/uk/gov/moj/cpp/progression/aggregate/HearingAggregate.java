@@ -222,26 +222,7 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final Hearing.Builder updatedHearingBuilder = Hearing.hearing();
         if (hasProsecutionCases(hearing)) {
-            final List<ProsecutionCase> updatedProsecutionCases = hearing.getProsecutionCases().stream().map(prosecutionCase -> {
-                final List<Defendant> updatedDefendants = new ArrayList<>();
-
-                final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
-                return ProsecutionCase.prosecutionCase()
-                        .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                        .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
-                        .withId(prosecutionCase.getId())
-                        .withDefendants(updatedDefendants)
-                        .withInitiationCode(prosecutionCase.getInitiationCode())
-                        .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                        .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                        .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
-                        .withCaseMarkers(prosecutionCase.getCaseMarkers())
-                        .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                        .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                        .withRemovalReason(prosecutionCase.getRemovalReason())
-                        .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
-                        .build();
-            }).collect(toList());
+            final List<ProsecutionCase> updatedProsecutionCases = hearing.getProsecutionCases().stream().map(prosecutionCase -> getUpdatedProsecutionCase(prosecutionCase)).collect(toList());
             updatedHearingBuilder.withProsecutionCases(updatedProsecutionCases);
         }
 
@@ -279,6 +260,29 @@ public class HearingAggregate implements Aggregate {
                 HearingListingStatus.HEARING_RESULTED));
 
         return apply(streamBuilder.build());
+    }
+
+    private ProsecutionCase getUpdatedProsecutionCase(ProsecutionCase prosecutionCase) {
+        final List<Defendant> updatedDefendants = new ArrayList<>();
+
+        final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
+        return ProsecutionCase.prosecutionCase()
+                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
+                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
+                .withId(prosecutionCase.getId())
+                .withDefendants(updatedDefendants)
+                .withInitiationCode(prosecutionCase.getInitiationCode())
+                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
+                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
+                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
+                .withCaseMarkers(prosecutionCase.getCaseMarkers())
+                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
+                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
+                .withRemovalReason(prosecutionCase.getRemovalReason())
+                .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
+                .build();
     }
 
     private boolean hasProsecutionCases(final Hearing hearing) {

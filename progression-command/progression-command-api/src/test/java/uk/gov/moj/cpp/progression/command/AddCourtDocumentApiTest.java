@@ -12,6 +12,7 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
+import javax.json.JsonObjectBuilder;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -93,7 +94,7 @@ public class AddCourtDocumentApiTest {
     @Test
     public void shouldAddDocument() {
 
-        final JsonEnvelope commandEnvelope = buildEnvelope();
+        final JsonEnvelope commandEnvelope = buildEnvelope(null);
 
 
         addCourtDocumentApi.handle(commandEnvelope);
@@ -132,10 +133,48 @@ public class AddCourtDocumentApiTest {
         assertThat(newCommand.payload(), equalTo(expected().payload()));
     }
 
-    private JsonEnvelope buildEnvelope() {
+    @Test
+    public void shouldAddDocumentWithCpsCase() {
+
+        final JsonEnvelope commandEnvelope = buildEnvelope(true);
+        final JsonEnvelope expectedCommandEnvelope = buildEnvelopeForHandler(true);
+
+
+        addCourtDocumentApi.handle(commandEnvelope);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final Envelope newCommand = envelopeCaptor.getValue();
+
+        assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME));
+        assertThat(newCommand.payload(), equalTo(expectedCommandEnvelope.payload()));
+    }
+
+    private JsonEnvelope buildEnvelope(Boolean isCpsCase) {
+        final JsonObjectBuilder builder = Json.createObjectBuilder().add("documentTypeId", docTypeId.toString());
+        if(isCpsCase != null){
+            builder.add("isCpsCase", isCpsCase);
+        }
         final JsonObject payload = Json.createObjectBuilder()
-                .add("courtDocument", Json.createObjectBuilder().add("documentTypeId", docTypeId.toString()).build())
+                .add("courtDocument", builder.build())
                 .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName(ADD_COURT_DOCUMENT_NAME)
+                .withId(uuid)
+                .withUserId(userId.toString())
+                .build();
+
+        return new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, payload);
+    }
+
+    private JsonEnvelope buildEnvelopeForHandler(Boolean isCpsCase) {
+        final JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("courtDocument", Json.createObjectBuilder().add("documentTypeId", docTypeId.toString()));
+        if(isCpsCase != null){
+            builder.add("isCpsCase", isCpsCase);
+        }
+        final JsonObject payload = builder.build();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

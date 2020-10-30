@@ -168,6 +168,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(prosecutorDetails.getAddress().getAddress1(), is("address1"));
         assertThat(prosecutorDetails.getAddress().getAddress2(), is("address2"));
         assertThat(prosecutorDetails.getAddress().getPostcode(), is("postcode"));
+        assertThat(prosecutorDetails.getIsCpsOrgVerifyError(), is(true));
     }
 
     @Test
@@ -368,6 +369,7 @@ public class CaseAtAGlanceHelperTest {
                         .withProsecutionAuthorityCode(PROSECUTION_AUTHORITY_CODE)
                         .withProsecutionAuthorityReference(PROSECUTION_AUTHORITY_REFERENCE)
                         .build())
+                .withIsCpsOrgVerifyError(true)
                 .withCaseStatus(CASE_STATUS)
                 .withRemovalReason(REMOVAL_REASON)
                 .withInitiationCode(InitiationCode.J)

@@ -261,6 +261,8 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(hearingListingNeedsList.get(0).getProsecutionCases().size(), is(2));
         assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().size(), is(1));
         assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getCpsOrganisation(), is("A01"));
+
 
         final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
         final Defendant defendant2 = hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().get(0);

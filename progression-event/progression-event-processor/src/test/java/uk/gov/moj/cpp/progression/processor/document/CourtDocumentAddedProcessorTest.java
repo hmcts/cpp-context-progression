@@ -9,8 +9,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
+import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_UPDATE_CASE_FOR_CPS;
+import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_COURT_DOCUMENT_ADDED;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED;
+import static org.junit.Assert.assertNull;
 
+import javax.json.JsonObjectBuilder;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
@@ -67,18 +71,24 @@ public class CourtDocumentAddedProcessorTest {
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
-    private static JsonObject buildDocumentCategoryJsonObject(String documentTypeId) {
-
-        final JsonObject documentCategory =
-                createObjectBuilder().add("defendantDocument",
+    private static JsonObject buildDefendantDocument(){
+        return createObjectBuilder().add("defendantDocument",
                         createObjectBuilder()
                                 .add("prosecutionCaseId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")
                                 .add("defendants", createArrayBuilder().add("e1d32d9d-29ec-4934-a932-22a50f223966"))).build();
+    }
 
-        final JsonObject courtDocument =
+    private static JsonObject buildCaseDocument(){
+        return createObjectBuilder().add("caseDocument",
+                createObjectBuilder()
+                        .add("prosecutionCaseId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")).build();
+    }
+
+    private static JsonObject buildDocumentCategoryJsonObject(JsonObject documentCategory, String documentTypeId, Boolean isCpsCase) {
+        final JsonObjectBuilder courtDocument =
                 createObjectBuilder().add("courtDocument",
                         createObjectBuilder()
-                                .add("courtDocumentId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")
+                                .add("courtDocumentId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e28")
                                 .add("documentCategory", documentCategory)
                                 .add("name", "SJP Notice")
                                 .add("documentTypeId", documentTypeId)
@@ -86,10 +96,12 @@ public class CourtDocumentAddedProcessorTest {
                                 .add("mimeType", "pdf")
                                 .add("materials", createArrayBuilder().add(buildMaterial()))
                                 .add("containsFinancialMeans", false)
-                                .add("documentTypeRBAC", buildDocumentTypeDataWithRBAC()))
-                        .build();
+                                .add("documentTypeRBAC", buildDocumentTypeDataWithRBAC()));
+        if(isCpsCase != null){
+            courtDocument.add("isCpsCase", isCpsCase);
+        }
 
-        return courtDocument;
+        return courtDocument.build();
     }
 
     private static JsonObject buildMaterial() {
@@ -108,7 +120,7 @@ public class CourtDocumentAddedProcessorTest {
     @Test
     public void shouldProcessUploadCourtDocumentMessage() {
 
-        final JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject("0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        final JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject(buildDefendantDocument(), "0bb7b276-9dc0-4af2-83b9-f4acef0c7898", null);
 
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
@@ -135,7 +147,7 @@ public class CourtDocumentAddedProcessorTest {
     @Test
     public void shouldProcessUploadIDPCCourtDocumentMessage() {
 
-        final JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject("41be14e8-9df5-4b08-80b0-1e670bc80a5b");
+        final JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject(buildDefendantDocument(), "41be14e8-9df5-4b08-80b0-1e670bc80a5b", null);
 
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
@@ -164,4 +176,96 @@ public class CourtDocumentAddedProcessorTest {
 
     }
 
+    @Test
+    public void shouldCallCommandToUpdateCaseForCPSWhenCpsDefendantDocumentAdded() {
+
+        final JsonObject defendantDocumentPayload = buildDocumentCategoryJsonObject(buildDefendantDocument(), "41be14e8-9df5-4b08-80b0-1e670bc80a5b", true);
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                defendantDocumentPayload);
+
+        List<UserGroupDetails> userGroupDetails  = new ArrayList<>();
+        userGroupDetails.add(new UserGroupDetails(UUID.randomUUID(),"Chambers Admin"));
+        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
+
+        eventProcessor.handleCourtDocumentAddEvent(requestMessage);
+        verify(sender, times(4)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        verifyUpdateCpsCommand(commands.get(0), requestMessage);
+        verifyCreateCommand(commands.get(1), requestMessage);
+        verifyPublicCourtDocumentAdded(commands.get(2), requestMessage);
+        verifyIDPCommand(commands.get(3));
+    }
+
+    @Test
+    public void shouldCallCommandToUpdateCaseForCPSWhenCpsCaseDocumentAdded() {
+
+        final JsonObject caseDocumentPayload = buildDocumentCategoryJsonObject(buildCaseDocument(), "41be14e8-9df5-4b08-80b0-1e670bc80a5a", true);
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                caseDocumentPayload);
+
+        List<UserGroupDetails> userGroupDetails  = new ArrayList<>();
+        userGroupDetails.add(new UserGroupDetails(UUID.randomUUID(),"Chambers Admin"));
+        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
+
+        eventProcessor.handleCourtDocumentAddEvent(requestMessage);
+        verify(sender, times(3)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        verifyUpdateCpsCommand(commands.get(0), requestMessage);
+        verifyCreateCommand(commands.get(1), requestMessage);
+        verifyPublicCourtDocumentAdded(commands.get(2), requestMessage);
+    }
+
+    @Test
+    public void shouldNotCallCommandToUpdateCaseForCPSWhenNoCpsCaseDocumentAdded() {
+
+        final JsonObject caseDocumentPayload = buildDocumentCategoryJsonObject(buildCaseDocument(), "41be14e8-9df5-4b08-80b0-1e670bc80a5a", false);
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                caseDocumentPayload);
+
+        List<UserGroupDetails> userGroupDetails  = new ArrayList<>();
+        userGroupDetails.add(new UserGroupDetails(UUID.randomUUID(),"Chambers Admin"));
+        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
+
+        eventProcessor.handleCourtDocumentAddEvent(requestMessage);
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        verifyCreateCommand(commands.get(0), requestMessage);
+        verifyPublicCourtDocumentAdded(commands.get(1), requestMessage);
+    }
+
+
+    private void verifyIDPCommand(Envelope<JsonObject> commandIDPC ){
+        assertThat(commandIDPC.metadata().name(), is(PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED));
+        assertThat(commandIDPC.payload().getString("caseId"),is("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27"));
+        assertThat(commandIDPC.payload().getString("materialId"),is("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"));
+        assertThat(commandIDPC.payload().getString("defendantId"),is("e1d32d9d-29ec-4934-a932-22a50f223966"));
+        assertNull(commandIDPC.payload().get("isCpsCase"));
+    }
+
+    private void verifyCreateCommand(Envelope<JsonObject> commandCreateCourtDocument, JsonEnvelope requestMessage){
+        assertThat(commandCreateCourtDocument.metadata(), withMetadataEnvelopedFrom(requestMessage).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
+        final JsonObject commandCreateCourtDocumentPayload = commandCreateCourtDocument.payload();
+        //This is an Error Payload Structure that is actually returned....
+        assertThat(commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getBoolean("containsFinancialMeans"),is(false));
+        assertNull(commandCreateCourtDocumentPayload.get("isCpsCase"));
+        final JsonObject documentTypeRBACObject = commandCreateCourtDocumentPayload.getJsonObject("courtDocument").getJsonObject("documentTypeRBAC");
+        assertThat(documentTypeRBACObject, is(buildDocumentTypeDataWithRBAC()));
+    }
+
+    private void verifyUpdateCpsCommand(Envelope<JsonObject>commandUpdateCaseForCps, JsonEnvelope requestMessage ){
+        assertThat(commandUpdateCaseForCps.metadata(), withMetadataEnvelopedFrom(requestMessage).withName(PROGRESSION_COMMAND_UPDATE_CASE_FOR_CPS));
+        assertThat(commandUpdateCaseForCps.payload().getString("caseId"),is("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27"));
+        assertNull(commandUpdateCaseForCps.payload().get("isCpsCase"));
+    }
+
+    private void verifyPublicCourtDocumentAdded(Envelope<JsonObject> publicCourtDocumentAdded, JsonEnvelope requestMessage){
+        assertThat(publicCourtDocumentAdded.metadata().name(), is(PUBLIC_COURT_DOCUMENT_ADDED));
+        assertNull(publicCourtDocumentAdded.payload().get("isCpsCase"));
+    }
 }

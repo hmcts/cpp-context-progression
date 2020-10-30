@@ -175,7 +175,7 @@ public class HearingResultHandlerTest {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(randomUUID())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
-
+                .withCpsOrganisation("A01")
                 .withDefendants(defendantList).build();
         final HearingResult hearingResult = hearingResult()
                 .withHearing(Hearing.hearing()
@@ -212,7 +212,8 @@ public class HearingResultHandlerTest {
                                         is(true)),
                                 withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
                                         is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())))
+                                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
 
                         )));
 

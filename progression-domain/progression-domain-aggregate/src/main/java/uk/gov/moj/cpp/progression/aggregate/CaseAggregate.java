@@ -26,6 +26,7 @@ import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisa
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
+import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
@@ -37,6 +38,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationRejected;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
@@ -333,6 +335,7 @@ public class CaseAggregate implements Aggregate {
                 when(DefendantPartialMatchCreated.class).apply(
                         e -> this.partialMatchedDefendants.remove(e.getDefendantId())
                 ),
+                when(CaseCpsProsecutorUpdated.class).apply(this::updateProsecutionCaseIdentifier),
                 otherwiseDoNothing());
 
     }
@@ -660,6 +663,8 @@ public class CaseAggregate implements Aggregate {
                 .withDefendants(updatedDefendants)
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
                 .withCaseMarkers(prosecutionCase.getCaseMarkers())
@@ -1371,6 +1376,41 @@ public class CaseAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> updateCaseProsecutorDetails(final ProsecutionCaseIdentifier prosecutionCaseIdentifier,
+                                                      final String oldCpsProsecutor) {
+        LOGGER.debug("update case Prosecution details for caseId");
+        final UUID caseId = this.prosecutionCase.getId();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(caseId)
+                .withAddress(prosecutionCaseIdentifier.getAddress())
+                .withCaseURN(this.prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
+                .withOldCpsProsecutor(oldCpsProsecutor)
+                .withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode())
+                .withProsecutionAuthorityId(prosecutionCaseIdentifier.getProsecutionAuthorityId())
+                .withProsecutionAuthorityName(prosecutionCaseIdentifier.getProsecutionAuthorityName())
+                .withProsecutionAuthorityReference(this.prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                .withContact(prosecutionCaseIdentifier.getContact())
+                .withMajorCreditorCode(prosecutionCaseIdentifier.getMajorCreditorCode())
+                .withProsecutionAuthorityOUCode(prosecutionCaseIdentifier.getProsecutionAuthorityOUCode())
+                .withIsCpsOrgVerifyError(false)// this method is called for valid cps organisation so we should set the error flag as false.
+                .build());
+
+        if(oldCpsProsecutor != null && !oldCpsProsecutor.isEmpty()) {
+            streamBuilder.add(CpsProsecutorUpdated.cpsProsecutorUpdated()
+                    .withProsecutionCaseId(caseId)
+                    .withOldCpsProsecutor(oldCpsProsecutor)
+                    .withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode())
+                    .build());
+        }
+
+        return apply(streamBuilder.build());
+    }
+
+    public ProsecutionCase getProsecutionCase(){
+        return this.prosecutionCase;
+    }
+
     private List<MatchedDefendants> transform(final List<MatchedDefendant> matchedDefendants) {
         return matchedDefendants.stream()
                 .map(matchedDefendant -> MatchedDefendants.matchedDefendants()
@@ -1430,19 +1470,33 @@ public class CaseAggregate implements Aggregate {
                         .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
                         .build());
             } else {
-                LOGGER.info("Organisation for LAA Contract Number {} is already associated", laaContractNumber);
+                if(!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
+                    // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
+                    streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
+                            .withDefendantId(defendantId)
+                            .withLaaContractNumber(laaContractNumber)
+                            .withOrganisationId(organisationId)
+                            .withOrganisationName(organisationName)
+                            .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
+                            .build());
+                }
+                else {
+                    LOGGER.info("Organisation for LAA Contract Number {} is already associated", laaContractNumber);
+                }
 
             }
         } else {
             if (organisationId != null) {
                 // Associate the one which is linked with one from payload
-                streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
-                        .withDefendantId(defendantId)
-                        .withLaaContractNumber(laaContractNumber)
-                        .withOrganisationId(organisationId)
-                        .withOrganisationName(organisationName)
-                        .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
-                        .build());
+                if(!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
+                    streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
+                            .withDefendantId(defendantId)
+                            .withLaaContractNumber(laaContractNumber)
+                            .withOrganisationId(organisationId)
+                            .withOrganisationName(organisationName)
+                            .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
+                            .build());
+                }
             } else {
                 if (LOGGER.isErrorEnabled()) {
                     LOGGER.error("Organisation not set up for LAA Contract Number {} and there is no existing association for defendant {} ", laaContractNumber, defendantId.toString());
@@ -1524,4 +1578,64 @@ public class CaseAggregate implements Aggregate {
         return !isNull(this.defendantAssociatedDefenceOrganisation.get(defendantId));
     }
 
+    private boolean isAlreadyAssociatedToOrganisation(final UUID defendantId, final UUID organisationId) {
+        return this.defendantAssociatedDefenceOrganisation.containsKey(defendantId) && this.defendantAssociatedDefenceOrganisation.get(defendantId).equals(organisationId);
+    }
+
+    private void updateProsecutionCaseIdentifier(final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
+        ProsecutionCaseIdentifier newProsecutionCaseIdentifier;
+        if(!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()){
+            newProsecutionCaseIdentifier = this.prosecutionCase.getProsecutionCaseIdentifier();
+        }else{
+            newProsecutionCaseIdentifier = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                    .withProsecutionAuthorityCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
+                    .withCaseURN(caseCpsProsecutorUpdated.getCaseURN())
+                    .withProsecutionAuthorityId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
+                    .withProsecutionAuthorityReference(caseCpsProsecutorUpdated.getProsecutionAuthorityReference())
+                    .withProsecutionAuthorityName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
+                    .withAddress(caseCpsProsecutorUpdated.getAddress())
+                    .withProsecutionAuthorityOUCode(caseCpsProsecutorUpdated.getProsecutionAuthorityOUCode())
+                    .withContact(caseCpsProsecutorUpdated.getContact())
+                    .withMajorCreditorCode(caseCpsProsecutorUpdated.getMajorCreditorCode())
+                    .build();
+        }
+
+        final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
+                .withProsecutionCaseIdentifier(newProsecutionCaseIdentifier)
+                .withId(prosecutionCase.getId())
+                .withDefendants(prosecutionCase.getDefendants())
+                .withInitiationCode(prosecutionCase.getInitiationCode())
+                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
+                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
+                .withCaseMarkers(prosecutionCase.getCaseMarkers())
+                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
+                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
+                .withRemovalReason(prosecutionCase.getRemovalReason())
+                .withCaseStatus(prosecutionCase.getCaseStatus())
+                .withIsCpsOrgVerifyError(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError())
+                .build();
+        this.prosecutionCase = updatedProsecutionCase;
+
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = this.prosecutionCase.getProsecutionCaseIdentifier();
+        if (nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {
+            reference = caseCpsProsecutorUpdated.getProsecutionAuthorityReference();
+        }
+        if (nonNull(prosecutionCaseIdentifier.getCaseURN())) {
+            reference = caseCpsProsecutorUpdated.getCaseURN();
+        }
+    }
+
+    public Stream<Object> updateCpsOrganisationInvalid() {
+        final UUID caseId = this.prosecutionCase.getId();
+       final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(caseId)
+                .withProsecutionAuthorityCode(this.prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode())
+                .withIsCpsOrgVerifyError(true).build());
+
+        return apply(streamBuilder.build());
+    }
 }

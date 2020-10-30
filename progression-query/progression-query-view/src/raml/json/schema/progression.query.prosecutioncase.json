@@ -15,10 +15,6 @@
           "description": "The jurisdiction type of the latest hearing",
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/jurisdictionType"
         },
-        "latestHearingJurisdictionType" : {
-          "description": "The jurisdiction type of the latest hearing",
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/jurisdictionType"
-        },
         "prosecutionCaseIdentifier": {
           "$ref": "http://justice.gov.uk/core/courts/prosecutionCaseIdentifier.json#"
         },

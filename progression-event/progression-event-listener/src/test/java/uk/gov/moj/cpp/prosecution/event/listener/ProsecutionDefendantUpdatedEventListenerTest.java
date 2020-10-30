@@ -402,6 +402,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
                 .withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1, of2)))
                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                .withCpsOrganisation("A01")
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
@@ -418,6 +419,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         verify(repository).save(argumentCaptor.capture());
         final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert
                 (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
+        assertThat(prosecutionCase.getCpsOrganisation(), is("A01"));
         assertThat(prosecutionCase.getDefendants().get(0).getProceedingsConcluded(), equalTo(true));
         assertThat(prosecutionCase.getDefendants().get(0).getAssociationLockedByRepOrder(), equalTo(true));
         final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream().filter(def -> def.getId().equals(def1)).findFirst();

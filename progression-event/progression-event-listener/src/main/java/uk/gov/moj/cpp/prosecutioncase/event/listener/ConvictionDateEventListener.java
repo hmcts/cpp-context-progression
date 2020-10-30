@@ -94,6 +94,7 @@ public class ConvictionDateEventListener {
                 offence.getCount(),
                 offence.getCustodyTimeLimit(),
                 offence.getDateOfInformation(),
+                offence.getDvlaOffenceCode(),
                 offence.getEndDate(),
                 offence.getId(),
                 offence.getIndicatedPlea(),

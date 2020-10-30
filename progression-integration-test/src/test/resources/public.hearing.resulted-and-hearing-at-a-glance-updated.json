@@ -47,6 +47,7 @@
           "caseURN": "a"
         },
         "originatingOrganisation": "a",
+        "cpsOrganisation": "A02",
         "initiationCode": "J",
         "caseStatus": "a",
         "statementOfFacts": "a",

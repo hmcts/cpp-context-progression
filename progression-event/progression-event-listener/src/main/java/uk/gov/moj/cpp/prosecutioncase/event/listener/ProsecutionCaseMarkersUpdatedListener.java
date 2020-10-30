@@ -61,6 +61,8 @@ public class ProsecutionCaseMarkersUpdatedListener {
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withCaseStatus(prosecutionCase.getCaseStatus())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
@@ -80,8 +82,8 @@ public class ProsecutionCaseMarkersUpdatedListener {
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        JsonObject object = jsonReader.readObject();
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 
         return object;

@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
 import uk.gov.justice.core.courts.SjpReferral;
 import uk.gov.justice.core.courts.SummonsRequired;
@@ -128,6 +129,8 @@ public class ListCourtHearingTransformer {
                     .withDefendants(mapOfProsecutionCaseIdWithDefendants.get(prosecutionCaseId))
                     .withInitiationCode(matchedProsecutionCase.getInitiationCode())
                     .withOriginatingOrganisation(matchedProsecutionCase.getOriginatingOrganisation())
+                    .withCpsOrganisation(matchedProsecutionCase.getCpsOrganisation())
+                    .withIsCpsOrgVerifyError(matchedProsecutionCase.getIsCpsOrgVerifyError())
                     .withProsecutionCaseIdentifier(matchedProsecutionCase.getProsecutionCaseIdentifier())
                     .withStatementOfFacts(matchedProsecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh())
@@ -199,6 +202,8 @@ public class ListCourtHearingTransformer {
                     .withDefendants(mapOfProsecutionCaseIdWithDefendants.get(prosecutionCaseId))
                     .withInitiationCode(matchedProsecutionCase.getInitiationCode())
                     .withOriginatingOrganisation(matchedProsecutionCase.getOriginatingOrganisation())
+                    .withCpsOrganisation(matchedProsecutionCase.getCpsOrganisation())
+                    .withIsCpsOrgVerifyError(matchedProsecutionCase.getIsCpsOrgVerifyError())
                     .withProsecutionCaseIdentifier(matchedProsecutionCase.getProsecutionCaseIdentifier())
                     .withStatementOfFacts(matchedProsecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh())
@@ -432,7 +437,11 @@ public class ListCourtHearingTransformer {
         return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
     }
 
-    private String getReferralReasonDescription(final JsonEnvelope jsonEnvelope, final UUID referralId) {
+    private String getReferralReasonDescription(final JsonEnvelope jsonEnvelope, final ReferralReason referralReason) {
+        if(referralReason == null){
+            return null;
+        }
+        final UUID referralId = referralReason.getId();
         final JsonObject jsonObject = referenceDataService.getReferralReasonById(jsonEnvelope, referralId, requester)
                 .orElseThrow(() -> new ReferenceDataNotFoundException("ReferralReason", referralId.toString()));
         return jsonObject.getString("reason");
@@ -451,8 +460,7 @@ public class ListCourtHearingTransformer {
                                 listDefendantRequest.getReferralReason().getDefendantId() : listDefendantRequest.getDefendantId())
                         .withHearingLanguageNeeds(listDefendantRequest.getHearingLanguageNeeds())
                         .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
-                        .withListingReason(isNull(listDefendantRequest.getReferralReason()) ? null
-                                : (getReferralReasonDescription(jsonEnvelope, listDefendantRequest.getReferralReason().getId())))
+                        .withListingReason(getReferralReasonDescription(jsonEnvelope, listDefendantRequest.getReferralReason()))
                         .withIsYouth(listDefendantRequest.getSummonsRequired() != null && SummonsRequired.YOUTH.equals(listDefendantRequest.getSummonsRequired()))
                         .build()
         ).collect(Collectors.toList());

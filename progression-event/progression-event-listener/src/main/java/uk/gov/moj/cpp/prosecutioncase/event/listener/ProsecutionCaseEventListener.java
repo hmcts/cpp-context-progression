@@ -147,6 +147,8 @@ public class ProsecutionCaseEventListener {
                 .withCaseMarkers(persistentProsecutionCase.getCaseMarkers())
                 .withCaseStatus(CASE_STATUS_EJECTED)
                 .withOriginatingOrganisation(persistentProsecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(persistentProsecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(persistentProsecutionCase.getIsCpsOrgVerifyError())
                 .withPoliceOfficerInCase(persistentProsecutionCase.getPoliceOfficerInCase())
                 .withRemovalReason(removalReason)
                 .withStatementOfFacts(persistentProsecutionCase.getStatementOfFacts())

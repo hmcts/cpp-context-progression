@@ -97,6 +97,9 @@ public class CaseAtAGlanceHelper {
             prosecutorDetailsBuilder.withProsecutionAuthorityId(prosecutionAuthorityId);
             prosecutorDetailsBuilder.withAddress(getProsecutorAddress(prosecutionAuthorityId));
         }
+
+        prosecutorDetailsBuilder.withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError());
+
         return prosecutorDetailsBuilder.build();
     }
 

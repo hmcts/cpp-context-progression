@@ -2,9 +2,12 @@ package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -64,8 +67,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -102,7 +107,6 @@ public class ReceiveRepresentationOrderHandlerTest {
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
-
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             OffencesForDefendantChanged.class,
@@ -117,7 +121,6 @@ public class ReceiveRepresentationOrderHandlerTest {
 
     @InjectMocks
     private ReceiveRepresentationOrderHandler receiveRepresentationOrderHandler;
-
 
     private CaseAggregate aggregate;
 
@@ -137,8 +140,6 @@ public class ReceiveRepresentationOrderHandlerTest {
 
     public static final String REPRESENTATION_TYPE = "representationType";
 
-
-
     private static final uk.gov.justice.core.courts.Defendant defendant1 = Defendant.defendant().withId(DEFENDANT_ID)
             .withPersonDefendant(PersonDefendant.personDefendant().build())
             .withOffences(Arrays.asList(Offence.offence().withId(OFFENCE_ID).build()))
@@ -153,6 +154,23 @@ public class ReceiveRepresentationOrderHandlerTest {
         add(defendant1);
         add(defendant2);
     }};
+
+    private static final UUID SAME_DEFENDANT_OFFENCE_ID_1 = randomUUID();
+
+    private static final UUID SAME_DEFENDANT_OFFENCE_ID_2 = randomUUID();
+
+    private static final UUID MULTI_OFFENCE_DEFENDANT_ID = randomUUID();
+
+    static final List<Offence> offences = new ArrayList<Offence>() {{
+        add(Offence.offence().withId(SAME_DEFENDANT_OFFENCE_ID_1).build());
+        add(Offence.offence().withId(SAME_DEFENDANT_OFFENCE_ID_2).build());
+    }};
+
+    private static final uk.gov.justice.core.courts.Defendant multiOffenceDefendant = uk.gov.justice.core.courts.Defendant.defendant().withId(MULTI_OFFENCE_DEFENDANT_ID)
+            .withOffences(offences)
+            .withProsecutionCaseId(CASE_ID)
+            .withPersonDefendant(PersonDefendant.personDefendant().build()).build();
+
     private static final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
             .withCaseStatus("caseStatus")
             .withId(CASE_ID)
@@ -166,6 +184,20 @@ public class ReceiveRepresentationOrderHandlerTest {
                     .build())
             .build();
 
+    private ProsecutionCase getProsecutionCaseWithMultiOffence() {
+        return ProsecutionCase.prosecutionCase()
+                .withCaseStatus("caseStatus")
+                .withId(CASE_ID)
+                .withOriginatingOrganisation("originatingOrganisation")
+                .withDefendants(Arrays.asList(multiOffenceDefendant))
+                .withInitiationCode(InitiationCode.C)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("reference")
+                        .withProsecutionAuthorityCode("code")
+                        .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .build();
+    }
 
     @Before
     public void setup() {
@@ -184,16 +216,12 @@ public class ReceiveRepresentationOrderHandlerTest {
     }
 
     @Test
-    public void shouldProcessCommandWhenOrganisationIsNotSetupAndNoAssoicatedOrgExpectNoAssociationOrDisassociationEvent() throws EventStreamException {
+    public void shouldProcessCommandWhenOrganisationIsNotSetupAndNoAssociatedOrgExpectNoAssociationOrDisassociationEvent() throws EventStreamException {
         aggregate.createProsecutionCase(prosecutionCase);
-        final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null);
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.handler.receive-representationOrder-for-defendant")
-                .withId(randomUUID())
-                .build();
+        final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, null, DEFENDANT_ID);
+
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
-        final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(metadata, receiveRepresentationOrderForDefendant);
+        final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(getLegalStatus()));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(JsonEnvelope.class), any(String.class))).thenReturn(OrganisationDetails.newBuilder().build());
         when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
@@ -209,19 +237,13 @@ public class ReceiveRepresentationOrderHandlerTest {
 
     }
 
-
     @Test
-    public void shouldProcessCommand_whenOrganisationIsSetupAndAssociated_expectNoAssociationEvent() throws EventStreamException {
+    public void shouldProcessCommand_whenOrganisationIsSetupAndAssociated_expectAssociationEvent() throws EventStreamException {
         aggregate.createProsecutionCase(prosecutionCase);
         final UUID organisationId = randomUUID();
-        final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId);
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.handler.receive-representationOrder-for-defendant")
-                .withId(randomUUID())
-                .build();
+        final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId, OFFENCE_ID, DEFENDANT_ID);
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
-        final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(metadata, receiveRepresentationOrderForDefendant);
+        final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(getLegalStatus()));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(JsonEnvelope.class), any(String.class))).thenReturn(OrganisationDetails.newBuilder()
                 .withId(organisationId)
@@ -231,13 +253,87 @@ public class ReceiveRepresentationOrderHandlerTest {
 
         receiveRepresentationOrderHandler.handle(envelope);
 
+        assertFirstReceiveRepresentationOrderHandlerCommand();
+
+        receiveRepresentationOrderHandler.handle(envelope);
+        assertSecondSendReceiveRepresentationOrderHandlerCommand();
+    }
+
+    @Test
+    public void shouldTestDefenceOrganisationAssociated_Event_whenOrganisationIsSetupAndAssociatedWithMultiOffence_expectOneAssociationEvent() throws EventStreamException {
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithMultiOffence();
+        aggregate.createProsecutionCase(prosecutionCase);
+        ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, SAME_DEFENDANT_OFFENCE_ID_1, MULTI_OFFENCE_DEFENDANT_ID);
+
+        final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
+        when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(getLegalStatus()));
+        final UUID organisationId = randomUUID();
+        when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(JsonEnvelope.class), any(String.class))).thenReturn(OrganisationDetails.newBuilder()
+                .withId(organisationId)
+                .withName("Test")
+                .build());
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+
+        receiveRepresentationOrderHandler.handle(envelope);
+
+        assertFirstReceiveRepresentationOrderHandlerCommand();
+
+        receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, SAME_DEFENDANT_OFFENCE_ID_2, MULTI_OFFENCE_DEFENDANT_ID);
+
+        final Envelope<ReceiveRepresentationOrderForDefendant> newEnvelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
+
+        receiveRepresentationOrderHandler.handle(newEnvelope);
+
+        assertSecondSendReceiveRepresentationOrderHandlerCommand();
+    }
+
+    @Test
+    public void shouldTestDefenceOrganisationAssociated_Event_whenDefenceHasMultiOffence_expectTwoTimesAssociationEvent() throws EventStreamException {
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithMultiOffence();
+        aggregate.createProsecutionCase(prosecutionCase);
+        ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, SAME_DEFENDANT_OFFENCE_ID_1, MULTI_OFFENCE_DEFENDANT_ID);
+
+        final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
+        when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(getLegalStatus()));
+        final UUID organisationId = randomUUID();
+        when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(JsonEnvelope.class), any(String.class))).thenReturn(OrganisationDetails.newBuilder()
+                .withId(organisationId)
+                .withName("Test")
+                .build());
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+
+        receiveRepresentationOrderHandler.handle(envelope);
+
+        assertFirstReceiveRepresentationOrderHandlerCommand();
+
+        receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId, SAME_DEFENDANT_OFFENCE_ID_2, MULTI_OFFENCE_DEFENDANT_ID);
+
+        final Envelope<ReceiveRepresentationOrderForDefendant> newEnvelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
+
+        receiveRepresentationOrderHandler.handle(newEnvelope);
+
+        assertSecondSendReceiveRepresentationOrderHandlerCommand();
+    }
+
+    private void assertFirstReceiveRepresentationOrderHandlerCommand() throws EventStreamException {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         Optional<JsonEnvelope>  associatedOrDisAssociatedEnvelope = envelopeStream.filter
                 (a->a.metadata().name().equals("progression.event.defendant-defence-organisation-associated"))
                 .findAny();
 
-        assertFalse(associatedOrDisAssociatedEnvelope.isPresent());
+        assertTrue(associatedOrDisAssociatedEnvelope.isPresent());
+    }
+
+    private void assertSecondSendReceiveRepresentationOrderHandlerCommand() throws EventStreamException {
+        final ArgumentCaptor<Stream> argumentCaptor2 = ArgumentCaptor.forClass(Stream.class);
+        (Mockito.verify(eventStream, times(2))).append(argumentCaptor2.capture());
+        final List<Stream> streams2 = argumentCaptor2.getAllValues();
+        final Envelope record1JsonEnvelope = (JsonEnvelope) streams2.get(1).findFirst().orElse(null);
+
+        assertThat(record1JsonEnvelope.metadata().name(), not("progression.event.defendant-defence-organisation-associated"));
     }
 
     private static JsonObject getLegalStatus() {
@@ -269,17 +365,18 @@ public class ReceiveRepresentationOrderHandlerTest {
     }
 
 
-    private static ReceiveRepresentationOrderForDefendant payloadForReceiveRepresentationOrder(final UUID organisationId) {
+    private static ReceiveRepresentationOrderForDefendant payloadForReceiveRepresentationOrder(final UUID associatedOrganisationId, final UUID offenceId
+                                                                                                                                ,final UUID defendantId) {
         return ReceiveRepresentationOrderForDefendant.receiveRepresentationOrderForDefendant()
                 .withApplicationReference("AB746921")
-                .withDefendantId(DEFENDANT_ID)
+                .withDefendantId(defendantId)
                 .withProsecutionCaseId(CASE_ID)
-                .withOffenceId(OFFENCE_ID)
+                .withOffenceId(offenceId)
                 .withStatusCode("GR")
                 .withStatusDate(LocalDate.parse("2019-07-01"))
                 .withEffectiveStartDate(LocalDate.parse("2019-09-01"))
                 .withEffectiveEndDate(LocalDate.parse("2019-12-01"))
-                .withAssociatedOrganisationId(organisationId)
+                .withAssociatedOrganisationId(associatedOrganisationId)
                 .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
                         .withLaaContractNumber("LAA1234")
                         .withOrganisation(Organisation.organisation()
@@ -290,5 +387,13 @@ public class ReceiveRepresentationOrderHandlerTest {
                 .build();
 
 
+    }
+
+    private static Metadata getProgressionCommandHandlerReceiveRepresentationOrderForDefendant() {
+         return Envelope
+                .metadataBuilder()
+                .withName("progression.command.handler.receive-representationOrder-for-defendant")
+                .withId(randomUUID())
+                .build();
     }
 }

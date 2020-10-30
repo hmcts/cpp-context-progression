@@ -59,6 +59,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
     private final String statementOfFactsWelsh = "Statement of Facts Welsh";
     private final String policeOfficerRank = "1";
     private final String initiationCode = "C";
+    private final String cpsOrganisation = "A01";
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -198,6 +199,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
                 .withDefendants(singletonList(Defendant.defendant().withId(defendantId).build()))
                 .withInitiationCode(InitiationCode.C)
                 .withOriginatingOrganisation(originatingOrganisation)
+                .withCpsOrganisation(cpsOrganisation)
                 .withRemovalReason(removalReason)
                 .withStatementOfFacts(statementOfFacts)
                 .withStatementOfFactsWelsh(statementOfFactsWelsh)
@@ -215,6 +217,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
         assertThat(convert.getString("removalReason"), is(removalReason));
         assertThat(convert.getString("statementOfFactsWelsh"), is(statementOfFactsWelsh));
         assertThat(convert.getString("statementOfFacts"), is(statementOfFacts));
+        assertThat(convert.getString("cpsOrganisation"), is(cpsOrganisation));
 
         final JsonObject policeOfficerInCase = convert.getJsonObject("policeOfficerInCase");
         assertThat(policeOfficerInCase, is(notNullValue()));

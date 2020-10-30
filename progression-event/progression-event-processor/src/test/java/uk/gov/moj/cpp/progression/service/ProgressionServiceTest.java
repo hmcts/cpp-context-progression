@@ -717,6 +717,7 @@ public class ProgressionServiceTest {
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope);
 
+        assertThat(prosecutionCases.get(0).getCpsOrganisation(), is("A01"));
         assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
         assertThat(defendant2, is(prosecutionCases.get(0).getDefendants().get(0).getId()));
         assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
@@ -873,6 +874,7 @@ public class ProgressionServiceTest {
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, boolean youth) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
+                .withCpsOrganisation("A01")
                 .withDefendants(asList(Defendant.defendant()
                                 .withId(defendant1)
                                 .withIsYouth(youth)

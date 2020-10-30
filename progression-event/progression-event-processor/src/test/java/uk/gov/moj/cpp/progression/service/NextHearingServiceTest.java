@@ -414,6 +414,7 @@ public class NextHearingServiceTest {
     private void assertProsecutionCase(final ProsecutionCase prosecutionCase, final UUID prosecutionCaseId, final int size) {
         assertThat(prosecutionCase.getId(), is(prosecutionCaseId));
         assertThat(prosecutionCase.getDefendants().size(), is(size));
+        assertThat(prosecutionCase.getCpsOrganisation(), is("A01"));
     }
 
     private void assertDefendant(final Defendant defendant, final UUID defendantId, final int size) {

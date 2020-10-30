@@ -83,4 +83,5 @@
     <include file="liquibase/alter-court-register-hearing-id.xml"/>
     <include file="liquibase/alter-court-application-add-index.xml"/>
     <include file="liquibase/add-is-pinned-to-case-note.xml"/>
+    <include file="liquibase/create-case-cps-prosecutor.xml"/>
 </databaseChangeLog>

@@ -100,6 +100,7 @@ public class ListCourtHearingTransformerTest {
     private static final UUID MARKER_TYPE_ID = UUID.randomUUID();
     private static final String MARKER_TYPE_CODE = "MarkerTypeCode";
     private static final String MARKER_TYPE_DESCRIPTION = "MarkerTypeDescription";
+    private static final String cpsOrganisation = "A01";
 
     @Mock
     private Sender sender;
@@ -168,7 +169,8 @@ public class ListCourtHearingTransformerTest {
                 .getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
                 .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
-
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getCpsOrganisation(), is(cpsOrganisation));
     }
 
     @Test
@@ -442,6 +444,7 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getReportingRestrictionReason(), is(AUTOMATIC_ANONYMITY));
         assertThat(listCourtHearing.getHearings().get(0).getEarliestStartDateTime().toString(), is(earliestStartDateTime.toString()));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getCpsOrganisation(), is(cpsOrganisation));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendantId));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
                 .getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
@@ -581,6 +584,7 @@ public class ListCourtHearingTransformerTest {
     private ProsecutionCase getProsecutionCase(final LocalDate birthDate) {
         return ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
+                .withCpsOrganisation(cpsOrganisation)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .withProsecutionAuthorityCode(prosecutingAuth).build())
                 .withDefendants(Arrays.asList(Defendant.defendant()

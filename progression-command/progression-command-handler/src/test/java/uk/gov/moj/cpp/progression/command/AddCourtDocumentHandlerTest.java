@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.AddCourtDocument.addCourtDocument;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -22,6 +23,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.json.JsonValue;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import uk.gov.justice.core.courts.AddCourtDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
@@ -37,6 +43,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.handler.AddCourtDocumentHandler;
 import uk.gov.moj.cpp.progression.handler.courts.document.CourtDocumentEnricher;
 import uk.gov.moj.cpp.progression.handler.courts.document.DefaultCourtDocumentFactory;
@@ -97,8 +104,18 @@ public class AddCourtDocumentHandlerTest {
     @Mock
     private Logger logger;
 
+    @Mock
+    EventStream eventStream;
+
+    @Mock
+    private UsersGroupService usersGroupService;
+
+
     @InjectMocks
     private AddCourtDocumentHandler addCourtDocumentHandler;
+
+    @Captor
+    private ArgumentCaptor<java.util.stream.Stream<uk.gov.justice.services.messaging.JsonEnvelope>> eventCaptor;
 
     private CourtDocument buildCourtDocument() {
 
@@ -186,6 +203,50 @@ public class AddCourtDocumentHandlerTest {
         );
     }
 
+    @Test
+    public void shouldPassIsCpsCaseFlagToProcessorWhenFlagIsTrue() throws Exception {
+        isCpsCaseHandleWith(true);
+    }
+
+    @Test
+    public void shouldPassIsCpsCaseFlagToProcessorWhenFlagIsFalse() throws Exception {
+        isCpsCaseHandleWith(false);
+    }
+
+    @Test
+    public void shouldNotPassIsCpsCaseFlagToProcessorWhenFlagNotExist() throws Exception {
+        isCpsCaseHandleWith(null);
+    }
+
+    private void isCpsCaseHandleWith(Boolean isCpsCase) throws Exception{
+        final AddCourtDocument addCourtDocument = addCourtDocument()
+                .withCourtDocument(buildCourtDocument())
+                .withIsCpsCase(isCpsCase)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.add-court-document")
+                .withId(randomUUID())
+                .build();
+        final CourtDocument enrichedCourtDocument = CourtDocument.courtDocument().build();
+        final DocumentTypeAccess documentTypeData = DocumentTypeAccess.documentTypeAccess().withActionRequired(false).build();
+        when(courtDocumentEnricher.enrichWithMaterialUserGroups(any(), any())).thenReturn(enrichedCourtDocument);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(new CourtDocumentAggregate());
+        when(documentTypeAccessProvider.getDocumentTypeAccess(any(), any())).thenReturn(documentTypeData);
+
+        final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
+        addCourtDocumentHandler.handle(envelope);
+
+        verify(eventStream).append(eventCaptor.capture());
+        List<JsonValue> expectedIsCpsCase = eventCaptor.getValue().collect(Collectors.toList()).stream().map(t -> (JsonObject)t.payload()).map(t-> t.get("isCpsCase")).filter(t->t != null).collect(Collectors.toList());
+        assertThat(expectedIsCpsCase.isEmpty(), is(isCpsCase == null ? true : false));
+        if(isCpsCase != null){
+            assertThat(expectedIsCpsCase.get(0), is(isCpsCase ? JsonValue.TRUE : JsonValue.FALSE ));
+        }
+
+    }
     private JsonObject buildCourtDocumentWithoutDocumentType() {
 
         final JsonObject documentCategory =

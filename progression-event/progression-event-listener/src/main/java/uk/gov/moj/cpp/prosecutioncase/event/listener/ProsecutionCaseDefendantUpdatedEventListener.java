@@ -68,8 +68,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        JsonObject object = jsonReader.readObject();
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 
         return object;
@@ -90,7 +90,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final List<CourtApplicationEntity> applicationEntities = courtApplicationRepository.findByLinkedCaseId(defendantUpdate.getProsecutionCaseId());
 
         if (originDefendant.isPresent()) {
-            Defendant updatedDefendant = updateDefendant(originDefendant.get(), defendantUpdate);
+            final Defendant updatedDefendant = updateDefendant(originDefendant.get(), defendantUpdate);
             prosecutionCase.getDefendants().remove(originDefendant.get());
             prosecutionCase.getDefendants().add(updatedDefendant);
             if (nonNull(applicationEntities) && !applicationEntities.isEmpty()) {
@@ -135,6 +135,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .withDefendants(prosecutionCaseInRepository.getDefendants())
                     .withInitiationCode(prosecutionCaseInRepository.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCaseInRepository.getOriginatingOrganisation())
+                    .withCpsOrganisation(prosecutionCaseInRepository.getCpsOrganisation())
+                    .withIsCpsOrgVerifyError(prosecutionCaseInRepository.getIsCpsOrgVerifyError())
                     .withStatementOfFacts(prosecutionCaseInRepository.getStatementOfFacts())
                     .withStatementOfFactsWelsh(prosecutionCaseInRepository.getStatementOfFactsWelsh())
                     .withCaseMarkers(prosecutionCaseInRepository.getCaseMarkers())

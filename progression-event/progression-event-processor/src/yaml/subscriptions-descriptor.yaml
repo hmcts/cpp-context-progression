@@ -193,6 +193,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-marked-as-duplicate
           schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate.json
 
+        - name: progression.event.case-cps-prosecutor-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

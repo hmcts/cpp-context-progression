@@ -45,11 +45,11 @@
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>7.0.21</referencedata.version>
         <listing.version>7.0.32</listing.version>
-        <hearing.version>7.0.53</hearing.version>
+        <hearing.version>7.0.54</hearing.version>
         <usersgroups.version>7.0.10</usersgroups.version>
         <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>7.0.3</referencedata.offence.version>
-        <coredomain.version>1.0.122</coredomain.version>
+        <coredomain.version>1.0.123</coredomain.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>

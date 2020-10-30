@@ -5,7 +5,9 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 
+import javax.json.JsonObject;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
@@ -22,6 +24,8 @@ import javax.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class AddCourtDocumentApi {
+
+    private static final String IS_CPS_CASE = "isCpsCase";
 
     @Inject
     private Enveloper enveloper;
@@ -41,10 +45,18 @@ public class AddCourtDocumentApi {
 
     @Handles("progression.add-court-document")
     public void handle(final JsonEnvelope envelope) {
+        JsonObject payload =  envelope.payloadAsJsonObject();
+        JsonObject courtDocument = (JsonObject)payload.get("courtDocument");
+        if(courtDocument.get(IS_CPS_CASE) != null ){
+            final boolean isCpsCase = courtDocument.getBoolean(IS_CPS_CASE);
+            courtDocument =removeProperty(courtDocument, IS_CPS_CASE);
+            payload = addProperty(payload, "courtDocument", courtDocument);
+            payload = addProperty(payload, IS_CPS_CASE, isCpsCase);
+        }
         final Metadata metadata = metadataFrom(envelope.metadata())
                 .withName("progression.command.add-court-document")
                 .build();
-        sender.send(envelopeFrom(metadata, envelope.payload()));
+        sender.send(envelopeFrom(metadata, payload));
     }
 
     @Handles("progression.add-court-document-for-defence")

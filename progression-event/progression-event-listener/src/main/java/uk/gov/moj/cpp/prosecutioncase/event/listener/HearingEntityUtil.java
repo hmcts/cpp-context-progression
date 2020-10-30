@@ -76,6 +76,8 @@ public class HearingEntityUtil {
                 .withCaseMarkers(prosecutionCase.getCaseMarkers())
                 .withCaseStatus(CASE_STATUS_EJECTED)
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())

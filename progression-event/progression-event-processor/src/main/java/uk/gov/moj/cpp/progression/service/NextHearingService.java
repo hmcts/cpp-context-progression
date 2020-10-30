@@ -163,6 +163,8 @@ public class NextHearingService {
                 .withClassOfCase(prosecutionCase.getClassOfCase())
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())

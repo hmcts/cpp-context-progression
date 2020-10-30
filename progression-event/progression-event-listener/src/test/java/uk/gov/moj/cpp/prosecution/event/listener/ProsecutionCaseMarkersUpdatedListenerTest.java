@@ -6,16 +6,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.core.courts.CaseMarkersUpdated;
+import org.junit.Assert;
 import uk.gov.justice.core.courts.Marker;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseMarkersUpdatedListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
@@ -39,39 +37,22 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCaseMarkersUpdatedListenerTest {
     @Mock
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Mock
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Mock
-    private ProsecutionCase prosecutionCase;
-
-    @Mock
     private ProsecutionCaseRepository repository;
 
     @Captor
     private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
-
-    @Mock
-    private JsonObject payload;
-
-    @Mock
-    private CaseMarkersUpdated caseMarkersUpdated;
-
-    @Mock
-    private JsonEnvelope envelope;
-    @Mock
-    private Metadata metadata;
-
-    @Mock
-    private ProsecutionCaseEntity prosecutionCaseEntity;
 
     @InjectMocks
     private ProsecutionCaseMarkersUpdatedListener eventListener;
 
     @Spy
     private ListToJsonArrayConverter jsonConverter;
+
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Before
     public void initMocks() {
@@ -80,33 +61,30 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
                 new ObjectMapperProducer().objectMapper());
         setField(this.jsonConverter, "stringToJsonObjectConverter",
                 new StringToJsonObjectConverter());
+        setField(this.jsonObjectToObjectConverter, "objectMapper",
+                new ObjectMapperProducer().objectMapper());
+        setField(this.objectToJsonObjectConverter, "mapper",
+                new ObjectMapperProducer().objectMapper());
     }
 
     @Test
-    public void shouldHandleCaseMarkerUpdateEvent() {
+    public void shouldPersistCpsOrganisation() {
         final List<Marker> caseMarkers = null;
         final UUID prosecutionId = randomUUID();
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, CaseMarkersUpdated.class)).thenReturn(caseMarkersUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
-        when(caseMarkersUpdated.getProsecutionCaseId()).thenReturn(prosecutionId);
-        when(caseMarkersUpdated.getCaseMarkers()).thenReturn(caseMarkers);
+        ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        final JsonObject caseMarker = Json.createObjectBuilder()
+                .add("hearingId", randomUUID().toString()).build();
+        final JsonObject prosecutionCase = Json.createObjectBuilder()
+                .add("cpsOrganisation", "A01")
+                .build();
+        prosecutionCaseEntity.setPayload(prosecutionCase.toString());
+        when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
-                                .add("id", randomUUID().toString()).build())
-                                .build())
-                        .build()).build();
-
-        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class))
-                .thenReturn(prosecutionCase);
-        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
-        when(repository.findByCaseId(prosecutionId)).thenReturn(prosecutionCaseEntity);
-        when(prosecutionCase.getId()).thenReturn(prosecutionId);
+        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(), Json.createObjectBuilder().add("payload", caseMarker).build());
         eventListener.processCaseMarkersUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
+        ProsecutionCaseEntity prosecutionCaseEntitySaved = argumentCaptor.getValue();
+        Assert.assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"cpsOrganisation\":\"A01\""));
     }
 }

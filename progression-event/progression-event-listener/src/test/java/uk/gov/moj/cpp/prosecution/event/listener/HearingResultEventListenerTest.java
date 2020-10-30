@@ -308,6 +308,7 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getId(), is(hearingId));
         assertThat(savedHearing1.getProsecutionCases(), notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getCpsOrganisation(), is("A01"));
         assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getOffenceDateCode(), is(4));
     }
 
@@ -358,12 +359,14 @@ public class HearingResultEventListenerTest {
 
         assertThat(savedHearing1.getProsecutionCases(), notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getCpsOrganisation(), is("A01"));
         assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getDefendantCaseJudicialResults().size(), is(1));
         assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getDefendantCaseJudicialResults().get(0).getLabel(),
                 is("PublishedForNowsFALSE"));
         assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults().size(), is(1));
         assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults().get(0).getLabel(),
                 is("PublishedForNowsFALSE"));
+
     }
 
     private List<CourtApplication> getCourtApplications(final UUID courtApplicationId) {
@@ -403,6 +406,7 @@ public class HearingResultEventListenerTest {
                 .build();
         return ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
+                .withCpsOrganisation("A01")
                 .withDefendants(singletonList(defendant))
                 .build();
     }

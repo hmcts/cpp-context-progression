@@ -1,0 +1,197 @@
+package uk.gov.moj.cpp.progression.handler;
+
+
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
+
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.UpdateCpsProsecutorDetails;
+import uk.gov.justice.progression.courts.exract.Contact;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class UpdateCpsProsecutorHandlerTest {
+
+    private static final String CONTACT = "abx.xqz.com";
+    private static final String MAJOR_CREDITOR_CODE = "OUCode";
+    private static final String AUTH_OU_CODE = "B01EF01";
+    private static final String PROSECUTOR_CODE= "BLOO1";
+
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    @Mock
+    private Sender sender;
+
+    @InjectMocks
+    private UpdateCpsProsecutorHandler updateCpsProsecutorHandler;
+
+    @Mock
+    private AggregateService aggregateService;
+
+    @Mock
+    private CaseAggregate caseAggregate;
+
+    @Mock
+    private EventSource eventSource;
+
+    @Mock
+    private EventStream eventStream;
+
+    @Mock
+    private Stream<Object> events;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    private final UUID caseId = randomUUID();
+
+    private final FileResourceObjectMapper handlerTestHelper = new FileResourceObjectMapper();
+
+    @Captor
+    private ArgumentCaptor<ProsecutionCaseIdentifier> cpsProsecutorCaptor;
+
+    @Captor
+    private ArgumentCaptor<String> cpsOldProsecutorCaptor;
+
+    @Before
+    public void setup() {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        this.caseAggregate.createProsecutionCase(ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityCode("SL00Q")
+                        .withProsecutionAuthorityName("TFL")
+                        .build())
+                .withDefendants(Collections.emptyList() )
+                .build());
+
+        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+    }
+
+
+    @Test
+    public void shouldHandleUpdateCpsProsecutor() throws Exception {
+
+        UUID prosecutionAuthorityId = randomUUID();
+        Address address = Address.address().withAddress1("adres1").build();
+        final UpdateCpsProsecutorDetails cpsProsecutorDetails = UpdateCpsProsecutorDetails.updateCpsProsecutorDetails()
+                .withOldCpsProsecutor(PROSECUTOR_CODE)
+                .withProsecutionCaseId(caseId)
+                .withProsecutionAuthorityCode("TFL")
+                .withProsecutionAuthorityId(prosecutionAuthorityId)
+                .withProsecutionAuthorityName("Name")
+                .withContact(CONTACT)
+                .withMajorCreditorCode(MAJOR_CREDITOR_CODE)
+                .withProsecutionAuthorityOUCode(AUTH_OU_CODE)
+                .withAddress(address)
+                .build();
+
+        ProsecutionCaseIdentifier prosecutionCaseIdentifier = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                .withProsecutionAuthorityCode("TFL")
+                .withProsecutionAuthorityId(prosecutionAuthorityId)
+                .withProsecutionAuthorityName("Name")
+                .withProsecutionAuthorityOUCode(AUTH_OU_CODE)
+                .withAddress(address)
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail(CONTACT).build())
+                .withMajorCreditorCode(MAJOR_CREDITOR_CODE)
+                .build();
+
+        when(caseAggregate.updateCaseProsecutorDetails(any(), any())).thenReturn(events);
+
+        final Envelope<UpdateCpsProsecutorDetails> envelope = Envelope.envelopeFrom(
+                metadataFor("progression.command.update-cps-prosecutor-details", randomUUID()), cpsProsecutorDetails);
+
+        updateCpsProsecutorHandler.handleUpdateCpsProsecutor(envelope);
+
+        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture(), cpsOldProsecutorCaptor.capture());
+
+        assertThat(cpsOldProsecutorCaptor.getValue(), is(PROSECUTOR_CODE));
+        assertThat(objectToJsonObjectConverter.convert(cpsProsecutorCaptor.getValue()), is(objectToJsonObjectConverter.convert(prosecutionCaseIdentifier)));
+
+    }
+
+    @Test
+    public void shouldUpdateProsecutionAuthorityWhenCpsOrganisationIsValid() throws Exception{
+        final JsonObject prosecutorFromReferenceData = handlerTestHelper.convertFromFile("json/cps_prosecutor_from_reference_data.json", JsonObject.class);
+        final ProsecutionCaseIdentifier expectedProsecutor = handlerTestHelper.convertFromFile("json/cps_prosecutor.json", ProsecutionCaseIdentifier.class);
+        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withCpsOrganisation("GAFTL00").withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
+        when(referenceDataService.getProsecutorByOuCode(any(), eq("GAFTL00"), any())).thenReturn(Optional.of(prosecutorFromReferenceData));
+        when(caseAggregate.updateCaseProsecutorDetails(any(), any())).thenReturn(events);
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.command.update-case-for-cps-prosecutor"),
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+
+        updateCpsProsecutorHandler.handleUpdateCpsProsecutorFromReferenceData(jsonEnvelope);
+
+        verify(referenceDataService, times(1)).getProsecutorByOuCode(any(), eq("GAFTL00"), any());
+        verify(caseAggregate, times(0)).updateCpsOrganisationInvalid();
+        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture(), any());
+        ProsecutionCaseIdentifier prosecutionCaseIdentifier =  cpsProsecutorCaptor.getValue();
+
+        assertThat(objectToJsonObjectConverter.convert(prosecutionCaseIdentifier), is(objectToJsonObjectConverter.convert(expectedProsecutor)));
+    }
+
+    @Test
+    public void shouldNotUpdateProsecutionAuthorityWhenCpsOrganisationIsInValid() throws Exception{
+        final JsonObject prosecutorFromReferenceData = handlerTestHelper.convertFromFile("json/cps_prosecutor_from_reference_data.json", JsonObject.class);
+        final ProsecutionCaseIdentifier expectedProsecutor = handlerTestHelper.convertFromFile("json/cps_prosecutor.json", ProsecutionCaseIdentifier.class);
+        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withCpsOrganisation("GAFTL00").withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
+        when(referenceDataService.getProsecutorByOuCode(any(), eq("GAFTL00"), any())).thenReturn(Optional.empty());
+        when(caseAggregate.updateCpsOrganisationInvalid()).thenReturn(events);
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.command.update-case-for-cps-prosecutor"),
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+
+        updateCpsProsecutorHandler.handleUpdateCpsProsecutorFromReferenceData(jsonEnvelope);
+
+        verify(referenceDataService, times(1)).getProsecutorByOuCode(any(), eq("GAFTL00"), any());
+        verify(caseAggregate, times(0)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture(), any());
+        verify(caseAggregate, times(1)).updateCpsOrganisationInvalid();
+    }
+}

@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("squid:S1192")
 public class UnscheduledCourtHearingListTransformer {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnscheduledCourtHearingListTransformer.class);
 
@@ -283,6 +284,8 @@ public class UnscheduledCourtHearingListTransformer {
                 .withClassOfCase(prosecutionCase.getClassOfCase())
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
+                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())

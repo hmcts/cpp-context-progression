@@ -134,6 +134,9 @@
         },
         "sendToCps": {
           "type": "boolean"
+        },
+        "isCpsCase": {
+          "type": "boolean"
         }
       },
       "required": [

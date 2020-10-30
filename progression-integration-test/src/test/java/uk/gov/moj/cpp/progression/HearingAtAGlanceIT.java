@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -57,7 +58,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
     private static String caseId;
     private static String defendantId;
 
-
     @BeforeClass
     public static void setUpClass() {
         HearingStub.stubInitiateHearing();
@@ -75,6 +75,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
+        assertThat(message.get().getJsonObject("prosecutionCase").getString("cpsOrganisation"), equalTo("A02"));
 
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
                 .getJsonArray("judicialResults").getJsonObject(0).getString("judicialResultId"), equalTo("94d6e18a-4114-11ea-b77f-2e728ce88125"));
@@ -88,6 +89,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
                 .getJsonArray("judicialResults").getJsonObject(0).getBoolean("urgent"), equalTo(false));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
                 .getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("resultText"));
+
     }
 
     @Before
@@ -113,6 +115,25 @@ public class HearingAtAGlanceIT extends AbstractIT {
                         .build());
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
+        verifyInMessagingQueueForHearingResultedCaseUpdated();
+    }
+
+    @Test
+    public void shouldKeepCpsOrganisationForHearingAtAGlance() throws Exception {
+        initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
+                        hearingId, defendantId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED)
+                        .withUserId(userId)
+                        .build());
+
+        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchersForCpsOrganisation());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
 
@@ -148,6 +169,15 @@ public class HearingAtAGlanceIT extends AbstractIT {
     private Matcher[] getHearingAtAGlanceMatchers() {
         return new Matcher[]{
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
+                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
+
+        };
+    }
+
+    private Matcher[] getHearingAtAGlanceMatchersForCpsOrganisation() {
+        return new Matcher[]{
+                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
+                withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")),
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
 
         };
