@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.lang.Boolean.FALSE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -26,15 +27,18 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655", "squid:S1135","squid:S1612"})
 @ServiceComponent(EVENT_LISTENER)
@@ -55,35 +59,43 @@ public class HearingResultEventListener {
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultEventListener.class);
 
     @Handles("progression.event.hearing-resulted")
     public void updateHearingResult(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event progression.event.hearing-resulted {} ", event.toObfuscatedDebugString());
+        }
+
         //To save hearing result in current hearing and removing the defendant and case proceeding flag in it.
         final HearingResulted hearingResulted = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
         final HearingEntity currentHearingEntity = hearingRepository.findBy(hearingResulted.getHearing().getId());
         final JsonObject currentHearingJson = jsonFromString(currentHearingEntity.getPayload());
         final Hearing originalCurrentHearing = jsonObjectConverter.convert(currentHearingJson, Hearing.class);
         final Hearing updatedHearing = getUpdatedHearingForResulted(hearingResulted.getHearing(), originalCurrentHearing);
-        currentHearingEntity.setPayload(objectToJsonObjectConverter.convert(updatedHearing).toString());
+        final String resultedHearingPayload = objectToJsonObjectConverter.convert(updatedHearing).toString();
+        currentHearingEntity.setPayload(resultedHearingPayload);
         currentHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
         hearingRepository.save(currentHearingEntity);
+        LOGGER.info("Hearing: {} has been updated with listing status {}", currentHearingEntity.getHearingId(), HearingListingStatus.HEARING_RESULTED);
 
         //TO deal with setting of case and defendant proceeding flag for future hearing.
-        if (nonNull(updatedHearing.getProsecutionCases()) && !updatedHearing.getProsecutionCases().isEmpty()) {
-            updatedHearing.getProsecutionCases().forEach(prosecutionCase -> {
-                final List<CaseDefendantHearingEntity> caseDefendantHearingEntities =
-                        caseDefendantHearingRepository.findByCaseId(prosecutionCase.getId());
-                caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
-                    final HearingEntity originalHearingEntity = caseDefendantHearingEntity.getHearing();
-                    final JsonObject hearingJson = jsonFromString(originalHearingEntity.getPayload());
-                    final Hearing originalHearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
-                    if (nonNull(originalHearing.getHasSharedResults()) && !originalHearing.getHasSharedResults()) {
-                        final Hearing updatedNonResultedHearing = getUpdatedHearingForNonResulted(originalHearing, hearingResulted.getHearing());
-                        originalHearingEntity.setPayload(objectToJsonObjectConverter.convert(updatedNonResultedHearing).toString());
-                        hearingRepository.save(originalHearingEntity);
-                    }
-                });
-            });
+        final List<ProsecutionCase> prosecutionCases = ofNullable(updatedHearing.getProsecutionCases()).orElse(new ArrayList<>());
+        for (final ProsecutionCase prosecutionCase: prosecutionCases) {
+            final List<CaseDefendantHearingEntity> caseDefendantEntities = caseDefendantHearingRepository.findByCaseId(prosecutionCase.getId());
+            for (final CaseDefendantHearingEntity caseDefendantHearingEntity : caseDefendantEntities) {
+                final HearingEntity originalHearingEntity = caseDefendantHearingEntity.getHearing();
+                final JsonObject hearingJson = jsonFromString(originalHearingEntity.getPayload());
+                final Hearing originalHearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
+                final Boolean hasSharedResults = originalHearing.getHasSharedResults();
+                if (FALSE.equals(hasSharedResults)) {
+                    final Hearing updatedNonResultedHearing = getUpdatedHearingForNonResulted(originalHearing, hearingResulted.getHearing());
+                    final String payload = objectToJsonObjectConverter.convert(updatedNonResultedHearing).toString();
+                    originalHearingEntity.setPayload(payload);
+                    hearingRepository.save(originalHearingEntity);
+                    LOGGER.info("Original hearing without shared results: {} has been updated.", originalHearingEntity.getHearingId());
+                }
+            }
         }
     }
 
@@ -278,7 +290,7 @@ public class HearingResultEventListener {
     }
 
     private List<CourtApplication> getUpdateCourtApplications(final List<CourtApplication> courtApplicationList) {
-        Optional.ofNullable(courtApplicationList).ifPresent(
+        ofNullable(courtApplicationList).ifPresent(
                 courtApplications -> courtApplications.stream().filter(Objects::nonNull).forEach(HearingResultEventListener::getCourtApplicationJudResultsforNonNows
                 )
         );
@@ -289,7 +301,7 @@ public class HearingResultEventListener {
     private static void getCourtApplicationJudResultsforNonNows(CourtApplication courtApplication) {
         ofNullable(courtApplication.getJudicialResults()).ifPresent(
                 judicialResults -> {
-                    final List<JudicialResult> caJudicialResults = judicialResults.stream().filter(Objects::nonNull).filter(jr -> !jr.getPublishedForNows().equals(Boolean.TRUE)).collect(Collectors.toList());
+                    final List<JudicialResult> caJudicialResults = judicialResults.stream().filter(Objects::nonNull).filter(jr -> !jr.getPublishedForNows().equals(Boolean.TRUE)).collect(toList());
                     courtApplication.getJudicialResults().clear();
                     courtApplication.getJudicialResults().addAll(caJudicialResults);
                 }
