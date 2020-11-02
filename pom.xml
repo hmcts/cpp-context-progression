@@ -25,7 +25,6 @@
         <module>progression-integration-test</module>
         <module>progression-performance-test</module>
         <module>progression-service</module>
-        <module>progression-azure</module>
         <module>progression-test-utilities</module>
         <module>progression-refdata-service</module>
         <module>progression-event-sources</module>
