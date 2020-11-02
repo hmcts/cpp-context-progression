@@ -43,7 +43,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
-import org.hamcrest.CoreMatchers;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -90,7 +89,8 @@ public class HearingDaysIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY"))
+                )));
 
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
@@ -98,6 +98,7 @@ public class HearingDaysIT extends AbstractIT {
         final int hearingDaysCount = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").size();
         final Integer listedDurationMinutes = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getInt("listedDurationMinutes");
         final String sittingDay = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getString("sittingDay");
+        final String dvlaCode = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("dvlaOffenceCode");
 
 
         final JsonObject payload = createObjectBuilder()
@@ -116,7 +117,8 @@ public class HearingDaysIT extends AbstractIT {
                 withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
                 withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId)),
                 withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(listedDurationMinutes)),
-                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(sittingDay))
+                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(sittingDay)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].dvlaOffenceCode", is(dvlaCode))
         );
     }
 

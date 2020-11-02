@@ -138,8 +138,8 @@ class CaseMapper extends Mapper {
     }
 
     getDvlaCode(offence) {
-        if(offence.offenceFacts && offence.offenceFacts.vehicleCode) {
-            return offence.offenceFacts.vehicleCode;
+        if(offence.dvlaOffenceCode) {
+            return offence.dvlaOffenceCode;
         }
     }
 

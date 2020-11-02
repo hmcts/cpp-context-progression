@@ -27,6 +27,7 @@ public class ReferenceDataOffenceService {
     public static final String LEGISLATION_WELSH = "welshlegislation";
     public static final String MODEOFTRIAL_DERIVED = "modeOfTrialDerived";
     public static final String MODEOFTRIAL_CODE = "code";
+    public static final String DVLA_CODE = "dvlaCode";
     public static final String CJS_OFFENCE_CODE = "cjsOffenceCode";
     public static final String OFFENCE_ID = "offenceId";
     public static final String OFFENCES = "offences";
@@ -54,6 +55,10 @@ public class ReferenceDataOffenceService {
         }
         final JsonObject offencePayload = response.payloadAsJsonObject();
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        return buildOffence(offencePayload, jsonObjectBuilder);
+    }
+
+    private Optional<JsonObject> buildOffence(final JsonObject offencePayload, final JsonObjectBuilder jsonObjectBuilder) {
         final JsonObject offenceDocument = offencePayload.getJsonObject(DETAILS).getJsonObject(DOCUMENT);
         jsonObjectBuilder.add(OFFENCE_TITLE, offenceDocument.getJsonObject(ENGLISH) != null ? offenceDocument.getJsonObject(ENGLISH).getString(OFFENCE_TITLE) : StringUtils.EMPTY);
         jsonObjectBuilder.add(LEGISLATION, offenceDocument.getJsonObject(ENGLISH) != null ? offenceDocument.getJsonObject(ENGLISH).getString(LEGISLATION) : StringUtils.EMPTY);
@@ -61,6 +66,7 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(LEGISLATION_WELSH, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(LEGISLATION_WELSH) : StringUtils.EMPTY);
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE) != null ? offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
         jsonObjectBuilder.add(MODEOFTRIAL_CODE, offencePayload.getString(MODEOFTRIAL_DERIVED) != null ? offencePayload.getString(MODEOFTRIAL_DERIVED) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(DVLA_CODE, offencePayload.getString(DVLA_CODE) != null ? offencePayload.getString(DVLA_CODE) : StringUtils.EMPTY);
 
         return Optional.of(jsonObjectBuilder.build());
     }

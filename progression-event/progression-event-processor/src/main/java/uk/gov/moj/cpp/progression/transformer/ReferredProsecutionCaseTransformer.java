@@ -4,6 +4,7 @@ package uk.gov.moj.cpp.progression.transformer;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.DVLA_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
@@ -210,6 +211,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withWording(referredOffence.getWording())
                 .withWordingWelsh(referredOffence.getWordingWelsh())
                 .withOffenceDateCode(referredOffence.getOffenceDateCode())
+                .withDvlaOffenceCode(fetchValueFromKey(offenceJson, DVLA_CODE))
                 .build();
         if ((initiationCode == InitiationCode.J || initiationCode == InitiationCode.Z)
                 && nonNull(offence.getModeOfTrial())
