@@ -64,9 +64,9 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(LEGISLATION, offenceDocument.getJsonObject(ENGLISH) != null ? offenceDocument.getJsonObject(ENGLISH).getString(LEGISLATION) : StringUtils.EMPTY);
         jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(WELSH_OFFENCE_TITLE) : StringUtils.EMPTY);
         jsonObjectBuilder.add(LEGISLATION_WELSH, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(LEGISLATION_WELSH) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE) != null ? offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(MODEOFTRIAL_CODE, offencePayload.getString(MODEOFTRIAL_DERIVED) != null ? offencePayload.getString(MODEOFTRIAL_DERIVED) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(DVLA_CODE, offencePayload.getString(DVLA_CODE) != null ? offencePayload.getString(DVLA_CODE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE, null) != null ? offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(MODEOFTRIAL_CODE, offencePayload.getString(MODEOFTRIAL_DERIVED, null) != null ? offencePayload.getString(MODEOFTRIAL_DERIVED) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(DVLA_CODE, offencePayload.getString(DVLA_CODE,null) != null ? offencePayload.getString(DVLA_CODE) : StringUtils.EMPTY);
 
         return Optional.of(jsonObjectBuilder.build());
     }
