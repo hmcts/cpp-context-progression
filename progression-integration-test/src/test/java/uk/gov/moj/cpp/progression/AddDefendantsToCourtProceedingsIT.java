@@ -78,10 +78,12 @@ import org.slf4j.LoggerFactory;
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
+    static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE = "public.progression.defendants-added-to-case";
     static final String PUBLIC_LISTING_COMMAND_LIST_COURT_HEARING = "listing.command.list-court-hearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
-    private MessageConsumer messageConsumerClientPublic;
+    private MessageConsumer messageConsumerClientPublicCourtProceedings;
+    private MessageConsumer messageConsumerClientPublicCase;
     private MessageProducer messageProducerClientPublic;
     private static final String DOCUMENT_TEXT = STRING.next();
 
@@ -99,13 +101,15 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     @After
     public void tearDown() throws JMSException {
-        messageConsumerClientPublic.close();
+        messageConsumerClientPublicCourtProceedings.close();
+        messageConsumerClientPublicCase.close();
         messageProducerClientPublic.close();
     }
 
     @Before
     public void setUp() {
-        messageConsumerClientPublic = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+        messageConsumerClientPublicCourtProceedings = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+        messageConsumerClientPublicCase = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE);
         messageProducerClientPublic = publicEvents.createProducer();
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
@@ -282,10 +286,19 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         //Verify public.progression.defendants-added-to-court-proceedings message in the public queue
         verifyInMessagingQueueForDefendantsAddedToCourtHearings(caseId, defendantId2);
+        verifyInMessagingQueueForDefendantsAddedToCase(caseId, defendantId2);
     }
 
     private void verifyInMessagingQueueForDefendantsAddedToCourtHearings(final String caseId, final String defendantId) {
-        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerClientPublic, isJson(Matchers.allOf(
+        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerClientPublicCourtProceedings, isJson(Matchers.allOf(
+                withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].defendantId", is(defendantId))
+        )));
+        assertNotNull(message);
+    }
+
+    private void verifyInMessagingQueueForDefendantsAddedToCase(final String caseId, final String defendantId) {
+        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerClientPublicCase, isJson(Matchers.allOf(
                 withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].prosecutionCaseId", is(caseId)),
                 withJsonPath("$.listHearingRequests[0].listDefendantRequests[0].defendantId", is(defendantId))
         )));

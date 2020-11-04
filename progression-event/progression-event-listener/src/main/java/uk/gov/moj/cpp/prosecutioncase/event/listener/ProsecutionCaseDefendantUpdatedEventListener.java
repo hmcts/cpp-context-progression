@@ -439,7 +439,13 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     }
 
     private Ethnicity getUpdatedEthnicity(final Ethnicity originalEthnicity, final Ethnicity ethnicity) {
-        return ethnicity == null ? originalEthnicity : Ethnicity.ethnicity()
+        if (ethnicity == null) {
+            return originalEthnicity;
+        }
+        if (originalEthnicity == null) {
+            return ethnicity;
+        }
+        return Ethnicity.ethnicity()
                 .withSelfDefinedEthnicityId(ethnicity.getSelfDefinedEthnicityId())
                 .withSelfDefinedEthnicityCode(ethnicity.getSelfDefinedEthnicityCode())
                 .withSelfDefinedEthnicityDescription(ethnicity.getSelfDefinedEthnicityDescription())

@@ -48,7 +48,10 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/court-application-updated.json
 
         - name: public.progression.defendants-added-to-court-proceedings
-          schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json"
+          schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
+
+        - name: public.progression.defendants-added-to-case
+          schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-case.json
 
         - name: public.progression.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json

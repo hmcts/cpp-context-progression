@@ -76,6 +76,11 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                     jsonObject
             ));
 
+            sender.send(envelopeFrom(
+                    metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-case"),
+                    payload
+            ));
+
 
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
                     ProsecutionCase.class);
@@ -97,6 +102,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                 final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(jsonEnvelope,
                         Collections.singletonList(prosecutionCase), listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests());
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
+                progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
             }
         }
     }

@@ -372,6 +372,78 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     }
 
     @Test
+    public void shouldUpdateDefendantWithoutExistingPersonEthnicityWithNewValue() {
+
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID selfDefinedEthnicityId = randomUUID();
+        final UUID observedEthnicityId = randomUUID();
+        final Defendant defendant1 = prepareDefendant(defendantId, masterDefendantId, prosecutionCaseId);
+
+
+        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent.courtApplicationRespondent()
+                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+                        .withDefendant(defendant1).
+                                build())
+                .build();
+        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
+        courtApplicationRespondentList.add(courtApplicationRespondent1);
+        CourtApplication courtApplication = CourtApplication.courtApplication().withRespondents(courtApplicationRespondentList).build();
+
+        final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
+        DefendantUpdate defendantUpdate = prepareDefendantUpdate(selfDefinedEthnicityId,observedEthnicityId, updatedDoB, defendantId);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(defendant.getId()).thenReturn(defendantId);
+        when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("payload", Json.createObjectBuilder()
+                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                .add("id", defendant.getId().toString()).build())
+                                .build())
+                        .build()).build();
+
+        List<Defendant> defendantList = getDefendants(defendantId, defendantId, defendantId, randomUUID(), Arrays.asList(randomUUID()));
+        defendantList.add(defendant1);
+
+        List<Defendant> defendants = new ArrayList<>();
+        defendants.add(defendant1);
+        ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
+        List<CourtApplicationEntity> courtApplicationEntityList = new ArrayList<>();
+        CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntityList.add(courtApplicationEntity);
+
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
+        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
+        when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
+        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(courtApplicationRepository.findByLinkedCaseId(defendant1.getProsecutionCaseId())).thenReturn(courtApplicationEntityList);
+        when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
+        when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+        when(searchProsecutionCase.makeSearchable(prosecutionCase1, defendant1)).thenReturn(null);
+
+        final JsonObject updatedProsecutionCaseJson = prepareUpdatedProsecutionCase();
+
+        ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor = ArgumentCaptor.forClass(ProsecutionCase.class);
+        when(objectToJsonObjectConverter.convert(prosecutionCaseArgumentCaptor.capture())).thenReturn(updatedProsecutionCaseJson);
+
+        eventListener.processProsecutionCaseDefendantUpdated(envelope);
+
+        verify(repository).save(argumentCaptor.capture());
+        final ProsecutionCaseEntity value = argumentCaptor.getValue();
+        verifyProsecutionCaseHasBeenUpdated(value);
+
+        final ProsecutionCase allValues = prosecutionCaseArgumentCaptor.getValue();
+
+        verifyProsecutionCaseAllValuesWithoutExistingEthnicity(allValues, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId, updatedDoB);
+
+    }
+
+    @Test
     public void shouldHandleProsecutionCaseUpdatedEvent() throws Exception {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
@@ -529,6 +601,25 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
     }
 
+    private Defendant prepareDefendant(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId) {
+
+        return Defendant.defendant()
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(Person.person()
+                                .withLastName("Leeks")
+                                .withOccupation("Plumber")
+                                .withOccupationCode("PL01")
+                                .build())
+                        .withPerceivedBirthYear(1984)
+                        .withBailConditions("bailConditions")
+                        .build())
+                .withId(defendantId)
+                .withMasterDefendantId(masterDefendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build();
+
+    }
+
 
     private DefendantUpdate prepareDefendantUpdate(final UUID selfDefinedEthnicityId, final LocalDate updatedDoB, final UUID defendantId){
 
@@ -540,6 +631,32 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                                 .withLastName("UpdatedLastName")
                                 .withEthnicity(Ethnicity.ethnicity()
                                         .withSelfDefinedEthnicityId(selfDefinedEthnicityId)
+                                        .build())
+                                .withDateOfBirth(updatedDoB)
+                                .build())
+                        .build())
+                .withAssociatedPersons(Arrays.asList(AssociatedPerson.associatedPerson()
+                        .withRole("role")
+                        .withPerson(Person.person()
+                                .withMiddleName("Lara")
+                                .build())
+                        .build()))
+                .withId(defendantId)
+                .build();
+
+    }
+
+    private DefendantUpdate prepareDefendantUpdate(final UUID selfDefinedEthnicityId,final UUID observedEthnicityId, final LocalDate updatedDoB, final UUID defendantId){
+
+        return DefendantUpdate.defendantUpdate()
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withDriverNumber("newDriverNumber")
+                        .withPersonDetails(Person.person()
+                                .withFirstName("newFirstName")
+                                .withLastName("UpdatedLastName")
+                                .withEthnicity(Ethnicity.ethnicity()
+                                        .withSelfDefinedEthnicityId(selfDefinedEthnicityId)
+                                        .withObservedEthnicityId(observedEthnicityId)
                                         .build())
                                 .withDateOfBirth(updatedDoB)
                                 .build())
@@ -649,6 +766,21 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat("Original observedEthnicityId should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getObservedEthnicityId(), is(observedEthnicityId));
         assertThat("Original observedEthnicityCode should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getObservedEthnicityCode(), is("observedEthnicityCode"));
         assertThat("Original observedEthnicityDescription should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getObservedEthnicityDescription(), is("observedEthnicityDescription"));
+        assertThat("Last name field should be updated", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getLastName(), is("UpdatedLastName"));
+        assertThat("Birth Year was deleted in new event so should be null.", allValues.getDefendants().get(0).getPersonDefendant().getPerceivedBirthYear(), is(nullValue()));
+        assertThat("Original bailConditions should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getBailConditions(), is("bailConditions"));
+        assertThat("Original occupation should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupation(), is("Plumber"));
+        assertThat("Original occupationCode should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupationCode(), is("PL01"));
+        assertThat("Original associated person role should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getRole(), is("role"));
+    }
+
+    private void verifyProsecutionCaseAllValuesWithoutExistingEthnicity(final ProsecutionCase allValues, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId,  final LocalDate updatedDoB){
+        assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getMasterDefendantId(), is(masterDefendantId));
+        assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+        assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getPersonDefendant().getDriverNumber(), is("newDriverNumber"));
+        assertThat("New firstName field should be set.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getFirstName(), is("newFirstName"));
+        assertThat("New selfDefinedEthnicityId field should be set.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getSelfDefinedEthnicityId(), is(selfDefinedEthnicityId));
+        assertThat("New observedEthnicityId field should be set.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getObservedEthnicityId(), is(observedEthnicityId));
         assertThat("Last name field should be updated", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getLastName(), is("UpdatedLastName"));
         assertThat("Birth Year was deleted in new event so should be null.", allValues.getDefendants().get(0).getPersonDefendant().getPerceivedBirthYear(), is(nullValue()));
         assertThat("Original bailConditions should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getBailConditions(), is("bailConditions"));
