@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query.view;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.time.Period.between;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -20,8 +21,10 @@ import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.progression.courts.CaagDefendantOffences;
 import uk.gov.justice.progression.courts.CaagDefendants;
 import uk.gov.justice.progression.courts.CaagDefendants.Builder;
@@ -36,7 +39,6 @@ import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -112,7 +114,7 @@ public class CaseAtAGlanceHelper {
             setDefendantPersonalDetails(defendant, caagDefendantBuilder);
             final List<CaagDefendantOffences> caagDefendantOffencesList = getCaagDefendantOffencesList(defendant);
             final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults(defendant.getMasterDefendantId());
-            final List<JudicialResult> defendantCaseJudicialResultList = getCaseLevelJudicialResults();
+            final List<JudicialResult> defendantCaseJudicialResultList = getCaseLevelJudicialResults(defendant.getId());
 
             if (!isEmpty(caagDefendantOffencesList)) {
                 caagDefendantBuilder.withCaagDefendantOffences(caagDefendantOffencesList);
@@ -139,10 +141,11 @@ public class CaseAtAGlanceHelper {
                 .collect(toList());
     }
 
-    private List<JudicialResult> getCaseLevelJudicialResults() {
+    private List<JudicialResult> getCaseLevelJudicialResults(final UUID defendantId) {
         return hearingsList.stream().map(Hearings::getDefendants)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
+                .filter(defendants -> defendantId.equals(defendants.getId()))
                 .map(Defendants::getJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
@@ -158,6 +161,8 @@ public class CaseAtAGlanceHelper {
                 final CaagDefendantOffences.Builder caagDefendantOffenceBuilder = CaagDefendantOffences.caagDefendantOffences();
                 final List<JudicialResult> resultsFromAllHearings = getResultsFromAllHearings(defendant.getId(), offence.getId());
                 final List<CaagResults> caagResultsList = extractResults(resultsFromAllHearings);
+                final Optional<Plea> plea = getPlea(defendant.getId(), offence.getId());
+                final Optional<Verdict> verdict = getVerdict(defendant.getId(), offence.getId());
 
                 caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
                 caagDefendantOffenceBuilder.withId(offence.getId());
@@ -173,8 +178,8 @@ public class CaseAtAGlanceHelper {
                 caagDefendantOffenceBuilder.withEndDate(offence.getEndDate());
                 caagDefendantOffenceBuilder.withAllocationDecision(offence.getAllocationDecision());
                 caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
-                caagDefendantOffenceBuilder.withPlea(offence.getPlea());
-                caagDefendantOffenceBuilder.withVerdict(offence.getVerdict());
+                plea.ifPresent(caagDefendantOffenceBuilder::withPlea);
+                verdict.ifPresent(caagDefendantOffenceBuilder::withVerdict);
                 caagDefendantOffenceList.add(caagDefendantOffenceBuilder.build());
             }
         }
@@ -202,7 +207,7 @@ public class CaseAtAGlanceHelper {
                     }
                     return caagResultsBuilder.build();
                 })
-                .sorted(Comparator.comparing(CaagResults::getOrderedDate).reversed())
+                .sorted(comparing(CaagResults::getOrderedDate).reversed())
                 .collect(toList());
     }
 
@@ -294,5 +299,30 @@ public class CaseAtAGlanceHelper {
                 .filter(offences -> offenceId.equals(offences.getId()))
                 .flatMap(offences -> offences.getJudicialResults().stream())
                 .collect(toList());
+    }
+
+    private Optional<Plea> getPlea(final UUID defendantId, final UUID offenceId) {
+        return hearingsList.stream()
+                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()))
+                .flatMap(hearings -> hearings.getDefendants().stream())
+                .filter(defendants -> defendantId.equals(defendants.getId()))
+                .flatMap(defendants -> defendants.getOffences().stream())
+                .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getPleas()))
+                .flatMap(offences -> offences.getPleas().stream())
+                .filter(plea -> nonNull(plea.getPleaValue()) && nonNull(plea.getPleaDate()))
+                .max(comparing(Plea::getPleaDate));
+    }
+
+
+    private Optional<Verdict> getVerdict(final UUID defendantId, final UUID offenceId) {
+        return hearingsList.stream()
+                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()))
+                .flatMap(hearings -> hearings.getDefendants().stream())
+                .filter(defendants -> defendantId.equals(defendants.getId()))
+                .flatMap(defendants -> defendants.getOffences().stream())
+                .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getVerdicts()))
+                .flatMap(offences -> offences.getVerdicts().stream())
+                .filter(verdict -> nonNull(verdict.getVerdictType()) && nonNull(verdict.getVerdictDate()))
+                .max(comparing(Verdict::getVerdictDate));
     }
 }
