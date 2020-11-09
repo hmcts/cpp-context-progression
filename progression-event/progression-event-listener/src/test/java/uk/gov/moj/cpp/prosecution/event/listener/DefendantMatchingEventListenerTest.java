@@ -148,7 +148,7 @@ public class DefendantMatchingEventListenerTest {
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build();
 
-        when(matchDefendantCaseHearingRepository.findByDefendantId(defendantId)).thenReturn(entity);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId)).thenReturn(Arrays.asList(entity));
         listener.defendantUnmatch(envelopeFrom(metadataWithRandomUUID("progression.event.defendant-unmatched"),
                 objectToJsonObjectConverter.convert(event)));
 

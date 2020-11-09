@@ -1,12 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -21,6 +25,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,10 +33,10 @@ import java.util.UUID;
 public class MatchDefendantCaseHearingRepositoryTest {
 
     private static final UUID PROSECUTION_CASE_ID = randomUUID();
-    private static final UUID PROSECUTION_CASE_ID_2 = randomUUID();
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID MASTER_DEFENDANT_ID = randomUUID();
     private static final UUID HEARING_ID = randomUUID();
+    private static final UUID NEW_HEARING_ID = randomUUID();
     private static final UUID RESULT_ID = randomUUID();
 
     @Inject
@@ -43,17 +48,73 @@ public class MatchDefendantCaseHearingRepositoryTest {
     @Inject
     private HearingRepository hearingRepository;
 
+    @Before
+    public void setup(){
+        saveEntity(DEFENDANT_ID, MASTER_DEFENDANT_ID, PROSECUTION_CASE_ID, HEARING_ID, RESULT_ID);
+    }
+
+    @After
+    public void tearDown(){
+        removeEntity(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
+        removeEntity(NEW_HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
+    }
+
+
+
     @Test
     public void shouldFindByProsecutionCaseIdAndDefendantId() {
 
-        saveEntity(DEFENDANT_ID, MASTER_DEFENDANT_ID, PROSECUTION_CASE_ID, HEARING_ID, RESULT_ID);
-
-        final MatchDefendantCaseHearingEntity actual = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(PROSECUTION_CASE_ID, DEFENDANT_ID);
+        final List<MatchDefendantCaseHearingEntity> entities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(PROSECUTION_CASE_ID, DEFENDANT_ID);
+        assertThat(entities.size(), is(1));
+        final MatchDefendantCaseHearingEntity actual = entities.get(0);
         assertThat(actual, is(notNullValue()));
         assertThat(actual.getDefendantId(), is(DEFENDANT_ID));
         assertThat(actual.getMasterDefendantId(), is(MASTER_DEFENDANT_ID));
         assertThat(actual.getProsecutionCaseId(), is(PROSECUTION_CASE_ID));
         assertThat(actual.getHearingId(), is(HEARING_ID));
+    }
+
+    @Test
+    public void shouldFindByProsecutionCaseIdAndDefendantId_WhenMultipleHearingExists() {
+
+        saveEntity(DEFENDANT_ID, MASTER_DEFENDANT_ID, PROSECUTION_CASE_ID, NEW_HEARING_ID, randomUUID());
+        final List<MatchDefendantCaseHearingEntity> entities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(PROSECUTION_CASE_ID, DEFENDANT_ID);
+
+        assertThat(entities.size(), is(2));
+
+        final MatchDefendantCaseHearingEntity firstEntity = entities.get(0);
+        assertThat(firstEntity, is(notNullValue()));
+        assertThat(firstEntity.getDefendantId(), is(DEFENDANT_ID));
+        assertThat(firstEntity.getMasterDefendantId(), is(MASTER_DEFENDANT_ID));
+        assertThat(firstEntity.getProsecutionCaseId(), is(PROSECUTION_CASE_ID));
+
+        final MatchDefendantCaseHearingEntity secondEntity = entities.get(1);
+        assertThat(secondEntity, is(notNullValue()));
+        assertThat(secondEntity.getDefendantId(), is(DEFENDANT_ID));
+        assertThat(secondEntity.getMasterDefendantId(), is(MASTER_DEFENDANT_ID));
+        assertThat(secondEntity.getProsecutionCaseId(), is(PROSECUTION_CASE_ID));
+
+        final List<UUID> actualHearings = Arrays.asList(firstEntity.getHearingId(), secondEntity.getHearingId());
+        final List<UUID> expectedHearings = Arrays.asList(HEARING_ID, NEW_HEARING_ID);
+        assertThat(actualHearings, equalTo(expectedHearings));
+    }
+
+    @Test
+    public void shouldFindByHearingIdProsecutionCaseIdAndDefendantId() {
+        final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
+
+        assertThat(entity, is(notNullValue()));
+        assertThat(entity.getDefendantId(), is(DEFENDANT_ID));
+        assertThat(entity.getMasterDefendantId(), is(MASTER_DEFENDANT_ID));
+        assertThat(entity.getProsecutionCaseId(), is(PROSECUTION_CASE_ID));
+        assertThat(entity.getHearingId(), is(HEARING_ID));
+    }
+
+    @Test
+    public void shouldNotFindByHearingIdProsecutionCaseIdAndDefendantIdWhenRecordNotExists() {
+        final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(randomUUID(), PROSECUTION_CASE_ID, DEFENDANT_ID);
+
+        assertThat(entity, is(nullValue()));
     }
 
     @Test
@@ -106,5 +167,12 @@ public class MatchDefendantCaseHearingRepositoryTest {
         prosecutionCaseEntity.setCaseId(prosecutionCaseId);
         prosecutionCaseEntity.setPayload(Json.createObjectBuilder().build().toString());
         return prosecutionCaseEntity;
+    }
+
+    private void removeEntity(final UUID hearingId, final UUID prosecutionCaseId, final UUID defendantId) {
+        final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
+        if (Objects.nonNull(entity)) {
+            matchDefendantCaseHearingRepository.remove(entity);
+        }
     }
 }

@@ -103,7 +103,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         matchDefendantCaseHearingEntity.setDefendantId(defendantId);
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
-        when(matchDefendantCaseHearingRepository.findByDefendantId(defendantId)).thenReturn(matchDefendantCaseHearingEntity);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChanged.class))

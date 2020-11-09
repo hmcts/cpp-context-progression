@@ -69,16 +69,16 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     private void updateHearingForMatchedDefendants(final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged) {
         final UUID hearingId = prosecutionCaseDefendantListingStatusChanged.getHearing().getId();
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
-         if (Objects.nonNull(prosecutionCases) && prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus() == HearingListingStatus.HEARING_INITIALISED) {
+        if (Objects.nonNull(prosecutionCases) && prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus() == HearingListingStatus.HEARING_INITIALISED) {
             prosecutionCases.forEach(
                     prosecutionCase -> prosecutionCase.getDefendants().forEach(
                             defendant -> {
-                                final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByDefendantId(defendant.getId());
-                                if (Objects.nonNull(entity)) {
+                                final List<MatchDefendantCaseHearingEntity> entities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCase.getId(), defendant.getId());
+                                entities.forEach(entity -> {
                                     entity.setHearingId(hearingId);
                                     entity.setHearing(hearingRepository.findBy(hearingId));
                                     matchDefendantCaseHearingRepository.save(entity);
-                                }
+                                });
                             }
                     )
             );

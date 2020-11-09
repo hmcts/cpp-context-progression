@@ -98,7 +98,8 @@ public class DefendantMatchingEventListener {
         final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
         if (isNull(prosecutionCase.getCaseStatus()) ||
                 !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
-            matchDefendantCaseHearingRepository.remove(matchDefendantCaseHearingRepository.findByDefendantId(defendantUnmatched.getDefendantId()));
+            final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(defendantUnmatched.getProsecutionCaseId(), defendantUnmatched.getDefendantId());
+            matchDefendantCaseHearingEntities.forEach(matchDefendantCaseHearingEntity ->  matchDefendantCaseHearingRepository.remove(matchDefendantCaseHearingEntity));
             updateMasterDefendant(defendantUnmatched.getDefendantId(), defendantUnmatched.getDefendantId(), prosecutionCase);
         }
     }
@@ -129,7 +130,7 @@ public class DefendantMatchingEventListener {
                 !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
             updateMasterDefendant(defendantId, masterDefendantId, prosecutionCase);
 
-            MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByDefendantId(defendantId);
+            MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
             if (nonNull(matchDefendantCaseHearingEntity)) {
                 matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
             } else {
