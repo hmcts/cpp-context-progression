@@ -85,7 +85,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final boolean isYouth) {
         try {
-            waitAtMost(Duration.TEN_SECONDS).until(() ->
+            waitAtMost(Duration.ONE_MINUTE).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
