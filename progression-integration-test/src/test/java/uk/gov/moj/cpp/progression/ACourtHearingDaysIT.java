@@ -49,7 +49,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class HearingDaysIT extends AbstractIT {
+public class ACourtHearingDaysIT extends AbstractIT {
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
@@ -81,7 +81,6 @@ public class HearingDaysIT extends AbstractIT {
         messageProducerClientPublic.close();
     }
 
-    @Ignore("CPP_20.45 flaky test to be investigated after release")
     @Test
     public void shouldCorrectHearingDaysWithCourtCentre() throws IOException {
         final String userId = randomUUID().toString();
