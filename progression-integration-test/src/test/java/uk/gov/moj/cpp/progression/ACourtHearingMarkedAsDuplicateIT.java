@@ -36,7 +36,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HearingMarkedAsDuplicateIT extends AbstractIT {
+public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT = "public.events.hearing.marked-as-duplicate";
 
