@@ -22,6 +22,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
@@ -109,8 +110,10 @@ public class HearingConfirmedEventProcessor {
             }
         } else {
 
+            final SeedingHearing seedingHearing = hearingInProgression.getSeedingHearing();
+
             final Initiate hearingInitiate = Initiate.initiate()
-                    .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope))
+                    .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing))
                     .build();
 
             final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
@@ -120,7 +123,7 @@ public class HearingConfirmedEventProcessor {
                 progressionService.updateHearingForPartialAllocation(jsonEnvelope, updateHearingForPartialAllocation);
                 final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
-                progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+                progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, seedingHearing);
             }
 
             final List<UUID> applicationIds = confirmedHearing.getCourtApplicationIds();

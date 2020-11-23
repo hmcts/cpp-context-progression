@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
@@ -28,12 +29,15 @@ import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingUpdated;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -55,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -111,6 +114,8 @@ public class ProgressionService {
     public static final String CASE_STATUS = "caseStatus";
     private static final String COURT_APPLICATIONS = "courtApplications";
     public static final String UNSCHEDULED_HEARING_IDS = "unscheduledHearingIds";
+    private static final String PLEA_TYPE_GUILTY_NO = "No";
+    private static final String PLEA_TYPE_GUILTY_FLAG_FIELD = "pleaTypeGuiltyFlag";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -164,7 +169,7 @@ public class ProgressionService {
         return prosecutionCasesArrayBuilder.build();
     }
 
-    private static Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds) {
+    private Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds, final SeedingHearing seedingHearing) {
         final ZonedDateTime hearingDateTime = nonNull(hearingListingNeeds.getEarliestStartDateTime()) ?
                 hearingListingNeeds.getEarliestStartDateTime() : hearingListingNeeds.getListedStartDateTime();
 
@@ -177,6 +182,7 @@ public class ProgressionService {
                 .withReportingRestrictionReason(hearingListingNeeds.getReportingRestrictionReason())
                 .withType(hearingListingNeeds.getType())
                 .withProsecutionCases(hearingListingNeeds.getProsecutionCases())
+                .withSeedingHearing(seedingHearing)
                 .build();
     }
 
@@ -192,8 +198,22 @@ public class ProgressionService {
         return days;
     }
 
-    private static List<Defendant> filterDefendants(final ConfirmedProsecutionCase confirmedProsecutionCase, final
-    ProsecutionCase prosecutionCase, final LocalDate earliestHearingDate) {
+    /**
+     *
+     * Convert ConfirmedDefendant to Defendant and update offence to remove plea if,
+     * 
+     *  1. Moving from magistrate to crown court and,
+     *  2. Has no verdict and,
+     *  3. Plea type guilty flag is 'No'
+     *
+     * @param confirmedProsecutionCase
+     * @param prosecutionCase
+     * @param earliestHearingDate
+     * @param seedingHearing
+     * @return
+     */
+    private List<Defendant> filterDefendantsAndUpdateOffences(final ConfirmedProsecutionCase confirmedProsecutionCase, final ProsecutionCase prosecutionCase,
+                                             final LocalDate earliestHearingDate, final SeedingHearing seedingHearing) {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
@@ -207,10 +227,96 @@ public class ProgressionService {
                     .filter(offence -> confirmedDefendantConsumer.getOffences().stream()
                             .anyMatch(o -> o.getId().equals(offence.getId())))
                     .collect(Collectors.toList());
-            defendantsList.add(populateDefendant(matchedDefendant, matchedDefendantOffence, earliestHearingDate));
+
+            final List<Offence> matchedDefendantAndPleaRemovedOffences = new ArrayList<>();
+
+            matchedDefendantOffence.forEach(offence -> {
+                if (isNull(offence.getJudicialResults()) || isNull(seedingHearing) || isNull(offence.getPlea()) || nonNull(offence.getVerdict())) {
+                    matchedDefendantAndPleaRemovedOffences.add(offence);
+                } else {
+                    offence.getJudicialResults().forEach(judicialResult ->
+                            matchedDefendantAndPleaRemovedOffences.add(populateOffenceBasedOnPleaGuiltyType(offence, judicialResult, seedingHearing)));
+                }
+            });
+            defendantsList.add(populateDefendant(matchedDefendant, matchedDefendantAndPleaRemovedOffences, earliestHearingDate));
         });
 
         return defendantsList;
+    }
+
+    /**
+     * This method returns an Offence with plea information removed if
+     *
+     *   1. Moving from magistrate to crown court and,
+     *   2. Has no verdict and,
+     *   3. Plea type guilty flag is 'No'
+     *
+     *
+     * @param offence
+     * @param judicialResult
+     * @param seedingHearing
+     * @return
+     */
+    private Offence populateOffenceBasedOnPleaGuiltyType(final Offence offence, final JudicialResult judicialResult,
+                                                         final SeedingHearing seedingHearing) {
+
+        LOGGER.info("Populate offence based on plea type guilty flag: {}", offence.getId());
+
+        final String pleaTypeValue = offence.getPlea().getPleaValue();
+        final Optional<JsonObject> pleaType = referenceDataService.getPleaType(pleaTypeValue, requester);
+
+        if (!pleaType.isPresent() || isNull(judicialResult) || isNull(judicialResult.getNextHearing())) {
+            return offence;
+        }
+
+        final String pleaTypeGuiltyFlag = pleaType.get().getString(PLEA_TYPE_GUILTY_FLAG_FIELD);
+
+        final boolean pleaToBeRemoved = PLEA_TYPE_GUILTY_NO.equals(pleaTypeGuiltyFlag) &&
+                nonNull(seedingHearing.getJurisdictionType()) &&
+                seedingHearing.getJurisdictionType() == JurisdictionType.MAGISTRATES &&
+                judicialResult.getNextHearing().getJurisdictionType() == JurisdictionType.CROWN;
+
+        if (pleaToBeRemoved) {
+            return Offence.offence()
+                    .withProceedingsConcluded(offence.getProceedingsConcluded())
+                    .withAllocationDecision(offence.getAllocationDecision())
+                    .withAquittalDate(offence.getAquittalDate())
+                    .withArrestDate(offence.getArrestDate())
+                    .withChargeDate(offence.getChargeDate())
+                    .withConvictionDate(offence.getConvictionDate())
+                    .withCount(offence.getCount())
+                    .withCustodyTimeLimit(offence.getCustodyTimeLimit())
+                    .withDateOfInformation(offence.getDateOfInformation())
+                    .withEndDate(offence.getEndDate())
+                    .withId(offence.getId())
+                    .withIndicatedPlea(offence.getIndicatedPlea())
+                    .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
+                    .withIsDiscontinued(offence.getIsDiscontinued())
+                    .withIsDisposed(offence.getIsDisposed())
+                    .withJudicialResults(offence.getJudicialResults())
+                    .withLaaApplnReference(offence.getLaaApplnReference())
+                    .withLaidDate(offence.getLaidDate())
+                    .withModeOfTrial(offence.getModeOfTrial())
+                    .withNotifiedPlea(offence.getNotifiedPlea())
+                    .withOffenceCode(offence.getOffenceCode())
+                    .withOffenceDefinitionId(offence.getOffenceDefinitionId())
+                    .withOffenceFacts(offence.getOffenceFacts())
+                    .withOffenceLegislation(offence.getOffenceLegislation())
+                    .withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh())
+                    .withOffenceTitle(offence.getOffenceTitle())
+                    .withOffenceTitleWelsh(offence.getOffenceTitleWelsh())
+                    .withOrderIndex(offence.getOrderIndex())
+                    .withStartDate(offence.getStartDate())
+                    .withVerdict(offence.getVerdict())
+                    .withVictims(offence.getVictims())
+                    .withWording(offence.getWording())
+                    .withWordingWelsh(offence.getWordingWelsh())
+                    .withCommittingCourt(offence.getCommittingCourt())
+                    .withOffenceDateCode(offence.getOffenceDateCode())
+                    .build();
+        } else {
+            return offence;
+        }
     }
 
     private static Defendant populateDefendant(final Defendant matchedDefendant, final List<Offence>
@@ -484,15 +590,25 @@ public class ProgressionService {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
     }
 
-    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing) {
+    /**
+     *  
+     * @param jsonEnvelope
+     * @param listCourtHearing
+     * @param seedingHearing - The originating hearing details
+     */
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing, final SeedingHearing seedingHearing) {
         listCourtHearing.getHearings().forEach(hearingListingNeeds -> {
-            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds);
+            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing);
             final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                     .add(HEARING, objectToJsonObjectConverter.convert(hearing)).build();
             LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
         });
+    }
+
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing) {
+        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, null);
     }
 
 
@@ -618,7 +734,26 @@ public class ProgressionService {
                 .build();
     }
 
+    /**
+     * Transform ConfirmedHearing to Hearing
+     *
+     * @param confirmedHearing
+     * @param jsonEnvelope
+     * @return
+     */
     public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope) {
+        return transformConfirmedHearing(confirmedHearing, jsonEnvelope, null);
+    }
+
+    /**
+     * Transform ConfirmedHearing to Hearing
+     *
+     * @param confirmedHearing
+     * @param jsonEnvelope
+     * @param seedingHearing
+     * @return
+     */
+    public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final SeedingHearing seedingHearing) {
 
         final LocalDate earliestHearingDate = getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
 
@@ -632,7 +767,7 @@ public class ProgressionService {
                 .withReportingRestrictionReason(confirmedHearing.getReportingRestrictionReason())
                 .withType(confirmedHearing.getType())
                 .withHasSharedResults(false)
-                .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope))
+                .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope, seedingHearing))
                 .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
                 .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
                 .build();
@@ -717,7 +852,7 @@ public class ProgressionService {
     }
 
     private List<JudicialRole> enrichJudiciaries(final List<JudicialRole> judiciaryList, final JsonEnvelope jsonEnvelope) {
-        if (Objects.isNull(judiciaryList) || judiciaryList.isEmpty()) {
+        if (isNull(judiciaryList) || judiciaryList.isEmpty()) {
             return null;
         }
         final List<UUID> judiciaryIds = judiciaryList.stream()
@@ -769,7 +904,30 @@ public class ProgressionService {
                 .map(cr -> cr.getString(fieldName, EMPTY_STRING)).findFirst().orElse("");
     }
 
+    /**
+     * Transform ConfirmedProsecutionCase to ProsecutionCase
+     * @param confirmedProsecutionCases
+     * @param earliestHearingDate
+     * @param jsonEnvelope
+     * @return
+     */
     public List<ProsecutionCase> transformProsecutionCase(final List<ConfirmedProsecutionCase> confirmedProsecutionCases, final LocalDate earliestHearingDate, final JsonEnvelope jsonEnvelope) {
+        return transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, jsonEnvelope, null);
+    }
+
+    /**
+     * Transform ConfirmedProsecutionCase to ProsecutionCase and remove Plea information from Offence if,
+     *   1. Moving from magistrate to crown court and,
+     *   2. Has no verdict and,
+     *   3. Plea type guilty flag is 'No'
+     *
+     * @param confirmedProsecutionCases
+     * @param earliestHearingDate
+     * @param jsonEnvelope
+     * @return
+     */
+    public List<ProsecutionCase> transformProsecutionCase(final List<ConfirmedProsecutionCase> confirmedProsecutionCases, final LocalDate earliestHearingDate, final JsonEnvelope jsonEnvelope,
+                                                          final SeedingHearing seedingHearing) {
         if (isNotEmpty(confirmedProsecutionCases)) {
             final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
             confirmedProsecutionCases.stream().forEach(pc -> {
@@ -779,7 +937,7 @@ public class ProgressionService {
                     final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                             .withId(prosecutionCaseEntity.getId())
                             .withCaseStatus(prosecutionCaseEntity.getCaseStatus())
-                            .withDefendants(filterDefendants(pc, prosecutionCaseEntity, earliestHearingDate))
+                            .withDefendants(filterDefendantsAndUpdateOffences(pc, prosecutionCaseEntity, earliestHearingDate, seedingHearing))
                             .withInitiationCode(prosecutionCaseEntity.getInitiationCode())
                             .withOriginatingOrganisation(prosecutionCaseEntity.getOriginatingOrganisation())
                             .withCpsOrganisation(prosecutionCaseEntity.getCpsOrganisation())

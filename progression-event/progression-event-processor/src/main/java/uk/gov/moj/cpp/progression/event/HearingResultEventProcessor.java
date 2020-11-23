@@ -27,6 +27,7 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingExtended;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -37,6 +38,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
@@ -107,6 +109,9 @@ public class HearingResultEventProcessor {
     @Inject
     private HearingResultHelper hearingResultHelper;
 
+    @Inject
+    private SeedingHearingConverter seedingHearingConverter;
+
     @Handles("public.hearing.resulted")
     public void handleHearingResultedPublicEvent(final JsonEnvelope event) {
 
@@ -114,6 +119,7 @@ public class HearingResultEventProcessor {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("public.hearing.resulted event arrived with hearingResulted json : {}", event.toObfuscatedDebugString());
         }
+
         final Hearing hearing = hearingResulted.getHearing();
         final List<UUID> shadowListedOffences = hearingResulted.getShadowListedOffences();
 
@@ -186,7 +192,14 @@ public class HearingResultEventProcessor {
 
     private void adjournProsecutionCasesToNewHearings(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
         LOGGER.info("Hearing adjourned to new hearing or hearings :: {}", hearing.getId());
-        listCourtHearings(event, hearingToHearingListingNeedsTransformer.transform(hearing, shouldPopulateCommittingCourt, committingCourt), shadowListedOffences);
+
+        final SeedingHearing seedingHearing = seedingHearingConverter.convert(hearing);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Created seeding hearing: {}", seedingHearing);
+        }
+
+        listCourtHearings(event, hearingToHearingListingNeedsTransformer.transform(hearing, shouldPopulateCommittingCourt, committingCourt), shadowListedOffences, seedingHearing);
     }
 
     /**
@@ -238,7 +251,14 @@ public class HearingResultEventProcessor {
 
     private void adjournCourtApplicationsToNewHearing(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
         LOGGER.info("Hearing containing court applications adjourned to new hearing or hearings :: {}", hearing.getId());
-        listCourtHearings(event, hearingListingNeedsTransformer.transform(hearing), shadowListedOffences);
+
+        final SeedingHearing seedingHearing = seedingHearingConverter.convert(hearing);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Created seeding hearing: {}", seedingHearing);
+        }
+
+        listCourtHearings(event, hearingListingNeedsTransformer.transform(hearing), shadowListedOffences, seedingHearing);
     }
 
     private void adjournCourtApplicationsToExistingHearing(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
@@ -271,7 +291,7 @@ public class HearingResultEventProcessor {
     }
 
 
-    private void listCourtHearings(final JsonEnvelope event, final List<HearingListingNeeds> hearingListingNeeds, final List<UUID> shadowListedOffences) {
+    private void listCourtHearings(final JsonEnvelope event, final List<HearingListingNeeds> hearingListingNeeds, final List<UUID> shadowListedOffences, final SeedingHearing seedingHearing) {
         if (isNotEmpty(hearingListingNeeds)) {
             final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
                     .withHearings(hearingListingNeeds)
@@ -279,7 +299,7 @@ public class HearingResultEventProcessor {
                     .withShadowListedOffences(shadowListedOffences)
                     .build();
             listingService.listCourtHearing(event, listCourtHearing);
-            progressionService.updateHearingListingStatusToSentForListing(event, listCourtHearing);
+            progressionService.updateHearingListingStatusToSentForListing(event, listCourtHearing, seedingHearing);
         }
     }
 

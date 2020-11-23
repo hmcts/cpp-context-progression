@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.common.converter.LocalDates.to;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import javax.json.JsonValue;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -11,6 +14,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -30,6 +35,8 @@ public class ReferenceDataService {
     public static final String CJSOFFENCECODE = "cjsoffencecode";
     public static final String REFERENCEDATA_QUERY_OFFENCES = "referencedata.query.offences";
     public static final String OFFENCES = "offences";
+    private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
+    private static final String PLEA_TYPE_VALUE = "pleaValue";
     public static final String REFERENCEDATA_GET_JUDGE = "referencedata.get.judge";
     public static final String REFERENCEDATA_GET_COURT_CENTRE = "referencedata.get.court-centre";
     public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit.v2";
@@ -48,6 +55,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
     public static final String REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS = "referencedata.get-all-result-definitions";
+    private static final String REFERENCEDATA_QUERY_PLEA_TYPES = "referencedata.query.plea-types";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -417,4 +425,22 @@ public class ReferenceDataService {
 
     }
 
+    public Optional<JsonObject> getPleaType(final String pleaTypeValue, final Requester requester) {
+
+        LOGGER.info("Get plea type data for {} ", pleaTypeValue);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCEDATA_QUERY_PLEA_TYPES);
+
+        final Envelope<JsonObject> pleaTypes = requester.requestAsAdmin(envelopeFrom(metadataBuilder, createObjectBuilder()), JsonObject.class);
+
+        final JsonArray pleaStatusTypes = pleaTypes.payload().getJsonArray(FIELD_PLEA_STATUS_TYPES);
+
+        return pleaStatusTypes
+                .stream()
+                .map(jsonValue -> (JsonObject) jsonValue)
+                .filter(jsonObject -> jsonObject.getString(PLEA_TYPE_VALUE).equals(pleaTypeValue))
+                .findFirst();
+    }
 }

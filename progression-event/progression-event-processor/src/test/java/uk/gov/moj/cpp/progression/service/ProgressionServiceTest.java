@@ -7,8 +7,10 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,11 +46,15 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
+import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
+import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -871,6 +877,174 @@ public class ProgressionServiceTest {
 
     }
 
+    @Test
+    public void shouldRemovePleaWhenMovingFromMagsToCrownAndGuiltyTypeNo() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
+                        .withId(defendant1)
+                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
+                                .withId(defendant1sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
+        ));
+
+        List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
+
+        assertThat(prosecutionCases.get(0).getCpsOrganisation(), is("A01"));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
+        assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldNotRemovePleaWhenMovingFromMagsToMagsAndGuiltyTypeNo() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
+                        .withId(defendant1)
+                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
+                                .withId(defendant1sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1,JurisdictionType.MAGISTRATES)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
+        ));
+
+        List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
+
+        assertThat(prosecutionCases.get(0).getCpsOrganisation(), is("A01"));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
+        assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldNotRemovePleaWhenMovingFromMagsToCrownAndGuiltyTypeYes() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
+                        .withId(defendant1)
+                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
+                                .withId(defendant1sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1,JurisdictionType.CROWN)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()
+        ));
+
+        List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
+
+        assertThat(prosecutionCases.get(0).getCpsOrganisation(), is("A01"));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
+        assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldNotRemovePleaWhenMovingFromMagsToCrownAndGuiltyTypeNoAndHasVerdict() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
+                        .withId(defendant1)
+                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
+                                .withId(defendant1sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        when(enveloper.withMetadataFrom
+                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(
+                        buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
+                )).build();
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
+        ));
+
+        List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
+
+        assertThat(prosecutionCases.get(0).getCpsOrganisation(), is("A01"));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
+        assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(notNullValue()));
+    }
+
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, boolean youth) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
@@ -895,6 +1069,47 @@ public class ProgressionServiceTest {
                                                 .withId(defendant2sOffence2)
                                                 .build()))
                                 .build()))
+                .build();
+    }
+
+    private ProsecutionCase buildProsecutionCaseWithDefendantWithOffenceWithPlea(UUID caseId, UUID defendant1, UUID defendant1sOffence1, JurisdictionType jurisdictionType) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withCpsOrganisation("A01")
+                .withDefendants(asList(Defendant.defendant()
+                                .withId(defendant1)
+                                .withIsYouth(Boolean.FALSE)
+                                .withOffences(asList(Offence.offence()
+                                                .withId(defendant1sOffence1)
+                                                .withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build())
+                                                .withJudicialResults(asList(JudicialResult.judicialResult()
+                                                        .withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build())
+                                                        .build()))
+                                                .build()
+                                        ))
+                                .build()
+                      ))
+                .build();
+    }
+
+    private ProsecutionCase buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(UUID caseId, UUID defendant1, UUID defendant1sOffence1, JurisdictionType jurisdictionType) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withCpsOrganisation("A01")
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendant1)
+                        .withIsYouth(Boolean.FALSE)
+                        .withOffences(asList(Offence.offence()
+                                .withId(defendant1sOffence1)
+                                .withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build())
+                                .withVerdict(Verdict.verdict().build())
+                                .withJudicialResults(asList(JudicialResult.judicialResult()
+                                        .withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build())
+                                        .build()))
+                                .build()
+                        ))
+                        .build()
+                ))
                 .build();
     }
 

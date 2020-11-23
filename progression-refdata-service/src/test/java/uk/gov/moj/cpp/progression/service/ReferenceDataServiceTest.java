@@ -8,8 +8,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -82,6 +83,14 @@ public class ReferenceDataServiceTest {
     private static final String JUDICIARY_LAST_NAME_2 = STRING.next();
     private static final String NATIONAL_COURT_CODE = "3109";
     private static final String ORGANISATION_UNIT = "referencedata.query.organisation-unit.v2";
+    private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
+    private static final String FIELD_PLEA_TYPE_GUILTY_FLAG = "pleaTypeGuiltyFlag";
+    private static final String GUILTY_FLAG_YES = "Yes";
+    private static final String GUILTY_FLAG_NO = "No";
+    private static final String FIELD_PLEA_VALUE = "pleaValue";
+    private static final String GUILTY = "GUILTY";
+    private static final String NOT_GUILTY = "NOT_GUILTY";
+
     @Spy
     Enveloper enveloper = EnveloperFactory.createEnveloper();
     @Mock
@@ -496,6 +505,29 @@ public class ReferenceDataServiceTest {
 
     }
 
+    @Test
+    public void shouldGetPleaTypeByValue() throws Exception {
+        final JsonObject payload = buildPleaStatusTypesPayload();
+        final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
+
+        when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
+
+        final Optional<JsonObject> result = referenceDataService.getPleaType( "NOT_GUILTY", requester);
+
+        assertThat(result.get().getString(FIELD_PLEA_TYPE_GUILTY_FLAG), is(GUILTY_FLAG_NO));
+    }
+
+    @Test
+    public void shouldGetEmptyPleaTypeByValue() throws Exception {
+        final JsonObject payload = buildPleaStatusTypesPayload();
+        final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
+        when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
+
+        final Optional<JsonObject> result = referenceDataService.getPleaType( "INVALID_GUILTY", requester);
+
+        assertThat(result.isPresent(), is(false));
+    }
+
     private JsonObject generateJudiciariesJson() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
                 .replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString())
@@ -691,5 +723,17 @@ public class ReferenceDataServiceTest {
 
         return envelopeFrom(metadataBuilder, payload);
 
+    }
+
+    private JsonObject buildPleaStatusTypesPayload(){
+        return createObjectBuilder().add(FIELD_PLEA_STATUS_TYPES, createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add(FIELD_PLEA_VALUE, GUILTY)
+                        .add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_YES)
+                )
+                .add(createObjectBuilder()
+                        .add(FIELD_PLEA_VALUE, NOT_GUILTY)
+                        .add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_NO)))
+                .build();
     }
 }
