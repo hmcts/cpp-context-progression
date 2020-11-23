@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nows-request-with-account-number-ignored.json",
+  "type": "object",
+  "properties": {
+    "requestId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "accountNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "requestId",
+    "accountNumber"
+  ],
+  "additionalProperties": false
+}
+

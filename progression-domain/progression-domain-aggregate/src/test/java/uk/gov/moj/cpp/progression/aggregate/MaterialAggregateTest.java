@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsRequestWithAccountNumberIgnored;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
@@ -64,6 +65,22 @@ public class MaterialAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(NowsRequestWithAccountNumberUpdated.class)));
         assertThat(eventStream.get(1).getClass(), is(CoreMatchers.equalTo(NowDocumentRequested.class)));
+    }
+
+    @Test
+    public void shouldNotSaveAccountNumberWhenSavedBefore() {
+        final UUID materialId = randomUUID();
+        final UUID requestId = randomUUID();
+        final String accountNumber = "ACC1234";
+
+        aggregate.apply(NowsRequestWithAccountNumberUpdated.nowsRequestWithAccountNumberUpdated()
+                .withAccountNumber(accountNumber)
+                .withRequestId(requestId)
+                .build());
+        final List<Object> eventStream = aggregate.saveAccountNumber(materialId, requestId, accountNumber).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(NowsRequestWithAccountNumberIgnored.class)));
     }
 
     @Test

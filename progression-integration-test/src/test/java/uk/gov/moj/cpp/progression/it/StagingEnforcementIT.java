@@ -35,22 +35,21 @@ public class StagingEnforcementIT extends AbstractIT {
     @Test
     public void shouldReceiveAcknowledgement() {
         final String requestId = UUID.randomUUID().toString();
-        final String payload = this.prepareAddNowDocumentRequestPayload(requestId);
-        nowsRequestHelper = new NowsRequestHelper();
-        nowsRequestHelper.makeNowsRequest(requestId, payload);
         final String accountNumber = "AER123451";
-        final JsonObject stagingEnforcementAckPayload = createObjectBuilder().add("originator", "courts")
-                .add("requestId", requestId)
-                .add("exportStatus", "ENFORCEMENT_ACKNOWLEDGED")
-                .add("updated", "2019-12-01T10:00:00Z")
-                .add("acknowledgement", createObjectBuilder().add("accountNumber", accountNumber).build())
-                .build();
-
-        sendMessage(producer, PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, stagingEnforcementAckPayload,
-                metadataOf(randomUUID(), PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT)
-                        .withUserId(USER_ID_VALUE_AS_ADMIN.toString()).build());
-
+        sendPublicEvent(requestId, accountNumber);
         nowsRequestHelper.verifyAccountNumberAddedToRequest(accountNumber, requestId);
+    }
+
+    @Test
+    public void shouldNotReceiveAcknowledgementWhenRequestDoubled() {
+        final String requestId = UUID.randomUUID().toString();
+        final String accountNumber = "AER123451";
+
+        sendPublicEvent(requestId, accountNumber);
+        nowsRequestHelper.verifyAccountNumberAddedToRequest(accountNumber, requestId);
+
+        sendPublicEvent(requestId, accountNumber);
+        nowsRequestHelper.verifyAccountNumberIgnoredToRequest(accountNumber, requestId);
     }
 
     @Test
@@ -88,5 +87,21 @@ public class StagingEnforcementIT extends AbstractIT {
     public void tearDown() throws JMSException {
         producer.close();
         closeSilently(nowsRequestHelper);
+    }
+
+    private void sendPublicEvent(final String requestId, final String accountNumber ){
+        final String payload = this.prepareAddNowDocumentRequestPayload(requestId);
+        nowsRequestHelper = new NowsRequestHelper();
+        nowsRequestHelper.makeNowsRequest(requestId, payload);
+        final JsonObject stagingEnforcementAckPayload = createObjectBuilder().add("originator", "courts")
+                .add("requestId", requestId)
+                .add("exportStatus", "ENFORCEMENT_ACKNOWLEDGED")
+                .add("updated", "2019-12-01T10:00:00Z")
+                .add("acknowledgement", createObjectBuilder().add("accountNumber", accountNumber).build())
+                .build();
+
+        sendMessage(producer, PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, stagingEnforcementAckPayload,
+                metadataOf(randomUUID(), PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT)
+                        .withUserId(USER_ID_VALUE_AS_ADMIN.toString()).build());
     }
 }

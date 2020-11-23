@@ -15,6 +15,7 @@ import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsMaterialStatusUpdated;
+import uk.gov.justice.core.courts.NowsRequestWithAccountNumberIgnored;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
@@ -41,6 +42,7 @@ public class MaterialAggregate implements Aggregate {
     private static final long serialVersionUID = 101L;
     private MaterialDetails details;
     private NowDocumentRequest nowDocumentRequest;
+    private boolean isAccountNumberSavedBefore = false;
 
     @Override
     public Object apply(final Object event) {
@@ -50,6 +52,9 @@ public class MaterialAggregate implements Aggregate {
                 ),
                 when(NowDocumentRequestToBeAcknowledged.class).apply(e ->
                         nowDocumentRequest = e.getNowDocumentRequest()
+                ),
+                when(NowsRequestWithAccountNumberUpdated.class).apply(e ->
+                        isAccountNumberSavedBefore = true
                 ),
                 otherwiseDoNothing()
         );
@@ -76,6 +81,9 @@ public class MaterialAggregate implements Aggregate {
     }
 
     public Stream<Object> saveAccountNumber(UUID materialId, final UUID requestId, final String accountNumber) {
+        if(isAccountNumberSavedBefore){
+            return Stream.of(new NowsRequestWithAccountNumberIgnored(accountNumber, requestId));
+        }
         final NowDocumentRequest updatedNowDocumentRequest = updateFinancialOrderDetails(nowDocumentRequest, accountNumber);
         return Stream.of(new NowsRequestWithAccountNumberUpdated(accountNumber, requestId), new NowDocumentRequested(materialId, updatedNowDocumentRequest));
     }

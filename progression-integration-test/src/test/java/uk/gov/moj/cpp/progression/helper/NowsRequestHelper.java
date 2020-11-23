@@ -14,13 +14,14 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR;
+import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
@@ -36,6 +37,13 @@ public class NowsRequestHelper extends AbstractTestHelper {
 
     public void verifyAccountNumberAddedToRequest(final String accountNumber, final String requestId) {
         privateEventsConsumer = privateEvents.createConsumer(EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER);
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
+        assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
+    }
+
+    public void verifyAccountNumberIgnoredToRequest(final String accountNumber, final String requestId) {
+        privateEventsConsumer = privateEvents.createConsumer(EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER);
         final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
         assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
         assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
