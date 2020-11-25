@@ -40,6 +40,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.CaagDefendants;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
+import uk.gov.justice.progression.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -222,10 +223,11 @@ public class ProsecutionCaseQueryViewTest {
     @Test
     public void shouldFindCaseAtAGlanceGivenProsecutionCaseWithUrn() {
         final UUID masterDefendantId = randomUUID();
+        final UUID defendantId = randomUUID();
         final String caseURN = "05PP1000915";
         final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG);
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
-        final Defendant defendant = defendant().withMasterDefendantId(masterDefendantId).build();
+        final Defendant defendant = defendant().withId(defendantId).withMasterDefendantId(masterDefendantId).build();
 
         when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(new ProsecutionCaseEntity());
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any(Class.class))).thenReturn(getProsecutionCase(caseURN, defendant));
@@ -534,6 +536,7 @@ public class ProsecutionCaseQueryViewTest {
     private List<Hearings> getHearingsList(final UUID masterDefendantId) {
         return asList(
                 hearings()
+                        .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
                         .withDefendantJudicialResults(asList(
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()
@@ -550,6 +553,7 @@ public class ProsecutionCaseQueryViewTest {
                         ))
                         .build(),
                 hearings()
+                        .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
                         .withDefendantJudicialResults(asList(
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()

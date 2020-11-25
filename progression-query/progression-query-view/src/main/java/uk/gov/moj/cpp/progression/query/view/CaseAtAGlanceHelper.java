@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
@@ -129,27 +130,6 @@ public class CaseAtAGlanceHelper {
             caagDefendantsList.add(caagDefendantBuilder.build());
         }
         return caagDefendantsList;
-    }
-
-    private List<JudicialResult> getDefendantLevelJudicialResults(final UUID masterDefendantId) {
-        return hearingsList.stream().map(Hearings::getDefendantJudicialResults)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
-                .map(DefendantJudicialResult::getJudicialResult)
-                .filter(Objects::nonNull)
-                .collect(toList());
-    }
-
-    private List<JudicialResult> getCaseLevelJudicialResults(final UUID defendantId) {
-        return hearingsList.stream().map(Hearings::getDefendants)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .filter(defendants -> defendantId.equals(defendants.getId()))
-                .map(Defendants::getJudicialResults)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .collect(toList());
     }
 
     private List<CaagDefendantOffences> getCaagDefendantOffencesList(final Defendant defendant) {
@@ -292,8 +272,7 @@ public class CaseAtAGlanceHelper {
     }
 
     private List<JudicialResult> getResultsFromAllHearings(final UUID defendantId, final UUID offenceId) {
-        return hearingsList.stream()
-                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()))
+        return getResultedHearings()
                 .flatMap(hearings -> hearings.getDefendants().stream())
                 .filter(defendants -> defendantId.equals(defendants.getId()))
                 .flatMap(defendants -> defendants.getOffences().stream())
@@ -303,8 +282,7 @@ public class CaseAtAGlanceHelper {
     }
 
     private Optional<Plea> getPlea(final UUID defendantId, final UUID offenceId) {
-        return hearingsList.stream()
-                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()))
+        return getResultedHearings()
                 .flatMap(hearings -> hearings.getDefendants().stream())
                 .filter(defendants -> defendantId.equals(defendants.getId()))
                 .flatMap(defendants -> defendants.getOffences().stream())
@@ -316,8 +294,7 @@ public class CaseAtAGlanceHelper {
 
 
     private Optional<Verdict> getVerdict(final UUID defendantId, final UUID offenceId) {
-        return hearingsList.stream()
-                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()))
+        return getResultedHearings()
                 .flatMap(hearings -> hearings.getDefendants().stream())
                 .filter(defendants -> defendantId.equals(defendants.getId()))
                 .flatMap(defendants -> defendants.getOffences().stream())
@@ -325,5 +302,33 @@ public class CaseAtAGlanceHelper {
                 .flatMap(offences -> offences.getVerdicts().stream())
                 .filter(verdict -> nonNull(verdict.getVerdictType()) && nonNull(verdict.getVerdictDate()))
                 .max(comparing(Verdict::getVerdictDate));
+    }
+
+    private List<JudicialResult> getDefendantLevelJudicialResults(final UUID masterDefendantId) {
+        return getResultedHearings()
+                .map(Hearings::getDefendantJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
+                .map(DefendantJudicialResult::getJudicialResult)
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
+    private List<JudicialResult> getCaseLevelJudicialResults(final UUID defendantId) {
+        return getResultedHearings()
+                .map(Hearings::getDefendants)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(d -> defendantId.equals(d.getId()))
+                .map(Defendants::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(toList());
+    }
+
+    private Stream<Hearings> getResultedHearings() {
+        return hearingsList.stream()
+                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()));
     }
 }
