@@ -1,16 +1,10 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
-import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -28,9 +22,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseH
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -95,70 +87,18 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
 
     private HearingEntity transformHearing(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
         HearingEntity hearingEntity = hearingRepository.findBy(hearing.getId());
+
+        // no updates should be allowed to hearing payload once its been resulted unless results are shared again
+        if (hearingEntity != null && hearingEntity.getListingStatus() == HearingListingStatus.HEARING_RESULTED) {
+            return hearingEntity;
+        }
+
         if (hearingEntity == null) {
             hearingEntity = new HearingEntity();
             hearingEntity.setHearingId(hearing.getId());
         }
         hearingEntity.setListingStatus(hearingListingStatus);
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(getUpdatedHearing(hearing)).toString());
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
         return hearingEntity;
-    }
-
-    private Hearing getUpdatedHearing(final Hearing hearing) {
-        Optional.ofNullable(hearing.getCourtApplications()).ifPresent(
-                courtApplications -> courtApplications.stream().filter(Objects::nonNull).forEach(ProsecutionCaseDefendantListingStatusChangedListener::getCourtApplicationJudResultsforNonNows
-                )
-        );
-
-        Optional.ofNullable(hearing.getProsecutionCases()).ifPresent(
-                prosecutionCases -> prosecutionCases.stream().filter(Objects::nonNull).forEach(ProsecutionCaseDefendantListingStatusChangedListener::getProsecutionCaseJudResultsforNonNows));
-
-        return hearing;
-    }
-
-    private static void getCourtApplicationJudResultsforNonNows(CourtApplication courtApplication) {
-        ofNullable(courtApplication.getJudicialResults()).ifPresent(
-                judicialResults -> {
-                    final List<JudicialResult> caJudicialResults = judicialResults.stream()
-                            .filter(Objects::nonNull)
-                            .filter(jr -> !Boolean.TRUE.equals(jr.getPublishedForNows()))
-                            .collect(Collectors.toList());
-                    courtApplication.getJudicialResults().clear();
-                    courtApplication.getJudicialResults().addAll(caJudicialResults);
-                }
-        );
-    }
-
-    private static void getProsecutionCaseJudResultsforNonNows(ProsecutionCase prosecutionCase) {
-        Optional.ofNullable(prosecutionCase.getDefendants()).ifPresent(
-                defendants -> defendants.stream().filter(Objects::nonNull).forEach(defendant -> {
-                    Optional.ofNullable(defendant.getOffences()).ifPresent(
-                            offences -> offences.stream().filter(Objects::nonNull).forEach(offence -> {
-                                final List<JudicialResult> offenceJudicialResults = getNonNowsResults(offence.getJudicialResults());
-                                if (nonNull(offenceJudicialResults) && !offenceJudicialResults.isEmpty()) {
-                                    offence.getJudicialResults().clear();
-                                    offence.getJudicialResults().addAll(offenceJudicialResults);
-                                }
-                            }));
-                    Optional.ofNullable(defendant.getDefendantCaseJudicialResults()).ifPresent(
-                            judicialResults -> {
-                                final List<JudicialResult> defendantCaseJudicialResults = getNonNowsResults(judicialResults);
-                                if (nonNull(defendantCaseJudicialResults) && !defendantCaseJudicialResults.isEmpty()) {
-                                    defendant.getDefendantCaseJudicialResults().clear();
-                                    defendant.getDefendantCaseJudicialResults().addAll(defendantCaseJudicialResults);
-                                }
-                            });
-                }));
-    }
-
-    private static List<JudicialResult> getNonNowsResults(final List<JudicialResult> judicialResults) {
-        if (isNull(judicialResults) || judicialResults.isEmpty()) {
-            return judicialResults;
-        }
-
-        return judicialResults.stream()
-                .filter(Objects::nonNull)
-                .filter(jr -> !Boolean.TRUE.equals(jr.getPublishedForNows()))
-                .collect(toList());
     }
 }

@@ -91,20 +91,10 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
 
         hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
         updateDefendantListingStatusChanged(hearingId, "progression.update-defendant-listing-status.json");
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
                 withJsonPath("$.hearing.id", is(hearingId)),
-                withJsonPath("$.hearingListingStatus", is("HEARING_RESULTED")),
+                withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")),
                 withJsonPath("$.hearing.jurisdictionType", is("CROWN"))
         );
     }

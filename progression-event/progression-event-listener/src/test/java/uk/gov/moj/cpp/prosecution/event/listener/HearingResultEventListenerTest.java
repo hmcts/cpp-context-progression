@@ -1,12 +1,14 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +23,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -63,6 +66,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultEventListenerTest {
 
+    private static final String CASE_RESULT_LABEL_1 = "case result label 1";
+    private static final String OFFENCE_RESULT_LABEL_1 = "offence result label 1";
+    private static final String CASE_RESULT_LABEL_2 = "case result label 2";
+    private static final String OFFENCE_RESULT_LABEL_2 = "offence result label 2";
+    private static final String DEFENDANT_RESULT_LABEL = "defendant result label";
+
     @Mock
     private HearingRepository hearingRepository;
 
@@ -74,7 +83,6 @@ public class HearingResultEventListenerTest {
 
     @Captor
     private ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
-
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -91,8 +99,8 @@ public class HearingResultEventListenerTest {
     @Test
     public void hearingResult() {
 
-        final UUID hearingId = randomUUID();
-        final UUID hearingId2 = randomUUID();
+        final UUID firstHearingId = randomUUID();
+        final UUID secondHearingId = randomUUID();
         final UUID courtCentreId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -101,16 +109,20 @@ public class HearingResultEventListenerTest {
         final UUID offenceId2 = randomUUID();
         final Defendant defendant1 = Defendant.defendant()
                 .withId(defendantId)
+                .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_1)))
                 .withProceedingsConcluded(true)
                 .withOffences(Arrays.asList(Offence.offence()
                         .withId(offenceId)
+                        .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1)))
                         .build()))
                 .build();
         final Defendant defendant2 = Defendant.defendant()
                 .withId(defendantId2)
+                .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_2)))
                 .withProceedingsConcluded(true)
                 .withOffences(Arrays.asList(Offence.offence()
                         .withId(offenceId2)
+                        .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2)))
                         .build()))
                 .build();
         final List<Defendant> defendants = new ArrayList<>();
@@ -119,7 +131,8 @@ public class HearingResultEventListenerTest {
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
-                        .withId(hearingId)
+                        .withId(firstHearingId)
+                        .withDefendantJudicialResults(newArrayList(DefendantJudicialResult.defendantJudicialResult().withJudicialResult(getJudicialResult(randomUUID(), DEFENDANT_RESULT_LABEL)).build()))
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withHearingLanguage(HearingLanguage.ENGLISH)
                         .withHasSharedResults(true)
@@ -135,7 +148,7 @@ public class HearingResultEventListenerTest {
                 .build();
 
         final Hearing hearing = Hearing.hearing()
-                .withId(hearingId)
+                .withId(firstHearingId)
                 .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
@@ -145,7 +158,7 @@ public class HearingResultEventListenerTest {
                 .build();
 
         final Hearing hearing2 = Hearing.hearing()
-                .withId(hearingId2)
+                .withId(secondHearingId)
                 .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
@@ -155,31 +168,31 @@ public class HearingResultEventListenerTest {
                 .build();
 
         HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setHearingId(firstHearingId);
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
 
         HearingEntity hearingEntity2 = new HearingEntity();
-        hearingEntity2.setHearingId(hearingId2);
+        hearingEntity2.setHearingId(secondHearingId);
         hearingEntity2.setPayload(objectToJsonObjectConverter.convert(hearing2).toString());
         hearingEntity2.setListingStatus(HearingListingStatus.SENT_FOR_LISTING);
 
-        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(hearingRepository.findBy(firstHearingId)).thenReturn(hearingEntity);
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity1.setHearing(hearingEntity);
-        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearingId));
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, firstHearingId));
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity2.setHearing(hearingEntity2);
-        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearingId2));
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, secondHearingId));
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity3 = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity3.setHearing(hearingEntity);
-        caseDefendantHearingEntity3.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId2, hearingId));
+        caseDefendantHearingEntity3.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId2, firstHearingId));
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity4 = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity4.setHearing(hearingEntity2);
-        caseDefendantHearingEntity4.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId2, hearingId2));
+        caseDefendantHearingEntity4.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId2, secondHearingId));
 
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
         caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
@@ -197,7 +210,7 @@ public class HearingResultEventListenerTest {
 
         List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
 
-        HearingEntity savedHearingEntity1 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(hearingId))
+        HearingEntity savedHearingEntity1 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(firstHearingId))
                 .findFirst().get();
 
 
@@ -205,12 +218,27 @@ public class HearingResultEventListenerTest {
 
         assertThat(savedHearing1, notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
-        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getProceedingsConcluded(), nullValue());
         assertThat(savedHearingEntity1.getListingStatus(), equalTo(HearingListingStatus.HEARING_RESULTED));
 
-        HearingEntity savedHearingEntity2 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(hearingId2))
-                .findFirst().get();
+        final Defendant firstDefendant = savedHearing1.getProsecutionCases().get(0).getDefendants().get(0);
+        assertThat(firstDefendant.getProceedingsConcluded(), nullValue());
+        assertThat(firstDefendant.getOffences().get(0).getJudicialResults(), hasSize(1));
+        assertThat(firstDefendant.getOffences().get(0).getJudicialResults().get(0).getLabel(), is(OFFENCE_RESULT_LABEL_1));
+        assertThat(firstDefendant.getDefendantCaseJudicialResults(), hasSize(1));
+        assertThat(firstDefendant.getDefendantCaseJudicialResults().get(0).getLabel(), is(CASE_RESULT_LABEL_1));
 
+        final Defendant secondDefendant = savedHearing1.getProsecutionCases().get(0).getDefendants().get(1);
+        assertThat(secondDefendant.getOffences().get(0).getJudicialResults(), hasSize(1));
+        assertThat(secondDefendant.getOffences().get(0).getJudicialResults().get(0).getLabel(), is(OFFENCE_RESULT_LABEL_2));
+        assertThat(secondDefendant.getDefendantCaseJudicialResults(), hasSize(1));
+        assertThat(secondDefendant.getDefendantCaseJudicialResults().get(0).getLabel(), is(CASE_RESULT_LABEL_2));
+        assertThat(secondDefendant.getDefendantCaseJudicialResults(), hasSize(1));
+
+        assertThat(savedHearing1.getDefendantJudicialResults(), hasSize(1));
+        assertThat(savedHearing1.getDefendantJudicialResults().get(0).getJudicialResult().getLabel(), is(DEFENDANT_RESULT_LABEL));
+
+        HearingEntity savedHearingEntity2 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(secondHearingId))
+                .findFirst().get();
 
         final Hearing savedHearing2 = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity2.getPayload()), Hearing.class);
 
@@ -219,6 +247,10 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing2.getProsecutionCases().get(0).getDefendants().get(0).getProceedingsConcluded(), is(true));
         assertThat(savedHearingEntity2.getListingStatus(), equalTo(HearingListingStatus.SENT_FOR_LISTING));
 
+    }
+
+    private JudicialResult getJudicialResult(final UUID judicialResultId, final String resultLabel) {
+        return JudicialResult.judicialResult().withJudicialResultId(judicialResultId).withLabel(resultLabel).build();
     }
 
     @Test

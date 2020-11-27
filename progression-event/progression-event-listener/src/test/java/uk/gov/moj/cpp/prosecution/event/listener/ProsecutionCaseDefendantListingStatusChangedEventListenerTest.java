@@ -5,17 +5,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -33,10 +26,21 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHeari
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
-import javax.json.Json;
-import javax.json.JsonObject;
+
 import java.util.Arrays;
 import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,7 +60,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
     private JsonEnvelope envelope;
 
     @Mock
-    private CaseDefendantHearingRepository repository;
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
     @Captor
     private ArgumentCaptor<CaseDefendantHearingEntity> argumentCaptorCaseDefendantHearingEntity;
@@ -106,22 +110,66 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
-        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChanged.class))
-                .thenReturn(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
-                        .withHearing(Hearing.hearing().withId(hearingId)
-                                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId)
-                                        .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId).build()))
-                                        .build()))
-                                .build())
-                        .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
-                        .build());
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChanged.class)).thenReturn(getEnvelope(HearingListingStatus.HEARING_INITIALISED));
 
         when(envelope.metadata()).thenReturn(metadata);
 
         eventListener.process(envelope);
-        verify(repository).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        verify(caseDefendantHearingRepository).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getCaseId(), is(caseId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getDefendantId(), is(defendantId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getHearing(), notNullValue());
         verify(matchDefendantCaseHearingRepository).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
         assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearingId(), is(hearingId));
         assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearing(), notNullValue());
+    }
+
+    @Test
+    public void shouldNotOverwriteHearingWhenStatusIsAlreadyResulted() throws Exception {
+
+        final HearingEntity hearingEntity = mock(HearingEntity.class);
+        when(hearingEntity.getHearingId()).thenReturn(hearingId);
+        when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_RESULTED);
+
+        final CaseDefendantHearingEntity hearingResultLineEntity = new CaseDefendantHearingEntity();
+        hearingResultLineEntity.setId(new CaseDefendantHearingKey(caseId, defendantId, hearingId));
+        hearingResultLineEntity.setHearing(hearingEntity);
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = new MatchDefendantCaseHearingEntity();
+        matchDefendantCaseHearingEntity.setId(randomUUID());
+        matchDefendantCaseHearingEntity.setDefendantId(defendantId);
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChanged.class)).thenReturn(getEnvelope(HearingListingStatus.HEARING_INITIALISED));
+
+        when(envelope.metadata()).thenReturn(metadata);
+
+        eventListener.process(envelope);
+        verify(caseDefendantHearingRepository).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getCaseId(), is(caseId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getDefendantId(), is(defendantId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getHearing(), is(hearingEntity));
+
+        verify(matchDefendantCaseHearingRepository).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearing(), is(hearingEntity));
+    }
+
+
+
+    private ProsecutionCaseDefendantListingStatusChanged getEnvelope(final HearingListingStatus hearingListingStatus) {
+        return ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearing(Hearing.hearing().withId(hearingId)
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId)
+                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId).build()))
+                                .build()))
+                        .build())
+                .withHearingListingStatus(hearingListingStatus)
+                .build();
     }
 }

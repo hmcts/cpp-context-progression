@@ -130,7 +130,7 @@ public class HearingResultEventListener {
     }
 
     private List<ProsecutionCase> getUpdatedProsecutionCasesForNonResultedHearing(final Hearing originalHearing,
-                                                                                 final Hearing resultedHearing) {
+                                                                                  final Hearing resultedHearing) {
         return originalHearing.getProsecutionCases().stream().map(prosecutionCase ->
                 getUpdatedProsecutionCaseForNonResultedHearing(prosecutionCase, resultedHearing)
         ).collect(toList());
@@ -256,36 +256,37 @@ public class HearingResultEventListener {
         }
     }
 
-    private Hearing getUpdatedHearingForResulted(final Hearing hearing, final Hearing originalHearing) {
+    private Hearing getUpdatedHearingForResulted(final Hearing hearingFromPayload, final Hearing hearingFromDatabase) {
 
         final Hearing.Builder builder = Hearing.hearing();
-        if (nonNull(hearing.getProsecutionCases()) && !hearing.getProsecutionCases().isEmpty()) {
-            builder.withProsecutionCases(getUpdatedProsecutionCases(hearing, originalHearing));
+        if (nonNull(hearingFromPayload.getProsecutionCases()) && !hearingFromPayload.getProsecutionCases().isEmpty()) {
+            builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase));
         }
-        return builder.withIsBoxHearing(hearing.getIsBoxHearing())
-                .withId(hearing.getId())
-                .withHearingDays(hearing.getHearingDays())
-                .withCourtCentre(hearing.getCourtCentre())
-                .withJurisdictionType(hearing.getJurisdictionType())
-                .withType(hearing.getType())
-                .withHearingLanguage(hearing.getHearingLanguage())
-                .withCourtApplications(getUpdateCourtApplications(hearing.getCourtApplications()))
-                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                .withJudiciary(hearing.getJudiciary())
-                .withDefendantAttendance(hearing.getDefendantAttendance())
-                .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
-                .withHasSharedResults(hearing.getHasSharedResults())
-                .withDefenceCounsels(hearing.getDefenceCounsels())
-                .withProsecutionCounsels(hearing.getProsecutionCounsels())
-                .withRespondentCounsels(hearing.getRespondentCounsels())
-                .withApplicationPartyCounsels(hearing.getApplicationPartyCounsels())
-                .withCrackedIneffectiveTrial(hearing.getCrackedIneffectiveTrial())
-                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                .withHearingCaseNotes(hearing.getHearingCaseNotes())
-                .withCourtApplicationPartyAttendance(hearing.getCourtApplicationPartyAttendance())
-                .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
-                .withIntermediaries(hearing.getIntermediaries())
-                .withIsEffectiveTrial(hearing.getIsEffectiveTrial())
+        return builder.withIsBoxHearing(hearingFromPayload.getIsBoxHearing())
+                .withId(hearingFromPayload.getId())
+                .withHearingDays(hearingFromPayload.getHearingDays())
+                .withCourtCentre(hearingFromPayload.getCourtCentre())
+                .withJurisdictionType(hearingFromPayload.getJurisdictionType())
+                .withType(hearingFromPayload.getType())
+                .withHearingLanguage(hearingFromPayload.getHearingLanguage())
+                .withCourtApplications(getUpdateCourtApplications(hearingFromPayload.getCourtApplications()))
+                .withReportingRestrictionReason(hearingFromPayload.getReportingRestrictionReason())
+                .withJudiciary(hearingFromPayload.getJudiciary())
+                .withDefendantJudicialResults(hearingFromPayload.getDefendantJudicialResults())
+                .withDefendantAttendance(hearingFromPayload.getDefendantAttendance())
+                .withDefendantReferralReasons(hearingFromPayload.getDefendantReferralReasons())
+                .withHasSharedResults(hearingFromPayload.getHasSharedResults())
+                .withDefenceCounsels(hearingFromPayload.getDefenceCounsels())
+                .withProsecutionCounsels(hearingFromPayload.getProsecutionCounsels())
+                .withRespondentCounsels(hearingFromPayload.getRespondentCounsels())
+                .withApplicationPartyCounsels(hearingFromPayload.getApplicationPartyCounsels())
+                .withCrackedIneffectiveTrial(hearingFromPayload.getCrackedIneffectiveTrial())
+                .withReportingRestrictionReason(hearingFromPayload.getReportingRestrictionReason())
+                .withHearingCaseNotes(hearingFromPayload.getHearingCaseNotes())
+                .withCourtApplicationPartyAttendance(hearingFromPayload.getCourtApplicationPartyAttendance())
+                .withCompanyRepresentatives(hearingFromPayload.getCompanyRepresentatives())
+                .withIntermediaries(hearingFromPayload.getIntermediaries())
+                .withIsEffectiveTrial(hearingFromPayload.getIsEffectiveTrial())
                 .build();
     }
 
@@ -308,73 +309,73 @@ public class HearingResultEventListener {
         );
     }
 
-    private List<ProsecutionCase> getUpdatedProsecutionCases(final Hearing hearing, final Hearing originalHearing) {
+    private List<ProsecutionCase> getUpdatedProsecutionCases(final Hearing hearingFromPayload, final Hearing hearingFromDatabase) {
 
-        return hearing.getProsecutionCases().stream().map(prosecutionCase ->
-                getUpdatedProsecutionCase(prosecutionCase, originalHearing)
+        return hearingFromPayload.getProsecutionCases().stream().map(prosecutionCaseFromPayload ->
+                getUpdatedProsecutionCase(prosecutionCaseFromPayload, hearingFromDatabase)
         ).collect(toList());
     }
 
-    private ProsecutionCase getUpdatedProsecutionCase(final ProsecutionCase prosecutionCase, final Hearing originalHearing) {
-        final Optional<ProsecutionCase> optionalResultedCase = originalHearing.getProsecutionCases().stream()
-                .filter(resultedCase -> resultedCase.getId().equals(prosecutionCase.getId()))
+    private ProsecutionCase getUpdatedProsecutionCase(final ProsecutionCase prosecutionCaseFromPayload, final Hearing hearingFromDatabase) {
+        final Optional<ProsecutionCase> optionalResultedCase = hearingFromDatabase.getProsecutionCases().stream()
+                .filter(resultedCase -> resultedCase.getId().equals(prosecutionCaseFromPayload.getId()))
                 .findFirst();
         if (optionalResultedCase.isPresent()) {
             final ProsecutionCase originalProsecutionCase = optionalResultedCase.get();
             return ProsecutionCase.prosecutionCase()
-                    .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                    .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
-                    .withId(prosecutionCase.getId())
-                    .withDefendants(getUpdatedDefendants(prosecutionCase))
-                    .withInitiationCode(prosecutionCase.getInitiationCode())
-                    .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                    .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
-                    .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
-                    .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                    .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
-                    .withCaseMarkers(prosecutionCase.getCaseMarkers())
-                    .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                    .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                    .withRemovalReason(prosecutionCase.getRemovalReason())
+                    .withPoliceOfficerInCase(prosecutionCaseFromPayload.getPoliceOfficerInCase())
+                    .withProsecutionCaseIdentifier(prosecutionCaseFromPayload.getProsecutionCaseIdentifier())
+                    .withId(prosecutionCaseFromPayload.getId())
+                    .withDefendants(getUpdatedDefendants(prosecutionCaseFromPayload))
+                    .withInitiationCode(prosecutionCaseFromPayload.getInitiationCode())
+                    .withOriginatingOrganisation(prosecutionCaseFromPayload.getOriginatingOrganisation())
+                    .withCpsOrganisation(prosecutionCaseFromPayload.getCpsOrganisation())
+                    .withIsCpsOrgVerifyError(prosecutionCaseFromPayload.getIsCpsOrgVerifyError())
+                    .withStatementOfFacts(prosecutionCaseFromPayload.getStatementOfFacts())
+                    .withStatementOfFactsWelsh(prosecutionCaseFromPayload.getStatementOfFactsWelsh())
+                    .withCaseMarkers(prosecutionCaseFromPayload.getCaseMarkers())
+                    .withAppealProceedingsPending(prosecutionCaseFromPayload.getAppealProceedingsPending())
+                    .withBreachProceedingsPending(prosecutionCaseFromPayload.getBreachProceedingsPending())
+                    .withRemovalReason(prosecutionCaseFromPayload.getRemovalReason())
                     .withCaseStatus(originalProsecutionCase.getCaseStatus())
                     .build();
         } else {
-            return prosecutionCase;
+            return prosecutionCaseFromPayload;
         }
     }
 
-    private List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCase) {
-        return prosecutionCase.getDefendants().stream().map(defendant ->
+    private List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCaseFromPayload) {
+        return prosecutionCaseFromPayload.getDefendants().stream().map(defendant ->
                 getUpdatedDefendant(defendant)
         ).collect(toList());
     }
 
-    private Defendant getUpdatedDefendant(final Defendant originDefendant) {
+    private Defendant getUpdatedDefendant(final Defendant defendantFromPayload) {
 
         return Defendant.defendant()
-                .withOffences(getUpdatedOffences(originDefendant))
-                .withPersonDefendant(originDefendant.getPersonDefendant())
-                .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
-                .withAssociatedPersons(originDefendant.getAssociatedPersons())
-                .withId(originDefendant.getId())
-                .withMasterDefendantId(originDefendant.getMasterDefendantId())
-                .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
-                .withLegalAidStatus(originDefendant.getLegalAidStatus())
-                .withMitigation(originDefendant.getMitigation())
-                .withMitigationWelsh(originDefendant.getMitigationWelsh())
-                .withNumberOfPreviousConvictionsCited(originDefendant.getNumberOfPreviousConvictionsCited())
-                .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
-                .withProsecutionCaseId(originDefendant.getProsecutionCaseId())
-                .withWitnessStatement(originDefendant.getWitnessStatement())
-                .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
-                .withDefenceOrganisation(originDefendant.getDefenceOrganisation())
-                .withPncId(originDefendant.getPncId())
-                .withAliases(originDefendant.getAliases())
-                .withIsYouth(originDefendant.getIsYouth())
-                .withCroNumber(originDefendant.getCroNumber())
-                .withDefendantCaseJudicialResults(getNonNowsResults(originDefendant.getDefendantCaseJudicialResults()))
-                .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
-                .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
+                .withOffences(getUpdatedOffences(defendantFromPayload))
+                .withPersonDefendant(defendantFromPayload.getPersonDefendant())
+                .withLegalEntityDefendant(defendantFromPayload.getLegalEntityDefendant())
+                .withAssociatedPersons(defendantFromPayload.getAssociatedPersons())
+                .withId(defendantFromPayload.getId())
+                .withMasterDefendantId(defendantFromPayload.getMasterDefendantId())
+                .withCourtProceedingsInitiated(defendantFromPayload.getCourtProceedingsInitiated())
+                .withLegalAidStatus(defendantFromPayload.getLegalAidStatus())
+                .withMitigation(defendantFromPayload.getMitigation())
+                .withMitigationWelsh(defendantFromPayload.getMitigationWelsh())
+                .withNumberOfPreviousConvictionsCited(defendantFromPayload.getNumberOfPreviousConvictionsCited())
+                .withProsecutionAuthorityReference(defendantFromPayload.getProsecutionAuthorityReference())
+                .withProsecutionCaseId(defendantFromPayload.getProsecutionCaseId())
+                .withWitnessStatement(defendantFromPayload.getWitnessStatement())
+                .withWitnessStatementWelsh(defendantFromPayload.getWitnessStatementWelsh())
+                .withDefenceOrganisation(defendantFromPayload.getDefenceOrganisation())
+                .withPncId(defendantFromPayload.getPncId())
+                .withAliases(defendantFromPayload.getAliases())
+                .withIsYouth(defendantFromPayload.getIsYouth())
+                .withCroNumber(defendantFromPayload.getCroNumber())
+                .withDefendantCaseJudicialResults(getNonNowsResults(defendantFromPayload.getDefendantCaseJudicialResults()))
+                .withAssociatedDefenceOrganisation(defendantFromPayload.getAssociatedDefenceOrganisation())
+                .withAssociationLockedByRepOrder(defendantFromPayload.getAssociationLockedByRepOrder())
                 .build();
     }
 
