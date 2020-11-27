@@ -136,6 +136,9 @@ subscriptions_descriptor:
         - name: progression.event.court-register-notified
           schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
 
+        - name: progression.event.hearing-resulted
+          schema_uri: http://justice.gov.uk/hearing/courts/hearing-resulted.json
+
           ############  Association Start ############
         - name: progression.event.defence-organisation-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json

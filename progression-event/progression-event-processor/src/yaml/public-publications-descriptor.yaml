@@ -107,6 +107,9 @@ subscriptions_descriptor:
         - name: public.progression.events.cps-prosecutor-updated
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.event.case-cps-prosecutor-updated.json
 
+        - name: public.progression.hearing-resulted
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.hearing-resulted.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

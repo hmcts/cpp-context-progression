@@ -40,12 +40,15 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
+    private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
+    private static final MessageConsumer messageConsumerClientPublicForHearingResulted = publicEvents
+            .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED);
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
             .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
 
@@ -65,6 +68,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
         messageConsumerClientPublicForHearingResultedCaseUpdated.close();
+        messageConsumerClientPublicForHearingResulted.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
@@ -73,6 +77,12 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
+    }
+
+    private static void verifyInMessagingQueueForHearingResulted() {
+        final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResulted);
+        assertTrue(message.isPresent());
+        assertThat(message.get().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("caseStatus"), equalTo("INACTIVE"));
     }
 
     @Before
@@ -104,6 +114,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
+        verifyInMessagingQueueForHearingResulted();
     }
 
     @Test
