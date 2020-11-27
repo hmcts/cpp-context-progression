@@ -5,13 +5,15 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.util.Optional;
 
@@ -29,9 +31,7 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
 
     private static final String NEW_PROSECUTION_AUTH_CODE = "TFL-CM";
 
-    private final MessageConsumer publicEventsCaseProsecutorUpdated =
-            QueueUtil.publicEvents
-                    .createConsumer("public.progression.events.cps-prosecutor-updated");
+    private final MessageConsumer publicEventsCaseProsecutorUpdated = publicEvents.createConsumer("public.progression.events.cps-prosecutor-updated");
 
     private final String prosecutionCaseId;
     private String request;
@@ -44,9 +44,9 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
 
     public void updateCaseProsecutor() {
         request = getPayload(TEMPLATE_UPDATE_CASE_PROSECUTOR_PAYLOAD);
+        privateEventsConsumer = privateEvents.createConsumer("progression.event.cps-prosecutor-updated");
+        caseProsecutorUpdatedPrivateEventsConsumer = privateEvents.createConsumer("progression.event.case-cps-prosecutor-updated");
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.cps-prosecutor-updated");
-        caseProsecutorUpdatedPrivateEventsConsumer  = QueueUtil.privateEvents.createConsumer("progression.event.case-cps-prosecutor-updated");
     }
 
     public void verifyInActiveMQ() {
@@ -61,15 +61,12 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
     }
 
     public void verifyInMessagingQueueForProsecutorUpdated(int hearingsCount) {
-        final Optional<JsonObject> message =
-                QueueUtil.retrieveMessageAsJsonObject(publicEventsCaseProsecutorUpdated);
-        assertTrue(message.isPresent());
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventsCaseProsecutorUpdated);
+        assertThat(message.isPresent(), is(true));
         assertThat(message.get().size(), is(8));
-        assertThat(message.get(), isJson(withJsonPath("$.prosecutionCaseId",
-                Matchers.hasToString(Matchers.containsString(prosecutionCaseId)))));
+        assertThat(message.get(), isJson(withJsonPath("$.prosecutionCaseId", hasToString(Matchers.containsString(prosecutionCaseId)))));
         assertThat(message.get(), isJson(withoutJsonPath("$.oldCpsProsecutor")));
-        assertThat(message.get(), isJson(withJsonPath("$.prosecutionAuthorityCode",
-                Matchers.hasToString(Matchers.containsString(NEW_PROSECUTION_AUTH_CODE)))));
-            assertThat(message.get(), isJson(withJsonPath("$.hearingIds", hasSize(hearingsCount))));
+        assertThat(message.get(), isJson(withJsonPath("$.prosecutionAuthorityCode", hasToString(Matchers.containsString(NEW_PROSECUTION_AUTH_CODE)))));
+        assertThat(message.get(), isJson(withJsonPath("$.hearingIds", hasSize(hearingsCount))));
     }
 }

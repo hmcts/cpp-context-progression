@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Objects.nonNull;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
@@ -18,7 +20,6 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
@@ -105,10 +106,11 @@ public class ProsecutionCaseQuery {
 
     @Inject
     private CaseCpsProsecutorRepository caseCpsProsecutorRepository;
+
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final Optional<UUID> caseId = getUUID(envelope.payloadAsJsonObject(), ID);
         try {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
             final JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
@@ -132,10 +134,10 @@ public class ProsecutionCaseQuery {
             if (nonNull(caseCpsProsecutorEntity) && StringUtils.isNotEmpty(caseCpsProsecutorEntity.getOldCpsProsecutor())) {
                 final String oldCpsProsecutor = caseCpsProsecutorEntity.getOldCpsProsecutor();
                 JsonObject prosecutionCaseIdentifier = addProperty(prosecutionCase.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
-                jsonObjectBuilder.add(PROSECUTION_CASE,  addProperty(prosecutionCase, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
+                jsonObjectBuilder.add(PROSECUTION_CASE, addProperty(prosecutionCase, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
 
                 prosecutionCaseIdentifier = addProperty(getCaseAtAGlanceJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
-                jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE,  addProperty(getCaseAtAGlanceJson, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
+                jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE, addProperty(getCaseAtAGlanceJson, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
             }
 
         } catch (final NoResultException e) {
@@ -150,8 +152,8 @@ public class ProsecutionCaseQuery {
 
     @Handles("progression.query.prosecutioncase.caag")
     public JsonEnvelope getProsecutionCaseForCaseAtAGlance(final JsonEnvelope envelope) {
-        final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final Optional<UUID> caseId = getUUID(envelope.payloadAsJsonObject(), ID);
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         try {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
@@ -199,7 +201,7 @@ public class ProsecutionCaseQuery {
     public JsonEnvelope searchByMaterialId(final JsonEnvelope envelope) {
 
         LOGGER.debug("Searching for allowed user groups with materialId='{}'", FIELD_QUERY);
-        final JsonObjectBuilder json = Json.createObjectBuilder();
+        final JsonObjectBuilder json = createObjectBuilder();
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         final CourtDocumentMaterialEntity courtDocumentMaterialEntity = courtDocumentMaterialRepository.findBy(UUID
                 .fromString(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
@@ -217,7 +219,7 @@ public class ProsecutionCaseQuery {
     @Handles("progression.query.search-cases")
     public JsonEnvelope searchCase(final JsonEnvelope envelope) {
         final String searchCriteria = envelope.payloadAsJsonObject().getString(FIELD_QUERY);
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (StringUtils.isNotBlank(searchCriteria)) {
             final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findBySearchCriteria(prepareSearch
                     (searchCriteria));

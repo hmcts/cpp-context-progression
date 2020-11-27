@@ -8,24 +8,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsCollectionWithSize;
 
 public class ReferProsecutionCaseToCrownCourtHelper {
 
-    public static Matcher[] getProsecutionCaseMatchers(final String caseId, final String defendantId) {
+    public static Matcher<? super ReadContext>[] getProsecutionCaseMatchers(final String caseId, final String defendantId) {
         return getProsecutionCaseMatchers(caseId, defendantId, Collections.emptyList());
 
     }
 
-    public static Matcher[] getProsecutionCaseMatchersWithOffence(final String caseId, final String defendantId, List<Matcher> additionalMatchers) {
-        List<Matcher> matchers = newArrayList(
+    public static Matcher<? super ReadContext>[] getProsecutionCaseMatchersWithOffence(final String caseId, final String defendantId, final List<Matcher<? super ReadContext>> additionalMatchers) {
+        final List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
                 withJsonPath("$.prosecutionCase.initiationCode", is("J")),
                 withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
                 withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
-
         );
 
         matchers.addAll(getDefendantMatchers(caseId, defendantId));
@@ -43,7 +43,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
-    public static ArrayList<Matcher> getDefendantOffenceMatchersWithOffenceDateCode() {
+    public static List<Matcher<? super ReadContext>> getDefendantOffenceMatchersWithOffenceDateCode() {
         return newArrayList(
                 // defendant offence assertion
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
@@ -61,14 +61,13 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static Matcher[] getProsecutionCaseMatchers(final String caseId, final String defendantId, List<Matcher> additionalMatchers) {
-        List<Matcher> matchers = newArrayList(
+    public static Matcher<? super ReadContext>[] getProsecutionCaseMatchers(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
+        List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
                 withJsonPath("$.prosecutionCase.initiationCode", is("J")),
                 withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
                 withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
-
         );
 
         matchers.addAll(getDefendantMatchers(caseId, defendantId));
@@ -86,7 +85,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
-    public static ArrayList<Matcher> getCourtDocumentMatchers(final String caseId, final String courtDocumentId, final String materialIdActive, final int position) {
+    public static List<Matcher<? super ReadContext>> getCourtDocumentMatchers(final String caseId, final String courtDocumentId, final String materialIdActive, final int position) {
         return newArrayList(
                 withJsonPath("$.courtDocuments[" + position + "].courtDocumentId", is(courtDocumentId)),
                 withJsonPath("$.courtDocuments[" + position + "].documentCategory.defendantDocument.prosecutionCaseId", is(caseId)),
@@ -100,7 +99,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getDefendantMatchers(final String caseId, final String defendantId) {
+    public static List<Matcher<? super ReadContext>> getDefendantMatchers(final String caseId, final String defendantId) {
         return newArrayList(
                 // defendant assertion
                 withJsonPath("$.prosecutionCase.defendants[0].id", is(defendantId)),
@@ -110,7 +109,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getDefendantOffenceMatchers() {
+    public static List<Matcher<? super ReadContext>> getDefendantOffenceMatchers() {
         return newArrayList(
                 // defendant offence assertion
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
@@ -127,7 +126,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getOffenceFactMatchers() {
+    public static ArrayList<Matcher<? super ReadContext>> getOffenceFactMatchers() {
         return newArrayList(
                 // offence facts
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.vehicleRegistration", is("AA12345")),
@@ -136,7 +135,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getNotifyPleatMatchers() {
+    public static ArrayList<Matcher<? super ReadContext>> getNotifyPleatMatchers() {
         return newArrayList(
                 // notified plea
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].notifiedPlea.offenceId", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
@@ -145,7 +144,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getPersonMatchers() {
+    public static ArrayList<Matcher<? super ReadContext>> getPersonMatchers() {
         return newArrayList(
                 // assert person
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.title", is("DR")),
@@ -165,7 +164,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getPersonAddressMatchers() {
+    public static ArrayList<Matcher<? super ReadContext>> getPersonAddressMatchers() {
         return newArrayList(
                 // person address
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.address1", is("22")),
@@ -177,7 +176,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getPersonContactDetailsMatchers() {
+    public static ArrayList<Matcher<? super ReadContext>> getPersonContactDetailsMatchers() {
         return newArrayList(
                 // person contact details
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.home", is("123456")),
@@ -189,7 +188,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         );
     }
 
-    public static ArrayList<Matcher> getPersonDefendantMatchers() {
+    public static ArrayList<Matcher<? super ReadContext>> getPersonDefendantMatchers() {
         return newArrayList(
                 // person defendant details
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.title", is("DR")),

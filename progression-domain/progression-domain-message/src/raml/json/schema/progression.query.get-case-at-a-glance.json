@@ -186,6 +186,9 @@
         "count": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
         },
+        "orderIndex": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
+        },
         "allocationDecision": {
           "$ref": "http://justice.gov.uk/core/courts/allocationDecision.json"
         },

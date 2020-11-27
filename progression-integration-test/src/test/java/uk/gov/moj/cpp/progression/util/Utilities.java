@@ -85,7 +85,7 @@ public class Utilities {
     }
 
     public static EventListener listenFor(String mediaType, long timeout) {
-        return new EventListener(publicEvents.createConsumer(mediaType),mediaType, timeout);
+        return new EventListener(publicEvents.createConsumer(mediaType), mediaType, timeout);
     }
 
     public static EventListener listenForPrivateEvent(String mediaType) {
@@ -93,7 +93,7 @@ public class Utilities {
     }
 
     public static EventListener listenForPrivateEvent(String mediaType, long timeout) {
-        return new EventListener(privateEvents.createConsumer(mediaType),mediaType, timeout);
+        return new EventListener(privateEvents.createConsumer(mediaType), mediaType, timeout);
     }
 
     public static class JsonUtil {
@@ -114,7 +114,6 @@ public class Utilities {
         private final String endpoint;
         private String type;
         private String payloadAsString;
-        private Object[] arguments = new Object[0];
 
         public CommandBuilder(RequestSpecification requestSpec, String endpoint) {
             this.requestSpec = requestSpec;

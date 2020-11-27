@@ -18,17 +18,19 @@ import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import org.hamcrest.Matcher;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import com.jayway.jsonpath.ReadContext;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +56,6 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateHearingResultedCaseUpdated() throws Exception {
-        final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         final String hearingId;
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
@@ -64,7 +65,6 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
-
 
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
@@ -82,7 +82,7 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
         caseProsecutorUpdateHelper.verifyInActiveMQ();
 
         caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(1);
-        List<Matcher> customMatchers = newArrayList(
+        final List<Matcher<? super ReadContext>> customMatchers = newArrayList(
                 withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(false))
         );
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, customMatchers));

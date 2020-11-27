@@ -248,6 +248,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceTitle(), is(OFFENCE_TITLE));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceTitleWelsh(), is(OFFENCE_TITLE_WELSH));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCount(), is(2));
+        assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOrderIndex(), is(2));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getPlea().getPleaValue(), is(PLEA_GUILTY));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getPlea().getPleaDate(), is(PLEA_DATE));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getVerdict().getVerdictType().getCategory(), is(GUILTY));
@@ -267,6 +268,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOffenceCode(), is(OFFENCE_CODE));
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOffenceTitleWelsh(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getCount(), nullValue());
+        assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOrderIndex(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getPlea(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getVerdict(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOffenceLegislation(), nullValue());
@@ -403,6 +405,7 @@ public class CaseAtAGlanceHelperTest {
                                                 .withOffenceTitle(OFFENCE_TITLE)
                                                 .withOffenceTitleWelsh(OFFENCE_TITLE_WELSH)
                                                 .withCount(2)
+                                                .withOrderIndex(2)
                                                 .withPlea(plea().withPleaDate(PLEA_DATE).withPleaValue(PLEA_GUILTY).build())
                                                 .withVerdict(verdict().withVerdictDate(VERDICT_DATE).withVerdictType(VerdictType.verdictType().withCategory(GUILTY).build()).build())
                                                 .withOffenceLegislation(OFFENCE_LEGISLATION)

@@ -45,6 +45,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.jsonpath.ReadContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -58,7 +59,7 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_DEFENCE_DEFENCE_ORGANISATION_DISASSOCIATED = "public.defence.defence-organisation-disassociated";
     private static final String PUBLIC_DEFENCE_DEFENCE_ORGANISATION_ASSOCIATED = "public.defence.defence-organisation-associated";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
-    private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
+    private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
 
@@ -86,8 +87,8 @@ public class DefenceFlowIT extends AbstractIT {
     public static void setUpClass() {
         ReferenceDataStub.stubLegalStatus("/restResource/ref-data-legal-statuses.json", statusCode);
         stubEnableAllCapabilities();
-        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber,organisationId, organisationName);
-        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber2,organisationId2, organisationName2);
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, organisationId, organisationName);
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber2, organisationId2, organisationName2);
         stubGetOrganisationQuery(userId, organisationId, organisationName);
         stubGetOrganisationDetails(organisationId, organisationName);
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
@@ -102,7 +103,7 @@ public class DefenceFlowIT extends AbstractIT {
     @Before
     public void setUp() {
         messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
+        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED);
         messageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumer(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
         multipleMessageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumerForMultipleSelectors(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
     }
@@ -117,14 +118,14 @@ public class DefenceFlowIT extends AbstractIT {
 
 
     @Test
-    public void shouldSuccessfullyDisassociateDefenceOrganisationFromDefenceWhenReceiveRepresentationOrderFirst () throws Exception {
+    public void shouldSuccessfullyDisassociateDefenceOrganisationFromDefenceWhenReceiveRepresentationOrderFirst() throws Exception {
         //Create case
         createCase();
 
         //Receive Rep Order
         receiveRepOrder(laaContractNumber);
 
-        List<Matcher> defenceOrganisationMatcher = newArrayList(
+        List<Matcher<? super ReadContext>> defenceOrganisationMatcher = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation"));
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, defenceOrganisationMatcher));
 
@@ -144,7 +145,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSuccessfullyReceiveRepresentationOrderWheDefenceOrganisationAssociationFromDefencePerformedFirst () throws Exception {
+    public void shouldSuccessfullyReceiveRepresentationOrderWheDefenceOrganisationAssociationFromDefencePerformedFirst() throws Exception {
         //Create case
         createCase();
 
@@ -158,7 +159,7 @@ public class DefenceFlowIT extends AbstractIT {
 
         verifyInMessagingQueueForCaseDefendantChanged(laaContractNumber);
 
-        List<Matcher> defenceOrganisationMatcher = newArrayList(
+        List<Matcher<? super ReadContext>> defenceOrganisationMatcher = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber)));
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, defenceOrganisationMatcher));
 
@@ -181,7 +182,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSuccessfullyDisassociateFromDefenceWhenDefenceOrganisationAssociationFromDefencePerformedFirst () throws Exception {
+    public void shouldSuccessfullyDisassociateFromDefenceWhenDefenceOrganisationAssociationFromDefencePerformedFirst() throws Exception {
         //Create case
         createCase();
 
@@ -195,7 +196,7 @@ public class DefenceFlowIT extends AbstractIT {
 
         verifyInMessagingQueueForCaseDefendantChanged(laaContractNumber);
 
-        List<Matcher> defenceOrganisationMatcher = newArrayList(
+        List<Matcher<? super ReadContext>> defenceOrganisationMatcher = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber)));
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, defenceOrganisationMatcher));
 
@@ -250,20 +251,20 @@ public class DefenceFlowIT extends AbstractIT {
     private static boolean isPublicCaseDefendantChangedEventExists(final String laaContractNumber) {
 
         return nonNull(retrieveMessage(multipleMessageConsumerClientPublicForCaseDefendantChanged, isJson(allOf(
-                    withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),
-                    withJsonPath("$.defendant.associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber))
-            ))));
+                withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),
+                withJsonPath("$.defendant.associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber))
+        ))));
     }
 
     private JsonObject createPayloadForDisassociation(final boolean isLAA) {
         return Json.createObjectBuilder()
-                    .add("userId", userId)
-                    .add("defendantId", defendantId)
-                    .add("organisationId", organisationId)
-                    .add("caseId", caseId)
-                    .add("endDate", "2011-12-03T10:15:30+01:00")
-                    .add("isLAA", isLAA)
-                    .build();
+                .add("userId", userId)
+                .add("defendantId", defendantId)
+                .add("organisationId", organisationId)
+                .add("caseId", caseId)
+                .add("endDate", "2011-12-03T10:15:30+01:00")
+                .add("isLAA", isLAA)
+                .build();
     }
 
     private JsonObject createPayloadForAssociation(final boolean isLAA, final String laaContractNumber) {

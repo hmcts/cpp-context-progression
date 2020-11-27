@@ -40,6 +40,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class DefendantMatchIT extends AbstractIT {
             .createConsumer("public.progression.defendant-matched");
     private final MessageConsumer publicEventConsumerForCaseDefendantChanged = publicEvents
             .createConsumer("public.progression.case-defendant-changed");
-        private final MessageConsumer publicEventConsumerForCaseDefendantUpdated = privateEvents
+    private final MessageConsumer publicEventConsumerForCaseDefendantUpdated = privateEvents
             .createConsumer("progression.event.prosecution-case-defendant-updated");
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -97,11 +98,11 @@ public class DefendantMatchIT extends AbstractIT {
         // initiation of first case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
-        List<Matcher> customMatchers = newArrayList(
+        List<Matcher<? super ReadContext>> customMatchers = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4))
         );
 
-        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, customMatchers);
+        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, customMatchers);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
         // initiation of second case
@@ -127,7 +128,7 @@ public class DefendantMatchIT extends AbstractIT {
         // initiation of first case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
-        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
+        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
         // initiation of second case
@@ -161,7 +162,7 @@ public class DefendantMatchIT extends AbstractIT {
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1, defendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
-        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
+        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2, defendantId_2, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
@@ -189,7 +190,7 @@ public class DefendantMatchIT extends AbstractIT {
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2, defendantId_2, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
         // match defendant2 associated to case 2
@@ -251,18 +252,18 @@ public class DefendantMatchIT extends AbstractIT {
     }
 
     private void shouldMatchDefendantsExactlyForCase(final String caseType, final String pncId) throws IOException {
-        stubUnifiedSearchQueryForExactDefendantMatching(prosecutionCaseId_1,defendantId_1);
+        stubUnifiedSearchQueryForExactDefendantMatching(prosecutionCaseId_1, defendantId_1);
 
         final String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
-        initiateCourtProceedingsForExactMatchDefendants(prosecutionCaseId_1, defendantId_1,caseReceivedDate, caseType);
+        initiateCourtProceedingsForExactMatchDefendants(prosecutionCaseId_1, defendantId_1, caseReceivedDate, caseType);
         verifyInMessagingQueueForProsecutionCaseCreated();
 
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchersForExactMatch(pncId, "Louis");
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForExactMatch(pncId, "Louis");
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
     }
 
-    private Matcher[] getProsecutionCaseMatchersForExactMatch(final String pncId, final String lastName) {
-        final List<Matcher> matchers = newArrayList(
+    private Matcher<? super ReadContext>[] getProsecutionCaseMatchersForExactMatch(final String pncId, final String lastName) {
+        final List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].pncId", is(pncId)),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.lastName", is(lastName))
         );
@@ -270,8 +271,8 @@ public class DefendantMatchIT extends AbstractIT {
     }
 
     private void stubUnifiedSearchQueryForExactDefendantMatching(final String caseId, final String defendantId) {
-        stubUnifiedSearchQueryExactMatchForSPISpec(caseId,defendantId);
-        stubUnifiedSearchQueryExactMatchForCJSSpec(caseId,defendantId);
+        stubUnifiedSearchQueryExactMatchForSPISpec(caseId, defendantId);
+        stubUnifiedSearchQueryExactMatchForCJSSpec(caseId, defendantId);
     }
 
     @Test
@@ -284,27 +285,27 @@ public class DefendantMatchIT extends AbstractIT {
         shouldMatchDefendantsPartiallyForCase("CPPI", "2016/0000234W");
     }
 
-    private Matcher[] getProsecutionCaseMatchersForPartialMatch(final String pncId) {
-        final List<Matcher> matchers = newArrayList(
+    private Matcher<? super ReadContext>[] getProsecutionCaseMatchersForPartialMatch(final String pncId) {
+        final List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].pncId", is(pncId))
         );
         return matchers.toArray(new Matcher[0]);
     }
 
     private void shouldMatchDefendantsPartiallyForCase(final String caseType, final String pncId) throws IOException {
-        stubUnifiedSearchQueryForPartialDefendantMatching(prosecutionCaseId_1,defendantId_1);
+        stubUnifiedSearchQueryForPartialDefendantMatching(prosecutionCaseId_1, defendantId_1);
 
         final String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
-        initiateCourtProceedingsForPartialMatchDefendants(prosecutionCaseId_1, defendantId_1,caseReceivedDate, caseType);
+        initiateCourtProceedingsForPartialMatchDefendants(prosecutionCaseId_1, defendantId_1, caseReceivedDate, caseType);
         verifyInMessagingQueueForProsecutionCaseCreated();
 
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchersForPartialMatch(pncId);
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForPartialMatch(pncId);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
     }
 
     private void stubUnifiedSearchQueryForPartialDefendantMatching(final String caseId, final String defendantId) {
-        stubUnifiedSearchQueryPartialMatchForSPISpec(caseId,defendantId);
-        stubUnifiedSearchQueryPartialMatchForCJSSpec(caseId,defendantId);
+        stubUnifiedSearchQueryPartialMatchForSPISpec(caseId, defendantId);
+        stubUnifiedSearchQueryPartialMatchForCJSSpec(caseId, defendantId);
     }
 }
 
