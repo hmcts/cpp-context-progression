@@ -19,7 +19,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
-import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +27,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+
 @SuppressWarnings("squid:S1188")
 public class HearingListingNeedsTransformer {
+
+    @SuppressWarnings("squid:S1312")
+    @Inject
+    private Logger logger;
 
     @Inject
     private HearingBookingReferenceListExtractor hearingBookingReferenceListExtractor;
@@ -120,7 +128,8 @@ public class HearingListingNeedsTransformer {
         final String key;
         if (nonNull(bookingReference)) {
             if (!bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
-                throw new IllegalStateException("CourtScheduleId not found for BookingReference:" + bookingReference.toString());
+                logger.warn("CourtScheduleId not found for BookingReference: {} for courtApplication: {}", bookingReference, courtApplication.getId());
+                return;
             }
             key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference));
         } else {

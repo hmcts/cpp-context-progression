@@ -1,0 +1,187 @@
+package uk.gov.moj.cpp.progression;
+
+import static com.google.common.io.Resources.getResource;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.http.HttpStatus.SC_ACCEPTED;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.test.utils.core.rest.RestClient;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
+import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
+import org.json.JSONObject;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+
+public class HearingDaysIT extends AbstractIT {
+
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+
+    private static final String MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE = "application/vnd.progression.correct-hearing-days-without-court-centre+json";
+    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
+
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private static final RestClient restClient = new RestClient();
+    private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+    private String courtCentreId;
+    private String courtRoomId;
+    private Integer listedDurationMinutes;
+
+    private Integer listingSequence;
+
+    @Before
+    public void setUp() {
+        HearingStub.stubInitiateHearing();
+        courtCentreId = fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
+        courtRoomId = randomUUID().toString();
+        listedDurationMinutes = 20;
+        listingSequence = 0;
+    }
+
+    @AfterClass
+    public static void tearDown() throws JMSException {
+        messageProducerClientPublic.close();
+    }
+
+    @Test
+    public void shouldCorrectHearingDaysWithCourtCentre() throws IOException {
+        final String userId = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
+        final String hearingId = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
+        final int hearingDaysCount = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").size();
+        final Integer listedDurationMinutes = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getInt("listedDurationMinutes");
+        final String sittingDay = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getString("sittingDay");
+
+
+        final JsonObject payload = createObjectBuilder()
+                .add("hearingDays", createArrayBuilder().add(populateCorrectedHearingDays()))
+                .add("id", hearingId).build();
+
+        final Response response = restClient.postCommand(getWriteUrl("/correct-hearing-days-without-court-centre"),
+                MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE,
+                payload.toString(), getRequestHeader(userId));
+
+        assertThat(response.getStatus(), equalTo(SC_ACCEPTED));
+
+        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.id", is(hearingId)),
+                withJsonPath("$.hearing.hearingDays", hasSize(hearingDaysCount)),
+                withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
+                withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId)),
+                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(listedDurationMinutes)),
+                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(sittingDay))
+        );
+    }
+
+    private MultivaluedMap<String, Object> getRequestHeader(final String userId) {
+        final MultivaluedMap<String, Object> headersMap = new MultivaluedHashMap<>();
+        headersMap.add(CPP_UID_HEADER.getName(), userId);
+        return headersMap;
+    }
+
+    public static com.jayway.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws IOException {
+        return addProsecutionCaseToCrownCourt(caseId, defendantId, generateUrn());
+    }
+
+    public static com.jayway.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                jsonPayload.toString());
+    }
+
+    private static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
+                                                                         final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                         final String caseUrn) throws IOException {
+        return createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
+                materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+    }
+
+    public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
+                                                                        final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                        final String caseUrn, final String filePath) throws IOException {
+        final URL resource = getResource(filePath);
+        return Resources.toString(resource, Charset.defaultCharset())
+                .replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                .replace("RANDOM_DOC_ID", courtDocumentId)
+                .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
+                .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
+                .replace("RANDOM_REFERRAL_ID", referralId);
+    }
+
+    public static String generateUrn() {
+        return randomUUID().toString().replace("-", "").substring(0, 8);
+    }
+
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId, final String courtCentreName) {
+        return stringToJsonObjectConverter.convert(
+                getPayload(path)
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+        );
+    }
+
+    private JsonObjectBuilder populateCorrectedHearingDays() {
+        return createObjectBuilder()
+                .add("listedDurationMinutes", listedDurationMinutes)
+                .add("listingSequence", listingSequence)
+                .add("courtCentreId", courtCentreId)
+                .add("courtRoomId", courtRoomId)
+                .add("sittingDay", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()));
+    }
+}

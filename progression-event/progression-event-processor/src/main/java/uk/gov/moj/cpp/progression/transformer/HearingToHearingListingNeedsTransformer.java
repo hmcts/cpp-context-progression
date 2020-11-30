@@ -30,8 +30,14 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+
 
 public class HearingToHearingListingNeedsTransformer {
+
+    @SuppressWarnings("squid:S1312")
+    @Inject
+    private Logger logger;
 
     @Inject
     private HearingBookingReferenceListExtractor hearingBookingReferenceListExtractor;
@@ -84,7 +90,8 @@ public class HearingToHearingListingNeedsTransformer {
         final String key;
         if (nonNull(bookingReference)) {
             if (!bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
-                throw new IllegalStateException("CourtScheduleId not found for BookingReference:" + bookingReference.toString());
+                logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
+                return;
             }
             key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference));
         } else {
