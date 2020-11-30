@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/assign-defendant-request-to-extend-hearing.json",
+  "type": "object",
+  "description": "When SPI requests or SJP requests enter the CPP platform these requests come with Hearing defendant requests come along with prosecution cases and assigned to the initial hearing. When Court clerk or Listing user do partial allocation these defendant requests from the initial hearing should be assigned to extend hearing.",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantRequests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/listDefendantRequest.json#"
+      }
+    }
+  },
+  "required": [
+    "hearingId",
+    "defendantRequests"
+  ],
+  "additionalProperties": false
+}

@@ -1,9 +1,16 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
@@ -15,13 +22,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
@@ -29,6 +41,7 @@ import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
@@ -105,6 +118,8 @@ public class HearingConfirmedEventProcessorTest {
     private HearingListingNeeds hearingListingNeeds;
     @Mock
     private JsonObject jsonObject;
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> senderJsonEnvelopeCaptor;
 
 
     @Before
@@ -213,6 +228,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing")).thenReturn(enveloperFunction);
         when(progressionService.getHearing(anyObject(), anyString())).thenReturn(Optional.empty());
         final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = buildUpdateHearingForPartialAllocation(hearingId);
         final ListCourtHearing listCourtHearing =buildListCourtHearing(randomUUID());
@@ -494,6 +510,38 @@ public class HearingConfirmedEventProcessorTest {
 
         //Then
         verify(sender, times(2)).send(finalEnvelope);
+    }
+
+    @Test
+    public void shouldProcessDefendantRequestFromCurrentHearingToExtendHearingCreated()  {
+        final UUID currentHearingId = randomUUID();
+        final UUID extendHearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final DefendantRequestFromCurrentHearingToExtendHearingCreated event = DefendantRequestFromCurrentHearingToExtendHearingCreated.defendantRequestFromCurrentHearingToExtendHearingCreated()
+                .withExtendHearingId(extendHearingId)
+                .withCurrentHearingId(currentHearingId)
+                .withDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(event);
+        final JsonEnvelope eventJson = envelopeFrom(metadataWithRandomUUID("progression.event.defendant-request-from-current-hearing-to-extend-hearing-created"), payload);
+
+        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(event);
+
+        eventProcessor.processDefendantRequestFromCurrentHearingToExtendHearingCreated(eventJson);
+
+        verify(this.sender).send(this.senderJsonEnvelopeCaptor.capture());
+
+        final JsonEnvelope commandEvent = this.senderJsonEnvelopeCaptor.getValue();
+
+        assertThat(commandEvent.metadata().name(), is("progression.command.assign-defendant-request-to-extend-hearing"));
+        assertThat(commandEvent.payload().toString(), isJson(anyOf(
+                withJsonPath("$.hearingId", equalTo(extendHearingId)),
+                withJsonPath("$.defendantRequests[0]", notNullValue()))));
+
     }
 
     private ConfirmedProsecutionCase createConfirmedProsecutionCase(final UUID prosecutionCaseId, final UUID defendantId, final UUID offenceId) {

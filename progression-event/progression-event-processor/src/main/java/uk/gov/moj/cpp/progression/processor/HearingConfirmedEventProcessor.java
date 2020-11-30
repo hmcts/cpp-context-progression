@@ -6,10 +6,13 @@ import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.AssignDefendantRequestFromCurrentHearingToExtendHearing;
+import uk.gov.justice.core.courts.AssignDefendantRequestToExtendHearing;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
@@ -123,6 +126,15 @@ public class HearingConfirmedEventProcessor {
                 progressionService.updateHearingForPartialAllocation(jsonEnvelope, updateHearingForPartialAllocation);
                 final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
+
+                for (final HearingListingNeeds hearingListingNeeds : listCourtHearing.getHearings()) {
+                    final JsonObject command = objectToJsonObjectConverter.convert(AssignDefendantRequestFromCurrentHearingToExtendHearing.assignDefendantRequestFromCurrentHearingToExtendHearing()
+                            .withCurrentHearingId(hearingInitiate.getHearing().getId())
+                            .withExtendHearingId(hearingListingNeeds.getId())
+                            .build());
+                    final JsonEnvelope payload = enveloper.withMetadataFrom(jsonEnvelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing").apply(command);
+                    sender.send(payload);
+                }
                 progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, seedingHearing);
             }
 
@@ -237,6 +249,30 @@ public class HearingConfirmedEventProcessor {
         }
 
         sender.send(hearingExtendTransformedPayload);
+    }
+
+    @Handles("progression.event.defendant-request-from-current-hearing-to-extend-hearing-created")
+    public void processDefendantRequestFromCurrentHearingToExtendHearingCreated(final JsonEnvelope jsonEnvelope){
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info("processing 'progression.event.defendant-request-from-current-hearing-to-extend-hearing-created' {}", jsonEnvelope.toObfuscatedDebugString());
+        }
+
+        final DefendantRequestFromCurrentHearingToExtendHearingCreated event =
+                jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), DefendantRequestFromCurrentHearingToExtendHearingCreated.class);
+
+        final AssignDefendantRequestToExtendHearing command = AssignDefendantRequestToExtendHearing.assignDefendantRequestToExtendHearing()
+                .withHearingId(event.getExtendHearingId())
+                .withDefendantRequests(event.getDefendantRequests())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(command);
+
+        final JsonEnvelope assignDefendantRequestToExtendHearingEnvelope =
+                enveloper.withMetadataFrom(jsonEnvelope, "progression.command.assign-defendant-request-to-extend-hearing")
+                        .apply(payload);
+
+        sender.send(assignDefendantRequestToExtendHearingEnvelope);
     }
 
     @Handles("progression.event.extend-hearing-defendant-request-created")

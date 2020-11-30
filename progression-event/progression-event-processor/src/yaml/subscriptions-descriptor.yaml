@@ -190,6 +190,9 @@ subscriptions_descriptor:
         - name: progression.event.extend-hearing-defendant-request-updated
           schema_uri: http://justice.gov.uk/core/courts/extend-hearing-defendant-request-updated.json
 
+        - name: progression.event.defendant-request-from-current-hearing-to-extend-hearing-created
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.defendant-request-from-current-hearing-to-extend-hearing-created.json
+
         - name: progression.event.unscheduled-hearing-listing-requested
           schema_uri: http://justice.gov.uk/core/courts/progression.event.unscheduled-hearing-listing-requested.json
 

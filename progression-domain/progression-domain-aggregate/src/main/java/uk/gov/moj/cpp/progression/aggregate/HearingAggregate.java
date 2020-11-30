@@ -13,6 +13,8 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
+import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
@@ -52,7 +54,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 203L;
+    private static final long serialVersionUID = -4848796143895994632L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private UUID boxWorkAssignedUserId;
     private String boxWorkTaskId;
@@ -92,6 +94,9 @@ public class HearingAggregate implements Aggregate {
                 when(HearingDaysWithoutCourtCentreCorrected.class).apply(this::onHearingDaysWithoutCourtCentreCorrected),
                 when(HearingMarkedAsDuplicate.class).apply(e ->
                         this.duplicate = true
+                ),
+                when(DefendantRequestToExtendHearingCreated.class).apply(e ->
+                    listDefendantRequests.addAll(e.getDefendantRequests())
                 ),
                 otherwiseDoNothing());
     }
@@ -312,6 +317,21 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated()
                 .withDefendantRequests(listDefendantRequests)
                 .withConfirmedHearing(confirmedHearing)
+                .build()));
+    }
+
+    public Stream<Object> assignDefendantRequestFromCurrentHearingToExtendHearing(final UUID currentHearingId, final UUID extendHearingId) {
+        return apply(Stream.of(DefendantRequestFromCurrentHearingToExtendHearingCreated.defendantRequestFromCurrentHearingToExtendHearingCreated()
+                .withCurrentHearingId(currentHearingId)
+                .withExtendHearingId(extendHearingId)
+                .withDefendantRequests(listDefendantRequests)
+                .build()));
+    }
+
+    public Stream<Object> assignDefendantRequestToExtendHearing(final UUID hearingId, final List<ListDefendantRequest> defendantRequests) {
+        return apply(Stream.of(DefendantRequestToExtendHearingCreated.defendantRequestToExtendHearingCreated()
+                .withHearingId(hearingId)
+                .withDefendantRequests(defendantRequests)
                 .build()));
     }
 

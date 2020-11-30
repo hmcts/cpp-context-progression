@@ -107,3 +107,15 @@ Feature: CaseAggregate
     Given defendant matched
     When you matchPartiallyMatchedDefendants on a CaseAggregate with a match defendant again
     Then defendant already matched
+
+  Scenario: Assign Defendant Request from current hearing to extend hearing
+
+    Given hearing defendant request created
+    When you assignDefendantRequestFromCurrentHearingToExtendHearing on a HearingAggregate with a assign defendant request from current hearing to extend hearing
+    Then defendant request from current hearing to extend hearing created
+
+  Scenario: Assign Defendant Request to extend hearing
+
+    Given no previous events
+    When you assignDefendantRequestToExtendHearing on a HearingAggregate with a assign defendant request to extend hearing
+    Then defendant request to extend hearing created
