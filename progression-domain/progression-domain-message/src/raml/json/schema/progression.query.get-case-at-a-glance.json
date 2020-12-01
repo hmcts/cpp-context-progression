@@ -208,6 +208,14 @@
         },
         "custodyTimeLimit": {
           "$ref": "http://justice.gov.uk/core/courts/custodyTimeLimit.json"
+        },
+        "reportingRestrictions": {
+          "description": "Reporting restrictions",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/reportingRestriction.json"
+          }
         }
       },
       "required": [

@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,9 +22,11 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.ReferCasesToCourt;
 import uk.gov.justice.core.courts.ReferredDefendant;
+import uk.gov.justice.core.courts.ReferredOffence;
 import uk.gov.justice.core.courts.ReferredPerson;
 import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -37,7 +41,6 @@ import uk.gov.moj.cpp.progression.aggregate.CasesReferredToCourtAggregate;
 import uk.gov.moj.cpp.progression.handler.ReferCasesToCourtHandler;
 import uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -76,6 +79,7 @@ public class ReferCasesToCourtHandlerTest {
     private CasesReferredToCourtAggregate aggregate;
 
     private static final UUID CASE_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66");
+    private static final UUID RR_ID = randomUUID();
 
 
     @Before
@@ -103,7 +107,7 @@ public class ReferCasesToCourtHandlerTest {
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.refer-cases-to-court")
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .build();
 
         final Envelope<ReferCasesToCourt> envelope = envelopeFrom(metadata, referCasesToCourt);
@@ -117,11 +121,13 @@ public class ReferCasesToCourtHandlerTest {
                         metadata()
                                 .withName("progression.event.cases-referred-to-court"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.courtReferral", notNullValue ()))
+                                withJsonPath("$.courtReferral.prosecutionCases[0].defendants[0].offences[0].reportingRestrictions[0].id", is(RR_ID.toString())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].defendants[0].offences[0].reportingRestrictions[0].label", is ("label")))
                         ))
 
                 )
         );
+
         verify(matchedDefendantLoadService).aggregateDefendantsSearchResultForAProsecutionCase(any(),any());
     }
 
@@ -138,17 +144,26 @@ public class ReferCasesToCourtHandlerTest {
     }
 
     private static List<ReferredProsecutionCase> generateProsecutionCases() {
-        return Collections.singletonList(
+        return singletonList(
                 ReferredProsecutionCase.referredProsecutionCase()
                         .withId(CASE_ID)
-                        .withDefendants(Collections.singletonList(
+                        .withDefendants(singletonList(
                                 ReferredDefendant.referredDefendant()
-                                        .withId(UUID.randomUUID())
+                                        .withId(randomUUID())
                                         .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
                                                 .withPersonDetails(ReferredPerson.referredPerson()
                                                         .withAddress(Address.address().build())
                                                         .build())
                                                 .build())
+                                        .withOffences(singletonList(ReferredOffence.referredOffence()
+                                                .withId(randomUUID())
+                                                .withOffenceDefinitionId(randomUUID())
+                                                .withWording("wording")
+                                                .withReportingRestrictions(singletonList(ReportingRestriction.reportingRestriction()
+                                                        .withId(RR_ID)
+                                                        .withLabel("label")
+                                                        .build()))
+                                                .build()))
                                         .build()
                         ))
                         .build()

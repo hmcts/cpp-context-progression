@@ -29,6 +29,7 @@ import uk.gov.moj.cpp.progression.stub.HearingStub;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -46,7 +47,6 @@ import com.google.common.io.Resources;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ACourtHearingDaysIT extends AbstractIT {
@@ -86,8 +86,9 @@ public class ACourtHearingDaysIT extends AbstractIT {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
+        final String reportingRestrictionOrderedDate = LocalDate.now().toString();
 
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId, reportingRestrictionOrderedDate);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY"))
@@ -129,13 +130,13 @@ public class ACourtHearingDaysIT extends AbstractIT {
         return headersMap;
     }
 
-    public static com.jayway.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws IOException {
-        return addProsecutionCaseToCrownCourt(caseId, defendantId, generateUrn());
+    public static com.jayway.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String reportingRestrictionOrderedDate) throws IOException {
+        return addProsecutionCaseToCrownCourt(caseId, defendantId, generateUrn(), reportingRestrictionOrderedDate);
     }
 
-    public static com.jayway.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
+    public static com.jayway.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String caseUrn, final String reportingRestrictionOrderedDate) throws IOException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
-                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn));
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn, reportingRestrictionOrderedDate));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
@@ -144,14 +145,14 @@ public class ACourtHearingDaysIT extends AbstractIT {
 
     private static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
                                                                          final String materialIdTwo, final String courtDocumentId, final String referralId,
-                                                                         final String caseUrn) throws IOException {
+                                                                         final String caseUrn, final String reportingRestrictionOrderedDate) throws IOException {
         return createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
-                materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+                materialIdTwo, courtDocumentId, referralId, caseUrn, reportingRestrictionOrderedDate, "progression.command.prosecution-case-refer-to-court.json");
     }
 
     public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
                                                                         final String materialIdTwo, final String courtDocumentId, final String referralId,
-                                                                        final String caseUrn, final String filePath) throws IOException {
+                                                                        final String caseUrn, final String reportingRestrictionOrderedDate, final String filePath) throws IOException {
         final URL resource = getResource(filePath);
         return Resources.toString(resource, Charset.defaultCharset())
                 .replace("RANDOM_CASE_ID", caseId)
@@ -160,7 +161,8 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 .replace("RANDOM_DOC_ID", courtDocumentId)
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
-                .replace("RANDOM_REFERRAL_ID", referralId);
+                .replace("RANDOM_REFERRAL_ID", referralId)
+                .replace("RR_ORDERED_DATE", reportingRestrictionOrderedDate);
     }
 
     public static String generateUrn() {

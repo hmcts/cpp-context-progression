@@ -4,8 +4,8 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
@@ -19,6 +19,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 
 import java.time.LocalDate;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -203,4 +206,172 @@ public class DefendantHelperTest {
         Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(offences, existingOffences, uuid, defendantId);
         assertFalse(offencesForDefendantUpdated.isPresent());
     }
+
+    @Test
+    public void shouldGetOffencesForDefendantUpdatedIfReportingRestrictionHasRemoved() {
+        final UUID offenceId = randomUUID();
+
+        final Offence.Builder offenceBuilder = createOffenceWithDefaults(offenceId, "first");
+        final Offence existingOffence = offenceBuilder
+                .withReportingRestrictions(singletonList(ReportingRestriction.reportingRestriction()
+                .withId(randomUUID())
+                .withLabel("Reporting Restriction Label")
+                .withJudicialResultId(randomUUID())
+                .withOrderedDate(LocalDate.now())
+                .build()))
+                .build();
+
+        final List<Offence> existingOffences = singletonList(existingOffence);
+
+        final Offence.Builder updatedOffenceBuilder = createOffenceWithDefaults(offenceId, "first");
+        final List<Offence> updatedOffences = singletonList(updatedOffenceBuilder.build());
+
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(updatedOffences, existingOffences, uuid, defendantId);
+        assertThat(offencesForDefendantUpdated.isPresent(), is(true));
+        assertThat(offencesForDefendantUpdated.get().getAddedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getDeletedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getUpdatedOffences().size(), is(1));
+    }
+
+    @Test
+    public void shouldGetOffencesForDefendantUpdatedIfReportingRestrictionLabelChanged() {
+        final UUID offenceId = randomUUID();
+        final UUID reportingRestrictionId = randomUUID();
+        final UUID judicialResultId = randomUUID();
+        final LocalDate reportingRestrictionOrderedDate = LocalDate.now();
+
+        final Offence existingOffence = createOffenceWithReportingRestriction(reportingRestrictionId, judicialResultId, reportingRestrictionOrderedDate, offenceId, "Reporting Restriction Label")
+                .build();
+
+        final List<Offence> existingOffences = singletonList(existingOffence);
+
+        final Offence.Builder updatedOffenceBuilder = createOffenceWithReportingRestriction(reportingRestrictionId, judicialResultId, reportingRestrictionOrderedDate, offenceId, "Reporting Restriction Label Changed");
+        final List<Offence> updatedOffences = singletonList(updatedOffenceBuilder.build());
+
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(updatedOffences, existingOffences, uuid, defendantId);
+        assertThat(offencesForDefendantUpdated.isPresent(), is(true));
+        assertThat(offencesForDefendantUpdated.get().getAddedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getDeletedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getUpdatedOffences().size(), is(1));
+    }
+
+    @Test
+    public void shouldGetOffencesForDefendantUpdatedIfReportingRestrictionJudicialResultHasBeenAdded() {
+        final UUID offenceId = randomUUID();
+        final UUID reportingRestrictionId = randomUUID();
+        final UUID judicialResultId = randomUUID();
+        final LocalDate reportingRestrictionOrderedDate = LocalDate.now();
+
+        final Offence.Builder offenceBuilder = createOffenceWithDefaults(offenceId, "first");
+        final Offence existingOffence = offenceBuilder
+                .withReportingRestrictions(Stream.of(ReportingRestriction.reportingRestriction()
+                        .withId(reportingRestrictionId)
+                        .withLabel("Reporting Restriction Label")
+                        .withOrderedDate(reportingRestrictionOrderedDate)
+                        .build())
+                        .collect(Collectors.toList()))
+                .build();
+
+        final List<Offence> existingOffences = singletonList(existingOffence);
+
+        final Offence.Builder updatedOffenceBuilder = createOffenceWithReportingRestriction(reportingRestrictionId, judicialResultId, reportingRestrictionOrderedDate, offenceId, "Reporting Restriction Label");
+        final List<Offence> updatedOffences = singletonList(updatedOffenceBuilder.build());
+
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(updatedOffences, existingOffences, uuid, defendantId);
+        assertThat(offencesForDefendantUpdated.isPresent(), is(true));
+        assertThat(offencesForDefendantUpdated.get().getAddedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getDeletedOffences(), is(nullValue()));
+        assertThat(offencesForDefendantUpdated.get().getUpdatedOffences().size(), is(1));
+    }
+
+    @Test
+    public void shouldNotGetOffencesForDefendantUpdatedIfReportingRestrictionAsItIs() {
+        final UUID offenceId = randomUUID();
+        final UUID reportingRestrictionId = randomUUID();
+        final UUID judicialResultId = randomUUID();
+        final LocalDate reportingRestrictionOrderedDate = LocalDate.now();
+
+        final Offence existingOffence = createOffenceWithReportingRestriction(reportingRestrictionId, judicialResultId, reportingRestrictionOrderedDate, offenceId, "Reporting Restriction Label")
+                .build();
+
+        final List<Offence> existingOffences = singletonList(existingOffence);
+
+        final Offence.Builder updatedOffenceBuilder = createOffenceWithReportingRestriction(reportingRestrictionId, judicialResultId, reportingRestrictionOrderedDate, offenceId, "Reporting Restriction Label");
+        final List<Offence> updatedOffences = singletonList(updatedOffenceBuilder.build());
+
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(updatedOffences, existingOffences, uuid, defendantId);
+        assertThat(offencesForDefendantUpdated.isPresent(), is(false));
+    }
+
+    @Test
+    public void shouldNotGetOffencesForDefendantUpdatedIfReportingRestrictionAsItIsButInDifferentOrder() {
+        final UUID offenceId = randomUUID();
+        final UUID reportingRestrictionId1 = randomUUID();
+        final UUID judicialResultId1 = randomUUID();
+
+        final LocalDate reportingRestrictionOrderedDate = LocalDate.now();
+        final String reportingRestrictionLabel = "Reporting Restriction Label";
+
+        final UUID reportingRestrictionId2 = randomUUID();
+        final UUID judicialResultId2 = randomUUID();
+
+        final Offence existingOffence = createOffenceWithMultipleReportingRestriction(
+                prepareReportingRestriction(reportingRestrictionId1, judicialResultId1, reportingRestrictionOrderedDate, reportingRestrictionLabel),
+                prepareReportingRestriction(reportingRestrictionId2, judicialResultId2, reportingRestrictionOrderedDate, reportingRestrictionLabel),
+                offenceId)
+                .build();
+
+        final List<Offence> existingOffences = singletonList(existingOffence);
+
+        final Offence.Builder updatedOffenceBuilder = createOffenceWithMultipleReportingRestriction(
+                prepareReportingRestriction(reportingRestrictionId2, judicialResultId2, reportingRestrictionOrderedDate, reportingRestrictionLabel),
+                prepareReportingRestriction(reportingRestrictionId1, judicialResultId1, reportingRestrictionOrderedDate, reportingRestrictionLabel),
+                offenceId);
+        final List<Offence> updatedOffences = singletonList(updatedOffenceBuilder.build());
+
+        final UUID uuid = randomUUID();
+        final UUID defendantId = randomUUID();
+        Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(updatedOffences, existingOffences, uuid, defendantId);
+        assertThat(offencesForDefendantUpdated.isPresent(), is(false));
+    }
+
+    private Offence.Builder createOffenceWithMultipleReportingRestriction(final ReportingRestriction reportingRestriction1,
+                                                                          final ReportingRestriction reportingRestriction2,
+                                                                          final UUID offenceId) {
+        return createOffenceWithDefaults(offenceId, "first")
+                .withReportingRestrictions(Stream.of(reportingRestriction1, reportingRestriction2)
+                        .collect(Collectors.toList()));
+    }
+
+    private Offence.Builder createOffenceWithReportingRestriction(final UUID reportingRestrictionId,
+                                                                  final UUID judicialResultId,
+                                                                  final LocalDate rrOrderedDate,
+                                                                  final UUID offenceId,
+                                                                  final String label) {
+        return createOffenceWithDefaults(offenceId, "first")
+                .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId, judicialResultId, rrOrderedDate, label))
+                        .collect(Collectors.toList()));
+    }
+
+    private ReportingRestriction prepareReportingRestriction(final UUID reportingRestrictionId,
+                                                             final UUID judicialResultId,
+                                                             final LocalDate rrOrderedDate,
+                                                             final String label) {
+        return ReportingRestriction.reportingRestriction()
+                .withId(reportingRestrictionId)
+                .withLabel(label)
+                .withJudicialResultId(judicialResultId)
+                .withOrderedDate(rrOrderedDate)
+                .build();
+    }
+
+
 }

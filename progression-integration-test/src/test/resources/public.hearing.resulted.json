@@ -206,6 +206,14 @@
                       }
                     ]
                   }
+                ],
+                "reportingRestrictions": [
+                  {
+                    "id": "REPORTING_RESTRICTION_ID",
+                    "judicialResultId": "0f5b8757-e588-4b7f-806a-44dc0eb0e75e",
+                    "label": "Reporting Restriction Label",
+                    "orderedDate": "2020-10-20"
+                  }
                 ]
               }
             ],

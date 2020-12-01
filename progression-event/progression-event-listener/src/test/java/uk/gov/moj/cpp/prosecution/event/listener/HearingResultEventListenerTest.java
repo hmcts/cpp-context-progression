@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +32,7 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -342,6 +344,7 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
         assertThat(savedHearing1.getProsecutionCases().get(0).getCpsOrganisation(), is("A01"));
         assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getOffenceDateCode(), is(4));
+        assertThat(savedHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getReportingRestrictions().get(0).getLabel(), is("ReportingRestrictionLabel"));
     }
 
     @Test
@@ -434,6 +437,13 @@ public class HearingResultEventListenerTest {
                                         .build())
                         )
                         .withOffenceDateCode(4)
+                        .withReportingRestrictions(singletonList(
+                                ReportingRestriction.reportingRestriction()
+                                .withId(randomUUID())
+                                .withLabel("ReportingRestrictionLabel")
+                                .withJudicialResultId(randomUUID())
+                                .build()
+                        ))
                         .build()))
                 .build();
         return ProsecutionCase.prosecutionCase()

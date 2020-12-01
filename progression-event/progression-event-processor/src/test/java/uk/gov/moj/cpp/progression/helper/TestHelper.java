@@ -21,11 +21,13 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -117,6 +119,24 @@ public class TestHelper {
                 .build();
     }
 
+    public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final UUID reportingRestrictionId, final NextHearing nextHearing){
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withId(offenceId)
+                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                        .withNextHearing(nextHearing)
+                                        .build()))
+                                .withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction()
+                                        .withId(reportingRestrictionId)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+    }
+
     public static ProsecutionCase buildProsecutionCaseWithCommittingCourt(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing){
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
@@ -187,10 +207,27 @@ public class TestHelper {
                 .build();
     }
 
+    public static ReportingRestriction buildReportingRestriction(final UUID id, final UUID judicialResultId, final String label, final LocalDate orderedDate) {
+        return ReportingRestriction.reportingRestriction()
+                .withId(id)
+                .withJudicialResultId(judicialResultId)
+                .withLabel(label)
+                .withOrderedDate(orderedDate)
+                .build();
+    }
+
     public static Offence buildOffence(final UUID offenceId, final List<JudicialResult> judicialResults) {
         return Offence.offence()
                 .withId(offenceId)
                 .withJudicialResults(judicialResults)
+                .build();
+    }
+
+    public static Offence buildOffence(final UUID offenceId, final List<JudicialResult> judicialResults, final List<ReportingRestriction> reportingRestrictions) {
+        return Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(judicialResults)
+                .withReportingRestrictions(reportingRestrictions)
                 .build();
     }
 

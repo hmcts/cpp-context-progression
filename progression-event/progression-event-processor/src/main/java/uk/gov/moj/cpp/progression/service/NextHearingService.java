@@ -240,6 +240,7 @@ public class NextHearingService {
                 .withWordingWelsh(offence.getWordingWelsh())
                 .withCommittingCourt(committingCourt)
                 .withOffenceDateCode(offence.getOffenceDateCode())
+                .withReportingRestrictions(offence.getReportingRestrictions())
                 .build();
     }
 

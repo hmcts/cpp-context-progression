@@ -43,6 +43,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -68,6 +69,7 @@ public class HearingResultedIT extends AbstractIT {
     private String newCourtCentreId;
     private String newCourtCentreName;
     private String applicationId;
+    private String reportingRestrictionId;
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -101,6 +103,7 @@ public class HearingResultedIT extends AbstractIT {
         newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
+        reportingRestrictionId = randomUUID().toString();
     }
 
     @Test
@@ -138,7 +141,7 @@ public class HearingResultedIT extends AbstractIT {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED + ".json", caseId,
-                            hearingId, defendantId, newCourtCentreId, newCourtCentreName), metadataBuilder()
+                            hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId), metadataBuilder()
                             .withId(randomUUID())
                             .withName(PUBLIC_HEARING_RESULTED)
                             .withUserId(userId)
@@ -158,7 +161,11 @@ public class HearingResultedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", is("2018-09-10")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent", is(44)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", is("2018-09-14")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", is(55))
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", is(55)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is(reportingRestrictionId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].judicialResultId", is("0f5b8757-e588-4b7f-806a-44dc0eb0e75e")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Reporting Restriction Label")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2020-10-20"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
@@ -200,7 +207,7 @@ public class HearingResultedIT extends AbstractIT {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED + ".json", caseId,
-                            hearingId, defendantId, newCourtCentreId, newCourtCentreName), metadataBuilder()
+                            hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId), metadataBuilder()
                             .withId(randomUUID())
                             .withName(PUBLIC_HEARING_RESULTED)
                             .withUserId(userId)
@@ -348,6 +355,20 @@ public class HearingResultedIT extends AbstractIT {
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
         );
+    }
+
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId, final String courtCentreName,
+                                            final String reportingRestrictionId) {
+        final String payload = getPayload(path)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
+
+        return stringToJsonObjectConverter.convert(payload);
     }
 
 

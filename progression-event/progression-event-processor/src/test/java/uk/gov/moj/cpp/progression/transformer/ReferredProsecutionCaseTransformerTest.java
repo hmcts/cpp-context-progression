@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -41,17 +42,16 @@ import uk.gov.justice.core.courts.ReferredOffence;
 import uk.gov.justice.core.courts.ReferredPerson;
 import uk.gov.justice.core.courts.ReferredPersonDefendant;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
-import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -93,12 +93,12 @@ public class ReferredProsecutionCaseTransformerTest {
                         .withProsecutionAuthorityId(randomUUID())
                         .build())
                 .withInitiationCode(InitiationCode.C)
-                .withDefendants(Arrays.asList(ReferredDefendant.referredDefendant()
+                .withDefendants(singletonList(ReferredDefendant.referredDefendant()
                         .withId(randomUUID())
-                        .withAssociatedPersons(Arrays.asList(ReferredAssociatedPerson.referredAssociatedPerson()
+                        .withAssociatedPersons(singletonList(ReferredAssociatedPerson.referredAssociatedPerson()
                                 .withRole("Role")
                                 .withPerson(getReferredPerson()).build()))
-                        .withOffences(Arrays.asList(getReferredOffence()))
+                        .withOffences(singletonList(getReferredOffence()))
                         .withProsecutionCaseId(randomUUID())
                         .build()))
                 .build();
@@ -245,11 +245,18 @@ public class ReferredProsecutionCaseTransformerTest {
         // Setup
         final UUID offenceDefinitionId = randomUUID();
         final UUID id = randomUUID();
+        final UUID rrId = randomUUID();
+
+        final ReportingRestriction reportingRestriction = ReportingRestriction.reportingRestriction()
+                .withId(rrId)
+                .withLabel("label")
+                .build();
 
         final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
                 .withId(id)
                 .withOffenceDefinitionId(offenceDefinitionId)
                 .withOrderIndex(0)
+                .withReportingRestrictions(singletonList(reportingRestriction))
                 .build());
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
@@ -262,8 +269,11 @@ public class ReferredProsecutionCaseTransformerTest {
                 (referredOffence, jsonEnvelope, InitiationCode.C);
 
         //Verify the results
+
         assertThat(id, is(result.getId()));
         assertThat("Indictable", is(result.getModeOfTrial()));
+        assertThat(rrId, is(result.getReportingRestrictions().get(0).getId()));
+        assertThat("label", is(result.getReportingRestrictions().get(0).getLabel()));
     }
 
     @Test
@@ -330,8 +340,8 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withId(randomUUID())
                 .withAliases(defendantAliasList)
                 .withOffences(
-                        new ArrayList<>(Arrays.asList(ReferredOffence.referredOffence().withId(randomUUID()).build())))
-                .withAssociatedPersons(new ArrayList<>(Arrays.asList(ReferredAssociatedPerson.referredAssociatedPerson()
+                        new ArrayList<>(singletonList(ReferredOffence.referredOffence().withId(randomUUID()).build())))
+                .withAssociatedPersons(new ArrayList<>(singletonList(ReferredAssociatedPerson.referredAssociatedPerson()
                         .withPerson(ReferredPerson.referredPerson().build()).withRole("role").build())))
                 .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
                         .withPersonDetails(ReferredPerson.referredPerson().withNationalityId(randomUUID()).build()).build())
@@ -369,13 +379,13 @@ public class ReferredProsecutionCaseTransformerTest {
                         .withId(randomUUID())
                         .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                                 .withProsecutionAuthorityId(randomUUID()).build())
-                        .withDefendants(new ArrayList<>(Arrays.asList(ReferredDefendant.referredDefendant()
+                        .withDefendants(new ArrayList<>(singletonList(ReferredDefendant.referredDefendant()
                                 .withId(randomUUID())
                                 .withPersonDefendant(ReferredPersonDefendant.referredPersonDefendant()
                                         .withSelfDefinedEthnicityId(randomUUID())
                                         .withPersonDetails(ReferredPerson.referredPerson().build())
                                         .build())
-                                .withOffences(new ArrayList<>(Arrays.asList(ReferredOffence.referredOffence()
+                                .withOffences(new ArrayList<>(singletonList(ReferredOffence.referredOffence()
                                         .withId(randomUUID()).build())))
                                 .build())))
                         .build());

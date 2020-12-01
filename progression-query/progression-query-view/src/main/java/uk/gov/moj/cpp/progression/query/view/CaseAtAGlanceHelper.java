@@ -47,6 +47,8 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import org.apache.commons.collections.CollectionUtils;
+
 public class CaseAtAGlanceHelper {
 
     static final String ADDRESS_1 = "address1";
@@ -161,6 +163,10 @@ public class CaseAtAGlanceHelper {
                 caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
                 plea.ifPresent(caagDefendantOffenceBuilder::withPlea);
                 verdict.ifPresent(caagDefendantOffenceBuilder::withVerdict);
+
+                if (CollectionUtils.isNotEmpty(offence.getReportingRestrictions())) {
+                    caagDefendantOffenceBuilder.withReportingRestrictions(offence.getReportingRestrictions());
+                }
                 caagDefendantOffenceList.add(caagDefendantOffenceBuilder.build());
             }
         }

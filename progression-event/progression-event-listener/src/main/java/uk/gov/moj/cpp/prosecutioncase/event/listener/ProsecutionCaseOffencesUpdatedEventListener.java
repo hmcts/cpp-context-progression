@@ -122,12 +122,12 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                     .withWitnessStatement(defendant.getWitnessStatement())
                     .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                     .withPncId(defendant.getPncId())
-                    .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                     .withProsecutionCaseId(defendant.getProsecutionCaseId())
                     .withLegalAidStatus(getLegalAidStatus(defendantCaseOffences.getLegalAidStatus()))
                     .withProceedingsConcluded(defendant.getProceedingsConcluded())
                     .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
                     .withAssociationLockedByRepOrder(defendant.getAssociationLockedByRepOrder())
+                    .withIsYouth(defendant.getIsYouth())
                     .build();
             prosecutionCase.getDefendants().remove(defendant);
             prosecutionCase.getDefendants().add(updatedDefendant);
@@ -194,6 +194,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withOffenceDateCode(updatedOffence.getOffenceDateCode())
                 .withJudicialResults(persistedOffence.getJudicialResults())
                 .withCommittingCourt(updatedOffence.getCommittingCourt())
+                .withReportingRestrictions(updatedOffence.getReportingRestrictions())
                 .build();
     }
 

@@ -16,6 +16,7 @@ import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -125,6 +126,10 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     public void shouldHandleProsecutionCaseOffencesUpdatedEvent() throws Exception {
         final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
         final UUID offenceId  = randomUUID();
+        final UUID reportingRestrictionId1 = randomUUID();
+        final UUID reportingRestrictionId2 = randomUUID();
+        final String reportingRestrictionLabel = "RRLabel";
+
         final DefendantCaseOffences defendantCaseOffences =DefendantCaseOffences.defendantCaseOffences()
                 .withDefendantId(randomUUID())
                 .withProsecutionCaseId(randomUUID())
@@ -136,6 +141,8 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                                 .withLaaContractNumber("LAA1234")
                                 .withStatusDate(LocalDate.now())
                                 .build())
+                        .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel))
+                                .collect(Collectors.toList()))
                         .build()).collect(Collectors.toList()))
                 .build();
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
@@ -151,6 +158,9 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                                         .withLaaContractNumber("LAA1234")
                                         .withStatusDate(LocalDate.now())
                                         .build())
+                                .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel),
+                                        prepareReportingRestriction(reportingRestrictionId2, reportingRestrictionLabel))
+                                        .collect(Collectors.toList()))
                                 .withJudicialResults(Stream.of(JudicialResult.judicialResult()
                                         .withJudicialResultId(randomUUID())
                                         .withResultText("Some Text")
@@ -210,5 +220,21 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("proceedingsConcluded").asBoolean(), is(true));
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("judicialResults").get(0).path("resultText").asText(), is("Some Text"));
 
+        final JsonNode reportingRestrictionListJsonNode = prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("reportingRestrictions");
+        assertThat(reportingRestrictionListJsonNode.size(), is(1));
+
+        final JsonNode reportingRestrictionJsonNode = reportingRestrictionListJsonNode.get(0);
+        assertThat(reportingRestrictionJsonNode.path("id").asText(), is(reportingRestrictionId1.toString()));
+        assertThat(reportingRestrictionJsonNode.path("label").asText(), is(reportingRestrictionLabel));
+        assertThat(reportingRestrictionJsonNode.path("orderedDate").asText(), is(LocalDate.now().toString()));
+    }
+
+    private ReportingRestriction prepareReportingRestriction(final UUID reportingRestrictionId,
+                                                             final String label) {
+        return ReportingRestriction.reportingRestriction()
+                .withId(reportingRestrictionId)
+                .withLabel(label)
+                .withOrderedDate(LocalDate.now())
+                .build();
     }
 }

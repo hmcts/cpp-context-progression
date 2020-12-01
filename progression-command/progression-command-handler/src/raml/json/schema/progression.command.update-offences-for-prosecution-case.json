@@ -3,6 +3,9 @@
   "id": "http://justice.gov.uk/core/courts/update-offences-for-prosecution-case.json",
   "type": "object",
   "properties": {
+    "switchedToYouth": {
+      "type": "boolean"
+    },
     "defendantCaseOffences": {
       "$ref": "#/definitions/defendantCaseOffences"
     },

@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Stream.of;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildDefendant;
@@ -14,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJudicialResult;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildOffence;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildReportingRestriction;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
@@ -23,20 +26,24 @@ import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -58,6 +65,8 @@ public class NextHearingServiceTest {
     private static final UUID OFFENCE_ID_1 = fromString("a98e6235-9d4d-47f0-9c09-81a76dba3caf");
     private static final UUID OFFENCE_ID_2 = fromString("8e7b4098-2d4c-4ecf-b2d0-499bdb5889c2");
 
+    private static final UUID REPORTING_RESTRICTION_ID_1 = fromString("6794cc13-e490-41a0-ba95-bf18590e37e6");
+
     @InjectMocks
     private NextHearingService service;
 
@@ -70,7 +79,8 @@ public class NextHearingServiceTest {
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
                                 of(buildOffence(OFFENCE_ID_1,
-                                        asList(buildJudicialResult(buildNextHearing(HEARING_ID_1)))))
+                                        asList(buildJudicialResult(buildNextHearing(HEARING_ID_1))),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))));
 
@@ -87,6 +97,12 @@ public class NextHearingServiceTest {
 
         final Defendant defendant = prosecutionCase.getDefendants().get(0);
         assertDefendant(defendant, DEFENDANT_ID_1, 1);
+
+        final Offence offence = defendant.getOffences().get(0);
+        assertOffence(offence, OFFENCE_ID_1);
+
+        final ReportingRestriction reportingRestriction = offence.getReportingRestrictions().get(0);
+        assertReportingRestriction(reportingRestriction, REPORTING_RESTRICTION_ID_1);
     }
 
     @Test
@@ -399,11 +415,11 @@ public class NextHearingServiceTest {
         final Defendant defendant = prosecutionCase.getDefendants().get(0);
         assertDefendant(defendant, DEFENDANT_ID_1, 1);
 
-        MatcherAssert.assertThat(defendant.getOffences().size(), is(1));
-        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
-        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
-        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
-        MatcherAssert.assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+        assertThat(defendant.getOffences().size(), is(1));
+        assertThat(defendant.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
+        assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
+        assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
+        assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
     }
 
     private void assertHearing(final HearingListingNeeds hearingListingNeeds, final UUID hearingId, final int size) {
@@ -420,6 +436,14 @@ public class NextHearingServiceTest {
     private void assertDefendant(final Defendant defendant, final UUID defendantId, final int size) {
         assertThat(defendant.getId(), is(defendantId));
         assertThat(defendant.getOffences().size(), is(size));
+    }
+
+    private void assertOffence(final Offence offence, final UUID offenceId) {
+        assertThat(offence.getId(), is(offenceId));
+    }
+
+    private void assertReportingRestriction(final ReportingRestriction reportingRestriction, final UUID reportingRestrictionId) {
+        assertThat(reportingRestriction.getId(), is(reportingRestrictionId));
     }
 
 }

@@ -212,6 +212,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withWordingWelsh(referredOffence.getWordingWelsh())
                 .withOffenceDateCode(referredOffence.getOffenceDateCode())
                 .withDvlaOffenceCode(fetchValueFromKey(offenceJson, DVLA_CODE))
+                .withReportingRestrictions(referredOffence.getReportingRestrictions())
                 .build();
         if ((initiationCode == InitiationCode.J || initiationCode == InitiationCode.Z)
                 && nonNull(offence.getModeOfTrial())

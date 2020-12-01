@@ -1,13 +1,18 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -26,6 +31,8 @@ public class ReferenceDataOffenceService {
     public static final String LEGISLATION = "legislation";
     public static final String LEGISLATION_WELSH = "welshlegislation";
     public static final String MODEOFTRIAL_DERIVED = "modeOfTrialDerived";
+    public static final String REPORT_RESTRICT_RESULT_CODE = "reportRestrictResultCode";
+    public static final String MODE_OF_TRIAL = "modeOfTrial";
     public static final String MODEOFTRIAL_CODE = "code";
     public static final String DVLA_CODE = "dvlaCode";
     public static final String CJS_OFFENCE_CODE = "cjsOffenceCode";
@@ -88,15 +95,51 @@ public class ReferenceDataOffenceService {
         LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCode, offences.toObfuscatedDebugString());
 
         final JsonObject offencePayload = (JsonObject) offences.payloadAsJsonObject().getJsonArray(OFFENCES).get(0);
+        return Optional.of(generateOffenceJsonObject(offencePayload));
+    }
+
+    public Optional<List<JsonObject>> getMultipleOffencesByOffenceCodeList(final List<String> cjsOffenceCodes, final JsonEnvelope envelope, final Requester requester) {
+        final JsonObject requestParameter = createObjectBuilder()
+                .add("cjsoffencecode", cjsOffenceCodes.stream()
+                                        .collect(Collectors.joining(",")))
+                .build();
+
+        LOGGER.info("cjsoffencecodes {} ref data request {}", cjsOffenceCodes, requestParameter);
+
+        final JsonEnvelope offences = requester.request(envelop(requestParameter)
+                .withName(REFERENCEDATAOFFENCE_QUERY_OFFENCES)
+                .withMetadataFrom(envelope));
+
+        if (isNull(offences.payload())) {
+            return Optional.empty();
+        }
+
+        final List<JsonObject> offencesJsonObject = new ArrayList<>();
+
+        LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCodes, offences.toObfuscatedDebugString());
+
+        offences.payloadAsJsonObject().getJsonArray(OFFENCES)
+            .forEach(offenceJsonValue -> {
+                final JsonObject offenceJsonObject = (JsonObject) offenceJsonValue;
+
+                offencesJsonObject.add(generateOffenceJsonObject(offenceJsonObject));
+            });
+
+        return Optional.of(offencesJsonObject);
+    }
+
+    private JsonObject generateOffenceJsonObject(final JsonObject offencePayload) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         final JsonObject offenceDocument = offencePayload.getJsonObject(DETAILS).getJsonObject(DOCUMENT);
-        jsonObjectBuilder.add(OFFENCE_TITLE, offenceDocument.getJsonObject(ENGLISH) != null ? offenceDocument.getJsonObject(ENGLISH).getString(OFFENCE_TITLE) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(LEGISLATION, offenceDocument.getJsonObject(ENGLISH) != null ? offenceDocument.getJsonObject(ENGLISH).getString(LEGISLATION) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(WELSH_OFFENCE_TITLE) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(LEGISLATION_WELSH, offenceDocument.getJsonObject(WELSH) != null ? offenceDocument.getJsonObject(WELSH).getString(LEGISLATION_WELSH) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE) != null ? offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
-        jsonObjectBuilder.add(OFFENCE_ID, offencePayload.getString(OFFENCE_ID) != null ? offencePayload.getString(OFFENCE_ID) : StringUtils.EMPTY);
-        jsonObjectBuilder.add("modeOfTrial", offencePayload.getString(MODEOFTRIAL_DERIVED));
-        return Optional.of(jsonObjectBuilder.build());
+        jsonObjectBuilder.add(OFFENCE_TITLE, nonNull(offenceDocument.getJsonObject(ENGLISH)) ? offenceDocument.getJsonObject(ENGLISH).getString(OFFENCE_TITLE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(LEGISLATION, nonNull(offenceDocument.getJsonObject(ENGLISH)) ? offenceDocument.getJsonObject(ENGLISH).getString(LEGISLATION) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, nonNull(offenceDocument.getJsonObject(WELSH)) ? offenceDocument.getJsonObject(WELSH).getString(WELSH_OFFENCE_TITLE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(LEGISLATION_WELSH, nonNull(offenceDocument.getJsonObject(WELSH)) ? offenceDocument.getJsonObject(WELSH).getString(LEGISLATION_WELSH) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(CJS_OFFENCE_CODE, nonNull(offencePayload.getString(CJS_OFFENCE_CODE)) ? offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(OFFENCE_ID, nonNull(offencePayload.getString(OFFENCE_ID)) ? offencePayload.getString(OFFENCE_ID) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(MODE_OF_TRIAL, offencePayload.getString(MODEOFTRIAL_DERIVED));
+        jsonObjectBuilder.add(REPORT_RESTRICT_RESULT_CODE, offencePayload.getString(REPORT_RESTRICT_RESULT_CODE, StringUtils.EMPTY));
+
+        return jsonObjectBuilder.build();
     }
 }

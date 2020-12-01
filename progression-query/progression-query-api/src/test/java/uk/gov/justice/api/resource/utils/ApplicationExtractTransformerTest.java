@@ -248,18 +248,18 @@ public class ApplicationExtractTransformerTest {
     }
 
     private void assertRespondentRepresentation(List<RespondentRepresentation> respondentRepresentation, boolean isHearingExist) {
-        respondentRepresentation.forEach(rr -> {
-            assertAddress(rr.getAddress());
+        respondentRepresentation.forEach(reportingRestriction -> {
+            assertAddress(reportingRestriction.getAddress());
             if (isHearingExist) {
-                rr.getRespondentCounsels().stream().forEach(rc -> {
+                reportingRestriction.getRespondentCounsels().stream().forEach(rc -> {
                     assertThat(rc.getFirstName(), is(FIRST_NAME));
                     assertThat(rc.getLastName(), is(LAST_NAME));
                 });
             } else {
-                assertThat(rr.getRespondentCounsels(), empty());
+                assertThat(reportingRestriction.getRespondentCounsels(), empty());
             }
-            assertThat(rr.getName(), is(ORG_NAME));
-            assertThat(rr.getSynonym(), is(SYNONYM + "R"));
+            assertThat(reportingRestriction.getName(), is(ORG_NAME));
+            assertThat(reportingRestriction.getSynonym(), is(SYNONYM + "R"));
         });
 
     }

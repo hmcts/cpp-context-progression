@@ -1,30 +1,44 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -35,20 +49,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This processor will split event progression.event.court-proceedings-initiated
- * ( Which is created from command progression.initiate-court-proceedings )
- * into ProsecutionCases , CourtDocuments and ListHearingRequests to individually
- * call private commands for each one of them
+ * This processor will split event progression.event.court-proceedings-initiated ( Which is created
+ * from command progression.initiate-court-proceedings ) into ProsecutionCases , CourtDocuments and
+ * ListHearingRequests to individually call private commands for each one of them
  */
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtProceedingsInitiatedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtProceedingsInitiatedProcessor.class.getCanonicalName());
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
+    private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+    private static final String SEXUAL_OFFENCE_RR_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
+    private static final String SEXUAL_OFFENCE_RR_CODE = "YES";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
+
+    @Inject
+    @ServiceComponent(Component.EVENT_PROCESSOR)
+    private Requester requester;
 
     @Inject
     private Enveloper enveloper;
@@ -63,7 +83,8 @@ public class CourtProceedingsInitiatedProcessor {
     @Inject
     private ListCourtHearingTransformer listCourtHearingTransformer;
 
-
+    @Inject
+    private ReferenceDataOffenceService referenceDataOffenceService;
 
     @Handles("progression.event.court-proceedings-initiated")
     public void handle(final JsonEnvelope jsonEnvelope) {
@@ -72,18 +93,74 @@ public class CourtProceedingsInitiatedProcessor {
         final CourtReferral courtReferral = jsonObjectToObjectConverter.convert(
                 event.getJsonObject("courtReferral"), CourtReferral.class);
 
+        enrichOffencesWithReportingRestriction(jsonEnvelope, courtReferral);
+
         final List<ListDefendantRequest> listDefendantRequests = courtReferral.getListHearingRequests().stream().map(ListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
         final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
                 .withHearingId(hearingId)
                 .withDefendantRequests(listDefendantRequests)
                 .build());
         final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId);
+
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
 
         progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
         listingService.listCourtHearing(jsonEnvelope,
                 listCourtHearingTransformer.transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId));
+    }
+
+    private void enrichOffencesWithReportingRestriction(final JsonEnvelope jsonEnvelope, final CourtReferral courtReferral) {
+        final List<String> offenceCodes = courtReferral.getProsecutionCases().stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream().flatMap(defendant -> defendant.getOffences().stream()))
+                .map(Offence::getOffenceCode)
+                .distinct()
+                .collect(Collectors.toList());
+
+        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, jsonEnvelope, requester);
+
+        courtReferral.getProsecutionCases().stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .forEach(defendant -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendant));
+
+
+    }
+
+    @SuppressWarnings("squid:S1188")
+    private void populateReportingRestrictionsForOffences(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Defendant defendant) {
+        final Function<JsonObject, String> offenceKey = offenceJsonObject -> offenceJsonObject.getString("cjsOffenceCode");
+
+        final List<Offence> offencesWithReportingRestriction = new ArrayList<>();
+        defendant.getOffences().forEach(offence -> {
+            final List<ReportingRestriction> reportingRestrictions = new ArrayList<>();
+            if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) && LocalDateUtils.isYouth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), LocalDate.now()).booleanValue()) {
+                reportingRestrictions.add(new ReportingRestriction.Builder()
+                        .withId(randomUUID())
+                        .withOrderedDate(LocalDate.now())
+                        .withLabel(YOUTH_RESTRICTION).build());
+            }
+            if (referenceDataOffencesJsonObjectOptional.isPresent()) {
+                final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
+                final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
+                if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {
+                    reportingRestrictions.add(new ReportingRestriction.Builder()
+                            .withId(randomUUID())
+                            .withLabel(SEXUAL_OFFENCE_RR_LABEL)
+                            .withOrderedDate(LocalDate.now())
+                            .build());
+                }
+            }
+
+            final Offence.Builder builder = new Offence.Builder().withValuesFrom(offence);
+            if (isNotEmpty(reportingRestrictions)) {
+                builder.withReportingRestrictions(reportingRestrictions);
+            }
+            offencesWithReportingRestriction.add(builder.build());
+        });
+        if (isNotEmpty(defendant.getOffences())) {
+            defendant.getOffences().clear();
+            defendant.getOffences().addAll(offencesWithReportingRestriction);
+        }
     }
 
     private List<ProsecutionCase> getProsecutionCasesList(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases) {

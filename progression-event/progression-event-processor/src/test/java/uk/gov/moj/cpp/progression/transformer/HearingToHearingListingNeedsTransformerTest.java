@@ -17,7 +17,9 @@ import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
@@ -26,6 +28,7 @@ import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverte
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +49,7 @@ public class HearingToHearingListingNeedsTransformerTest {
     private static final UUID CASE_ID_1 = randomUUID();
     private static final UUID DEFENDANT_ID_1 = randomUUID();
     private static final UUID OFFENCE_ID_1 = randomUUID();
+    private static final UUID REPORTING_RESTRICTION_ID_1 = randomUUID();
 
     private static final UUID CASE_ID_2 = randomUUID();
     private static final UUID DEFENDANT_ID_2 = randomUUID();
@@ -304,4 +308,28 @@ public class HearingToHearingListingNeedsTransformerTest {
 
     }
 
+    @Test
+    public void shouldCarryReportingRestrictionDetails() {
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearing(Collections.singletonList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, REPORTING_RESTRICTION_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing, false, null);
+        assertThat(hearingListingNeedsList.size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().size(), is(1));
+
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        assertThat(defendant1.getOffences().size(), is(1));
+
+        final Offence offence1 = defendant1.getOffences().get(0);
+        assertThat(offence1.getId(), is(OFFENCE_ID_1));
+        assertThat(offence1.getCommittingCourt(), is(nullValue()));
+
+        final ReportingRestriction reportingRestriction1 = offence1.getReportingRestrictions().get(0);
+        assertThat(reportingRestriction1, is(notNullValue()));
+        assertThat(reportingRestriction1.getId(), is(REPORTING_RESTRICTION_ID_1));
+    }
 }

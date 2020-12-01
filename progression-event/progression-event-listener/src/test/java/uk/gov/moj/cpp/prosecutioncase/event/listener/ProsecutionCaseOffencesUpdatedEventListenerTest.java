@@ -30,8 +30,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import java.util.UUID;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,6 +107,9 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
         verify(prosecutionCaseRepository).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue(), is(notNullValue()));
         final ProsecutionCaseEntity updatedProsecutionCaseEntity = argumentCaptor.getValue();
+        final JsonObject payload =  stringToJsonObjectConverter.convert(updatedProsecutionCaseEntity.getPayload());
+        final JsonArray defendantProperties = payload.getJsonArray("defendants");
+        assertThat(defendantProperties.getJsonObject(0).get("isYouth").toString(), is("true"));
         assertThat(updatedProsecutionCaseEntity.getCaseId(), is(id));
     }
 
@@ -135,6 +140,7 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
                 .withDefendants(singletonList(
                         Defendant.defendant()
                                 .withId(defendantId)
+                                .withIsYouth(true)
                                 .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
                                 .build())
                 )

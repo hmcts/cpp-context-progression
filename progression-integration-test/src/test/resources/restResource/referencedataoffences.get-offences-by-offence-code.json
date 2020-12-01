@@ -2,13 +2,14 @@
   "offences": [
     {
       "offenceId": "04c099cc-eba2-4c80-9eed-7c1ef21d706a",
-      "cjsOffenceCode": "CA03010",
+      "cjsOffenceCode": "TTH105HY",
       "modeOfTrial": "SNONIMP",
       "modeOfTrialDerived": "Summary",
       "validFrom": "2017-10-10",
       "validTo": "2017-12-10",
       "cppDateOfLastUpdate": "2017-12-10",
       "pnldDateOfLastUpdate": "2017-06-10",
+      "reportRestrictResultCode": "YES",
       "details": {
         "document": {
           "type": "H",

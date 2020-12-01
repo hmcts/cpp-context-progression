@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.creat
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestriction;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndex;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
@@ -685,16 +686,16 @@ public class CaseAggregate implements Aggregate {
                 .withMatchedDefendantHearingId(matchedDefendantHearingId).build()));
     }
 
-    public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId) {
+    public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
         LOGGER.debug("Offences information is being updated.");
         final AtomicInteger maxOrderIndex = new AtomicInteger(Collections.max(this.defendantCaseOffences.get(defendantId), Comparator.comparing(uk.gov.justice.core.courts.Offence::getOrderIndex)).getOrderIndex());
-        final List<uk.gov.justice.core.courts.Offence> updatedOffences = offences.stream().map(s -> {
+        final List<uk.gov.justice.core.courts.Offence> updatedOffences = offences.stream().map(commandOffence -> {
             uk.gov.justice.core.courts.Offence offence;
-            Optional<uk.gov.justice.core.courts.Offence> existingOffence = this.defendantCaseOffences.get(defendantId).stream().filter(o -> o.getId().equals(s.getId())).findFirst();
+            Optional<uk.gov.justice.core.courts.Offence> existingOffence = this.defendantCaseOffences.get(defendantId).stream().filter(o -> o.getId().equals(commandOffence.getId())).findFirst();
             if (existingOffence.isPresent()) {
-                offence = updateOrderIndex(s, existingOffence.get().getOrderIndex());
+                offence = updateOrderIndex(commandOffence, existingOffence.get().getOrderIndex());
             } else {
-                offence = updateOrderIndex(s, maxOrderIndex.addAndGet(1));
+                offence = offenceWithSexualOffenceReportingRestriction(updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1)), referenceDataOffences);
             }
             return offence;
         }).collect(Collectors.toList());
@@ -710,10 +711,8 @@ public class CaseAggregate implements Aggregate {
                 .withDefendantCaseOffences(newDefendantCaseOffences).build());
 
         if (this.defendantCaseOffences.containsKey(defendantId)) {
-            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantChanged(updatedOffences, this.defendantCaseOffences.get(defendantId), prosecutionCaseId, defendantId);
-            if (offencesForDefendantChanged.isPresent()) {
-                streamBuilder.add(offencesForDefendantChanged.get());
-            }
+            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantChanged(updatedOffences, this.defendantCaseOffences.get(defendantId), prosecutionCaseId, defendantId, referenceDataOffences);
+            offencesForDefendantChanged.ifPresent(streamBuilder::add);
         }
         return apply(streamBuilder.build());
 

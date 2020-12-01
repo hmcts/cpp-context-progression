@@ -25,6 +25,7 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matcher;
@@ -92,6 +93,9 @@ public class CaseAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.defendants[0].address.address1", equalTo("22")),
                                 withJsonPath("$.defendants[0].address.address2", equalTo("Acacia Avenue")),
                                 withJsonPath("$.defendants[0].dateOfBirth", equalTo(defendantDOB)),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].id",notNullValue()),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].label", equalTo("Section 49 of the Children and Young Persons Act 1933 applies")),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].orderedDate", notNullValue()),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].offenceCode", equalTo("TTH105HY")),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].offenceTitle", equalTo("ROBBERY")),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].wording", equalTo("No Travel Card")),

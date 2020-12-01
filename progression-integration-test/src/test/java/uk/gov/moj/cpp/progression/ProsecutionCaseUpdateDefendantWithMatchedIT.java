@@ -6,6 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
@@ -125,6 +126,11 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
     private void verifyInMessagingQueueForProsecutionCaseCreated(final MessageConsumer publicEventConsumerForProsecutionCaseCreated) {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForProsecutionCaseCreated);
         assertTrue(message.isPresent());
+        final JsonObject reportingRestrictionObject = message.get().getJsonObject("prosecutionCase")
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("reportingRestrictions").getJsonObject(0);
+        assertNotNull(reportingRestrictionObject);
     }
 
     private void verifyInMessagingQueueForDefendantUpdated(final MessageConsumer publicEventConsumerForDefendantUpdated) {

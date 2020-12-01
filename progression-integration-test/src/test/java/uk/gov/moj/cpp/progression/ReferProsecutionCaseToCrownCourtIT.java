@@ -11,6 +11,7 @@ import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithMinimumAttributes;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithReportingRestrictions;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
@@ -26,6 +27,8 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchersWithOffence;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +43,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
 
@@ -54,6 +56,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
     private String materialIdDeleted;
     private String defendantId;
     private String referralReasonId;
+    private String reportingRestrictionId;
 
     @Before
     public void setUp() {
@@ -63,6 +66,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         courtDocumentId = randomUUID().toString();
         defendantId = randomUUID().toString();
         referralReasonId = randomUUID().toString();
+        reportingRestrictionId = randomUUID().toString();
     }
 
     @After
@@ -137,6 +141,19 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         final Matcher[] matchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.prosecutionCase.initiationCode", is("J"))
+        };
+        pollProsecutionCasesProgressionFor(caseId, matchers);
+    }
+
+    @Test
+    public void shouldGetProsecutionCaseWithReportingRestrictions() throws Exception {
+        addProsecutionCaseToCrownCourtWithReportingRestrictions(caseId, defendantId, reportingRestrictionId);
+        final Matcher[] matchers = {
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.initiationCode", is("J")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is(reportingRestrictionId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2020-11-11"))
         };
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }

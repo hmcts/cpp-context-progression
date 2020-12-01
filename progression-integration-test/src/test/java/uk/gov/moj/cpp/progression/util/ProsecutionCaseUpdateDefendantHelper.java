@@ -11,6 +11,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,6 +87,16 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         final String jsonString = getPayload(TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD);
         updateDefendant(jsonString);
     }
+
+    public void updateDateOfBirthForDefendant(final String prosecutionCaseId , final String defendantId,final LocalDate newDateOfBirth){
+            final JSONObject jsonObjectPayload = new JSONObject(getPayload("progression.update-date-of-birth-for-defendant.json"));
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("personDetails").put("dateOfBirth", newDateOfBirth.toString());
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId",prosecutionCaseId);
+        jsonObjectPayload.getJSONObject("defendant").put("id",defendantId);
+            request = jsonObjectPayload.toString();
+            makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
 
     public void updateSameDefendant() {
         final String jsonString = getPayload(TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD);

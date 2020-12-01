@@ -71,6 +71,7 @@ public class CourtExtractIT extends AbstractIT {
     private String hearingId;
     private String courtCentreId;
     private String courtApplicationId;
+    private String reportingRestrictionId;
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -92,6 +93,7 @@ public class CourtExtractIT extends AbstractIT {
         userId = randomUUID().toString();
         courtCentreId = randomUUID().toString();
         courtApplicationId = randomUUID().toString();
+        reportingRestrictionId = randomUUID().toString();
 
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
@@ -214,7 +216,7 @@ public class CourtExtractIT extends AbstractIT {
 
         sendMessage(messageProducerClientPublic,
                 publicHearingResulted, getHearingJsonObject(publicHearingResulted + ".json", caseId,
-                        hearingId, defendantId, newCourtCentreId), metadataBuilder()
+                        hearingId, defendantId, newCourtCentreId, reportingRestrictionId), metadataBuilder()
                         .withId(randomUUID())
                         .withName(publicHearingResulted)
                         .withUserId(userId)
@@ -232,7 +234,11 @@ public class CourtExtractIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-10")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent", CoreMatchers.is(44)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-14")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", CoreMatchers.is(55))
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", CoreMatchers.is(55)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", CoreMatchers.is(reportingRestrictionId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].judicialResultId", CoreMatchers.is("0f5b8757-e588-4b7f-806a-44dc0eb0e75e")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", CoreMatchers.is("Reporting Restriction Label")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", CoreMatchers.is("2020-10-20"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
@@ -264,6 +270,17 @@ public class CourtExtractIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
+        return stringToJsonObjectConverter.convert(strPayload);
+    }
+
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId, final String reportingRestrictionId) {
+        final String strPayload = getPayload(path)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
         return stringToJsonObjectConverter.convert(strPayload);
     }
 

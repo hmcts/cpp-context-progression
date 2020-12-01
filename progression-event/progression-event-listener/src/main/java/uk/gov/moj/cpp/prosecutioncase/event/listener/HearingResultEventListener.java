@@ -250,6 +250,7 @@ public class HearingResultEventListener {
                     .withProceedingsConcluded(resultedOffence.getProceedingsConcluded())
                     .withOffenceDateCode(originalOffence.getOffenceDateCode())
                     .withCommittingCourt(originalOffence.getCommittingCourt())
+                    .withReportingRestrictions(originalOffence.getReportingRestrictions())
                     .build();
         } else {
             return originalOffence;
@@ -420,6 +421,7 @@ public class HearingResultEventListener {
                 .withWordingWelsh(originOffence.getWordingWelsh())
                 .withOffenceDateCode(originOffence.getOffenceDateCode())
                 .withCommittingCourt(originOffence.getCommittingCourt())
+                .withReportingRestrictions(originOffence.getReportingRestrictions())
                 .build();
     }
 

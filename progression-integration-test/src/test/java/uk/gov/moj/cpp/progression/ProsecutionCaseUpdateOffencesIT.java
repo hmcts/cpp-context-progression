@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -10,6 +11,8 @@ import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelpe
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
+
+import java.time.LocalDate;
 
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
@@ -36,7 +39,12 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
         final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+                newArrayList(
+                        // defendant offence reporting restrictions and offencecode assertion
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is(LocalDate.now().toString())),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
         );
 
         pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
@@ -48,7 +56,10 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.verifyInActiveMQ();
         helper.verifyInMessagingQueueForOffencesUpdated();
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is(OFFENCE_CODE)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)));
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is(LocalDate.now().plusDays(1).toString())));
     }
 
     @Test

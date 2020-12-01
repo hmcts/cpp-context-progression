@@ -117,6 +117,7 @@ public class ConvictionDateEventListener {
                 offence.getOrderIndex(),
                 offence.getPlea(),
                 offence.getProceedingsConcluded(),
+                offence.getReportingRestrictions(),
                 offence.getStartDate(),
                 offence.getVerdict(),
                 offence.getVictims(),

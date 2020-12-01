@@ -226,6 +226,7 @@ public class HearingToHearingListingNeedsTransformer {
                 .withWordingWelsh(offence.getWordingWelsh())
                 .withCommittingCourt(committingCourt)
                 .withOffenceDateCode(offence.getOffenceDateCode())
+                .withReportingRestrictions(offence.getReportingRestrictions())
                 .build();
 
         defendantInNeeds.getOffences().add(offenceInNeeds);

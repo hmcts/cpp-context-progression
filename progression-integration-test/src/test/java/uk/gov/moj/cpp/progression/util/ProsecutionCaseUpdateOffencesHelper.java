@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import javax.jms.MessageConsumer;
@@ -55,6 +56,7 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
         jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("offenceCode", offenceCode);
 
         request = jsonObjectPayload.toString();
+        request = request.replace("REPORTING_RESTRICTION_ORDERED_DATE", LocalDate.now().plusDays(1).toString());
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
