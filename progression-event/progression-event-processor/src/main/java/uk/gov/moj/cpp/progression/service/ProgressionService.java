@@ -234,8 +234,7 @@ public class ProgressionService {
                 if (isNull(offence.getJudicialResults()) || isNull(seedingHearing) || isNull(offence.getPlea()) || nonNull(offence.getVerdict())) {
                     matchedDefendantAndPleaRemovedOffences.add(offence);
                 } else {
-                    offence.getJudicialResults().forEach(judicialResult ->
-                            matchedDefendantAndPleaRemovedOffences.add(populateOffenceBasedOnPleaGuiltyType(offence, judicialResult, seedingHearing)));
+                    matchedDefendantAndPleaRemovedOffences.add(populateOffenceBasedOnPleaGuiltyType(offence, seedingHearing));
                 }
             });
             defendantsList.add(populateDefendant(matchedDefendant, matchedDefendantAndPleaRemovedOffences, earliestHearingDate));
@@ -253,19 +252,28 @@ public class ProgressionService {
      *
      *
      * @param offence
-     * @param judicialResult
      * @param seedingHearing
      * @return
      */
-    private Offence populateOffenceBasedOnPleaGuiltyType(final Offence offence, final JudicialResult judicialResult,
-                                                         final SeedingHearing seedingHearing) {
+    private Offence populateOffenceBasedOnPleaGuiltyType(final Offence offence, final SeedingHearing seedingHearing) {
 
         LOGGER.info("Populate offence based on plea type guilty flag: {}", offence.getId());
+
+        // Find one judicial result with next hearing and jurisdiction type CROWN
+        final Optional<JudicialResult> judicialResultWithNextHearingInCrownCourt = offence.getJudicialResults()
+                .stream()
+                .filter(judicialResult -> nonNull(judicialResult.getNextHearing()))
+                .filter(judicialResult -> judicialResult.getNextHearing().getJurisdictionType() == JurisdictionType.CROWN)
+                .findAny();
+
+        if (!judicialResultWithNextHearingInCrownCourt.isPresent()) {
+            return offence;
+        }
 
         final String pleaTypeValue = offence.getPlea().getPleaValue();
         final Optional<JsonObject> pleaType = referenceDataService.getPleaType(pleaTypeValue, requester);
 
-        if (!pleaType.isPresent() || isNull(judicialResult) || isNull(judicialResult.getNextHearing())) {
+        if (!pleaType.isPresent()) {
             return offence;
         }
 
@@ -273,8 +281,7 @@ public class ProgressionService {
 
         final boolean pleaToBeRemoved = PLEA_TYPE_GUILTY_NO.equals(pleaTypeGuiltyFlag) &&
                 nonNull(seedingHearing.getJurisdictionType()) &&
-                seedingHearing.getJurisdictionType() == JurisdictionType.MAGISTRATES &&
-                judicialResult.getNextHearing().getJurisdictionType() == JurisdictionType.CROWN;
+                seedingHearing.getJurisdictionType() == JurisdictionType.MAGISTRATES;
 
         if (pleaToBeRemoved) {
             return Offence.offence()
