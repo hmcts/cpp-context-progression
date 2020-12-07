@@ -55,12 +55,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders");
     }
 
     @Test
@@ -252,12 +252,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetAllCaseNotes() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin", "Judge", "Recorders", "Deputies");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetAllCaseNotes() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin","Judge","Deputies","Recorders");
     }
 
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {

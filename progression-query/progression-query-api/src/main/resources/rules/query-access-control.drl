@@ -52,7 +52,7 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin"))
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders"))
   then
     $outcome.setSuccess(true);
 end
@@ -317,7 +317,7 @@ rule "Command - Access all case notes for progression.query.case-notes"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.case-notes");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin", "Judge", "Recorders", "Deputies"));
   then
     $outcome.setSuccess(true);
 end
