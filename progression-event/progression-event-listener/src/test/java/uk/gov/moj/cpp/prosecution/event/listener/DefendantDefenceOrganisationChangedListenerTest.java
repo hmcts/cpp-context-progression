@@ -42,17 +42,12 @@ import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantDefenceOrganisationChangedListenerTest {
-
-    private UUID hearingId;
-    private UUID caseId;
-    private UUID defendantId;
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -101,17 +96,19 @@ public class DefendantDefenceOrganisationChangedListenerTest {
 
     @Before
     public void setUp() {
-        hearingId = randomUUID();
-        caseId = randomUUID();
-        defendantId = randomUUID();
     }
 
     @Test
-    public void shouldHandleDefendantDefenceOrganisationChanged() throws Exception {
+    public void shouldHandleDefendantDefenceOrganisationChanged() {
+
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, DefendantDefenceOrganisationChanged.class)).thenReturn(defendantDefenceOrganisationChanged);
-        when(defendantDefenceOrganisationChanged.getProsecutionCaseId()).thenReturn(caseId);
+        when(defendantDefenceOrganisationChanged.getProsecutionCaseId()).thenReturn(prosecutionCaseId);
         when(defendantDefenceOrganisationChanged.getDefendantId()).thenReturn(defendantId);
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
                 .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
@@ -130,10 +127,6 @@ public class DefendantDefenceOrganisationChangedListenerTest {
 
         when(envelope.metadata()).thenReturn(metadata);
 
-        final UUID prosecutionCaseId = randomUUID();
-
-
-
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("payload", Json.createObjectBuilder()
                         .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
@@ -142,7 +135,7 @@ public class DefendantDefenceOrganisationChangedListenerTest {
                         .build()).build();
 
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
-                .withDefendants(getDefendants(defendantId, prosecutionCaseId, associatedDefenceOrganisation))
+                .withDefendants(getDefendants(prosecutionCaseId, defendantId, masterDefendantId, associatedDefenceOrganisation))
                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                 .build();
         final Hearing hearing = Hearing.hearing()
@@ -152,14 +145,14 @@ public class DefendantDefenceOrganisationChangedListenerTest {
 
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntityList = new ArrayList<>();
         final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
-        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(caseId, defendantId, hearingId));
+        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearingId));
         caseDefendantHearingEntity.setHearing(hearingEntity);
         caseDefendantHearingEntityList.add(caseDefendantHearingEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
         when(hearingEntity.getPayload()).thenReturn(jsonObject.toString());
         when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(hearing);
-        when(repository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
         when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
@@ -173,33 +166,41 @@ public class DefendantDefenceOrganisationChangedListenerTest {
         verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
 
 
-        final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert
-                (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
+        final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert(jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
         assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
-        assertThat(prosecutionCase.getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
-        assertThat(prosecutionCase.getDefendants().get(0).getAssociatedDefenceOrganisation().getApplicationReference(), equalTo("ABC1234"));
 
-        assertThat(prosecutionCase.getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), equalTo("Org1"));
-        assertThat(prosecutionCase.getDefendants().get(0).getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));
+        final Defendant defendantFromProsecutionCaseArgumentCaptor = prosecutionCase.getDefendants().get(0);
 
-        final Hearing resultedHearing = this.jsonObjectToObjectConverter.convert
-                (jsonFromString(hearingEntityArgumentCaptor.getValue().getPayload()), Hearing.class);
-        assertThat(resultedHearing.getProsecutionCases().get(0).getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
-        assertThat(resultedHearing.getProsecutionCases().get(0).getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
-        assertThat(resultedHearing.getProsecutionCases().get(0).getDefendants().get(0).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), equalTo("Org1"));
-        assertThat(resultedHearing.getProsecutionCases().get(0).getDefendants().get(0).getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getApplicationReference(), equalTo("ABC1234"));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), equalTo("Org1"));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));
+
+        final Hearing resultedHearing = this.jsonObjectToObjectConverter.convert(jsonFromString(hearingEntityArgumentCaptor.getValue().getPayload()), Hearing.class);
+
+        final ProsecutionCase prosecutionCaseFromHearingArgumentCaptor = resultedHearing.getProsecutionCases().get(0);
+
+        assertThat(prosecutionCaseFromHearingArgumentCaptor.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
+
+        final Defendant defendantFromHearingArgumentCaptor = prosecutionCaseFromHearingArgumentCaptor.getDefendants().get(0);
+
+        assertThat(defendantFromHearingArgumentCaptor.getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
+        assertThat(defendantFromHearingArgumentCaptor.getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), equalTo("Org1"));
+        assertThat(defendantFromHearingArgumentCaptor.getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));
+        assertThat(defendantFromHearingArgumentCaptor.getMasterDefendantId(), equalTo(masterDefendantId));
 
     }
 
-    private List<Defendant> getDefendants(final UUID defendantId, final UUID prosecutionCaseId, final AssociatedDefenceOrganisation associatedDefenceOrganisation) {
-        List<Defendant> defendantList = new ArrayList<>();
-         defendantList.add(Defendant.defendant().
-                withId(defendantId)
-                .withProsecutionCaseId(prosecutionCaseId)
-                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
-                .withLegalAidStatus("Granted")
-                .build());
-         return defendantList;
+    private List<Defendant> getDefendants(final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId, final AssociatedDefenceOrganisation associatedDefenceOrganisation) {
+        List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                 .withId(defendantId)
+                 .withMasterDefendantId(masterDefendantId)
+                 .withProsecutionCaseId(prosecutionCaseId)
+                 .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                 .withLegalAidStatus("Granted")
+                 .build());
+         return defendants;
     }
 
     private JsonObject jsonFromString(final String jsonObjectStr) {
