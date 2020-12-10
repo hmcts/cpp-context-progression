@@ -260,6 +260,18 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.case-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Police Admin","Judge","Deputies","Recorders");
     }
 
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToGetAllCourtDocuments() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.courtdocuments", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers",
+                "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Court Associate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support", "NCES", "Recorders");
+    }
+
+    @Test
+    public void shouldNotAllowUserInAuthorisedGroupToGetAllCourtDocuments() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.courtdocuments", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers",
+                "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Court Associate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support", "NCES", "Recorders");
+    }
+
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);
         when(progressionProvider.getAllowedUserGroups(action)).thenReturn(ALLOWED_USER_GROUPS);
