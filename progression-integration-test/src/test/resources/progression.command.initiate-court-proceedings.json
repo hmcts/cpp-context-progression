@@ -255,7 +255,9 @@
         "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
         "courtCentre": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-          "name": "Lavender Hill Magistrate's Court"
+          "name": "Lavender Hill Magistrate's Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
         },
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",

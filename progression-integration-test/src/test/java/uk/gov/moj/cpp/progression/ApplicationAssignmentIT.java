@@ -1,10 +1,17 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
@@ -19,6 +26,7 @@ import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.veri
 import static uk.gov.moj.cpp.progression.util.Utilities.listenFor;
 import static uk.gov.moj.cpp.progression.util.Utilities.makeCommand;
 
+import org.hamcrest.CoreMatchers;
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -27,6 +35,7 @@ import uk.gov.justice.core.courts.Application;
 import uk.gov.justice.progression.courts.ChangeBoxworkAssignment;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
@@ -35,6 +44,7 @@ import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -54,6 +64,7 @@ public class ApplicationAssignmentIT extends AbstractIT {
     private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED);
     private static final String PROGRESSION_QUERY_APPLICATION_JSON = "application/vnd.progression.query.application+json";
     private static final String PROGRESSION_COMMAND_REFER_BOXWORK_APPLICATION_JSON = "progression.command.refer-boxwork-application.json";
+    public static final String PROGRESSION_QUERY_GET_APPLICATION_HEARINGS = "application/vnd.progression.query.applicationhearings+json";
     private String hearingId;
 
 
@@ -161,6 +172,21 @@ public class ApplicationAssignmentIT extends AbstractIT {
                 .build();
         checkUserAssigned(applicationQueryRequest);
 
+        verifyApplicationHearings(courtApplicationId.toString());
+    }
+
+    private void verifyApplicationHearings(final String applicationId) {
+        poll(requestParams(getReadUrl("/applications/" + applicationId), PROGRESSION_QUERY_GET_APPLICATION_HEARINGS)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearings.length()", CoreMatchers.is(1)),
+                                withJsonPath("$.hearings[0].hearingId", CoreMatchers.is(hearingId.toString())),
+                                withJsonPath("$.hearings[0].courtCentre.id", CoreMatchers.is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
+                                withJsonPath("$.hearings[0].courtCentre.roomId", CoreMatchers.is("88cdf36e-93e4-41b0-8277-17d9dba7f06f"))
+                        )));
     }
 
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {

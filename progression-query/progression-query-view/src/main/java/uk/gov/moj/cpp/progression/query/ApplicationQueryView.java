@@ -6,6 +6,7 @@ import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.buildApplicationHearingResponse;
 
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -205,6 +206,17 @@ public class ApplicationQueryView {
                 .collect(Collectors.groupingBy(NotificationStatusEntity::getApplicationId, HashMap::new, Collectors.toCollection(ArrayList::new)));
 
         return createJsonEnvelope(envelope, applicationNotificationMap);
+    }
+
+    @Handles("progression.query.applicationhearings")
+    public JsonEnvelope getApplicationHearings(final JsonEnvelope envelope) {
+        final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
+        final List<HearingApplicationEntity> hearingEntities = hearingApplicationRepository.findByApplicationId(applicationId.get());
+        final List<JsonObject> hearingPayloads = hearingEntities.stream()
+                .map(hearingApplicationEntity -> stringToJsonObjectConverter.convert(hearingApplicationEntity.getHearing().getPayload()))
+                .collect(Collectors.toList());
+        final JsonObject responsePayload = buildApplicationHearingResponse(hearingPayloads);
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
     private JsonArray buildApplicationSummaries(final List<CourtApplicationEntity> childApplications) {

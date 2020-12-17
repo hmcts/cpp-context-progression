@@ -116,4 +116,10 @@ public class ApplicationQueryApiTest {
         when(requester.request(query)).thenReturn(response);
         assertThat(applicationQueryApi.getCourtApplicationForApplicationAtAGlance(query), equalTo(response));
     }
+
+    @Test
+    public void shouldGetApplicationHearings() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(applicationQueryApi.getApplicationHearings(query), equalTo(response));
+    }
 }

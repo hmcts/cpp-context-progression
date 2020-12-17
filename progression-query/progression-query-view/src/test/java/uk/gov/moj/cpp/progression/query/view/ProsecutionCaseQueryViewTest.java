@@ -26,6 +26,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -105,6 +106,7 @@ public class ProsecutionCaseQueryViewTest {
     private static final String RESPONDENTS_ORG_NAME = new StringGenerator().next();
     private static final String APPLICATION_PROSECUTOR_NAME = new StringGenerator().next();
     private static final String PROGRESSION_QUERY_PROSECUTIONCASE_CAAG = "progression.query.prosecutioncase.caag";
+    private static final String PROGRESSION_QUERY_CASEHEARINGS = "progression.query.casehearings";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final Logger LOGGER = getLogger(ProsecutionCaseQueryViewTest.class);
     private static final String LABEL1 = "label 1";
@@ -225,7 +227,7 @@ public class ProsecutionCaseQueryViewTest {
         final UUID masterDefendantId = randomUUID();
         final UUID defendantId = randomUUID();
         final String caseURN = "05PP1000915";
-        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG);
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
         final Defendant defendant = defendant().withId(defendantId).withMasterDefendantId(masterDefendantId).build();
 
@@ -257,7 +259,7 @@ public class ProsecutionCaseQueryViewTest {
         final JsonEnvelope jsonEnvelope = buildEnvelope(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, "progression.query.prosecutioncase.caag.with.urn.json");
         final JsonObject prosecutionCaseEntityJson = jsonEnvelope.payloadAsJsonObject().getJsonObject(PROSECUTION_CASE);
 
-        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG);
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
 
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
@@ -301,7 +303,7 @@ public class ProsecutionCaseQueryViewTest {
         final JsonEnvelope jsonEnvelope = buildEnvelope(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, "progression.query.prosecutioncase.caag.with.urn.json");
         final JsonObject prosecutionCaseEntityJson = jsonEnvelope.payloadAsJsonObject().getJsonObject(PROSECUTION_CASE);
 
-        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG);
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
 
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
@@ -345,6 +347,40 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(response.payloadAsJsonObject().getJsonObject("prosecutorDetails").getString("oldProsecutionAuthorityCode"), is("OLDCPSPROSECUTOR"));
     }
 
+    @Test
+    public void shouldReturnCaseHearings(){
+        final UUID caseId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+
+        when(hearingAtAGlanceService.getCaseHearings(caseId)).thenReturn(asList(
+                createCaseHearing(hearingId1, courtCentreId1),
+                createCaseHearing(hearingId2, courtCentreId2)));
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_CASEHEARINGS, caseId);
+        final JsonEnvelope response = prosecutionCaseQuery.getCaseHearings(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonArray hearings = payload.getJsonArray("hearings");
+        assertThat(hearings.size(), is(2));
+
+        final Optional<JsonObject> hearing1 = hearings.stream()
+                .map(h -> (JsonObject)h)
+                .filter(h -> hearingId1.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(hearing1.isPresent(), is(true));
+        final String actualCourtCentre1 = hearing1.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
+
+        final Optional<JsonObject> hearing2 = hearings.stream()
+                .map(h -> (JsonObject)h)
+                .filter(h -> hearingId2.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(hearing2.isPresent(), is(true));
+        final String actualCourtCentre2 = hearing2.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre2, is(courtCentreId2.toString()));
+    }
 
     @Test
     public void shouldFindApplicationsLinkedToProsecutionCase() {
@@ -533,6 +569,18 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
     }
 
+    private Hearings createCaseHearing(final UUID hearingId, final UUID courtCentreId){
+        return Hearings.hearings()
+                .withId(hearingId)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCentreId)
+                        .withName("name")
+                        .withRoomId(randomUUID())
+                        .withRoomName("roomName")
+                        .build())
+                .build();
+    }
+
     private List<Hearings> getHearingsList(final UUID masterDefendantId) {
         return asList(
                 hearings()
@@ -615,10 +663,10 @@ public class ProsecutionCaseQueryViewTest {
         return null;
     }
 
-    private JsonEnvelope buildEnvelopeWithCaseId(final String eventName) {
+    private JsonEnvelope buildEnvelopeWithCaseId(final String eventName, final UUID caseId) {
         return envelopeFrom(
                 DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(eventName).createdAt(ZonedDateTime.now()),
-                createObjectBuilder().add("caseId", randomUUID().toString()).build());
+                createObjectBuilder().add("caseId", caseId.toString()).build());
     }
 
     private ProsecutionCase getProsecutionCase(final String caseURN, final Defendant... defendants) {

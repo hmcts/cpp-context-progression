@@ -54,6 +54,12 @@ public class ProsecutionCaseQueryApiTest {
     }
 
     @Test
+    public void shouldHandleGetCaseHearings() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(prosecutionCaseQueryApi.getCaseHearings(query), equalTo(response));
+    }
+
+    @Test
     public void shouldHandleSearchProsecutionCaseQuery() {
         when(requester.request(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.searchCaseProsecutionCase(query), equalTo(response));

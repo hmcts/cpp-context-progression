@@ -63,6 +63,11 @@ public class ProsecutionCaseQueryApi {
         return appQueryResponse;
     }
 
+    @Handles("progression.query.casehearings")
+    public JsonEnvelope getCaseHearings(final JsonEnvelope query){
+        return requester.request(query);
+    }
+
 
     @Handles("progression.query.usergroups-by-material-id")
     public JsonEnvelope searchForUserGroupsByMaterialId(final JsonEnvelope query) {

@@ -22,8 +22,10 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Offence;
@@ -35,6 +37,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.ApplicantDetails;
 import uk.gov.justice.progression.courts.ApplicationDetails;
+import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -62,10 +65,13 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -374,6 +380,79 @@ public class ApplicationQueryViewTest {
         System.out.println(jsonEnvelopeOut.payloadAsJsonObject());
 
         assertThat(jsonEnvelopeOut.payloadAsJsonObject().getJsonArray("notificationStatus").size(), is(1));
+    }
+
+    @Test
+    public void shouldGetApplicationHearings() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+
+        final JsonObject hearing1 = createHearingPayload(hearingId1, courtCentreId1);
+        final JsonObject hearing2 = createHearingPayload(hearingId2, courtCentreId2);
+
+        when(hearingApplicationRepository.findByApplicationId(applicationId))
+                .thenReturn(
+                        asList(
+                                createHearingApplicationEntity(hearing1),
+                                createHearingApplicationEntity(hearing2)
+                ));
+
+        when(stringToJsonObjectConverter.convert(hearing1.toString())).thenReturn(hearing1);
+        when(stringToJsonObjectConverter.convert(hearing2.toString())).thenReturn(hearing2);
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add(ApplicationQueryView.APPLICATION_ID_SEARCH_PARAM, applicationId.toString())
+                .build();
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID())
+                        .withName("progression.query.applicationhearings").build(),
+                jsonObject);
+
+        final JsonEnvelope response = applicationQueryView.getApplicationHearings(envelope);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonArray hearings = payload.getJsonArray("hearings");
+        assertThat(hearings.size(), is(2));
+
+        final Optional<JsonObject> actualHearing1 = hearings.stream()
+                .map(h -> (JsonObject)h)
+                .filter(h -> hearingId1.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(actualHearing1.isPresent(), is(true));
+        final String actualCourtCentre1 = actualHearing1.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
+
+        final Optional<JsonObject> actualHearing2 = hearings.stream()
+                .map(h -> (JsonObject)h)
+                .filter(h -> hearingId2.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(actualHearing2.isPresent(), is(true));
+        final String actualCourtCentre2 = actualHearing2.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre2, is(courtCentreId2.toString()));
+    }
+
+    private JsonObject createHearingPayload(final UUID hearingId, final UUID courtCentreId){
+        return createObjectBuilder()
+                .add("id", hearingId.toString())
+                .add("courtCentre", createObjectBuilder()
+                        .add("id", courtCentreId.toString())
+                        .add("name", "name")
+                        .add("roomId", randomUUID().toString())
+                        .add("roomName", "Court Room 1")
+                ).build();
+    }
+
+    private HearingApplicationEntity createHearingApplicationEntity(final JsonObject hearingPayload){
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setPayload(hearingPayload.toString());
+
+        final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
+        hearingApplicationEntity.setId(new HearingApplicationKey());
+        hearingApplicationEntity.setHearing(hearingEntity);
+        return hearingApplicationEntity;
     }
 
     private ProsecutionCase createProsecutionCase(final UUID caseId) {

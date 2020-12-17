@@ -66,6 +66,15 @@ rule "Query - Access control for  progression.query.prosecutioncase.caag"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.casehearings"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.casehearings");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.case-at-a-glance"
   when
     $outcome: Outcome();
@@ -262,6 +271,16 @@ rule "Query - Access control for  progression.query.application.aaag"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.application.aaag");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
+     "Court Administrators", "Crown Court Admin", "Judge","Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.applicationhearings"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.applicationhearings");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
      "Court Administrators", "Crown Court Admin", "Judge","Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies"))
   then

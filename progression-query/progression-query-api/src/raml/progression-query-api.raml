@@ -87,6 +87,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.prosecutioncase.caag+json
             name: progression.query.prosecutioncase.caag
+        (mapping):
+            responseType: application/vnd.progression.query.casehearings+json
+            name: progression.query.casehearings
         ...
       responses:
             200:
@@ -98,6 +101,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.prosecutioncase.caag+json:
                     example:  !include json/progression.query.prosecutioncase.caag.json
                     schema:  !include json/schema/progression.query.prosecutioncase.caag.json
+                  application/vnd.progression.query.casehearings+json:
+                    example:  !include json/progression.query.casehearings.json
+                    schema:  !include json/schema/progression.query.casehearings.json
 
 /defendant-requests/{defendantId}:
   uriParameters:
@@ -254,6 +260,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.application.aaag+json
             name: progression.query.application.aaag
+        (mapping):
+            responseType: application/vnd.progression.query.applicationhearings+json
+            name: progression.query.applicationhearings
         ...
       responses:
             200:
@@ -268,7 +277,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.application.aaag+json:
                     example:  !include json/progression.query.application.aaag.json
                     schema:  !include json/schema/progression.query.application.aaag.json
-
+                  application/vnd.progression.query.applicationhearings+json:
+                    example:  !include json/progression.query.applicationhearings.json
+                    schema:  !include json/schema/progression.query.applicationhearings.json
 /applications/{applicationId}/extract:
   description: get court application extract content as pdf
   uriParameters:

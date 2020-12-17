@@ -76,4 +76,10 @@ public class HearingApplicationRepositoryTest {
         assertThat(actual.get(0).getHearing().getResultLines().size(), is(1));
         assertThat(actual.get(0).getHearing().getResultLines().iterator().next().getId(), is(RESULT_ID));
     }
+
+    @Test
+    public void shouldNotFailWhenHearingHasNoApplication() throws Exception {
+        final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(UUID.randomUUID());
+        assertThat(actual.size(), is(0));
+    }
 }

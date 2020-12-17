@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
+import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingsResponse;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -20,6 +21,7 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
@@ -187,6 +189,14 @@ public class ProsecutionCaseQuery {
         }
 
         return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
+    }
+
+    @Handles("progression.query.casehearings")
+    public JsonEnvelope getCaseHearings(final JsonEnvelope envelope) {
+        final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
+        final List<Hearings> hearings = hearingAtAGlanceService.getCaseHearings(caseId.get());
+        final JsonObject responsePayload = buildCaseHearingsResponse(hearings);
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
     private void addCourtApplication(final GetHearingsAtAGlance getHearingAtAGlance, final List<CourtApplicationEntity> courtApplicationEntities) {

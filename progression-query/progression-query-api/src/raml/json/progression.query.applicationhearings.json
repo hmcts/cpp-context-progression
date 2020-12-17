@@ -1,0 +1,13 @@
+{
+  "hearings": [
+    {
+      "hearingId":"a9254db1-1683-483e-afb3-b87fde5a0a26",
+      "courtCentre": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      }
+    }
+  ]
+}

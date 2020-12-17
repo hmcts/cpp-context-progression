@@ -34,6 +34,8 @@ import org.junit.Test;
 
 public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
+    public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
+
     private String caseId;
     private String materialIdActive;
     private String materialIdDeleted;
@@ -66,6 +68,23 @@ public class CaseAtAGlanceIT extends AbstractIT {
 
         verifyCaseAtAGlance(caseId, defendantDOB);
         verifyCaseForCpsOrganisation(caseId);
+        verifyCaseHearings(caseId);
+    }
+
+    private static void verifyCaseHearings(final String caseId) {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_GET_CASE_HEARINGS)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearings.length()", is(1)),
+                                withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
+                                withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
+                                withJsonPath("$.hearings[0].courtCentre.name", is("Lavender Hill Magistrate's Court")),
+                                withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
+                                withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01"))
+                        )));
     }
 
     private static void verifyCaseAtAGlance(final String caseId, final String defendantDOB) {
