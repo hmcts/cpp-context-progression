@@ -79,6 +79,14 @@ public class ApplicationParameters {
     @Value(key = "now_sla_email_template_id")
     private String nowSlaEmailTemplateId;
 
+    @Inject
+    @Value(key = "now_extradition_email_template_id")
+    private String nowExtraditionEmailTemplateId;
+
+    @Inject
+    @Value(key = "now_extradition_sla_email_template_id")
+    private String nowExtraditionSlaEmailTemplateId;
+
     public String getNcesEmailTemplateId() {
 
         return ncesEmailTemplateId;
@@ -138,6 +146,8 @@ public class ApplicationParameters {
         emailTemplatesMap.put("cr_standard", this.courtRegisterEmailTemplateId);
         emailTemplatesMap.put("now_standard_template", this.nowEmailTemplateId);
         emailTemplatesMap.put("now_sla_template", this.nowSlaEmailTemplateId);
+        emailTemplatesMap.put("now_extradition_standard_template", this.nowExtraditionEmailTemplateId);
+        emailTemplatesMap.put("now_extradition_sla_template", this.nowExtraditionSlaEmailTemplateId);
 
         return emailTemplatesMap.getOrDefault(templateName, "");
     }

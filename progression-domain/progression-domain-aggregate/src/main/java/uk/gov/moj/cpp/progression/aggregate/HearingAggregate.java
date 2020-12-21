@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
 
 import uk.gov.justice.core.courts.BoxWorkTaskStatus;
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -23,6 +26,7 @@ import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
@@ -35,6 +39,7 @@ import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
+import uk.gov.justice.progression.courts.ProsecutionCasesResulted;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -42,7 +47,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,7 +59,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = -4848796143895994632L;
+    private static final long serialVersionUID = -4848796143895994633L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private UUID boxWorkAssignedUserId;
     private String boxWorkTaskId;
@@ -63,6 +68,7 @@ public class HearingAggregate implements Aggregate {
     private HearingListingStatus hearingListingStatus;
     private Boolean unscheduledHearingListedFromThisHearing;
     private boolean duplicate;
+    private CommittingCourt committingCourt;
 
     @Override
     public Object apply(final Object event) {
@@ -72,11 +78,13 @@ public class HearingAggregate implements Aggregate {
                     this.boxWorkTaskId = e.getBoxWorkTaskId();
                     this.boxWorkTaskStatus = e.getBoxWorkTaskStatus();
                     this.hearing = e.getHearing();
+                    this.committingCourt = findCommittingCourt(e.getHearing());
                     this.hearingListingStatus = e.getHearingListingStatus();
                 }),
-                when(HearingResulted.class).apply(e ->
-                        this.hearing = e.getHearing()
-                ),
+                when(HearingResulted.class).apply(e -> {
+                        this.hearing = e.getHearing();
+                    this.committingCourt = findCommittingCourt(e.getHearing());
+    }),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
                         listDefendantRequests.addAll(e.getDefendantRequests());
@@ -126,7 +134,7 @@ public class HearingAggregate implements Aggregate {
                     .collect(Collectors.toList());
             final List<ReferralReason> referralReasons = listDefendantRequests.stream()
                     .filter(listDefendantRequest -> {
-                        if (Objects.nonNull(listDefendantRequest.getReferralReason())) {
+                        if (nonNull(listDefendantRequest.getReferralReason())) {
                             return defendantIds.contains(listDefendantRequest.getReferralReason().getDefendantId());
                         } else {
                             return false;
@@ -222,7 +230,7 @@ public class HearingAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> saveHearingResult(final Hearing hearing, final ZonedDateTime sharedTime) {
+    public Stream<Object> saveHearingResult(final Hearing hearing, final ZonedDateTime sharedTime,  List<UUID> shadowListedOffences) {
         LOGGER.debug("Hearing Resulted.");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final Hearing.Builder updatedHearingBuilder = Hearing.hearing();
@@ -264,8 +272,19 @@ public class HearingAggregate implements Aggregate {
                 hearing,
                 HearingListingStatus.HEARING_RESULTED));
 
+        if (nonNull(hearing.getProsecutionCases())) {
+            streamBuilder.add(ProsecutionCasesResulted.prosecutionCasesResulted()
+                    .withHearing(hearing)
+                    .withShadowListedOffences(shadowListedOffences)
+                    .withCommittingCourt(this.committingCourt)
+                    .build());
+        }
+
         return apply(streamBuilder.build());
     }
+
+
+
 
     private ProsecutionCase getUpdatedProsecutionCase(ProsecutionCase prosecutionCase) {
         final List<Defendant> updatedDefendants = new ArrayList<>();
@@ -291,7 +310,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     private boolean hasProsecutionCases(final Hearing hearing) {
-        return Objects.nonNull(hearing.getProsecutionCases()) && !hearing.getProsecutionCases().isEmpty();
+        return nonNull(hearing.getProsecutionCases()) && !hearing.getProsecutionCases().isEmpty();
     }
 
 
@@ -389,5 +408,19 @@ public class HearingAggregate implements Aggregate {
                         .withCourtRoomId(courtRoomId).build())
         );
         return hearingDayListToBeReplaced;
+    }
+
+    private CommittingCourt findCommittingCourt(final Hearing hearing) {
+        if (nonNull(hearing) && MAGISTRATES.equals(hearing.getJurisdictionType()) && nonNull(hearing.getProsecutionCases())) {
+            final Optional<Offence> offence = hearing.getProsecutionCases().stream().flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .filter(o -> nonNull(o.getCommittingCourt()))
+                    .findFirst();
+            if (offence.isPresent()) {
+                return offence.get().getCommittingCourt();
+            }
+        }
+
+        return this.committingCourt;
     }
 }

@@ -202,6 +202,10 @@ subscriptions_descriptor:
         - name: progression.event.case-cps-prosecutor-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
 
+        - name: progression.event.prosecution-cases-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.prosecution-cases-resulted.json
+
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

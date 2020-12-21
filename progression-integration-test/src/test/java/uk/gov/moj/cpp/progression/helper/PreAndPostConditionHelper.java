@@ -249,6 +249,13 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response initiateCourtProceedingsWithCommittingCourt(final String caseId, final String defendantId, final String listedStartDateTime, final String earliestStartDateTime) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getInitiateCourtProceedingsWithCommittingCourtJsonBody(caseId, defendantId, listedStartDateTime, earliestStartDateTime));
+
+    }
+
     public static Response initiateCourtProceedingsWithoutCourtDocument(final String caseId, final String defendantId,
                                                                         final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
         final JSONObject jsonPayload = new JSONObject(getInitiateCourtProceedingsJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
@@ -632,6 +639,12 @@ public class PreAndPostConditionHelper {
         return jsonString;
     }
 
+    private static String getInitiateCourtProceedingsWithCommittingCourtJsonBody(final String caseId, final String defendantId, final String listedStartDateTime, final String earliestStartDateTime) {
+        return getInitiateCourtProceedingsJsonFromResource("progression.command.initiate-court-proceedings-with-committing-court.json", caseId,
+                defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(),
+                listedStartDateTime, earliestStartDateTime, LocalDate.now().minusYears(15).toString());
+    }
+
     private static String getReferProsecutionCaseToCrownCourtWithMinimumAttribute(final String caseId, final String defendantId, final String caseUrn) {
         return getPayload("progression.command.prosecution-case-refer-to-court-minimal-payload.json")
                 .replace("RANDOM_CASE_ID", caseId)
@@ -644,6 +657,13 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
                 .replace("RANDOM_RR_ID", reportingRestrictionId)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId);
+    }
+
+    private static String getReferProsecutionCaseToCourtWitCommittingCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
+        return Resources.toString(getResource("progression.command.prosecution-case-refer-to-court-with-committing-court.json"), Charset.defaultCharset())
+                .replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_REFERENCE", caseUrn)
                 .replaceAll("RANDOM_DEFENDANT_ID", defendantId);
     }
 

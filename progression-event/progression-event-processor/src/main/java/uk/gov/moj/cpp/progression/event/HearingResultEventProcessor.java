@@ -30,6 +30,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingExtended;
+import uk.gov.justice.progression.courts.ProsecutionCasesResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -133,7 +134,6 @@ public class HearingResultEventProcessor {
 
         final boolean isHearingAdjournedAlreadyForCourtApplications = hearingResultHelper.doCourtApplicationsContainNextHearingResults(hearingInProgression.getCourtApplications());
         LOGGER.info("Hearing with hearing id :: {} already adjourned for court applications :: {}", hearing.getId(), isHearingAdjournedAlreadyForCourtApplications);
-        resultProsecutionCases(event, hearing, shadowListedOffences);
         resultApplications(event, hearing, isHearingAdjournedAlreadyForCourtApplications, shadowListedOffences);
 
         if (hearingResultUnscheduledListingHelper.checksIfUnscheduledHearingNeedsToBeCreated(hearing)) {
@@ -141,25 +141,27 @@ public class HearingResultEventProcessor {
         }
     }
 
-    @SuppressWarnings("squid:S134")
-    private void resultProsecutionCases(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
-        if (isNotEmpty(hearing.getProsecutionCases())) {
-            LOGGER.info("Hearing contains prosecution cases resulted for hearing id :: {}", hearing.getId());
-            hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
+    @Handles("progression.event.prosecution-cases-resulted")
+    public void handleProsecutionCasesResulted(final JsonEnvelope event) {
+        final ProsecutionCasesResulted prosecutionCasesResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCasesResulted.class);
+        final Hearing hearing = prosecutionCasesResulted.getHearing();
+        final List<UUID> shadowListedOffences = prosecutionCasesResulted.getShadowListedOffences();
+        final Optional<CommittingCourt> committingCourt = ofNullable(prosecutionCasesResulted.getCommittingCourt());
+        LOGGER.info("Hearing contains prosecution cases resulted for hearing id :: {}", hearing.getId());
+        hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
 
-            final boolean isHearingAdjournedForProsecutionCases = hearingResultHelper.doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
+        final boolean isHearingAdjournedForProsecutionCases = hearingResultHelper.doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
 
-            LOGGER.info("Hearing with hearing id containing prosecution cases :: {} resulted with next hearing :: {}", hearing.getId(), isHearingAdjournedForProsecutionCases);
+        LOGGER.info("Hearing with hearing id containing prosecution cases :: {} resulted with next hearing :: {}", hearing.getId(), isHearingAdjournedForProsecutionCases);
 
-            if (isHearingAdjournedForProsecutionCases) {
-                final boolean shouldPopulateCommittingCourt = checkResultLinesForCommittingCourt(hearing);
-                final Optional<CommittingCourt> committingCourt = listingService.getCommittingCourt(event, hearing.getId());
-                adjournProsecutionCasesToExistingHearings(event, hearing, shadowListedOffences, shouldPopulateCommittingCourt, committingCourt);
-                adjournProsecutionCasesToNewHearings(event, hearing, shadowListedOffences, shouldPopulateCommittingCourt, committingCourt);
+        if (isHearingAdjournedForProsecutionCases) {
 
-            } else {
-                LOGGER.info("Hearing contains prosecution cases does not contain next hearing details for hearing id :: {}", hearing.getId());
-            }
+            final boolean shouldPopulateCommittingCourt = checkResultLinesForCommittingCourt(hearing);
+            adjournProsecutionCasesToExistingHearings(event, hearing, shadowListedOffences, shouldPopulateCommittingCourt, committingCourt);
+            adjournProsecutionCasesToNewHearings(event, hearing, shadowListedOffences, shouldPopulateCommittingCourt, committingCourt);
+
+        } else {
+            LOGGER.info("Hearing contains prosecution cases does not contain next hearing details for hearing id :: {}", hearing.getId());
         }
     }
 

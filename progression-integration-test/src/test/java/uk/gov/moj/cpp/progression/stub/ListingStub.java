@@ -110,6 +110,34 @@ public class ListingStub {
         }
     }
 
+    public static void verifyPostListCourtHearingWithCommittingCourt(final String caseId, final String defendantId, final String courtHouseType) {
+        try {
+            waitAtMost(Duration.ONE_MINUTE).until(() ->
+                    getListCourtHearingRequestsAsStream()
+                            .anyMatch(
+                                    payload -> {
+                                        if(payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases")){
+                                            final JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                            final JSONObject defendants = prosecutionCase.getJSONArray("defendants").getJSONObject(0);
+                                            final JSONObject offences = defendants.getJSONArray("offences").getJSONObject(0);
+
+                                            return prosecutionCase.getString("id").equals(caseId) &&
+                                                    defendants.getString("id").equals(defendantId) &&
+                                                    offences.getJSONObject("committingCourt").getString("courtHouseType").equals(courtHouseType);
+
+                                        }else{
+                                            return false;
+                                        }
+                                    }
+                            )
+
+            );
+
+        } catch (Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
+        }
+    }
+
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final String offenceId, String applicationId) {
         try {

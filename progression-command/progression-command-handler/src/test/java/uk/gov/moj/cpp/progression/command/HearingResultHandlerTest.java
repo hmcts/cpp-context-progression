@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -23,18 +24,22 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.Category;
+import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.progression.courts.ProsecutionCasesResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -80,13 +85,19 @@ public class HearingResultHandlerTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             HearingResulted.class,
-            ProsecutionCaseDefendantListingStatusChanged.class);
+            ProsecutionCaseDefendantListingStatusChanged.class,
+            ProsecutionCasesResulted.class);
 
     @InjectMocks
     private HearingResultHandler hearingResultHandler;
 
 
     private HearingAggregate aggregate;
+
+    private final static String COMMITTING_CROWN_COURT_CODE = "CRCODE";
+    private final static String COMMITTING_CROWN_COURT_NAME = "Committing Crown Court";
+    private final static String COMMITTING_MAGS_COURT_CODE = "MGCODE";
+    private final static String COMMITTING_MAGS_COURT_NAME = "Committing Mag Court";
 
 
     @Before
@@ -377,6 +388,69 @@ public class HearingResultHandlerTest {
                                 )
                         )
                 ));
+    }
+
+    @Test
+    public void shouldHandleCommandForProsecutionCasesResulted() throws Exception {
+        final CommittingCourt initCommittingCourt = CommittingCourt.committingCourt()
+                .withCourtCentreId(UUID.randomUUID())
+                .withCourtHouseShortName(COMMITTING_MAGS_COURT_CODE)
+                .withCourtHouseName(COMMITTING_MAGS_COURT_NAME)
+                .withCourtHouseCode(COMMITTING_MAGS_COURT_CODE)
+                .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                .build();
+
+        final Hearing initHearing = Hearing.hearing()
+                .withProsecutionCases(getProsecutionCasesWithCommittingCourt(initCommittingCourt))
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withCourtApplications(getCourtApplications())
+                .build();
+
+        aggregate.apply(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearing(initHearing)
+                .build());
+
+        final CommittingCourt resultCommittingCourt = CommittingCourt.committingCourt()
+                .withCourtCentreId(UUID.randomUUID())
+                .withCourtHouseShortName(COMMITTING_CROWN_COURT_CODE)
+                .withCourtHouseName(COMMITTING_CROWN_COURT_NAME)
+                .withCourtHouseCode(COMMITTING_CROWN_COURT_CODE)
+                .withCourtHouseType(CourtHouseType.CROWN)
+                .build();
+        final Hearing resultHearing = Hearing.hearing()
+                .withProsecutionCases(getProsecutionCasesWithCommittingCourt(resultCommittingCourt))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(getCourtApplications())
+                .build();
+
+        final UUID shadowOffenceId = randomUUID();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .withShadowListedOffences(Arrays.asList(shadowOffenceId))
+                        .build());
+
+        hearingResultHandler.handle(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+
+
+        assertThat(prosecutionCasesResultedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecution-cases-resulted"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing", notNullValue()),
+                                withJsonPath("$.hearing.prosecutionCases", notNullValue()),
+                                withJsonPath("$.hearing.courtApplications", notNullValue()),
+                                withJsonPath("$.shadowListedOffences", hasSize(1)),
+                                withJsonPath("$.shadowListedOffences[0]", is(shadowOffenceId.toString())),
+                                withJsonPath("$.committingCourt.courtHouseCode", is(COMMITTING_MAGS_COURT_CODE)),
+                                withJsonPath("$.committingCourt.courtHouseName", is(COMMITTING_MAGS_COURT_NAME))
+                                )
+                        )
+                ));
 
     }
 
@@ -404,6 +478,19 @@ public class HearingResultHandlerTest {
                 .withId(randomUUID())
                 .withIsYouth(true)
                 .withOffences(singletonList(Offence.offence().withId(randomUUID()).withOffenceTitle("offence title").build()))
+                .build());
+
+        return singletonList(prosecutionCase().withId(randomUUID()).withDefendants(defendants).withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription()).build());
+    }
+
+
+    private List<ProsecutionCase> getProsecutionCasesWithCommittingCourt(CommittingCourt committingCourt) {
+        final List<Defendant> defendants = singletonList(Defendant.defendant()
+                .withId(randomUUID())
+                .withIsYouth(true)
+                .withOffences(singletonList(Offence.offence().withId(randomUUID())
+                        .withCommittingCourt(committingCourt)
+                        .withOffenceTitle("offence title").build()))
                 .build());
 
         return singletonList(prosecutionCase().withId(randomUUID()).withDefendants(defendants).withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription()).build());
