@@ -23,7 +23,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -120,7 +119,7 @@ public class UsersGroupServiceTest {
         jsonObject = buildGetOrganisationsDetailsForIds();
         prepareResponseMock();
 
-        final Map<String,String> emails = usersGroupService.getEmailsForOrganisationIds(requestMessage, orgIds);
+        final List<String> emails = usersGroupService.getEmailsForOrganisationIds(requestMessage, orgIds);
 
         verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
         assertThat(envelopeArgumentCaptor.getValue(), notNullValue());
@@ -132,8 +131,8 @@ public class UsersGroupServiceTest {
 
         assertThat(emails, notNullValue());
         assertThat(emails.size(), is(2));
-        assertThat(emails.values(), hasItem("joe@example.com"));
-        assertThat(emails.values(), hasItem("bee@example.com"));
+        assertThat(emails, hasItem("joe@example.com"));
+        assertThat(emails, hasItem("bee@example.com"));
     }
 
     @Test
@@ -149,7 +148,7 @@ public class UsersGroupServiceTest {
         jsonObject = buildGetOrganisationsDetailsForIdsWithNullEmail();
         prepareResponseMock();
 
-        final Map<String,String> emails = usersGroupService.getEmailsForOrganisationIds(requestMessage, orgIds);
+        final List<String> emails = usersGroupService.getEmailsForOrganisationIds(requestMessage, orgIds);
 
         verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
         assertThat(envelopeArgumentCaptor.getValue(), notNullValue());
@@ -237,7 +236,7 @@ public class UsersGroupServiceTest {
                                 .add("laaContractNumber", "LAA3482374WER")
                         )
                         .add(Json.createObjectBuilder()
-                                .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9b")
+                                .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
                                 .add("addressLine1", "Legal House")
