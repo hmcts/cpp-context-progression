@@ -42,7 +42,9 @@ public class HearingDetailsLoader {
         hearingDetails.setHearingTypeId(fromString(response.payload().getJsonObject(HEARING_FIELD).getJsonObject(TYPE_FIELD).getString(ID_FIELD)));
         final JsonArray judiciaries = response.payload().getJsonObject(HEARING_FIELD).getJsonArray(JUDICIARY_FIELD);
         for(final JsonObject judiciary : judiciaries.getValuesAs(JsonObject.class)) {
-            hearingDetails.addUserId(fromString(judiciary.getString(USER_ID_FIELD)));
+            if(judiciary.containsKey(USER_ID_FIELD)) {
+                hearingDetails.addUserId(fromString(judiciary.getString(USER_ID_FIELD)));
+            }
         }
         return hearingDetails;
     }
