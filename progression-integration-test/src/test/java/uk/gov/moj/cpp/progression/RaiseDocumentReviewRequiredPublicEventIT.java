@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
@@ -27,14 +28,18 @@ import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
 
     private final Poller poller = new Poller();
 
-    @Ignore("See CPI-396")
+    @Before
+    public void setup() {
+        setupUsersGroupQueryStub();
+    }
+
     @Test
     public void shouldRaiseReviewRequiredEventIfNonHtmsUserInCorrectGroupsUploadsCourtDocument() throws Exception {
 
