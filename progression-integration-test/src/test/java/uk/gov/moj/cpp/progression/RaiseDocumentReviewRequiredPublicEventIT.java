@@ -27,12 +27,14 @@ import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
 import org.hamcrest.Matcher;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
 
     private final Poller poller = new Poller();
 
+    @Ignore("See CPI-396")
     @Test
     public void shouldRaiseReviewRequiredEventIfNonHtmsUserInCorrectGroupsUploadsCourtDocument() throws Exception {
 
