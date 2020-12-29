@@ -5,7 +5,7 @@
       "defendantDocument": {
         "prosecutionCaseId": "%RANDOM_CASE_ID%",
         "defendants": [
-          "%RANDOM_DEFENDANT_ID%"
+          "%DEFENDANT_ID%"
         ]
       }
     },

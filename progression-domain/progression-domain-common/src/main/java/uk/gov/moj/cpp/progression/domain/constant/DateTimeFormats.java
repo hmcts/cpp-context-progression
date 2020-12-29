@@ -6,7 +6,7 @@ public enum DateTimeFormats {
     STANDARD("yyyy-MM-dd"),
     HYP_DAY_TIME_YYYY_MM_DD("yyyy-MM-dd HH:mm:ss"),
     TIME_HMMA("h:mm a"),
-    DATE_SLASHED_DD_MM_YYYY("dd/MM/YYYY");
+    DATE_SLASHED_DD_MM_YYYY("dd/MM/yyyy");
 
     private String dateFormat;
 

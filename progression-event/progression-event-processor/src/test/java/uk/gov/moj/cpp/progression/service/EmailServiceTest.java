@@ -1,17 +1,23 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.lang.String.format;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyListOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtsDocumentAdded;
+import uk.gov.justice.core.courts.Personalisation;
+import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
@@ -24,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -31,6 +38,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,13 +46,20 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1607"})
-public class DefenceNotificationServiceTest {
+public class EmailServiceTest {
+    private static final UUID TEMPLATE_ID = UUID.randomUUID();
     private static final UUID CASE_ID = UUID.randomUUID();
+    private static final String URN_VALUE = "urn-123456";
+    private static final UUID NOTIFICATION_ID = UUID.randomUUID();
+    private static final UUID MATERIAL_ID = UUID.fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1");
+    private static final String URN = "URN";
+    private static final String MATERIAL_SECTIONS_URL = "MATERIAL_SECTIONS_URL";
+    private static final String URI_TO_MATERIAL = "defence/case/materials?caseId=%s&material=%s";
+    private static final String DEFENDANT_PATH_PARAM = "&defendantId=";
 
     /*
      * Defendant - AssociatedOrganisation
@@ -65,16 +80,10 @@ public class DefenceNotificationServiceTest {
     private ApplicationParameters applicationParameters;
 
     @Mock
-    private DefenceService defenceService;
-
-    @Mock
-    private UsersGroupService usersGroupService;
-
-    @Mock
-    private EmailService emailService;
+    private NotificationService notificationService;
 
     @InjectMocks
-    private DefenceNotificationService defenceNotificationService;
+    private EmailService emailService;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> sourceEnvelopeCaptor;
@@ -83,142 +92,105 @@ public class DefenceNotificationServiceTest {
     private ArgumentCaptor<UUID> notificationIdCaptor;
 
     @Captor
+    private ArgumentCaptor<UUID> applicationIdCaptor;
+
+    @Captor
     private ArgumentCaptor<UUID> caseIdCaptor;
 
     @Captor
     private ArgumentCaptor<UUID> materialIdCaptor;
 
     @Captor
-    private ArgumentCaptor<String> urnCaptor;
-
-    @Captor
-    private ArgumentCaptor<HashMap<UUID, String>> defendantAndRelatedOrganisationEmail;
+    private ArgumentCaptor<List<EmailChannel>> emailNotificationsCaptor;
 
     @Before
     public void setUp() {
     }
 
     @Test
-    public void shouldPrepareNotificationsForDefendantDocument() {
+    public void shouldSendEmailsForDefendantDocument() {
         final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
         final JsonObject courtDocumentPayload = buildDocumentCategoryWithDefendantDocument("0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
 
-        final CourtDocument courtDocument = mapper.convertValue(requestMessage.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
-        final CourtsDocumentAdded courtsDocumentAdded = CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build();
-
-        final List<Defendants> defendants = Arrays.asList(
-                new Defendants(ORG1, DEFENDANT1),
-                new Defendants(ORG1, DEFENDANT2),
-                new Defendants(ORG2, DEFENDANT3),
-                new Defendants(null, DEFENDANT4)
-        );
-
-        final List<String> organisationIds = new ArrayList<>();
-        organisationIds.add(ORG1.toString());
-        organisationIds.add(ORG2.toString());
-
-        final String urn = "urn-123456";
-        final CaseDefendantsWithOrganisation caseDefendantsWithOrg =
-                CaseDefendantsWithOrganisation.caseDefendantsWithOrganisation()
-                        .withCaseId(CASE_ID)
-                        .withUrn(urn)
-                        .withDefendants(defendants)
-                        .build();
-        final CaseDefendantsOrganisations caseDefendantsOrg = CaseDefendantsOrganisations.caseDefendantsOrganisations()
-                .withCaseDefendantOrganisation(caseDefendantsWithOrg)
-                .build();
-
-        final HashMap<String, String> emailOrganisationIds = new HashMap<>();
-        emailOrganisationIds.put(ORG1.toString(), "email1");
-        emailOrganisationIds.put(ORG2.toString(), "email2");
-
-        final HashMap<UUID, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT1, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT2, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT3, "email2");
-
-        when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
-        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
-        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
+        final Map<UUID, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
+        final String emailAddress1 = "email@abc.com";
+        defendantAndRelatedOrganisationEmail.put(DEFENDANT1, emailAddress1);
+        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
 
-        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
-        final UUID materialId = courtDocument.getMaterials().get(0).getId();
+        final List<EmailChannel> emailChannels = new ArrayList<>();
+        emailChannels.add(emailChannel(emailAddress1,personalisation(DEFENDANT1.toString())));
 
-        verify(emailService, times(1))
-                .sendEmailNotifications(sourceEnvelopeCaptor.capture(),
-                        notificationIdCaptor.capture(),
-                        materialIdCaptor.capture(),
-                        urnCaptor.capture(),
-                        caseIdCaptor.capture(),
-                        defendantAndRelatedOrganisationEmail.capture());
-        verify(usersGroupService, times(1)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
+        emailService.sendEmailNotifications(requestMessage, NOTIFICATION_ID, MATERIAL_ID,
+                URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail );
 
-        assertThat(materialIdCaptor.getValue(), is(materialId));
-        assertThat(urnCaptor.getValue(), is(urn));
+        verify(notificationService, times(1)).sendEmail(
+                sourceEnvelopeCaptor.capture(), notificationIdCaptor.capture(),
+                caseIdCaptor.capture(), applicationIdCaptor.capture(),
+                materialIdCaptor.capture(), emailNotificationsCaptor.capture());
+
+        assertThat(notificationIdCaptor.getValue(), is(NOTIFICATION_ID));
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
-        assertThat(defendantAndRelatedOrganisationEmail.getValue(), is(defendantAndRelatedOrganisationEmailL));
+        assertThat(materialIdCaptor.getValue(), is(MATERIAL_ID));
+        assertThat(applicationIdCaptor.getValue(), Matchers.nullValue());
+
+        assertThat(emailNotificationsCaptor.getValue(), notNullValue());
+        assertThat(emailNotificationsCaptor.getValue().size(), is(1));
+        assertThat(emailNotificationsCaptor.getValue().get(0).getSendToAddress(), is("email@abc.com"));
+        assertThat(emailNotificationsCaptor.getValue().get(0).getMaterialUrl(), nullValue());
+        assertThat(emailNotificationsCaptor.getValue().get(0).getPersonalisation().getAdditionalProperties().get(URN), is(URN_VALUE));
+        final String expectedURL = "EndClientHost".concat(format(URI_TO_MATERIAL,CASE_ID,MATERIAL_ID).concat(DEFENDANT_PATH_PARAM).concat(DEFENDANT1.toString()));
+        assertThat(emailNotificationsCaptor.getValue().get(0).getPersonalisation().getAdditionalProperties().get(MATERIAL_SECTIONS_URL), is(expectedURL));
     }
 
     @Test
-    public void shouldPrepareNotificationsForCaseDocument() {
+    public void shouldSendEmailsForCaseDocument() {
         final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
         final JsonObject courtDocumentPayload = buildDocumentCategoryWithCaseDocument("0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
 
-        final CourtDocument courtDocument = mapper.convertValue(requestMessage.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
-        final CourtsDocumentAdded courtsDocumentAdded = CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build();
-
         final List<Defendants> defendants = Arrays.asList(
                 new Defendants(ORG1, DEFENDANT1), new Defendants(ORG1, DEFENDANT2),
                 new Defendants(ORG2, DEFENDANT3), new Defendants(null, DEFENDANT4)
         );
-        final HashMap<String, String> emailOrganisationIds = new HashMap<>();
-        emailOrganisationIds.put(ORG1.toString(), "email1");
-        emailOrganisationIds.put(ORG2.toString(), "email2");
-
-        final String urn = "urn-123456";
         final CaseDefendantsWithOrganisation caseDefendantsWithOrg = CaseDefendantsWithOrganisation.caseDefendantsWithOrganisation()
                 .withCaseId(CASE_ID)
-                .withUrn(urn)
+                .withUrn("urn-123456")
                 .withDefendants(defendants)
                 .build();
-        final CaseDefendantsOrganisations caseDefendantsOrg = CaseDefendantsOrganisations.caseDefendantsOrganisations()
-                .withCaseDefendantOrganisation(caseDefendantsWithOrg)
-                .build();
 
-        when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
-        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
-        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
+        final List<String> emails = Arrays.asList("email1@abc.com", "email2@abc.com");
+
+        final Map<UUID, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
+        defendantAndRelatedOrganisationEmail.put(DEFENDANT1, emails.get(0));
+        defendantAndRelatedOrganisationEmail.put(DEFENDANT2, emails.get(1));
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
-        final List<String> organisationIds = new ArrayList<>();
-        organisationIds.add(ORG1.toString());
-        organisationIds.add(ORG2.toString());
+        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
 
-        final HashMap<UUID, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT1, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT2, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT3, "email2");
+        emailService.sendEmailNotifications(requestMessage, NOTIFICATION_ID,MATERIAL_ID, URN_VALUE, CASE_ID,defendantAndRelatedOrganisationEmail );
+        verify(notificationService, times(1)).sendEmail(
+                sourceEnvelopeCaptor.capture(), notificationIdCaptor.capture(),
+                caseIdCaptor.capture(), applicationIdCaptor.capture(),
+                materialIdCaptor.capture(), emailNotificationsCaptor.capture());
 
-        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
-        final UUID materialId = courtDocument.getMaterials().get(0).getId();
+        final List<EmailChannel> emailChannels = new ArrayList<>();
+        emailChannels.add(emailChannel(emails.get(0),personalisation(DEFENDANT1.toString())));
+        emailChannels.add(emailChannel(emails.get(1),personalisation(DEFENDANT2.toString())));
 
-        verify(emailService, times(1))
-                .sendEmailNotifications(sourceEnvelopeCaptor.capture(),
-                        notificationIdCaptor.capture(),
-                        materialIdCaptor.capture(),
-                        urnCaptor.capture(), caseIdCaptor.capture(), defendantAndRelatedOrganisationEmail.capture());
-        verify(usersGroupService, times(1)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
-
-        assertThat(materialIdCaptor.getValue(), is(materialId));
-        assertThat(urnCaptor.getValue(), is(urn));
+        assertThat(notificationIdCaptor.getValue(), notNullValue());
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
-        assertThat(defendantAndRelatedOrganisationEmail.getValue(), is(defendantAndRelatedOrganisationEmailL));
+        assertThat(applicationIdCaptor.getValue(), Matchers.nullValue());
+        assertThat(notificationIdCaptor.getValue(), is(NOTIFICATION_ID));
+        assertThat(materialIdCaptor.getValue(), is(MATERIAL_ID));
+        assertThat(emailNotificationsCaptor.getValue(), notNullValue());
+        assertThat(emailNotificationsCaptor.getValue().size(), is(2));
+
+        containsInAnyOrder(emailChannels,emailNotificationsCaptor.getValue());
 
     }
 
@@ -229,27 +201,34 @@ public class DefenceNotificationServiceTest {
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
+        final List<String> emails = Arrays.asList("email1@abc.com");
 
-        final CourtDocument courtDocument = mapper.convertValue(requestMessage.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
-        final CourtsDocumentAdded courtsDocumentAdded = CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build();
+        final List<EmailChannel> emailChannels = new ArrayList<>();
+        emailChannels.add(emailChannel(emails.get(0),personalisation(DEFENDANT1.toString())));
+        final Map<UUID, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
 
-        final List<Defendants> defendants = new ArrayList<>();
-        final CaseDefendantsWithOrganisation caseDefendantsWithOrg = CaseDefendantsWithOrganisation.caseDefendantsWithOrganisation()
-                .withCaseId(CASE_ID)
-                .withUrn("urn-123456")
-                .withDefendants(defendants)
+
+        emailService.sendEmailNotifications(requestMessage, NOTIFICATION_ID,MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail );
+        verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), anyListOf(EmailChannel.class));
+    }
+
+    private EmailChannel emailChannel(final String emailAddress1,
+                                      final Personalisation personalisation1) {
+        final EmailChannel emailChannel = EmailChannel.emailChannel()
+                .withPersonalisation(personalisation1)
+                .withSendToAddress(emailAddress1)
+                .withTemplateId(TEMPLATE_ID)
                 .build();
+        return emailChannel;
+    }
 
-        final CaseDefendantsOrganisations caseDefendantsOrg = CaseDefendantsOrganisations.caseDefendantsOrganisations()
-                .withCaseDefendantOrganisation(caseDefendantsWithOrg)
+    private Personalisation personalisation(final String defendantId) {
+        final String materialLink = format(URI_TO_MATERIAL, CASE_ID, MATERIAL_ID);
+        final String url = materialLink.concat(DEFENDANT_PATH_PARAM).concat(defendantId);
+        return Personalisation.personalisation()
+                .withAdditionalProperty(URN, URN_VALUE)
+                .withAdditionalProperty(MATERIAL_SECTIONS_URL, url)
                 .build();
-
-        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
-        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
-
-        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
-        verify(emailService, never()).sendEmailNotifications(any(), any(), any(), any(), any(), Mockito.anyMap());
-        verify(usersGroupService, times(2)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
     }
 
     private static JsonObject buildDefendantDocument() {
@@ -327,7 +306,7 @@ public class DefenceNotificationServiceTest {
     }
 
     private static JsonObject buildMaterial() {
-        return createObjectBuilder().add("id", "5e1cc18c-76dc-47dd-99c1-d6f87385edf1").add("receivedDateTime", ZonedDateTime.now().toString()).build();
+        return createObjectBuilder().add("id", MATERIAL_ID.toString()).add("receivedDateTime", ZonedDateTime.now().toString()).build();
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
@@ -338,4 +317,5 @@ public class DefenceNotificationServiceTest {
                 .add("canDownloadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
+
 }

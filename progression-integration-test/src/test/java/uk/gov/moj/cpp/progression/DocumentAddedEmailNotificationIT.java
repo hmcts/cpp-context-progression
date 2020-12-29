@@ -56,9 +56,8 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 public class DocumentAddedEmailNotificationIT extends AbstractIT {
     private String caseId;
     private String docId;
-    private String defendantId;
-    private String hearingId;
-    private String courtCentreId;
+    private String defendantId1;
+    private String defendantId2;
     private String userId;
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = UUID.randomUUID().toString();
@@ -88,7 +87,6 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         setupUsersGroupQueryStub();
     }
 
-
     @Before
     public void setup() {
         UsersAndGroupsStub.stubGetUsersAndGroupsQuery();
@@ -98,24 +96,22 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         ReferenceDataStub.stubGetOrganisationById("/restResource/ref-data-get-organisation.json");
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
-        defendantId = randomUUID().toString();
-        hearingId = randomUUID().toString();
-        courtCentreId = randomUUID().toString();
+        defendantId1 = randomUUID().toString();
+        defendantId2 = randomUUID().toString();
         userId = randomUUID().toString();
     }
 
     @Test
     public void shouldGenerateNotificationForCourtDocumentAddedByNonDefenceUser() throws IOException {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
+        addProsecutionCaseToCrownCourt(caseId, defendantId1);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         final List<String> organizationIds = Arrays.asList("fcb1edc9-786a-462d-9400-318c95c7c700", "fcb1edc9-786a-462d-9400-318c95c7b700");
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
-        DefenceStub.stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId);
+        DefenceStub.stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId1, defendantId2);
         UsersAndGroupsStub.stubGetOrganisationDetailForIds("stub-data/usersgroups.get-organisations-details.json", organizationIds, userId);
         addCourtDocument("expected/expected.progression.add-court-document-for-email.json");
-
 
         verifyInMessagingQueueForPublicCourtDocumentAdded();
         verifyInMessagingQueueForEmailSendForDocumentAdded(caseId);
@@ -134,8 +130,6 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
                 Matchers.hasToString(Matchers.containsString(caseId)))));
         assertThat(message.get(), isJson(withJsonPath("$.notifications[0].sendToAddress",
                 Matchers.hasToString(Matchers.containsString("joe@example.com")))));
-        assertThat(message.get(), isJson(withJsonPath("$.notifications[1].sendToAddress",
-                Matchers.hasToString(Matchers.containsString("bee@example.com")))));
     }
 
 
@@ -152,12 +146,13 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         final String actualDocument = getCourtDocumentFor(docId, allOf(
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
                 withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)),
-                withJsonPath("$.courtDocument.sendToCps", equalTo(true)))
+                withJsonPath("$.courtDocument.sendToCps", equalTo(true))
+                )
         );
 
         final String expectedPayload = getPayload(expectedPayloadPath)
                 .replace("COURT-DOCUMENT-ID", docId.toString())
-                .replace("DEFENDENT-ID", defendantId.toString())
+                .replace("DEFENDENT-ID", defendantId1.toString())
                 .replace("CASE-ID", caseId.toString());
 
         JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
@@ -173,7 +168,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         String body = getPayload("progression.add-court-document.json");
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
                 .replaceAll("%RANDOM_CASE_ID%", caseId)
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId);
+                .replaceAll("%DEFENDANT_ID%", defendantId1);
         return body;
     }
 
