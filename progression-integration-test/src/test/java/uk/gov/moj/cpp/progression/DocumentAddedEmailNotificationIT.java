@@ -87,6 +87,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         setupUsersGroupQueryStub();
     }
 
+
     @Before
     public void setup() {
         UsersAndGroupsStub.stubGetUsersAndGroupsQuery();
@@ -112,6 +113,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         DefenceStub.stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId1, defendantId2);
         UsersAndGroupsStub.stubGetOrganisationDetailForIds("stub-data/usersgroups.get-organisations-details.json", organizationIds, userId);
         addCourtDocument("expected/expected.progression.add-court-document-for-email.json");
+
 
         verifyInMessagingQueueForPublicCourtDocumentAdded();
         verifyInMessagingQueueForEmailSendForDocumentAdded(caseId);
@@ -146,8 +148,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         final String actualDocument = getCourtDocumentFor(docId, allOf(
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
                 withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)),
-                withJsonPath("$.courtDocument.sendToCps", equalTo(true))
-                )
+                withJsonPath("$.courtDocument.sendToCps", equalTo(true)))
         );
 
         final String expectedPayload = getPayload(expectedPayloadPath)
@@ -168,7 +169,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         String body = getPayload("progression.add-court-document.json");
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
                 .replaceAll("%RANDOM_CASE_ID%", caseId)
-                .replaceAll("%DEFENDANT_ID%", defendantId1);
+                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId1);
         return body;
     }
 
