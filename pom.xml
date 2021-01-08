@@ -7,6 +7,7 @@
         <artifactId>service-parent-pom</artifactId>
         <version>10.2.4</version>
     </parent>
+
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
     <version>7.0.97-SNAPSHOT</version>
@@ -42,9 +43,9 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>7.0.26</referencedata.version>
-        <listing.version>7.0.42</listing.version>
+        <listing.version>7.0.49</listing.version>
         <hearing.version>7.0.64</hearing.version>
-        <usersgroups.version>7.0.18</usersgroups.version>
+        <usersgroups.version>7.0.19</usersgroups.version>
         <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>7.0.4</referencedata.offence.version>
         <coredomain.version>1.0.125</coredomain.version>
@@ -52,7 +53,7 @@
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
         <results.version>7.0.33</results.version>
-        <notification.notify.version>7.0.1</notification.notify.version>
+        <notification.notify.version>7.0.7</notification.notify.version>
         <unifiedsearch.version>7.0.8</unifiedsearch.version>
         <systemdocgenerator.version>7.0.1</systemdocgenerator.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>

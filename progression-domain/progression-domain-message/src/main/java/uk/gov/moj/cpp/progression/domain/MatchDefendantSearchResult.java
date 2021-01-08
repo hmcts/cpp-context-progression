@@ -52,5 +52,4 @@ public class MatchDefendantSearchResult implements Serializable {
             return new MatchDefendantSearchResult(partiallyMatchedDefendants, fullyMatchedDefendants);
         }
     }
-
 }
