@@ -7,7 +7,6 @@
         <artifactId>service-parent-pom</artifactId>
         <version>10.2.4</version>
     </parent>
-
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
     <version>7.0.95-SNAPSHOT</version>
