@@ -148,6 +148,11 @@ public class ProsecutionCaseUpdateDefendantWithMatchedHelper extends AbstractTes
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
 
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
+
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.custody", is("Prison-2")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.id", is("a7f54d22-20a1-4154-8955-8e215818bcb5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.name", is("custody-name-2")),
+
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("AACC12345"))
         );
 

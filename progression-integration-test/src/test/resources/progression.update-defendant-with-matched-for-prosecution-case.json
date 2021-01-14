@@ -131,6 +131,11 @@
       "perceivedBirthYear": 2015,
       "driverNumber": "AACC12345",
       "arrestSummonsNumber": "arrest123",
+      "custodialEstablishment": {
+        "custody": "Prison-2",
+        "id": "a7f54d22-20a1-4154-8955-8e215818bcb5",
+        "name": "custody-name-2"
+      },
       "employerOrganisation": {
         "name": "Disneyland Paris-2",
         "incorporationNumber": "Mickeymouse1",

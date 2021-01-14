@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -18,10 +19,13 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * https://tools.hmcts.net/jira/browse/GPE-12938 We need to update matched defendant fields which are updated in original defendant <br>
+ * https://tools.hmcts.net/jira/browse/GPE-12938 We need to update matched defendant fields which
+ * are updated in original defendant <br>
  * <p><ul>
- * <li>We have originalDefendantPreviousVersion, originalDefendantNextVersion We calculate changed fields according to lists below (List is provided in Story)
- * <li>We apply same changes over matchedDefendantPreviousVersion, we we will have DefendantUpdate for matched defendants
+ * <li>We have originalDefendantPreviousVersion, originalDefendantNextVersion We calculate changed
+ * fields according to lists below (List is provided in Story)
+ * <li>We apply same changes over matchedDefendantPreviousVersion, we we will have DefendantUpdate
+ * for matched defendants
  * </ul>
  * <b>Here we update these fields</b>
  * <pre>
@@ -123,7 +127,8 @@ public class DefendantUpdateDifferenceCalculator {
                                 .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
                                 .withBailStatus(personDefendant.getBailStatus())
                                 .withBailConditions(personDefendant.getBailConditions())
-                                .withCustodialEstablishment(personDefendant.getCustodialEstablishment())
+                                .withCustodialEstablishment(
+                                        calculateCustodialEstablishment(defendantUpdate -> defendantUpdate.getPersonDefendant().getCustodialEstablishment()))
                                 .withCustodyTimeLimit(personDefendant.getCustodyTimeLimit())
                                 .withDriverLicenceCode(newValue(
                                         defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverLicenceCode()))
@@ -240,6 +245,19 @@ public class DefendantUpdateDifferenceCalculator {
                 .withOccupation(personDetails.getOccupation())
                 .withOccupationCode(personDetails.getOccupationCode())
                 .withPersonMarkers(personDetails.getPersonMarkers())
+                .build();
+    }
+
+    private CustodialEstablishment calculateCustodialEstablishment(Function<DefendantUpdate, CustodialEstablishment> custodialEstablishmentFunction) {
+        final Pair<Boolean, CustodialEstablishment> objectResults = checkNullableObjectResults(custodialEstablishmentFunction);
+        if (objectResults.getKey()) {
+            return objectResults.getRight();
+        }
+        custodialEstablishmentFunction = custodialEstablishmentFunction.andThen(person -> person != null ? person : CustodialEstablishment.custodialEstablishment().build());
+        return CustodialEstablishment.custodialEstablishment()
+                .withCustody(newValue(custodialEstablishmentFunction.andThen(CustodialEstablishment::getCustody)))
+                .withId(newValue(custodialEstablishmentFunction.andThen(CustodialEstablishment::getId)))
+                .withName(newValue(custodialEstablishmentFunction.andThen(CustodialEstablishment::getName)))
                 .build();
     }
 

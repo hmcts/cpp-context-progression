@@ -4,7 +4,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,7 +33,6 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.node.BooleanNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,14 +48,8 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
 
     private final UUID id = randomUUID();
     private final UUID defendantId = randomUUID();
+    private final UUID masterDefendantId = randomUUID();
     private final UUID prosecutionCaseId = randomUUID();
-
-    private final String classOfCase = "ProsecutionCase";
-    private final String originatingOrganisation = "originatingOrganisation";
-    private final String removalReason = "removal Reason";
-    private final String statementOfFacts = "Statement of facts";
-    private final String statementOfFactsWelsh = "Statement of Facts Welsh";
-    private final String policeOfficerRank = "1";
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -110,6 +103,8 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
         final JsonObject payload =  stringToJsonObjectConverter.convert(updatedProsecutionCaseEntity.getPayload());
         final JsonArray defendantProperties = payload.getJsonArray("defendants");
         assertThat(defendantProperties.getJsonObject(0).get("isYouth").toString(), is("true"));
+        assertThat(defendantProperties.getJsonObject(0).getString("id"), is(defendantId.toString()));
+        assertThat(defendantProperties.getJsonObject(0).getString("masterDefendantId"), is(masterDefendantId.toString()));
         assertThat(updatedProsecutionCaseEntity.getCaseId(), is(id));
     }
 
@@ -128,6 +123,12 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
     }
 
     private ProsecutionCase getProsecutionCase() {
+        String classOfCase = "ProsecutionCase";
+        String originatingOrganisation = "originatingOrganisation";
+        String removalReason = "removal Reason";
+        String statementOfFacts = "Statement of facts";
+        String statementOfFactsWelsh = "Statement of Facts Welsh";
+        String policeOfficerRank = "1";
         return ProsecutionCase.prosecutionCase()
                 .withId(id)
                 .withAppealProceedingsPending(true)
@@ -140,6 +141,7 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
                 .withDefendants(singletonList(
                         Defendant.defendant()
                                 .withId(defendantId)
+                                .withMasterDefendantId(masterDefendantId)
                                 .withIsYouth(true)
                                 .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
                                 .build())

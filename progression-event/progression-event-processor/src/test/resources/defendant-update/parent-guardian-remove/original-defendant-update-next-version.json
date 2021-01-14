@@ -3,9 +3,9 @@
   "isYouth": false,
   "personDefendant": {
     "custodialEstablishment": {
-      "custody": "Prison-2",
-      "id": "a7f54d22-20a1-4154-8955-8e215818bcb5",
-      "name": "custody-name-2"
+      "custody": "Prison",
+      "id": "03eb8d61-f46e-43f4-b3f0-9a11e28c2ebe",
+      "name": "custody-name"
     },
     "employerOrganisation": {
       "address": {

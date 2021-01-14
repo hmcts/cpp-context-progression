@@ -117,6 +117,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         // Verify Original Defendant
         prosecutionCaseMatchers = getUpdatedDefendantMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+
         // Verify Matched Defendant
         prosecutionCaseMatchers = getUpdatedDefendantMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);

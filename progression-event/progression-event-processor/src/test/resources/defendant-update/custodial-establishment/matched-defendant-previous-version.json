@@ -1,0 +1,40 @@
+{
+  "id": "c38fb32d-c332-49a0-94b5-cea255aae232",
+  "isYouth": true,
+  "personDefendant": {
+    "custodialEstablishment": {
+      "custody": "Prison",
+      "id": "03eb8d61-f46e-43f4-b3f0-9a11e28c2ebe",
+      "name": "custody-name"
+    },
+
+    "personDetails": {
+      "contact": {
+        "home": "person-contact",
+        "fax": "person-fax",
+        "work": "person-work",
+        "secondaryEmail": "person-secondaryEmail"
+      },
+      "dateOfBirth": "2008-09-01",
+      "documentationLanguageNeeds": "ENGLISH",
+      "ethnicity": {
+        "selfDefinedEthnicityCode": "W1",
+        "selfDefinedEthnicityDescription": "British",
+        "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+      },
+      "firstName": "person-firstName",
+      "gender": "MALE",
+      "interpreterLanguageNeeds": "ENGLISH",
+      "nationalInsuranceNumber": "person-ni",
+      "nationalityCode": "person-nicode",
+      "nationalityDescription": "person-nidesc",
+      "nationalityId": "609a8551-3e4e-49c7-855c-2b2336344a09",
+      "additionalNationalityCode": "person-nicode-4",
+      "additionalNationalityDescription": "person-nidesc-4",
+      "additionalNationalityId": "000a8551-3e4e-49c7-855c-2b2336344a09",
+      "specificRequirements": "person-specificRequirements",
+      "title": "person-title"
+    }
+  },
+  "prosecutionCaseId": "e23bf84a-e16b-4992-98e2-a460f72ee1a8"
+}

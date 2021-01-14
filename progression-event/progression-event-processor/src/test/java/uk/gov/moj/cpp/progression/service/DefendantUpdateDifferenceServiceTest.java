@@ -50,7 +50,7 @@ public class DefendantUpdateDifferenceServiceTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"allfields"},{"parent-guardian-remove"}, {"new-fields"}
+                {"allfields"},{"parent-guardian-remove"}, {"new-fields"},{"custodial-establishment"}
         });
     }
 

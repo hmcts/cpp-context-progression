@@ -105,7 +105,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
             //Add Legal Aid Status and proceeding concluded
             final Defendant updatedDefendant = Defendant.defendant()
                     .withId(defendant.getId())
-                    .withMasterDefendantId(defendant.getId())
+                    .withMasterDefendantId(defendant.getMasterDefendantId())
                     .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
                     .withAliases(defendant.getAliases())
                     .withAssociatedPersons(defendant.getAssociatedPersons())
