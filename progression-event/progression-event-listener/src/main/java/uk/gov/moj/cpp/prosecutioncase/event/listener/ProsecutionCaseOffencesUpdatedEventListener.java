@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -65,19 +66,54 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
             final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendantCaseOffences.getProsecutionCaseId());
             final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+            final List<UUID> caseOffencesIds = prosecutionCase.getDefendants().stream()
+                    .flatMap(d -> d.getOffences().stream())
+                    .map(Offence::getId)
+                    .collect(Collectors.toList());
             updateOffenceForDefendant(defendantCaseOffences, prosecutionCase);
             repository.save(getProsecutionCaseEntity(prosecutionCase));
             final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId());
+
+
+
             caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
                 final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
                 final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
                 final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
+                final DefendantCaseOffences defendantCaseOffencesForHearing = getDefendantCaseOffencesForHearing(defendantCaseOffences, caseOffencesIds, hearing);
                 hearing.getProsecutionCases().stream().forEach(hearingProsecutionCase ->
-                        updateOffenceForDefendant(defendantCaseOffences, hearingProsecutionCase)
+                        updateOffenceForDefendant(defendantCaseOffencesForHearing, hearingProsecutionCase)
                 );
                 hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
                 hearingRepository.save(hearingEntity);
             });
+        }
+    }
+
+    private DefendantCaseOffences getDefendantCaseOffencesForHearing(final DefendantCaseOffences defendantCaseOffences, final List<UUID> caseOffencesIds, final Hearing hearing) {
+        final List<UUID> hearingOffenceIds = hearing.getProsecutionCases().stream()
+                .flatMap(pc -> pc.getDefendants().stream())
+                .flatMap(d -> d.getOffences().stream())
+                .map(Offence::getId)
+                .collect(Collectors.toList());
+
+        final DefendantCaseOffences defendantCaseOffencesForHearing = DefendantCaseOffences.defendantCaseOffences()
+                .withDefendantId(defendantCaseOffences.getDefendantId())
+                .withOffences(new ArrayList<>())
+                .withProsecutionCaseId(defendantCaseOffences.getProsecutionCaseId())
+                .withLegalAidStatus(defendantCaseOffences.getLegalAidStatus())
+                .build();
+
+        defendantCaseOffences.getOffences().forEach(offence ->
+                addDefendantCaseOffencesForHearing(caseOffencesIds, hearingOffenceIds, defendantCaseOffencesForHearing, offence)
+        );
+
+        return defendantCaseOffencesForHearing;
+    }
+
+    private void addDefendantCaseOffencesForHearing(final List<UUID> caseOffencesIds, final List<UUID> hearingOffenceIds, final DefendantCaseOffences defendantCaseOffencesForHearing, final Offence offence) {
+        if (hearingOffenceIds.contains(offence.getId()) || !caseOffencesIds.contains(offence.getId())) {
+            defendantCaseOffencesForHearing.getOffences().add(offence);
         }
     }
 
