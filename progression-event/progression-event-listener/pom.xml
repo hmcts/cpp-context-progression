@@ -89,8 +89,8 @@
                                     <artifactId>mireportdata-progression-event-listener</artifactId>
                                     <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
                                     <version>RELEASE</version>
-                                    <classifier>tests</classifier>
-                                    <type>test-jar</type>
+                                    <classifier>listener-tests</classifier>
+                                    <type>jar</type>
                                     <outputDirectory>${project.build.directory}/test-classes
                                     </outputDirectory>
                                     <overWrite>true</overWrite>
