@@ -54,6 +54,8 @@ public class AbstractIT {
     protected static final String HEARING_ID_TYPE_TRIAL = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_TRIAL_OF_ISSUE = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_NON_TRIAL = randomUUID().toString();
+    protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON = "/restResource/ref-data-get-organisation.json";
+    protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_WITHOUT_POSTCODE_JSON = "/restResource/ref-data-get-organisation-without-postcode.json";
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
 
@@ -108,7 +110,7 @@ public class AbstractIT {
         stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
         stubQueryCourtOURoom("/restResource/referencedata.ou-courtroom.json");
-        stubQueryOrganisation("/restResource/ref-data-get-organisation.json");
+        stubQueryOrganisation(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
         stubNotifications();
         stubMaterialUploadFile();
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());

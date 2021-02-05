@@ -7,7 +7,6 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
@@ -848,12 +847,12 @@ public class ProgressionService {
                 .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
                 .withRoomId(courtCentre.getRoomId())
                 .withAddress(uk.gov.justice.core.courts.Address.address()
-                        .withAddress1(courtCentreJson.getString(ADDRESS_1, EMPTY))
-                        .withAddress2(courtCentreJson.getString(ADDRESS_2, EMPTY))
-                        .withAddress3(courtCentreJson.getString(ADDRESS_3, EMPTY))
-                        .withAddress4(courtCentreJson.getString(ADDRESS_4, EMPTY))
-                        .withAddress5(courtCentreJson.getString(ADDRESS_5, EMPTY))
-                        .withPostcode(courtCentreJson.getString(POSTCODE, EMPTY))
+                        .withAddress1(courtCentreJson.getString(ADDRESS_1))
+                        .withAddress2(courtCentreJson.getString(ADDRESS_2, null))
+                        .withAddress3(courtCentreJson.getString(ADDRESS_3, null))
+                        .withAddress4(courtCentreJson.getString(ADDRESS_4, null))
+                        .withAddress5(courtCentreJson.getString(ADDRESS_5, null))
+                        .withPostcode(courtCentreJson.getString(POSTCODE, null))
                         .build())
                 .build();
     }

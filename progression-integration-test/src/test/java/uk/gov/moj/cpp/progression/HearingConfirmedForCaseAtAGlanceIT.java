@@ -4,12 +4,14 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetOrganisationById;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -18,6 +20,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
+import java.util.Arrays;
+
 import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
@@ -25,7 +29,6 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
@@ -44,11 +47,13 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
     @AfterClass
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
+        stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
     }
 
     @Before
     public void setUp() {
         DocumentGeneratorStub.stubDocumentCreate(STRING.next());
+        stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_WITHOUT_POSTCODE_JSON);
         HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
@@ -56,12 +61,13 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
         courtCentreId = randomUUID().toString();
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldUpdateCaseAtAGlance() throws Exception {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId, Arrays.asList(
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='"+ defendantId +"')]", notNullValue())
+        )));
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -80,8 +86,6 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseUpdatedMatchers);
-
-
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

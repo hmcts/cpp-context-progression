@@ -17,6 +17,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateDocumentTypeAccess;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
@@ -260,12 +261,15 @@ public class SummonsServiceTest {
 
     private CourtCentre generateCourtCentre() {
         return CourtCentre.courtCentre()
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .withName("Liverpool Crown Court")
-                .withRoomId(UUID.randomUUID())
+                .withRoomId(randomUUID())
                 .withRoomName("Legal room 1")
                 .withWelshName("Liverpool Crown Court")
                 .withWelshRoomName("Legal room 1")
+                .withAddress(Address.address()
+                        .withAddress1("Address1")
+                        .build())
                 .build();
     }
 }

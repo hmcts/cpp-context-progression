@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.apache.activemq.artemis.utils.JsonLoader.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -23,6 +24,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
 import uk.gov.justice.core.courts.Category;
@@ -72,6 +74,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -152,6 +155,8 @@ public class ProgressionServiceTest {
     private Requester requester;
     @Mock
     private ReferenceDataService referenceDataService;
+    @Mock
+    private ListingService listingService;
     @InjectMocks
     private ProgressionService progressionService;
     @Mock
@@ -512,6 +517,9 @@ public class ProgressionServiceTest {
                 .withRoomName("JK2Y7hu0Tc")
                 .withWelshName("3IpJDfdfhS")
                 .withWelshRoomName("hm60SAXokc")
+                .withAddress(Address.address()
+                        .withAddress1("Address1")
+                        .build())
                 .build();
     }
 
@@ -1085,6 +1093,32 @@ public class ProgressionServiceTest {
         assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
         assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
         assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldTransformCourtCentre() {
+        final UUID courtCentreId = randomUUID();
+        final String address1 = "ADDRESS1";
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
+                .add("address1", address1)
+                .build();
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withHearingDays(asList(HearingDay.hearingDay()
+                        .withSittingDay(ZonedDateTime.now()).build()))
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCentreId).build())
+                .build();
+
+        final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
+        assertThat(hearing.getCourtCentre().getAddress().getAddress1(), is(address1));
+        assertThat(hearing.getCourtCentre().getAddress().getAddress2(), nullValue());
+        assertThat(hearing.getCourtCentre().getAddress().getAddress3(), nullValue());
+        assertThat(hearing.getCourtCentre().getAddress().getAddress4(), nullValue());
+        assertThat(hearing.getCourtCentre().getAddress().getAddress5(), nullValue());
+        assertThat(hearing.getCourtCentre().getAddress().getPostcode(), nullValue());
     }
 
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, boolean youth) {

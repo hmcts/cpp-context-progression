@@ -360,12 +360,12 @@ public class SummonsService {
                 .withHearingDate(getCourtDate(earliestDate))
                 .withHearingTime(getCourtTime(earliestDate))
                 .withCourtAddress(SummonsAddress.summonsAddress()
-                        .withLine1(courtCentreJson.getString(ADDRESS_1, EMPTY))
-                        .withLine2(courtCentreJson.getString(ADDRESS_2, EMPTY))
-                        .withLine3(courtCentreJson.getString(ADDRESS_3, EMPTY))
-                        .withLine4(courtCentreJson.getString(ADDRESS_4, EMPTY))
-                        .withLine5(courtCentreJson.getString(ADDRESS_5, EMPTY))
-                        .withPostCode(courtCentreJson.getString(POSTCODE, EMPTY))
+                        .withLine1(courtCentreJson.getString(ADDRESS_1))
+                        .withLine2(courtCentreJson.getString(ADDRESS_2, null))
+                        .withLine3(courtCentreJson.getString(ADDRESS_3, null))
+                        .withLine4(courtCentreJson.getString(ADDRESS_4, null))
+                        .withLine5(courtCentreJson.getString(ADDRESS_5, null))
+                        .withPostCode(courtCentreJson.getString(POSTCODE, null))
                         .build())
                 .build();
     }
