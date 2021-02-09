@@ -133,6 +133,7 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     public static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
+    private static final String EMPTY = "";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -1114,10 +1115,10 @@ public class ProgressionServiceTest {
 
         final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
         assertThat(hearing.getCourtCentre().getAddress().getAddress1(), is(address1));
-        assertThat(hearing.getCourtCentre().getAddress().getAddress2(), nullValue());
-        assertThat(hearing.getCourtCentre().getAddress().getAddress3(), nullValue());
-        assertThat(hearing.getCourtCentre().getAddress().getAddress4(), nullValue());
-        assertThat(hearing.getCourtCentre().getAddress().getAddress5(), nullValue());
+        assertThat(hearing.getCourtCentre().getAddress().getAddress2(), is(EMPTY));
+        assertThat(hearing.getCourtCentre().getAddress().getAddress3(), is(EMPTY));
+        assertThat(hearing.getCourtCentre().getAddress().getAddress4(), is(EMPTY));
+        assertThat(hearing.getCourtCentre().getAddress().getAddress5(), is(EMPTY));
         assertThat(hearing.getCourtCentre().getAddress().getPostcode(), nullValue());
     }
 
