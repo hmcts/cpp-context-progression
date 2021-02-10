@@ -14,19 +14,14 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CommittingCourt;
-import uk.gov.justice.core.courts.ConfirmedHearing;
-import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingConfirmed;
-import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingExtended;
@@ -45,7 +40,6 @@ import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.transformer.HearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
@@ -53,10 +47,8 @@ import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransf
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -91,9 +83,6 @@ public class HearingResultEventProcessor {
 
     @Inject
     private ListingService listingService;
-
-    @Inject
-    private ReferenceDataService referenceDataService;
 
     @Inject
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
@@ -248,7 +237,6 @@ public class HearingResultEventProcessor {
                             .withName("progression.command.extend-hearing")
                             .withMetadataFrom(jsonEnvelope));
         });
-        generateSummons(nextHearingDetails.getHearingsMap(), hearing, nextHearingDetails.getNextHearings(), jsonEnvelope);
     }
 
     private void adjournCourtApplicationsToNewHearing(final JsonEnvelope event, final Hearing hearing, final List<UUID> shadowListedOffences) {
@@ -292,7 +280,6 @@ public class HearingResultEventProcessor {
                 .build();
     }
 
-
     private void listCourtHearings(final JsonEnvelope event, final List<HearingListingNeeds> hearingListingNeeds, final List<UUID> shadowListedOffences, final SeedingHearing seedingHearing) {
         if (isNotEmpty(hearingListingNeeds)) {
             final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
@@ -335,45 +322,6 @@ public class HearingResultEventProcessor {
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withRespondentCounsels(hearing.getRespondentCounsels())
                 .build();
-    }
-
-    private void generateSummons(final Map<UUID, Map<UUID, Map<UUID, Set<UUID>>>> hearingsMap, final Hearing hearing, final Map<UUID, NextHearing> nextHearings, final JsonEnvelope jsonEnvelope) {
-        LOGGER.info("Summons for extended or existing hearing from the current hearing :: {}", hearing.getId());
-        final Map<UUID, List<ConfirmedProsecutionCase>> confirmedHearings = nextHearingService.getConfirmedHearings(hearingsMap);
-        for (final Map.Entry<UUID, List<ConfirmedProsecutionCase>> hearingEntry : confirmedHearings.entrySet()) {
-            final UUID adjournedHearingId = hearingEntry.getKey();
-            final List<ConfirmedProsecutionCase> confirmedProsecutionCases = hearingEntry.getValue();
-            final NextHearing nextHearing = nextHearings.get(adjournedHearingId);
-            final List<ProsecutionCase> cases = progressionService.transformProsecutionCase(confirmedProsecutionCases, nextHearing.getListedStartDateTime().toLocalDate(), jsonEnvelope);
-
-            // update youth summons
-            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, cases);
-
-            // prepare summons data
-            final HearingConfirmed hearingConfirmed = HearingConfirmed.hearingConfirmed()
-                    .withConfirmedHearing(ConfirmedHearing.confirmedHearing()
-                            .withId(hearing.getId())
-                            .withType(nextHearing.getType())
-                            .withJurisdictionType(nextHearing.getJurisdictionType())
-                            .withExistingHearingId(adjournedHearingId)
-                            .withHearingDays(createHearingDays(nextHearing))
-                            .withCourtCentre(nextHearing.getCourtCentre())
-                            .withProsecutionCases(confirmedProsecutionCases)
-                            .build())
-                    .build();
-            progressionService.prepareSummonsDataForExtendHearing(jsonEnvelope, hearingConfirmed);
-        }
-    }
-
-    private List<HearingDay> createHearingDays(final NextHearing nextHearing) {
-        final List<HearingDay> hearingDays = new ArrayList<>();
-        if (nonNull(nextHearing.getListedStartDateTime())) {
-            hearingDays.add(HearingDay.hearingDay()
-                    .withSittingDay(nextHearing.getListedStartDateTime())
-                    .withListedDurationMinutes(nextHearing.getEstimatedMinutes())
-                    .build());
-        }
-        return hearingDays;
     }
 
     private Hearing retrieveHearing(final JsonEnvelope event, final UUID hearingId) {
