@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
@@ -326,6 +327,10 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> updateListDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, ConfirmedHearing confirmedHearing) {
+        if (isEmpty(listDefendantRequests)){
+            return Stream.empty();
+        }
+
         return apply(Stream.of(ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated()
                 .withDefendantRequests(listDefendantRequests)
                 .withConfirmedHearing(confirmedHearing)
@@ -333,6 +338,10 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> createListDefendantRequest(final ConfirmedHearing confirmedHearing) {
+        if (isEmpty(listDefendantRequests)){
+            return Stream.empty();
+        }
+
         return apply(Stream.of(ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated()
                 .withDefendantRequests(listDefendantRequests)
                 .withConfirmedHearing(confirmedHearing)

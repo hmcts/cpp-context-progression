@@ -96,6 +96,14 @@ public class PrepareSummonsDataHandlerTest {
 
     @Test
     public void shouldHandlePrepareSummonsDataForExtendedHearingEvent() throws EventStreamException {
+        final ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
+                .withDefendantId(randomUUID())
+                .build();
+
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(listDefendantRequest);
+
+        hearingAggregate.assignDefendantRequestToExtendHearing(randomUUID(), listDefendantRequests);
 
         final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing = createPrepareSummonsDataForExtendedHearing();
         hearingAggregate.createListDefendantRequest(prepareSummonsDataForExtendedHearing.getConfirmedHearing());
