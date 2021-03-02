@@ -124,7 +124,12 @@ public class DefendantMatchingEventListener {
     }
 
     private void associateMasterDefendantToDefendant(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId) {
-        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(prosecutionCaseId);
+        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findOptionalByCaseId(prosecutionCaseId);
+        if (isNull(prosecutionCaseEntity)){
+            LOGGER.warn("ProsecutionCase not found: {}", prosecutionCaseId);
+            return;
+        }
+
         final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
         if (isNull(prosecutionCase.getCaseStatus()) ||
                 !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
@@ -140,11 +145,12 @@ public class DefendantMatchingEventListener {
                 matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
                 matchDefendantCaseHearingEntity.setProsecutionCaseId(prosecutionCaseId);
                 matchDefendantCaseHearingEntity.setHearingId(hearingId);
-                matchDefendantCaseHearingEntity.setHearing(nonNull(hearingId) ?  hearingRepository.findBy(hearingId) : null);
+                matchDefendantCaseHearingEntity.setHearing(nonNull(hearingId) ? hearingRepository.findBy(hearingId) : null);
                 matchDefendantCaseHearingEntity.setProsecutionCase(prosecutionCaseRepository.findByCaseId(prosecutionCaseId));
             }
             matchDefendantCaseHearingRepository.save(matchDefendantCaseHearingEntity);
         }
+
     }
 
     private void updateMasterDefendant(UUID defendantId, UUID masterDefendantId, ProsecutionCase prosecutionCase) {

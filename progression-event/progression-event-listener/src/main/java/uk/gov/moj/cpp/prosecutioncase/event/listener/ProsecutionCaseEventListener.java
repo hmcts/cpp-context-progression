@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
@@ -180,9 +181,11 @@ public class ProsecutionCaseEventListener {
     public void caseNoteEdited(final JsonEnvelope event) {
         final CaseNoteEdited caseNotePinned = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteEdited.class);
         final CaseNoteEntity caseNoteEntity = caseNoteRepository.findBy(caseNotePinned.getCaseNoteId());
-        caseNoteEntity.setPinned(caseNotePinned.getIsPinned());
-        caseNoteRepository.save(caseNoteEntity);
-
+        if (nonNull(caseNoteEntity)) {
+            //check for null to prevent errors during EventReplay (auto generated uuid when case note added)
+            caseNoteEntity.setPinned(caseNotePinned.getIsPinned());
+            caseNoteRepository.save(caseNoteEntity);
+        }
     }
 
 }

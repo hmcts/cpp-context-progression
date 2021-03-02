@@ -223,9 +223,10 @@ public class DefendantMatchingEventListenerTest {
                 .build();
         prosecutionCaseEntityForMatchedDefendant2.setPayload(objectToJsonObjectConverter.convert(prosecutionCaseForMatchedDefendant2).toString());
 
-        when(prosecutionCaseRepository.findByCaseId(incomingProsecutionCaseId)).thenReturn(prosecutionCaseEntity);
-        when(prosecutionCaseRepository.findByCaseId(matchedProsecutionCaseId_1)).thenReturn(prosecutionCaseEntityForMatchedDefendant1);
-        when(prosecutionCaseRepository.findByCaseId(matchedProsecutionCaseId_2)).thenReturn(prosecutionCaseEntityForMatchedDefendant2);
+        when(prosecutionCaseRepository.findOptionalByCaseId(incomingProsecutionCaseId)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(matchedProsecutionCaseId_1)).thenReturn(prosecutionCaseEntityForMatchedDefendant1);
+        when(prosecutionCaseRepository.findOptionalByCaseId(matchedProsecutionCaseId_2)).thenReturn(prosecutionCaseEntityForMatchedDefendant2);
+
         final MasterDefendantIdUpdated event = MasterDefendantIdUpdated.masterDefendantIdUpdated()
                 .withDefendantId(incomingDefendantId)
                 .withProsecutionCaseId(incomingProsecutionCaseId)
@@ -274,6 +275,7 @@ public class DefendantMatchingEventListenerTest {
                 .build();
         incomingProsecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(incomingProsecutionCase).toString() );
         when(prosecutionCaseRepository.findByCaseId(incomingProsecutionCaseId)).thenReturn(incomingProsecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(incomingProsecutionCaseId)).thenReturn(incomingProsecutionCaseEntity);
 
         final ProsecutionCaseEntity matchedProsecutionCaseEntity = new ProsecutionCaseEntity();
         matchedProsecutionCaseEntity.setCaseId(matchedProsecutionCaseId_1);
@@ -283,6 +285,7 @@ public class DefendantMatchingEventListenerTest {
                 .build();
         matchedProsecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(matchedProsecutionCase).toString() );
         when(prosecutionCaseRepository.findByCaseId(matchedProsecutionCaseId_1)).thenReturn(matchedProsecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(matchedProsecutionCaseId_1)).thenReturn(matchedProsecutionCaseEntity);
 
         final MasterDefendantIdUpdated event = MasterDefendantIdUpdated.masterDefendantIdUpdated()
                 .withDefendantId(incomingDefendantId)

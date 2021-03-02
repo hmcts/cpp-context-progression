@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.persistence.NoResultException;
 import java.io.StringReader;
 import java.util.List;
 
@@ -92,8 +93,14 @@ public class HearingExtendedEventListener {
             prosecutionCasesToAdd.forEach(prosecutionCase -> prosecutionCase.getDefendants().forEach(defendant -> {
                 LOGGER.info("Remove entries from link table 'case_defendant_hearing' table for hearing id :{}, case id :{}, defendant id :{}",
                         hearingExtended.getIsPartiallyAllocated(), prosecutionCase.getId(), defendant.getId());
-                final CaseDefendantHearingEntity entity = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId());
-                caseDefendantHearingRepository.remove(entity);
+                try {
+                    final CaseDefendantHearingEntity entity = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId());
+                    caseDefendantHearingRepository.remove(entity);
+                }catch (NoResultException ex){
+                    //Handling NoResultException to prevent errors during EventReplay (dublicate call)
+                    LOGGER.error(String.format("CaseDefendantHearingEntity not found CaseId: %s DefendantId: %s HearingId: %s",
+                            hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId()), ex);
+                }
             }));
         }
     }

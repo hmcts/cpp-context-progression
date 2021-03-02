@@ -19,6 +19,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
 @ServiceComponent(EVENT_LISTENER)
 public class HearingMarkedAsDuplicateEventListener {
@@ -31,6 +32,8 @@ public class HearingMarkedAsDuplicateEventListener {
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
+    @Inject
+    private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
 
     @Handles("progression.event.hearing-marked-as-duplicate")
     public void hearingMarkedAsDuplicate(final Envelope<HearingMarkedAsDuplicate> event) {
@@ -56,8 +59,10 @@ public class HearingMarkedAsDuplicateEventListener {
             LOGGER.debug("received event progression.event.hearing-marked-as-duplicate-for-case hearingId: {} caseId:{}", hearingId, caseId);
         }
 
-        defendantIds.forEach(defendantId ->
-                caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId));
+        defendantIds.forEach(defendantId -> {
+                caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+                matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+        });
     }
 
 

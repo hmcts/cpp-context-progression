@@ -32,6 +32,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -48,6 +49,9 @@ public class HearingMarkedAsDuplicateEventListenerTest {
 
     @Mock
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    @Mock
+    private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
 
     @Captor
     private ArgumentCaptor<UUID> defendantArgumentCaptor;
@@ -111,6 +115,7 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         hearingMarkedAsDuplicateEventListener.hearingMarkedAsDuplicateForCase(envelopeForCase);
 
         verify(caseDefendantHearingRepository, times(2)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), any());
+        verify(matchDefendantCaseHearingRepository, times(2)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), any());
         assertThat(defendantArgumentCaptor.getAllValues().get(0), is(defendant1Id));
         assertThat(defendantArgumentCaptor.getAllValues().get(1), is(defendant2Id));
 

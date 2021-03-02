@@ -14,4 +14,6 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
 
     ProsecutionCaseEntity findByCaseId(UUID id);
 
+    ProsecutionCaseEntity findOptionalByCaseId(UUID id);
+
 }

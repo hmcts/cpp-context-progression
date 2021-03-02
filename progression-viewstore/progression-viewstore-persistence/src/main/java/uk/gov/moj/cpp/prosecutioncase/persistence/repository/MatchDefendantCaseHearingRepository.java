@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
+import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
 import org.apache.deltaspike.data.api.SingleResultType;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
@@ -24,4 +26,10 @@ public interface MatchDefendantCaseHearingRepository extends EntityRepository<Ma
 
     @Query(value = "from MatchDefendantCaseHearingEntity m where m.masterDefendantId IN  (?1) ")
     List<MatchDefendantCaseHearingEntity> findByMasterDefendantId(List<UUID> masterDefendantId);
+
+    @Modifying
+    @Query("delete from MatchDefendantCaseHearingEntity entity where entity.hearingId in (:hearingId) and entity.prosecutionCaseId in (:caseId) and entity.defendantId in (:defendantId)")
+    void removeByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
+                                                  @QueryParam("caseId") UUID caseId,
+                                                  @QueryParam("defendantId") UUID defendantId);
 }
