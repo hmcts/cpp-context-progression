@@ -30,6 +30,7 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingResultedCaseUpdatedIT extends AbstractIT {

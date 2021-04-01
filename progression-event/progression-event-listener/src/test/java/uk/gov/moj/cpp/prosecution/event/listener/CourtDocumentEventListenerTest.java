@@ -1,19 +1,29 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static java.time.ZonedDateTime.now;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.core.courts.CourtDocument.courtDocument;
+import static uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated.courtDocumentPrintTimeUpdated;
+import static uk.gov.justice.core.courts.Material.material;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -22,9 +32,11 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NowDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.CourtDocumentEventListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
@@ -32,8 +44,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +53,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,11 +66,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CourtDocumentEventListenerTest {
 
     public static final String CASE_DOCUMENT_ID = "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27";
+
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Mock
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Mock
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Mock
     private CourtDocumentRepository repository;
@@ -90,6 +105,9 @@ public class CourtDocumentEventListenerTest {
 
     @Captor
     private ArgumentCaptor<CourtDocumentMaterialEntity> argumentCaptorForCourtDocumentMaterialEntity;
+
+    @Captor
+    private ArgumentCaptor<Object> objectArgumentCaptor;
 
     @Mock
     private JsonObject payload;
@@ -201,7 +219,7 @@ public class CourtDocumentEventListenerTest {
         final JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject();
 
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
         setUpMockData(courtDocumentPayload, requestMessage);
         if (courtDocumentFinancialMeansValueNull) {
@@ -258,7 +276,7 @@ public class CourtDocumentEventListenerTest {
 
     private JsonEnvelope getCreateDocumentEnvelope(final JsonObject courtDocumentPayload) {
         return JsonEnvelope.envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
     }
 
@@ -273,6 +291,7 @@ public class CourtDocumentEventListenerTest {
                 UUID.fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"),
                 "TestPDF",
                 null,
+                null,
                 null, Arrays.asList("TestUser"));
         final List<Material> materialIds = Arrays.asList(material);
 
@@ -285,7 +304,7 @@ public class CourtDocumentEventListenerTest {
         when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
         when(documentCategory.getDefendantDocument()).thenReturn(defendantDocument);
         when(defendantDocument.getProsecutionCaseId()).thenReturn(randomUUID());
-        when(defendantDocument.getDefendants()).thenReturn(Collections.singletonList(randomUUID()));
+        when(defendantDocument.getDefendants()).thenReturn(singletonList(randomUUID()));
         when(objectToJsonObjectConverter.convert(any())).thenReturn(courtDocumentPayload);
         when(courtDocument.getMaterials()).thenReturn(materialIds);
     }
@@ -312,9 +331,9 @@ public class CourtDocumentEventListenerTest {
         eventListener.processCourtDocumentCreated(envelope);
         verify(repository).save(argumentCaptorForCourtDocumentEntity.capture());
         final CourtDocumentEntity entity = argumentCaptorForCourtDocumentEntity.getValue();
-        MatcherAssert.assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
+        assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
                 Matchers.is(applicationDocument.getProsecutionCaseId()));
-        MatcherAssert.assertThat(entity.getIndices().iterator().next().getApplicationId(),
+        assertThat(entity.getIndices().iterator().next().getApplicationId(),
                 Matchers.is(applicationDocument.getApplicationId()));
     }
 
@@ -340,9 +359,9 @@ public class CourtDocumentEventListenerTest {
         eventListener.processCourtDocumentCreated(envelope);
         verify(repository).save(argumentCaptorForCourtDocumentEntity.capture());
         final CourtDocumentEntity entity = argumentCaptorForCourtDocumentEntity.getValue();
-        MatcherAssert.assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
+        assertThat(entity.getIndices().iterator().next().getProsecutionCaseId(),
                 Matchers.is(applicationDocument.getProsecutionCaseId()));
-        MatcherAssert.assertThat(entity.getIndices().iterator().next().getApplicationId(),
+        assertThat(entity.getIndices().iterator().next().getApplicationId(),
                 Matchers.is(applicationDocument.getApplicationId()));
     }
 
@@ -372,10 +391,48 @@ public class CourtDocumentEventListenerTest {
 
         final CourtDocumentEntity entity = argumentCaptorForCourtDocumentEntity.getValue();
 
-        MatcherAssert.assertThat(entity.getIndices().size(), Matchers.is(2));
-        MatcherAssert.assertThat(entity.getIndices().iterator().next().getHearingId(), Matchers.is(nowDocument.getOrderHearingId()));
-        MatcherAssert.assertThat(entity.getIndices().iterator().next().getDefendantId(), Matchers.is(nowDocument.getDefendantId()));
+        assertThat(entity.getIndices().size(), Matchers.is(2));
+        assertThat(entity.getIndices().iterator().next().getHearingId(), Matchers.is(nowDocument.getOrderHearingId()));
+        assertThat(entity.getIndices().iterator().next().getDefendantId(), Matchers.is(nowDocument.getDefendantId()));
 
+    }
+
+    @Test
+    public void shouldProcessCourtDocumentPrinted() {
+        final ObjectToJsonObjectConverter jsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
+        final UUID courtDocumentId = randomUUID();
+        final UUID materialId = randomUUID();
+        final ZonedDateTime printedAt = now();
+        final CourtDocumentPrintTimeUpdated documentPrintTimeUpdated = courtDocumentPrintTimeUpdated()
+                .withCourtDocumentId(courtDocumentId)
+                .withMaterialId(materialId)
+                .withPrintedAt(printedAt)
+                .build();
+        final Envelope<CourtDocumentPrintTimeUpdated> envelope =
+                envelopeFrom(metadataWithRandomUUID("progression.event.court-document-print-time-updated"),
+                        documentPrintTimeUpdated);
+
+        final CourtDocument courtDocument = courtDocument()
+                .withCourtDocumentId(courtDocumentId)
+                .withDocumentTypeId(UUID.randomUUID())
+                .withMaterials(singletonList(material()
+                        .withId(materialId)
+                        .build()))
+                .build();
+
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setPayload(jsonObjectConverter.convert(courtDocument).toString());
+
+        when(repository.findBy(courtDocumentId)).thenReturn(courtDocumentEntity);
+        when(jsonObjectToObjectConverter.convert(anyObject(), eq(CourtDocument.class))).thenReturn(courtDocument);
+        when(objectToJsonObjectConverter.convert(anyObject())).thenReturn(jsonObject);
+        eventListener.processCourtDocumentPrinted(envelope);
+        verify(repository).save(courtDocumentEntity);
+        verify(objectToJsonObjectConverter).convert(objectArgumentCaptor.capture());
+        final CourtDocument savedCourtDocument = (CourtDocument)objectArgumentCaptor.getValue();
+        assertThat(savedCourtDocument.getCourtDocumentId(), is(documentPrintTimeUpdated.getCourtDocumentId()));
+        assertThat(savedCourtDocument.getMaterials().get(0).getPrintedDateTime(), is(printedAt));
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {

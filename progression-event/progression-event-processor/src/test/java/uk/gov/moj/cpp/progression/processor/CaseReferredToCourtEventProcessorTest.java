@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.MessageService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -67,7 +69,7 @@ public class CaseReferredToCourtEventProcessorTest {
     private final UUID offenceId = UUID.randomUUID();
     private final UUID defendantId = UUID.randomUUID();
     private final UUID referralReasonId = UUID.randomUUID();
-    
+
     @InjectMocks
     private CasesReferredToCourtProcessor eventProcessor;
 
@@ -81,7 +83,7 @@ public class CaseReferredToCourtEventProcessorTest {
     private ListCourtHearingTransformer listCourtHearingTransformer;
 
     @Mock
-    private MessageService messageService ;
+    private MessageService messageService;
 
     @Mock
     private JsonEnvelope jsonEnvelope;
@@ -113,9 +115,11 @@ public class CaseReferredToCourtEventProcessorTest {
     @Mock
     private ProgressionService progressionService;
 
-    @Rule
-    public ExpectedException expectedException =ExpectedException.none();
+    @Mock
+    private SummonsHearingRequestService summonsHearingRequestService;
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void initMocks() {
@@ -126,10 +130,10 @@ public class CaseReferredToCourtEventProcessorTest {
     public void shouldHandleCasesReferredToCourtEventMessage() throws Exception {
         // Setup
         SjpCourtReferral sjpCourtReferral = getCourtReferral();
-        
-        ListCourtHearing listCourtHearing= ListCourtHearing.listCourtHearing().build();
-        ProsecutionCase prosecutionCase=ProsecutionCase.prosecutionCase().build();
-        CourtDocument courtDocument=CourtDocument.courtDocument().build();
+
+        ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().build();
+        CourtDocument courtDocument = CourtDocument.courtDocument().build();
 
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
@@ -157,9 +161,10 @@ public class CaseReferredToCourtEventProcessorTest {
 
         //When
         this.eventProcessor.process(jsonEnvelope);
-        verify(listingService).listCourtHearing(jsonEnvelope,listCourtHearing);
+        verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
         verify(progressionService).createProsecutionCases(any(), any());
         verify(progressionService).createCourtDocument(any(), any());
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), any(), any(UUID.class));
     }
 
     @Test
@@ -182,7 +187,7 @@ public class CaseReferredToCourtEventProcessorTest {
         //When
         this.eventProcessor.process(jsonEnvelope);
 
-        verify(messageService).sendMessage(any(JsonEnvelope.class),any(JsonObject.class),any(String.class));
+        verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
     }
@@ -202,13 +207,13 @@ public class CaseReferredToCourtEventProcessorTest {
                         ()).build()));
 
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
-                (JsonEnvelope.class))).thenThrow(new ReferenceDataNotFoundException("Key","value"));
+                (JsonEnvelope.class))).thenThrow(new ReferenceDataNotFoundException("Key", "value"));
 
 
         //When
         this.eventProcessor.process(jsonEnvelope);
 
-        verify(messageService).sendMessage(any(JsonEnvelope.class),any(JsonObject.class),any(String.class));
+        verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
     }
@@ -226,17 +231,17 @@ public class CaseReferredToCourtEventProcessorTest {
         when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
                 (Json.createObjectBuilder().add("searchResults", Json.createArrayBuilder().add("some value").build
                         ()).build()));
-        
+
         //When
         this.eventProcessor.process(jsonEnvelope);
 
-        verify(messageService).sendMessage(any(JsonEnvelope.class),any(JsonObject.class),any(String.class));
+        verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
         verifyNoMoreInteractions(referredProsecutionCaseTransformer);
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
-        
+
     }
-    
+
     private SjpCourtReferral getCourtReferral() {
         final SjpReferral sjpReferral = SjpReferral.sjpReferral()
                 .withNoticeDate(LocalDate.of(2018, 01, 01))

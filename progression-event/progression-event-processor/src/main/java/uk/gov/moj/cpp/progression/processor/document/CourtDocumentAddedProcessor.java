@@ -26,6 +26,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
 import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
+import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -104,13 +105,13 @@ public class CourtDocumentAddedProcessor {
     }
 
     private boolean isNonDefenceUser(final JsonEnvelope envelope) {
-        final List<String> userGroups = usersGroupService.getUserGroupsForUser(envelope).stream().map(x -> x.getGroupName()).collect(Collectors.toList());
+        final List<String> userGroups = usersGroupService.getUserGroupsForUser(envelope).stream().map(UserGroupDetails::getGroupName).collect(Collectors.toList());
         return !userGroups.contains("Defence Lawyers") && !userGroups.contains("Advocates") && !userGroups.contains("Chambers Admin") && !userGroups.contains("Chambers Clerk");
     }
 
     private boolean hasReadPermissionForDefenceLawyers(final DocumentTypeRBAC documentTypeRBAC) {
         final List<String> readAccessGroups = documentTypeRBAC.getReadUserGroups();
-        return isNotEmpty(readAccessGroups) ? readAccessGroups.contains("Defence Lawyers") : false;
+        return isNotEmpty(readAccessGroups) && readAccessGroups.contains("Defence Lawyers");
 
     }
     private boolean isCaseDocumentOrDefendantDocument(final DocumentCategory documentCategory) {

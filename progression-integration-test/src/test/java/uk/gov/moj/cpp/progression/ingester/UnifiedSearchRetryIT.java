@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.ingester;
 import static com.jayway.jsonassert.JsonAssert.with;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-
 public class UnifiedSearchRetryIT extends AbstractIT {
     public static final Poller POLLER = new Poller(300, 1000L);
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
@@ -42,9 +42,13 @@ public class UnifiedSearchRetryIT extends AbstractIT {
         elasticSearchIndexRemoverUtil.deleteCaseIndex("crime_case_index");
     }
 
+    @After
+    public void teardown() throws IOException {
+        elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex("crime_case_index");
+    }
+
     @Test
     @SuppressWarnings("squid:S1607")
-//    @Ignore // Passing locally failing with standalone elastic server TODO: fix before master merge
     public void shouldRetryToIngestData() throws IOException {
         final String caseId = randomUUID().toString();
         final String applicationId = randomUUID().toString();
@@ -55,7 +59,7 @@ public class UnifiedSearchRetryIT extends AbstractIT {
 
             final List<String> deadLetterQueueMessages = deadLetterQueueBrowser.browse();
             if (!deadLetterQueueMessages.isEmpty()
-                    && validMessageFound(caseId, deadLetterQueueMessages)) {
+                    && validMessageFound(applicationId, deadLetterQueueMessages)) {
                 return Optional.of(deadLetterQueueMessages);
             }
             return empty();
@@ -63,7 +67,7 @@ public class UnifiedSearchRetryIT extends AbstractIT {
 
         assertThat(deadLetterQueueMessagesResult.isPresent(), is(true));
 
-        final String message = getRightDLQMessage(caseId, deadLetterQueueMessagesResult.get());
+        final String message = getRightDLQMessage(applicationId, deadLetterQueueMessagesResult.get());
 
         with(message)
                 .assertThat("courtApplication.id", is(applicationId), deadLetterQueueMessagesResult.get().toString())

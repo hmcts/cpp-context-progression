@@ -18,6 +18,7 @@
   "welshAddress5": "Caerdydd",
   "defaultStartTime": "10:30",
   "defaultDuration": "6",
+  "isWelsh": true,
   "courtrooms": [
     {
       "courtroomId": 294,

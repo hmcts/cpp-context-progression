@@ -11,7 +11,6 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -45,7 +44,7 @@ import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-@SuppressWarnings({"squid:S1067", "pmd:NullAssignment"})
+@SuppressWarnings({"squid:S1067", "pmd:NullAssignment", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1172"})
 public class ApplicationExtractTransformer {
 
     @Inject
@@ -80,7 +79,7 @@ public class ApplicationExtractTransformer {
                 .withReference(courtApplication.getApplicationReference())
                 .withHearings(getHearings(hearings))
                 .withCourtApplications(getCourtApplications(hearings, courtApplication))
-                .withIsAppealPending((nonNull(courtApplication.getType().getIsAppealApplication()) && courtApplication.getType().getIsAppealApplication()) &&
+                .withIsAppealPending((nonNull(courtApplication.getType().getAppealFlag()) && courtApplication.getType().getAppealFlag()) &&
                         (courtApplication.getApplicationStatus().equals(ApplicationStatus.DRAFT) || courtApplication.getApplicationStatus().equals(ApplicationStatus.LISTED))
                         || courtApplication.getApplicationStatus().equals(ApplicationStatus.EJECTED))
                 .build();
@@ -97,13 +96,8 @@ public class ApplicationExtractTransformer {
     }
 
     private CourtApplications mapCourtApplication(final CourtApplication courtApplication, final List<Hearing> hearings) {
-        final boolean applicationResponseAvailable = transformationHelper.isApplicationResponseAvailable(courtApplication.getRespondents());
         return CourtApplications.courtApplications()
-                .withApplicationType(courtApplication.getType().getApplicationType())
-                .withDecision(nonNull(courtApplication.getApplicationOutcome()) ? courtApplication.getApplicationOutcome().getApplicationOutcomeType().getDescription() : null)
-                .withDecisionDate(nonNull(courtApplication.getApplicationOutcome()) ? courtApplication.getApplicationOutcome().getApplicationOutcomeDate() : null)
-                .withResponse(applicationResponseAvailable ? transformationHelper.transformApplicationResponse(courtApplication.getRespondents()) : null)
-                .withResponseDate(applicationResponseAvailable ? transformationHelper.transformApplicationResponseDate(courtApplication.getRespondents()) : null)
+                .withApplicationType(courtApplication.getType().getType())
                 .withResults(courtApplication.getJudicialResults())
                 .withRepresentation(transformRepresentation(courtApplication, hearings))
                 .build();
@@ -188,21 +182,18 @@ public class ApplicationExtractTransformer {
     }
 
     private List<Respondent> getRespondents(final CourtApplication courtApplication) {
-
         return nonNull(courtApplication.getRespondents()) ? courtApplication.getRespondents().stream()
-                .map(respondent -> getRespondent(respondent.getPartyDetails(), courtApplication.getType().getRespondentSynonym()))
+                .map(this::getRespondent)
                 .collect(toList()): emptyList();
     }
-    private Respondent getRespondent(final CourtApplicationParty partyDetails, final String synonym){
+    private Respondent getRespondent(final CourtApplicationParty partyDetails){
         return Respondent.respondent()
                 .withName(getName(partyDetails.getPersonDetails(), partyDetails.getOrganisation()))
                 .withAddress(getAddress(partyDetails.getPersonDetails(), partyDetails.getOrganisation()))
-                .withSynonym(synonym)
                 .build();
     }
     private Applicant getApplicant(CourtApplication courtApplication) {
         return Applicant.applicant()
-                .withSynonym(courtApplication.getType().getApplicantSynonym())
                 .withName(getName(courtApplication.getApplicant().getPersonDetails(), courtApplication.getApplicant().getOrganisation()))
                 .withAddress(getAddress(courtApplication.getApplicant().getPersonDetails(), courtApplication.getApplicant().getOrganisation()))
                 .build();
@@ -244,27 +235,26 @@ public class ApplicationExtractTransformer {
         if (nonNull(ca.getApplicant().getRepresentationOrganisation()) || nonNull(ca.getRespondents())) {
             return Representation.representation()
                     .withApplicantRepresentation(nonNull(ca.getApplicant().getRepresentationOrganisation()) ?
-                            transformApplicantRepresentation(ca.getApplicant().getRepresentationOrganisation(),
-                                    ca.getType().getApplicantSynonym(), hearingsList) : null)
+                            transformApplicantRepresentation(ca.getApplicant().getRepresentationOrganisation(), hearingsList) : null)
                     .withRespondentRepresentation(nonNull(ca.getRespondents()) ?
-                            transformRespondentRepresentations(ca.getRespondents(), ca.getType().getRespondentSynonym(), hearingsList) : null)
+                            transformRespondentRepresentations(ca.getRespondents(), hearingsList) : null)
                     .build();
         }
         return null;
     }
 
-    private List<RespondentRepresentation> transformRespondentRepresentations(final List<CourtApplicationRespondent> respondents, final String synonym, final List<Hearing> hearingsList) {
-        return respondents.stream().filter(r -> nonNull(r.getPartyDetails()) && nonNull(r.getPartyDetails().getRepresentationOrganisation()))
-                .map(r -> transformRespondentRepresentation(r.getPartyDetails().getRepresentationOrganisation(), synonym, hearingsList)).collect(toList());
+
+    private List<RespondentRepresentation> transformRespondentRepresentations(final List<CourtApplicationParty> respondents, final List<Hearing> hearingsList) {
+        return respondents.stream().filter(r -> nonNull(r) && nonNull(r.getRepresentationOrganisation()))
+                .map(r -> transformRespondentRepresentation(r.getRepresentationOrganisation(), hearingsList)).collect(toList());
 
     }
 
-    private RespondentRepresentation transformRespondentRepresentation(final Organisation representationOrganisation, final String synonym, final List<Hearing> hearingsList) {
+    private RespondentRepresentation transformRespondentRepresentation(final Organisation representationOrganisation, final List<Hearing> hearingsList) {
         return RespondentRepresentation.respondentRepresentation()
                 .withAddress(getAddress(representationOrganisation.getAddress()))
                 .withName(representationOrganisation.getName())
                 .withContact(representationOrganisation.getContact())
-                .withSynonym(synonym)
                 .withRespondentCounsels(hearingsList.stream()
                         .filter(hearings -> nonNull(hearings.getRespondentCounsels()))
                         .flatMap(hearings -> hearings.getRespondentCounsels().stream())
@@ -272,12 +262,12 @@ public class ApplicationExtractTransformer {
                 .build();
     }
 
-    private ApplicantRepresentation transformApplicantRepresentation(final Organisation representationOrganisation, final String synonym, final List<Hearing> hearingsList) {
+    private ApplicantRepresentation transformApplicantRepresentation(final Organisation representationOrganisation, final List<Hearing> hearingsList) {
         return ApplicantRepresentation.applicantRepresentation()
                 .withAddress(getAddress(representationOrganisation.getAddress()))
                 .withContact(representationOrganisation.getContact())
                 .withName(representationOrganisation.getName())
-                .withSynonym(synonym)
+                //.withSynonym(synonym)
                 .withApplicantCounsels(hearingsList.stream()
                         .filter(hearings -> nonNull(hearings.getApplicantCounsels()))
                         .flatMap(hearings -> hearings.getApplicantCounsels().stream())

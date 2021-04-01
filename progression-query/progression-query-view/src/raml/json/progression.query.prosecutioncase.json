@@ -408,5 +408,50 @@
       "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
       "prosecutionAuthorityReference": "0fcca896"
     }
-  }
+  },
+  "relatedCases": [
+    {
+      "masterDefendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+      "cases": [
+        {
+          "caseId": "5a5c49f5-a5a8-440d-8912-fb83ed6c95f6",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "CPS-EM",
+            "prosecutionAuthorityId": "42880989-5d09-332e-a711-8797af06ecea",
+            "caseURN": "10GD7635820"
+          },
+          "caseStatus": "ACTIVE",
+          "offences": [
+            {
+              "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+              "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+              "offenceCode": "AAA",
+              "offenceTitle": "a title",
+              "offenceTitleWelsh": "a title in Welsh",
+              "offenceLegislation": "legislation",
+              "offenceLegislationWelsh": "legislation in Welsh",
+              "wording": "No Travel Card",
+              "wordingWelsh": "No Travel Card In Welsh",
+              "startDate": "2018-01-01",
+              "endDate": "2018-01-01",
+              "arrestDate": "2018-01-01",
+              "chargeDate": "2018-01-01",
+              "orderIndex": 1,
+              "count": 0,
+              "notifiedPlea": {
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "notifiedPleaDate": "2018-04-01",
+                "notifiedPleaValue": "NOTIFIED_GUILTY"
+              },
+              "offenceFacts": {
+                "vehicleRegistration": "AA12345",
+                "alcoholReadingAmount": "111",
+                "alcoholReadingMethodCode": "2222"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

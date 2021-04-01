@@ -26,7 +26,6 @@ import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-
 public class CourtApplicationCreatedIngesterIT extends AbstractIT {
 
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";

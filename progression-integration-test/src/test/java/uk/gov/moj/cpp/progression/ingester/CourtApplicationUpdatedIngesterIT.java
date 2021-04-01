@@ -9,6 +9,8 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
@@ -23,14 +25,15 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.io.IOException;
 import java.util.Optional;
 
+import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-
 public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
     private static final String UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.update-court-application.json";
@@ -58,10 +61,14 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
+    }
+
+    private void verifyMessageReceived(final MessageConsumer messageConsumer) {
+        assertTrue(retrieveMessageAsJsonObject(messageConsumer).isPresent());
     }
 
     @Test
@@ -69,10 +76,12 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         setUpCourtApplication(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
-                                           applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
+            updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
-        final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
+        final Matcher[] matchers = {withJsonPath("$.parties[?(@._party_type=='RESPONDENT')].firstName", hasItem(equalTo("updatedA")))};
 
         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
 
@@ -89,10 +98,12 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         setUpCourtApplication(CREATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
 
-        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,
-                applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
+            updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
+            verifyMessageReceived(messageConsumer);
+        }
 
-        final Matcher[] matchers = {withJsonPath("$.parties[*].firstName", hasItem(equalTo("updatedA")))};
+        final Matcher[] matchers = {withJsonPath("$.parties[?(@._party_type=='APPLICANT')].organisationName", hasItem(equalTo("updatedA")))};
 
         final Optional<JsonObject> courApplicationUpdatesResponseJsonObject = findBy(matchers);
 

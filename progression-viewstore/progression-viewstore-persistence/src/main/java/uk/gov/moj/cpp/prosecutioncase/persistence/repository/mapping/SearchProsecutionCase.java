@@ -4,7 +4,7 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 import static uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority.CPS;
 
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
@@ -31,7 +31,7 @@ public class SearchProsecutionCase {
     public static final String SPACE = " ";
     public static final String COMMA = ",";
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchProsecutionCase.class);
-    private static final DateTimeFormatter DOB_FORMATER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DOB_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     @Inject
     private SearchProsecutionCaseRepository searchRepository;
 
@@ -49,7 +49,7 @@ public class SearchProsecutionCase {
             searchEntity.setDefendantMiddleName(safeUnbox(builder.getDefendantMiddleName(), searchEntity.getDefendantMiddleName()));
             searchEntity.setDefendantLastName(safeUnbox(builder.getDefendantLastName(), searchEntity.getDefendantLastName()));
             final String dob = safeUnbox(builder.getDefendantDob(), searchEntity.getDefendantDob());
-            searchEntity.setDefendantDob(StringUtils.isNotEmpty(dob) ? DOB_FORMATER.format(LocalDate.parse(dob)) : StringUtils.EMPTY);
+            searchEntity.setDefendantDob(StringUtils.isNotEmpty(dob) ? DOB_FORMATTER.format(LocalDate.parse(dob)) : StringUtils.EMPTY);
             searchEntity.setProsecutor(safeUnbox(builder.getProsecutor(), searchEntity.getProsecutor()));
             searchEntity.setStatus(prosecutionCase.getCaseStatus());
             searchEntity.setStandaloneApplication(false);
@@ -106,21 +106,21 @@ public class SearchProsecutionCase {
         return searchEntity;
     }
 
-    private String buildProsecutorFromApplicationRespondents(final List<CourtApplicationRespondent> respondents) {
+    private String buildProsecutorFromApplicationRespondents(final List<CourtApplicationParty> respondents) {
 
         return respondents.stream().map(respondent -> {
             String result = StringUtils.EMPTY;
 
-            if (Objects.nonNull(respondent.getPartyDetails())) {
-                final uk.gov.justice.core.courts.Person respondentPerson = respondent.getPartyDetails().getPersonDetails();
+            if (Objects.nonNull(respondent.getPersonDetails())) {
+                final uk.gov.justice.core.courts.Person respondentPerson = respondent.getPersonDetails();
                 if (Objects.nonNull(respondentPerson)) {
                     result = defaultString(respondentPerson.getFirstName()).concat(SPACE);
                     result = result.concat(defaultString(respondentPerson.getMiddleName())).concat(SPACE);
                     result = result.concat(defaultString(respondentPerson.getLastName()));
                 }
 
-                if (Objects.nonNull(respondent.getPartyDetails().getOrganisation())) {
-                    result = respondent.getPartyDetails().getOrganisation().getName();
+                if (Objects.nonNull(respondent.getOrganisation())) {
+                    result = respondent.getOrganisation().getName();
                 }
             }
 
@@ -160,7 +160,7 @@ public class SearchProsecutionCase {
             buildDefendantName(defendant, searchEntity);
             final String defendantDob = safeUnbox(getDob(defendant.getPerson()), searchEntity.getDefendantDob());
             searchEntity.setDefendantDob(StringUtils.isNotEmpty(defendantDob)
-                    ? DOB_FORMATER.format(LocalDate.parse(defendantDob)) : StringUtils.EMPTY);
+                    ? DOB_FORMATTER.format(LocalDate.parse(defendantDob)) : StringUtils.EMPTY);
             searchEntity.setProsecutor(CPS.getDescription());
             searchEntity.setStatus(caseProgressionDetail.getStatus() != null ?
                     caseProgressionDetail.getStatus().name() : searchEntity.getStatus());

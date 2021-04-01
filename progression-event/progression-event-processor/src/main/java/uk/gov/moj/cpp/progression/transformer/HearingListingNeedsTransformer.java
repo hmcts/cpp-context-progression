@@ -15,17 +15,22 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -44,22 +49,47 @@ public class HearingListingNeedsTransformer {
     @Inject
     private ProvisionalBookingServiceAdapter provisionalBookingServiceAdapter;
 
+    @Inject
+    private HearingResultHelper hearingResultHelper;
+
+    public List<UUID> extractBookingReferences(final List<CourtApplication> courtApplications) {
+
+        final List<JudicialResult> judicialResults = courtApplications.stream()
+                .flatMap(courtApplication -> hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication).stream())
+                .collect(Collectors.toList());
+
+        return judicialResults.stream()
+                .map(JudicialResult::getNextHearing)
+                .filter(Objects::nonNull)
+                .map(NextHearing::getBookingReference)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
     public List<HearingListingNeeds> transform(final Hearing hearing) {
-        final List<UUID> bookingReferences = hearingBookingReferenceListExtractor.extractBookingReferences(hearing.getCourtApplications());
+        final List<UUID> bookingReferences = extractBookingReferences(hearing.getCourtApplications());
         final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap = provisionalBookingServiceAdapter.getSlots(bookingReferences);
         final Map<String, HearingListingNeeds> hearingListingNeedsMap = new HashMap<>();
 
         hearing.getCourtApplications().forEach(courtApplication -> {
-            final ProsecutionCase linkedProsecutionCase = retrieveProsecutionCase(hearing.getProsecutionCases(), courtApplication.getLinkedCaseId());
+            final List<JudicialResult> judicialResults = hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication);
+            Optional.ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                    .forEach(courtApplicationCase -> judicialResults.forEach(
+                            judicialResult -> transform(courtApplication,
+                                    judicialResult,
+                                    hearingListingNeedsMap,
+                                    bookingReferenceCourtScheduleIdMap,
+                                    hearing.getJudiciary(),
+                                    hearing.getHearingLanguage())));
 
-            if (isNotEmpty(courtApplication.getJudicialResults())) {
-                courtApplication.getJudicialResults().forEach(
+            if (nonNull(courtApplication.getCourtOrder())) {
+                judicialResults.forEach(
                         judicialResult -> transform(courtApplication,
                                 judicialResult,
                                 hearingListingNeedsMap,
                                 bookingReferenceCourtScheduleIdMap,
                                 hearing.getJudiciary(),
-                                linkedProsecutionCase,
                                 hearing.getHearingLanguage()));
             }
         });
@@ -76,39 +106,26 @@ public class HearingListingNeedsTransformer {
 
     private HearingListingNeeds getUpdatedHearingListingNeeds(final HearingListingNeeds hearingListingNeeds) {
         return HearingListingNeeds.hearingListingNeeds()
-                            .withId(hearingListingNeeds.getId())
-                            .withCourtApplications(getList(hearingListingNeeds.getCourtApplications()))
-                            .withProsecutionCases(getList(hearingListingNeeds.getProsecutionCases()))
-                            .withCourtCentre(hearingListingNeeds.getCourtCentre())
-                            .withEstimatedMinutes(hearingListingNeeds.getEstimatedMinutes())
-                            .withType(hearingListingNeeds.getType())
-                            .withJurisdictionType(hearingListingNeeds.getJurisdictionType())
-                            .withEarliestStartDateTime(hearingListingNeeds.getEarliestStartDateTime())
-                            .withReportingRestrictionReason(hearingListingNeeds.getReportingRestrictionReason())
-                            .withDefendantListingNeeds(getList(hearingListingNeeds.getDefendantListingNeeds()))
-                            .withJudiciary(hearingListingNeeds.getJudiciary())
-                            .withListingDirections(hearingListingNeeds.getListingDirections())
-                            .withCourtApplicationPartyListingNeeds(getList(hearingListingNeeds.getCourtApplicationPartyListingNeeds()))
-                            .withListedStartDateTime(hearingListingNeeds.getListedStartDateTime())
-                            .withProsecutorDatesToAvoid(hearingListingNeeds.getProsecutorDatesToAvoid())
-                            .withEndDate(hearingListingNeeds.getEndDate())
-                            .withBookingReference(hearingListingNeeds.getBookingReference())
-                            .withWeekCommencingDate(hearingListingNeeds.getWeekCommencingDate())
-                            .withBookedSlots(hearingListingNeeds.getBookedSlots())
-                            .build();
-    }
-
-    private ProsecutionCase retrieveProsecutionCase(final List<ProsecutionCase> prosecutionCases, final UUID linkedProsecutionCase) {
-        if (isNull(linkedProsecutionCase)) {
-            return null;
-        }
-        if (isNotEmpty(prosecutionCases)) {
-            return prosecutionCases.stream()
-                    .filter(prosecutionCase -> prosecutionCase.getId().equals(linkedProsecutionCase))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Linked Prosecution Case is not available in the hearing"));
-        }
-        return null;
+                .withId(hearingListingNeeds.getId())
+                .withCourtApplications(getList(hearingListingNeeds.getCourtApplications()))
+                .withProsecutionCases(getList(hearingListingNeeds.getProsecutionCases()))
+                .withCourtCentre(hearingListingNeeds.getCourtCentre())
+                .withEstimatedMinutes(hearingListingNeeds.getEstimatedMinutes())
+                .withType(hearingListingNeeds.getType())
+                .withJurisdictionType(hearingListingNeeds.getJurisdictionType())
+                .withEarliestStartDateTime(hearingListingNeeds.getEarliestStartDateTime())
+                .withReportingRestrictionReason(hearingListingNeeds.getReportingRestrictionReason())
+                .withDefendantListingNeeds(getList(hearingListingNeeds.getDefendantListingNeeds()))
+                .withJudiciary(hearingListingNeeds.getJudiciary())
+                .withListingDirections(hearingListingNeeds.getListingDirections())
+                .withCourtApplicationPartyListingNeeds(getList(hearingListingNeeds.getCourtApplicationPartyListingNeeds()))
+                .withListedStartDateTime(hearingListingNeeds.getListedStartDateTime())
+                .withProsecutorDatesToAvoid(hearingListingNeeds.getProsecutorDatesToAvoid())
+                .withEndDate(hearingListingNeeds.getEndDate())
+                .withBookingReference(hearingListingNeeds.getBookingReference())
+                .withWeekCommencingDate(hearingListingNeeds.getWeekCommencingDate())
+                .withBookedSlots(hearingListingNeeds.getBookedSlots())
+                .build();
     }
 
     private void transform(final CourtApplication courtApplication,
@@ -116,7 +133,6 @@ public class HearingListingNeedsTransformer {
                            final Map<String, HearingListingNeeds> hearingListingNeedsMap,
                            final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap,
                            final List<JudicialRole> judiciaries,
-                           final ProsecutionCase linkedProsecutionCase,
                            final HearingLanguage hearingLanguage) {
         if (isNull(judicialResult.getNextHearing()) || nonNull(judicialResult.getNextHearing().getExistingHearingId())) {
             return;
@@ -148,9 +164,6 @@ public class HearingListingNeedsTransformer {
         final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeeds = createCourtApplicationPartyListingNeeds(courtApplication, hearingLanguage);
         hearingListingNeeds.getCourtApplications().add(newCourtApplication);
         hearingListingNeeds.getCourtApplicationPartyListingNeeds().addAll(courtApplicationPartyListingNeeds);
-        if (nonNull(linkedProsecutionCase)) {
-            hearingListingNeeds.getProsecutionCases().add(linkedProsecutionCase);
-        }
     }
 
     private List<CourtApplicationPartyListingNeeds> createCourtApplicationPartyListingNeeds(final CourtApplication courtApplication, final HearingLanguage hearingLanguage) {
@@ -165,10 +178,10 @@ public class HearingListingNeedsTransformer {
         }
         if (isNotEmpty(courtApplication.getRespondents())) {
             courtApplication.getRespondents().forEach(courtApplicationRespondent -> {
-                if (nonNull(courtApplicationRespondent.getPartyDetails().getProsecutingAuthority())) {
+                if (nonNull(courtApplicationRespondent.getProsecutingAuthority())) {
                     final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds = CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
                             .withCourtApplicationId(courtApplication.getId())
-                            .withCourtApplicationPartyId(courtApplicationRespondent.getPartyDetails().getId())
+                            .withCourtApplicationPartyId(courtApplicationRespondent.getId())
                             .withHearingLanguageNeeds(HearingLanguageNeeds.valueOf(hearingLanguage.name()))
                             .build();
                     courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);
@@ -180,25 +193,7 @@ public class HearingListingNeedsTransformer {
 
     private CourtApplication createApplication(final CourtApplication courtApplication) {
         return CourtApplication.courtApplication()
-                .withId(courtApplication.getId())
-                .withApplicant(courtApplication.getApplicant())
-                .withRespondents(courtApplication.getRespondents())
-                .withType(courtApplication.getType())
-                .withApplicationStatus(courtApplication.getApplicationStatus())
-                .withLinkedCaseId(courtApplication.getLinkedCaseId())
-                .withApplicationOutcome(courtApplication.getApplicationOutcome())
-                .withApplicationReference(courtApplication.getApplicationReference())
-                .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
-                .withParentApplicationId(courtApplication.getParentApplicationId())
-                .withApplicationParticulars(courtApplication.getApplicationParticulars())
-                .withCourtApplicationPayment(courtApplication.getCourtApplicationPayment())
-                .withOrderingCourt(courtApplication.getOrderingCourt())
-                .withApplicationDecisionSoughtByDate(courtApplication.getApplicationDecisionSoughtByDate())
-                .withBreachedOrder(courtApplication.getBreachedOrder())
-                .withBreachedOrderDate(courtApplication.getBreachedOrderDate())
-                .withDueDate(courtApplication.getDueDate())
-                .withRemovalReason(courtApplication.getRemovalReason())
+                .withValuesFrom(courtApplication)
                 .build();
     }
 
@@ -246,7 +241,7 @@ public class HearingListingNeedsTransformer {
                 .toString();
     }
 
-    private  <T> List<T> getList(final List<T> list) {
+    private <T> List<T> getList(final List<T> list) {
         return isNotEmpty(list) ? list : null;
     }
 }

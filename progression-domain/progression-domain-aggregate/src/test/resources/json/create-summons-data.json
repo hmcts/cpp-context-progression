@@ -8,5 +8,6 @@
     "welshName": "3IpJDfdfhS",
     "welshRoomName": "hm60SAXokc"
   },
-  "confirmedProsecutionCaseIds": [{"id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27", "confirmedDefendantIds":  ["e1d32d9d-29ec-4934-a932-22a50f223966"]}]
+  "confirmedProsecutionCaseIds": [{"id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27", "confirmedDefendantIds":  ["e1d32d9d-29ec-4934-a932-22a50f223966"]}],
+  "confirmedApplicationIds": null
 }

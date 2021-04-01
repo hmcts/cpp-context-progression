@@ -2,10 +2,14 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.BooleanUtils.toBooleanDefaultIfNull;
+import static uk.gov.justice.core.courts.CourtDocument.courtDocument;
+import static uk.gov.justice.core.courts.Material.material;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
 import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -13,8 +17,10 @@ import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
@@ -23,6 +29,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +46,9 @@ public class CourtDocumentEventListener {
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Inject
     private CourtDocumentRepository repository;
@@ -62,15 +72,32 @@ public class CourtDocumentEventListener {
         }
     }
 
-
-
-
     @Handles("progression.event.court-document-updated")
     public void processCourtDocumentUpdated(final JsonEnvelope event) {
-
         final CourtDocumentUpdated courtDocumentUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtDocumentUpdated.class);
-
         repository.save(getCourtDocumentEntity(courtDocumentUpdated.getCourtDocument()));
+    }
+
+    @Handles("progression.event.court-document-print-time-updated")
+    public void processCourtDocumentPrinted(final Envelope<CourtDocumentPrintTimeUpdated> event) {
+        final CourtDocumentPrintTimeUpdated courtDocumentPrintTimeUpdated = event.payload();
+        final CourtDocumentEntity courtDocumentEntity = repository.findBy(courtDocumentPrintTimeUpdated.getCourtDocumentId());
+
+        if (nonNull(courtDocumentEntity)) {
+            final UUID materialId = courtDocumentPrintTimeUpdated.getMaterialId();
+            final CourtDocument courtDocument = jsonObjectConverter.convert(stringToJsonObjectConverter.convert(courtDocumentEntity.getPayload()), CourtDocument.class);
+            final ZonedDateTime printedAt = courtDocumentPrintTimeUpdated.getPrintedAt();
+            final List<Material> materialList = courtDocument.getMaterials().stream()
+                    .map(material -> material.getId().equals(materialId) ?
+                            material().withValuesFrom(material).withPrintedDateTime(printedAt).build() : material)
+                    .collect(toList());
+            final CourtDocument updatedCourtDocument = courtDocument()
+                    .withValuesFrom(courtDocument)
+                    .withMaterials(materialList)
+                    .build();
+            courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtDocument).toString());
+            repository.save(courtDocumentEntity);
+        }
     }
 
     private CourtDocumentEntity getCourtDocumentEntity(final CourtDocument courtDocument) {

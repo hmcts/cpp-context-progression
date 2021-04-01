@@ -31,12 +31,14 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.time.LocalDate;
 
@@ -44,6 +46,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ApplicationAtAGlanceIT extends AbstractIT {
@@ -53,6 +56,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-aaag.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private static final String DOCUMENT_TEXT = STRING.next();
 
     private String userId;
     private String caseId;
@@ -64,6 +68,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private String applicantReceivedDate;
     private String applicationType;
     private Boolean appeal;
+    private Boolean applicantAppellantFlag;
     private String paymentReference;
     private String applicantSynonym;
     private String applicantFirstName;
@@ -90,9 +95,14 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private String respondentRepresentativeFirstName;
     private String respondentRepresentativeLastName;
     private String respondentRepresentativePosition;
+    private String prosecutionCaseId;
+    private String prosecutionAuthorityId;
+    private String prosecutionAuthorityCode;
+    private String prosecutionAuthorityReference;
 
     @Before
     public void setUp() {
+        stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
         setupData();
     }
@@ -120,6 +130,15 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         final String linkedApplicationId = courtApplicationId;
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, firstApplicationId);
         verifyLinkedApplications(firstApplicationId, linkedApplicationId);
+    }
+
+    @Test
+    public void shouldVerifyLinkedCasesInApplicationAtAGlance() throws Exception {
+        doReferCaseToCourtAndVerify();
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        doHearingConfirmedAndVerify();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
+        verifyApplicationAtAGlance(courtApplicationId);
     }
 
     private void doReferCaseToCourtAndVerify() throws Exception {
@@ -158,6 +177,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 applicantReceivedDate,
                 applicationType,
                 appeal,
+                applicantAppellantFlag,
                 paymentReference,
                 applicantSynonym,
                 applicantFirstName,
@@ -184,6 +204,10 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 respondentRepresentativeFirstName,
                 respondentRepresentativeLastName,
                 respondentRepresentativePosition,
+                prosecutionCaseId,
+                prosecutionAuthorityId,
+                prosecutionAuthorityCode,
+                prosecutionAuthorityReference,
                 parentApplicationId,
                 filename);
 
@@ -205,7 +229,16 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.applicationDetails.applicationReceivedDate", equalTo(applicantReceivedDate)),
                                 withJsonPath("$.applicationDetails.applicationType", equalTo(applicationType)),
                                 withJsonPath("$.applicationDetails.appeal", equalTo(appeal)),
+                                withJsonPath("$.applicationDetails.applicantAppellantFlag", equalTo(applicantAppellantFlag)),
                                 withJsonPath("$.applicationDetails.feePayable", equalTo(false)),
+                                withJsonPath("$.applicationDetails.aagResults.length()", equalTo(1)),
+                                withJsonPath("$.applicationDetails.aagResults[0].id", equalTo("f8e926eb-704a-457a-a794-8c3ad40d3113")),
+                                withJsonPath("$.applicationDetails.aagResults[0].label", equalTo("wording for results")),
+                                withJsonPath("$.applicationDetails.aagResults[0].orderedDate", equalTo("2019-01-01")),
+                                withJsonPath("$.applicationDetails.aagResults[0].lastSharedDateTime", equalTo("2019-02-01")),
+                                withJsonPath("$.applicationDetails.aagResults[0].amendmentDate", equalTo("2019-03-01")),
+                                withJsonPath("$.applicationDetails.aagResults[0].amendmentReason", equalTo("wording for amendment")),
+                                withJsonPath("$.applicationDetails.aagResults[0].amendedBy", equalTo("delegatedPowers a delegatedPowers b")),
                                 withJsonPath("$.applicationDetails.paymentReference", equalTo(paymentReference)),
                                 withJsonPath("$.applicantDetails.address.address1", equalTo(applicantAddress1)),
                                 withJsonPath("$.applicantDetails.address.address2", equalTo(applicantAddress2)),
@@ -214,11 +247,10 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.applicantDetails.address.address5", equalTo(applicantAddress5)),
                                 withJsonPath("$.applicantDetails.address.postcode", equalTo(applicantPostCode)),
                                 withJsonPath("$.applicantDetails.interpreterLanguageNeeds", equalTo(interpreterLanguageNeeds)),
-                                withJsonPath("$.applicantDetails.applicantSynonym", equalTo(applicantSynonym)),
                                 withJsonPath("$.applicantDetails.name", equalTo(format("%s %s", applicantFirstName, applicantLastName))),
                                 withJsonPath("$.applicantDetails.representation", equalTo(applicantRepresentation)),
-                                withJsonPath("$.applicantDetails.remandStatus", equalTo(applicantRemandStatus)),
                                 withJsonPath("$.respondentDetails[0].name", equalTo(respondentOrganisationName)),
+                                withJsonPath("$.respondentDetails.length()", equalTo(2)),
                                 withJsonPath("$.respondentDetails[0].address.address1", equalTo(respondentOrganisationAddress1)),
                                 withJsonPath("$.respondentDetails[0].address.address2", equalTo(respondentOrganisationAddress2)),
                                 withJsonPath("$.respondentDetails[0].address.address3", equalTo(respondentOrganisationAddress3)),
@@ -226,7 +258,23 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.respondentDetails[0].address.address5", equalTo(respondentOrganisationAddress5)),
                                 withJsonPath("$.respondentDetails[0].address.postcode", equalTo(respondentOrganisationPostcode)),
                                 withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativeName", equalTo(format("%s %s", respondentRepresentativeFirstName, respondentRepresentativeLastName))),
-                                withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativePosition", equalTo(respondentRepresentativePosition))
+                                withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativePosition", equalTo(respondentRepresentativePosition)),
+                                withJsonPath("$.respondentDetails[1].name", equalTo("David lloyd")),
+                                withJsonPath("$.respondentDetails[1].address.address1", equalTo("44, Wilson Patten Street")),
+                                withJsonPath("$.linkedCases[0].prosecutionCaseId", equalTo(prosecutionCaseId)),
+                                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
+                                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
+                                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))
+//                                withJsonPath("$.linkedCases[0].offences.length()", equalTo(1)),
+//                                withJsonPath("$.linkedCases[0].offences[0].wording", equalTo("Some offence wording"))
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults.length()", equalTo(1)),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].id", equalTo("f8e926eb-704a-457a-a794-8c3ad40d3113")),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].label", equalTo("wording for linked case results")),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].orderedDate", equalTo("2019-01-01")),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].lastSharedDateTime", equalTo("2019-02-01")),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].amendmentDate", equalTo("2019-03-01")),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].amendmentReason", equalTo("wording for linked case amendment")),
+//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].amendedBy", equalTo("scott dale"))
                         )));
     }
 
@@ -258,6 +306,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         applicantReceivedDate = now().toLocalDate().toString();
         applicationType = STRING.next();
         appeal = BOOLEAN.next();
+        applicantAppellantFlag = BOOLEAN.next();
         paymentReference = STRING.next();
         applicantSynonym = STRING.next();
         applicantFirstName = STRING.next();
@@ -284,7 +333,10 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         respondentRepresentativeFirstName = STRING.next();
         respondentRepresentativeLastName = STRING.next();
         respondentRepresentativePosition = STRING.next();
+        prosecutionCaseId = randomUUID().toString();
+        prosecutionAuthorityId = randomUUID().toString();
+        prosecutionAuthorityCode = STRING.next();
+        prosecutionAuthorityReference = STRING.next();
     }
-
 }
 

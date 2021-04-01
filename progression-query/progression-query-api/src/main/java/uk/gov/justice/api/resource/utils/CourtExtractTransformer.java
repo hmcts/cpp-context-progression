@@ -14,12 +14,7 @@ import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.AttendanceType;
 import uk.gov.justice.core.courts.CompanyRepresentative;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationOutcome;
-import uk.gov.justice.core.courts.CourtApplicationOutcomeType;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtApplicationResponse;
-import uk.gov.justice.core.courts.CourtApplicationResponseType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.DefendantAttendance;
@@ -72,7 +67,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3457", "squid:S1612", "squid:S3655", "squid:S2259", "squid:S1188", "squid:S2789", "squid:S1067", "squid:MethodCyclomaticComplexity", "pmd:NullAssignment"})
+@SuppressWarnings({"squid:S3457", "squid:S1612", "squid:S3655", "squid:S2259", "squid:S1188", "squid:S2789", "squid:S1067", "squid:MethodCyclomaticComplexity", "pmd:NullAssignment", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1172"})
 public class CourtExtractTransformer {
 
     public static final String NOT_PRESENT = "Not present";
@@ -114,7 +109,7 @@ public class CourtExtractTransformer {
                 .collect(Collectors.toList());
 
         if (caseDefendant.isPresent() && masterDefendantId.isPresent()) {
-            extractHearingDetails(hearingsAtAGlance, fromString(defendantId), masterDefendantId.get(), userId, courtExtract, defendantBuilder, hearingsList, caseDefendant.get());
+            extractHearingDetails(hearingsAtAGlance, fromString(defendantId), userId, courtExtract, defendantBuilder, hearingsList, caseDefendant.get());
         }
 
         if (isNotEmpty(hearingsAtAGlance.getCourtApplications())) {
@@ -160,7 +155,7 @@ public class CourtExtractTransformer {
         LOGGER.info("Hearings {}", isNotEmpty(defendantHearings.getHearingIds()) ? defendantHearings.getHearingIds() : "No hearings present");
 
         if (isNotEmpty(hearingsList)) {
-            extractHearingDetails(hearingsAtAGlance, fromString(defendantId), caseDefendant.get().getMasterDefendantId(), userId, ejectExtract, defendantBuilder, hearingsList, caseDefendant.get());
+            extractHearingDetails(hearingsAtAGlance, fromString(defendantId), userId, ejectExtract, defendantBuilder, hearingsList, caseDefendant.get());
         } else {
             ejectExtract.withDefendant(transformDefendantWithoutHearingDetails(caseDefendant.get(), defendantBuilder));
             ejectExtract.withProsecutingAuthority(transformationHelper.transformProsecutingAuthority(hearingsAtAGlance.getProsecutionCaseIdentifier(), userId));
@@ -174,8 +169,10 @@ public class CourtExtractTransformer {
         return ejectExtract.build();
     }
 
-    private void extractHearingDetails(final GetHearingsAtAGlance hearingsAtAGlance, final UUID defendantId, final UUID masterDefendantId, final UUID userId, final CourtExtractRequested.Builder courtExtract,
+    private void extractHearingDetails(final GetHearingsAtAGlance hearingsAtAGlance, final UUID defendantId, final UUID userId, final CourtExtractRequested.Builder courtExtract,
                                        final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Defendant caseDefendant) {
+        final UUID masterDefendantId = caseDefendant.getMasterDefendantId();
+
         final Hearings latestHearing = hearingsList.size() > 1 ? transformationHelper.getLatestHearings(hearingsList) : hearingsList.get(0);
 
         courtExtract.withDefendant(transformDefendants(latestHearing.getDefendants(), defendantId, masterDefendantId, defendantBuilder, hearingsList, caseDefendant));
@@ -200,13 +197,9 @@ public class CourtExtractTransformer {
 
         return applicationsExtractList.stream()
                 .map(ca -> CourtApplications.courtApplications()
-                        .withDecision(ca.getApplicationOutcome() != null ? ca.getApplicationOutcome().getApplicationOutcomeType().getDescription() : null)
-                        .withDecisionDate(ca.getApplicationOutcome() != null ? ca.getApplicationOutcome().getApplicationOutcomeDate() : null)
-                        .withResponse(transformationHelper.isApplicationResponseAvailable(ca.getRespondents()) ? transformationHelper.transformApplicationResponse(ca.getRespondents()) : null)
-                        .withResponseDate(transformationHelper.isApplicationResponseAvailable(ca.getRespondents()) ? transformationHelper.transformApplicationResponseDate(ca.getRespondents()) : null)
                         .withResults(ca.getJudicialResults())
                         .withRepresentation(transformRepresentation(ca, hearingsList))
-                        .withApplicationType(ca.getType().getApplicationType())
+                        .withApplicationType(ca.getType().getType())
                         .build()).collect(Collectors.toList());
     }
 
@@ -231,51 +224,49 @@ public class CourtExtractTransformer {
                 .withRespondents(updateResponse(courtApplication.getRespondents(), resultedApplication.orElse(null)))
                 .withJudicialResults(resultedApplication.map(uk.gov.justice.progression.courts.CourtApplications::getJudicialResults).orElse(null))
                 .withApplicationStatus(courtApplication.getApplicationStatus())
-                .withApplicationOutcome(resultedApplication.map(courtApplications -> CourtApplicationOutcome.courtApplicationOutcome()
-                        .withApplicationOutcomeType(CourtApplicationOutcomeType.courtApplicationOutcomeType()
-                                .withDescription(courtApplications.getOutcome()).build())
-                        .withApplicationOutcomeDate(courtApplications.getOutcomeDate())
-                        .build()).orElse(null))
                 .build());
 
     }
 
-    private List<CourtApplicationRespondent> updateResponse(final List<CourtApplicationRespondent> courtApplicationRespondents, final uk.gov.justice.progression.courts.CourtApplications resultedApplication) {
-        final List<CourtApplicationRespondent> updatedResponseList = new ArrayList();
+    private List<CourtApplicationParty> updateResponse(final List<CourtApplicationParty> courtApplicationRespondents, final uk.gov.justice.progression.courts.CourtApplications resultedApplication) {
+        final List<CourtApplicationParty> updatedResponseList = new ArrayList<>();
         if (isNotEmpty(courtApplicationRespondents)) {
             updatedResponseList.addAll(courtApplicationRespondents);
         }
         if (nonNull(resultedApplication) && isNotEmpty(resultedApplication.getRespondents())) {
-            final String responseDescription = resultedApplication.getRespondents().stream()
-                    .filter(Objects::nonNull)
-                    .filter(r -> nonNull(r.getApplicationResponse()))
-                    .map(Respondents::getApplicationResponse)
-                    .filter(Objects::nonNull)
-                    .findAny()
-                    .orElse(EMPTY);
+            // GPE-15039 Commented temporarily
+//            final String responseDescription = resultedApplication.getRespondents().stream()
+//                    .filter(Objects::nonNull)
+//                    .filter(r -> nonNull(r.getApplicationResponse()))
+//                    .map(Respondents::getApplicationResponse)
+//                    .filter(Objects::nonNull)
+//                    .findAny()
+//                    .orElse(EMPTY);
 
-            final LocalDate responseDate = resultedApplication.getRespondents().stream()
-                    .filter(Objects::nonNull)
-                    .filter(r -> nonNull(r.getApplicationResponse()))
-                    .map(Respondents::getResponseDate)
-                    .filter(Objects::nonNull)
-                    .findAny()
-                    .orElse(null);
+//            final LocalDate responseDate = resultedApplication.getRespondents().stream()
+//                    .filter(Objects::nonNull)
+//                    .filter(r -> nonNull(r.getApplicationResponse()))
+//                    .map(Respondents::getResponseDate)
+//                    .filter(Objects::nonNull)
+//                    .findAny()
+//                    .orElse(null);
 
-            updatedResponseList.add(CourtApplicationRespondent.courtApplicationRespondent()
-                    .withApplicationResponse(CourtApplicationResponse.courtApplicationResponse()
-                            .withApplicationResponseType(CourtApplicationResponseType.courtApplicationResponseType()
-                                    .withDescription(responseDescription).build())
-                            .withApplicationResponseDate(nonNull(responseDate) ? responseDate : null)
-                            .build()).build());
+            updatedResponseList.add(CourtApplicationParty.courtApplicationParty()
+                    // GPE-15039 Commented temporarily
+//                    .withApplicationResponse(CourtApplicationResponse.courtApplicationResponse()
+//                            .withApplicationResponseType(CourtApplicationResponseType.courtApplicationResponseType()
+//                                    .withDescription(responseDescription).build())
+//                            .withApplicationResponseDate(nonNull(responseDate) ? responseDate : null)
+//                            .build())
+                    .build());
         }
         return updatedResponseList;
     }
 
     private Representation transformRepresentation(final CourtApplication ca, final List<Hearings> hearingsList) {
         return Representation.representation()
-                .withApplicantRepresentation(transformApplicantRepresentation(ca.getApplicant().getRepresentationOrganisation(), ca.getType().getApplicantSynonym(), hearingsList))
-                .withRespondentRepresentation(ca.getRespondents() != null ? transformRespondantRepresentations(ca.getRespondents(), ca.getType().getRespondentSynonym(), hearingsList) : null)
+                .withApplicantRepresentation(transformApplicantRepresentation(ca.getApplicant().getRepresentationOrganisation(), hearingsList))
+                .withRespondentRepresentation(ca.getRespondents() != null ? transformRespondantRepresentations(ca.getRespondents() , hearingsList) : null)
                 .build();
     }
 
@@ -289,19 +280,19 @@ public class CourtExtractTransformer {
                 .orElse(null);
     }
 
-    private List<RespondentRepresentation> transformRespondantRepresentations(final List<CourtApplicationRespondent> respondents, final String synonym, final List<Hearings> hearingsList) {
+    private List<RespondentRepresentation> transformRespondantRepresentations(final List<CourtApplicationParty> respondents, final List<Hearings> hearingsList) {
         final List<RespondentRepresentation> respondentRepresentations = new ArrayList<>();
-        respondents.forEach(r -> respondentRepresentations.add(transformRespondantRepresentation(r.getPartyDetails(), synonym, hearingsList)));
+
+        respondents.forEach(r -> respondentRepresentations.add(transformRespondantRepresentation(r, hearingsList)));
         return respondentRepresentations;
     }
 
-    private RespondentRepresentation transformRespondantRepresentation(final CourtApplicationParty courtApplicationParty, final String synonym, final List<Hearings> hearingsList) {
+    private RespondentRepresentation transformRespondantRepresentation(final CourtApplicationParty courtApplicationParty, final List<Hearings> hearingsList) {
         final Organisation representationOrganisation = nonNull(courtApplicationParty) ? courtApplicationParty.getRepresentationOrganisation() : null;
         return RespondentRepresentation.respondentRepresentation()
                 .withAddress(nonNull(representationOrganisation) ? representationOrganisation.getAddress() : null)
                 .withName(nonNull(representationOrganisation) ? representationOrganisation.getName() : null)
                 .withContact(nonNull(representationOrganisation) ? representationOrganisation.getContact() : null)
-                .withSynonym(synonym)
                 .withRespondentCounsels(nonNull(hearingsList) ? hearingsList.stream()
                         .filter(hearings -> hearings.getRespondentCounsels() != null)
                         .flatMap(hearings -> hearings.getRespondentCounsels().stream())
@@ -309,11 +300,10 @@ public class CourtExtractTransformer {
                 .build();
     }
 
-    private ApplicantRepresentation transformApplicantRepresentation(final Organisation representationOrganisation, final String synonym, final List<Hearings> hearingsList) {
+    private ApplicantRepresentation transformApplicantRepresentation(final Organisation representationOrganisation, final List<Hearings> hearingsList) {
         final String orgName = nonNull(representationOrganisation) ? representationOrganisation.getName() : null;
         return ApplicantRepresentation.applicantRepresentation()
                 .withName(orgName)
-                .withSynonym(nonNull(orgName) ? synonym : null)
                 .withAddress(nonNull(representationOrganisation) ? representationOrganisation.getAddress() : null)
                 .withContact(nonNull(representationOrganisation) ? representationOrganisation.getContact() : null)
                 .withApplicantCounsels(nonNull(hearingsList) ? hearingsList.stream()

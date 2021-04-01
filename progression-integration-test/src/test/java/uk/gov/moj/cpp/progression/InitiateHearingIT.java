@@ -19,6 +19,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
@@ -31,6 +32,7 @@ import javax.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("squid:S1607")
 public class InitiateHearingIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -48,6 +50,7 @@ public class InitiateHearingIT extends AbstractIT {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
     }
+
 
     @Test
     public void shouldInitiateHearing() throws Exception {

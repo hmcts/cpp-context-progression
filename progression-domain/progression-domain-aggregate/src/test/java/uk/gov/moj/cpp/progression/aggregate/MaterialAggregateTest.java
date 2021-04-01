@@ -13,13 +13,13 @@ import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
-import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequestNotSent;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
+import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MaterialAggregateTest {
@@ -118,7 +117,7 @@ public class MaterialAggregateTest {
 
     @Test
     public void shouldRecordNotificationRequestSuccess() {
-        final List<Object> eventStream = aggregate.recordNotificationRequestSuccess(randomUUID(), randomUUID(), ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = aggregate.recordNotificationRequestSuccess(randomUUID(), randomUUID(), ZonedDateTime.now(), ZonedDateTime.now()).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(NotificationRequestSucceeded.class)));

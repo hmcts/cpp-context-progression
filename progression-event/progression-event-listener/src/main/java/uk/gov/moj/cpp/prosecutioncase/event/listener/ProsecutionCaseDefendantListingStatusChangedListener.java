@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.Defendant;
@@ -48,13 +49,14 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     public void process(final JsonEnvelope event) {
         final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChanged.class);
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
-        if (prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases() != null && !prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().isEmpty()) {
+        if (isNotEmpty(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases())) {
             prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().forEach(pc ->
                     pc.getDefendants().forEach(d ->
                             caseDefendantHearingRepository.save(transformCaseDefendantHearingEntity(d, pc, hearingEntity))
                     )
             );
         }
+
         updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged);
     }
 
@@ -78,7 +80,6 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     }
 
     private CaseDefendantHearingEntity transformCaseDefendantHearingEntity(final Defendant defendant, final ProsecutionCase prosecutionCase, final HearingEntity hearingEntity) {
-
         final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(prosecutionCase.getId(), defendant.getId(), hearingEntity.getHearingId()));
         caseDefendantHearingEntity.setHearing(hearingEntity);

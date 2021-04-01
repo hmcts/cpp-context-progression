@@ -17,9 +17,11 @@ import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -34,13 +36,17 @@ import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseEventListene
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseNoteEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseNoteRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
@@ -59,7 +65,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minidev.json.JSONValue;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,7 +74,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCaseEventListenerTest {
@@ -94,7 +98,7 @@ public class ProsecutionCaseEventListenerTest {
     @Mock
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
     @Mock
-    private CourtApplicationRepository courtApplicationRepository;
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
     @Mock
     private HearingRepository hearingRepository;
     @Mock
@@ -108,13 +112,15 @@ public class ProsecutionCaseEventListenerTest {
     @Mock
     private ProsecutionCase prosecutionCase;
     @Mock
+    private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
+    @Mock
     private Defendant defendant;
     @Captor
     private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
     @Captor
     private ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
     @Captor
-    private ArgumentCaptor<CourtApplicationEntity> courtApplicationEntityArgumentCaptor;
+    private ArgumentCaptor<CourtApplicationCaseEntity> courtApplicationCaseEntityArgumentCaptor;
     @Captor
     private ArgumentCaptor<CaseNoteEntity> caseNoteArgumentCaptor;
     @Mock
@@ -155,8 +161,9 @@ public class ProsecutionCaseEventListenerTest {
     @Test
     public void shouldHandleCaseEjectedEvent() throws IOException {
         final UUID caseId = fromString("b46ddab2-3e9d-4c8c-b9ea-386a6b93d23f");
+        final UUID applicationId = fromString("f5decee0-27b5-4dc7-8c42-66dfbc6168d6");
         final UUID hearingId = UUID.randomUUID();
-        final UUID defendentId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
         final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
 
         final ProsecutionCaseEntity persistedEntity = new ProsecutionCaseEntity();
@@ -164,19 +171,33 @@ public class ProsecutionCaseEventListenerTest {
         persistedEntity.setPayload(payload.toString());
         when(repository.findByCaseId(caseId)).thenReturn(persistedEntity);
 
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = new InitiateCourtApplicationEntity();
+        initiateCourtApplicationEntity.setApplicationId(applicationId);
+        initiateCourtApplicationEntity.setPayload(payload.toString());
+
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setLinkedCaseId(caseId);
         courtApplicationEntity.setPayload(createPayload("/json/courtApplicationData.json"));
 
-        when(courtApplicationRepository.findByLinkedCaseId(caseId)).thenReturn(singletonList(courtApplicationEntity));
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), caseId));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
+        when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(singletonList(courtApplicationCaseEntity));
         when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         final CourtApplication courtApplication =
-                CourtApplication.courtApplication().withLinkedCaseId(caseId)
+                CourtApplication.courtApplication()
+                        .withCourtApplicationCases(
+                                singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
                         .withId(UUID.randomUUID())
                         .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication)
+                        .build();
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
@@ -184,7 +205,7 @@ public class ProsecutionCaseEventListenerTest {
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
-        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(caseId, defendentId, hearingId));
+        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(caseId, defendantId, hearingId));
         caseDefendantHearingEntity.setHearing(hearingEntity);
 
         List<ProsecutionCase> prosecutionCaseList = new ArrayList<>();
@@ -209,7 +230,8 @@ public class ProsecutionCaseEventListenerTest {
         when(caseEjected.getRemovalReason()).thenReturn("Legal");
         when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
         when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(jsonObject);
-
+        when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
+        when(jsonObjectToObjectConverter.convert(jsonObject, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
 
         when(objectToJsonObjectConverter.convert(any(Hearing.class))).thenReturn(Json.createObjectBuilder()
                 .add("id", randomUUID().toString())
@@ -223,20 +245,17 @@ public class ProsecutionCaseEventListenerTest {
 
         eventListener.processProsecutionCaseEjected(envelope);
 
-
         verify(repository).save(argumentCaptor.capture());
-        verify(courtApplicationRepository).save(courtApplicationEntityArgumentCaptor.capture());
-        final CourtApplicationEntity updatedCourtApplicationEntity = courtApplicationEntityArgumentCaptor.getValue();
-        final JsonNode courtApplicationNode = mapper.valueToTree(JSONValue.parse(updatedCourtApplicationEntity.getPayload()));
-        Assert.assertEquals("Check if the application status is ejected", ApplicationStatus.EJECTED.name(), courtApplicationNode.path(APPLICATION_STATUS).asText());
-
+        verify(courtApplicationCaseRepository).save(courtApplicationCaseEntityArgumentCaptor.capture());
+        final CourtApplicationCaseEntity updatedCourtApplicationEntity = courtApplicationCaseEntityArgumentCaptor.getValue();
+        final JsonNode courtApplicationNode = mapper.valueToTree(JSONValue.parse(updatedCourtApplicationEntity.getCourtApplication().getPayload()));
+        assertThat(courtApplicationNode.path(APPLICATION_STATUS).asText(), is(ApplicationStatus.EJECTED.name()));
 
         verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
-
         final HearingEntity updatedHearingEntity = hearingEntityArgumentCaptor.getValue();
 
         final JsonNode hearingNode = mapper.valueToTree(JSONValue.parse(updatedHearingEntity.getPayload()));
-        Assert.assertEquals("Check if the application status is ejected", CASE_STATUS_EJECTED, hearingNode.path(PROSECUTION_CASES).get(0).path(CASE_STATUS).asText());
+        assertThat(hearingNode.path(PROSECUTION_CASES).get(0).path(CASE_STATUS).asText(), is(CASE_STATUS_EJECTED));
         assertThat(hearingNode.path(PROSECUTION_CASES).get(0).path(CPS_ORGANISATION).asText(), is(CPS_ORGANISATION_VALUE));
     }
 

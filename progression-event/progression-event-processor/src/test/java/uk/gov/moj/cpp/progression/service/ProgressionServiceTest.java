@@ -17,6 +17,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings.publicListingNewDefendantAddedForCourtProceedings;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -33,6 +37,7 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsToRemove;
@@ -52,12 +57,14 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PrepareSummonsData;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -84,6 +91,7 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -99,6 +107,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({"squid:S1607"})
 public class ProgressionServiceTest {
 
     private static final UUID CASE_ID_1 = UUID.randomUUID();
@@ -151,6 +160,8 @@ public class ProgressionServiceTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Captor
+    private ArgumentCaptor<Envelope> typedEnvelopeArgumentCaptor;
+    @Captor
     private ArgumentCaptor<Envelope> envelopeCaptor;
     @Mock
     private Requester requester;
@@ -202,7 +213,25 @@ public class ProgressionServiceTest {
                 )
                 )
         );
+    }
 
+    @Test
+    public void shouldSendPrepareSummonsCommandWhenDefendantAddedToCourtProceedingInListing() {
+        final PublicListingNewDefendantAddedForCourtProceedings publicEventPayload = getDefendantAddedPayload();
+        final Envelope<PublicListingNewDefendantAddedForCourtProceedings> prepareSummonsEnvelope = getTypedEnvelope(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA, publicEventPayload);
+
+        progressionService.prepareSummonsDataForAddedDefendant(prepareSummonsEnvelope);
+
+        verify(sender).send(typedEnvelopeArgumentCaptor.capture());
+
+        final PrepareSummonsData payload = (PrepareSummonsData)typedEnvelopeArgumentCaptor.getValue().payload();
+        assertThat(typedEnvelopeArgumentCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA));
+        assertThat(payload.getHearingDateTime(), is(publicEventPayload.getHearingDateTime()));
+        assertThat(payload.getHearingId(), is(publicEventPayload.getHearingId()));
+        assertThat(payload.getConfirmedProsecutionCaseIds().get(0).getId(), is(publicEventPayload.getCaseId()));
+        assertThat(payload.getConfirmedProsecutionCaseIds().get(0).getConfirmedDefendantIds().get(0), is(publicEventPayload.getDefendantId()));
+        assertThat(payload.getCourtCentre().getId(), is(publicEventPayload.getCourtCentre().getId()));
+        assertThat(payload.getCourtCentre().getRoomId(), is(publicEventPayload.getCourtCentre().getRoomId()));
     }
 
     @Test
@@ -301,7 +330,8 @@ public class ProgressionServiceTest {
                 .withDefendants(generateDefendantsForCase(randomUUID()))
                 .withId(caseId).build();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withLinkedCaseId(caseId)
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
                 .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
                 .build();
         final List<CourtApplication> courtApplications = singletonList(courtApplication);
@@ -332,7 +362,8 @@ public class ProgressionServiceTest {
 
         final UUID courtApplicationId = randomUUID();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withLinkedCaseId(prosecutionCaseId)
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(prosecutionCaseId).build()))
                 .withId(courtApplicationId)
                 .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .build();
@@ -367,7 +398,8 @@ public class ProgressionServiceTest {
 
         final UUID courtApplicationId = randomUUID();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withLinkedCaseId(prosecutionCaseId)
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(prosecutionCaseId).build()))
                 .withId(courtApplicationId)
                 .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .build();
@@ -505,9 +537,15 @@ public class ProgressionServiceTest {
     }
 
     private JsonEnvelope getEnvelope(final String name) {
-        return JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
+        return envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName(name).build(),
                 Json.createObjectBuilder().build());
+    }
+
+    private <T> Envelope<T> getTypedEnvelope(final String name, final T payload) {
+        return envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName(name).build(),
+                payload);
     }
 
     private CourtCentre generateFullCourtCentre() {
@@ -593,17 +631,16 @@ public class ProgressionServiceTest {
         verify(sender).send(finalEnvelope);
     }
 
+
     @Test
     public void testShouldTransformBoxWorkApplication() {
 
         final UUID applicationId = UUID.randomUUID();
-        final LocalDate dueDate = LocalDate.now().plusDays(2);
 
         final Hearing expectedHearing = Hearing.hearing()
                 .withIsBoxHearing(true).withId(UUID.randomUUID())
                 .withCourtApplications(asList(CourtApplication.courtApplication()
-                        .withId(applicationId)
-                        .withDueDate(dueDate).build()))
+                       .withId(applicationId).build()))
                 .withHearingDays(asList(HearingDay.hearingDay()
                         .withListedDurationMinutes(10)
                         .withSittingDay(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).build()))
@@ -611,7 +648,8 @@ public class ProgressionServiceTest {
 
 
         final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
-                .withCourtApplications(asList(CourtApplication.courtApplication().withDueDate(dueDate).withId(applicationId).build()))
+                .withCourtApplications(asList(CourtApplication.courtApplication()
+                        .withId(applicationId).build()))
                 .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
                 .build();
 
@@ -623,7 +661,6 @@ public class ProgressionServiceTest {
         assertThat(actualHearing.getCourtApplications().get(0).getId(), CoreMatchers.is(expectedHearing.getCourtApplications().get(0).getId()));
         assertThat(actualHearing.getHearingDays().get(0).getSittingDay(), CoreMatchers.is(expectedHearing.getHearingDays().get(0).getSittingDay()));
         assertThat(actualHearing.getHearingDays().get(0).getListedDurationMinutes(), CoreMatchers.is(expectedHearing.getHearingDays().get(0).getListedDurationMinutes()));
-        assertThat(actualHearing.getCourtApplications().get(0).getDueDate(), CoreMatchers.is(expectedHearing.getCourtApplications().get(0).getDueDate()));
         assertThat(actualHearing.getIsBoxHearing(), CoreMatchers.is(expectedHearing.getIsBoxHearing()));
 
     }
@@ -996,7 +1033,7 @@ public class ProgressionServiceTest {
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES)
+                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1,JurisdictionType.MAGISTRATES)
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
@@ -1199,6 +1236,19 @@ public class ProgressionServiceTest {
                         ))
                         .build()
                 ))
+                .build();
+    }
+
+    private PublicListingNewDefendantAddedForCourtProceedings getDefendantAddedPayload() {
+        return publicListingNewDefendantAddedForCourtProceedings()
+                .withHearingId(randomUUID())
+                .withCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withRoomId(randomUUID())
+                        .build())
+                .withHearingDateTime(ZonedDateTime.now())
                 .build();
     }
 

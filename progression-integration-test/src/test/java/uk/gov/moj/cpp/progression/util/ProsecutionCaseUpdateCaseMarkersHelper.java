@@ -4,8 +4,10 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasToString;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
@@ -66,11 +68,8 @@ public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
     }
 
     public void verifyInMessagingQueueForCaseMarkersUpdated() {
-        final Optional<JsonObject> message =
-                QueueUtil.retrieveMessageAsJsonObject(publicEventsCaseMarkersUpdated);
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventsCaseMarkersUpdated);
         assertTrue(message.isPresent());
-        System.out.println(message.get());
-        assertThat(message.get(), isJson(withJsonPath("$.prosecutionCaseId",
-                Matchers.hasToString(Matchers.containsString(prosecutionCaseId)))));
+        assertThat(message.get(), isJson(withJsonPath("$.prosecutionCaseId", hasToString(Matchers.containsString(prosecutionCaseId)))));
     }
 }

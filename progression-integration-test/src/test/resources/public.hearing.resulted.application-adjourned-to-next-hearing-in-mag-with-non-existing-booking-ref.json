@@ -7,23 +7,18 @@
           "prosecutingAuthority": {
             "prosecutionAuthorityCode": "TVL",
             "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962"
-          }
-        },
-        "applicationOutcome": {
-          "applicationId": "6603d008-6012-4722-9f8e-a2e1ad1abb99",
-          "applicationOutcomeDate": "2020-06-27",
-          "applicationOutcomeType": {
-            "description": "Allowed",
-            "id": "bb5fe5cd-9c8c-378e-81b0-5ef53c166612",
-            "sequence": 80
           },
-          "originatingHearingId": "1de482e8-9656-4bcc-938d-95345def0b8a"
+          "summonsRequired" : false,
+          "notificationRequired": false
+        },
+        "subject": {
+          "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+          "summonsRequired": false,
+          "notificationRequired": true
         },
         "applicationReceivedDate": "2020-06-01",
         "applicationReference": "APPLICATION_REF",
         "applicationStatus": "FINALISED",
-        "breachedOrderDate": "2020-06-01",
-        "dueDate": "2020-06-27",
         "id": "APPLICATION_ID",
         "judicialResults": [
           {
@@ -192,7 +187,8 @@
               "type": {
                 "description": "SentenceApp4noBookingRef",
                 "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
-              }
+              },
+              "existingHearingId": "ADJOURNED_ID"
             },
             "orderedDate": "2020-06-27",
             "orderedHearingId": "1de482e8-9656-4bcc-938d-95345def0b8a",
@@ -208,85 +204,44 @@
             "usergroups": []
           }
         ],
-        "linkedCaseId": "CASE_ID",
-        "orderingCourt": {
-          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
-          "name": "Lavender Hill Magistrates' Court"
-        },
         "respondents": [
           {
-            "partyDetails": {
-              "defendant": {
-                "courtProceedingsInitiated": "2020-06-27T14:09:35.663Z",
                 "id": "DEFENDANT_ID",
-                "isYouth": false,
-                "masterDefendantId": "DEFENDANT_ID",
-                "offences": [
-                  {
-                    "arrestDate": "2016-01-01",
-                    "chargeDate": "2016-01-01",
-                    "count": 1,
-                    "id": "d96a3ce5-9890-4a00-afe7-32046da1ca14",
-                    "modeOfTrial": "Summary",
-                    "offenceCode": "CA03014",
-                    "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
-                    "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
-                    "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
-                    "orderIndex": 1,
-                    "startDate": "2015-07-02",
-                    "wording": "Some offence wording"
-                  }
-                ],
-                "personDefendant": {
-                  "bailConditions": "Some bail conditions",
-                  "bailStatus": {
-                    "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
-                    "code": "B",
-                    "description": "Conditional Bail",
-                    "custodyTimeLimit": {
-                      "timeLimit": "2018-09-10",
-                      "daysSpent": 44
-                    }
-                  },
-                  "personDetails": {
-                    "additionalNationalityCode": "POL",
-                    "additionalNationalityDescription": "Pole",
-                    "additionalNationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
-                    "address": {
-                      "address1": "2HAuQ0B2r4",
-                      "address2": "Address 2 Had No Provisional booking ID"
-                    },
-                    "dateOfBirth": "1955-03-26",
-                    "documentationLanguageNeeds": "ENGLISH",
-                    "firstName": "Mavis",
-                    "gender": "NOT_SPECIFIED",
-                    "lastName": "Kertzmann",
-                    "nationalityCode": "GBR",
-                    "nationalityDescription": "British",
-                    "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
-                    "title": "MR"
-                  }
-                },
-                "prosecutionAuthorityReference": "26GD3392620",
-                "prosecutionCaseId": "199a4039-9e2f-4deb-ac73-3917840241f9"
-              },
-              "id": "DEFENDANT_ID"
-            }
+            "summonsRequired" : false,
+            "notificationRequired" : false
           }
         ],
         "type": {
-          "applicantSynonym": "Appellant",
-          "applicationCategory": "VP",
-          "applicationCode": "LM76506",
-          "applicationJurisdictionType": "MAGISTRATES",
-          "applicationLegislation": "In accordance with Section 48(7) of the Local Government (Miscellaneous Provisions) Act 1976.",
-          "applicationType": "Appeal against conditions attached to a private hire licence",
+          "categoryCode": "VP",
+          "jurisdiction": "MAGISTRATES",
+          "legislation": "In accordance with Section 48(7) of the Local Government (Miscellaneous Provisions) Act 1976.",
+          "type": "Appeal against conditions attached to a private hire licence",
           "id": "2c9bff82-fe9c-315f-b41a-44923d5d8669",
-          "isAppealApplication": false,
-          "isBreachApplication": true,
+          "appealFlag": false,
+          "applicantAppellantFlag" : false,
           "linkType": "STANDALONE",
-          "respondentSynonym": "Respondent"
-        }
+          "summonsTemplateType" : "GENERIC_APPLICATION",
+          "breachType" : "NOT_APPLICABLE",
+          "pleaApplicableFlag" : false,
+          "commrOfOathFlag" : false,
+          "courtOfAppealFlag" : false,
+          "courtExtractAvlFlag" : false,
+          "prosecutorThirdPartyFlag" : false,
+          "spiOutApplicableFlag" : false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
+        },
+        "courtApplicationCases" : [
+          {
+            "prosecutionCaseId": "CASE_ID",
+            "isSJP" : false,
+            "caseStatus": "ACTIVE",
+            "prosecutionCaseIdentifier" : {
+              "prosecutionAuthorityReference" : "APPLICATION_REF",
+              "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+              "prosecutionAuthorityCode": "TFL"
+            }
+          }
+        ]
       }
     ],
     "id": "HEARING_ID",

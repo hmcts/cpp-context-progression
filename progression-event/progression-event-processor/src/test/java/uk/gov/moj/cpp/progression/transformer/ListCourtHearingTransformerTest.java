@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.progression.transformer;
 
 import static java.time.LocalDate.parse;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -17,8 +17,8 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -30,6 +30,7 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Marker;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -81,8 +82,6 @@ import org.mockito.Spy;
 
 public class ListCourtHearingTransformerTest {
 
-    @Spy
-    private final Enveloper enveloper = createEnveloper();
     final private String postcode = "CR11111";
     final private String prosecutingAuth = "CPS";
     final private UUID prosecutionCaseId = UUID.randomUUID();
@@ -101,6 +100,9 @@ public class ListCourtHearingTransformerTest {
     private static final String MARKER_TYPE_CODE = "MarkerTypeCode";
     private static final String MARKER_TYPE_DESCRIPTION = "MarkerTypeDescription";
     private static final String cpsOrganisation = "A01";
+
+    @Spy
+    private final Enveloper enveloper = createEnveloper();
 
     @Mock
     private Sender sender;
@@ -139,7 +141,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
 
-        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
                 .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
@@ -184,7 +186,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonObject payload = createPayloadForOrgUnits(randomUUID().toString());
 
-        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(hearingDescription));
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(hearingDescription));
         when(referenceDataService.getCourtsOrganisationUnitsByOuCode(envelopeReferral, courtReferral.getSjpReferral().getReferringJudicialDecision().getCourtHouseCode(), requester))
                 .thenReturn(Optional.ofNullable((JsonObject) payload));
 
@@ -235,7 +237,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonObject payload = createPayloadForOrgUnits(randomUUID().toString());
 
-        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtsOrganisationUnitsByOuCode(envelopeReferral, courtReferral.getSjpReferral().getReferringJudicialDecision().getCourtHouseCode(), requester))
                 .thenReturn(Optional.ofNullable((JsonObject) payload));
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
@@ -284,7 +286,7 @@ public class ListCourtHearingTransformerTest {
         final JsonObject payload = createPayloadForOrgUnits(randomUUID().toString());
         final JsonObject orgUnitJsonObj = (JsonObject) payload;
 
-        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
                 .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
         when(referenceDataService.getCourtsOrganisationUnitsByOuCode(envelopeReferral, courtReferral.getSjpReferral().getReferringJudicialDecision().getCourtHouseCode(), requester))
@@ -345,7 +347,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
 
-        when(referenceDataService.getHearingType(any(), any(), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
                 .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
         when(referenceDataService.getReferralReasonById(any(), any(), any()))
@@ -500,22 +502,20 @@ public class ListCourtHearingTransformerTest {
         final List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
                 .withId(UUID.randomUUID())
-                .withLinkedCaseId(UUID.randomUUID())
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(UUID.randomUUID())
-                        .withDefendant(Defendant.defendant()
-                                .withId(UUID.randomUUID())
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withMasterDefendantId(UUID.randomUUID())
                                 .build())
                         .build())
-                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withId(UUID.randomUUID())
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withProsecutionAuthorityId(UUID.randomUUID())
+                .withRespondents(Arrays.asList(CourtApplicationParty.courtApplicationParty()
+                        .withId(UUID.randomUUID())
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(UUID.randomUUID())
 
-                                        .build())
                                 .build())
-
                         .build()))
                 .build());
         return courtApplications;

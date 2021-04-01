@@ -26,25 +26,33 @@
     "courtApplications": [
       {
         "id": "APPLICATION_ID",
-        "dueDate" : "2019-08-11",
         "type": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-          "applicationCode": "a",
-          "applicationType": "a",
-          "applicationTypeWelsh": "a",
-          "applicationLegislation": "a",
-          "applicationLegislationWelsh": "a",
-          "applicationCategory": "a",
+          "type": "a",
+          "typeWelsh": "a",
+          "legislation": "a",
+          "legislationWelsh": "a",
+          "categoryCode": "a",
           "linkType": "STANDALONE",
-          "applicantSynonym": "a",
-          "respondentSynonym": "a",
-          "applicationJurisdictionType": "MAGISTRATES",
-          "applicationSummonsRecipientType": "APPLICANT"
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType" : "GENERIC_APPLICATION",
+          "breachType" : "NOT_APPLICABLE",
+          "appealFlag": false,
+          "applicantAppellantFlag" : false,
+          "pleaApplicableFlag" : false,
+          "commrOfOathFlag" : false,
+          "courtOfAppealFlag" : false,
+          "courtExtractAvlFlag" : false,
+          "prosecutorThirdPartyFlag" : false,
+          "spiOutApplicableFlag" : false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
         },
         "applicationReceivedDate": "0000-01-01",
         "applicant": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
           "synonym": "a",
+          "summonsRequired" : false,
+          "notificationRequired" : false,
           "personDetails": {
             "title": "MR",
             "firstName": "a",
@@ -204,6 +212,11 @@
               "fax": "a"
             }
           }
+        },
+        "subject" : {
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "summonsRequired" : false,
+          "notificationRequired" : false
         },
         "applicationStatus": "LISTED"
       }

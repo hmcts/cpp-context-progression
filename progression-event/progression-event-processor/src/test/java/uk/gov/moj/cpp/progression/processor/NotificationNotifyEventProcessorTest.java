@@ -1,30 +1,42 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.lang.String.format;
+import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.APPLICATION;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.MATERIAL;
 
+import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -40,10 +52,19 @@ public class NotificationNotifyEventProcessorTest {
     private SystemIdMapperService systemIdMapperService;
 
     @Mock
+    private SystemIdMapping systemIdMapping;
+
+    @Mock
     private FileStorer fileStorer;
 
     @Mock
     private Logger logger;
+
+    @Mock
+    private Sender sender;
+
+    @Captor
+    private ArgumentCaptor<Envelope<UpdateCourtDocumentPrintTime>> envelopeCaptor;
 
     @InjectMocks
     private NotificationNotifyEventProcessor notificationNotifyEventProcessor;
@@ -176,14 +197,45 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldDeleteAssociatedFileWhenNotificationSendSucceeded() throws FileServiceException {
+    public void shouldDeleteAssociatedFileAndUpdatePrintDateTimeWhenNotificationSendSucceeded() throws FileServiceException {
         final UUID notificationId = randomUUID();
-        final JsonEnvelope notificationSucceededEvent = envelope()
-                .withPayloadOf(notificationId.toString(), "notificationId").build();
-
+        final UUID materialId = randomUUID();
+        final UUID courtDocumentId = randomUUID();
+        final ZonedDateTime completedAt = now();
+        final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf(materialId.toString(), "materialId")
+                .withPayloadOf(completedAt.toString(), "completedAt")
+                .build();
+        when(systemIdMapperService.getDocumentIdForMaterialId(anyString())).thenReturn(of(this.systemIdMapping));
+        when(this.systemIdMapping.getTargetId()).thenReturn(courtDocumentId);
         notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
 
         verify(fileStorer).delete(notificationId);
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<UpdateCourtDocumentPrintTime> command = envelopeCaptor.getValue();
+        final UpdateCourtDocumentPrintTime courtDocumentPrintTime = command.payload();
+        assertThat(command.metadata().name(), is("progression.command.update-court-document-print-time"));
+        assertThat(courtDocumentPrintTime.getCourtDocumentId(), is(courtDocumentId));
+        assertThat(courtDocumentPrintTime.getMaterialId(), is(materialId));
+        assertThat(courtDocumentPrintTime.getPrintedAt(), is(completedAt));
+    }
+
+    @Test
+    public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenCompletionTimeNotAvailable() throws FileServiceException {
+        final UUID notificationId = randomUUID();
+        final UUID materialId = randomUUID();
+        final UUID courtDocumentId = randomUUID();
+        final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf(materialId.toString(), "materialId")
+                .build();
+        when(systemIdMapperService.getDocumentIdForMaterialId(anyString())).thenReturn(of(this.systemIdMapping));
+        when(this.systemIdMapping.getTargetId()).thenReturn(courtDocumentId);
+        notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
+
+        verify(fileStorer).delete(notificationId);
+        verifyZeroInteractions(systemIdMapperService, systemIdMapping);
     }
 
     @Test

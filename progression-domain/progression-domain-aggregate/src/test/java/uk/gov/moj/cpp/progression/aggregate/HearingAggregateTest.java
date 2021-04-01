@@ -7,6 +7,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
+import uk.gov.justice.core.courts.AddBreachApplication;
+import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
+import uk.gov.justice.core.courts.BreachedApplications;
+import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -17,7 +22,9 @@ import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -43,6 +50,36 @@ public class HearingAggregateTest {
         final Object response = hearingAggregate.apply(createHearingDaysWithoutCourtCentreCorrected());
 
         assertThat(response.getClass(), is(CoreMatchers.equalTo(HearingDaysWithoutCourtCentreCorrected.class)));
+    }
+
+    @Test
+    public void shouldApplyBreachApplicationCreationRequestedEvent() {
+        final AddBreachApplication addBreachApplication = AddBreachApplication
+                .addBreachApplication()
+                .withBreachedApplications(Arrays.asList(BreachedApplications.breachedApplications()
+                                .withApplicationType(CourtApplicationType.courtApplicationType()
+                                        .withId(randomUUID())
+                                        .build())
+                                .withCourtOrder(CourtOrder.courtOrder()
+                                        .withId(randomUUID())
+                                        .build())
+                                .build(),
+                        BreachedApplications.breachedApplications()
+                                .withApplicationType(CourtApplicationType.courtApplicationType()
+                                        .withId(randomUUID())
+                                        .build())
+                                .withCourtOrder(CourtOrder.courtOrder()
+                                        .withId(randomUUID())
+                                        .build())
+                                .build()
+                ))
+                .withMasterDefendantId(randomUUID())
+                .withHearingId(randomUUID())
+                .build();
+
+        final List<Object> response = hearingAggregate.addBreachApplication(addBreachApplication).collect(Collectors.toList());
+        assertThat(response.size(), is(2));
+        assertThat(response.get(0).getClass(), is(CoreMatchers.equalTo(BreachApplicationCreationRequested.class)));
     }
 
     private HearingResulted createHearingResulted(final Hearing hearing) {

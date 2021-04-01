@@ -1,0 +1,120 @@
+{
+  "alwaysPublished": false,
+  "canBeSubjectOfBreach": false,
+  "canBeSubjectOfVariation": false,
+  "category": "INTERMEDIARY",
+  "courtClerk": {
+    "firstName": "Erica",
+    "lastName": "Wilson",
+    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+  },
+  "d20": false,
+  "excludedFromResults": false,
+  "isAdjournmentResult": false,
+  "isAvailableForCourtExtract": false,
+  "isConvictedResult": false,
+  "isDeleted": false,
+  "isFinancialResult": false,
+  "isUnscheduled": false,
+  "judicialResultId": "7c19b67e-78e3-4ca6-8c9f-cf095ad7615b",
+  "judicialResultPrompts": [
+    {
+      "courtExtract": "N",
+      "isFinancialImposition": false,
+      "judicialResultPromptTypeId": "428e2b37-88f9-4f9c-beda-450b96bac466",
+      "label": "Prosecution costs",
+      "promptReference": "prosecutionCosts",
+      "promptSequence": 100,
+      "type": "CURR",
+      "usergroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "YOTs",
+        "Prosecuting Authorities"
+      ],
+      "value": "PROSECUTION_COST",
+      "welshValue": "£245.56"
+    },
+    {
+      "courtExtract": "N",
+      "isFinancialImposition": false,
+      "judicialResultPromptTypeId": "04d5d843-f530-43e4-927f-57942b310d5c",
+      "label": "THIS SUMMONS IS FOR PERSONAL SERVICE",
+      "promptReference": "tHISSUMMONSISFORPERSONALSERVICE",
+      "promptSequence": 200,
+      "type": "BOOLEAN",
+      "usergroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "Probation",
+        "NCES",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "value": "PERSONAL_SERVICE",
+      "welshValue": "true"
+    },
+    {
+      "courtExtract": "N",
+      "isFinancialImposition": false,
+      "judicialResultPromptTypeId": "1d068bf5-5149-4bb2-b333-7c8b288ca119",
+      "label": "This summons will be served by a Prosecutor",
+      "promptReference": "thisSummonsWillBeServedByAProsecutor",
+      "promptSequence": 300,
+      "type": "BOOLEAN",
+      "usergroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "value": "SUMMONS_SUPPRESSED",
+      "welshValue": "true"
+    },
+    {
+      "courtExtract": "N",
+      "isFinancialImposition": false,
+      "judicialResultPromptTypeId": "7d881e55-50ee-4098-9d3a-9b9c8f9eb834",
+      "label": "Prosecutor's email address (used summons notification)",
+      "promptReference": "prosecutorsEmailAddressUsedSummonsNotification",
+      "promptSequence": 100,
+      "type": "TXT",
+      "usergroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "YOTs",
+        "Prosecuting Authorities"
+      ],
+      "value": "PROSECUTOR_EMAIL",
+      "welshValue": ""
+    }
+  ],
+  "judicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+  "label": "Summons approved",
+  "lastSharedDateTime": "2021-01-29",
+  "level": "C",
+  "lifeDuration": false,
+  "orderedDate": "2021-01-30",
+  "orderedHearingId": "f6cad15d-b8a3-4aec-91bd-beb11ef017cb",
+  "postHearingCustodyStatus": "A",
+  "publishedAsAPrompt": false,
+  "publishedForNows": false,
+  "rank": 14100,
+  "resultText": "Summons approved\nProsecution costs £245.56\nTHIS SUMMONS IS FOR PERSONAL SERVICE true\nThis summons will be served by a Prosecutor true",
+  "rollUpPrompts": false,
+  "terminatesOffenceProceedings": false,
+  "urgent": false,
+  "usergroups": [
+
+  ]
+}

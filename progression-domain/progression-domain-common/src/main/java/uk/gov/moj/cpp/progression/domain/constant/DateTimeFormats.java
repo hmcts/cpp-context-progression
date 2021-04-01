@@ -6,11 +6,12 @@ public enum DateTimeFormats {
     STANDARD("yyyy-MM-dd"),
     HYP_DAY_TIME_YYYY_MM_DD("yyyy-MM-dd HH:mm:ss"),
     TIME_HMMA("h:mm a"),
-    DATE_SLASHED_DD_MM_YYYY("dd/MM/yyyy");
+    DATE_SLASHED_DD_MM_YYYY("dd/MM/yyyy"),
+    SPACE_SEPARATED_3_CHAR_MONTH("dd MMM yyyy");
 
-    private String dateFormat;
+    private final String dateFormat;
 
-    private DateTimeFormats(String dateFormat) {
+    DateTimeFormats(String dateFormat) {
         this.dateFormat = dateFormat;
     }
 

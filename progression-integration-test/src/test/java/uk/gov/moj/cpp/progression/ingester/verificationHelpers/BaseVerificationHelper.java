@@ -85,21 +85,29 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
 
         final String id = ((JsonString) inputCourtApplication.read(inputApplicationPath + "id")).getString();
         final String applicationReference = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationReference")).getString();
-        final String applicationType = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".type.applicationType")).getString();
+        final String applicationType = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".type.type")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationDecisionSoughtByDate")).getString();
-        final String dueDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".dueDate")).getString();
+
+        final boolean isLinkedApplication = inputCourtApplication.read(inputApplicationPath).toString().contains("courtApplicationCases");
 
         try {
+            if (isLinkedApplication) {
+                with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", not(equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString())))
+                        .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
+                        .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
+            } else {
+                with(outputCase.toString())
+                        .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
+                        .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"));
+            }
+
             with(outputCase.toString())
-                    .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
-                    .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"))
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationId", is(id))
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationReference", is(applicationReference))
                     .assertThat(outputCaseDocumentsPath + ".applications[0].applicationType", is(applicationType))
                     .assertThat(outputCaseDocumentsPath + ".applications[0].receivedDate", is(applicationReceivedDate))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].decisionDate", is(applicationDecisionSoughtByDate))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].dueDate", is(dueDate));
+                    .assertThat(outputCaseDocumentsPath + ".applications[0].decisionDate", is(applicationDecisionSoughtByDate));
             incrementCaseDocumentsCount();
         } catch (final Exception e) {
             incrementExceptionCount();

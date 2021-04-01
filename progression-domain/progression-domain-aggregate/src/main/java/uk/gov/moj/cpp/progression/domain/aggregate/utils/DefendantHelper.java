@@ -7,6 +7,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
 import uk.gov.justice.core.courts.Category;
@@ -55,86 +56,33 @@ public class DefendantHelper {
 
     public static boolean isAllDefendantProceedingConcluded(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants) {
         return prosecutionCase.getDefendants().stream().map(defendant -> {
-            final List<Offence> udpatedOffences = new ArrayList<>();
+            final List<Offence> updatedOffences = new ArrayList<>();
+
             final boolean proceedingConcluded = defendant.getOffences().stream()
-                    .map(offence -> getUpdatedOffence(udpatedOffences, offence, offence.getJudicialResults() != null && offence.getJudicialResults().stream()
-                            .anyMatch(judicialResult -> judicialResult.getCategory().equals(Category.FINAL))))
+                    .map(offence -> getUpdatedOffence(updatedOffences, offence, isConcluded(offence)))
                     .map(Offence::getProceedingsConcluded)
                     .collect(toList()).stream().allMatch(finalCategory -> finalCategory.equals(Boolean.TRUE));
 
-            final Defendant updatedDefendant = getDefendant(defendant, udpatedOffences, proceedingConcluded);
+            final Defendant updatedDefendant = getDefendant(defendant, updatedOffences, proceedingConcluded);
+
             updatedDefendants.add(updatedDefendant);
 
             return proceedingConcluded;
         }).collect(toList()).stream().allMatch(proceedingConcluded -> proceedingConcluded.equals(Boolean.TRUE));
     }
 
-    private static Defendant getDefendant(Defendant defendant, final List<Offence> udpatedOffences, boolean proceedingConcluded) {
-        return Defendant.defendant()
-                .withPersonDefendant(defendant.getPersonDefendant())
-                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                .withId(defendant.getId())
-                .withMasterDefendantId(defendant.getMasterDefendantId())
-                .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
-                .withOffences(udpatedOffences)
-                .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                .withAliases(defendant.getAliases())
-                .withAssociatedPersons(defendant.getAssociatedPersons())
-                .withDefenceOrganisation(defendant.getDefenceOrganisation())
-                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
-                .withMitigation(defendant.getMitigation())
-                .withMitigationWelsh(defendant.getMitigationWelsh())
-                .withWitnessStatement(defendant.getWitnessStatement())
-                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
-                .withDefendantCaseJudicialResults(defendant.getDefendantCaseJudicialResults())
-                .withPncId(defendant.getPncId())
-                .withCroNumber(defendant.getCroNumber())
-                .withLegalAidStatus(defendant.getLegalAidStatus())
-                .withProceedingsConcluded(proceedingConcluded)
-                .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
-                .build();
+    private static boolean isConcluded(Offence offence) {
+        return isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
+                .anyMatch(judicialResult -> judicialResult.getCategory().equals(Category.FINAL));
     }
 
-    private static Offence getUpdatedOffence(final List<Offence> udpatedOffences, Offence offence, boolean proceedingConcluded) {
-        final Offence updatedOffence = Offence.offence()
-                .withAllocationDecision(offence.getAllocationDecision())
-                .withAquittalDate(offence.getAquittalDate())
-                .withArrestDate(offence.getArrestDate())
-                .withChargeDate(offence.getChargeDate())
-                .withConvictionDate(offence.getConvictionDate())
-                .withCount(offence.getCount())
-                .withCustodyTimeLimit(offence.getCustodyTimeLimit())
-                .withDateOfInformation(offence.getDateOfInformation())
-                .withEndDate(offence.getEndDate())
-                .withId(offence.getId())
-                .withIndicatedPlea(offence.getIndicatedPlea())
-                .withIsDiscontinued(offence.getIsDiscontinued())
-                .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
-                .withJudicialResults(offence.getJudicialResults())
-                .withLaaApplnReference(offence.getLaaApplnReference())
-                .withModeOfTrial(offence.getModeOfTrial())
-                .withNotifiedPlea(offence.getNotifiedPlea())
-                .withOffenceCode(offence.getOffenceCode())
-                .withOffenceDefinitionId(offence.getOffenceDefinitionId())
-                .withOffenceFacts(offence.getOffenceFacts())
-                .withOffenceLegislation(offence.getOffenceLegislation())
-                .withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh())
-                .withOffenceTitle(offence.getOffenceTitle())
-                .withOffenceTitleWelsh(offence.getOffenceTitleWelsh())
-                .withOrderIndex(offence.getOrderIndex())
-                .withPlea(offence.getPlea())
-                .withProceedingsConcluded(proceedingConcluded)
-                .withStartDate(offence.getStartDate())
-                .withVerdict(offence.getVerdict())
-                .withVictims(offence.getVictims())
-                .withWording(offence.getWording())
-                .withWordingWelsh(offence.getWordingWelsh())
-                .withOffenceDateCode(offence.getOffenceDateCode())
-                .withCommittingCourt(offence.getCommittingCourt())
-                .withReportingRestrictions(offence.getReportingRestrictions())
-                .build();
-        udpatedOffences.add(updatedOffence);
+    private static Defendant getDefendant(Defendant defendant, final List<Offence> updatedOffences, boolean proceedingConcluded) {
+        return Defendant.defendant().withValuesFrom(defendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
+    }
+
+    private static Offence getUpdatedOffence(final List<Offence> updatedOffences, Offence offence, boolean proceedingConcluded) {
+        final Offence updatedOffence = Offence.offence().withValuesFrom(offence).withProceedingsConcluded(proceedingConcluded).build();
+        updatedOffences.add(updatedOffence);
         return updatedOffence;
     }
 
@@ -227,6 +175,7 @@ public class DefendantHelper {
                 .withOffenceDateCode(offence.getOffenceDateCode())
                 .withCommittingCourt(offence.getCommittingCourt())
                 .withReportingRestrictions(offence.getReportingRestrictions())
+                .withDvlaOffenceCode(offence.getDvlaOffenceCode())
                 .build();
 
     }
@@ -264,7 +213,7 @@ public class DefendantHelper {
     private static List<Offence> processReportingRestrictionForAddedOffences(final List<Offence> offencesToBeProcessed, final Optional<List<JsonObject>> referenceDataOffences) {
         final List<Offence> offenceDetailListAddWithReportingRestrictions = new ArrayList<>();
 
-        if (referenceDataOffences.isPresent() && CollectionUtils.isNotEmpty(referenceDataOffences.get())) {
+        if (referenceDataOffences.isPresent() && isNotEmpty(referenceDataOffences.get())) {
             offencesToBeProcessed.forEach(offence ->
                     offenceDetailListAddWithReportingRestrictions.add(offenceWithSexualOffenceReportingRestriction(offence, referenceDataOffences))
             );
@@ -280,22 +229,25 @@ public class DefendantHelper {
         final Map<String, JsonObject> offenceCodeMap = referenceDataOffences.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
         final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
 
-        if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_REPORTING_RESTRICTION_CODE))  {
-            final List<ReportingRestriction> reportingRestrictions = CollectionUtils.isEmpty(offence.getReportingRestrictions()) ? new ArrayList<>() : offence.getReportingRestrictions();
-           if(reportingRestrictions.stream().filter(r -> SEXUAL_OFFENCE_REPORTING_RESTRICTION_LABEL.equalsIgnoreCase(r.getLabel())).count() == 0) {
-               reportingRestrictions.add(new ReportingRestriction.Builder()
-                       .withId(randomUUID())
-                       .withLabel(SEXUAL_OFFENCE_REPORTING_RESTRICTION_LABEL)
-                       .withOrderedDate(LocalDate.now())
-                       .build());
-           }
-            return Offence.offence()
-                    .withValuesFrom(offence)
-                    .withReportingRestrictions(reportingRestrictions)
-                    .build();
-        } else {
-            return offence;
+        final Offence.Builder builder = Offence.offence().withValuesFrom(offence);
+
+        if (nonNull(referenceDataOffenceInfo) && referenceDataOffenceInfo.containsKey("dvlaCode")) {
+            final String dvlaCode = referenceDataOffenceInfo.getString("dvlaCode");
+            builder.withDvlaOffenceCode(dvlaCode);
         }
+        if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_REPORTING_RESTRICTION_CODE)) {
+            final List<ReportingRestriction> reportingRestrictions = CollectionUtils.isEmpty(offence.getReportingRestrictions()) ? new ArrayList<>() : offence.getReportingRestrictions();
+            if (reportingRestrictions.stream().filter(r -> SEXUAL_OFFENCE_REPORTING_RESTRICTION_LABEL.equalsIgnoreCase(r.getLabel())).count() == 0) {
+                reportingRestrictions.add(new ReportingRestriction.Builder()
+                        .withId(randomUUID())
+                        .withLabel(SEXUAL_OFFENCE_REPORTING_RESTRICTION_LABEL)
+                        .withOrderedDate(LocalDate.now())
+                        .build());
+            }
+            builder.withReportingRestrictions(reportingRestrictions);
+        }
+
+        return builder.build();
     }
 
     public static Optional<OffencesForDefendantChanged> getOffencesForDefendantUpdated(final List<Offence> offences,

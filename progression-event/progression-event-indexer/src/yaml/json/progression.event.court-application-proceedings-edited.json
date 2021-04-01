@@ -1,0 +1,469 @@
+{
+  "courtApplication": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "type": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "type": "a",
+      "categoryCode": "a",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "GENERIC_BREACH",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtExtractAvlFlag": false,
+      "courtOfAppealFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "NOT_APPLICABLE"
+    },
+    "applicationReceivedDate": "0000-01-01",
+    "applicationReference": "a",
+    "applicant": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": true,
+      "personDetails": {
+        "title": "MR",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "dateOfBirth": "0000-01-01",
+        "nationalityId": "00000000-0000-0000-0000-000000000000",
+        "nationalityCode": "a",
+        "nationalityDescription": "a",
+        "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+        "additionalNationalityCode": "a",
+        "additionalNationalityDescription": "a",
+        "disabilityStatus": "a",
+        "ethnicity": {
+          "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+          "observedEthnicityCode": "a",
+          "observedEthnicityDescription": "a",
+          "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+          "selfDefinedEthnicityCode": "a",
+          "selfDefinedEthnicityDescription": "a"
+        },
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "a",
+        "documentationLanguageNeeds": "ENGLISH",
+        "nationalInsuranceNumber": "NH111111B",
+        "occupation": "a",
+        "occupationCode": "a",
+        "specificRequirements": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        },
+        "personMarkers": [
+          {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "markerTypeid": "00000000-0000-0000-0000-000000000000",
+            "markerTypeCode": "a",
+            "markerTypeDescription": "a"
+          }
+        ]
+      },
+      "organisation": {
+        "name": "a",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      },
+      "organisationPersons": [
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "dateOfBirth": "0000-01-01",
+            "nationalityId": "00000000-0000-0000-0000-000000000000",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+          },
+          "role": "a"
+        }
+      ],
+      "prosecutingAuthority": {
+        "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+        "prosecutionAuthorityCode": "a",
+        "name": "a",
+        "accountCode": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      },
+      "representationOrganisation": {
+        "name": "a",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      }
+    },
+    "respondents": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "synonym": "a",
+        "summonsRequired": false,
+        "notificationRequired": true,
+        "personDetails": {
+          "title": "MR",
+          "firstName": "a",
+          "middleName": "a",
+          "lastName": "a",
+          "dateOfBirth": "0000-01-01",
+          "nationalityId": "00000000-0000-0000-0000-000000000000",
+          "nationalityCode": "a",
+          "nationalityDescription": "a",
+          "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+          "additionalNationalityCode": "a",
+          "additionalNationalityDescription": "a",
+          "disabilityStatus": "a",
+          "ethnicity": {
+            "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+            "observedEthnicityCode": "a",
+            "observedEthnicityDescription": "a",
+            "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+            "selfDefinedEthnicityCode": "a",
+            "selfDefinedEthnicityDescription": "a"
+          },
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "a",
+          "documentationLanguageNeeds": "ENGLISH",
+          "nationalInsuranceNumber": "NH111111B",
+          "occupation": "a",
+          "occupationCode": "a",
+          "specificRequirements": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          },
+          "personMarkers": [
+            {
+              "id": "00000000-0000-0000-0000-000000000000",
+              "markerTypeid": "00000000-0000-0000-0000-000000000000",
+              "markerTypeCode": "a",
+              "markerTypeDescription": "a"
+            }
+          ]
+        },
+        "organisation": {
+          "name": "a",
+          "incorporationNumber": "a",
+          "registeredCharityNumber": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        },
+        "organisationPersons": [
+          {
+            "person": {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "dateOfBirth": "0000-01-01",
+              "nationalityId": "00000000-0000-0000-0000-000000000000",
+              "nationalityCode": "a",
+              "nationalityDescription": "a",
+              "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+              "additionalNationalityCode": "a",
+              "additionalNationalityDescription": "a",
+              "disabilityStatus": "a",
+              "ethnicity": {
+                "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "observedEthnicityCode": "a",
+                "observedEthnicityDescription": "a",
+                "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "selfDefinedEthnicityCode": "a",
+                "selfDefinedEthnicityDescription": "a"
+              },
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "a",
+              "documentationLanguageNeeds": "ENGLISH",
+              "nationalInsuranceNumber": "NH111111B",
+              "occupation": "a",
+              "occupationCode": "a",
+              "specificRequirements": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              },
+              "personMarkers": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000000",
+                  "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                  "markerTypeCode": "a",
+                  "markerTypeDescription": "a"
+                }
+              ]
+            },
+            "role": "a"
+          }
+        ],
+        "prosecutingAuthority": {
+          "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+          "prosecutionAuthorityCode": "a",
+          "name": "a",
+          "accountCode": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        },
+        "representationOrganisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          }
+      }
+    ],
+    "applicationOutcome": {
+      "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+      "applicationId": "00000000-0000-0000-0000-000000000000",
+      "applicationOutcomeDate": "0000-01-01",
+      "applicationOutcomeType": {
+        "id": "89abc992-c78d-4b3a-93b5-eac694c47db2",
+        "sequence": 0,
+        "description": "OUTCOME"
+      }
+    },
+    "parentApplicationId": "00000000-0000-0000-0000-000000000000",
+    "applicationParticulars": "a",
+    "courtApplicationPayment": {
+      "isFeePaid": true,
+      "isFeeUndertakingAttached": true,
+      "isFeeExempt": true,
+      "paymentReference": "a"
+    },
+    "applicationDecisionSoughtByDate": "0000-01-01",
+    "applicationStatus": "DRAFT",
+    "outOfTimeReasons": "a",
+    "judicialResults": [
+      {
+        "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+        "label": "a",
+        "welshLabel": "a",
+        "isAdjournmentResult": true,
+        "isFinancialResult": true,
+        "isConvictedResult": true,
+        "isAvailableForCourtExtract": true,
+        "amendmentDate": "0000-01-01",
+        "amendmentReason": "a",
+        "cjsCode": "a",
+        "rank": 0.1,
+        "orderedDate": "0000-01-01",
+        "lastSharedDateTime": "a",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "delegatedPowers": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "fourEyesApproval": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "approvedDate": "0000-01-01",
+        "usergroups": [
+          "a"
+        ],
+        "category": "FINAL",
+        "judicialResultPrompts": [
+          {
+            "label": "a",
+            "welshLabel": "a",
+            "value": "a",
+            "promptSequence": 0.1,
+            "promptReference": "a"
+          }
+        ]
+      }
+    ]
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06g",
+      "description": "Sentence",
+      "code": "SEN"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "estimateMinutes": 20,
+    "courtCentre": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+    }
+  }
+}

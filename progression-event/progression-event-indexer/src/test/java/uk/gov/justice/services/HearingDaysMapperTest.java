@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
+import static uk.gov.justice.services.DomainToIndexMapper.ISO_8601_FORMATTER;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingDaysMapperTest {
@@ -65,7 +67,7 @@ public class HearingDaysMapperTest {
         assertThat(hearingDays, hasSize(1));
 
         uk.gov.justice.services.unifiedsearch.client.domain.HearingDay result = hearingDays.get(0);
-        assertThat(result.getSittingDay(), is(today.format(DateTimeFormatter.ISO_INSTANT)));
+        assertThat(result.getSittingDay(), is(today.format(ISO_8601_FORMATTER)));
         assertThat(fromString(result.getCourtCentreId()),is(courtCentreId));
         assertThat(fromString(result.getCourtRoomId()),is(courtRoomId));
     }
@@ -98,7 +100,7 @@ public class HearingDaysMapperTest {
         assertThat(hearingDays, hasSize(1));
 
         uk.gov.justice.services.unifiedsearch.client.domain.HearingDay result = hearingDays.get(0);
-        assertThat(result.getSittingDay(), is(today.format(DateTimeFormatter.ISO_INSTANT)));
+        assertThat(result.getSittingDay(), is(today.format(ISO_8601_FORMATTER)));
         assertThat(fromString(result.getCourtCentreId()),is(courtCentreId));
         assertThat(fromString(result.getCourtRoomId()),is(courtRoomId));
     }

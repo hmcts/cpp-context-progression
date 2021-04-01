@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectCaseApplication;
@@ -43,10 +43,8 @@ import com.google.common.collect.Lists;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@SuppressWarnings("squid:S1607")
 public class EjectCaseApplicationIT extends AbstractIT {
     private static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
     private static final String CASE_OR_APPLICATION_EJECTED
@@ -59,6 +57,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
     private static final String REMOVAL_REASON = "Legal";
     private static final String STATUS_EJECTED = "EJECTED";
     private static final String STATUS_DRAFT = "DRAFT";
+    private static final String STATUS_UN_ALLOCATED = "UN_ALLOCATED";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String hearingId;
@@ -84,7 +83,6 @@ public class EjectCaseApplicationIT extends AbstractIT {
         messageProducerClientPublic.close();
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldEjectStandaloneCourtApplicationAndGetConfirmation() throws Exception {
 
@@ -92,7 +90,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
 
-            addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+            addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
             verifyInMessagingQueueForStandaloneCourtApplicationCreated(consumerForCourtApplicationCreated);
         }
@@ -111,7 +109,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         pollForApplicationStatus(applicationId, "LISTED");
 
-        try (final MessageConsumer consumerForCaseOrAPplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
+        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
 
             ejectCaseApplication(applicationId, caseId, REMOVAL_REASON, "eject/progression.eject-application.json");
 
@@ -122,7 +120,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
             };
             pollForApplication(applicationId, applicationEjectedMatchers);
 
-            verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrAPplicationEjected);
+            verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrApplicationEjected);
         }
 
         pollForResponse("/hearingSearch/" + hearingId,
@@ -137,14 +135,14 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
 
-            addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+            addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
             verifyInMessagingQueueForStandaloneCourtApplicationCreated(consumerForCourtApplicationCreated);
         }
 
         pollForApplicationStatus(applicationId, STATUS_DRAFT);
 
-        try (final MessageConsumer consumerForCaseOrAPplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
+        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
 
             ejectCaseApplication(applicationId, caseId, REMOVAL_REASON, "eject/progression.eject-application.json");
 
@@ -155,7 +153,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
             };
             pollForApplication(applicationId, matchers);
 
-            verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrAPplicationEjected);
+            verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrApplicationEjected);
         }
     }
 
@@ -174,12 +172,12 @@ public class EjectCaseApplicationIT extends AbstractIT {
         String firstApplicationId = randomUUID().toString();
 
         try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
-            addCourtApplication(caseId, firstApplicationId, "progression.command.create-court-application.json");
+            initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
-            verifyInMessagingQueueForCourtApplicationCreated(reference + "-1", consumerForCourtApplicationCreated);
+            verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId, consumerForCourtApplicationCreated);
         }
         //assert first application
-        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_DRAFT));
+        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_UN_ALLOCATED));
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -194,16 +192,16 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
 
-            addCourtApplication(caseId, secondApplicationId, "progression.command.create-court-application.json");
-            verifyInMessagingQueueForCourtApplicationCreated(reference + "-2", consumerForCourtApplicationCreated);
+            initiateCourtProceedingsForCourtApplication(secondApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
+            verifyInMessagingQueueForCourtApplicationCreated(secondApplicationId, consumerForCourtApplicationCreated);
         }
         //assert second application
-        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_DRAFT));
+        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_UN_ALLOCATED));
 
         //assert linked applications
-        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_DRAFT));
+        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_UN_ALLOCATED));
 
-        try (final MessageConsumer consumerForCaseOrAPplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
+        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
 
             // Eject case
             ejectCaseApplication(randomUUID().toString(), caseId, REMOVAL_REASON, "eject/progression.eject-case.json");
@@ -219,7 +217,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
             pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_EJECTED));
 
             pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_EJECTED));
-            verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrAPplicationEjected);
+            verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrApplicationEjected);
         }
 
         pollForResponse("/hearingSearch/" + hearingId,
@@ -263,23 +261,23 @@ public class EjectCaseApplicationIT extends AbstractIT {
     }
 
 
-    private static void verifyInMessagingQueueForCourtApplicationCreated(String arn, final MessageConsumer consumerForCourtApplicationCreated) {
+    private static void verifyInMessagingQueueForCourtApplicationCreated(String applicationId, final MessageConsumer consumerForCourtApplicationCreated) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        String arnResponse = message.get().getString("arn");
-        assertThat(arnResponse, equalTo(arn));
+        String idResponse = message.get().getJsonObject("courtApplication").getString("id");
+        assertThat(idResponse, equalTo(applicationId));
     }
 
-    private static void verifyInMessagingQueueForCaseOrApplicationEjected(final MessageConsumer consumerForCaseOrAPplicationEjected) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCaseOrAPplicationEjected);
+    private static void verifyInMessagingQueueForCaseOrApplicationEjected(final MessageConsumer consumerForCaseOrApplicationEjected) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCaseOrApplicationEjected);
         assertTrue(message.isPresent());
     }
 
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated(final MessageConsumer consumerForCourtApplicationCreated) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        String arnResponse = message.get().getString("arn");
-        assertThat(10, is(arnResponse.length()));
+        String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");
+        assertThat(10, is(referenceResponse.length()));
     }
 
     public JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

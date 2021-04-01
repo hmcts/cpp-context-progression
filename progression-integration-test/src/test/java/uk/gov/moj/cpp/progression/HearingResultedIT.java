@@ -50,6 +50,7 @@ import com.google.common.io.Resources;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingResultedIT extends AbstractIT {
@@ -303,7 +304,7 @@ public class HearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateHearingResulted() throws Exception {
-        addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         pollForApplicationStatus(applicationId, "DRAFT");
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
                 .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {

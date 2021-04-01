@@ -7,13 +7,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingLanguage;
@@ -22,6 +21,7 @@ import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingDefendant;
 import uk.gov.justice.core.courts.NextHearingOffence;
@@ -44,7 +44,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -177,16 +176,14 @@ public class AdjournHearingEventProcessorTest {
                 .withParentApplicationId(linkedApplicationId)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(applicantId)
-                        .withDefendant(Defendant.defendant()
-                                .withId(applicantDefendantId)
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withMasterDefendantId(applicantDefendantId)
                                 .build())
                         .build())
-                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withId(respondentId)
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withProsecutionAuthorityId(UUID.randomUUID())
-                                        .build())
+                .withRespondents(Arrays.asList(CourtApplicationParty.courtApplicationParty()
+                        .withId(respondentId)
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(UUID.randomUUID())
                                 .build())
                         .build())).build();
         final HearingAdjourned hearingAdjourned = HearingAdjourned.hearingAdjourned()
@@ -274,8 +271,8 @@ public class AdjournHearingEventProcessorTest {
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialId(), is(judicialId));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getJudiciary().get(0).getJudicialRoleType().getJudiciaryType(), is("Circuit Judge"));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getApplicant().getId(), is(applicantId));
-        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getRespondents().get(0).getPartyDetails().getId(), is(respondentId));
-        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getApplicant().getDefendant().getId(), is(applicantDefendantId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getRespondents().get(0).getId(), is(respondentId));
+        assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getApplicant().getMasterDefendant().getMasterDefendantId(), is(applicantDefendantId));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getParentApplicationId(), is(linkedApplicationId));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplications().get(0).getId(), is(courtApplicationId));
         assertThat(listCourtHearingArgumentCaptorForProgressionService.getValue().getHearings().get(0).getCourtApplicationPartyListingNeeds().get(0).getHearingLanguageNeeds().toString(), is("ENGLISH"));

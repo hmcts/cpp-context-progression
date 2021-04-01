@@ -5,9 +5,8 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationType;
-import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Person;
 
 import java.util.List;
@@ -130,7 +129,7 @@ public class CourtApplicationSummary {
         }
 
         public Builder withApplicationTitle(final CourtApplicationType courtApplicationType) {
-            this.applicationTitle = Objects.nonNull(courtApplicationType) ? courtApplicationType.getApplicationType() : EMPTY;
+            this.applicationTitle = Objects.nonNull(courtApplicationType) ? courtApplicationType.getType() : EMPTY;
             return this;
         }
 
@@ -148,12 +147,13 @@ public class CourtApplicationSummary {
             this.removalReason = removalReason;
             return this;
         }
-        public Builder withRespondentDisplayNames(List<CourtApplicationRespondent> respondents) {
-            if(!CollectionUtils.isEmpty(respondents)) {
+
+        public Builder withRespondentDisplayNames(List<CourtApplicationParty> respondents) {
+            if (!CollectionUtils.isEmpty(respondents)) {
                 this.respondentDisplayNames =
-                respondents.stream().map(respondent -> extractDisplayName(respondent.getPartyDetails()))
-                    .filter(StringUtils::isNotBlank)
-                    .collect(Collectors.toList());
+                        respondents.stream().map(this::extractDisplayName)
+                                .filter(StringUtils::isNotBlank)
+                                .collect(Collectors.toList());
             }
             return this;
         }
@@ -174,24 +174,24 @@ public class CourtApplicationSummary {
 
         private String extractDisplayName(final CourtApplicationParty applicationParty) {
             Optional<String> displayName = Optional.empty();
-            final Defendant defendant = applicationParty.getDefendant();
-            if(Objects.nonNull(defendant)){
-                if(Objects.nonNull(defendant.getPersonDefendant())){
-                    displayName = getPersonName(defendant.getPersonDefendant().getPersonDetails());
+            final MasterDefendant masterDefendant = applicationParty.getMasterDefendant();
+            if (Objects.nonNull(masterDefendant)) {
+                if (Objects.nonNull(masterDefendant.getPersonDefendant())) {
+                    displayName = getPersonName(masterDefendant.getPersonDefendant().getPersonDetails());
                 }
-                if(Objects.nonNull(defendant.getLegalEntityDefendant())){
-                    displayName = Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getName());
+                if (Objects.nonNull(masterDefendant.getLegalEntityDefendant())) {
+                    displayName = Optional.of(masterDefendant.getLegalEntityDefendant().getOrganisation().getName());
                 }
             }
 
-            if(!displayName.isPresent()){
-                if(Objects.nonNull(applicationParty.getPersonDetails())){
+            if (!displayName.isPresent()) {
+                if (Objects.nonNull(applicationParty.getPersonDetails())) {
                     displayName = getPersonName(applicationParty.getPersonDetails());
                 }
-                if(Objects.nonNull(applicationParty.getOrganisation())){
+                if (Objects.nonNull(applicationParty.getOrganisation())) {
                     displayName = Optional.of(defaultString(applicationParty.getOrganisation().getName()));
                 }
-                if(Objects.nonNull(applicationParty.getProsecutingAuthority())){
+                if (Objects.nonNull(applicationParty.getProsecutingAuthority())) {
                     displayName = Optional.of(defaultString(applicationParty.getProsecutingAuthority().getProsecutionAuthorityCode()));
                 }
             }
@@ -200,9 +200,8 @@ public class CourtApplicationSummary {
 
 
         private Optional<String> getPersonName(final Person person) {
-            return Optional.ofNullable(Stream.of(person.getFirstName(), person.getMiddleName(), person.getLastName())
+            return Optional.of(Stream.of(person.getFirstName(), person.getMiddleName(), person.getLastName())
                     .filter(StringUtils::isNotBlank).collect(Collectors.joining(" ")));
-
         }
     }
 }

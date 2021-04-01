@@ -7,7 +7,9 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -36,6 +38,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class ConvictionDateIT extends AbstractIT {
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
@@ -56,6 +59,7 @@ public class ConvictionDateIT extends AbstractIT {
     private ConvictionDateHelper helper;
     private String caseId;
     private String defendantId;
+    final String offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
 
     @BeforeClass
     public static void setUpClass() {
@@ -73,8 +77,7 @@ public class ConvictionDateIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         userId = randomUUID().toString();
-        final String offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
-        helper = new ConvictionDateHelper(caseId, offenceId);
+        helper = new ConvictionDateHelper(caseId, offenceId, null);
     }
 
     @Test
@@ -101,6 +104,95 @@ public class ConvictionDateIT extends AbstractIT {
         helper.verifyInActiveMQForConvictionDateRemoved();
 
         pollProsecutionCasesProgressionFor(caseId, withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate"));
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderCourtApplicationCase() throws Exception {
+        // given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
+
+        final String courtApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-appeal-application.json");
+
+        pollForApplication(courtApplicationId);
+
+        helper = new ConvictionDateHelper(null, "28b3d444-ae80-4920-a70f-ef01e128188e", courtApplicationId);
+
+        // when
+        helper.addConvictionDate();
+
+        // then
+        helper.verifyInActiveMQForConvictionDateChanged();
+
+        final Matcher[] convictionAddedMatchers = {
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].convictionDate", is("2017-02-02"))
+        };
+        pollForApplication(courtApplicationId, convictionAddedMatchers);
+
+        helper.removeConvictionDate();
+
+        helper.verifyInActiveMQForConvictionDateRemoved();
+
+        pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].convictionDate"));
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderCourtApplicationCourtOrder() throws Exception {
+        // given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
+
+        final String courtApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
+        pollForApplication(courtApplicationId);
+
+        helper = new ConvictionDateHelper(null, "28b3d444-ae80-4920-a70f-ef01e128188e", courtApplicationId);
+
+        // when
+        helper.addConvictionDate();
+
+        // then
+        helper.verifyInActiveMQForConvictionDateChanged();
+
+        final Matcher[] convictionAddedMatchers = {
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.convictionDate", is("2017-02-02"))
+        };
+        pollForApplication(courtApplicationId, convictionAddedMatchers);
+
+        helper.removeConvictionDate();
+
+        helper.verifyInActiveMQForConvictionDateRemoved();
+
+        pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.convictionDate"));
+    }
+
+    @Test
+    public void shouldUpdateCourtApplication() throws Exception {
+        // given
+        final String courtApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-standalone-application.json");
+        pollForApplication(courtApplicationId);
+
+        helper = new ConvictionDateHelper(null, null, courtApplicationId);
+        // when
+        helper.addConvictionDate();
+
+        // then
+        helper.verifyInActiveMQForConvictionDateChanged();
+
+        final Matcher[] convictionAddedMatchers = {
+                withJsonPath("$.courtApplication.convictionDate", is("2017-02-02"))
+        };
+        pollForApplication(courtApplicationId, convictionAddedMatchers);
+
+        helper.removeConvictionDate();
+
+        helper.verifyInActiveMQForConvictionDateRemoved();
+
+        pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.convictionDate"));
     }
 
     @Test

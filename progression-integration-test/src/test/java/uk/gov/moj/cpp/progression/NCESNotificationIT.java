@@ -9,6 +9,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -43,7 +44,7 @@ public class NCESNotificationIT extends AbstractIT {
     public static final String APPLICATION_VND_PROGRESSION_QUERY_PROSECUTION_NOTIFICATION_STATUS_JSON = "application/vnd.progression.query.prosecution.notification-status+json";
 
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     private static final String PUBLIC_HEARING_EVENT_NCES_NOTIFICATION_REQUESTED = "public.hearing.event.nces-notification-requested";
 
@@ -67,13 +68,13 @@ public class NCESNotificationIT extends AbstractIT {
         sendMessage(messageProducerClientPublic, PUBLIC_HEARING_EVENT_NCES_NOTIFICATION_REQUESTED, requestAsJson,
                 metadataOf(randomUUID(), PUBLIC_HEARING_EVENT_NCES_NOTIFICATION_REQUESTED).withUserId(randomUUID().toString()).build());
 
-        pollForResponse(PROGRESSION_QUERY_API_QUERY_API_REST_PROGRESSION,
-                join("", "/prosecutioncases/", ncesNotificationRequested.getCaseId().toString(), "/notification-status"),
+        pollForResponse(join("", "/prosecutioncases/",
+                ncesNotificationRequested.getCaseId().toString(), "/notification-status"),
                 APPLICATION_VND_PROGRESSION_QUERY_PROSECUTION_NOTIFICATION_STATUS_JSON);
 
         DocumentGeneratorStub.verifyCreate(singletonList(ncesNotificationRequested.getDocumentContent().getUrn()));
         List<String> details = Arrays.asList("subject", ncesNotificationRequested.getDocumentContent().getAmendmentType(), ncesNotificationRequested.getMaterialId().toString());
-        NotificationServiceStub.verifyEmailCreate(details);
+        verifyEmailNotificationIsRaisedWithoutAttachment(details);
     }
 
     @After

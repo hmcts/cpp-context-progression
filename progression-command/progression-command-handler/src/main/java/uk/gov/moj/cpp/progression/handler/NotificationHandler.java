@@ -47,6 +47,7 @@ public class NotificationHandler {
     private static final String ERROR_MESSAGE = "errorMessage";
     private static final String STATUS_CODE = "statusCode";
     private static final String SENT_TIME = "sentTime";
+    private static final String COMPLETED_AT = "completedAt";
     private static final String ACCEPTED_TIME = "acceptedTime";
 
     @Inject
@@ -148,31 +149,25 @@ public class NotificationHandler {
 
     @Handles("progression.command.record-notification-request-success")
     public void recordNotificationRequestSuccess(final JsonEnvelope command) throws EventStreamException {
-
         final JsonObject payload = command.payloadAsJsonObject();
-
         final ZonedDateTime sentTime = ZonedDateTimes.fromString(payload.getString(SENT_TIME));
-
+        // optional attribute
+        final ZonedDateTime completedAt = Optional.ofNullable(payload.getString(COMPLETED_AT, null)).map(ZonedDateTimes::fromString).orElse(null);
         final UUID notificationId = fromString(payload.getString(NOTIFICATION_ID));
 
         if (payload.containsKey(CASE_ID)) {
-
             final UUID caseId = fromString(payload.getString(CASE_ID));
-
             appendAggregateEvents(command, caseId, CaseAggregate.class,
-                    aggregate -> aggregate.recordNotificationRequestSuccess(caseId, notificationId, sentTime));
+                    aggregate -> aggregate.recordNotificationRequestSuccess(caseId, notificationId, sentTime, completedAt));
 
         } else if (payload.containsKey(APPLICATION_ID)) {
-
             final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
-
             appendAggregateEvents(command, applicationId, ApplicationAggregate.class,
-                    aggregate -> aggregate.recordNotificationRequestSuccess(applicationId, notificationId, sentTime));
+                    aggregate -> aggregate.recordNotificationRequestSuccess(applicationId, notificationId, sentTime, completedAt));
         } else {
             final UUID materialId = fromString(payload.getString(MATERIAL_ID));
-
             appendAggregateEvents(command, materialId, MaterialAggregate.class,
-                    aggregate -> aggregate.recordNotificationRequestSuccess(materialId, notificationId, sentTime));
+                    aggregate -> aggregate.recordNotificationRequestSuccess(materialId, notificationId, sentTime, completedAt));
         }
     }
 

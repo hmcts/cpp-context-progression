@@ -44,8 +44,8 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-
 public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";

@@ -3,11 +3,11 @@ package uk.gov.justice.services;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.DomainToIndexMapper.ISO_8601_FORMATTER;
 
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +41,7 @@ public class HearingDaysMapper {
             hearingDayIndex.setListedDurationMinutes(hearingDay.getListedDurationMinutes());
         }
         if (nonNull(hearingDay.getSittingDay())) {
-            hearingDayIndex.setSittingDay(hearingDay.getSittingDay().format(DateTimeFormatter.ISO_INSTANT));
+            hearingDayIndex.setSittingDay(hearingDay.getSittingDay().format(ISO_8601_FORMATTER));
         }
         if(nonNull(courtCentreId)) {
             hearingDayIndex.setCourtCentreId(courtCentreId.toString());

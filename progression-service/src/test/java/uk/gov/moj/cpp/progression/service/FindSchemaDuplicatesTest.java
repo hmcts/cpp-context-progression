@@ -8,6 +8,6 @@ public class FindSchemaDuplicatesTest {
 
     @Test
     public void shouldFindSchemaDuplicatesTest() {
-        SchemaDuplicateTestHelper.failTestIfDifferentSchemasWithSameName();
+       SchemaDuplicateTestHelper.failTestIfDifferentSchemasWithSameName();
     }
 }

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.lang.Integer.valueOf;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
@@ -11,6 +12,7 @@ import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.UpdateCourtDocument;
+import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -41,8 +43,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("squid:S1168")
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateCourtDocumentHandler {
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateCourtDocumentHandler.class.getName());
     private static final String UPLOAD_ACCESS = "uploadUserGroups";
     private static final String READ_ACCESS = "readUserGroups";
@@ -57,25 +57,19 @@ public class UpdateCourtDocumentHandler {
 
     @Inject
     private EnvelopeHelper envelopeHelper;
-
     @Inject
     private ReferenceDataService refDataService;
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
     @Inject
     private EventSource eventSource;
-
     @Inject
     private AggregateService aggregateService;
-
     @Inject
     private Requester requester;
 
-
     @Handles("progression.command.update-court-document")
-    public void handle(final Envelope<UpdateCourtDocument> updateCourtDocumentEnvelope) throws EventStreamException {
-
+    public void handleUpdateCourtDocument(final Envelope<UpdateCourtDocument> updateCourtDocumentEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.update-court-document {}", updateCourtDocumentEnvelope);
         final UpdateCourtDocument updateCourtDocument = updateCourtDocumentEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateCourtDocument.getCourtDocumentId());
@@ -87,11 +81,11 @@ public class UpdateCourtDocumentHandler {
 
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
 
-        Stream<Object> events =null;
+        Stream<Object> events = null;
 
         final DocumentCategory documentCategory = buildDocumentCategory(updateCourtDocument, documentTypeData.getString(DOCUMENT_CATEGORY));
 
-        if(documentCategory!=null){
+        if (documentCategory != null) {
             final CourtDocument inputCourtDocumentDetails = CourtDocument.courtDocument().
                     withCourtDocumentId(updateCourtDocument.getCourtDocumentId()).
                     withDocumentTypeId(updateCourtDocument.getDocumentTypeId()).
@@ -100,51 +94,50 @@ public class UpdateCourtDocumentHandler {
                     withContainsFinancialMeans(updateCourtDocument.getContainsFinancialMeans()).
                     withDocumentTypeDescription(documentTypeData.getString(SECTION)).
                     withName(updateCourtDocument.getName()).
-                    withSeqNum(Integer.valueOf(documentTypeData.getInt(SEQNUM)))
-                    .withSendToCps(updateCourtDocument.getSendToCps()!=null ? updateCourtDocument.getSendToCps(): false)
+                    withSeqNum(valueOf(documentTypeData.getInt(SEQNUM)))
+                    .withSendToCps(updateCourtDocument.getSendToCps() != null ? updateCourtDocument.getSendToCps() : false)
                     .build();
 
             events = courtDocumentAggregate
                     .updateCourtDocument(inputCourtDocumentDetails, updateCourtDocument.getReceivedDateTime(), buildDocumentTypeRBAC(documentTypeData));
 
-        }
-        else {
-            events = courtDocumentAggregate.updateCourtDocumentFailed(updateCourtDocument.getCourtDocumentId(), format("Update document is not supported for this Document Category %s",documentTypeData.getString(DOCUMENT_CATEGORY)));
+        } else {
+            events = courtDocumentAggregate.updateCourtDocumentFailed(updateCourtDocument.getCourtDocumentId(), format("Update document is not supported for this Document Category %s", documentTypeData.getString(DOCUMENT_CATEGORY)));
         }
 
         appendEventsToStream(updateCourtDocumentEnvelope, eventStream, events);
-
     }
 
+    @Handles("progression.command.update-court-document-print-time")
+    public void handleUpdateCourtDocumentPrintTime(final Envelope<UpdateCourtDocumentPrintTime> updateCourtDocumentPrintTimeEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-court-document-print-time {}", updateCourtDocumentPrintTimeEnvelope);
+        final UpdateCourtDocumentPrintTime payload = updateCourtDocumentPrintTimeEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(payload.getCourtDocumentId());
+        final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
+
+        final Stream<Object> events = courtDocumentAggregate.updateCourtDocumentPrintTime(payload.getMaterialId(), payload.getCourtDocumentId(), payload.getPrintedAt());
+        appendEventsToStream(updateCourtDocumentPrintTimeEnvelope, eventStream, events);
+    }
 
     private DocumentCategory buildDocumentCategory(final UpdateCourtDocument updateCourtDocument, final String documentCategory) {
-
-
-        if(documentCategory.equalsIgnoreCase(CASE_LEVEL)){
+        if (documentCategory.equalsIgnoreCase(CASE_LEVEL)) {
             return DocumentCategory.documentCategory().
                     withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(updateCourtDocument.getProsecutionCaseId()).build())
                     .build();
-        }
-
-        else if (documentCategory.equalsIgnoreCase(DEFENDANT_LEVEL)){
+        } else if (documentCategory.equalsIgnoreCase(DEFENDANT_LEVEL)) {
             return DocumentCategory.documentCategory().
                     withDefendantDocument(DefendantDocument.defendantDocument().
                             withDefendants(updateCourtDocument.getDefendants()).
                             withProsecutionCaseId(updateCourtDocument.getProsecutionCaseId()).build()).build();
-        }
-
-        else if (documentCategory.equalsIgnoreCase(APPLICATIONS)){
+        } else if (documentCategory.equalsIgnoreCase(APPLICATIONS)) {
             return DocumentCategory.documentCategory()
                     .withApplicationDocument(ApplicationDocument.applicationDocument()
                             .withApplicationId(updateCourtDocument.getApplicationId())
                             .build()).build();
         }
 
-        else {
-            return null;
-        }
+        return null;
     }
-
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
@@ -152,7 +145,6 @@ public class UpdateCourtDocumentHandler {
                 events
                         .map(toEnvelopeWithMetadataFrom(jsonEnvelope)));
     }
-
 
     private DocumentTypeRBAC buildDocumentTypeRBAC(final JsonObject documentTypeRBACData) {
         if (null != documentTypeRBACData && null != documentTypeRBACData.getJsonObject("courtDocumentTypeRBAC")) {
@@ -170,17 +162,11 @@ public class UpdateCourtDocumentHandler {
         return null;
     }
 
-
-
-
     private List<String> getRBACUserGroups(final JsonObject documentTypeData, final String accessLevel) {
-
         final JsonArray documentTypeRBACJsonArray = documentTypeData.getJsonArray(accessLevel);
         if (null == documentTypeRBACJsonArray || documentTypeRBACJsonArray.isEmpty()) {
             return null;
         }
         return IntStream.range(0, (documentTypeRBACJsonArray).size()).mapToObj(i -> documentTypeRBACJsonArray.getJsonObject(i).getJsonObject("cppGroup").getString("groupName")).collect(toList());
-
     }
-
 }

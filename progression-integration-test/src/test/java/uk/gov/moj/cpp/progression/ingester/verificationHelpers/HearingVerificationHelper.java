@@ -129,21 +129,6 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                 .assertThat(hearingOutputIndexPath + ".hearingDates[" + hearingDayIndex + "]", is(date.toString()));
     }
 
-    public void verifyBoxWork(final DocumentContext event,
-                              final JsonObject outputCases,
-                              final int outputHearingIndex) {
-        try {
-            final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH,  outputHearingIndex);
-
-            with(outputCases.toString())
-                    .assertThat(hearingOutputIndexPath + ".boxWorkAssignedUserId", equalTo(((JsonString) event.read(ROOT + ".boxWorkAssignedUserId")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".boxWorkTaskStatus", equalTo(((JsonString) event.read(ROOT + ".boxWorkTaskStatus")).getString()));
-        } catch (Exception e) {
-            incrementExceptionCount();
-            logger.log(WARNING, format("Exception validating Hearing", e.getMessage()));
-        }
-    }
-
     public void verifyHearing(final DocumentContext event,
                               final JsonObject outputCases,
                               final int outputHearingIndex) {
@@ -162,7 +147,8 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                     .assertThat(hearingOutputIndexPath + ".courtCentreCode", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.code")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingTypeId", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.id")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingTypeLabel", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.description")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".isBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isBoxHearing").toString()).booleanValue()));
+                    .assertThat(hearingOutputIndexPath + ".isBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isBoxHearing").toString()).booleanValue()))
+                    .assertThat(hearingOutputIndexPath + ".isVirtualBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isVirtualBoxHearing").toString()).booleanValue()));
             incrementHearingsCount();
         } catch (Exception e) {
             incrementExceptionCount();

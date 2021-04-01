@@ -8,6 +8,7 @@ import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.HOST;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.stub.CourtOrderStub.setupCourtOrdersStub;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
@@ -33,6 +34,7 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorise
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
 
+import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -109,7 +111,7 @@ public class AbstractIT {
         stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json", randomUUID());
         stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
-        stubQueryCourtOURoom("/restResource/referencedata.ou-courtroom.json");
+        stubQueryCourtOURoom();
         stubQueryOrganisation(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
         stubNotifications();
         stubMaterialUploadFile();
@@ -119,6 +121,8 @@ public class AbstractIT {
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_NON_TRIAL),"stub-data/hearing.get-hearing-of-type-non-trial.json");
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
         stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), "2099/1234567L", "1234567");
+        setupCourtOrdersStub();
+        IdMapperStub.setUp();
     }
 
 }

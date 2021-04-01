@@ -21,13 +21,12 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class SystemIdMapperService {
 
-    protected static final String SOURCE_TYPE = "PROGRESSION_NOTIFICATION_ID";
-
+    protected static final String NOTIFICATION_SOURCE_TYPE = "PROGRESSION_NOTIFICATION_ID";
+    protected static final String MATERIAL_SOURCE_TYPE = "PROGRESSION_MATERIAL_ID";
     protected static final String CASE_TARGET_TYPE = "CASE_ID";
-
     protected static final String APPLICATION_TARGET_TYPE = "APPLICATION_ID";
-
     protected static final String MATERIAL_TARGET_TYPE = "MATERIAL_ID";
+    protected static final String DOCUMENT_TARGET_TYPE = "DOCUMENT_ID";
 
     @Inject
     private SystemUserProvider systemUserProvider;
@@ -37,22 +36,26 @@ public class SystemIdMapperService {
 
     public Optional<SystemIdMapping> getCppCaseIdForNotificationId(final String notificationId) {
 
-        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, CASE_TARGET_TYPE, getSystemUserId());
+        return systemIdMapperClient.findBy(notificationId, NOTIFICATION_SOURCE_TYPE, CASE_TARGET_TYPE, getSystemUserId());
     }
 
     public Optional<SystemIdMapping> getCppApplicationIdForNotificationId(final String notificationId) {
 
-        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, APPLICATION_TARGET_TYPE, getSystemUserId());
+        return systemIdMapperClient.findBy(notificationId, NOTIFICATION_SOURCE_TYPE, APPLICATION_TARGET_TYPE, getSystemUserId());
     }
 
     public Optional<SystemIdMapping> getCppMaterialIdForNotificationId(final String notificationId) {
-        return systemIdMapperClient.findBy(notificationId, SOURCE_TYPE, MATERIAL_TARGET_TYPE, getSystemUserId());
+        return systemIdMapperClient.findBy(notificationId, NOTIFICATION_SOURCE_TYPE, MATERIAL_TARGET_TYPE, getSystemUserId());
+    }
+
+    public Optional<SystemIdMapping> getDocumentIdForMaterialId(final String materialId) {
+        return systemIdMapperClient.findBy(materialId, MATERIAL_SOURCE_TYPE, DOCUMENT_TARGET_TYPE, getSystemUserId());
     }
 
     @SuppressWarnings("squid:S3655")
     public void mapNotificationIdToCaseId(final UUID caseId, final UUID notificationId) {
 
-        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, caseId, CASE_TARGET_TYPE);
+        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), NOTIFICATION_SOURCE_TYPE, caseId, CASE_TARGET_TYPE);
 
         final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
 
@@ -63,7 +66,7 @@ public class SystemIdMapperService {
 
     public void mapNotificationIdToApplicationId(final UUID applicationId, final UUID notificationId) {
 
-        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, applicationId, APPLICATION_TARGET_TYPE);
+        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), NOTIFICATION_SOURCE_TYPE, applicationId, APPLICATION_TARGET_TYPE);
 
         final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
 
@@ -74,12 +77,23 @@ public class SystemIdMapperService {
 
     public void mapNotificationIdToMaterialId(final UUID materialId, final UUID notificationId) {
 
-        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), SOURCE_TYPE, materialId, MATERIAL_TARGET_TYPE);
+        final SystemIdMap systemIdMap = new SystemIdMap(notificationId.toString(), NOTIFICATION_SOURCE_TYPE, materialId, MATERIAL_TARGET_TYPE);
 
         final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
 
         if (!response.isSuccess()) {
             throw new IllegalStateException(format("Failed to map material Id: %s to notification id %s", materialId, notificationId));
+        }
+    }
+
+    public void mapMaterialIdToDocumentId(final UUID documentId, final UUID materialId) {
+
+        final SystemIdMap systemIdMap = new SystemIdMap(materialId.toString(), MATERIAL_SOURCE_TYPE, documentId, DOCUMENT_TARGET_TYPE);
+
+        final AdditionResponse response = systemIdMapperClient.add(systemIdMap, getSystemUserId());
+
+        if (!response.isSuccess()) {
+            throw new IllegalStateException(format("Failed to map material Id: %s to document id %s", materialId, documentId));
         }
     }
 

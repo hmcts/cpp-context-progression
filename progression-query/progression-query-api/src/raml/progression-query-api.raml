@@ -645,6 +645,28 @@ protocols: [ HTTP, HTTPS ]
                     schema: !include json/schema/progression.query.prison-court-register-document-by-court-centre.json
 
 
+/court-proceedings/application/{applicationId}:
+  uriParameters:
+        applicationId:
+          description: application id for the particular court application
+          type: string
+  get:
+      description: |
+        Return the application for the application id
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-proceedings-for-application+json
+            name: progression.query.court-proceedings-for-application
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-proceedings-for-application+json:
+                    example: !include json/progression.query.court-proceedings-for-application.json
+                    schema: !include json/schema/progression.query.court-proceedings-for-application.json
+
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 

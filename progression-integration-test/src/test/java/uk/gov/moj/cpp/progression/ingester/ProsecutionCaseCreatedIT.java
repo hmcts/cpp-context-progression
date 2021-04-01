@@ -1,14 +1,19 @@
 package uk.gov.moj.cpp.progression.ingester;
 
 import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
@@ -26,6 +31,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
+import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,24 +68,16 @@ public class ProsecutionCaseCreatedIT extends AbstractIT {
         final String caseUrn = PreAndPostConditionHelper.generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
-            try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject)) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                fail();
-            }
+        final Matcher[] caseMatcher = {withJsonPath("$.caseId", equalTo(caseId))};
 
-            return empty();
-        });
+        final Optional<JsonObject> prosecussionCaseResponseJsonObject = findBy(caseMatcher);
 
-        assertTrue(prosecussionCaseResponseJsonObject.isPresent());
+        assertThat(prosecussionCaseResponseJsonObject.isPresent(), is(true));
 
-        final JsonObject outputCase = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
+        final JsonObject outputCase = prosecussionCaseResponseJsonObject.get();
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
         verifyCaseCreated(1l, inputProsecutionCase, outputCase);
+
         final JsonObject inputDefendant = inputProsecutionCase.read("$.prosecutionCase.defendants[0]");
         verifyCaseDefendant(inputProsecutionCase, outputCase, true);
     }

@@ -54,10 +54,9 @@ public class DefendantsListingStatusChangedTransformerTest {
         final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
         final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
 
-        jsonValidator.validate(output, "/json/schema/crime-case-index-schema.json");
-
         hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 0, "$.hearing.prosecutionCases[0]");
         hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 3, "$.hearing.prosecutionCases[1]");
+
         hearingVerificationHelper.verifyApplication(inputDC, output, 1, "$.hearing.courtApplications[0]");
         hearingVerificationHelper.verifyApplication(inputDC, output, 2, "$.hearing.courtApplications[1]");
 
@@ -102,6 +101,25 @@ public class DefendantsListingStatusChangedTransformerTest {
 
         hearingVerificationHelper.verifyApplication(inputDC, output, 0, "$.hearing.courtApplications[0]");
         hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 0, 0);
+        hearingVerificationHelper.verifyCounts(1, 1, 0);
+    }
+
+    @Test
+    public void shouldTransformDefendantsListingStatusChangedWithLinkedApplication() throws IOException {
+
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json");
+        final DocumentContext inputDC = JsonPath.parse(inputJson);
+        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
+        final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
+
+        hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 0, "$.hearing.prosecutionCases[0]");
+
+        hearingVerificationHelper.verifyApplication(inputDC, output, 0, "$.hearing.courtApplications[0]", 0);
+        hearingVerificationHelper.verifyApplication(inputDC, output, 0, "$.hearing.courtApplications[1]", 1);
+
+        hearingVerificationHelper.verifyHearings(inputDC, output, 0, 0);
+
+
         hearingVerificationHelper.verifyCounts(1, 1, 0);
     }
 }

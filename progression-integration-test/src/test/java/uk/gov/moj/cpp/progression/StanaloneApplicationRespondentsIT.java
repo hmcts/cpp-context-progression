@@ -19,6 +19,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
 import com.jayway.restassured.response.Response;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class StanaloneApplicationRespondentsIT extends AbstractIT {
@@ -27,7 +28,7 @@ public class StanaloneApplicationRespondentsIT extends AbstractIT {
 
     @Test
     public void shouldGetStandaloneApplicationWithMultipleRespondents() throws Exception {
-        randomValues = new CourtApplicationsHelper().new CourtApplicationRandomValues();
+        randomValues = new CourtApplicationsHelper.CourtApplicationRandomValues();
         CourtApplicationsHelper.addStandaloneCourtApplicationWithRespondents("progression.create-court-application-with-respondents.json", randomValues);
         poll(requestParams(getReadUrl("/applications/" + randomValues.RANDOM_APPLICATION_ID), PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
                 .withHeader(USER_ID, randomUUID()))

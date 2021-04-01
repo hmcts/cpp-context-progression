@@ -169,9 +169,9 @@ function buildDeployAndTest {
 function deployAndTest {
   deleteWars
   startVagrant
-  runLiquibase
   deployWiremock
   deploySingleWar
+  runLiquibase
   healthCheck
   integrationTests
 }

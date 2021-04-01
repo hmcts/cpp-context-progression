@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import static java.lang.Boolean.FALSE;
+import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.justice.courts.progression.query.AagResultPrompts.aagResultPrompts;
+import static uk.gov.justice.courts.progression.query.ThirdParties.thirdParties;
 import static uk.gov.justice.progression.courts.ApplicantDetails.applicantDetails;
-import static uk.gov.justice.progression.courts.ApplicationDetails.Builder;
-import static uk.gov.justice.progression.courts.ApplicationDetails.applicationDetails;
 import static uk.gov.justice.progression.courts.RespondentDetails.respondentDetails;
 
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -15,14 +16,20 @@ import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationType;
-import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.courts.progression.query.AagResultPrompts;
+import uk.gov.justice.courts.progression.query.AagResults;
+import uk.gov.justice.courts.progression.query.ApplicationDetails;
+import uk.gov.justice.courts.progression.query.ThirdParties;
+import uk.gov.justice.courts.progression.query.ThirdPartyRepresentatives;
 import uk.gov.justice.progression.courts.ApplicantDetails;
-import uk.gov.justice.progression.courts.ApplicationDetails;
 import uk.gov.justice.progression.courts.RespondentDetails;
 import uk.gov.justice.progression.courts.RespondentRepresentatives;
 
@@ -33,10 +40,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings({"squid:CommentedOutCodeLine"})
 public class ApplicationAtAGlanceHelper {
 
+    private static final String FIRST_LAST_NAME_FORMAT = "%s %s";
+
     public ApplicationDetails getApplicationDetails(final CourtApplication courtApplication) {
-        final Builder applicationBuilder = applicationDetails()
+        final ApplicationDetails.Builder applicationBuilder = ApplicationDetails.applicationDetails()
                 .withApplicationReference(courtApplication.getApplicationReference())
                 .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
                 .withApplicationParticulars(courtApplication.getApplicationParticulars());
@@ -49,9 +59,17 @@ public class ApplicationAtAGlanceHelper {
 
         final CourtApplicationType type = courtApplication.getType();
         if (nonNull(type)) {
-            applicationBuilder.withApplicationType(type.getApplicationType());
-            applicationBuilder.withAppeal(type.getIsAppealApplication());
+            applicationBuilder.withApplicationType(type.getType());
+            applicationBuilder.withAppeal(type.getAppealFlag());
+            applicationBuilder.withApplicantAppellantFlag(type.getApplicantAppellantFlag());
         }
+        ofNullable(courtApplication.getPlea()).ifPresent(applicationBuilder::withPlea);
+        ofNullable(courtApplication.getVerdict()).ifPresent(applicationBuilder::withVerdict);
+
+        ofNullable(courtApplication.getJudicialResults()).ifPresent(judicialResults -> {
+            final List<AagResults> aagResultsList = judicialResults.stream().map(this::getAagResult).collect(toList());
+            applicationBuilder.withAagResults(aagResultsList);
+        });
 
         return applicationBuilder.build();
     }
@@ -59,44 +77,68 @@ public class ApplicationAtAGlanceHelper {
     public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication) {
         final ApplicantDetails.Builder applicantDetailsBuilder = applicantDetails();
         final CourtApplicationParty applicant = courtApplication.getApplicant();
+        ofNullable(applicant.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(applicantDetailsBuilder::withName);
         final Person person = getPersonDetails(applicant);
         final Organisation organisation = applicant.getOrganisation();
-
-        final CourtApplicationType type = courtApplication.getType();
-        if (nonNull(type)) {
-            applicantDetailsBuilder.withApplicantSynonym(type.getApplicantSynonym());
-        }
-
         if (nonNull(person)) {
             applicantDetailsBuilder.withName(getName(person));
             applicantDetailsBuilder.withAddress(person.getAddress());
             applicantDetailsBuilder.withInterpreterLanguageNeeds(person.getInterpreterLanguageNeeds());
 
             final Optional<String> representationName = getRepresentationName(applicant);
-            if (representationName.isPresent()) {
-                applicantDetailsBuilder.withRepresentation(representationName.get());
-            }
+            representationName.ifPresent(applicantDetailsBuilder::withRepresentation);
 
             final Optional<String> remandStatus = getRemandStatus(applicant);
-            if (remandStatus.isPresent()) {
-                applicantDetailsBuilder.withRemandStatus(remandStatus.get());
-            }
+            remandStatus.ifPresent(applicantDetailsBuilder::withRemandStatus);
         } else if (nonNull(organisation)) {
             applicantDetailsBuilder.withName(organisation.getName());
             applicantDetailsBuilder.withAddress(organisation.getAddress());
             if (nonNull(applicant.getOrganisationPersons())) {
                 applicantDetailsBuilder.withRepresentation(getOrganisationPersons(applicant.getOrganisationPersons()));
             }
+        } else if (nonNull(applicant.getMasterDefendant())) {
+            final Optional<PersonDefendant> personDefendantDetails = ofNullable(applicant.getMasterDefendant().getPersonDefendant());
+            final Optional<LegalEntityDefendant> organisationDefendantDetails = ofNullable(applicant.getMasterDefendant().getLegalEntityDefendant());
+            if (personDefendantDetails.isPresent()) {
+                applicantDetailsBuilder.withName(getName(personDefendantDetails.get().getPersonDetails()));
+                applicantDetailsBuilder.withAddress(personDefendantDetails.get().getPersonDetails().getAddress());
+            } else if (organisationDefendantDetails.isPresent()) {
+                applicantDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
+                applicantDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
+            }
         }
+        applicantDetailsBuilder.withIsSubject(courtApplication.getSubject() != null && applicant.getId().equals(courtApplication.getSubject().getId()));
         return applicantDetailsBuilder.build();
     }
 
     private String getOrganisationPersons(final List<AssociatedPerson> associatedPersonList) {
         return associatedPersonList.stream().map(AssociatedPerson::getPerson)
                 .filter(person -> (nonNull(person.getFirstName()) && !person.getFirstName().isEmpty()) && (nonNull(person.getLastName()) && !person.getLastName().isEmpty()))
-                .map(person -> String.format("%s %s", person.getFirstName(), person.getLastName()))
+                .map(person -> String.format(FIRST_LAST_NAME_FORMAT, person.getFirstName(), person.getLastName()))
                 .collect(Collectors.joining(", "));
 
+    }
+
+    public AagResults getAagResult(final JudicialResult judicialResult) {
+        final AagResults.Builder aagResultBuilder = new AagResults.Builder();
+        aagResultBuilder.withId(judicialResult.getJudicialResultId());
+        aagResultBuilder.withLabel(judicialResult.getLabel());
+        aagResultBuilder.withOrderedDate(judicialResult.getOrderedDate());
+        aagResultBuilder.withLastSharedDateTime(judicialResult.getLastSharedDateTime());
+        aagResultBuilder.withAmendmentDate(judicialResult.getAmendmentDate());
+        aagResultBuilder.withAmendmentReason(judicialResult.getAmendmentReason());
+        ofNullable(judicialResult.getDelegatedPowers()).map(delegatedPower -> format(FIRST_LAST_NAME_FORMAT, delegatedPower.getFirstName(), delegatedPower.getLastName()))
+                .ifPresent(aagResultBuilder::withAmendedBy);
+        ofNullable(judicialResult.getJudicialResultPrompts()).ifPresent(judicialResultPrompts -> {
+            final List<AagResultPrompts> aagResultPrompts = judicialResultPrompts.stream().map(jrp -> aagResultPrompts()
+                    .withLabel(jrp.getLabel())
+                    .withValue(jrp.getValue())
+                    .build())
+                    .collect(toList());
+            aagResultBuilder.withAagResultPrompts(aagResultPrompts);
+        });
+
+        return aagResultBuilder.build();
     }
 
     public List<RespondentDetails> getRespondentDetails(final CourtApplication courtApplication) {
@@ -104,32 +146,42 @@ public class ApplicationAtAGlanceHelper {
                 .getRespondents())
                 .map(Collection::stream)
                 .orElseGet(Stream::empty)
-                .map(this::getRespondentDetails)
+                .map(respondent -> getRespondentDetails(respondent, courtApplication.getSubject()))
                 .collect(toList());
     }
 
-    private RespondentDetails getRespondentDetails(final CourtApplicationRespondent courtApplicationRespondent) {
+    private RespondentDetails getRespondentDetails(final CourtApplicationParty respondent, final CourtApplicationParty subject) {
         final RespondentDetails.Builder respondentDetailsBuilder = respondentDetails();
-        final CourtApplicationParty courtApplicationParty = courtApplicationRespondent.getPartyDetails();
-
-        final Organisation organisation = courtApplicationParty.getOrganisation();
-        final Person personDetails = courtApplicationParty.getPersonDetails();
+        ofNullable(respondent.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(respondentDetailsBuilder::withName);
+        respondentDetailsBuilder.withId(respondent.getId());
+        final Organisation organisation = respondent.getOrganisation();
+        final Person personDetails = respondent.getPersonDetails();
         if (nonNull(organisation)) {
             respondentDetailsBuilder.withName(organisation.getName());
             respondentDetailsBuilder.withAddress(organisation.getAddress());
-            final List<AssociatedPerson> organisationPersons = courtApplicationParty.getOrganisationPersons();
+            final List<AssociatedPerson> organisationPersons = respondent.getOrganisationPersons();
             if (nonNull(organisationPersons)) {
                 respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(organisationPersons));
             }
         } else if (nonNull(personDetails)) {
             respondentDetailsBuilder.withName(getName(personDetails));
             respondentDetailsBuilder.withAddress(personDetails.getAddress());
-            final Organisation representationOrganisation = courtApplicationParty.getRepresentationOrganisation();
+            final Organisation representationOrganisation = respondent.getRepresentationOrganisation();
             if (nonNull(representationOrganisation)) {
                 respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(representationOrganisation));
             }
+        } else if (nonNull(respondent.getMasterDefendant())) {
+            final Optional<PersonDefendant> personDefendantDetails = ofNullable(respondent.getMasterDefendant().getPersonDefendant());
+            final Optional<LegalEntityDefendant> organisationDefendantDetails = ofNullable(respondent.getMasterDefendant().getLegalEntityDefendant());
+            if (personDefendantDetails.isPresent()) {
+                respondentDetailsBuilder.withName(getName(personDefendantDetails.get().getPersonDetails()));
+                respondentDetailsBuilder.withAddress(personDefendantDetails.get().getPersonDetails().getAddress());
+            } else if (organisationDefendantDetails.isPresent()) {
+                respondentDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
+                respondentDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
+            }
         }
-
+        respondentDetailsBuilder.withIsSubject(subject != null && respondent.getId().equals(subject.getId()));
         return respondentDetailsBuilder.build();
     }
 
@@ -150,8 +202,8 @@ public class ApplicationAtAGlanceHelper {
     }
 
     private Person getPersonDetails(final CourtApplicationParty applicant) {
-        return ofNullable(applicant.getDefendant())
-                .map(Defendant::getPersonDefendant)
+        return ofNullable(applicant.getMasterDefendant())
+                .map(MasterDefendant::getPersonDefendant)
                 .map(PersonDefendant::getPersonDetails)
                 .orElse(applicant.getPersonDetails());
     }
@@ -165,8 +217,8 @@ public class ApplicationAtAGlanceHelper {
     }
 
     private Optional<String> getRemandStatus(final CourtApplicationParty applicant) {
-        return ofNullable(applicant.getDefendant())
-                .map(Defendant::getPersonDefendant)
+        return ofNullable(applicant.getMasterDefendant())
+                .map(MasterDefendant::getPersonDefendant)
                 .map(PersonDefendant::getBailStatus)
                 .map(BailStatus::getDescription);
     }
@@ -174,5 +226,72 @@ public class ApplicationAtAGlanceHelper {
     private Optional<String> getRepresentationName(final CourtApplicationParty applicant) {
         return ofNullable(applicant.getRepresentationOrganisation())
                 .map(Organisation::getName);
+    }
+
+    public List<ThirdParties> getThirdPartyDetails(final CourtApplication courtApplication) {
+        return ofNullable(courtApplication
+                .getThirdParties())
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .map(this::getThirdPartyDetails)
+                .collect(toList());
+    }
+
+    private ThirdParties getThirdPartyDetails(final CourtApplicationParty courtApplicationParty) {
+        final ThirdParties.Builder thirdPartiesDetailsBuilder = thirdParties();
+        thirdPartiesDetailsBuilder.withId(courtApplicationParty.getId());
+
+        ofNullable(courtApplicationParty.getOrganisation()).ifPresent(organisation -> {
+            thirdPartiesDetailsBuilder.withName(organisation.getName());
+            thirdPartiesDetailsBuilder.withAddress(organisation.getAddress());
+            final List<AssociatedPerson> organisationPersons = courtApplicationParty.getOrganisationPersons();
+            if (nonNull(organisationPersons)) {
+                thirdPartiesDetailsBuilder.withThirdPartyRepresentatives(getThirdPartyRepresentatives(organisationPersons));
+            }
+        });
+
+        ofNullable(courtApplicationParty.getPersonDetails()).ifPresent(personDetails -> {
+            thirdPartiesDetailsBuilder.withName(getName(personDetails));
+            thirdPartiesDetailsBuilder.withAddress(personDetails.getAddress());
+            final Organisation representationOrganisation = courtApplicationParty.getRepresentationOrganisation();
+            if (nonNull(representationOrganisation)) {
+                thirdPartiesDetailsBuilder.withThirdPartyRepresentatives(getThirdPartyRepresentatives(representationOrganisation));
+            }
+        });
+
+        ofNullable(courtApplicationParty.getMasterDefendant()).ifPresent(masterDefendant -> {
+            final Optional<PersonDefendant> personDefendantDetails = ofNullable(masterDefendant.getPersonDefendant());
+            final Optional<LegalEntityDefendant> organisationDefendantDetails = ofNullable(masterDefendant.getLegalEntityDefendant());
+            if (personDefendantDetails.isPresent()) {
+                thirdPartiesDetailsBuilder.withName(getName(personDefendantDetails.get().getPersonDetails()));
+                thirdPartiesDetailsBuilder.withAddress(personDefendantDetails.get().getPersonDetails().getAddress());
+            } else if (organisationDefendantDetails.isPresent()) {
+                thirdPartiesDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
+                thirdPartiesDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
+            }
+        });
+
+        ofNullable(courtApplicationParty.getProsecutingAuthority()).ifPresent(prosecutingAuthority -> {
+            thirdPartiesDetailsBuilder.withName(prosecutingAuthority.getName());
+            thirdPartiesDetailsBuilder.withAddress(prosecutingAuthority.getAddress());
+        });
+
+        return thirdPartiesDetailsBuilder.build();
+    }
+
+    private List<ThirdPartyRepresentatives> getThirdPartyRepresentatives(final List<AssociatedPerson> organisationPersons) {
+        return organisationPersons
+                .stream()
+                .map(p -> new ThirdPartyRepresentatives(getName(p.getPerson()), p.getRole()))
+                .collect(toList());
+    }
+
+    private List<ThirdPartyRepresentatives> getThirdPartyRepresentatives(final Organisation representationOrganisation) {
+        final ThirdPartyRepresentatives respondentRepresentatives = ThirdPartyRepresentatives.thirdPartyRepresentatives()
+                .withRepresentativeName(representationOrganisation.getName())
+                .build();
+        final List<ThirdPartyRepresentatives> thirdPartyRepresentatives = new ArrayList<>();
+        thirdPartyRepresentatives.add(respondentRepresentatives);
+        return thirdPartyRepresentatives;
     }
 }

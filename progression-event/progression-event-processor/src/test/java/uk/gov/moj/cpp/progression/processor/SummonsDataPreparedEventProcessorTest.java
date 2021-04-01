@@ -1,62 +1,99 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.allOf;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonList;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.times;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnCourtAddress;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnDefendant;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnDefendantAddress;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnHearingCourtDetails;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnOffences;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnReferralReason;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnSummonsData;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateCourtCentreJson;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateCourtCentreJsonInWelsh;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateDocumentTypeAccess;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateLjaDetails;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateLjaDetailsWithWelsh;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateProsecutionCaseJson;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateReferralReasonsJson;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateSummonsData;
+import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.justice.core.courts.Address.address;
+import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
+import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
+import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
+import static uk.gov.justice.core.courts.LjaDetails.ljaDetails;
+import static uk.gov.justice.core.courts.MasterDefendant.masterDefendant;
+import static uk.gov.justice.core.courts.Person.person;
+import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthority;
+import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
+import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
+import static uk.gov.justice.core.courts.SummonsData.summonsData;
+import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
+import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
+import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
+import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
+import static uk.gov.justice.core.courts.summons.SummonsProsecutor.summonsProsecutor;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.EMAIL_ADDRESS;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.EITHER_WAY;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.MCA;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.WITNESS;
 
+import uk.gov.justice.core.courts.AssociatedPerson;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.core.courts.summons.SummonsDefendant;
+import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
-import uk.gov.moj.cpp.progression.service.NotificationService;
+import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
+import uk.gov.moj.cpp.progression.processor.summons.ApplicantEmailAddressUtil;
+import uk.gov.moj.cpp.progression.processor.summons.ApplicationSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.CaseDefendantSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.PublishSummonsDocumentService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsCode;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsNotificationEmailPayloadService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsTemplateNameService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
-import java.util.List;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.IntStream;
 
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -64,34 +101,29 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(DataProviderRunner.class)
 public class SummonsDataPreparedEventProcessorTest {
 
-    public static final String NAME_HARRY_JACK_KANE = "Harry Jack Kane";
-    private static final UUID CASE_ID = UUID.randomUUID();
-    private static final UUID REFERRAL_ID = UUID.randomUUID();
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
-    private static final UUID COURT_CENTRE_ID = UUID.fromString("89b10041-b44d-43c8-9b1e-d1b9fee15c93");
-    public static final UUID SUMMONS_DOCUMENT_TYPE_ID = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
-    private static final String ADDRESS = "address";
-    public static final String OFFENCES = "offences";
-    public static final String ADDRESSEE = "addressee";
-    public static final String HEARING_COURT_DETAILS = "hearingCourtDetails";
-    public static final String COURT_ADDRESS = "courtAddress";
-    public static final String USER_ID = UUID.randomUUID().toString();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
+    private static final UUID SUBJECT_ID = randomUUID();
+    private static final UUID APPLICATION_ID = randomUUID();
+    private static final UUID COURT_CENTRE_ID = UUID.fromString("f8254db1-1683-483e-afb3-b87fde5a0a26");
+    private static final UUID COURT_ROOM_ID = randomUUID();
+    private static final UUID PROSECUTION_AUTHORITY_ID = randomUUID();
+    private static final String EMAIL_ADDRESS = RandomGenerator.EMAIL_ADDRESS.next();
+    private static final String SUMMONS_APPROVED_EMAIL_ADDRESS = RandomGenerator.EMAIL_ADDRESS.next();
+    private static final EmailChannel EMAIL_CHANNEL = emailChannel().build();
 
-
-    @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private static final ZonedDateTime HEARING_DATE_TIME = ZonedDateTimes.fromString("2018-04-01T13:00:00.000Z");
+    private static final String LJA_CODE = "ljaCode";
 
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    private final Enveloper enveloper = createEnveloper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Mock
     private ReferenceDataService referenceDataService;
@@ -100,307 +132,327 @@ public class SummonsDataPreparedEventProcessorTest {
     private Requester requester;
 
     @Mock
-    private SummonsDataPrepared summonsDataPrepared;
-
-    @Mock
     private ProgressionService progressionService;
-
-    @Mock
-    private SystemUserProvider systemUserProvider;
-
-    @Mock
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Mock
-    private Sender sender;
 
     @Mock
     private JsonEnvelope envelope;
 
     @Mock
-    private JsonObject payload;
-
-    @Mock
-    private JsonEnvelope finalEnvelope;
-
-    @Mock
-    private NotificationService notificationService;
-
-    @Mock
-    private DocumentGeneratorService documentGeneratorService;
-
-    @Mock
-    private Function<Object, JsonEnvelope> enveloperFunction;
+    private SummonsNotificationEmailPayloadService summonsNotificationEmailPayloadService;
 
     @InjectMocks
     private SummonsDataPreparedEventProcessor summonsDataPreparedEventProcessor;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    private ArgumentCaptor<SummonsDocumentContent> parentSummonsDocumentContentArgumentCaptor;
 
-    @Captor
-    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
+    @Mock
+    private SummonsService summonsService;
 
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptorForCourtDocument;
+    @Mock
+    private SummonsTemplateNameService summonsTemplateNameService;
 
-    @Captor
-    private ArgumentCaptor<Sender> senderArgumentCaptor;
+    @Mock
+    private CaseDefendantSummonsService caseDefendantSummonsService;
 
-    @Captor
-    private ArgumentCaptor<String> templateArgumentCaptor;
+    @Mock
+    private ApplicationSummonsService applicationSummonsService;
 
-    @Captor
-    private ArgumentCaptor<UUID> caseIdArgumentCaptor;
+    @Mock
+    private PublishSummonsDocumentService publishSummonsDocumentService;
 
-    @Captor
-    private ArgumentCaptor<UUID> applicationIdArgumentCaptor;
+    @Mock
+    private ApplicantEmailAddressUtil applicantEmailAddressUtil;
 
+    // if suppressed, document not sent for remote printing
+    private boolean summonsSuppressed;
+
+    @DataProvider
+    public static Object[][] firstHearingSummonsSpecifications() {
+        return new Object[][]{
+                {MCA, false, 1},
+                {WITNESS, false, 1},
+                {EITHER_WAY, false, 1},
+                {MCA, true, 2},
+                {WITNESS, true, 2},
+                {EITHER_WAY, true, 2},
+        };
+    }
+
+    @DataProvider
+    public static Object[][] sjpReferralSummonsSpecifications() {
+        return new Object[][]{
+                {false, 1},
+                {true, 1},
+        };
+    }
+
+    @DataProvider
+    public static Object[][] applicationSummonsSpecifications() {
+        return new Object[][]{
+                // summons required, is youth, number of documents
+                {APPLICATION, false, 1},
+                {APPLICATION, true, 1},
+                {BREACH, false, 1},
+                {BREACH, true, 2},
+        };
+    }
+
+    @Before
+    public void setup() {
+        initMocks(this);
+        summonsSuppressed = BOOLEAN.next();
+    }
+
+    @UseDataProvider("firstHearingSummonsSpecifications")
     @Test
-    public void shouldGenerateSummonsPayloadForFirstHearing() {
+    public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
+        verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.S, FIRST_HEARING, summonsCode, false, isYouth, numberOfDocuments, !summonsSuppressed);
+    }
+
+
+    @UseDataProvider("firstHearingSummonsSpecifications")
+    @Test
+    public void shouldGenerateBilingualSummonsPayloadForFirstHearing(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
+        verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.S, FIRST_HEARING, summonsCode, true, isYouth, numberOfDocuments, !summonsSuppressed);
+    }
+
+    @UseDataProvider("sjpReferralSummonsSpecifications")
+    @Test
+    public void shouldGenerateEnglishSummonsForSjpReferral(final boolean isYouth, final int numberOfDocuments) {
+        verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.J, SJP_REFERRAL, null, false, isYouth, numberOfDocuments, true);
+    }
+
+    @UseDataProvider("sjpReferralSummonsSpecifications")
+    @Test
+    public void shouldGenerateBilingualSummonsForSjpReferral(final boolean isYouth, final int numberOfDocuments) {
+        verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.J, SJP_REFERRAL, null, true, isYouth, numberOfDocuments, true);
+    }
+
+    @UseDataProvider("applicationSummonsSpecifications")
+    @Test
+    public void shouldGenerateEnglishSummonsForApplications(final SummonsRequired summonsRequired, final boolean isYouth, final int numberOfDocuments) {
+        verifySummonsPayloadGeneratedForApplications(summonsRequired, true, isYouth, numberOfDocuments, !summonsSuppressed);
+    }
+
+    public void verifySummonsPayloadGeneratedForCaseSummons(final InitiationCode initiationCode, final SummonsRequired summonsRequired, final SummonsCode summonsCode, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {
 
         //Given
-        prepareDataAndConditionsForDocumentGeneration(generateCourtCentreJson(),
-                SummonsRequired.FIRST_HEARING,
-                false);
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(summonsRequired);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(getProsecutionCase(initiationCode, summonsCode))).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(isWelsh);
+        final SummonsProsecutor summonsProsecutor = getSummonsProsecutor();
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String defendantTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent defendantTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
+        when(referenceDataService.getCourtRoomById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsService.getProsecutor(eq(envelope), eq(PROSECUTION_AUTHORITY_ID))).thenReturn(summonsProsecutor);
+        when(summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh)).thenReturn(defendantTemplateName);
+        when(summonsTemplateNameService.getCaseSummonsParentTemplateName(isWelsh)).thenReturn(parentGuardianTemplateName);
+        when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
 
         summonsDataPreparedEventProcessor.requestSummons(envelope);
 
         //When
-        verify(documentGeneratorService).generateDocument(envelopeArgumentCaptor.capture(),
-                jsonObjectArgumentCaptor.capture(),
-                templateArgumentCaptor.capture(),
-                senderArgumentCaptor.capture(),
-                caseIdArgumentCaptor.capture(),
-                applicationIdArgumentCaptor.capture());
+        verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
+        verify(referenceDataService).getCourtRoomById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsService).getProsecutor(eq(envelope), eq(PROSECUTION_AUTHORITY_ID));
+        verify(summonsTemplateNameService).getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh);
+        verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
+        verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(summonsRequired));
 
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getCaseSummonsParentTemplateName(isWelsh);
+            verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), any(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+        }
 
-        //Then
-        verifyCourtDocument(1);
-        final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
-        assertOnCaseIdAndEnvelope();
-
-        assertOnSummonsData(summonsDataJson,
-                SummonsRequired.FIRST_HEARING,
-                false);
-
-        final JsonObject defendantJson = assertOnDefendant(summonsDataJson);
-
-        final JsonObject defendantAddressJson = defendantJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(defendantAddressJson);
-
-        final JsonArray offencesJson = summonsDataJson.getJsonArray(OFFENCES);
-        assertOnOffences(offencesJson, false);
-
-        final JsonObject addresseeJson = summonsDataJson.getJsonObject(ADDRESSEE);
-        assertThat(addresseeJson, notNullValue());
-        assertThat(addresseeJson.getString("name"), is(NAME_HARRY_JACK_KANE));
-
-        final JsonObject addresseeAddressJson = addresseeJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(addresseeAddressJson);
-
-
-        final JsonObject hearingCourtDetails = summonsDataJson.getJsonObject(HEARING_COURT_DETAILS);
-        assertOnHearingCourtDetails(hearingCourtDetails);
-
-        final JsonObject courtAddress = hearingCourtDetails.getJsonObject(COURT_ADDRESS);
-        assertOnCourtAddress(courtAddress, false);
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
     }
 
-    @Test
-    public void shouldGenerateSummonsPayloadForSjpReferral() {
+    private void verifySummonsPayloadGeneratedForApplications(final SummonsRequired summonsRequired, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {
 
         //Given
-        prepareDataAndConditionsForDocumentGeneration(generateCourtCentreJson(),
-                SummonsRequired.SJP_REFERRAL,
-                false);
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final Optional<JsonObject> optionalApplication = of(createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(getCourtApplication())).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(isWelsh);
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String subjectTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent subjectTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getCourtApplicationById(envelope, APPLICATION_ID.toString())).thenReturn(optionalApplication);
+        when(referenceDataService.getCourtRoomById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(applicantEmailAddressUtil.getApplicantEmailAddress(any(CourtApplication.class))).thenReturn(Optional.of(EMAIL_ADDRESS));
+        when(summonsTemplateNameService.getApplicationTemplateName(summonsRequired, isWelsh)).thenReturn(subjectTemplateName);
+        when(summonsTemplateNameService.getBreachSummonsParentTemplateName(isWelsh)).thenReturn(parentGuardianTemplateName);
+        when(applicationSummonsService.generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails))).thenReturn(subjectTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+        when(summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddresseeParent(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
 
         //When
-        summonsDataPreparedEventProcessor.requestSummons(envelope);
+        verify(progressionService).getCourtApplicationById(envelope, APPLICATION_ID.toString());
+        verify(referenceDataService).getCourtRoomById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsTemplateNameService).getApplicationTemplateName(summonsRequired, isWelsh);
+        verify(applicationSummonsService).generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails));
+        verify(publishSummonsDocumentService).generateApplicationSummonsCourtDocument(eq(envelope), eq(APPLICATION_ID), eq(subjectTemplatePayload), eq(subjectTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForApplicationAddressee(any(SummonsDataPrepared.class), eq(subjectTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(summonsRequired));
 
-        //Then
-        verifyCourtDocument(1);
-        verify(documentGeneratorService).generateDocument(envelopeArgumentCaptor.capture(),
-                jsonObjectArgumentCaptor.capture(),
-                templateArgumentCaptor.capture(),
-                senderArgumentCaptor.capture(),
-                caseIdArgumentCaptor.capture(),
-                applicationIdArgumentCaptor.capture());
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getBreachSummonsParentTemplateName(isWelsh);
+            verify(publishSummonsDocumentService).generateApplicationSummonsCourtDocument(eq(envelope), eq(APPLICATION_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForApplicationAddresseeParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
 
-        final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
-        assertOnCaseIdAndEnvelope();
+        }
 
-        assertOnSummonsData(summonsDataJson,
-                SummonsRequired.SJP_REFERRAL,
-                false);
-
-        final JsonObject defendantJson = assertOnDefendant(summonsDataJson);
-
-        final JsonObject defendantAddressJson = defendantJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(defendantAddressJson);
-
-        final JsonArray offencesJson = summonsDataJson.getJsonArray(OFFENCES);
-        assertOnOffences(offencesJson, false);
-
-        final JsonObject addresseeJson = summonsDataJson.getJsonObject(ADDRESSEE);
-        assertThat(addresseeJson, notNullValue());
-        assertThat(addresseeJson.getString("name"), is(NAME_HARRY_JACK_KANE));
-
-        final JsonObject addresseeAddressJson = addresseeJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(addresseeAddressJson);
-
-        final JsonObject hearingCourtDetails = summonsDataJson.getJsonObject(HEARING_COURT_DETAILS);
-        assertOnHearingCourtDetails(hearingCourtDetails);
-
-        final JsonObject courtAddress = hearingCourtDetails.getJsonObject(COURT_ADDRESS);
-        assertOnCourtAddress(courtAddress, false);
-
-        final JsonObject referralReason = summonsDataJson.getJsonObject("referralContent");
-        assertOnReferralReason(referralReason, false);
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
     }
 
-    @Test
-    public void shouldGenerateSummonsPayloadForSjpReferralForWelsh() {
-
-        //Given
-        prepareDataAndConditionsForDocumentGeneration(generateCourtCentreJsonInWelsh(),
-                SummonsRequired.SJP_REFERRAL,
-                true);
-
-        //When
-        summonsDataPreparedEventProcessor.requestSummons(envelope);
-
-        verify(documentGeneratorService).generateDocument(envelopeArgumentCaptor.capture(),
-                jsonObjectArgumentCaptor.capture(),
-                templateArgumentCaptor.capture(),
-                senderArgumentCaptor.capture(),
-                caseIdArgumentCaptor.capture(),
-                applicationIdArgumentCaptor.capture());
-        verifyCourtDocument(1);
-
-        final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
-        assertOnCaseIdAndEnvelope();
-        assertOnSummonsData(summonsDataJson,
-                SummonsRequired.SJP_REFERRAL,
-                true);
-
-        final JsonObject defendantJson = assertOnDefendant(summonsDataJson);
-
-        final JsonObject defendantAddressJson = defendantJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(defendantAddressJson);
-
-        final JsonArray offencesJson = summonsDataJson.getJsonArray(OFFENCES);
-        assertOnOffences(offencesJson, true);
-
-        final JsonObject addresseeJson = summonsDataJson.getJsonObject(ADDRESSEE);
-        assertThat(addresseeJson, notNullValue());
-        assertThat(addresseeJson.getString("name"), is(NAME_HARRY_JACK_KANE));
-
-        final JsonObject addresseeAddressJson = addresseeJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(addresseeAddressJson);
-
-        final JsonObject hearingCourtDetails = summonsDataJson.getJsonObject(HEARING_COURT_DETAILS);
-        assertOnHearingCourtDetails(hearingCourtDetails);
-
-        final JsonObject courtAddress = hearingCourtDetails.getJsonObject(COURT_ADDRESS);
-        assertOnCourtAddress(courtAddress, true);
-
-        final JsonObject referralReason = summonsDataJson.getJsonObject("referralContent");
-        assertOnReferralReason(referralReason, true);
+    private SummonsProsecutor getSummonsProsecutor() {
+        return summonsProsecutor()
+                .withName("pros name")
+                .withEmailAddress("random email")
+                .build();
     }
 
-    @Test
-    public void shouldGenerateSummonsPayloadForYouth() {
-        //Given
-        prepareDataAndConditionsForDocumentGeneration(generateCourtCentreJson(),
-                SummonsRequired.YOUTH,
-                false);
-
-        summonsDataPreparedEventProcessor.requestSummons(envelope);
-        verify(documentGeneratorService,
-                times(2)).generateDocument(envelopeArgumentCaptor.capture(),
-                jsonObjectArgumentCaptor.capture(),
-                templateArgumentCaptor.capture(),
-                senderArgumentCaptor.capture(),
-                caseIdArgumentCaptor.capture(),
-                applicationIdArgumentCaptor.capture());
-
-        //Then
-        verifyCourtDocument(2);
-        assertOnCaseIdAndEnvelope();
-        final JsonObject summonsDataJson = jsonObjectArgumentCaptor.getValue();
-        assertOnSummonsData(summonsDataJson, SummonsRequired.YOUTH, false);
-
-        assertOnSummonsData(summonsDataJson,
-                SummonsRequired.YOUTH,
-                false);
-
-        final JsonObject defendantJson = assertOnDefendant(summonsDataJson);
-        final JsonObject defendantAddressJson = defendantJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(defendantAddressJson);
-
-        final JsonArray offencesJson = summonsDataJson.getJsonArray(OFFENCES);
-        assertOnOffences(offencesJson, false);
-
-        final JsonObject addresseeJson = summonsDataJson.getJsonObject(ADDRESSEE);
-        assertThat(addresseeJson, notNullValue());
-
-        final JsonObject addresseeAddressJson = addresseeJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(addresseeAddressJson);
-
-        final JsonObject youthJson = summonsDataJson.getJsonObject("youthContent");
-        assertThat(youthJson, notNullValue());
-
-        final JsonObject guardianAddressJson = youthJson.getJsonObject(ADDRESS);
-        assertOnDefendantAddress(guardianAddressJson);
-
-        final JsonObject hearingCourtDetails = summonsDataJson.getJsonObject(HEARING_COURT_DETAILS);
-        assertOnHearingCourtDetails(hearingCourtDetails);
-
-        final JsonObject courtAddress = hearingCourtDetails.getJsonObject(COURT_ADDRESS);
-        assertOnCourtAddress(courtAddress, false);
+    private ProsecutionCase getProsecutionCase(final InitiationCode initiationCode, final SummonsCode summonsCode) {
+        final AssociatedPerson associatedPerson = getAssociatedPerson();
+        final Defendant defendant = defendant()
+                .withId(DEFENDANT_ID)
+                .withAssociatedPersons(newArrayList(associatedPerson))
+                .build();
+        return prosecutionCase()
+                .withInitiationCode(initiationCode)
+                .withSummonsCode(Optional.ofNullable(summonsCode).map(SummonsCode::getCode).orElse(null))
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(PROSECUTION_AUTHORITY_ID)
+                        .build())
+                .withDefendants(newArrayList(defendant))
+                .build();
     }
 
-    private void prepareDataAndConditionsForDocumentGeneration(final JsonObject jsonObject,
-                                                               SummonsRequired summonsRequired,
-                                                               final boolean welshRequiredFlag) {
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(UUID.randomUUID()));
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, SummonsDataPrepared.class)).thenReturn(summonsDataPrepared);
-        when(envelope.metadata()).thenReturn(metadataWithRandomUUID("progression.event.summons-data-prepared").withUserId(USER_ID).build());
+    private CourtApplication getCourtApplication() {
+        final ProsecutingAuthority prosecutingAuthority = prosecutingAuthority().withProsecutionAuthorityId(PROSECUTION_AUTHORITY_ID).build();
+        final CourtApplicationParty applicant = courtApplicationParty().withProsecutingAuthority(prosecutingAuthority).build();
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withMasterDefendant(masterDefendant().withAssociatedPersons(newArrayList(getAssociatedPerson())).build())
+                .withId(SUBJECT_ID)
+                .build();
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicant(applicant)
+                .withSubject(subject)
+                .build();
 
-        final SummonsData summonsData = generateSummonsData(summonsRequired, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID);
-        when(summonsDataPrepared.getSummonsData()).thenReturn(summonsData);
-
-        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(Optional.of(generateProsecutionCaseJson(CASE_ID.toString(), DEFENDANT_ID.toString())));
-        when(referenceDataService.getReferralReasons(envelope, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
-        when(referenceDataService.getOrganisationUnitById(COURT_CENTRE_ID, envelope, requester)).thenReturn(Optional.of(jsonObject));
-        when(referenceDataService.getEnforcementAreaByLjaCode(envelope, "1810", requester)).thenReturn(generateLjaDetails());
-        when(referenceDataService.getLocalJusticeArea(envelope, "2577", requester)).thenReturn(Optional.of(generateLjaDetailsWithWelsh(welshRequiredFlag)));
-
-        when(referenceDataService.getDocumentTypeAccessData(SUMMONS_DOCUMENT_TYPE_ID, envelope, requester)).thenReturn(Optional.of(generateDocumentTypeAccess(SUMMONS_DOCUMENT_TYPE_ID)));
     }
 
-
-    private void assertOnCaseIdAndEnvelope() {
-        assertThat(caseIdArgumentCaptor.getValue(), is(CASE_ID));
-        assertThat(envelopeArgumentCaptor.getValue(), is(envelope));
+    private AssociatedPerson getAssociatedPerson() {
+        return associatedPerson().withPerson(
+                person()
+                        .withFirstName("parent first name")
+                        .withMiddleName("parent middle name")
+                        .withLastName("parent last name")
+                        .withAddress(address()
+                                .withAddress1("parent address 1")
+                                .build())
+                        .build()).build();
     }
 
-    private void verifyCourtDocument(int times) {
-        verify(this.sender, times(times)).send(this.envelopeArgumentCaptorForCourtDocument.capture());
-        final List<JsonEnvelope> jsonEnvelope = this.envelopeArgumentCaptorForCourtDocument.getAllValues();
-        IntStream.range(0, times).forEach( index -> {
+    private SummonsDataPrepared getSummonsDataPreparedForCase(final SummonsRequired summonsRequired) {
 
-            MatcherAssert.assertThat(jsonEnvelope.get(index), jsonEnvelope(
-                    metadata().withName("progression.command.create-court-document"),
-                    payloadIsJson(allOf(
-                            withJsonPath("$.courtDocument.mimeType", Matchers.is("application/pdf")),
-                            withJsonPath("$.courtDocument.documentTypeDescription", Matchers.is("Charges"))
-                    ))));
-                }
+        final SummonsData summonsData = summonsData()
+                .withConfirmedProsecutionCaseIds(newArrayList(confirmedProsecutionCaseId()
+                        .withId(CASE_ID)
+                        .withConfirmedDefendantIds(singletonList(DEFENDANT_ID))
+                        .build()))
+                .withCourtCentre(courtCentre()
+                        .withId(COURT_CENTRE_ID)
+                        .withRoomId(COURT_ROOM_ID)
+                        .build())
+                .withHearingDateTime(HEARING_DATE_TIME)
+                .withListDefendantRequests(newArrayList(listDefendantRequest()
+                        .withSummonsRequired(summonsRequired)
+                        .withProsecutionCaseId(CASE_ID)
+                        .withDefendantId(DEFENDANT_ID)
+                        .withSummonsApprovedOutcome(getSummonsApprovedOutcome())
+                        .build()))
+                .build();
+
+        return summonsDataPrepared().withSummonsData(summonsData).build();
+    }
+
+    private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsRequired summonsRequired) {
+
+        final SummonsData summonsData = summonsData()
+                .withConfirmedApplicationIds(newArrayList(APPLICATION_ID))
+                .withCourtCentre(courtCentre()
+                        .withId(COURT_CENTRE_ID)
+                        .withRoomId(COURT_ROOM_ID)
+                        .build())
+                .withHearingDateTime(HEARING_DATE_TIME)
+                .withCourtApplicationPartyListingNeeds(newArrayList(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withSummonsRequired(summonsRequired)
+                        .withCourtApplicationId(APPLICATION_ID)
+                        .withCourtApplicationPartyId(SUBJECT_ID)
+                        .withSummonsApprovedOutcome(getSummonsApprovedOutcome())
+                        .build()))
+                .build();
+
+        return summonsDataPrepared().withSummonsData(summonsData).build();
+    }
+
+    private SummonsApprovedOutcome getSummonsApprovedOutcome() {
+        return summonsApprovedOutcome()
+                .withProsecutorCost("£300.00")
+                .withPersonalService(true)
+                .withSummonsSuppressed(summonsSuppressed)
+                .withProsecutorEmailAddress(SUMMONS_APPROVED_EMAIL_ADDRESS)
+                .build();
+    }
+
+    private Optional<JsonObject> getCourtCentreJson(final boolean isWelsh) {
+        return of(createObjectBuilder()
+                .add("lja", LJA_CODE)
+                .add("isWelsh", isWelsh)
+                .build()
         );
+    }
 
+    private Optional<LjaDetails> getLjaDetails() {
+        return of(ljaDetails().withLjaCode(LJA_CODE).withLjaName("ljaName").withWelshLjaName("welshLjaName").build());
+    }
+
+    private SummonsDocumentContent getDefendantTemplatePayload(final boolean isYouth) {
+        final ZonedDateTime defendantDateOfBirth = isYouth ? HEARING_DATE_TIME.minusYears(16) : HEARING_DATE_TIME.minusYears(20);
+        return summonsDocumentContent().withDefendant(SummonsDefendant.summonsDefendant().withDateOfBirth(DateTimeFormatter.ofPattern("yyyy-MM-dd").format(defendantDateOfBirth)).build()).build();
     }
 
 }

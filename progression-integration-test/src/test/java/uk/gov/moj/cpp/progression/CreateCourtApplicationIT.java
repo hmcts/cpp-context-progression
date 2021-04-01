@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -16,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
@@ -23,11 +25,12 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import java.util.Optional;
 
 import javax.jms.MessageConsumer;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -51,12 +54,12 @@ public class CreateCourtApplicationIT extends AbstractIT {
     public void shouldCreateStandaloneCourtApplicationAndGetConfirmation() throws Exception {
 
         String firstApplicationId = randomUUID().toString();
-        addStandaloneCourtApplication(firstApplicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(firstApplicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
         verifyInMessagingQueueForStandaloneCourtApplicationCreated();
 
         String secondApplicationId = randomUUID().toString();
-        addStandaloneCourtApplication(secondApplicationId, firstApplicationId, new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(secondApplicationId, firstApplicationId, new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
         verifyInMessagingQueueForStandaloneCourtApplicationCreated();
 
@@ -64,12 +67,12 @@ public class CreateCourtApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.id", is(firstApplicationId)),
                 withJsonPath("$.courtApplication.applicationStatus", is("DRAFT")),
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("a")),
-                withJsonPath("$.courtApplication.applicationReference", notNullValue(String.class)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("DRAFT")),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationTitle", is("a")),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationReference", notNullValue(String.class)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicantDisplayName", notNullValue(String.class)),
-                withJsonPath("$.linkedApplicationsSummary[0].respondentDisplayNames", notNullValue(JsonArray.class))
+                withJsonPath("$.courtApplication.applicationReference", notNullValue(String.class))
+//                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("DRAFT")),
+//                withJsonPath("$.linkedApplicationsSummary[0].applicationTitle", is("a")),
+//                withJsonPath("$.linkedApplicationsSummary[0].applicationReference", notNullValue(String.class)),
+//                withJsonPath("$.linkedApplicationsSummary[0].applicantDisplayName", notNullValue(String.class)),
+//                withJsonPath("$.linkedApplicationsSummary[0].respondentDisplayNames", notNullValue(JsonArray.class))
         };
 
         pollForApplication(firstApplicationId, matchers);
@@ -87,32 +90,30 @@ public class CreateCourtApplicationIT extends AbstractIT {
 
         // Creating first application for the case
         String firstApplicationId = randomUUID().toString();
-        addCourtApplication(caseId, firstApplicationId, "progression.command.create-court-application.json");
+        initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
-        verifyInMessagingQueueForCourtApplicationCreated(reference + "-1");
+        verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId);
 
         Matcher[] firstApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(firstApplicationId)),
-                withJsonPath("$.courtApplication.linkedCaseId", is(caseId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("DRAFT")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("a")),
-                withJsonPath("$.courtApplication.applicationReference", is(reference + "-1")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
         };
 
         pollForApplication(firstApplicationId, firstApplicationMatchers);
 
         // Creating second application for the case
         String secondApplicationId = randomUUID().toString();
-        addCourtApplication(caseId, secondApplicationId, "progression.command.create-court-application.json");
+        initiateCourtProceedingsForCourtApplication(secondApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
-        verifyInMessagingQueueForCourtApplicationCreated(reference + "-2");
+        verifyInMessagingQueueForCourtApplicationCreated(secondApplicationId);
 
         Matcher[] secondApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(secondApplicationId)),
-                withJsonPath("$.courtApplication.linkedCaseId", is(caseId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("DRAFT")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("a")),
-                withJsonPath("$.courtApplication.applicationReference", is(reference + "-2")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
         };
 
         pollForApplication(secondApplicationId, secondApplicationMatchers);
@@ -120,15 +121,110 @@ public class CreateCourtApplicationIT extends AbstractIT {
         Matcher[] caseMatchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.linkedApplicationsSummary", hasSize(2)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationTitle", is("Application for bad character")),
-                withJsonPath("$.linkedApplicationsSummary[0].isAppeal", is(false)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("DRAFT")),
-                withJsonPath("$.linkedApplicationsSummary[0].respondentDisplayNames", hasSize(1)),
+                withJsonPath("$.linkedApplicationsSummary[0].applicationTitle", is("Application for an order of reimbursement in relation to a closure order")),
+                withJsonPath("$.linkedApplicationsSummary[0].isAppeal", is(true)),
+                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("UN_ALLOCATED"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);
     }
 
+    @Test
+    public void shouldUpdateOffenceWordingWhenCourtOrderIsNotSuspendedSentence() throws Exception {
+
+        // when
+       // addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        // Creating first application for the case
+        String firstApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-with-court-order-to-update-offence-wording.json");
+
+        verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId);
+        final String expectedWording = "Resentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
+        final String expectedWordingWelsh = "Resentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
+        Matcher[] firstApplicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(firstApplicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.offenceCode", is("AO0001")),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wording", is(expectedWording)),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wordingWelsh", is(expectedWordingWelsh)),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.id", is("28b3d444-ae80-4920-a70f-ef01e128188e")),
+                withJsonPath("$.courtApplication.courtOrder.id", is("8ab0af4c-db0e-4535-9775-d52669d6b07f")),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", is("4ZKOPhuyh5")),
+        };
+
+        pollForApplication(firstApplicationId, firstApplicationMatchers);
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceWordingWhenCourtOrderNotExist() throws Exception {
+
+        // when
+        // addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        // Creating first application for the case
+        String firstApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-without-court-order-to-update-offence-wording.json");
+
+        verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId);
+        final String expectedWording = "Resentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
+        final String expectedWordingWelsh = "Resentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
+        Matcher[] firstApplicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(firstApplicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
+                hasNoJsonPath("$.courtApplication.courtOrder"),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].isSJP", Matchers.is(false)),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", Matchers.is(caseId)),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", Matchers.is("28b3d444-ae80-4920-a70f-ef01e128188e")),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].offenceCode", Matchers.is("AO0001")),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wording", Matchers.is(expectedWording)),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wordingWelsh", Matchers.is(expectedWordingWelsh))
+
+        };
+
+        pollForApplication(firstApplicationId, firstApplicationMatchers);
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceWordingWhenCourtOrderIsSuspendedSentence() throws Exception {
+
+        // when
+        // addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        // Creating first application for the case
+        String firstApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-with-court-order-to-update-offence-wording2.json");
+
+        verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId);
+        final String expectedWording = "Activation of a suspended sentence order. Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
+        final String expectedWordingWelsh = "Activation of a suspended sentence order. Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
+        Matcher[] firstApplicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(firstApplicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.offenceCode", is("AO0001")),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wording", is(expectedWording)),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wordingWelsh", is(expectedWordingWelsh)),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.id", is("28b3d444-ae80-4920-a70f-ef01e128188e")),
+                withJsonPath("$.courtApplication.courtOrder.id", is("8ab0af4c-db0e-4535-9775-d52669d6b07f")),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", is("4ZKOPhuyh5"))
+        };
+
+        pollForApplication(firstApplicationId, firstApplicationMatchers);
+
+    }
+    // progression.event.court-application-rejected never raise in progression context
+    // GPE-15039 Ignored temporarily until applications feature is implemented
+    @Ignore
     @Test
     public void shouldRejectCourtApplicationWhenApplicantIsRespondent() throws Exception {
         // when
@@ -137,11 +233,11 @@ public class CreateCourtApplicationIT extends AbstractIT {
         verifyInMessagingQueueForCourtApplicationRejected();
     }
 
-    private static void verifyInMessagingQueueForCourtApplicationCreated(String arn) {
+    private static void verifyInMessagingQueueForCourtApplicationCreated(String applicationId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        String arnResponse = message.get().getString("arn");
-        assertThat(arnResponse, equalTo(arn));
+        String idResponse = message.get().getJsonObject("courtApplication").getString("id");
+        assertThat(idResponse, equalTo(applicationId));
     }
 
     private static void verifyInMessagingQueueForCourtApplicationRejected() {
@@ -152,8 +248,8 @@ public class CreateCourtApplicationIT extends AbstractIT {
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        String arnResponse = message.get().getString("arn");
-        assertThat(10, is(arnResponse.length()));
+        String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");
+        assertThat(10, is(referenceResponse.length()));
     }
 
 }

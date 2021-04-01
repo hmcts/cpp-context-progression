@@ -13,18 +13,6 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
@@ -55,7 +43,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.events.DefendantMatched;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.helper.MatchedDefendantHelper;
-import javax.json.JsonObject;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -63,6 +51,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MatchedDefendantLoadServiceTest {
@@ -87,6 +90,7 @@ public class MatchedDefendantLoadServiceTest {
     private static final int DEFAULT_PAGE_SIZE = 25;
     private static final boolean DEFAULT_PROCEEDINGS_CONCLUDED = false;
     private static final boolean DEFAULT_CROWN_OR_MAGISTRATES = true;
+    private final String DEFAULT_COURT_ORDER_VALIDITY_DATE = LocalDate.now().toString();
     private static final String PAGE_SIZE = "pageSize";
     private static final String START_FROM = "startFrom";
     private static final String PNC_ID = "pncId";
@@ -97,6 +101,7 @@ public class MatchedDefendantLoadServiceTest {
     private static final String ADDRESS_LINE = "addressLine1";
     private static final String PROCEEDINGS_CONCLUDED = "proceedingsConcluded";
     private static final String CROWN_OR_MAGISTRATES = "crownOrMagistrates";
+    private static final String COURT_ORDER_VALIDITY_DATE = "courtOrderValidityDate";
 
 
     @Mock
@@ -224,30 +229,33 @@ public class MatchedDefendantLoadServiceTest {
         assertThat(firstCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(firstCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(firstCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(firstCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(firstCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(firstCallUnifiedSearchQueryParam.containsKey(PNC_ID), is(true));
         assertThat(firstCallUnifiedSearchQueryParam.containsKey(LAST_NAME), is(true));
-        assertThat(firstCallUnifiedSearchQueryParam.entrySet().size(), is(6));
+        assertThat(firstCallUnifiedSearchQueryParam.entrySet().size(), is(7));
 
         final JsonObject secondCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(1).payload();
         assertThat(secondCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(secondCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(secondCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(secondCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(secondCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(secondCallUnifiedSearchQueryParam.containsKey(CRO_NUMBER), is(true));
         assertThat(secondCallUnifiedSearchQueryParam.containsKey(LAST_NAME), is(true));
-        assertThat(secondCallUnifiedSearchQueryParam.entrySet().size(), is(6));
+        assertThat(secondCallUnifiedSearchQueryParam.entrySet().size(), is(7));
 
         final JsonObject thirdCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(2).payload();
         assertThat(thirdCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(thirdCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(thirdCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(thirdCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(thirdCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(thirdCallUnifiedSearchQueryParam.containsKey(FIRST_NAME), is(true));
         assertThat(thirdCallUnifiedSearchQueryParam.containsKey(DATE_OF_BIRTH), is(true));
         assertThat(thirdCallUnifiedSearchQueryParam.containsKey(ADDRESS_LINE), is(true));
         assertThat(thirdCallUnifiedSearchQueryParam.containsKey(LAST_NAME), is(true));
-        assertThat(thirdCallUnifiedSearchQueryParam.entrySet().size(), is(8));
+        assertThat(thirdCallUnifiedSearchQueryParam.entrySet().size(), is(9));
     }
 
     @Test
@@ -332,50 +340,56 @@ public class MatchedDefendantLoadServiceTest {
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getInt(START_FROM), is(0));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().entrySet().size(), is(6));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(0).payload().entrySet().size(), is(7));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getInt(START_FROM), is(1));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().entrySet().size(), is(6));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(1).payload().entrySet().size(), is(7));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getInt(START_FROM), is(2));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().entrySet().size(), is(6));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(2).payload().entrySet().size(), is(7));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getInt(START_FROM), is(0));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().entrySet().size(), is(6));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(3).payload().entrySet().size(), is(7));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getInt(START_FROM), is(1));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().entrySet().size(), is(6));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(4).payload().entrySet().size(), is(7));
 
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getInt(START_FROM), is(2));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
         assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().getString(LAST_NAME), is(SAMPLE_LAST_NAME));
-        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().entrySet().size(), is(6));
+        assertThat(unifiedSearchQueryParamCapture.getAllValues().get(5).payload().entrySet().size(), is(7));
     }
 
     @Test
@@ -423,53 +437,59 @@ public class MatchedDefendantLoadServiceTest {
         assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.getString(PNC_ID), is(SAMPLE_PNC_ID_WITH_SLASH));
-        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.entrySet().size(), is(5));
+        assertThat(firstCallFirstSubStepUnifiedSearchQueryParam.entrySet().size(), is(6));
 
         final JsonObject firstCallSecondSubStepUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(5).payload();
         assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.getString(PNC_ID), is(SAMPLE_PNC_ID_WITHOUT_SLASH));
-        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.entrySet().size(), is(5));
+        assertThat(firstCallSecondSubStepUnifiedSearchQueryParam.entrySet().size(), is(6));
 
         final JsonObject secondCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(6).payload();
         assertThat(secondCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(secondCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(secondCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(secondCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(secondCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(secondCallUnifiedSearchQueryParam.getString(CRO_NUMBER), is(SAMPLE_CRO_NUMBER));
-        assertThat(secondCallUnifiedSearchQueryParam.entrySet().size(), is(5));
+        assertThat(secondCallUnifiedSearchQueryParam.entrySet().size(), is(6));
 
         final JsonObject thirdCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(7).payload();
         assertThat(thirdCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(thirdCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(thirdCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(thirdCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(thirdCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(thirdCallUnifiedSearchQueryParam.getString(LAST_NAME), is(SAMPLE_LAST_NAME));
         assertThat(thirdCallUnifiedSearchQueryParam.getString(ADDRESS_LINE), is(SAMPLE_ADDRESS_LINE1));
         assertThat(thirdCallUnifiedSearchQueryParam.getString(DATE_OF_BIRTH), is(FORMATTER.format(SAMPLE_DATE_OF_BIRTH)));
-        assertThat(thirdCallUnifiedSearchQueryParam.entrySet().size(), is(7));
+        assertThat(thirdCallUnifiedSearchQueryParam.entrySet().size(), is(8));
 
         final JsonObject fourthCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(8).payload();
         assertThat(fourthCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(fourthCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(fourthCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(fourthCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(fourthCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(fourthCallUnifiedSearchQueryParam.getString(LAST_NAME), is(SAMPLE_LAST_NAME));
         assertThat(fourthCallUnifiedSearchQueryParam.getString(DATE_OF_BIRTH), is(FORMATTER.format(SAMPLE_DATE_OF_BIRTH)));
-        assertThat(fourthCallUnifiedSearchQueryParam.entrySet().size(), is(6));
+        assertThat(fourthCallUnifiedSearchQueryParam.entrySet().size(), is(7));
 
         final JsonObject fifthCallUnifiedSearchQueryParam = unifiedSearchQueryParamCapture.getAllValues().get(9).payload();
         assertThat(fifthCallUnifiedSearchQueryParam.getInt(PAGE_SIZE), is(DEFAULT_PAGE_SIZE));
         assertThat(fifthCallUnifiedSearchQueryParam.getInt(START_FROM), is(0));
         assertThat(fifthCallUnifiedSearchQueryParam.getBoolean(PROCEEDINGS_CONCLUDED), is(DEFAULT_PROCEEDINGS_CONCLUDED));
+        assertThat(fifthCallUnifiedSearchQueryParam.getString(COURT_ORDER_VALIDITY_DATE), is(DEFAULT_COURT_ORDER_VALIDITY_DATE));
         assertThat(fifthCallUnifiedSearchQueryParam.getBoolean(CROWN_OR_MAGISTRATES), is(DEFAULT_CROWN_OR_MAGISTRATES));
         assertThat(fifthCallUnifiedSearchQueryParam.getString(ADDRESS_LINE), is(SAMPLE_ADDRESS_LINE1));
         assertThat(fifthCallUnifiedSearchQueryParam.getString(DATE_OF_BIRTH), is(FORMATTER.format(SAMPLE_DATE_OF_BIRTH)));
-        assertThat(fourthCallUnifiedSearchQueryParam.entrySet().size(), is(6));
+        assertThat(fourthCallUnifiedSearchQueryParam.entrySet().size(), is(7));
     }
 
     @Test

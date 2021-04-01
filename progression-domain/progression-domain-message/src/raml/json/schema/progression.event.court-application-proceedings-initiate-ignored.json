@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.court-application-proceedings-initiate-ignored.json",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    },
+    "boxHearing": {
+      "description": "The details of the required box hearing including agreed appointment details where necessary",
+      "$ref": "http://justice.gov.uk/core/courts/boxHearingRequest.json#"
+    },
+    "courtHearing": {
+      "description": "The details of a new court hearing that are required to be listed",
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    }
+  },
+  "required": [
+    "courtApplication"
+  ],
+  "additionalProperties": false
+}

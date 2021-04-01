@@ -2,16 +2,13 @@ package uk.gov.justice.services;
 
 import static java.util.Optional.ofNullable;
 
-import uk.gov.justice.core.courts.BoxWorkTaskStatus;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class HearingMapper {
 
@@ -20,16 +17,12 @@ public class HearingMapper {
 
     private HearingDaysMapper hearingDaysMapper = new HearingDaysMapper();
 
-    public uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearing(final ProsecutionCaseDefendantListingStatusChanged listingStatusChanged,
-                                                                                final List<String> defendantIds) {
-        final Hearing hearing = listingStatusChanged.getHearing();
-        final UUID boxWorkAssignedUserId = listingStatusChanged.getBoxWorkAssignedUserId();
-        final BoxWorkTaskStatus boxWorkTaskStatus = listingStatusChanged.getBoxWorkTaskStatus();
+    public uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearing(final Hearing hearing,
+                                                                               final List<String> defendantIds) {
         final CourtCentre courtCentre = hearing.getCourtCentre();
         uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearingIndex
                 = new uk.gov.justice.services.unifiedsearch.client.domain.Hearing();
         hearingIndex = populateCourtCentre(courtCentre, hearingIndex);
-        populateBoxWorkDetails(boxWorkAssignedUserId, boxWorkTaskStatus, hearingIndex);
         populateHearingDetails(defendantIds, hearing, hearingIndex);
 
         return hearingIndex;
@@ -39,7 +32,8 @@ public class HearingMapper {
                                         final Hearing hearing,
                                         final uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearingIndex) {
         hearingIndex.setDefendantIds(defendantIds);
-        hearingIndex.setIsIsBoxHearing(hearing.getIsBoxHearing() == null ? false : hearing.getIsBoxHearing());
+        hearingIndex.setIsIsBoxHearing(hearing.getIsBoxHearing() != null && hearing.getIsBoxHearing());
+        hearingIndex.setIsIsVirtualBoxHearing(hearing.getIsVirtualBoxHearing() != null && hearing.getIsVirtualBoxHearing());
         hearingIndex.setHearingDays(hearingDaysMapper.extractHearingDays(hearing));
         hearingIndex.setHearingDates(hearingDatesMapper.extractHearingDates(hearing));
         hearingIndex.setJudiciaryTypes(judiciaryTypes(hearing));
@@ -52,21 +46,11 @@ public class HearingMapper {
         }
 
         if (hearing.getType() != null && hearing.getType().getDescription() != null) {
-            hearingIndex.setHearingTypeLabel(hearing.getType().getDescription().toString());
+            hearingIndex.setHearingTypeLabel(hearing.getType().getDescription());
         }
 
         if (hearing.getJurisdictionType() != null) {
             hearingIndex.setJurisdictionType(hearing.getJurisdictionType().toString());
-        }
-    }
-
-    private void populateBoxWorkDetails(final UUID boxWorkAssignedUserId, BoxWorkTaskStatus boxWorkTaskStatus,
-                                        final uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearingIndex) {
-        if (boxWorkAssignedUserId != null) {
-            hearingIndex.setBoxWorkAssignedUserId(boxWorkAssignedUserId.toString());
-        }
-        if (boxWorkTaskStatus != null) {
-            hearingIndex.setBoxWorkTaskStatus(boxWorkTaskStatus.toString());
         }
     }
 

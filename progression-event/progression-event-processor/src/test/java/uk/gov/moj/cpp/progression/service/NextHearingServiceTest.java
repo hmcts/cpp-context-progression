@@ -29,6 +29,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
@@ -48,6 +49,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -69,6 +71,9 @@ public class NextHearingServiceTest {
 
     @InjectMocks
     private NextHearingService service;
+
+    @Spy
+    private HearingResultHelper hearingResultHelper;
 
     @Mock
     private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;

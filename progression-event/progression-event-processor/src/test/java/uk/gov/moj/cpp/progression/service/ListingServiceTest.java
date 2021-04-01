@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -26,8 +28,8 @@ import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_SEARCH_H
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
@@ -303,22 +305,20 @@ public class ListingServiceTest {
         List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
                 .withId(UUID.randomUUID())
-                .withLinkedCaseId(UUID.randomUUID())
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(UUID.randomUUID())
-                        .withDefendant(uk.gov.justice.core.courts.Defendant.defendant()
-                                .withId(UUID.randomUUID())
+                        .withMasterDefendant(uk.gov.justice.core.courts.MasterDefendant.masterDefendant()
+                                .withMasterDefendantId(UUID.randomUUID())
                                 .build())
                         .build())
-                .withRespondents(Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withId(UUID.randomUUID())
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withProsecutionAuthorityId(UUID.randomUUID())
+                .withRespondents(Arrays.asList(CourtApplicationParty.courtApplicationParty()
+                        .withId(UUID.randomUUID())
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(UUID.randomUUID())
 
-                                        .build())
                                 .build())
-
                         .build()))
                 .build());
         return courtApplications;

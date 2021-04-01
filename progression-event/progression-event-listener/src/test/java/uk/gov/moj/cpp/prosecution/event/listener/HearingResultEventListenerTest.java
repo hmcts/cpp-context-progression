@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static com.google.common.collect.Lists.asList;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -13,6 +14,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtOrderOffence.courtOrderOffence;
+import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -20,9 +23,11 @@ import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.READY_FO
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
@@ -113,7 +118,7 @@ public class HearingResultEventListenerTest {
                 .withId(defendantId)
                 .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_1)))
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(Arrays.asList(offence()
                         .withId(offenceId)
                         .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1)))
                         .build()))
@@ -122,7 +127,7 @@ public class HearingResultEventListenerTest {
                 .withId(defendantId2)
                 .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_2)))
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(Arrays.asList(offence()
                         .withId(offenceId2)
                         .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2)))
                         .build()))
@@ -262,9 +267,13 @@ public class HearingResultEventListenerTest {
                 .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .withId(randomUUID())
                 .withApplicant(CourtApplicationParty.courtApplicationParty().build())
-                .withLinkedCaseId(randomUUID())
-                .withOrderingCourt(CourtCentre.courtCentre().build())
-                .withRespondents(singletonList(CourtApplicationRespondent.courtApplicationRespondent().build()))
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence().build()).build()))
+                        .build())
+                .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
                 .build();
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
@@ -389,8 +398,8 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getId(), is(hearingId));
         assertThat(savedHearing1.getCourtApplications(), notNullValue());
         assertThat(savedHearing1.getCourtApplications().get(0).getId(), is(courtApplicationId));
-        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(1));
-        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().get(0).getLabel(), is("PublishedForNowsFALSE"));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(2));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().get(0).getLabel(), is("PublishedForNowsTRUE"));
 
         assertThat(savedHearing1.getProsecutionCases(), notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
@@ -409,9 +418,13 @@ public class HearingResultEventListenerTest {
                 .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .withId(courtApplicationId)
                 .withApplicant(CourtApplicationParty.courtApplicationParty().build())
-                .withLinkedCaseId(randomUUID())
-                .withOrderingCourt(CourtCentre.courtCentre().build())
-                .withRespondents(singletonList(CourtApplicationRespondent.courtApplicationRespondent().build()))
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence().build()).build()))
+                        .build())
+                .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
                         JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                 .build());
@@ -424,7 +437,7 @@ public class HearingResultEventListenerTest {
                 .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
                         JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                 .withOffences(singletonList(
-                        Offence.offence()
+                        offence()
                         .withId(randomUUID())
                         .withJudicialResults(
                                 Arrays.asList(JudicialResult.judicialResult()

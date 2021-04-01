@@ -49,14 +49,6 @@ public class ProsecutionCaseDefendantListingStatusChangedVerificationHelper {
 
                     final JsonObject hearingOutput = hearingOutputDocument.read("$.hearings[0]");
 
-                    final String boxWorkAssignedUserIdOutput = hearingOutput.getString("boxWorkAssignedUserId");
-                    final JsonString boxWorkAssignedUserIdInput = hearingInput.read("$.boxWorkAssignedUserId");
-                    assertThat(boxWorkAssignedUserIdOutput, is(boxWorkAssignedUserIdInput.getString()));
-
-                    final String boxWorkTaskStatusOutput = hearingOutput.getString("boxWorkTaskStatus");
-                    final JsonString boxWorkTaskStatusInput = hearingInput.read("$.boxWorkTaskStatus");
-                    assertThat(boxWorkTaskStatusOutput, is(boxWorkTaskStatusInput.getString()));
-
                     final String hearingIdOutput = hearingOutput.getString("hearingId");
                     final JsonString hearingIdInput = hearingInput.read("$.hearing.id");
                     assertThat(hearingIdOutput, is(hearingIdInput.getString()));
@@ -126,13 +118,11 @@ public class ProsecutionCaseDefendantListingStatusChangedVerificationHelper {
 
     private static void assertApplication(final DocumentContext inputApplicationEventPayload, final DocumentContext hearingOutputDocument) {
 
-        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "dueDate", "$.applications[0].dueDate");
-
         assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "applicationReceivedDate", "$.applications[0].receivedDate");
 
         assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "applicationReference", "$.applications[0].applicationReference");
 
-        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "type.applicationType", "$.applications[0].applicationType");
+        assertApplicationProperty(inputApplicationEventPayload, hearingOutputDocument, "type.type", "$.applications[0].applicationType");
     }
 
     private static void assertApplicationProperty(final DocumentContext inputApplicationEventPayload, final DocumentContext transformedOutputDocument, final String inputPath, final String outputPath) {

@@ -10,7 +10,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtNullPostCode;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extendHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
@@ -21,26 +20,28 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHea
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
 import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @SuppressWarnings("squid:S1607")
 public class ExtendHearingIT extends AbstractIT {
@@ -93,14 +94,6 @@ public class ExtendHearingIT extends AbstractIT {
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         messageConsumerProgressionHearingExtendedEvent.close();
         messageConsumerProgressionSummonsDataPreparedEvent.close();
-    }
-
-    @Test
-    public void shouldListCourtHearing() throws Exception {
-        final String applicationId = randomUUID().toString();
-        final String hearingId = randomUUID().toString();
-        extendHearing(applicationId, hearingId, "progression.command.extend-hearing.json");
-        verifyPostListCourtHearing(applicationId);
     }
 
     @Test

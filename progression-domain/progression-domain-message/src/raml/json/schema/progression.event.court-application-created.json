@@ -5,12 +5,10 @@
   "properties": {
     "courtApplication": {
       "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
-    },
-    "count": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
-    },
-    "arn" : {
-      "type": "string"
     }
-  }
+  },
+  "required": [
+    "courtApplication"
+  ],
+  "additionalProperties": false
 }

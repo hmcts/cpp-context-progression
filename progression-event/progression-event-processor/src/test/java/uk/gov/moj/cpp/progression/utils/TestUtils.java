@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.utils;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -27,16 +27,18 @@ public class TestUtils {
     public static final String TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE = "PO1 AU1";
     public static final String TEST_PERSON_ADDRESS_LINE1 = "person address line 1";
     public static final String TEST_PERSON_ADDRESS_POSTCODE = "PE1 1PE";
+    public static final String LJA_CODE = "008";
+    public static final String LJA_NAME = "Manchester Courts";
 
 
-    public static Defendant buildDefendantWithLegalEntity() {
-        return Defendant.defendant()
+    public static MasterDefendant buildDefendantWithLegalEntity() {
+        return MasterDefendant.masterDefendant()
                 .withLegalEntityDefendant(buildLegalEntityDefendant())
                 .build();
     }
 
-    public static Defendant buildDefendantWithPersonDefendant(){
-        return Defendant.defendant()
+    public static MasterDefendant buildDefendantWithPersonDefendant(){
+        return MasterDefendant.masterDefendant()
                 .withPersonDefendant(buildPersonDefendant())
                 .build();
     }
@@ -94,13 +96,13 @@ public class TestUtils {
 
     public static CourtApplicationParty buildCourtApplicationPartyWithLegalEntity(){
        return CourtApplicationParty.courtApplicationParty()
-               .withDefendant(buildDefendantWithLegalEntity())
+               .withMasterDefendant(buildDefendantWithLegalEntity())
                .build();
     }
 
     public static CourtApplicationParty buildCourtApplicationPartyWithPersonDefendant(){
         return CourtApplicationParty.courtApplicationParty()
-                .withDefendant(buildDefendantWithPersonDefendant())
+                .withMasterDefendant(buildDefendantWithPersonDefendant())
                 .build();
     }
 
@@ -126,6 +128,16 @@ public class TestUtils {
 
     public static void verifyPersonName(String resultName){
         assertEquals("Mismatch person's name",TEST_FIRST_NAME+" "+TEST_LAST_NAME, resultName);
+    }
+
+    public static void verifyMagistratesCourt(final String ljaCode, final String ljaName) {
+        assertEquals("Mismatch LJA Code", LJA_CODE, ljaCode);
+        assertEquals("Mismatch LJA NAME", LJA_NAME, ljaName);
+    }
+
+    public static void verifyCrownCourt(final String ljaCode, final String ljaName) {
+        assertEquals("Mismatch LJA Code", null, ljaCode);
+        assertEquals("Mismatch LJA NAME", null, ljaName);
     }
 
     public static void verifyPersonAddress(PostalAddress resultAddress){

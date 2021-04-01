@@ -19,6 +19,7 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607"})
@@ -34,7 +35,7 @@ public class SearchCourtApplicationsIT extends AbstractIT {
 
     @BeforeClass
     public static void createStandaloneApplication() throws Exception {
-        randomValues = new CourtApplicationsHelper().new CourtApplicationRandomValues();
+        randomValues = new CourtApplicationRandomValues();
         addStandaloneCourtApplication(UUID.randomUUID().toString(), UUID.randomUUID().toString(), randomValues, "progression.command.create-standalone-court-application.json");
     }
 
@@ -59,7 +60,7 @@ public class SearchCourtApplicationsIT extends AbstractIT {
     public void shouldGetApplicationByReferenceNumber() throws Exception {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        String applicationReferenceNumber = message.get().getString("arn");
+        String applicationReferenceNumber = message.get().getJsonObject("courtApplication").getString("applicationReference");
         verifyCasesForSearchCriteria(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))});
     }
 

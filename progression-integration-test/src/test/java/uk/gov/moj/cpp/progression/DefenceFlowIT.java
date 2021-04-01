@@ -52,8 +52,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class DefenceFlowIT extends AbstractIT {
 
     private static final String PUBLIC_DEFENCE_DEFENCE_ORGANISATION_DISASSOCIATED = "public.defence.defence-organisation-disassociated";
@@ -115,7 +117,6 @@ public class DefenceFlowIT extends AbstractIT {
         messageConsumerClientPublicForCaseDefendantChanged.close();
         multipleMessageConsumerClientPublicForCaseDefendantChanged.close();
     }
-
 
     @Test
     public void shouldSuccessfullyDisassociateDefenceOrganisationFromDefenceWhenReceiveRepresentationOrderFirst() throws Exception {

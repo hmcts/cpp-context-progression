@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-application-summons-rejected.json",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    },
+    "caseIds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    },
+    "summonsRejectedOutcome": {
+      "$ref": "http://justice.gov.uk/core/courts/summonsRejectedOutcome.json"
+    }
+  },
+  "required": [
+    "courtApplication",
+    "summonsRejectedOutcome"
+  ],
+  "additionalProperties": false
+}

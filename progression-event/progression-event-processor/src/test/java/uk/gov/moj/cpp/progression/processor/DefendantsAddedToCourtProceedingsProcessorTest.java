@@ -1,23 +1,28 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.google.common.io.Resources.getResource;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.lang.String.format;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings;
+import static uk.gov.justice.core.courts.HearingType.hearingType;
+import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
+import static uk.gov.justice.core.courts.ListHearingRequest.listHearingRequest;
+import static uk.gov.justice.core.courts.Offence.offence;
+import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -30,7 +35,6 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -40,6 +44,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
@@ -54,11 +59,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,7 +78,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantsAddedToCourtProceedingsProcessorTest {
 
-    public static final UUID PROSECUTION_CASE_ID = UUID.randomUUID();
+    public static final UUID PROSECUTION_CASE_ID = randomUUID();
+    private static final UUID DEFENDANT_ID_1 = randomUUID();
+    private static final UUID DEFENDANT_ID_2 = randomUUID();
     @InjectMocks
     private DefendantsAddedToCourtProceedingsProcessor eventProcessor;
 
@@ -112,8 +120,18 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     @Mock
     private ListCourtHearing listCourtHearing;
 
+    @Mock
+    private SummonsHearingRequestService summonsHearingRequestService;
+
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
+
+    @Captor
+    private ArgumentCaptor<UUID> uuidCaptor;
+
+    private static final UUID HEARING_ID_1 = randomUUID();
+    private static final UUID HEARING_ID_2 = randomUUID();
+    private static final UUID HEARING_ID_3 = randomUUID();
 
     @Before
     public void initMocks() {
@@ -137,7 +155,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                 .thenReturn(defendantsAddedToCourtProceedings);
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withCaseURN("caseUrn")
                         .build())
                 .build();
@@ -156,11 +174,11 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         eventProcessor.process(jsonEnvelope);
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(),is("progression.command.process-matched-defendants"));
-        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"),is(PROSECUTION_CASE_ID.toString()));
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
 
-        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(),is("public.progression.defendants-added-to-case"));
-        assertThat(envelopeCaptor.getAllValues().get(1).payload(),is(payload));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("public.progression.defendants-added-to-case"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload(), is(payload));
 
 
         verify(listingService, times(0)).listCourtHearing(jsonEnvelope, listCourtHearing);
@@ -168,10 +186,10 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     }
 
     public List<Hearing> createFutureHearings() {
-        return Collections.singletonList(
+        return singletonList(
                 Hearing.hearing()
                         .withHearingDays(
-                                Collections.singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(ZonedDateTime.now().plusDays(3))
                                         .build())
                         ).build()
@@ -189,7 +207,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings").build());
 
-        final CourtCentre existingHearingCourtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).withRoomId(randomUUID()).build();
+        final CourtCentre existingHearingCourtCentre = courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build();
         final ZonedDateTime existingHearingSittingDay = ZonedDateTime.now().plusWeeks(2);
 
         prosecutionCaseJsonObject = Optional.of(getProsecutionCaseResponse());
@@ -197,7 +215,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withCaseURN("caseUrn")
                         .build())
                 .build();
@@ -222,7 +240,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
 
 
-        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any())).thenReturn(listCourtHearing);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(), any())).thenReturn(listCourtHearing);
 
         //When
         eventProcessor.process(jsonEnvelope);
@@ -232,11 +250,11 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(),is("progression.command.process-matched-defendants"));
-        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"),is(PROSECUTION_CASE_ID.toString()));
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
 
-        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(),is("public.progression.defendants-added-to-case"));
-        assertThat(envelopeCaptor.getAllValues().get(1).payload(),is(payload));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("public.progression.defendants-added-to-case"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload(), is(payload));
 
 
     }
@@ -245,7 +263,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     public void shouldHandleCasesReferredToCourtWithSameFutureHearings() throws Exception {
         final UUID userId = randomUUID();
 
-        final CourtCentre existingHearingCourtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).withRoomId(randomUUID()).build();
+        final CourtCentre existingHearingCourtCentre = courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build();
         final ZonedDateTime existingHearingSittingDay = ZonedDateTime.now().plusWeeks(2);
 
         prosecutionCaseJsonObject = Optional.of(getProsecutionCaseResponse());
@@ -253,7 +271,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withCaseURN("caseUrn")
                         .build())
                 .build();
@@ -286,45 +304,60 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         eventProcessor.process(jsonEnvelope);
         verify(sender, times(3)).send(envelopeCaptor.capture());
 
-        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(),is("progression.command.process-matched-defendants"));
-        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"),is(PROSECUTION_CASE_ID.toString()));
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
 
-        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(),is("public.progression.defendants-added-to-case"));
-        assertThat(envelopeCaptor.getAllValues().get(1).payload(),is(payload));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("public.progression.defendants-added-to-case"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload(), is(payload));
 
-        assertThat(envelopeCaptor.getAllValues().get(2).metadata().name(),is("public.progression.defendants-added-to-court-proceedings"));        assertThat(envelopeCaptor.getAllValues().get(1).payload(),is(payload));
-        assertThat(envelopeCaptor.getAllValues().get(2).payload(),is(payload));
+        assertThat(envelopeCaptor.getAllValues().get(2).metadata().name(), is("public.progression.defendants-added-to-court-proceedings"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload(), is(payload));
+        assertThat(envelopeCaptor.getAllValues().get(2).payload(), is(payload));
 
-        verify(listingService, times(0)).listCourtHearing(jsonEnvelope, listCourtHearing);
-        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+        verify(listingService, never()).listCourtHearing(jsonEnvelope, listCourtHearing);
+        verify(progressionService, never()).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
 
+        //verify 1st defendant is added to hearing 1 - matching future known hearing
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(jsonEnvelope, getDefendantRequestFor(DEFENDANT_ID_1), HEARING_ID_1);
+
+        //verify 2nd defendant is added to a new hearing - not matching any known hearings
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), eq(getDefendantRequestFor(DEFENDANT_ID_2)), uuidCaptor.capture());
+        assertThat(Lists.newArrayList(HEARING_ID_1, HEARING_ID_2, HEARING_ID_3), not(hasItem(uuidCaptor.getValue())));
+
+    }
+
+    private List<ListDefendantRequest> getDefendantRequestFor(final UUID defendantId) {
+        return defendantsAddedToCourtProceedings.getListHearingRequests().stream().flatMap(r -> r.getListDefendantRequests().stream().filter(dr -> dr.getDefendantId() == defendantId)).collect(Collectors.toList());
     }
 
     private List<Hearing> createFutureHearings(final CourtCentre existingHearingCourtCentre, final ZonedDateTime existingHearingSittingDay) {
         return Arrays.asList(
                 Hearing.hearing()
                         .withHearingDays(
-                                Collections.singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(existingHearingSittingDay)
                                         .build())
                         )
                         .withCourtCentreId(existingHearingCourtCentre.getId())
+                        .withId(HEARING_ID_1)
                         .build(),
                 Hearing.hearing()
                         .withHearingDays(
-                                Collections.singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(existingHearingSittingDay)
                                         .build())
                         )
                         .withCourtCentreId(randomUUID())
+                        .withId(HEARING_ID_2)
                         .build(),
                 Hearing.hearing()
                         .withHearingDays(
-                                Collections.singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(ZonedDateTime.now().plusDays(3))
                                         .build())
                         )
                         .withCourtCentreId(randomUUID())
+                        .withId(HEARING_ID_3)
                         .build()
         );
     }
@@ -352,7 +385,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         hearings.add(Hearings.hearings()
                 .withId(randomUUID())
                 .withHearingDays(hearingDays)
-                .withCourtCentre(CourtCentre.courtCentre()
+                .withCourtCentre(courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())
                         .build())
@@ -364,114 +397,36 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         hearingDays.add(hd);
 
         hearingDays2.add(hd);
-
-        hearings.add(Hearings.hearings()
-                .withId(UUID.randomUUID())
-                .withHearingDays(hearingDays2)
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(randomUUID())
-                        .withRoomId(randomUUID())
-                        .build())
-                .build());
-
-        hearings.add(Hearings.hearings()
-                .withId(UUID.randomUUID())
-                .withHearingDays(Collections.singletonList(
-                        HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build()))
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(randomUUID())
-                        .withRoomId(randomUUID())
-                        .build())
-                .build());
-
-        return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
-
-    }
-
-    private GetHearingsAtAGlance getCaseAtAGlanceWithFutureHearings(final CourtCentre existingHearingCourtCentre, final ZonedDateTime existingHearingSittingDay) throws Exception {
-
-        final List<Hearings> hearings = new ArrayList<>();
-
-        final List<HearingDay> hearingDays = new ArrayList<>();
-
-        HearingDay hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build();
-        hearingDays.add(hd);
-        hd = HearingDay.hearingDay().withSittingDay(existingHearingSittingDay).build();
-        hearingDays.add(hd);
 
         hearings.add(Hearings.hearings()
                 .withId(randomUUID())
-                .withHearingDays(hearingDays)
-                .withCourtCentre(existingHearingCourtCentre)
-                .build());
-
-        final List<HearingDay> hearingDays2 = new ArrayList<>();
-
-        hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().minusDays(1)).build();
-        hearingDays.add(hd);
-
-        hearingDays2.add(hd);
-
-        hearings.add(Hearings.hearings()
-                .withId(UUID.randomUUID())
                 .withHearingDays(hearingDays2)
-                .withCourtCentre(CourtCentre.courtCentre()
+                .withCourtCentre(courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())
                         .build())
                 .build());
 
         hearings.add(Hearings.hearings()
-                .withId(UUID.randomUUID())
-                .withHearingDays(Collections.singletonList(
+                .withId(randomUUID())
+                .withHearingDays(singletonList(
                         HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build()))
-                .withCourtCentre(CourtCentre.courtCentre()
+                .withCourtCentre(courtCentre()
                         .withId(randomUUID())
                         .withRoomId(randomUUID())
                         .build())
                 .build());
 
         return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
-
-    }
-
-
-    private GetHearingsAtAGlance getCaseAtAGlanceWithNoFutureHearings() throws Exception {
-
-        final List<Hearings> hearings = new ArrayList<>();
-
-        final List<HearingDay> hearingDays = new ArrayList<>();
-
-        HearingDay hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().minusDays(5)).build();
-        hearingDays.add(hd);
-        hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().minusDays(1)).build();
-        hearingDays.add(hd);
-
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(hearingDays).build());
-
-        final List<HearingDay> hearingDays2 = new ArrayList<>();
-
-        hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().minusDays(4)).build();
-        hearingDays.add(hd);
-
-        hearingDays2.add(hd);
-
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(hearingDays2).build());
-
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(Collections.singletonList(
-                HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().minusWeeks(1)).build())).build());
-
-        return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
-
     }
 
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings() {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
-        final Offence offence = Offence.offence()
-                .withId(UUID.randomUUID())
-                .withOffenceDefinitionId(UUID.randomUUID())
+        final Offence offence = offence()
+                .withId(randomUUID())
+                .withOffenceDefinitionId(randomUUID())
                 .withOffenceCode("TFL123")
                 .withOffenceTitle("TFL Ticket Dodger")
                 .withWording("TFL ticket dodged")
@@ -479,36 +434,35 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                 .withCount(0)
                 .build();
 
-        final Defendant defendant = Defendant.defendant()
-                .withId(UUID.randomUUID())
+        final Defendant defendant = defendant()
+                .withId(DEFENDANT_ID_1)
                 .withProsecutionCaseId(PROSECUTION_CASE_ID)
-                .withOffences(Collections.singletonList(offence))
+                .withOffences(singletonList(offence))
                 .build();
 
         defendantsList.add(defendant);
 
-        final ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
+        final ListDefendantRequest listDefendantRequest = listDefendantRequest()
                 .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                .withDefendantOffences(Collections.singletonList(defendant.getOffences().get(0).getId()))
+                .withDefendantOffences(singletonList(defendant.getOffences().get(0).getId()))
                 .withDefendantId(defendant.getId())
                 .build();
 
-        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_TRIAL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+        final HearingType hearingType = hearingType().withId(randomUUID()).withDescription("TO_TRIAL").build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).build();
 
-        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+        final ListHearingRequest listHearingRequest = listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .withListDefendantRequests(Arrays.asList(listDefendantRequest))
+                .withListDefendantRequests(singletonList(listDefendantRequest))
                 .withListedStartDateTime(ZonedDateTime.now().plusWeeks(2))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
-                .withEstimateMinutes(new Integer(20))
+                .withEstimateMinutes(20)
                 .build();
 
-        return DefendantsAddedToCourtProceedings
-                .defendantsAddedToCourtProceedings()
+        return defendantsAddedToCourtProceedings()
                 .withDefendants(defendantsList)
-                .withListHearingRequests(Collections.singletonList(listHearingRequest))
+                .withListHearingRequests(singletonList(listHearingRequest))
                 .build();
 
     }
@@ -518,24 +472,24 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         final UUID prosecutionCaseId = PROSECUTION_CASE_ID;
         final List<Defendant> defendantsList = new ArrayList<>();
 
-        final Offence offence1 = Offence.offence()
-                .withId(UUID.randomUUID())
-                .withOffenceDefinitionId(UUID.randomUUID())
+        final Offence offence1 = offence()
+                .withId(randomUUID())
+                .withOffenceDefinitionId(randomUUID())
                 .withOffenceCode("TFL123")
                 .withOffenceTitle("TFL Ticket Dodger")
                 .withWording("TFL ticket dodged")
                 .withStartDate(LocalDate.now().minusWeeks(1))
                 .withCount(0)
                 .build();
-        final Defendant defendant1 = Defendant.defendant()
-                .withId(UUID.randomUUID())
+        final Defendant defendant1 = defendant()
+                .withId(DEFENDANT_ID_1)
                 .withProsecutionCaseId(prosecutionCaseId)
-                .withOffences(Collections.singletonList(offence1))
+                .withOffences(singletonList(offence1))
                 .build();
 
-        final Offence offence2 = Offence.offence()
-                .withId(UUID.randomUUID())
-                .withOffenceDefinitionId(UUID.randomUUID())
+        final Offence offence2 = offence()
+                .withId(randomUUID())
+                .withOffenceDefinitionId(randomUUID())
                 .withOffenceCode("TFL123")
                 .withOffenceTitle("TFL Ticket Dodger")
                 .withWording("TFL ticket dodged")
@@ -543,48 +497,47 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                 .withCount(0)
                 .build();
 
-        final Defendant defendant2 = Defendant.defendant()
-                .withId(UUID.randomUUID())
+        final Defendant defendant2 = defendant()
+                .withId(DEFENDANT_ID_2)
                 .withProsecutionCaseId(prosecutionCaseId)
-                .withOffences(Collections.singletonList(offence2))
+                .withOffences(singletonList(offence2))
                 .build();
 
         defendantsList.add(defendant1);
         defendantsList.add(defendant2);
 
-        final ListDefendantRequest listDefendantRequest1 = ListDefendantRequest.listDefendantRequest()
+        final ListDefendantRequest listDefendantRequest1 = listDefendantRequest()
                 .withProsecutionCaseId(defendant1.getProsecutionCaseId())
-                .withDefendantOffences(Collections.singletonList(defendant1.getOffences().get(0).getId()))
+                .withDefendantOffences(singletonList(defendant1.getOffences().get(0).getId()))
                 .withDefendantId(defendant1.getId())
                 .build();
-        final ListDefendantRequest listDefendantRequest2 = ListDefendantRequest.listDefendantRequest()
+        final ListDefendantRequest listDefendantRequest2 = listDefendantRequest()
                 .withProsecutionCaseId(defendant2.getProsecutionCaseId())
-                .withDefendantOffences(Collections.singletonList(defendant2.getOffences().get(0).getId()))
+                .withDefendantOffences(singletonList(defendant2.getOffences().get(0).getId()))
                 .withDefendantId(defendant2.getId())
                 .build();
 
-        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_TRIAL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+        final HearingType hearingType = hearingType().withId(randomUUID()).withDescription("TO_TRIAL").build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).build();
 
-        final ListHearingRequest listHearingRequest1 = ListHearingRequest.listHearingRequest()
+        final ListHearingRequest listHearingRequest1 = listHearingRequest()
                 .withCourtCentre(existingHearingCourtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .withListDefendantRequests(Arrays.asList(listDefendantRequest1))
+                .withListDefendantRequests(singletonList(listDefendantRequest1))
                 .withListedStartDateTime(existingHearingSittingDay)
                 .withEarliestStartDateTime(existingHearingSittingDay)
-                .withEstimateMinutes(new Integer(20))
+                .withEstimateMinutes(20)
                 .build();
-        final ListHearingRequest listHearingRequest2 = ListHearingRequest.listHearingRequest()
+        final ListHearingRequest listHearingRequest2 = listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .withListDefendantRequests(Arrays.asList(listDefendantRequest2))
+                .withListDefendantRequests(singletonList(listDefendantRequest2))
                 .withListedStartDateTime(ZonedDateTime.now().plusWeeks(3))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(2))
-                .withEstimateMinutes(new Integer(20))
+                .withEstimateMinutes(20)
                 .build();
 
-        return DefendantsAddedToCourtProceedings
-                .defendantsAddedToCourtProceedings()
+        return defendantsAddedToCourtProceedings()
                 .withDefendants(defendantsList)
                 .withListHearingRequests(Arrays.asList(listHearingRequest1, listHearingRequest2))
                 .build();
@@ -592,7 +545,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     }
 
     private MetadataBuilder getMetadataBuilder(final UUID userId, final String name) {
-        return JsonEnvelope.metadataBuilder()
+        return metadataBuilder()
                 .withId(randomUUID())
                 .withName(name)
                 .withCausation(randomUUID())

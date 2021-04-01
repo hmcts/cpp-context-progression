@@ -2,12 +2,10 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.AssociatedPerson;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Ethnicity;
@@ -20,13 +18,10 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
@@ -35,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -43,12 +37,11 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("squid:S3655")
+@SuppressWarnings({"squid:S3655", "squid:S1135", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod"})
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantUpdatedEventListener {
 
@@ -61,10 +54,6 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     private ProsecutionCaseRepository repository;
     @Inject
     private SearchProsecutionCase searchCase;
-    @Inject
-    private CourtApplicationRepository courtApplicationRepository;
-    @Inject
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
@@ -87,18 +76,13 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final Optional<Defendant> originDefendant = prosecutionCase.getDefendants().stream().filter(d -> d.getId().equals(defendantUpdate.getId())).findFirst();
 
-        final List<CourtApplicationEntity> applicationEntities = courtApplicationRepository.findByLinkedCaseId(defendantUpdate.getProsecutionCaseId());
-
         if (originDefendant.isPresent()) {
             final Defendant updatedDefendant = updateDefendant(originDefendant.get(), defendantUpdate);
             prosecutionCase.getDefendants().remove(originDefendant.get());
             prosecutionCase.getDefendants().add(updatedDefendant);
-            if (nonNull(applicationEntities) && !applicationEntities.isEmpty()) {
-                updateDefendantForCourtApplication(applicationEntities, updatedDefendant);
-            }
         }
-        repository.save(getProsecutionCaseEntity(prosecutionCase));
 
+        repository.save(getProsecutionCaseEntity(prosecutionCase));
         updateSearchable(prosecutionCase);
     }
 
@@ -112,22 +96,22 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedCaseUpdated.class);
         final List<Defendant> defendants = hearingResultedCaseUpdated.getProsecutionCase().getDefendants();
 
-        if (CollectionUtils.isNotEmpty(defendants)) {
+        if (isNotEmpty(defendants)) {
             final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendants.get(0).getProsecutionCaseId());
             final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
-
             final ProsecutionCase prosecutionCaseInRepository = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-            for (final Defendant defendant : defendants) {
-                final Optional<Defendant> defendantFromRespository = prosecutionCaseInRepository.getDefendants().stream().filter(def -> def.getId().equals(defendant.getId())).findFirst();
 
-                if (defendantFromRespository.isPresent()) {
-                    final Defendant originalDefendant = defendantFromRespository.get();
-                    prosecutionCaseInRepository.getDefendants().remove(defendantFromRespository.get());
+            for (final Defendant defendant : defendants) {
+                final Optional<Defendant> defendantFromRepository = prosecutionCaseInRepository.getDefendants().stream().filter(def -> def.getId().equals(defendant.getId())).findFirst();
+                if (defendantFromRepository.isPresent()) {
+                    final Defendant originalDefendant = defendantFromRepository.get();
+                    prosecutionCaseInRepository.getDefendants().remove(defendantFromRepository.get());
                     // GPE-12381 . This has been done explicitly  not to loose  progression flag associationLockedByRepOrder when we receive result from hearing
                     final Defendant updatedDefendant = getUpdatedDefendant(originalDefendant, defendant);
                     prosecutionCaseInRepository.getDefendants().add(updatedDefendant);
                 }
             }
+
             final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
                     .withPoliceOfficerInCase(prosecutionCaseInRepository.getPoliceOfficerInCase())
                     .withProsecutionCaseIdentifier(prosecutionCaseInRepository.getProsecutionCaseIdentifier())
@@ -151,7 +135,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     }
 
     private Defendant getUpdatedDefendant(final Defendant originalDefendant, final Defendant defendant) {
-        final List<Offence> offences = nonNull(originalDefendant.getOffences()) ? new ArrayList<>(originalDefendant.getOffences()): new ArrayList<>();
+        final List<Offence> offences = nonNull(originalDefendant.getOffences()) ? new ArrayList<>(originalDefendant.getOffences()) : new ArrayList<>();
 
         if (nonNull(defendant.getOffences())) {
             final List<Offence> updatedOffences = getUpdatedOffencesWithNonNowsJudicialResults(defendant.getOffences());
@@ -218,101 +202,6 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     private void updateSearchable(final ProsecutionCase prosecutionCase) {
         prosecutionCase.getDefendants().forEach(caseDefendant ->
                 searchCase.makeSearchable(prosecutionCase, caseDefendant));
-    }
-
-    private void updateDefendantForCourtApplication(final List<CourtApplicationEntity> applicationEntities, final Defendant updatedDefendant) {
-        applicationEntities.forEach(applicationEntity -> {
-            final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
-            final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
-            if (persistedApplication.getApplicant() != null && persistedApplication.getApplicant().getDefendant() != null) {
-                updateApplicant(persistedApplication, updatedDefendant, applicationEntity);
-            }
-            if (persistedApplication.getRespondents() != null) {
-                updateRespondents(persistedApplication, updatedDefendant, applicationEntity);
-            }
-        });
-
-    }
-
-    private void updateApplicant(final CourtApplication persistedApplication, final Defendant updatedDefendant, final CourtApplicationEntity applicationEntity) {
-        if (persistedApplication.getApplicant().getDefendant().getId().equals(updatedDefendant.getId())) {
-            final CourtApplication updatedApplication = CourtApplication.courtApplication()
-                    .withId(persistedApplication.getId())
-                    .withType(persistedApplication.getType())
-                    .withApplicant(CourtApplicationParty.courtApplicationParty()
-                            .withDefendant(updatedDefendant)
-                            .withId(persistedApplication.getApplicant().getId())
-                            .withSynonym(persistedApplication.getApplicant().getSynonym())
-                            .withRepresentationOrganisation(persistedApplication.getApplicant().getRepresentationOrganisation())
-                            .withOrganisation(persistedApplication.getApplicant().getOrganisation())
-                            .withOrganisationPersons(persistedApplication.getApplicant().getOrganisationPersons())
-                            .withProsecutingAuthority(persistedApplication.getApplicant().getProsecutingAuthority())
-                            .withPersonDetails(persistedApplication.getApplicant().getPersonDetails())
-                            .build())
-                    .withApplicationDecisionSoughtByDate(persistedApplication.getApplicationDecisionSoughtByDate())
-                    .withApplicationOutcome(persistedApplication.getApplicationOutcome())
-                    .withApplicationParticulars(persistedApplication.getApplicationParticulars())
-                    .withApplicationReceivedDate(persistedApplication.getApplicationReceivedDate())
-                    .withApplicationReference(persistedApplication.getApplicationReference())
-                    .withApplicationStatus(persistedApplication.getApplicationStatus())
-                    .withCourtApplicationPayment(persistedApplication.getCourtApplicationPayment())
-                    .withJudicialResults(persistedApplication.getJudicialResults())
-                    .withParentApplicationId(persistedApplication.getParentApplicationId())
-                    .withLinkedCaseId(persistedApplication.getLinkedCaseId())
-                    .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .withRespondents(persistedApplication.getRespondents())
-                    .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .build();
-
-
-            applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
-            courtApplicationRepository.save(applicationEntity);
-        }
-    }
-
-    private void updateRespondents(final CourtApplication persistedApplication, final Defendant updatedDefendant, final CourtApplicationEntity applicationEntity) {
-        if (getAllDefendantsUUID(persistedApplication).contains(updatedDefendant.getId())) {
-            final CourtApplication updatedApplication = CourtApplication.courtApplication()
-                    .withId(persistedApplication.getId())
-                    .withType(persistedApplication.getType())
-                    .withApplicant(persistedApplication.getApplicant())
-                    .withApplicationDecisionSoughtByDate(persistedApplication.getApplicationDecisionSoughtByDate())
-                    .withApplicationOutcome(persistedApplication.getApplicationOutcome())
-                    .withApplicationParticulars(persistedApplication.getApplicationParticulars())
-                    .withApplicationReceivedDate(persistedApplication.getApplicationReceivedDate())
-                    .withApplicationReference(persistedApplication.getApplicationReference())
-                    .withApplicationStatus(persistedApplication.getApplicationStatus())
-                    .withCourtApplicationPayment(persistedApplication.getCourtApplicationPayment())
-                    .withJudicialResults(persistedApplication.getJudicialResults())
-                    .withParentApplicationId(persistedApplication.getParentApplicationId())
-                    .withLinkedCaseId(persistedApplication.getLinkedCaseId())
-                    .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .withRespondents(persistedApplication.getRespondents().stream()
-                            .map(r -> r.getPartyDetails().getDefendant() != null && r.getPartyDetails().getDefendant().getId().equals(updatedDefendant.getId()) ? updateRespondent(r, updatedDefendant) : r)
-                            .collect(Collectors.toList()))
-                    .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .build();
-
-
-            applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
-            courtApplicationRepository.save(applicationEntity);
-        }
-    }
-
-    private CourtApplicationRespondent updateRespondent(final CourtApplicationRespondent respondent, final Defendant updatedDefendant) {
-        return CourtApplicationRespondent.courtApplicationRespondent()
-                .withApplicationResponse(respondent.getApplicationResponse())
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withPersonDetails(respondent.getPartyDetails().getPersonDetails())
-                        .withRepresentationOrganisation(respondent.getPartyDetails().getRepresentationOrganisation())
-                        .withProsecutingAuthority(respondent.getPartyDetails().getProsecutingAuthority())
-                        .withOrganisationPersons(respondent.getPartyDetails().getOrganisationPersons())
-                        .withDefendant(updatedDefendant)
-                        .withId(respondent.getPartyDetails().getId())
-                        .withSynonym(respondent.getPartyDetails().getSynonym())
-                        .withOrganisation(respondent.getPartyDetails().getOrganisation())
-                        .build())
-                .build();
     }
 
     private Defendant updateDefendant(final Defendant originDefendant, final DefendantUpdate defendant) {
@@ -499,7 +388,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     private Optional<Person> getMatchingOriginAssociatedPerson(final List<AssociatedPerson> originalAssociatedPeople, final Person person) {
 
-        if (CollectionUtils.isNotEmpty(originalAssociatedPeople)) {
+        if (isNotEmpty(originalAssociatedPeople)) {
             return originalAssociatedPeople.stream().map(AssociatedPerson::getPerson)
                     .filter(p -> StringUtils.equals(person.getLastName(), p.getLastName())
                             && StringUtils.equals(person.getFirstName(), p.getFirstName())
@@ -509,8 +398,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         return Optional.empty();
     }
 
-    private <T extends Object> T getUpdatedValue(T originalValue, T newValue) {
-        return newValue != null ? newValue : originalValue;
+    private <T> T getUpdatedValue(T originalValue, T newValue) {
+        return nonNull(newValue) ? newValue : originalValue;
     }
 
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
@@ -518,12 +407,5 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         pCaseEntity.setCaseId(prosecutionCase.getId());
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
-    }
-
-    private List<UUID> getAllDefendantsUUID(CourtApplication courtApplication) {
-        return courtApplication.getRespondents()
-                .stream()
-                .filter(respondents -> respondents.getPartyDetails() != null && respondents.getPartyDetails().getDefendant() != null)
-                .map(filteredRespondents -> filteredRespondents.getPartyDetails().getDefendant().getId()).collect(Collectors.toList());
     }
 }

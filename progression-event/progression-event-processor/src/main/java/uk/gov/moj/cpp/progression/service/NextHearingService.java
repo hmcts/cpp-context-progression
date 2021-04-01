@@ -1,23 +1,29 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -38,39 +45,29 @@ public class NextHearingService {
     @Inject
     private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
 
+    @Inject
+    private HearingResultHelper hearingResultHelper;
+
+    private static boolean doesExistingHearingIdPresent(final NextHearing nextHearing) {
+        return nonNull(nextHearing) && nonNull(nextHearing.getExistingHearingId());
+    }
+
     public NextHearingDetails getNextHearingDetails(final Hearing hearing) {
-       return getNextHearingDetails(hearing, false, null);
+        return getNextHearingDetails(hearing, false, Optional.empty());
     }
 
     public NextHearingDetails getNextHearingDetails(final Hearing hearing, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
-        final List<ProsecutionCase> prosecutionCases = hearing.getProsecutionCases();
-        final Set<UUID> hearingIds = getAllocatedHearingIds(prosecutionCases);
+        final List<ProsecutionCase> prosecutionCases = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).collect(Collectors.toList());
+        final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty).collect(Collectors.toList());
+        final Set<UUID> hearingIds = getAllocatedHearingIds(hearing);
         final Map<UUID, ProsecutionCase> prosecutionCaseMap = getProsecutionCasesMap(prosecutionCases);
 
         final Map<UUID, Map<UUID, Map<UUID, Set<UUID>>>> hearingsMap = new HashMap<>();
+        final Map<UUID, List<CourtApplication>> hearingsMap2 = new HashMap<>();
         final Map<UUID, NextHearing> nextHearings = new HashMap<>();
         hearingIds.forEach(hearingId -> {
-            final Map<UUID, Map<UUID, Set<UUID>>> prosecutionCasesMap = new HashMap<>();
-            prosecutionCases.forEach(prosecutionCase -> {
-                final Map<UUID, Set<UUID>> defendantsMap = new HashMap<>();
-                prosecutionCase.getDefendants().forEach(defendant -> {
-                    final Set<UUID> offenceIds = new HashSet<>();
-                    defendant.getOffences().forEach(offence -> {
-                        if (isNotEmpty(offence.getJudicialResults())) {
-                            offence.getJudicialResults().forEach(judicialResult -> {
-                                final NextHearing nextHearing = judicialResult.getNextHearing();
-                                if (doesExistingHearingIdPresent(nextHearing) && (nextHearing.getExistingHearingId().equals(hearingId))) {
-                                    offenceIds.add(offence.getId());
-                                    defendantsMap.put(defendant.getId(), offenceIds);
-                                    prosecutionCasesMap.put(prosecutionCase.getId(), defendantsMap);
-                                    hearingsMap.put(hearingId, prosecutionCasesMap);
-                                    nextHearings.put(hearingId, nextHearing);
-                                }
-                            });
-                        }
-                    });
-                });
-            });
+            processProsecutionCases(prosecutionCases, hearingsMap, nextHearings, hearingId);
+            processApplications(courtApplications, hearingsMap2, nextHearings, hearingId);
         });
 
         final List<HearingListingNeeds> hearingListingNeedsList = new ArrayList<>();
@@ -95,16 +92,72 @@ public class NextHearingService {
                 prosecutionCaseToBeAdded.getDefendants().addAll(defendantsToBeAdded);
                 prosecutionCasesToBeAdded.add(prosecutionCaseToBeAdded);
             });
-            addToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, prosecutionCasesToBeAdded);
+            addToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, prosecutionCasesToBeAdded, hearingsMap2.get(hearingId));
         });
-        return new NextHearingDetails(hearingsMap, hearingListingNeedsList, nextHearings);
+
+        hearingsMap2.forEach((hearingId, applications) -> addToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, applications));
+
+        return new NextHearingDetails(hearingListingNeedsList, nextHearings);
     }
 
-    private void addToHearingListingNeeds(final Map<UUID, NextHearing> nextHearings, final List<HearingListingNeeds> hearingListingNeedsList, final UUID hearingId, final List<ProsecutionCase> prosecutionCasesToBeAdded) {
+    private void processApplications(List<CourtApplication> courtApplications, Map<UUID, List<CourtApplication>> hearingsMap2, Map<UUID, NextHearing> nextHearings, UUID hearingId) {
+        courtApplications.forEach(courtApplication -> {
+            final List<JudicialResult> judicialResults = hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication);
+            judicialResults.forEach(judicialResult -> {
+                final NextHearing nextHearing = judicialResult.getNextHearing();
+                if (doesExistingHearingIdPresent(nextHearing) && (nextHearing.getExistingHearingId().equals(hearingId))) {
+                    final List<CourtApplication> courtApplicationList = hearingsMap2.getOrDefault(hearingId, new ArrayList<>());
+                    courtApplicationList.add(courtApplication);
+                    hearingsMap2.put(hearingId, courtApplicationList);
+                    nextHearings.put(hearingId, nextHearing);
+                }
+            });
+        });
+    }
+
+    private void processProsecutionCases(List<ProsecutionCase> prosecutionCases, Map<UUID, Map<UUID, Map<UUID, Set<UUID>>>> hearingsMap, Map<UUID, NextHearing> nextHearings, UUID hearingId) {
+        final Map<UUID, Map<UUID, Set<UUID>>> prosecutionCasesMap = new HashMap<>();
+        prosecutionCases.forEach(prosecutionCase -> {
+            final Map<UUID, Set<UUID>> defendantsMap = new HashMap<>();
+            prosecutionCase.getDefendants().forEach(defendant -> {
+                final Set<UUID> offenceIds = new HashSet<>();
+                defendant.getOffences().forEach(offence -> {
+                    if (isNotEmpty(offence.getJudicialResults())) {
+                        offence.getJudicialResults().forEach(judicialResult -> {
+                            final NextHearing nextHearing = judicialResult.getNextHearing();
+                            if (doesExistingHearingIdPresent(nextHearing) && (nextHearing.getExistingHearingId().equals(hearingId))) {
+                                offenceIds.add(offence.getId());
+                                defendantsMap.put(defendant.getId(), offenceIds);
+                                prosecutionCasesMap.put(prosecutionCase.getId(), defendantsMap);
+                                hearingsMap.put(hearingId, prosecutionCasesMap);
+                                nextHearings.put(hearingId, nextHearing);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    private void addToHearingListingNeeds(final Map<UUID, NextHearing> nextHearings, final List<HearingListingNeeds> hearingListingNeedsList, final UUID hearingId, final List<ProsecutionCase> prosecutionCasesToBeAdded, List<CourtApplication> courtApplications) {
         final NextHearing nextHearing = nextHearings.get(hearingId);
         hearingListingNeedsList.add(HearingListingNeeds.hearingListingNeeds()
                 .withCourtCentre(nextHearing.getCourtCentre())
                 .withProsecutionCases(prosecutionCasesToBeAdded)
+                .withCourtApplications(courtApplications)
+                .withId(hearingId)
+                .withJurisdictionType(nextHearing.getJurisdictionType())
+                .withEstimatedMinutes(30)
+                .withType(nextHearing.getType())
+                .build());
+    }
+
+    private void addToHearingListingNeeds(final Map<UUID, NextHearing> nextHearings, final List<HearingListingNeeds> hearingListingNeedsList, final UUID hearingId, List<CourtApplication> courtApplications) {
+        final NextHearing nextHearing = nextHearings.get(hearingId);
+        hearingListingNeedsList.add(HearingListingNeeds.hearingListingNeeds()
+                .withCourtCentre(nextHearing.getCourtCentre())
+                .withProsecutionCases(null)
+                .withCourtApplications(courtApplications)
                 .withId(hearingId)
                 .withJurisdictionType(nextHearing.getJurisdictionType())
                 .withEstimatedMinutes(30)
@@ -249,20 +302,30 @@ public class NextHearingService {
                 .collect(Collectors.toMap(ProsecutionCase::getId, pc -> pc));
     }
 
-    private Set<UUID> getAllocatedHearingIds(final List<ProsecutionCase> prosecutionCases) {
+    private Set<UUID> getAllocatedHearingIds(final Hearing hearing) {
         final Set<UUID> hearingIds = new HashSet<>();
-        prosecutionCases.stream()
+        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                 .flatMap(defendant -> defendant.getOffences().stream())
                 .filter(offence -> CollectionUtils.isNotEmpty(offence.getJudicialResults()))
                 .flatMap(offence -> offence.getJudicialResults().stream())
-                .forEach(judicialResult -> {
-                    final NextHearing nextHearing = judicialResult.getNextHearing();
-                    if (doesExistingHearingIdPresent(nextHearing)) {
-                        hearingIds.add(nextHearing.getExistingHearingId());
-                    }
-                });
+                .forEach(judicialResult -> getExistingHearingId(judicialResult).ifPresent(hearingIds::add));
+
+        final List<JudicialResult> judicialResults = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .flatMap(courtApplication -> hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication).stream())
+                .collect(Collectors.toList());
+
+        judicialResults.forEach(judicialResult -> getExistingHearingId(judicialResult).ifPresent(hearingIds::add));
+
         return hearingIds;
+    }
+
+    private Optional<UUID> getExistingHearingId(JudicialResult judicialResult) {
+        final NextHearing nextHearing = judicialResult.getNextHearing();
+        if (doesExistingHearingIdPresent(nextHearing)) {
+            return ofNullable(nextHearing.getExistingHearingId());
+        }
+        return empty();
     }
 
     private Offence getOffence(final Defendant defendant, final UUID offenceId) {
@@ -277,9 +340,5 @@ public class NextHearingService {
                 .filter(def -> def.getId().equals(defendantId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Defendant not found"));
-    }
-
-    private static boolean doesExistingHearingIdPresent(final NextHearing nextHearing) {
-        return nonNull(nextHearing) && nonNull(nextHearing.getExistingHearingId());
     }
 }

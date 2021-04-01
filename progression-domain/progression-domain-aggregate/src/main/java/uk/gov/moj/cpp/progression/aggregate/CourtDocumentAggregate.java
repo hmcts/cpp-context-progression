@@ -6,6 +6,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Stream.builder;
+import static uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated.courtDocumentPrintTimeUpdated;
 import static uk.gov.justice.core.courts.CourtDocumentShared.courtDocumentShared;
 import static uk.gov.justice.core.courts.CourtDocumentUpdated.courtDocumentUpdated;
 import static uk.gov.justice.core.courts.CourtsDocumentCreated.courtsDocumentCreated;
@@ -80,6 +82,17 @@ public class CourtDocumentAggregate implements Aggregate {
                 otherwiseDoNothing());
     }
 
+    public Stream<Object> updateCourtDocumentPrintTime(final UUID materialId, final UUID courtDocumentId, final ZonedDateTime printedAt) {
+        final Stream.Builder<Object> builder = builder();
+        builder.add(courtDocumentPrintTimeUpdated()
+                .withCourtDocumentId(courtDocumentId)
+                .withMaterialId(materialId)
+                .withPrintedAt(printedAt)
+                .build());
+
+        return apply(builder.build());
+    }
+
     public Stream<Object> updateCourtDocument(final CourtDocument inputCourtDocumentDetails, final ZonedDateTime receivedDateTime,
                                               final DocumentTypeRBAC documentTypeRBAC) {
 
@@ -103,7 +116,7 @@ public class CourtDocumentAggregate implements Aggregate {
                 .withMaterials(buildMaterials(receivedDateTime, documentTypeRBAC))
                 .withSendToCps(inputCourtDocumentDetails.getSendToCps())
                 .build();
-        final Stream.Builder<Object> builder = Stream.builder();
+        final Stream.Builder<Object> builder = builder();
         builder.add(courtDocumentUpdated().withCourtDocument(updatedCourtDocument).build());
 
         if (inputCourtDocumentDetails.getSendToCps()) {
@@ -126,7 +139,7 @@ public class CourtDocumentAggregate implements Aggregate {
         }
 
         LOGGER.debug("court document is being shared .");
-        final Stream.Builder<Object> builder = Stream.builder();
+        final Stream.Builder<Object> builder = builder();
         final List<UUID> defendants = this.courtDocument.getDocumentCategory().getDefendantDocument() != null ? this.courtDocument.getDocumentCategory().getDefendantDocument().getDefendants() : emptyList();
         if (!defendants.isEmpty()) {
             defendants.forEach(defendant ->
@@ -186,7 +199,7 @@ public class CourtDocumentAggregate implements Aggregate {
 
     public Stream<Object> createCourtDocument(final CourtDocument courtDocument) {
         LOGGER.debug("court document is being created .");
-        final Stream.Builder<Object> builder = Stream.builder();
+        final Stream.Builder<Object> builder = builder();
         builder.add(courtsDocumentCreated().withCourtDocument(courtDocument).build());
         if (nonNull(courtDocument.getSendToCps()) && courtDocument.getSendToCps()) {
             builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(courtDocument).build());
@@ -202,7 +215,7 @@ public class CourtDocumentAggregate implements Aggregate {
     public Stream<Object> addCourtDocument(final CourtDocument courtDocument, final List<String> groups, final boolean actionRequired, final UUID materialId, final String section, final Boolean isCpsCase) {
         LOGGER.debug("Court document being added");
 
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = builder();
         streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).withIsCpsCase(isCpsCase).build());
 
         if (actionRequired &&

@@ -55,6 +55,9 @@
             },
             "representation": {
               "type": "string"
+            },
+            "isSubject": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false
@@ -73,6 +76,9 @@
     "respondentDetail": {
       "type": "object",
       "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
         "name": {
           "type": "string"
         },
@@ -84,6 +90,9 @@
           "items": {
             "$ref": "#/definitions/respondentRepresentative"
           }
+        },
+        "isSubject": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

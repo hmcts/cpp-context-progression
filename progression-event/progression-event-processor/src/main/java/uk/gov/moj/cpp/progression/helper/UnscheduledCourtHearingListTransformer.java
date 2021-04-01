@@ -246,27 +246,8 @@ public class UnscheduledCourtHearingListTransformer {
 
     private CourtApplication createCourtApplication(final CourtApplication courtApplication, final JudicialResult judicialResult) {
         return CourtApplication.courtApplication()
-                .withApplicant(courtApplication.getApplicant())
-                .withApplicationDecisionSoughtByDate(courtApplication.getApplicationDecisionSoughtByDate())
-                .withApplicationOutcome(courtApplication.getApplicationOutcome())
-                .withApplicationParticulars(courtApplication.getApplicationParticulars())
-                .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                .withApplicationReference(courtApplication.getApplicationReference())
-                .withApplicationStatus(courtApplication.getApplicationStatus())
-                .withType(courtApplication.getType())
-                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
-                .withBreachedOrder(courtApplication.getBreachedOrder())
-                .withBreachedOrderDate(courtApplication.getBreachedOrderDate())
-                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
-                .withCourtApplicationPayment(courtApplication.getCourtApplicationPayment())
-                .withDueDate(courtApplication.getDueDate())
-                .withId(courtApplication.getId())
+                .withValuesFrom(courtApplication)
                 .withJudicialResults(Arrays.asList(judicialResult))
-                .withLinkedCaseId(courtApplication.getLinkedCaseId())
-                .withOrderingCourt(courtApplication.getOrderingCourt())
-                .withParentApplicationId(courtApplication.getParentApplicationId())
-                .withRemovalReason(courtApplication.getRemovalReason())
-                .withRespondents(courtApplication.getRespondents())
                 .build();
     }
 
@@ -274,22 +255,8 @@ public class UnscheduledCourtHearingListTransformer {
                                                   final List<Offence> offences) {
 
         return ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
                 .withDefendants(Arrays.asList(createDefendant(defendant, offences)))
-                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
-                .withId(prosecutionCase.getId())
-                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                .withCaseMarkers(prosecutionCase.getCaseMarkers())
-                .withCaseStatus(prosecutionCase.getCaseStatus())
-                .withClassOfCase(prosecutionCase.getClassOfCase())
-                .withInitiationCode(prosecutionCase.getInitiationCode())
-                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
-                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
-                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
                 .build();
 
     }
@@ -297,30 +264,8 @@ public class UnscheduledCourtHearingListTransformer {
     private Defendant createDefendant(final Defendant defendant, final List<Offence> offences) {
 
         return Defendant.defendant()
-                .withProceedingsConcluded(defendant.getProceedingsConcluded())
-                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                .withPersonDefendant(defendant.getPersonDefendant())
+                .withValuesFrom(defendant)
                 .withOffences(offences)
-                .withId(defendant.getId())
-                .withMasterDefendantId(defendant.getMasterDefendantId())
-                .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
-                .withAliases(defendant.getAliases())
-                .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
-                .withAssociatedPersons(defendant.getAssociatedPersons())
-                .withAssociationLockedByRepOrder(defendant.getAssociationLockedByRepOrder())
-                .withCroNumber(defendant.getCroNumber())
-                .withDefenceOrganisation(defendant.getDefenceOrganisation())
-                .withIsYouth(defendant.getIsYouth())
-                .withDefendantCaseJudicialResults(defendant.getDefendantCaseJudicialResults())
-                .withLegalAidStatus(defendant.getLegalAidStatus())
-                .withMitigation(defendant.getMitigation())
-                .withMitigationWelsh(defendant.getMitigationWelsh())
-                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                .withPncId(defendant.getPncId())
-                .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
-                .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                .withWitnessStatement(defendant.getWitnessStatement())
-                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
                 .build();
 
     }

@@ -23,6 +23,7 @@ public class MatchedDefendantCriteriaTest {
     private static final boolean DEFAULT_PROCEEDINGS_CONCLUDED = false;
     private static final boolean DEFAULT_CROWN_OR_MAGISTRATES = true;
     private static final int DEFAULT_PAGE_SIZE = 25;
+    private final String DEFAULT_COURT_ORDER_VALIDITY_DATE = LocalDate.now().toString();
 
     private static final String PAGE_SIZE = "pageSize";
     private static final String PNC_ID = "pncId";
@@ -33,6 +34,7 @@ public class MatchedDefendantCriteriaTest {
     private static final String ADDRESS_LINE = "addressLine1";
     private static final String PROCEEDINGS_CONCLUDED = "proceedingsConcluded";
     private static final String CROWN_OR_MAGISTRATES = "crownOrMagistrates";
+    private static final String COURT_ORDER_VALIDITY_DATE = "courtOrderValidityDate";
 
     private static final String SAMPLE_PNC_ID_WITH_SLASH = "2099/1234567L";
     private static final String SAMPLE_PNC_ID_WITHOUT_SLASH = "20991234567L";
@@ -54,8 +56,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonFirstCriteria.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFirstCriteria.entrySet().size());
+        assertEquals(6, jsonFirstCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonSecondCriteria = matchedDefendantCriteria.getExactCriteria().build();
@@ -63,8 +66,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonSecondCriteria.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonSecondCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonSecondCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonSecondCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonSecondCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonSecondCriteria.entrySet().size());
+        assertEquals(6, jsonSecondCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonThirdCriteria = matchedDefendantCriteria.getExactCriteria().build();
@@ -73,8 +77,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonThirdCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonThirdCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonThirdCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonThirdCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonThirdCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(7, jsonThirdCriteria.entrySet().size());
+        assertEquals(8, jsonThirdCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextExactCriteria());
     }
@@ -90,8 +95,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonFirstCriteriaFirstSubStep.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaFirstSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaFirstSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaFirstSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaFirstSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFirstCriteriaFirstSubStep.entrySet().size());
+        assertEquals(6, jsonFirstCriteriaFirstSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonFirstCriteriaSecondSubStep = matchedDefendantCriteria.getExactCriteria().build();
@@ -99,8 +105,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonFirstCriteriaSecondSubStep.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaSecondSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaSecondSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaSecondSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaSecondSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFirstCriteriaSecondSubStep.entrySet().size());
+        assertEquals(6, jsonFirstCriteriaSecondSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonSecondCriteria = matchedDefendantCriteria.getExactCriteria().build();
@@ -108,8 +115,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonSecondCriteria.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonSecondCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonSecondCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonSecondCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonSecondCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonSecondCriteria.entrySet().size());
+        assertEquals(6, jsonSecondCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonThirdCriteria = matchedDefendantCriteria.getExactCriteria().build();
@@ -118,8 +126,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonThirdCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonThirdCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonThirdCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonThirdCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonThirdCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(7, jsonThirdCriteria.entrySet().size());
+        assertEquals(8, jsonThirdCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextExactCriteria());
     }
@@ -135,8 +144,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonFirstCriteriaFirstSubStep.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaFirstSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaFirstSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaFirstSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaFirstSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFirstCriteriaFirstSubStep.entrySet().size());
+        assertEquals(6, jsonFirstCriteriaFirstSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonFirstCriteriaSecondSubStep = matchedDefendantCriteria.getExactCriteria().build();
@@ -144,8 +154,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonFirstCriteriaSecondSubStep.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaSecondSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaSecondSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaSecondSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaSecondSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFirstCriteriaSecondSubStep.entrySet().size());
+        assertEquals(6, jsonFirstCriteriaSecondSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         final JsonObject jsonSecondCriteria = matchedDefendantCriteria.getExactCriteria().build();
@@ -154,8 +165,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonSecondCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonSecondCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonSecondCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonSecondCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonSecondCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(7, jsonSecondCriteria.entrySet().size());
+        assertEquals(8, jsonSecondCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextExactCriteria());
     }
@@ -171,8 +183,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_LAST_NAME, jsonCriteria.getString(LAST_NAME));
         assertEquals(DEFAULT_PAGE_SIZE, jsonCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonCriteria.entrySet().size());
+        assertEquals(6, jsonCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextExactCriteria());
         assertFalse(matchedDefendantCriteria.nextExactCriteria());
@@ -190,8 +203,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(7, jsonCriteria.entrySet().size());
+        assertEquals(8, jsonCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextExactCriteria());
     }
@@ -251,16 +265,18 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_PNC_ID_LESS_THAN_12_CHARS, jsonFirstCriteria.getString(PNC_ID));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonFirstCriteria.entrySet().size());
+        assertEquals(5, jsonFirstCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonSecondCriteria = matchedDefendantCriteria.getPartialCriteria().build();
         assertEquals(SAMPLE_CRO_NUMBER, jsonSecondCriteria.getString(CRO_NUMBER));
         assertEquals(DEFAULT_PAGE_SIZE, jsonSecondCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonSecondCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonSecondCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonSecondCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonSecondCriteria.entrySet().size());
+        assertEquals(5, jsonSecondCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonThirdCriteria = matchedDefendantCriteria.getPartialCriteria().build();
@@ -269,8 +285,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonThirdCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonThirdCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonThirdCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonThirdCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonThirdCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(6, jsonThirdCriteria.entrySet().size());
+        assertEquals(7, jsonThirdCriteria.entrySet().size());
 
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
@@ -279,8 +296,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonFourthCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFourthCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFourthCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFourthCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFourthCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFourthCriteria.entrySet().size());
+        assertEquals(6, jsonFourthCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonFifthCriteria = matchedDefendantCriteria.getPartialCriteria().build();
@@ -288,8 +306,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonFifthCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFifthCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFifthCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFifthCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFifthCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFifthCriteria.entrySet().size());
+        assertEquals(6, jsonFifthCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextPartialCriteria());
     }
@@ -304,24 +323,27 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_PNC_ID_WITH_SLASH, jsonFirstCriteriaFirstSubStep.getString(PNC_ID));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaFirstSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaFirstSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaFirstSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaFirstSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonFirstCriteriaFirstSubStep.entrySet().size());
+        assertEquals(5, jsonFirstCriteriaFirstSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonFirstCriteriaSecondSubStep = matchedDefendantCriteria.getPartialCriteria().build();
         assertEquals(SAMPLE_PNC_ID_WITHOUT_SLASH, jsonFirstCriteriaSecondSubStep.getString(PNC_ID));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaSecondSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaSecondSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaSecondSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaSecondSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonFirstCriteriaSecondSubStep.entrySet().size());
+        assertEquals(5, jsonFirstCriteriaSecondSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonSecondCriteria = matchedDefendantCriteria.getPartialCriteria().build();
         assertEquals(SAMPLE_CRO_NUMBER, jsonSecondCriteria.getString(CRO_NUMBER));
         assertEquals(DEFAULT_PAGE_SIZE, jsonSecondCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonSecondCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonSecondCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonSecondCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonSecondCriteria.entrySet().size());
+        assertEquals(5, jsonSecondCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonThirdCriteria = matchedDefendantCriteria.getPartialCriteria().build();
@@ -330,8 +352,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonThirdCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonThirdCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonThirdCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonThirdCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonThirdCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(6, jsonThirdCriteria.entrySet().size());
+        assertEquals(7, jsonThirdCriteria.entrySet().size());
 
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
@@ -340,8 +363,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonFourthCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFourthCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFourthCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFourthCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFourthCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFourthCriteria.entrySet().size());
+        assertEquals(6, jsonFourthCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonFifthCriteria = matchedDefendantCriteria.getPartialCriteria().build();
@@ -349,8 +373,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonFifthCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFifthCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFifthCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFifthCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFifthCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFifthCriteria.entrySet().size());
+        assertEquals(6, jsonFifthCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextPartialCriteria());
     }
@@ -365,16 +390,18 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_PNC_ID_WITH_SLASH, jsonFirstCriteriaFirstSubStep.getString(PNC_ID));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaFirstSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaFirstSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaFirstSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaFirstSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonFirstCriteriaFirstSubStep.entrySet().size());
+        assertEquals(5, jsonFirstCriteriaFirstSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonFirstCriteriaSecondSubStep = matchedDefendantCriteria.getPartialCriteria().build();
         assertEquals(SAMPLE_PNC_ID_WITHOUT_SLASH, jsonFirstCriteriaSecondSubStep.getString(PNC_ID));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFirstCriteriaSecondSubStep.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFirstCriteriaSecondSubStep.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFirstCriteriaSecondSubStep.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFirstCriteriaSecondSubStep.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonFirstCriteriaSecondSubStep.entrySet().size());
+        assertEquals(5, jsonFirstCriteriaSecondSubStep.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonSecondCriteria = matchedDefendantCriteria.getPartialCriteria().build();
@@ -383,8 +410,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonSecondCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonSecondCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonSecondCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonSecondCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonSecondCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(6, jsonSecondCriteria.entrySet().size());
+        assertEquals(7, jsonSecondCriteria.entrySet().size());
 
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
@@ -393,8 +421,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonThirdCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonThirdCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonThirdCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonThirdCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonThirdCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonThirdCriteria.entrySet().size());
+        assertEquals(6, jsonThirdCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         final JsonObject jsonFourthCriteria = matchedDefendantCriteria.getPartialCriteria().build();
@@ -402,8 +431,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonFourthCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonFourthCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonFourthCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonFourthCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonFourthCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(5, jsonFourthCriteria.entrySet().size());
+        assertEquals(6, jsonFourthCriteria.entrySet().size());
 
         assertFalse(matchedDefendantCriteria.nextPartialCriteria());
     }
@@ -418,8 +448,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(SAMPLE_CRO_NUMBER, jsonCriteria.getString(CRO_NUMBER));
         assertEquals(DEFAULT_PAGE_SIZE, jsonCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(4, jsonCriteria.entrySet().size());
+        assertEquals(5, jsonCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
@@ -439,8 +470,9 @@ public class MatchedDefendantCriteriaTest {
         assertEquals(FORMATTER.format(SAMPLE_DATE_OF_BIRTH), jsonCriteria.getString(DATE_OF_BIRTH));
         assertEquals(DEFAULT_PAGE_SIZE, jsonCriteria.getInt(PAGE_SIZE));
         assertEquals(DEFAULT_PROCEEDINGS_CONCLUDED, jsonCriteria.getBoolean(PROCEEDINGS_CONCLUDED));
+        assertEquals(DEFAULT_COURT_ORDER_VALIDITY_DATE, jsonCriteria.getString(COURT_ORDER_VALIDITY_DATE));
         assertEquals(DEFAULT_CROWN_OR_MAGISTRATES, jsonCriteria.getBoolean(CROWN_OR_MAGISTRATES));
-        assertEquals(6, jsonCriteria.entrySet().size());
+        assertEquals(7, jsonCriteria.entrySet().size());
 
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());
         assertTrue(matchedDefendantCriteria.nextPartialCriteria());

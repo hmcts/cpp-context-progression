@@ -13,6 +13,8 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
@@ -34,6 +36,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
@@ -53,6 +56,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
@@ -82,6 +86,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
     @Before
     public void setUp() {
+        DocumentGeneratorStub.stubDocumentCreate(STRING.next());
         HearingStub.stubInitiateHearing();
         IdMapperStub.setUp();
         userId = randomUUID().toString();
@@ -148,7 +153,8 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription()));
 
-        addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
+        //addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
 
         pollForApplicationStatus(applicationId, "DRAFT");
 

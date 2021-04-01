@@ -161,8 +161,8 @@ public class MaterialAggregate implements Aggregate {
         return apply(Stream.of(new NotificationRequestFailed(null, null, materialId, notificationId, failedTime, errorMessage, statusCode)));
     }
 
-    public Stream<Object> recordNotificationRequestSuccess(final UUID materialId, final UUID notificationId, final ZonedDateTime sentTime) {
-        return apply(Stream.of(new NotificationRequestSucceeded(null, null, materialId, notificationId, sentTime)));
+    public Stream<Object> recordNotificationRequestSuccess(final UUID materialId, final UUID notificationId, final ZonedDateTime sentTime, final ZonedDateTime completedAt) {
+        return apply(Stream.of(new NotificationRequestSucceeded(null, null, materialId, notificationId, sentTime, completedAt)));
     }
 
     public Stream<Object> recordEmailRequest(final UUID materialId, final List<Notification> notifications) {

@@ -21,7 +21,7 @@ public class ApplicationHearingQueryHelper {
     private ApplicationHearingQueryHelper() {
     }
 
-    public static JsonObject buildApplicationHearingResponse(final List<JsonObject> hearingPayloads){
+    public static JsonObject buildApplicationHearingResponse(final List<JsonObject> hearingPayloads) {
         final JsonArrayBuilder hearingsBuilder = createArrayBuilder();
 
         hearingPayloads.forEach(hearing -> {
@@ -49,7 +49,7 @@ public class ApplicationHearingQueryHelper {
                 .add(ID, courtCentre.getString(ID))
                 .add(NAME, courtCentre.getString(NAME));
 
-        if (nonNull(courtCentre.getString(ROOM_ID))) {
+        if (courtCentre.containsKey(ROOM_ID) && courtCentre.containsKey(ROOM_NAME)) {
             builder.add(ROOM_ID, courtCentre.getString(ROOM_ID));
             builder.add(ROOM_NAME, courtCentre.getString(ROOM_NAME));
         }

@@ -7,23 +7,38 @@
           "prosecutingAuthority": {
             "prosecutionAuthorityCode": "TVL",
             "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962"
-          }
-        },
-        "applicationOutcome": {
-          "applicationId": "6603d008-6012-4722-9f8e-a2e1ad1abb99",
-          "applicationOutcomeDate": "2020-06-27",
-          "applicationOutcomeType": {
-            "description": "Allowed",
-            "id": "bb5fe5cd-9c8c-378e-81b0-5ef53c166612",
-            "sequence": 80
           },
-          "originatingHearingId": "1de482e8-9656-4bcc-938d-95345def0b8a"
+          "summonsRequired" : false,
+          "notificationRequired": false
+        },
+        "subject": {
+          "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+          "summonsRequired": false,
+          "notificationRequired": true
+        },
+        "type": {
+          "id": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
+          "code": "AS14518",
+          "type": "Application for an order of reimbursement in relation to a closure order",
+          "legislation": "In accordance with section 16E of the Magistrates' Courts Act 1980.",
+          "categoryCode": "VP",
+          "linkType": "LINKED",
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType" : "GENERIC_APPLICATION",
+          "breachType" : "NOT_APPLICABLE",
+          "appealFlag": true,
+          "applicantAppellantFlag": false,
+          "pleaApplicableFlag": false,
+          "commrOfOathFlag": false,
+          "courtOfAppealFlag": true,
+          "courtExtractAvlFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
         },
         "applicationReceivedDate": "2020-06-01",
         "applicationReference": "APPLICATION_REF",
         "applicationStatus": "FINALISED",
-        "breachedOrderDate": "2020-06-01",
-        "dueDate": "2020-06-27",
         "id": "APPLICATION_ID",
         "judicialResults": [
           {
@@ -208,81 +223,191 @@
             "usergroups": []
           }
         ],
-        "linkedCaseId": "CASE_ID",
-        "orderingCourt": {
-          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
-          "name": "Lavender Hill Magistrates' Court"
-        },
         "respondents": [
           {
-            "partyDetails": {
-              "defendant": {
-                "courtProceedingsInitiated": "2020-06-27T14:09:35.663Z",
-                "id": "433efaa2-82bc-436c-8542-83a02ec189fb",
-                "isYouth": false,
-                "masterDefendantId": "433efaa2-82bc-436c-8542-83a02ec189fb",
-                "offences": [
-                  {
-                    "arrestDate": "2016-01-01",
-                    "chargeDate": "2016-01-01",
-                    "count": 1,
-                    "id": "d96a3ce5-9890-4a00-afe7-32046da1ca14",
-                    "modeOfTrial": "Summary",
-                    "offenceCode": "CA03014",
-                    "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
-                    "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
-                    "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
-                    "orderIndex": 1,
-                    "startDate": "2015-07-02",
-                    "wording": "Some offence wording"
-                  }
-                ],
-                "personDefendant": {
-                  "bailConditions": "Some bail conditions",
-                  "bailStatus": {
-                    "code": "B",
-                    "description": "Conditional Bail",
-                    "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
-                  },
-                  "personDetails": {
-                    "additionalNationalityCode": "POL",
-                    "additionalNationalityDescription": "Pole",
-                    "additionalNationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
-                    "address": {
-                      "address1": "2HAuQ0B2r4"
-                    },
-                    "dateOfBirth": "1955-03-26",
-                    "documentationLanguageNeeds": "ENGLISH",
-                    "firstName": "Mavis",
-                    "gender": "NOT_SPECIFIED",
-                    "lastName": "Kertzmann",
-                    "nationalityCode": "GBR",
-                    "nationalityDescription": "British",
-                    "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
-                    "title": "MR"
-                  }
-                },
-                "prosecutionAuthorityReference": "26GD3392620",
-                "prosecutionCaseId": "199a4039-9e2f-4deb-ac73-3917840241f9"
+            "id": "00000000-0000-0000-0000-000000000000",
+            "synonym": "a",
+            "summonsRequired" : false,
+            "notificationRequired": false,
+            "personDetails": {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "dateOfBirth": "0000-01-01",
+              "nationalityId": "00000000-0000-0000-0000-000000000000",
+              "nationalityCode": "a",
+              "nationalityDescription": "a",
+              "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+              "additionalNationalityCode": "a",
+              "additionalNationalityDescription": "a",
+              "disabilityStatus": "a",
+              "ethnicity": {
+                "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "observedEthnicityCode": "a",
+                "observedEthnicityDescription": "a",
+                "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                "selfDefinedEthnicityCode": "a",
+                "selfDefinedEthnicityDescription": "a"
               },
-              "id": "433efaa2-82bc-436c-8542-83a02ec189fb"
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "a",
+              "documentationLanguageNeeds": "ENGLISH",
+              "nationalInsuranceNumber": "NH111111B",
+              "occupation": "a",
+              "occupationCode": "a",
+              "specificRequirements": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              },
+              "personMarkers": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000000",
+                  "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                  "markerTypeCode": "a",
+                  "markerTypeDescription": "a"
+                }
+              ]
+            },
+            "organisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            },
+            "organisationPersons": [
+              {
+                "person": {
+                  "title": "MR",
+                  "firstName": "a",
+                  "middleName": "a",
+                  "lastName": "a",
+                  "dateOfBirth": "0000-01-01",
+                  "nationalityId": "00000000-0000-0000-0000-000000000000",
+                  "nationalityCode": "a",
+                  "nationalityDescription": "a",
+                  "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                  "additionalNationalityCode": "a",
+                  "additionalNationalityDescription": "a",
+                  "disabilityStatus": "a",
+                  "ethnicity": {
+                    "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                    "observedEthnicityCode": "a",
+                    "observedEthnicityDescription": "a",
+                    "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+                    "selfDefinedEthnicityCode": "a",
+                    "selfDefinedEthnicityDescription": "a"
+                  },
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "a",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "nationalInsuranceNumber": "NH111111B",
+                  "occupation": "a",
+                  "occupationCode": "a",
+                  "specificRequirements": "a",
+                  "address": {
+                    "address1": "a",
+                    "address2": "a",
+                    "address3": "a",
+                    "address4": "a",
+                    "address5": "a",
+                    "postcode": "GIR0AA"
+                  },
+                  "contact": {
+                    "home": " ",
+                    "work": "a",
+                    "mobile": " ",
+                    "primaryEmail": "!.!@00.00",
+                    "secondaryEmail": "!.!@00.00",
+                    "fax": "a"
+                  },
+                  "personMarkers": [
+                    {
+                      "id": "00000000-0000-0000-0000-000000000000",
+                      "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                      "markerTypeCode": "a",
+                      "markerTypeDescription": "a"
+                    }
+                  ]
+                },
+                "role": "a"
+              }
+            ],
+            "prosecutingAuthority": {
+              "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+              "prosecutionAuthorityCode": "a",
+              "name": "a",
+              "accountCode": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            },
+            "representationOrganisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
             }
           }
-        ],
-        "type": {
-          "applicantSynonym": "Appellant",
-          "applicationCategory": "VP",
-          "applicationCode": "LM76506",
-          "applicationJurisdictionType": "MAGISTRATES",
-          "applicationLegislation": "In accordance with Section 48(7) of the Local Government (Miscellaneous Provisions) Act 1976.",
-          "applicationType": "Appeal against conditions attached to a private hire licence",
-          "id": "2c9bff82-fe9c-315f-b41a-44923d5d8669",
-          "isAppealApplication": false,
-          "isBreachApplication": true,
-          "linkType": "STANDALONE",
-          "respondentSynonym": "Respondent"
-        }
+        ]
       }
+
     ],
     "id": "HEARING_ID",
     "type": {

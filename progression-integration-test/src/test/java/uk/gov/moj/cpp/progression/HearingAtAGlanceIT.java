@@ -34,8 +34,10 @@ import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class HearingAtAGlanceIT extends AbstractIT {
 
     private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();

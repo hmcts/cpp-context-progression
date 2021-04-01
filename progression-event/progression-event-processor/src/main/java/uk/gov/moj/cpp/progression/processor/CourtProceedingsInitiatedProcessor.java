@@ -8,7 +8,6 @@ import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtReferral;
-import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -26,6 +25,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
@@ -57,7 +57,6 @@ import org.slf4j.LoggerFactory;
 public class CourtProceedingsInitiatedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtProceedingsInitiatedProcessor.class.getCanonicalName());
-    private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
     private static final String SEXUAL_OFFENCE_RR_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     private static final String SEXUAL_OFFENCE_RR_CODE = "YES";
@@ -72,19 +71,27 @@ public class CourtProceedingsInitiatedProcessor {
 
     @Inject
     private Enveloper enveloper;
+
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
     @Inject
     private ListingService listingService;
+
     @Inject
     private ProgressionService progressionService;
+
     @Inject
     private ListCourtHearingTransformer listCourtHearingTransformer;
 
     @Inject
     private ReferenceDataOffenceService referenceDataOffenceService;
+
+    @Inject
+    private SummonsHearingRequestService summonsHearingRequestService;
 
     @Handles("progression.event.court-proceedings-initiated")
     public void handle(final JsonEnvelope jsonEnvelope) {
@@ -96,16 +103,13 @@ public class CourtProceedingsInitiatedProcessor {
         enrichOffencesWithReportingRestriction(jsonEnvelope, courtReferral);
 
         final List<ListDefendantRequest> listDefendantRequests = courtReferral.getListHearingRequests().stream().map(ListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
-        final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
-                .withHearingId(hearingId)
-                .withDefendantRequests(listDefendantRequests)
-                .build());
-        final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId);
-
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
+        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, listDefendantRequests, hearingId);
 
         progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
+
+        final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId);
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+
         listingService.listCourtHearing(jsonEnvelope,
                 listCourtHearingTransformer.transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId));
     }

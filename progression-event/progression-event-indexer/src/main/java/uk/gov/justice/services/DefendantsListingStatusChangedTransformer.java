@@ -8,8 +8,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.unifiedsearch.client.domain.Application;
+import uk.gov.justice.services.transformer.BaseCourtApplicationTransformer;
 import uk.gov.justice.services.unifiedsearch.client.domain.CaseDetails;
 
 import java.util.ArrayList;
@@ -20,15 +19,10 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.bazaarvoice.jolt.Transform;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 
-public class DefendantsListingStatusChangedTransformer implements Transform {
+public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicationTransformer {
 
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    private ApplicationMapper applicationMapper = new ApplicationMapper();
-    private CaseDetailsMapper caseDetailsMapper = new CaseDetailsMapper();
     private HearingMapper hearingMapper = new HearingMapper();
 
     @Override
@@ -42,14 +36,20 @@ public class DefendantsListingStatusChangedTransformer implements Transform {
         final List<ProsecutionCase> prosecutionCases = hearing.getProsecutionCases();
         final Map<UUID, CaseDetails> caseDocumentsMap = new HashMap<>();
         prosecutionCases(listingStatusChanged, hearing, prosecutionCases, caseDocumentsMap);
-        courtApplications(listingStatusChanged, hearing, caseDocumentsMap);
+        courtApplications(hearing, caseDocumentsMap);
         final List<CaseDetails> caseDetailsList = caseDocumentsMap.values().stream().collect(toList());
         final HashMap<String, List<CaseDetails>> caseDocuments = new HashMap<>();
         caseDocuments.put("caseDocuments", caseDetailsList);
         return caseDocuments;
     }
 
-    @SuppressWarnings("squid:S3824")
+    @Override
+    public String getDefaultCaseStatus(){
+        //caseStatus should not be set as we do not want to overwrite existing info
+        return null;
+    }
+
+    @SuppressWarnings({"squid:S3824"})
     private void prosecutionCases(final ProsecutionCaseDefendantListingStatusChanged listingStatusChanged,
                                   final Hearing hearing,
                                   final List<ProsecutionCase> prosecutionCases,
@@ -62,8 +62,8 @@ public class DefendantsListingStatusChangedTransformer implements Transform {
                     defendantIds.add(defendant.getId().toString());
                     final UUID prosecutionCaseId = prosecutionCase.getId();
                     CaseDetails caseDetailsExisting = caseDocumentsMap.get(prosecutionCaseId);
-                    caseDetailsExisting = caseDetails("PROSECUTION", hearing, prosecutionCaseId, caseDetailsExisting);
-                    caseDetailsExisting.setHearings(hearings(listingStatusChanged, defendantIds));
+                    caseDetailsExisting = caseDetails(PROSECUTION, hearing, prosecutionCaseId, caseDetailsExisting);
+                    caseDetailsExisting.setHearings(hearings(listingStatusChanged.getHearing(), defendantIds));
                     populateProsecutingAuthorityDetails(prosecutionCase, caseDetailsExisting);
                     caseDocumentsMap.put(prosecutionCaseId, caseDetailsExisting);
                 }
@@ -84,36 +84,23 @@ public class DefendantsListingStatusChangedTransformer implements Transform {
         }
     }
 
-    @SuppressWarnings("squid:S3824")
-    private void courtApplications(final ProsecutionCaseDefendantListingStatusChanged listingStatusChanged,
-                                   final Hearing hearing,
+
+    private void courtApplications(final Hearing hearing,
                                    final Map<UUID, CaseDetails> caseDocumentsMap) {
         final List<CourtApplication> courtApplications = hearing.getCourtApplications();
-        if (courtApplications!= null) {
-            for (final CourtApplication courtApplication : courtApplications) {
-                final UUID caseId = courtApplication.getLinkedCaseId();
-                final UUID applicationId = courtApplication.getId();
 
-                UUID caseDetailsId = caseId;
-                if (caseId == null) {
-                    caseDetailsId = applicationId;
-                }
-                CaseDetails caseDetailsExisting = caseDocumentsMap.get(caseDetailsId);
-                List<Application> applications = new ArrayList<>();
-                caseDetailsExisting = caseDetails("APPLICATION", hearing, caseDetailsId, caseDetailsExisting);
-                applications.add(applicationMapper.transform(courtApplication));
-                caseDetailsExisting.setHearings(hearings(listingStatusChanged, null));
-                caseDetailsExisting.setApplications(applications);
-                caseDocumentsMap.put(caseDetailsId, caseDetailsExisting);
+        if (CollectionUtils.isNotEmpty(courtApplications)) {
+
+            for (final CourtApplication courtApplication : courtApplications) {
+                transformCourtApplication(courtApplication, hearing.getJurisdictionType(), hearings(hearing, null), caseDocumentsMap);
             }
+
         }
     }
 
-
-    private List<uk.gov.justice.services.unifiedsearch.client.domain.Hearing> hearings(final ProsecutionCaseDefendantListingStatusChanged listingStatusChanged,
-                                                                                       final List<String> defendantIds) {
+    private List<uk.gov.justice.services.unifiedsearch.client.domain.Hearing> hearings(final Hearing hearing,final List<String> defendantIds) {
         final List<uk.gov.justice.services.unifiedsearch.client.domain.Hearing> hearings = new ArrayList<>();
-        hearings.add(hearingMapper.hearing(listingStatusChanged, defendantIds));
+        hearings.add(hearingMapper.hearing(hearing, defendantIds));
         return hearings;
     }
 
@@ -123,5 +110,4 @@ public class DefendantsListingStatusChangedTransformer implements Transform {
         }
         return caseDetailsExisting;
     }
-
 }

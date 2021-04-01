@@ -1,27 +1,55 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.empty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
+import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtApplicationSummonsApproved;
+import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
+import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
+import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved.initiateCourtHearingAfterSummonsApproved;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.getCourtApplicationWithConvictionDate;
 
 import uk.gov.justice.core.courts.ApplicationEjected;
+import uk.gov.justice.core.courts.ApplicationReferredIgnored;
+import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
+import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
+import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.BoxworkApplicationReferred;
-import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
+import uk.gov.justice.core.courts.BoxHearingRequest;
+import uk.gov.justice.core.courts.ConvictionDateAdded;
+import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
-import uk.gov.justice.core.courts.CourtApplicationUpdated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
+import uk.gov.justice.core.courts.FutureSummonsHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.ListedCourtApplicationChanged;
+import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
+import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
+import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
@@ -30,74 +58,59 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1948", "squid:S1068", "squid:S1450"})
+@SuppressWarnings({"squid:S1948"})
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
     private static final long serialVersionUID = 1331113876243908494L;
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
+    private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
     private UUID boxHearingId;
-    private final Set<UUID> hearingIds = new HashSet<>();
+    private boolean applicationReferredToNewHearing;
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
-                when(ApplicationReferredToCourt.class).apply(e ->
-                        this.applicationStatus = ApplicationStatus.LISTED
-                ),
-                when(SlotsBookedForApplication.class).apply(e ->
-                        this.hearingIds.add(e.getHearingRequest().getId())
-                ),
-                when(BoxworkApplicationReferred.class).apply(e ->
-                        this.applicationStatus = ApplicationStatus.IN_PROGRESS
-                ),
-                when(CourtApplicationStatusChanged.class).apply(e ->
-                        this.applicationStatus = e.getApplicationStatus()
-                ),
-                when(CourtApplicationCreated.class).apply(
-                        e -> {
-                            this.courtApplication = e.getCourtApplication();
-                            this.applicationStatus = ApplicationStatus.DRAFT;
-                        }
-                ),
-                when(CourtApplicationUpdated.class).apply(
-                        e -> {
-                        }
-                ),
-                when(CourtApplicationAddedToCase.class).apply(
-                        e -> {
-                            this.courtApplication = e.getCourtApplication();
-                            this.applicationStatus = ApplicationStatus.DRAFT;
-                        }
-                ),
+                when(CourtApplicationProceedingsInitiated.class).apply(this::handleCourtApplicationProceedings),
+                when(ApplicationReferredToCourt.class).apply(e -> this.applicationStatus = ApplicationStatus.LISTED),
+                when(CourtApplicationCreated.class).apply(e -> this.applicationStatus = ApplicationStatus.DRAFT),
                 when(HearingApplicationLinkCreated.class).apply(
                         e -> {
-                            hearingIds.add(e.getHearing().getId());
-                            if (e.getHearing() != null && e.getHearing().getIsBoxHearing() != null && e.getHearing().getIsBoxHearing()) {
+                            if (isBoxWorkHearing(e)) {
                                 boxHearingId = e.getHearing().getId();
                             }
                         }
                 ),
+                when(ApplicationReferredToBoxwork.class).apply(e -> this.applicationStatus = ApplicationStatus.IN_PROGRESS),
+                when(ApplicationReferredToExistingHearing.class).apply(e -> this.applicationStatus = ApplicationStatus.LISTED),
+                when(CourtApplicationProceedingsEdited.class).apply(this::handleEditCourtApplicationProceedings),
+                when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
+                when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
+                when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
+                when(HearingResultedApplicationUpdated.class).apply(e -> {
+                    this.courtApplication = e.getCourtApplication();
+                    this.applicationStatus = FINALISED;
+                }),
                 when(ApplicationEjected.class).apply(
                         e ->
                                 this.applicationStatus = ApplicationStatus.EJECTED
 
                 ),
                 otherwiseDoNothing());
-
     }
 
     public Stream<Object> referApplicationToCourt(final HearingListingNeeds hearingListingNeeds) {
@@ -125,18 +138,6 @@ public class ApplicationAggregate implements Aggregate {
                         .build()));
     }
 
-    public Stream<Object> referBoxWorkApplication(final HearingListingNeeds hearingListingNeeds) {
-        LOGGER.debug("Box work application has been referred");
-        final Stream.Builder<Object> eventStreamBuilder = Stream.builder();
-        for (final CourtApplication ca : hearingListingNeeds.getCourtApplications()) {
-            updateCourtApplication(ca).forEach(o -> eventStreamBuilder.accept(o));
-        }
-        eventStreamBuilder.accept(BoxworkApplicationReferred.boxworkApplicationReferred()
-                .withHearingRequest(hearingListingNeeds)
-                .build());
-        return apply(eventStreamBuilder.build());
-    }
-
     public Stream<Object> updateApplicationStatus(final UUID applicationId, final ApplicationStatus applicationStatus) {
         LOGGER.debug("Application status being updated");
         return apply(Stream.of(
@@ -146,28 +147,12 @@ public class ApplicationAggregate implements Aggregate {
                         .build()));
     }
 
-    public Stream<Object> updateCourtApplication(final CourtApplication updatedCourtApplication) {
-        LOGGER.debug("court application has been updated");
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        if (this.applicationStatus.equals(ApplicationStatus.LISTED)) {
-            streamBuilder.add(ListedCourtApplicationChanged.listedCourtApplicationChanged()
-                    .withCourtApplication(updatedCourtApplication)
-                    .build());
-        }
-        streamBuilder.add(CourtApplicationUpdated.courtApplicationUpdated()
-                .withCourtApplication(updatedCourtApplication)
-                .build());
-        return apply(streamBuilder.build());
-    }
-
     public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
-        LOGGER.debug("Standalone court application has been created");
-        final int ARN_LENGTH = 10;
+        LOGGER.debug("Court application has been created");
         return apply(
                 Stream.of(
                         CourtApplicationCreated.courtApplicationCreated()
                                 .withCourtApplication(courtApplication)
-                                .withArn(RandomStringUtils.randomAlphanumeric(ARN_LENGTH).toUpperCase())
                                 .build()));
     }
 
@@ -181,12 +166,12 @@ public class ApplicationAggregate implements Aggregate {
             LOGGER.info("Application with id {} already ejected", courtApplicationId);
             return empty();
         }
+
         return apply(Stream.of(ApplicationEjected.applicationEjected()
                 .withApplicationId(courtApplicationId).withRemovalReason(removalReason).build()));
     }
 
-    public Stream<Object> createHearingApplicationLink(final Hearing hearing, final UUID applicationId,
-                                                       final HearingListingStatus hearingListingStatus) {
+    public Stream<Object> createHearingApplicationLink(final Hearing hearing, final UUID applicationId, final HearingListingStatus hearingListingStatus) {
         LOGGER.debug("Hearing Application link been created");
         return apply(Stream.of(
                 HearingApplicationLinkCreated.hearingApplicationLinkCreated()
@@ -208,8 +193,8 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(new NotificationRequestFailed(null, applicationId, null, notificationId, failedTime, errorMessage, statusCode)));
     }
 
-    public Stream<Object> recordNotificationRequestSuccess(final UUID applicationId, final UUID notificationId, final ZonedDateTime sentTime) {
-        return apply(Stream.of(new NotificationRequestSucceeded(null, applicationId, null, notificationId, sentTime)));
+    public Stream<Object> recordNotificationRequestSuccess(final UUID applicationId, final UUID notificationId, final ZonedDateTime sentTime, final ZonedDateTime completedAt) {
+        return apply(Stream.of(new NotificationRequestSucceeded(null, applicationId, null, notificationId, sentTime, completedAt)));
     }
 
     public Stream<Object> recordPrintRequest(final UUID applicationId,
@@ -219,12 +204,253 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, postage)));
     }
 
-    public Stream<Object> changeBoxWorkAssignment(final UUID applicationId, final UUID userId) {
-        return apply(Stream.of(new BoxworkAssignmentChanged(applicationId, userId)));
+    public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings, final boolean applicationReferredToNewHearing, final boolean applicationCreatedForSJPCase) {
+        LOGGER.debug("Initiated Court Application Proceedings");
+        CourtApplication updatedCourtApplication = updateCourtApplicationReference(initiateCourtApplicationProceedings.getCourtApplication());
+        if (initiateCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
+            updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(updatedCourtApplication, initiateCourtApplicationProceedings.getCourtHearing());
+        }
+        return apply(
+                Stream.of(CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated()
+                        .withCourtApplication(updatedCourtApplication)
+                        .withCourtHearing(initiateCourtApplicationProceedings.getCourtHearing())
+                        .withBoxHearing(initiateCourtApplicationProceedings.getBoxHearing())
+                        .withSummonsApprovalRequired(initiateCourtApplicationProceedings.getSummonsApprovalRequired())
+                        .withApplicationReferredToNewHearing(applicationReferredToNewHearing)
+                        .withIsSJP(applicationCreatedForSJPCase)
+                        .build()));
+    }
 
+    public Stream<Object> ignoreApplicationProceedings(InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication) {
+        return apply(
+                Stream.of(CourtApplicationProceedingsInitiateIgnored.courtApplicationProceedingsInitiateIgnored()
+                        .withCourtApplication(initiateCourtProceedingsForApplication.getCourtApplication())
+                        .withCourtHearing(initiateCourtProceedingsForApplication.getCourtHearing())
+                        .withBoxHearing(initiateCourtProceedingsForApplication.getBoxHearing())
+                        .build()));
+    }
+
+
+    public Stream<Object> editCourtApplicationProceedings(final EditCourtApplicationProceedings editCourtApplicationProceedings) {
+        final CourtApplication updatedCourtApplication;
+        if (editCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(editCourtApplicationProceedings.getCourtHearing())) {
+            updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(editCourtApplicationProceedings.getCourtApplication(), editCourtApplicationProceedings.getCourtHearing());
+        } else {
+            updatedCourtApplication = editCourtApplicationProceedings.getCourtApplication();
+        }
+        return apply(
+                Stream.of(
+                        CourtApplicationProceedingsEdited.courtApplicationProceedingsEdited()
+                                .withCourtApplication(updatedCourtApplication)
+                                .withCourtHearing(editCourtApplicationProceedings.getCourtHearing())
+                                .withBoxHearing(editCourtApplicationProceedings.getBoxHearing())
+                                .withSummonsApprovalRequired(editCourtApplicationProceedings.getSummonsApprovalRequired())
+                                .build()));
+
+    }
+
+    public Stream<Object> referApplication() {
+        final BoxHearingRequest boxHearing = initiateCourtApplicationProceedings.getBoxHearing();
+        final CourtHearingRequest courtHearing = initiateCourtApplicationProceedings.getCourtHearing();
+        final Stream.Builder<Object> streams = Stream.builder();
+
+        if (isApplicationLinkedToCase()) {
+            streams.add(CourtApplicationAddedToCase.courtApplicationAddedToCase().withCourtApplication(courtApplication).build());
+        }
+
+        if (nonNull(boxHearing)) {
+            streams.add(ApplicationReferredToBoxwork.applicationReferredToBoxwork()
+                    .withApplication(courtApplication().withValuesFrom(courtApplication)
+                            .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
+                            .build())
+                    .withBoxHearing(boxHearing)
+                    .build());
+        } else if (applicationReferredToNewHearing) {
+            streams.add(ApplicationReferredToCourtHearing.applicationReferredToCourtHearing()
+                    .withApplication(courtApplication().withValuesFrom(courtApplication)
+                            .withApplicationStatus(ApplicationStatus.LISTED)
+                            .build())
+                    .withCourtHearing(courtHearing)
+                    .build());
+        } else if (isApplicationReferredToExistingHearing(courtHearing)) {
+            streams.add(ApplicationReferredToExistingHearing.applicationReferredToExistingHearing()
+                    .withApplication(courtApplication().withValuesFrom(courtApplication)
+                            .withApplicationStatus(ApplicationStatus.LISTED)
+                            .build())
+                    .withCourtHearing(courtHearing)
+                    .build());
+        } else {
+            streams.add(ApplicationReferredIgnored.applicationReferredIgnored()
+                    .withApplication(courtApplication)
+                    .build());
+        }
+
+        return streams.build();
+    }
+
+    public CourtApplication getCourtApplication() {
+        return courtApplication;
+    }
+
+    public Stream<Object> referApplicationToCourtHearing() {
+        return apply(
+                Stream.of(ApplicationReferredToCourtHearing.applicationReferredToCourtHearing()
+                        .withApplication(courtApplication)
+                        .withCourtHearing(initiateCourtApplicationProceedings.getCourtHearing())
+                        .build()));
+    }
+
+    public Stream<Object> approveSummons(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        final Stream.Builder<Object> streams = Stream.builder();
+        final CourtHearingRequest courtHearing = initiateCourtApplicationProceedings.getCourtHearing();
+
+        if (courtApplication.getType().getLinkType() != LinkType.FIRST_HEARING && nonNull(courtHearing)) {
+            streams.add(initiateCourtHearingAfterSummonsApproved()
+                    .withApplication(courtApplication().withValuesFrom(courtApplication)
+                            .withApplicationStatus(ApplicationStatus.LISTED)
+                            .withFutureSummonsHearing(null)
+                            .build())
+                    .withCourtHearing(courtHearing)
+                    .withSummonsApprovedOutcome(summonsApprovedOutcome)
+                    .build());
+        }
+
+        streams.add(courtApplicationSummonsApproved()
+                .withApplicationId(courtApplication.getId())
+                .withLinkType(courtApplication.getType().getLinkType())
+                .withCaseIds(getCaseIds())
+                .withSummonsApprovedOutcome(summonsApprovedOutcome)
+                .build());
+
+        return streams.build();
+    }
+
+    public Stream<Object> rejectSummons(final SummonsRejectedOutcome summonsRejectedOutcome) {
+        return apply(Stream.of(courtApplicationSummonsRejected()
+                .withCourtApplication(courtApplication)
+                .withCaseIds(getCaseIds())
+                .withSummonsRejectedOutcome(summonsRejectedOutcome)
+                .build()));
+    }
+
+    public Stream<Object> addConvictionDate(final UUID applicationId, final UUID offenceId, final LocalDate convictionDate) {
+        return apply(Stream.of(ConvictionDateAdded.convictionDateAdded()
+                .withConvictionDate(convictionDate)
+                .withCourtApplicationId(applicationId)
+                .withOffenceId(offenceId)
+                .build()));
+    }
+
+    public Stream<Object> removeConvictionDate(final UUID applicationId, final UUID offenceId) {
+        return apply(Stream.of(ConvictionDateRemoved.convictionDateRemoved()
+                .withCourtApplicationId(applicationId)
+                .withOffenceId(offenceId)
+                .build()));
+    }
+
+    public Stream<Object> hearingResulted(CourtApplication courtApplication) {
+        return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(courtApplication().withValuesFrom(courtApplication).withApplicationStatus(FINALISED).build()).build()));
     }
 
     public UUID getBoxHearingId() {
         return boxHearingId;
+    }
+
+    private List<UUID> getCaseIds() {
+        final List<UUID> caseIds = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(CourtApplicationCase::getProsecutionCaseId)
+                .collect(Collectors.toList());
+
+        final List<UUID> courtOrderCaseIds = ofNullable(courtApplication.getCourtOrder()).map(courtOrder -> courtOrder.getCourtOrderOffences().stream()).orElseGet(Stream::empty)
+                .map(CourtOrderOffence::getProsecutionCaseId).collect(Collectors.toList());
+
+        return Stream.of(caseIds, courtOrderCaseIds).flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    private CourtApplication updateCourtApplicationWithFutureSummonsHearing(CourtApplication courtApplication, CourtHearingRequest courtHearingRequest) {
+        return CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                .withFutureSummonsHearing(FutureSummonsHearing.futureSummonsHearing()
+                        .withCourtCentre(courtHearingRequest.getCourtCentre())
+                        .withJudiciary(courtHearingRequest.getJudiciary())
+                        .withEarliestStartDateTime(courtHearingRequest.getEarliestStartDateTime())
+                        .withEstimatedMinutes(courtHearingRequest.getEstimatedMinutes())
+                        .withJurisdictionType(courtHearingRequest.getJurisdictionType())
+                        .withWeekCommencingDate(courtHearingRequest.getWeekCommencingDate())
+                        .build()).build();
+    }
+
+    private CourtApplication updateCourtApplicationReference(CourtApplication courtApplication) {
+        final String applicationReference = generateApplicationReference(courtApplication);
+        return courtApplication()
+                .withValuesFrom(courtApplication)
+                .withApplicationReference(applicationReference)
+                .build();
+    }
+
+    private String generateApplicationReference(final CourtApplication courtApplication) {
+
+        if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
+            return courtApplication.getCourtApplicationCases().stream().map(courtApplicationCase ->
+                    nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                    .distinct().collect(Collectors.joining(","));
+        }
+
+        if (nonNull(courtApplication.getCourtOrder())) {
+            return courtApplication.getCourtOrder().getCourtOrderOffences().stream().map(courtOrderOffence ->
+                    nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                    .distinct().collect(Collectors.joining(","));
+        }
+
+        final int ARN_LENGTH = 10;
+        return RandomStringUtils.randomAlphanumeric(ARN_LENGTH).toUpperCase();
+    }
+
+    private boolean isApplicationReferredToExistingHearing(final CourtHearingRequest courtHearing) {
+        return nonNull(courtHearing) && nonNull(courtHearing.getId());
+    }
+
+    private boolean isApplicationReferredToNewHearing(CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated) {
+        return !isNull(courtApplicationProceedingsInitiated.getApplicationReferredToNewHearing()) && courtApplicationProceedingsInitiated.getApplicationReferredToNewHearing();
+    }
+
+    private boolean isApplicationLinkedToCase() {
+        return (courtApplication.getType().getLinkType() != LinkType.FIRST_HEARING) && (nonNull(courtApplication.getCourtApplicationCases()) || nonNull(courtApplication.getCourtOrder()));
+    }
+
+    private void handleConvictionDateChanged(final UUID offenceId, final LocalDate convictionDate) {
+        if (offenceId == null) {
+            this.courtApplication = getCourtApplicationWithConvictionDate(this.courtApplication, convictionDate);
+        } else {
+            this.courtApplication = getCourtApplicationWithConvictionDate(this.courtApplication, offenceId, convictionDate);
+        }
+        this.initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withValuesFrom(this.initiateCourtApplicationProceedings)
+                .withCourtApplication(courtApplication)
+                .build();
+    }
+
+    private void handleEditCourtApplicationProceedings(CourtApplicationProceedingsEdited courtApplicationProceedingsEdited) {
+        this.courtApplication = courtApplicationProceedingsEdited.getCourtApplication();
+        this.initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplicationProceedingsEdited.getCourtApplication())
+                .withCourtHearing(courtApplicationProceedingsEdited.getCourtHearing())
+                .withBoxHearing(courtApplicationProceedingsEdited.getBoxHearing())
+                .withSummonsApprovalRequired(courtApplicationProceedingsEdited.getSummonsApprovalRequired())
+                .build();
+    }
+
+    private boolean isBoxWorkHearing(final HearingApplicationLinkCreated e) {
+        return nonNull(e.getHearing()) && nonNull(e.getHearing().getIsBoxHearing()) && e.getHearing().getIsBoxHearing();
+    }
+
+    private void handleCourtApplicationProceedings(final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated) {
+        this.courtApplication = courtApplicationProceedingsInitiated.getCourtApplication();
+        this.applicationReferredToNewHearing = isApplicationReferredToNewHearing(courtApplicationProceedingsInitiated);
+        this.initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplicationProceedingsInitiated.getCourtApplication())
+                .withCourtHearing(courtApplicationProceedingsInitiated.getCourtHearing())
+                .withBoxHearing(courtApplicationProceedingsInitiated.getBoxHearing())
+                .withSummonsApprovalRequired(courtApplicationProceedingsInitiated.getSummonsApprovalRequired())
+                .build();
     }
 }

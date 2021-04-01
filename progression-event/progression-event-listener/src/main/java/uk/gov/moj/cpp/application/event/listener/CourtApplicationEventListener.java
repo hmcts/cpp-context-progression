@@ -1,16 +1,22 @@
 package uk.gov.moj.cpp.application.event.listener;
 
-import uk.gov.justice.core.courts.BoxworkAssignmentChanged;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.CourtApplicationCreated;
-import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
-import uk.gov.justice.core.courts.ApplicationEjected;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.CourtApplicationUpdated;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.core.courts.ApplicationEjected;
+import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
+import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
+import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
+import uk.gov.justice.core.courts.CourtApplicationUpdated;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
+import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -18,30 +24,32 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.HearingEntityUtil;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import org.apache.commons.collections.CollectionUtils;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
-@SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)
 public class CourtApplicationEventListener {
-
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -53,10 +61,10 @@ public class CourtApplicationEventListener {
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Inject
-    private CourtApplicationRepository repository;
+    private SearchProsecutionCase searchApplication;
 
     @Inject
-    private ProsecutionCaseRepository prosecutionCaseRepository;
+    private CourtApplicationRepository courtApplicationRepository;
 
     @Inject
     private HearingApplicationRepository hearingApplicationRepository;
@@ -65,143 +73,161 @@ public class CourtApplicationEventListener {
     private HearingRepository hearingRepository;
 
     @Inject
-    private SearchProsecutionCase searchCase;
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
 
     @Inject
-    private SearchProsecutionCase searchApplication;
-
+    private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
 
     @Handles("progression.event.court-application-created")
     public void processCourtApplicationCreated(final JsonEnvelope event) {
         final CourtApplicationCreated courtApplicationCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class);
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
-        final CourtApplication applicationToBeSaved = CourtApplication.courtApplication()
-                .withRespondents(courtApplication.getRespondents())
-                .withApplicant(courtApplication.getApplicant())
-                .withLinkedCaseId(courtApplication.getLinkedCaseId())
-                .withId(courtApplication.getId())
-                .withApplicationDecisionSoughtByDate(courtApplication.getApplicationDecisionSoughtByDate())
-                .withApplicationOutcome(courtApplication.getApplicationOutcome())
-                .withApplicationParticulars(courtApplication.getApplicationParticulars())
-                .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                .withApplicationReference(courtApplicationCreated.getArn())
-                .withApplicationStatus(ApplicationStatus.DRAFT)
-                .withCourtApplicationPayment(courtApplication.getCourtApplicationPayment())
-                .withJudicialResults(courtApplication.getJudicialResults())
-                .withParentApplicationId(courtApplication.getParentApplicationId())
-                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
-                .withBreachedOrder(courtApplication.getBreachedOrder())
-                .withBreachedOrderDate(courtApplication.getBreachedOrderDate())
-                .withOrderingCourt(courtApplication.getOrderingCourt())
-                .withType(courtApplication.getType())
-                .build();
-        repository.save(getCourtApplicationEntity(applicationToBeSaved));
-
+        final CourtApplication applicationToBeSaved = buildCourtApplication(courtApplication);
+        courtApplicationRepository.save(getCourtApplicationEntity(applicationToBeSaved));
         makeStandaloneApplicationSearchable(applicationToBeSaved);
+    }
+
+    @Handles("progression.event.court-application-added-to-case")
+    public void processCourtApplicationAddedToCase(final JsonEnvelope event) {
+        final CourtApplicationAddedToCase courtApplicationAddedToCase = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationAddedToCase.class);
+        final CourtApplication courtApplication = courtApplicationAddedToCase.getCourtApplication();
+        if (nonNull(courtApplication.getCourtApplicationCases())) {
+            courtApplication.getCourtApplicationCases().forEach(courtApplicationCase -> {
+                final String caseReference = isNotBlank(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ?
+                        courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
+                addCourtApplicationToCase(courtApplication, courtApplicationCase.getProsecutionCaseId(), caseReference);
+            });
+        }
+
+        if (nonNull(courtApplication.getCourtOrder())) {
+            final Set<UUID> caseIds = new HashSet<>();
+            courtApplication.getCourtOrder().getCourtOrderOffences().forEach(courtOrderOffence -> {
+                final String courtReference = isNotBlank(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ?
+                        courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
+                if (!caseIds.contains(courtOrderOffence.getProsecutionCaseId())) {
+                    addCourtApplicationToCase(courtApplication, courtOrderOffence.getProsecutionCaseId(), courtReference);
+                    caseIds.add(courtOrderOffence.getProsecutionCaseId());
+                }
+            });
+        }
     }
 
     @Handles("progression.event.court-application-status-changed")
     public void processCourtApplicationStatusChanged(final JsonEnvelope event) {
         final CourtApplicationStatusChanged courtApplicationStatusChanged = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationStatusChanged.class);
-
-       final  CourtApplicationEntity applicationEntity = repository.findByApplicationId(courtApplicationStatusChanged.getId());
-
-        if (applicationEntity != null) {
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(courtApplicationStatusChanged.getId());
+        if (nonNull(applicationEntity)) {
             final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
             final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
-
             final ApplicationStatus applicationStatus = persistedApplication.getApplicationStatus() == ApplicationStatus.FINALISED ? ApplicationStatus.FINALISED : courtApplicationStatusChanged.getApplicationStatus();
-
-            final CourtApplication updatedApplication = CourtApplication.courtApplication()
-                    .withId(persistedApplication.getId())
-                    .withType(persistedApplication.getType())
-                    .withApplicant(persistedApplication.getApplicant())
-                    .withApplicationDecisionSoughtByDate(persistedApplication.getApplicationDecisionSoughtByDate())
-                    .withOrderingCourt(persistedApplication.getOrderingCourt())
-                    .withApplicationOutcome(persistedApplication.getApplicationOutcome())
-                    .withApplicationParticulars(persistedApplication.getApplicationParticulars())
-                    .withApplicationReceivedDate(persistedApplication.getApplicationReceivedDate())
-                    .withApplicationReference(persistedApplication.getApplicationReference())
-                    .withApplicationStatus(applicationStatus)
-                    .withCourtApplicationPayment(persistedApplication.getCourtApplicationPayment())
-                    .withJudicialResults(persistedApplication.getJudicialResults())
-                    .withParentApplicationId(persistedApplication.getParentApplicationId())
-                    .withLinkedCaseId(persistedApplication.getLinkedCaseId())
-                    .withBreachedOrder(persistedApplication.getBreachedOrder())
-                    .withBreachedOrderDate(persistedApplication.getBreachedOrderDate())
-                    .withRespondents(persistedApplication.getRespondents())
-                    .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .build();
-
+            final CourtApplication updatedApplication = buildCourtApplicationWithStatus(persistedApplication, applicationStatus);
             applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
-            repository.save(applicationEntity);
+            courtApplicationRepository.save(applicationEntity);
         }
     }
-
-    @Handles("progression.event.boxwork-assignment-changed")
-    public void processBoxworkAssignmentChanged(final JsonEnvelope eventEnvelope) {
-        final BoxworkAssignmentChanged event= jsonObjectConverter.convert(eventEnvelope.payloadAsJsonObject(), BoxworkAssignmentChanged.class);
-        final CourtApplicationEntity courtApplicationEntity = repository.findByApplicationId(event.getApplicationId());
-        courtApplicationEntity.setAssignedUserId(event.getUserId());
-        repository.save(courtApplicationEntity);
-    }
-
-
 
     @Handles("progression.event.court-application-updated")
     public void processCourtApplicationUpdated(final JsonEnvelope event) {
         final CourtApplicationUpdated courtApplicationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationUpdated.class);
         final CourtApplication updatedCourtApplication = courtApplicationUpdated.getCourtApplication();
-
-        final CourtApplicationEntity courtApplicationEntity = repository.findByApplicationId(courtApplicationUpdated.getCourtApplication().getId());
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(courtApplicationUpdated.getCourtApplication().getId());
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
-        repository.save(courtApplicationEntity);
-        if (updatedCourtApplication.getLinkedCaseId() != null) {
-            updateDefendantForProsecutionCase(updatedCourtApplication);
-        }
+        courtApplicationRepository.save(courtApplicationEntity);
         makeStandaloneApplicationSearchable(updatedCourtApplication);
     }
-    @Handles("progression.event.application-ejected")
-    public void processCourtApplicationEjected(final JsonEnvelope event){
-        final ApplicationEjected applicationEjected = jsonObjectConverter.convert(event.payloadAsJsonObject(), ApplicationEjected.class);
-        final CourtApplicationEntity applicationEntity = repository.findByApplicationId(applicationEjected.getApplicationId());
-        saveEjectedApplication(applicationEjected, applicationEntity);
-        final List<CourtApplicationEntity> childApplications = repository.findByParentApplicationId(applicationEjected.getApplicationId());
-        childApplications.stream().filter(Objects::nonNull).forEach(childApplicationEntity -> saveEjectedApplication(applicationEjected, childApplicationEntity));
 
+    @Handles("progression.event.application-ejected")
+    public void processCourtApplicationEjected(final JsonEnvelope event) {
+        final ApplicationEjected applicationEjected = jsonObjectConverter.convert(event.payloadAsJsonObject(), ApplicationEjected.class);
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(applicationEjected.getApplicationId());
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(applicationEjected.getApplicationId());
+        saveEjectedApplication(applicationEjected, applicationEntity,initiateCourtApplicationEntity);
+        final List<CourtApplicationEntity> childApplications = courtApplicationRepository.findByParentApplicationId(applicationEjected.getApplicationId());
+        childApplications.stream().filter(Objects::nonNull).forEach(childApplicationEntity -> saveEjectedApplication(applicationEjected, childApplicationEntity,initiateCourtApplicationEntity));
     }
 
-    private void saveEjectedApplication(final ApplicationEjected applicationEjected, final CourtApplicationEntity applicationEntity) {
-        if (applicationEntity != null) {
+    @Handles("progression.event.court-application-proceedings-initiated")
+    public void processCourtApplicationProceedingsInitiated(final JsonEnvelope event) {
+        final CourtApplicationProceedingsInitiated initiateCourtApplicationProceedings = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
+        initiateCourtApplicationRepository.save(getInitiateCourtApplication(initiateCourtApplicationProceedings));
+    }
+
+    @Handles("progression.event.court-application-proceedings-edited")
+    public void processCourtApplicationProceedingsEdited(final JsonEnvelope event) {
+        final CourtApplicationProceedingsEdited initiateCourtApplicationProceedings = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class);
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(initiateCourtApplicationProceedings.getCourtApplication().getId());
+        initiateCourtApplicationRepository.save(updateInitiateCourtApplication(initiateCourtApplicationProceedings, initiateCourtApplicationEntity));
+
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(initiateCourtApplicationProceedings.getCourtApplication().getId());
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(initiateCourtApplicationProceedings.getCourtApplication()).toString());
+        courtApplicationRepository.save(courtApplicationEntity);
+        makeStandaloneApplicationSearchable(initiateCourtApplicationProceedings.getCourtApplication());
+    }
+
+    @Handles("progression.event.hearing-resulted-application-updated")
+    public void processHearingResultedApplicationUpdated(final JsonEnvelope event) {
+        final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedApplicationUpdated.class);
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(hearingResultedApplicationUpdated.getCourtApplication().getId());
+        if (nonNull(applicationEntity)) {
+            final CourtApplication updatedCourtApplication = hearingResultedApplicationUpdated.getCourtApplication();
+            applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
+            courtApplicationRepository.save(applicationEntity);
+        }
+    }
+
+    private InitiateCourtApplicationEntity updateInitiateCourtApplication(final CourtApplicationProceedingsEdited initiateCourtApplicationProceedings, final InitiateCourtApplicationEntity courtApplicationEntity) {
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = new InitiateCourtApplicationEntity();
+        initiateCourtApplicationEntity.setApplicationId(initiateCourtApplicationProceedings.getCourtApplication().getId());
+        initiateCourtApplicationEntity.setParentApplicationId(initiateCourtApplicationProceedings.getCourtApplication().getParentApplicationId());
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedingsEdited = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(initiateCourtApplicationProceedings.getCourtApplication())
+                .withBoxHearing(initiateCourtApplicationProceedings.getBoxHearing())
+                .withSummonsApprovalRequired(initiateCourtApplicationProceedings.getSummonsApprovalRequired())
+                .withCourtHearing(this.jsonObjectConverter.convert(this.stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload()),
+                        InitiateCourtApplicationProceedings.class).getCourtHearing()).build();
+        initiateCourtApplicationEntity.setPayload(this.objectToJsonObjectConverter.convert(initiateCourtApplicationProceedingsEdited).toString());
+        return initiateCourtApplicationEntity;
+    }
+
+    private InitiateCourtApplicationEntity getInitiateCourtApplication(final CourtApplicationProceedingsInitiated initiateCourtApplicationProceedings) {
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = new InitiateCourtApplicationEntity();
+        initiateCourtApplicationEntity.setApplicationId(initiateCourtApplicationProceedings.getCourtApplication().getId());
+        initiateCourtApplicationEntity.setParentApplicationId(initiateCourtApplicationProceedings.getCourtApplication().getParentApplicationId());
+        initiateCourtApplicationEntity.setPayload(this.objectToJsonObjectConverter.convert(initiateCourtApplicationProceedings).toString());
+        return initiateCourtApplicationEntity;
+    }
+
+    private void addCourtApplicationToCase(final CourtApplication courtApplication, final UUID prosecutionCaseId, final String caseReference) {
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(courtApplication.getId());
+        if (nonNull(courtApplicationEntity)) {
+            final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+            final CourtApplicationCaseKey courtApplicationCaseKey = new CourtApplicationCaseKey(randomUUID(), courtApplication.getId(), prosecutionCaseId);
+            courtApplicationCaseEntity.setId(courtApplicationCaseKey);
+            courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+            courtApplicationCaseEntity.setCaseReference(caseReference);
+            courtApplicationCaseRepository.save(courtApplicationCaseEntity);
+        }
+    }
+
+    private void saveEjectedApplication(final ApplicationEjected applicationEjected, final CourtApplicationEntity applicationEntity, final InitiateCourtApplicationEntity initiateCourtApplicationEntity) {
+        if (nonNull(applicationEntity)) {
             final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
             final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
-
-            final CourtApplication updatedApplication = CourtApplication.courtApplication()
-                    .withId(persistedApplication.getId())
-                    .withType(persistedApplication.getType())
-                    .withApplicant(persistedApplication.getApplicant())
-                    .withApplicationDecisionSoughtByDate(persistedApplication.getApplicationDecisionSoughtByDate())
-                    .withOrderingCourt(persistedApplication.getOrderingCourt())
-                    .withApplicationOutcome(persistedApplication.getApplicationOutcome())
-                    .withApplicationParticulars(persistedApplication.getApplicationParticulars())
-                    .withApplicationReceivedDate(persistedApplication.getApplicationReceivedDate())
-                    .withApplicationReference(persistedApplication.getApplicationReference())
+            final CourtApplication updatedApplication = courtApplicationBuilder(persistedApplication)
                     .withApplicationStatus(ApplicationStatus.EJECTED)
-                    .withRemovalReason(applicationEjected.getRemovalReason())
-                    .withCourtApplicationPayment(persistedApplication.getCourtApplicationPayment())
-                    .withJudicialResults(persistedApplication.getJudicialResults())
-                    .withParentApplicationId(persistedApplication.getParentApplicationId())
-                    .withLinkedCaseId(persistedApplication.getLinkedCaseId())
-                    .withBreachedOrder(persistedApplication.getBreachedOrder())
-                    .withBreachedOrderDate(persistedApplication.getBreachedOrderDate())
-                    .withRespondents(persistedApplication.getRespondents())
-                    .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                    .build();
-
+                    .withRemovalReason(applicationEjected.getRemovalReason()).build();
             applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
-            repository.save(applicationEntity);
+            courtApplicationRepository.save(applicationEntity);
+
+            final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
+            final InitiateCourtApplicationProceedings persistedInitiateCourtApplication = jsonObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
+            final InitiateCourtApplicationProceedings updatedpersistedInitiateCourtApplication = initiateCourtApplicationProceedingsBuilder(persistedInitiateCourtApplication)
+                    .withCourtApplication(updatedApplication).build();
+            initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedpersistedInitiateCourtApplication).toString());
+            initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
+
             final List<HearingApplicationEntity> hearingApplicationEntityList = hearingApplicationRepository.findByApplicationId(applicationEjected.getApplicationId());
-            hearingApplicationEntityList.stream().forEach(hearingApplicationEntity -> {
+            hearingApplicationEntityList.forEach(hearingApplicationEntity -> {
                 final HearingEntity hearingEntity = hearingApplicationEntity.getHearing();
                 final UUID applicationId = hearingApplicationEntity.getId().getApplicationId();
                 final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
@@ -213,57 +239,36 @@ public class CourtApplicationEventListener {
         }
     }
 
-    private void updateDefendantForProsecutionCase(final CourtApplication updatedCourtApplication) {
-        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(updatedCourtApplication.getLinkedCaseId());
-        final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-        final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        if (updatedCourtApplication.getApplicant() != null) {
-            updateProsecutionCaseDefendant(prosecutionCase, updatedCourtApplication.getApplicant().getDefendant());
-        }
-        if (updatedCourtApplication.getRespondents() != null) {
-            updatedCourtApplication.getRespondents().forEach(respondent ->
-                    updateProsecutionCaseDefendant(prosecutionCase, respondent.getPartyDetails().getDefendant())
-            );
-        }
-    }
-
-    private void updateProsecutionCaseDefendant(final ProsecutionCase prosecutionCase, final Defendant defendantUpdate) {
-        if (defendantUpdate != null) {
-            final Optional<Defendant> originDefendant = prosecutionCase.getDefendants().stream().filter(d -> d.getId().equals(defendantUpdate.getId())).findFirst();
-            if (originDefendant.isPresent()) {
-                prosecutionCase.getDefendants().remove(originDefendant.get());
-                prosecutionCase.getDefendants().add(defendantUpdate);
-            }
-            prosecutionCaseRepository.save(getProsecutionCaseEntity(prosecutionCase));
-            updateSearchable(prosecutionCase);
-        }
-    }
-
     private CourtApplicationEntity getCourtApplicationEntity(final CourtApplication courtApplication) {
         final CourtApplicationEntity applicationEntity = new CourtApplicationEntity();
         applicationEntity.setApplicationId(courtApplication.getId());
-        applicationEntity.setLinkedCaseId(courtApplication.getLinkedCaseId());
         applicationEntity.setParentApplicationId(courtApplication.getParentApplicationId());
         applicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
         return applicationEntity;
     }
 
     private void makeStandaloneApplicationSearchable(final CourtApplication courtApplication) {
-        if (courtApplication.getLinkedCaseId() == null) {
+        if (CollectionUtils.isEmpty(courtApplication.getCourtApplicationCases())) {
             searchApplication.makeApplicationSearchable(courtApplication);
         }
     }
 
-    private void updateSearchable(final ProsecutionCase prosecutionCase) {
-        prosecutionCase.getDefendants().forEach(caseDefendant ->
-                searchCase.makeSearchable(prosecutionCase, caseDefendant));
+    private CourtApplication buildCourtApplicationWithStatus(CourtApplication courtApplication, ApplicationStatus applicationStatus) {
+        return courtApplicationBuilder(courtApplication).withApplicationStatus(applicationStatus).build();
     }
 
-    private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
-        final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
-        pCaseEntity.setCaseId(prosecutionCase.getId());
-        pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
-        return pCaseEntity;
+    private CourtApplication buildCourtApplication(CourtApplication courtApplication) {
+        return courtApplicationBuilder(courtApplication).build();
     }
 
+    private CourtApplication.Builder courtApplicationBuilder(CourtApplication courtApplication) {
+        return CourtApplication.courtApplication()
+                .withValuesFrom(courtApplication)
+                .withApplicationStatus(ApplicationStatus.DRAFT);
+    }
+
+    private InitiateCourtApplicationProceedings.Builder initiateCourtApplicationProceedingsBuilder(InitiateCourtApplicationProceedings initiateCourtApplicationProceedings) {
+        return InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withValuesFrom(initiateCourtApplicationProceedings);
+    }
 }

@@ -6,18 +6,17 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getCourtTime;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getCourtTime;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.ApplicationSummonsRecipientType;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.Personalisation;
@@ -60,7 +59,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by satishkumar on 12/11/2018.
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1172"})
 public class NotificationService {
 
     public static final String CASE_ID = "caseId";
@@ -76,6 +75,7 @@ public class NotificationService {
     private static final String FAILED_TIME = "failedTime";
     private static final String ERROR_MESSAGE = "errorMessage";
     private static final String SENT_TIME = "sentTime";
+    private static final String COMPLETED_AT = "completedAt";
     private static final String TEMPLATE_ID = "templateId";
     private static final String SEND_TO_ADDRESS = "sendToAddress";
     private static final String REPLY_TO_ADDRESS = "replyToAddress";
@@ -268,17 +268,18 @@ public class NotificationService {
     }
 
     public void recordNotificationRequestSuccess(final JsonEnvelope sourceEnvelope, final UUID targetId, final PartyType partyType) {
-
         final JsonObject payload = sourceEnvelope.payloadAsJsonObject();
-
         final String notificationId = payload.getString(NOTIFICATION_ID);
-
         final String sentTime = payload.getString(SENT_TIME);
-
+        final String completedAt = payload.getString(COMPLETED_AT, null);
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add(NOTIFICATION_ID, notificationId)
                 .add(getName(partyType), targetId.toString())
                 .add(SENT_TIME, sentTime);
+
+        if(nonNull(completedAt)) {
+                jsonObjectBuilder.add(COMPLETED_AT, completedAt);
+        }
 
         final JsonObject notificationSucceededPayload = jsonObjectBuilder.build();
 
@@ -350,27 +351,15 @@ public class NotificationService {
         });
     }
 
-    public void sendNotification(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final ZonedDateTime hearingStartDateTime) {
-
+    public void sendNotification(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final ZonedDateTime hearingStartDateTime, final JurisdictionType jurisdictionType) {
         Objects.requireNonNull(courtApplication);
-
         final String hearingDate = hearingStartDateTime.toLocalDate().toString();
-
         final String hearingTime = getCourtTime(hearingStartDateTime);
 
-        final Optional<ApplicationSummonsRecipientType> recipientTypeOptional = ofNullable(courtApplication.getType()).map(CourtApplicationType::getApplicationSummonsRecipientType);
-
-        //If court application type is null means no summons will be send to applicant and respondents
-        if (recipientTypeOptional.isPresent()) {
-            final ApplicationSummonsRecipientType applicationSummonsRecipientType = recipientTypeOptional.get();
-            if (applicationSummonsRecipientType == ApplicationSummonsRecipientType.APPLICANT) {
-                sendNotificationToRespondents(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime);
-            } else if (applicationSummonsRecipientType == ApplicationSummonsRecipientType.RESPONDENT) {
-                sendNotificationToApplicant(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime);
-            }
-        } else {
-            sendNotificationToApplicant(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime);
-            sendNotificationToRespondents(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime);
+        if (courtApplication.getType().getSummonsTemplateType().equals(NOT_APPLICABLE)) {
+            sendNotificationToApplicant(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, jurisdictionType);
+            sendNotificationToRespondents(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, jurisdictionType);
+            sendNotificationToThirdParties(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, jurisdictionType);
         }
     }
 
@@ -432,29 +421,36 @@ public class NotificationService {
         return emailChannelBuilder.build();
     }
 
-    private void sendNotificationToRespondents(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime) {
+    private void sendNotificationToRespondents(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType) {
 
-        final List<CourtApplicationRespondent> respondents = ofNullable(courtApplication.getRespondents()).map(r -> courtApplication.getRespondents()).orElse(new ArrayList<>());
+        final List<CourtApplicationParty> respondents = ofNullable(courtApplication.getRespondents()).map(r -> courtApplication.getRespondents()).orElse(new ArrayList<>());
 
-        respondents.stream().map(CourtApplicationRespondent::getPartyDetails).forEach(courtApplicationParty -> sendNotification(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, courtApplicationParty));
+        respondents.forEach(courtApplicationParty -> sendNotification(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType));
     }
 
-    private void sendNotificationToApplicant(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime) {
+    private void sendNotificationToApplicant(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType) {
 
         final CourtApplicationParty courtApplicationParty = courtApplication.getApplicant();
 
-        sendNotification(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, courtApplicationParty);
+        sendNotification(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType);
     }
 
-    private void sendNotification(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final CourtApplicationParty courtApplicationParty) {
+    private void sendNotificationToThirdParties(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType) {
+
+        final List<CourtApplicationParty> thirdParties = ofNullable(courtApplication.getThirdParties()).map(r -> courtApplication.getThirdParties()).orElse(new ArrayList<>());
+
+        thirdParties.forEach(courtApplicationParty -> sendNotification(event, notificationId, courtApplication, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType));
+    }
+
+    private void sendNotification(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final CourtApplicationParty courtApplicationParty, JurisdictionType jurisdictionType) {
 
         final Optional<Address> addressOptional = getApplicantAddress(courtApplicationParty);
 
         final Optional<String> emailAddressOptional = getApplicantEmailAddress(courtApplicationParty);
 
         emailAddressOptional.ifPresent(emailAddress -> sendEmail(event, notificationId, null, courtApplication.getId(), null, Collections.singletonList(buildEmailChannel(emailAddress,
-                courtApplication.getType().getApplicationType(),
-                courtApplication.getType().getApplicationLegislation(),
+                courtApplication.getType().getType(),
+                courtApplication.getType().getLegislation(),
                 hearingDate,
                 hearingTime,
                 ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY),
@@ -468,11 +464,13 @@ public class NotificationService {
                         hearingTime,
                         courtApplication.getId(),
                         courtApplication.getApplicationReference(),
-                        courtApplication.getType().getApplicationType(),
-                        courtApplication.getType().getApplicationLegislation(),
+                        courtApplication.getType().getType(),
+                        courtApplication.getType().getLegislation(),
                         courtCentre,
                         courtApplicationParty,
-                        courtApplication.getLinkedCaseId());
+                        null, // GPE-15039 Commented temporarily
+                        jurisdictionType
+                );
             }
         });
     }
@@ -483,7 +481,7 @@ public class NotificationService {
 
         final Optional<Organisation> organisationOptional = ofNullable(courtApplicationParty.getOrganisation());
 
-        final Optional<Defendant> defendantOptional = ofNullable(courtApplicationParty.getDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
 
         final Optional<ProsecutingAuthority> prosecutingAuthorityOptional = ofNullable(courtApplicationParty.getProsecutingAuthority());
 
@@ -509,15 +507,15 @@ public class NotificationService {
         return addressOptional;
     }
 
-    private Optional<Address> getDefendantAddress(final Defendant defendant) {
+    private Optional<Address> getDefendantAddress(final MasterDefendant masterDefendant) {
         Optional<Address> address = Optional.empty();
 
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getAddress())) {
-            address = Optional.of(defendant.getPersonDefendant().getPersonDetails().getAddress());
+        if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails().getAddress())) {
+            address = Optional.of(masterDefendant.getPersonDefendant().getPersonDetails().getAddress());
         }
 
-        if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getAddress())) {
-            address = Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getAddress());
+        if (nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation().getAddress())) {
+            address = Optional.of(masterDefendant.getLegalEntityDefendant().getOrganisation().getAddress());
         }
         return address;
     }
@@ -528,7 +526,7 @@ public class NotificationService {
 
         final Optional<Organisation> organisationOptional = ofNullable(courtApplicationParty.getOrganisation());
 
-        final Optional<Defendant> defendantOptional = ofNullable(courtApplicationParty.getDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
 
         final Optional<ProsecutingAuthority> prosecutingAuthorityOptional = ofNullable(courtApplicationParty.getProsecutingAuthority());
 
@@ -554,15 +552,15 @@ public class NotificationService {
         return emailAddress;
     }
 
-    private Optional<String> getDefendantEmailAddress(final Defendant defendant) {
+    private Optional<String> getDefendantEmailAddress(final MasterDefendant masterDefendant) {
         final Optional<String> emailAddress = Optional.empty();
 
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getContact()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail())) {
-            return Optional.of(defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail());
+        if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails().getContact()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail())) {
+            return Optional.of(masterDefendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail());
         }
 
-        if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getContact()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail())) {
-            return Optional.of(defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());
+        if (nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation().getContact()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail())) {
+            return Optional.of(masterDefendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());
         }
         return emailAddress;
     }

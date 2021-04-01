@@ -1,14 +1,30 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.now;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
+import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -31,30 +47,30 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.now;
-import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
-import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import javax.json.JsonObjectBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+
+@RunWith(DataProviderRunner.class)
 public class NotificationHandlerTest {
+
+    @DataProvider
+    public static Object[][] completedAtTime() {
+        return new Object[][]{
+                {null},
+                {now(UTC)},
+        };
+    }
 
     private UUID caseId;
     private UUID materialId;
@@ -111,6 +127,7 @@ public class NotificationHandlerTest {
 
     @Before
     public void setUp() {
+        initMocks(this);
         caseId = randomUUID();
         materialId = randomUUID();
     }
@@ -314,77 +331,93 @@ public class NotificationHandlerTest {
                 )));
     }
 
-
+    @UseDataProvider("completedAtTime")
     @Test
-    public void shouldRecordResultOrderPrintRequestSuccessForCase() throws EventStreamException {
+    public void shouldRecordResultOrderPrintRequestSuccessForCase(final ZonedDateTime completedAt) throws EventStreamException {
 
         final UUID notificationId = randomUUID();
         final ZonedDateTime sentTime = now;
-        final JsonEnvelope printResultOrderSucceessEnvelope = envelopeFrom(
+
+        final JsonObjectBuilder objectBuilder = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("notificationId", notificationId.toString())
+                .add("sentTime", sentTime.toString());
+        if (nonNull(completedAt)) {
+            objectBuilder.add("completedAt", completedAt.toString());
+        }
+
+        final JsonEnvelope printResultOrderSuccessEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.command.record-notification-request-success"),
-                createObjectBuilder()
-                        .add("caseId", caseId.toString())
-                        .add("notificationId", notificationId.toString())
-                        .add("sentTime", sentTime.toString())
-                        .build());
+                objectBuilder.build());
 
-
-        final NotificationRequestSucceeded resultOrderPrintRequestSucceeded = new NotificationRequestSucceeded(caseId, null, null, notificationId, sentTime);
+        final NotificationRequestSucceeded resultOrderPrintRequestSucceeded = new NotificationRequestSucceeded(caseId, null, null, notificationId, sentTime, completedAt);
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(caseAggregate.recordNotificationRequestSuccess(caseId, notificationId, sentTime)).thenReturn(Stream.of(resultOrderPrintRequestSucceeded));
+        when(caseAggregate.recordNotificationRequestSuccess(caseId, notificationId, sentTime, completedAt)).thenReturn(Stream.of(resultOrderPrintRequestSucceeded));
 
-        notificationHandler.recordNotificationRequestSuccess(printResultOrderSucceessEnvelope);
+        notificationHandler.recordNotificationRequestSuccess(printResultOrderSuccessEnvelope);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(printResultOrderSucceessEnvelope)
+                                withMetadataEnvelopedFrom(printResultOrderSuccessEnvelope)
                                         .withName("progression.event.notification-request-succeeded"),
                                 payloadIsJson(
                                         allOf(
                                                 withJsonPath("$.caseId", is(caseId.toString())),
                                                 withJsonPath("$.notificationId", is(notificationId.toString())),
-                                                withJsonPath("$.sentTime", is(ZonedDateTimes.toString(sentTime)))
+                                                withJsonPath("$.sentTime", is(ZonedDateTimes.toString(sentTime))),
+                                                nonNull(completedAt) ?
+                                                        withJsonPath("$.completedAt", is(ZonedDateTimes.toString(completedAt))) :
+                                                        withoutJsonPath("$.completedAt")
 
                                         )
                                 ))
                 )));
     }
 
+    @UseDataProvider("completedAtTime")
     @Test
-    public void shouldRecordResultOrderPrintRequestSuccessForMaterial() throws EventStreamException {
+    public void shouldRecordResultOrderPrintRequestSuccessForMaterial(final ZonedDateTime completedAt) throws
+            EventStreamException {
 
         final UUID notificationId = randomUUID();
         final ZonedDateTime sentTime = now;
-        final JsonEnvelope printResultOrderSucceessEnvelope = envelopeFrom(
+        final JsonObjectBuilder objectBuilder = createObjectBuilder()
+                .add("materialId", materialId.toString())
+                .add("notificationId", notificationId.toString())
+                .add("sentTime", sentTime.toString());
+
+        if (nonNull(completedAt)) {
+            objectBuilder.add("completedAt", completedAt.toString());
+        }
+
+        final JsonEnvelope printResultOrderSuccessEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.command.record-notification-request-success"),
-                createObjectBuilder()
-                        .add("materialId", materialId.toString())
-                        .add("notificationId", notificationId.toString())
-                        .add("sentTime", sentTime.toString())
-                        .build());
+                objectBuilder.build());
 
 
-        final NotificationRequestSucceeded resultOrderPrintRequestSucceeded = new NotificationRequestSucceeded(null, null, materialId, notificationId, sentTime);
+        final NotificationRequestSucceeded resultOrderPrintRequestSucceeded = new NotificationRequestSucceeded(null, null, materialId, notificationId, sentTime, completedAt);
 
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(materialAggregate);
-        when(materialAggregate.recordNotificationRequestSuccess(materialId, notificationId, sentTime)).thenReturn(Stream.of(resultOrderPrintRequestSucceeded));
+        when(materialAggregate.recordNotificationRequestSuccess(materialId, notificationId, sentTime, completedAt)).thenReturn(Stream.of(resultOrderPrintRequestSucceeded));
 
-        notificationHandler.recordNotificationRequestSuccess(printResultOrderSucceessEnvelope);
+        notificationHandler.recordNotificationRequestSuccess(printResultOrderSuccessEnvelope);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(printResultOrderSucceessEnvelope)
+                                withMetadataEnvelopedFrom(printResultOrderSuccessEnvelope)
                                         .withName("progression.event.notification-request-succeeded"),
                                 payloadIsJson(
                                         allOf(
                                                 withJsonPath("$.materialId", is(materialId.toString())),
                                                 withJsonPath("$.notificationId", is(notificationId.toString())),
-                                                withJsonPath("$.sentTime", is(ZonedDateTimes.toString(sentTime)))
+                                                withJsonPath("$.sentTime", is(ZonedDateTimes.toString(sentTime))), nonNull(completedAt) ?
+                                                        withJsonPath("$.completedAt", is(ZonedDateTimes.toString(completedAt))) :
+                                                        withoutJsonPath("$.completedAt")
 
                                         )
                                 ))
@@ -395,7 +428,6 @@ public class NotificationHandlerTest {
     public void shouldRecordResultOrderPrintRequestAccepted() throws EventStreamException {
 
         final UUID notificationId = randomUUID();
-        final String caseUrn = "TFL75947ZQ8UE";
         final ZonedDateTime acceptedTime = now;
         final JsonEnvelope printResultOrderAcceptedEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.command.record-notification-request-accepted"),
@@ -436,7 +468,8 @@ public class NotificationHandlerTest {
     }
 
     @Test
-    public void shouldRecordResultOrderPrintRequestAcceptedForApplicationId() throws EventStreamException {
+    public void shouldRecordResultOrderPrintRequestAcceptedForApplicationId() throws
+            EventStreamException {
 
         final UUID notificationId = randomUUID();
         final UUID applicationId = randomUUID();
@@ -481,12 +514,13 @@ public class NotificationHandlerTest {
     }
 
     @Test
-    public void shouldRecordResultOrderPrintRequestAcceptedForMaterial() throws EventStreamException {
+    public void shouldRecordResultOrderPrintRequestAcceptedForMaterial() throws
+            EventStreamException {
 
         final UUID notificationId = randomUUID();
 
         final ZonedDateTime acceptedTime = now;
-        final JsonEnvelope printResultOrderAcceptedEnvelope = envelopeFrom(
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.command.record-notification-request-accepted"),
                 createObjectBuilder()
                         .add("notificationId", notificationId.toString())
@@ -505,12 +539,12 @@ public class NotificationHandlerTest {
         when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(materialAggregate);
         when(materialAggregate.recordNotificationRequestAccepted(materialId, notificationId, acceptedTime)).thenReturn(Stream.of(resultOrderNotificationRequestAccepted));
 
-        notificationHandler.recordNotificationRequestAccepted(printResultOrderAcceptedEnvelope);
+        notificationHandler.recordNotificationRequestAccepted(jsonEnvelope);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(printResultOrderAcceptedEnvelope)
+                                withMetadataEnvelopedFrom(jsonEnvelope)
                                         .withName("progression.event.notification-request-accepted"),
                                 payloadIsJson(
                                         allOf(

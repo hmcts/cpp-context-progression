@@ -59,6 +59,9 @@ subscriptions_descriptor:
         - name: progression.event.court-application-created
           schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
 
+        - name: progression.event.court-application-added-to-case
+          schema_uri: http://justice.gov.uk/core/courts/court-application-added-to-case.json
+
         - name: progression.event.court-application-status-changed
           schema_uri: http://justice.gov.uk/core/courts/court-application-status-changed.json
 
@@ -76,6 +79,9 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
+
+        - name: progression.event.hearing-resulted-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
 
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
@@ -188,6 +194,15 @@ subscriptions_descriptor:
 
         - name: progression.event.case-cps-prosecutor-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
+
+        - name: progression.event.court-application-proceedings-initiated
+          schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-initiated.json
+
+        - name: progression.event.court-application-proceedings-edited
+          schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-edited.json
+
+        - name: progression.event.court-document-print-time-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-document-print-time-updated.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

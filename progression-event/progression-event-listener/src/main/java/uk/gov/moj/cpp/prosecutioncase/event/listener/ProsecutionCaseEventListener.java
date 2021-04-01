@@ -10,6 +10,7 @@ import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -20,13 +21,15 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseNoteEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseNoteRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
@@ -36,8 +39,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
-
-@SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseEventListener {
 
@@ -56,7 +57,10 @@ public class ProsecutionCaseEventListener {
     private ProsecutionCaseRepository repository;
 
     @Inject
-    private CourtApplicationRepository courtApplicationRepository;
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
+
+    @Inject
+    private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
 
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
@@ -78,6 +82,7 @@ public class ProsecutionCaseEventListener {
         repository.save(getProsecutionCaseEntity(prosecutionCase));
         makeSearchable(prosecutionCase);
     }
+
     @Handles("progression.event.case-ejected")
     public void processProsecutionCaseEjected(final JsonEnvelope event) {
         final CaseEjected caseEjected = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseEjected.class);
@@ -99,43 +104,37 @@ public class ProsecutionCaseEventListener {
         });
     }
 
-
     private void updateLinkedApplications(CaseEjected caseEjected) {
-        final List<CourtApplicationEntity> courtApplicationEntities = courtApplicationRepository.findByLinkedCaseId(caseEjected.getProsecutionCaseId());
-        courtApplicationEntities.forEach(applicationEntity -> {
-            final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
+        final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseEjected.getProsecutionCaseId());
+        courtApplicationCaseEntities.forEach(courtApplicationCaseEntity -> {
+            final JsonObject applicationJson = stringToJsonObjectConverter.convert(courtApplicationCaseEntity.getCourtApplication().getPayload());
             final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
             final CourtApplication updatedCourtApplication = updateCourtApplication(persistedApplication, caseEjected.getRemovalReason());
-            applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
-            courtApplicationRepository.save(applicationEntity);
+            courtApplicationCaseEntity.getCourtApplication().setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
+            courtApplicationCaseRepository.save(courtApplicationCaseEntity);
+
+            final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(courtApplicationCaseEntity.getCourtApplication().getApplicationId());
+            final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
+            final InitiateCourtApplicationProceedings persistedInitiateCourtApplication = jsonObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
+            final InitiateCourtApplicationProceedings updatedpersistedInitiateCourtApplication = initiateCourtApplicationProceedingsBuilder(persistedInitiateCourtApplication)
+                    .withCourtApplication(updatedCourtApplication).build();
+            initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedpersistedInitiateCourtApplication).toString());
+            initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
         });
     }
 
-    private CourtApplication updateCourtApplication(CourtApplication persistedApplication, String removalReason) {
-
-        return CourtApplication.courtApplication()
-                .withId(persistedApplication.getId())
-                .withType(persistedApplication.getType())
-                .withApplicant(persistedApplication.getApplicant())
-                .withApplicationDecisionSoughtByDate(persistedApplication.getApplicationDecisionSoughtByDate())
-                .withApplicationOutcome(persistedApplication.getApplicationOutcome())
-                .withApplicationParticulars(persistedApplication.getApplicationParticulars())
-                .withApplicationReceivedDate(persistedApplication.getApplicationReceivedDate())
-                .withApplicationReference(persistedApplication.getApplicationReference())
-                .withCourtApplicationPayment(persistedApplication.getCourtApplicationPayment())
-                .withJudicialResults(persistedApplication.getJudicialResults())
-                .withParentApplicationId(persistedApplication.getParentApplicationId())
-                .withLinkedCaseId(persistedApplication.getLinkedCaseId())
-                .withOutOfTimeReasons(persistedApplication.getOutOfTimeReasons())
-                .withRespondents(persistedApplication.getRespondents())
-                .withRemovalReason(removalReason)
-                .withApplicationStatus(ApplicationStatus.EJECTED)
-                .withBreachedOrder(persistedApplication.getBreachedOrder())
-                .withBreachedOrderDate(persistedApplication.getBreachedOrderDate())
-                .withOrderingCourt(persistedApplication.getOrderingCourt())
-                .build();
+    private InitiateCourtApplicationProceedings.Builder initiateCourtApplicationProceedingsBuilder(InitiateCourtApplicationProceedings initiateCourtApplicationProceedings) {
+        return InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withValuesFrom(initiateCourtApplicationProceedings);
     }
 
+    private CourtApplication updateCourtApplication(CourtApplication persistedApplication, String removalReason) {
+        return CourtApplication.courtApplication()
+                .withValuesFrom(persistedApplication)
+                .withApplicationStatus(ApplicationStatus.EJECTED)
+                .withRemovalReason(removalReason)
+                .build();
+    }
 
     private ProsecutionCase updateProsecutionCase(final ProsecutionCase persistentProsecutionCase, final String removalReason) {
         return ProsecutionCase.prosecutionCase()
@@ -187,5 +186,4 @@ public class ProsecutionCaseEventListener {
             caseNoteRepository.save(caseNoteEntity);
         }
     }
-
 }

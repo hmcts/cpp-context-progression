@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
-import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -24,13 +24,16 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEnt
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -40,26 +43,28 @@ import javax.json.JsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3655", "squid:S1135","squid:S1612"})
+@SuppressWarnings({"squid:S3655", "squid:S1135", "squid:S1612"})
 @ServiceComponent(EVENT_LISTENER)
 public class HearingResultEventListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultEventListener.class);
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
-
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
     @Inject
     private HearingRepository hearingRepository;
-
-    @Inject
-    private ProsecutionCaseRepository caseRepository;
-
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultEventListener.class);
+    private static JsonObject jsonFromString(String jsonObjectStr) {
+
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+
+        return object;
+    }
 
     @Handles("progression.event.hearing-resulted")
     public void updateHearingResult(final JsonEnvelope event) {
@@ -81,7 +86,7 @@ public class HearingResultEventListener {
 
         //TO deal with setting of case and defendant proceeding flag for future hearing.
         final List<ProsecutionCase> prosecutionCases = ofNullable(updatedHearing.getProsecutionCases()).orElse(new ArrayList<>());
-        for (final ProsecutionCase prosecutionCase: prosecutionCases) {
+        for (final ProsecutionCase prosecutionCase : prosecutionCases) {
             final List<CaseDefendantHearingEntity> caseDefendantEntities = caseDefendantHearingRepository.findByCaseId(prosecutionCase.getId());
             for (final CaseDefendantHearingEntity caseDefendantHearingEntity : caseDefendantEntities) {
                 final HearingEntity originalHearingEntity = caseDefendantHearingEntity.getHearing();
@@ -260,7 +265,7 @@ public class HearingResultEventListener {
     private Hearing getUpdatedHearingForResulted(final Hearing hearingFromPayload, final Hearing hearingFromDatabase) {
 
         final Hearing.Builder builder = Hearing.hearing();
-        if (nonNull(hearingFromPayload.getProsecutionCases()) && !hearingFromPayload.getProsecutionCases().isEmpty()) {
+        if (isNotEmpty(hearingFromPayload.getProsecutionCases())) {
             builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase));
         }
         return builder.withIsBoxHearing(hearingFromPayload.getIsBoxHearing())
@@ -270,7 +275,7 @@ public class HearingResultEventListener {
                 .withJurisdictionType(hearingFromPayload.getJurisdictionType())
                 .withType(hearingFromPayload.getType())
                 .withHearingLanguage(hearingFromPayload.getHearingLanguage())
-                .withCourtApplications(getUpdateCourtApplications(hearingFromPayload.getCourtApplications()))
+                .withCourtApplications(hearingFromPayload.getCourtApplications())
                 .withReportingRestrictionReason(hearingFromPayload.getReportingRestrictionReason())
                 .withJudiciary(hearingFromPayload.getJudiciary())
                 .withDefendantJudicialResults(hearingFromPayload.getDefendantJudicialResults())
@@ -291,34 +296,18 @@ public class HearingResultEventListener {
                 .build();
     }
 
-    private List<CourtApplication> getUpdateCourtApplications(final List<CourtApplication> courtApplicationList) {
-        ofNullable(courtApplicationList).ifPresent(
-                courtApplications -> courtApplications.stream().filter(Objects::nonNull).forEach(HearingResultEventListener::getCourtApplicationJudResultsforNonNows
-                )
-        );
-
-        return courtApplicationList;
-    }
-
-    private static void getCourtApplicationJudResultsforNonNows(CourtApplication courtApplication) {
-        ofNullable(courtApplication.getJudicialResults()).ifPresent(
-                judicialResults -> {
-                    final List<JudicialResult> caJudicialResults = judicialResults.stream().filter(Objects::nonNull).filter(jr -> !jr.getPublishedForNows().equals(Boolean.TRUE)).collect(toList());
-                    courtApplication.getJudicialResults().clear();
-                    courtApplication.getJudicialResults().addAll(caJudicialResults);
-                }
-        );
+    private <T> UnaryOperator<List<T>> getListOrNull() {
+        return list -> list.isEmpty() ? null : list;
     }
 
     private List<ProsecutionCase> getUpdatedProsecutionCases(final Hearing hearingFromPayload, final Hearing hearingFromDatabase) {
-
-        return hearingFromPayload.getProsecutionCases().stream().map(prosecutionCaseFromPayload ->
-                getUpdatedProsecutionCase(prosecutionCaseFromPayload, hearingFromDatabase)
-        ).collect(toList());
+        return ofNullable(hearingFromPayload.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCaseFromPayload -> getUpdatedProsecutionCase(prosecutionCaseFromPayload, hearingFromDatabase))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
     }
 
     private ProsecutionCase getUpdatedProsecutionCase(final ProsecutionCase prosecutionCaseFromPayload, final Hearing hearingFromDatabase) {
-        final Optional<ProsecutionCase> optionalResultedCase = hearingFromDatabase.getProsecutionCases().stream()
+        final Optional<ProsecutionCase> optionalResultedCase = ofNullable(hearingFromDatabase.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .filter(resultedCase -> resultedCase.getId().equals(prosecutionCaseFromPayload.getId()))
                 .findFirst();
         if (optionalResultedCase.isPresent()) {
@@ -346,9 +335,7 @@ public class HearingResultEventListener {
     }
 
     private List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCaseFromPayload) {
-        return prosecutionCaseFromPayload.getDefendants().stream().map(defendant ->
-                getUpdatedDefendant(defendant)
-        ).collect(toList());
+        return prosecutionCaseFromPayload.getDefendants().stream().map(this::getUpdatedDefendant).collect(toList());
     }
 
     private Defendant getUpdatedDefendant(final Defendant defendantFromPayload) {
@@ -381,9 +368,7 @@ public class HearingResultEventListener {
     }
 
     private List<Offence> getUpdatedOffences(final Defendant defendant) {
-        return defendant.getOffences().stream().map(offence ->
-                getUpdatedOffence(offence)
-        ).collect(toList());
+        return defendant.getOffences().stream().map(this::getUpdatedOffence).collect(toList());
     }
 
     private Offence getUpdatedOffence(final Offence originOffence) {
@@ -423,15 +408,6 @@ public class HearingResultEventListener {
                 .withCommittingCourt(originOffence.getCommittingCourt())
                 .withReportingRestrictions(originOffence.getReportingRestrictions())
                 .build();
-    }
-
-    private static JsonObject jsonFromString(String jsonObjectStr) {
-
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        final JsonObject object = jsonReader.readObject();
-        jsonReader.close();
-
-        return object;
     }
 
     private List<JudicialResult> getNonNowsResults(final List<JudicialResult> judicialResults) {

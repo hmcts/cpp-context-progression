@@ -9,8 +9,8 @@ import static junit.framework.TestCase.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
@@ -83,10 +83,10 @@ public class EmbeddedCourtApplicationCreatedIT extends AbstractIT {
         addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
 
-        final Optional<JsonObject> prosecussionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
                 final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject, 5)) {
+                if (jsonObject.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject, 3)) {
                     return of(jsonObject);
                 }
             } catch (final IOException e) {
@@ -96,7 +96,7 @@ public class EmbeddedCourtApplicationCreatedIT extends AbstractIT {
             return empty();
         });
 
-        assertTrue(prosecussionCaseResponseJsonObject.isPresent());
+        assertTrue(prosecutionCaseResponseJsonObject.isPresent());
 
         final String payloadStr = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .replaceAll("RANDOM_CASE_ID", caseId)
@@ -112,10 +112,10 @@ public class EmbeddedCourtApplicationCreatedIT extends AbstractIT {
 
         final DocumentContext inputCourtApplication = parse(inputApplication);
 
-        final JsonObject transformedJson = jsonFromString(getJsonArray(prosecussionCaseResponseJsonObject.get(), "index").get().getString(0));
+        final JsonObject transformedJson = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0));
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
-        verifyCaseCreated(5l, inputProsecutionCase, transformedJson);
-        final String linkedCaseId = ((JsonString) inputCourtApplication.read("$.application.linkedCaseId")).getString();
+        verifyCaseCreated(3l, inputProsecutionCase, transformedJson);
+        final String linkedCaseId = ((JsonString) inputCourtApplication.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
         verifyEmbeddedApplication(linkedCaseId, transformedJson);
         verifyAddCourtApplication(inputCourtApplication, transformedJson, applicationId);
     }

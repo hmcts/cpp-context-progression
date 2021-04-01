@@ -1,0 +1,79 @@
+{
+  "alwaysPublished": false,
+  "canBeSubjectOfBreach": false,
+  "canBeSubjectOfVariation": false,
+  "category": "FINAL",
+  "courtClerk": {
+    "firstName": "Erica",
+    "lastName": "Wilson",
+    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+  },
+  "d20": false,
+  "excludedFromResults": false,
+  "isAdjournmentResult": false,
+  "isAvailableForCourtExtract": false,
+  "isConvictedResult": false,
+  "isDeleted": false,
+  "isFinancialResult": false,
+  "isUnscheduled": false,
+  "judicialResultId": "8ffcdae6-1426-4383-aff7-34cb2f2250fe",
+  "judicialResultPrompts": [
+    {
+      "courtExtract": "N",
+      "isFinancialImposition": false,
+      "judicialResultPromptTypeId": "43002ed8-1cf1-41a5-9654-8f10e5f10a88",
+      "label": "Reason(s) for rejection",
+      "promptReference": "reasonsForRejection",
+      "promptSequence": 100,
+      "type": "TXT",
+      "usergroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Prosecuting Authorities",
+        "Probation",
+        "YOTs"
+      ],
+      "value": "REJECTION_REASON",
+      "welshValue": "test reason"
+    },
+    {
+      "courtExtract": "N",
+      "isFinancialImposition": false,
+      "judicialResultPromptTypeId": "7d881e55-50ee-4098-9d3a-9b9c8f9eb834",
+      "label": "Prosecutor's email address (used summons notification)",
+      "promptReference": "prosecutorsEmailAddressUsedSummonsNotification",
+      "promptSequence": 100,
+      "type": "TXT",
+      "usergroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "YOTs",
+        "Prosecuting Authorities"
+      ],
+      "value": "PROSECUTOR_EMAIL",
+      "welshValue": ""
+    }
+  ],
+  "judicialResultTypeId": "d8837a45-8281-49b3-8349-49b423193148",
+  "label": "Summons rejected",
+  "lastSharedDateTime": "2021-01-29",
+  "level": "C",
+  "lifeDuration": false,
+  "orderedDate": "2021-01-30",
+  "orderedHearingId": "f6cad15d-b8a3-4aec-91bd-beb11ef017cb",
+  "postHearingCustodyStatus": "A",
+  "publishedAsAPrompt": false,
+  "publishedForNows": false,
+  "rank": 14600,
+  "resultText": "Summons rejected\nReason(s) for rejection test reason",
+  "rollUpPrompts": false,
+  "terminatesOffenceProceedings": false,
+  "urgent": false,
+  "usergroups": [
+  ]
+}

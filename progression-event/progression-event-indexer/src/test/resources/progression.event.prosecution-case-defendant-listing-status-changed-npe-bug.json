@@ -132,14 +132,13 @@
           }
         ],
         "type": {
-          "applicantSynonym": "Applicant",
-          "applicationCategory": "VP",
+          "categoryCode": "VP",
           "applicationCode": "PC02520",
           "applicationJurisdictionType": "MAGISTRATES",
-          "applicationLegislation": "Pursuant to section 303Z1 of the Proceeds of Crime Act 2002.",
+          "legislation": "Pursuant to section 303Z1 of the Proceeds of Crime Act 2002.",
           "applicationSummonsRecipientType": "RESPONDENT",
           "applicationSummonsTemplateType": "GENERIC_SUMMONS",
-          "applicationType": "Application for an account freezing order",
+          "type": "Application for an account freezing order",
           "id": "3958e85e-104b-34c2-ac96-bbf4f9769da2",
           "isAppealApplication": false,
           "isBreachApplication": false,

@@ -1,0 +1,98 @@
+{
+  "hearingId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+  "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+  "breachedApplications": [
+    {
+      "courtOrder": {
+        "canBeSubjectOfBreachProceedings": true,
+        "canBeSubjectOfVariationProceedings": true,
+        "courtOrderOffences": [
+          {
+            "offence": {
+              "arrestDate": "2020-02-09",
+              "chargeDate": "2020-02-09",
+              "count": 0,
+              "id": "10e888c9-6af3-42bd-8165-8687aceab6e1",
+              "isDisposed": true,
+              "modeOfTrial": "Summary",
+              "offenceCode": "CJO3522",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+              "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+              "offenceTitle": "Use / install a television set without a licence",
+              "orderIndex": 1,
+              "startDate": "2020-02-09",
+              "wording": "Resentenced Original code : CA03010, Original details: Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+              "wordingWelsh": "Resentenced Original code : CA03010, Original details: null"
+            },
+            "prosecutionCaseId": "59d26220-aa82-4cde-8cec-95e134a42fe0",
+            "prosecutionCaseIdentifier": {
+              "majorCreditorCode": "PF45",
+              "prosecutionAuthorityCode": "CPS-SE",
+              "prosecutionAuthorityId": "125baa4d-ffeb-448b-852c-5ab695fdfcc7",
+              "prosecutionAuthorityName": "Surrey Police test",
+              "prosecutionAuthorityOUCode": "A45AA00",
+              "caseURN": "90GD8989122"
+            }
+          }
+        ],
+        "defendantIds": [
+          "c46ca4a8-39ae-440d-9016-e12e936313e3"
+        ],
+        "endDate": "2028-01-22",
+        "id": "425e7b6c-5181-43c0-ae00-60f59307fb4c",
+        "isSJPOrder": false,
+        "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+        "label": "Community order England / Wales",
+        "masterDefendantId": "c46ca4a8-39ae-440d-9016-e12e936313e3",
+        "orderDate": "2021-01-22",
+        "orderingCourt": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "b4562684-9209-3ec4-a544-7f80dabd94d8",
+          "roomName": "Courtroom 02"
+        },
+        "orderingHearingId": "318f574c-1ac4-44e4-ab2d-d03252e697dc",
+        "startDate": "2021-01-22"
+      },
+      "applicationType": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "GENERIC_BREACH",
+        "categoryCode": "CB",
+        "code": "CJ03506",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "hearingCode": "BOO",
+        "id": "2d0536c7-f2e8-3898-a132-b9f0a72ce1d4",
+        "jurisdiction": "EITHER",
+        "legislation": "In accordance with Part 2 of Schedule 12 to the Criminal Justice Act 2003.",
+        "linkType": "LINKED",
+        "listingNotifTemplate": "NOT_APPLICABLE",
+        "offenceActiveOrder": "COURT_ORDER",
+        "pleaApplicableFlag": true,
+        "prefix": "Activation of Suspended sentence",
+        "prosecutorThirdPartyFlag": false,
+        "resentencingActivationCode": "CJO3523",
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "BREACH",
+        "type": "Failing to comply with the community requirements of a suspended sentence order"
+      }
+    }
+  ]
+}

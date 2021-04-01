@@ -34,6 +34,7 @@ import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -68,7 +69,7 @@ public class ApplicationExtractIT extends AbstractIT {
     @Test
     public void shouldGetApplicationExtract_whenExtractTypeIsStandAloneApplication() throws Exception {
         // given
-        addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         verifyInMessagingQueueForStandaloneCourtApplicationCreated();
         // when
         final String documentContentResponse = getApplicationExtractPdf(courtApplicationId, hearingId);
@@ -80,7 +81,7 @@ public class ApplicationExtractIT extends AbstractIT {
     @Test
     public void shouldAddDocumentInStandAloneApplicationAndThenUpdateIt() throws Exception {
         // given
-        addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper().new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         verifyInMessagingQueueForStandaloneCourtApplicationCreated();
         // when
         final String documentContentResponse = getApplicationExtractPdf(courtApplicationId, hearingId);
@@ -156,7 +157,7 @@ public class ApplicationExtractIT extends AbstractIT {
     private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
         final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
 
-        String arnResponse = message.get().getString("arn");
-        assertThat(arnResponse.length(), is(10));
+        String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");
+        assertThat(referenceResponse.length(), is(10));
     }
 }

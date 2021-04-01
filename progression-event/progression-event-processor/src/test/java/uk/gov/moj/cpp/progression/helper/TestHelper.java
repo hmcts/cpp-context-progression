@@ -1,13 +1,17 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHouseType;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Hearing;
@@ -89,6 +93,30 @@ public class TestHelper {
                 .build();
     }
 
+    public static CourtApplication buildCourtApplicationWithJudicialResultsUnderCourtOrders(final UUID courtApplicationId, final List<JudicialResult> judicialResults) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence()
+                                        .withJudicialResults(judicialResults)
+                                        .build())
+                                .build()))
+                        .build())
+                .build();
+    }
+
+    public static CourtApplication buildCourtApplicationWithJudicialResultsUnderCourtApplicationCases(final UUID courtApplicationId, final List<JudicialResult> judicialResults) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withOffences(singletonList(Offence.offence()
+                                .withJudicialResults(judicialResults)
+                                .build()))
+                        .build()))
+                .build();
+    }
+
     public static CourtApplication buildCourtApplication(final UUID courtApplicationId, final NextHearing nextHearing) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
@@ -99,6 +127,47 @@ public class TestHelper {
                         .build())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withNextHearing(nextHearing)
+                        .build()))
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                .withIsSJP(false)
+                .build()))
+                .build();
+    }
+
+    public static CourtApplication buildCourtApplicationWithCourtOrder(final UUID courtApplicationId, final NextHearing nextHearing) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(randomUUID())
+                                .build())
+                        .build())
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence()
+                                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                .withNextHearing(nextHearing)
+                                                .build()))
+                                        .build())
+                                .build()))
+                        .build())
+                .build();
+    }
+
+    public static CourtApplication buildCourtApplicationWithCourtApplicationCases(final UUID courtApplicationId, final NextHearing nextHearing) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(randomUUID())
+                                .build())
+                        .build())
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withOffences(singletonList(Offence.offence()
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withNextHearing(nextHearing)
+                                        .build()))
+                                .build()))
                         .build()))
                 .build();
     }

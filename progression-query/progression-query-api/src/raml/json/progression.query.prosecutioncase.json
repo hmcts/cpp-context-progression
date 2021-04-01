@@ -200,6 +200,7 @@
     }
   ],
   "hearingsAtAGlance": {
+    "courtApplications": [],
     "defendantHearings": [
       {
         "defendantId": "47e35e53-c520-4062-a72a-de5c80802d53",
@@ -213,8 +214,18 @@
     "hearings": [
       {
         "courtCentre": {
-          "id": "0cc8b59f-7067-4acb-9fd7-5e422c2c4140",
-          "name": "South Western (Lavender Hill)"
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
         },
         "defendants": [
           {

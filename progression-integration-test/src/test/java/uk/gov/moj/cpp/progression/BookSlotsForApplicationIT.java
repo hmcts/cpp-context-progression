@@ -4,11 +4,11 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.bookSlotsForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -27,6 +27,7 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class BookSlotsForApplicationIT extends AbstractIT {
 
     private String applicationId;
@@ -56,31 +57,29 @@ public class BookSlotsForApplicationIT extends AbstractIT {
         final String reference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
 
         // Create application for the case
-        addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
+        //addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
-        verifyInMessagingQueueForCourtApplicationCreated(reference + "-1");
+        verifyInMessagingQueueForCourtApplicationCreated(applicationId);
 
         final Matcher[] firstApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
-                withJsonPath("$.courtApplication.linkedCaseId", is(caseId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("DRAFT")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("a")),
-                withJsonPath("$.courtApplication.applicationReference", is(reference + "-1")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
         };
 
         pollForApplication(applicationId, firstApplicationMatchers);
-
-        bookSlotsForApplication(applicationId, hearingRequestId, caseId, reference, "progression.command.book-slots-for-application.json");
 
         verifyPostListCourtHearing(applicationId);
     }
 
 
-    private static void verifyInMessagingQueueForCourtApplicationCreated(final String arn) {
+    private static void verifyInMessagingQueueForCourtApplicationCreated(final String applicationId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        final String arnResponse = message.get().getString("arn");
-        assertThat(arnResponse, equalTo(arn));
+        final String idResponse = message.get().getJsonObject("courtApplication").getString("id");
+        assertThat(idResponse, equalTo(applicationId));
     }
 
 }

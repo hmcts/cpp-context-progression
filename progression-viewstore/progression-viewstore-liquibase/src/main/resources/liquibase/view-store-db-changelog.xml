@@ -84,4 +84,8 @@
     <include file="liquibase/alter-court-application-add-index.xml"/>
     <include file="liquibase/add-is-pinned-to-case-note.xml"/>
     <include file="liquibase/create-case-cps-prosecutor.xml"/>
+    <include file="liquibase/delete-linked-case-id-from-application.xml"/>
+    <include file="liquibase/create-court-application-case.xml"/>
+    <include file="liquibase/add-initiate-court-application.xml"/>
+
 </databaseChangeLog>

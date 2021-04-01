@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.progression.court-application-initiate-sjp-case-ignored.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "type": "string"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "description" :  {
+      "type": "string"
+    }
+  }
+}

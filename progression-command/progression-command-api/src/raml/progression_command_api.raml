@@ -293,64 +293,42 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           202:
               description: OK
 
-/application :
+/initiate-application:
   post:
       description: |
-        Create court application.
+        Intitiate court application.
         ...
         (mapping):
-            requestType: application/vnd.progression.create-court-application+json
-            name: progression.create-court-application
+            requestType: application/vnd.progression.initiate-court-proceedings-for-application+json
+            name: progression.initiate-court-proceedings-for-application
         (mapping):
-            requestType: application/vnd.progression.update-court-application+json
-            name: progression.update-court-application
+            requestType: application/vnd.progression.edit-court-proceedings-for-application+json
+            name: progression.edit-court-proceedings-for-application
         ...
       body:
-        application/vnd.progression.create-court-application+json:
-            example:
-             !include json/progression.create-court-application.json
-            schema:
-             !include json/schema/progression.create-court-application.json
-        application/vnd.progression.update-court-application+json:
-            example:
-             !include json/progression.update-court-application.json
-            schema:
-             !include json/schema/progression.update-court-application.json
+        application/vnd.progression.initiate-court-proceedings-for-application+json:
+            example: !include json/progression.initiate-court-proceedings-for-application.json
+            schema: !include json/schema/progression.initiate-court-proceedings-for-application.json
+        application/vnd.progression.edit-court-proceedings-for-application+json:
+            example: !include json/progression.edit-court-proceedings-for-application.json
+            schema: !include json/schema/progression.edit-court-proceedings-for-application.json
       responses:
             202:
                 description: OK
 
-/referapplicationtocourt:
+/add-breach-application:
   post:
       description: |
-        Application is sent to a Court for Hearing.
+        Add breach application.
         ...
         (mapping):
-            requestType: application/vnd.progression.refer-application-to-court+json
-            name: progression.refer-application-to-court
-        (mapping):
-            requestType: application/vnd.progression.extend-hearing+json
-            name: progression.extend-hearing
-        (mapping):
-            requestType: application/vnd.progression.book-slots-for-application+json
-            name: progression.book-slots-for-application
+            requestType: application/vnd.progression.add-breach-application+json
+            name: progression.add-breach-application
         ...
       body:
-        application/vnd.progression.refer-application-to-court+json:
-            example:
-             !include json/progression.refer-application-to-court.json
-            schema:
-             !include json/schema/progression.refer-application-to-court.json
-        application/vnd.progression.extend-hearing+json:
-            example:
-             !include json/progression.extend-hearing.json
-            schema:
-             !include json/schema/progression.extend-hearing.json
-        application/vnd.progression.book-slots-for-application+json:
-            example:
-             !include json/progression.book-slots-for-application.json
-            schema:
-             !include json/schema/progression.book-slots-for-application.json
+        application/vnd.progression.add-breach-application+json:
+            example: !include json/progression.add-breach-application.json
+            schema: !include json/schema/progression.add-breach-application.json
       responses:
             202:
                 description: OK
@@ -370,45 +348,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.eject-case-or-application.json
             schema:
              !include json/schema/progression.eject-case-or-application.json
-      responses:
-            202:
-                description: OK
-
-/changeboxworkassignment:
-  post:
-      description: |
-        Application assigned to a user
-        ...
-        (mapping):
-            requestType: application/vnd.progression.change-boxwork-assignment+json
-            name: progression.change-boxwork-assignment
-        ...
-      body:
-        application/vnd.progression.change-boxwork-assignment+json:
-            example:
-             !include json/progression.change-boxwork-assignment.json
-            schema:
-             !include json/schema/progression.change-boxwork-assignment.json
-
-      responses:
-            202:
-                description: OK
-
-/refertoboxwork:
-  post:
-      description: |
-        Box work Application is sent for Hearing.
-        ...
-        (mapping):
-            requestType: application/vnd.progression.refer-box-work-application+json
-            name: progression.refer-box-work-application
-        ...
-      body:
-        application/vnd.progression.refer-box-work-application+json:
-            example:
-             !include json/progression.refer-boxwork-application.json
-            schema:
-             !include json/schema/progression.refer-boxwork-application.json
       responses:
             202:
                 description: OK

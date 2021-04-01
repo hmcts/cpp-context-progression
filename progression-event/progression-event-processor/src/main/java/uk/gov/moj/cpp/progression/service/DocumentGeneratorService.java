@@ -1,9 +1,13 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static com.google.common.collect.ImmutableList.of;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static javax.transaction.Transactional.TxType.REQUIRES_NEW;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.Personalisation;
@@ -21,8 +25,8 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.processor.InvalidHearingTimeException;
-import uk.gov.moj.cpp.progression.processor.NowsTemplateNameNotFoundException;
+import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
+import uk.gov.moj.cpp.progression.processor.exceptions.NowsTemplateNameNotFoundException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
@@ -89,7 +93,7 @@ public class DocumentGeneratorService {
         this.applicationParameters = applicationParameters;
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional(REQUIRES_NEW)
     public void generateNow(final Sender sender, final JsonEnvelope originatingEnvelope,
                             final UUID userId, final NowDocumentRequest nowDocumentRequest) {
         try {
@@ -107,7 +111,7 @@ public class DocumentGeneratorService {
     }
 
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional(REQUIRES_NEW)
     public void generateNcesDocument(final Sender sender, final JsonEnvelope originatingEnvelope,
                                      final UUID userId, final NcesNotificationRequested ncesNotificationRequested) {
         try {
@@ -125,10 +129,10 @@ public class DocumentGeneratorService {
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional(REQUIRES_NEW)
     public UUID generateDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final Sender sender, final UUID prosecutionCaseId, final UUID applicationId) {
 
-        final UUID materialId = UUID.randomUUID();
+        final UUID materialId = randomUUID();
 
         try {
             final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
@@ -141,7 +145,7 @@ public class DocumentGeneratorService {
                     getTimeStampAmendedFileName(templateName),
                     new ByteArrayInputStream(resultOrderAsByteArray),
                     userId,
-                    UUID.randomUUID().toString(),
+                    randomUUID().toString(),
                     materialId,
                     prosecutionCaseId,
                     applicationId,
@@ -154,6 +158,34 @@ public class DocumentGeneratorService {
         return materialId;
     }
 
+    @Transactional(REQUIRES_NEW)
+    public void generateSummonsDocument(final JsonEnvelope envelope, final JsonObject documentPayload, final String templateName,
+                                        final Sender sender, final UUID prosecutionCaseId, final UUID applicationId,
+                                        final boolean sendForRemotePrinting, final EmailChannel emailChannel, final UUID materialId) {
+        try {
+            final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException(format("UserId missing from event %s", envelope.toObfuscatedDebugString()))));
+
+            final byte[] resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
+
+            addDocumentToMaterial(
+                    sender,
+                    envelope,
+                    getTimeStampAmendedFileName(templateName),
+                    new ByteArrayInputStream(resultOrderAsByteArray),
+                    userId,
+                    randomUUID().toString(),
+                    materialId,
+                    prosecutionCaseId,
+                    applicationId,
+                    sendForRemotePrinting,
+                    emailChannel);
+
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error(ERROR_MESSAGE, e);
+            throw new InvalidHearingTimeException("Error while generating document");
+        }
+    }
+
     private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
                                        final UUID userId, final String hearingId,
                                        final UUID materialId,
@@ -161,10 +193,25 @@ public class DocumentGeneratorService {
                                        final UUID applicationId,
                                        final boolean isRemotePrintingRequired) {
 
+        addDocumentToMaterial(sender, originatingEnvelope, filename, fileContent, userId, hearingId, materialId, caseId, applicationId, isRemotePrintingRequired, null);
+    }
+
+    private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
+                                       final UUID userId, final String hearingId,
+                                       final UUID materialId,
+                                       final UUID caseId,
+                                       final UUID applicationId,
+                                       final boolean isRemotePrintingRequired,
+                                       final EmailChannel emailChannel) {
+
         try {
             final UUID fileId = storeFile(fileContent, filename);
             LOGGER.info("Stored material {} in file store {}", materialId, fileId);
-            uploadMaterialService.uploadFile(new UploadMaterialContextBuilder()
+            final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
+            if (nonNull(emailChannel)) {
+                uploadMaterialContextBuilder.setEmailNotifications(of(emailChannel));
+            }
+            uploadMaterialService.uploadFile(uploadMaterialContextBuilder
                     .setSender(sender)
                     .setOriginatingEnvelope(originatingEnvelope)
                     .setUserId(userId)
@@ -175,7 +222,6 @@ public class DocumentGeneratorService {
                     .setApplicationId(applicationId)
                     .setFirstClassLetter(false)
                     .setSecondClassLetter(isRemotePrintingRequired)
-                    .setEmailNotifications(null)
                     .build());
 
         } catch (final FileServiceException e) {
@@ -227,7 +273,7 @@ public class DocumentGeneratorService {
 
     private List<EmailChannel> buildEmailChannel(final UUID materialId, final NowDistribution nowDistribution, final OrderAddressee orderAddressee) {
 
-        if(notValidNowDistribution(nowDistribution) || notValidOrderAddressee(orderAddressee)) {
+        if (notValidNowDistribution(nowDistribution) || notValidOrderAddressee(orderAddressee)) {
             return Collections.emptyList();
         }
 
@@ -313,7 +359,7 @@ public class DocumentGeneratorService {
     }
 
     private String getTimeStampAmendedFileName(final String fileName) {
-        return String.format("%s_%s.pdf", fileName, ZonedDateTime.now().format(TIMESTAMP_FORMATTER));
+        return format("%s_%s.pdf", fileName, ZonedDateTime.now().format(TIMESTAMP_FORMATTER));
     }
 
     private UUID getSystemUserUuid() {

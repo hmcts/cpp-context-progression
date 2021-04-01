@@ -146,8 +146,6 @@ public class ApplicationReferredToCourtIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
-        System.out.println(strPayload);
-        System.out.println("COURT_CENTRE_ID==" + courtCentreId);
         return stringToJsonObjectConverter.convert(strPayload);
     }
 

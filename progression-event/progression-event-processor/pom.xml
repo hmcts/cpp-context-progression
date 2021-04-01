@@ -143,6 +143,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.tngtech.junit.dataprovider</groupId>
+            <artifactId>junit4-dataprovider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.moj.cpp.listing</groupId>
             <artifactId>listing-common</artifactId>
             <version>${listing.version}</version>
@@ -315,6 +320,18 @@
                         <groupId>uk.gov.moj.cpp.listing</groupId>
                         <artifactId>listing-query-api</artifactId>
                         <version>${listing.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-query-api</artifactId>
+                        <version>${sjp.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

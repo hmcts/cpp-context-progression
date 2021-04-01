@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
@@ -47,6 +48,8 @@ public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final String urn = generateUrn();
+
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
 
         addProsecutionCaseWithUrn(caseId.toString(), defendantId.toString(), urn);
         verifyCasesForSearchCriteria(urn, new Matcher[]{withJsonPath("$.searchResults[0].caseId", equalTo(caseId.toString()))});

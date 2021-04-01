@@ -16,14 +16,27 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+import uk.gov.moj.cpp.progression.util.Pair;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.apache.commons.collections.MapUtils;
+
 
 public class ReferenceDataStub {
+
+    public static final String WELSH_COURT_ID = "f8254db1-1683-483e-afb3-b87fde5a0a26";
+    public static final String ENGLISH_COURT_ID = "e3114db1-1683-483e-afb3-b87fde5a7777";
+
+    private static final List<Pair<String, String>> COURT_ID_LIST = Lists.newArrayList(Pair.p(".*", "/restResource/referencedata.ou-courtroom.json"), Pair.p(ENGLISH_COURT_ID, "/restResource/referencedata.ou-courtroom-english.json"));
+
 
     public static void stubQueryOffences(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
@@ -314,20 +327,25 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.get.prosecutor+json", fromStatusCode(returnStatus));
     }
 
-    public static void stubQueryCourtOURoom(final String resourceName) {
+    public static void stubQueryCourtOURoom() {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject courtCentre = Json.createReader(ReferenceDataStub.class
-                .getResourceAsStream(resourceName))
-                .readObject();
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/courtrooms/.*";
-        stubFor(get(urlMatching(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(courtCentre.toString())));
 
-        waitForStubToBeReady(urlPath, "application/vnd.referencedata.ou-courtrooms+json");
+        COURT_ID_LIST.forEach(cid -> {
+            final JsonObject courtCentre = Json.createReader(ReferenceDataStub.class
+                    .getResourceAsStream(cid.getV()))
+                    .readObject();
+
+            final String urlPath = "/referencedata-service/query/api/rest/referencedata/courtrooms/" + cid.getK();
+            stubFor(get(urlMatching(urlPath))
+                    .willReturn(aResponse().withStatus(SC_OK)
+                            .withHeader("CPPID", randomUUID().toString())
+                            .withHeader("Content-Type", APPLICATION_JSON)
+                            .withBody(courtCentre.toString())));
+
+            waitForStubToBeReady(urlPath, "application/vnd.referencedata.ou-courtrooms+json");
+        });
+
     }
 
     public static void stubEnforcementArea(final String resourceName) {

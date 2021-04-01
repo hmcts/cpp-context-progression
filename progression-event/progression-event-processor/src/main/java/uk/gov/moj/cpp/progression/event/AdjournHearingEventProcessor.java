@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.event;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingLanguageNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -117,13 +117,13 @@ public class AdjournHearingEventProcessor {
                 courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);
             }
 
-            final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
+            final List<CourtApplicationParty> respondents = courtApplication.getRespondents();
             if (null != respondents && !respondents.isEmpty()) {
                 respondents.forEach(courtApplicationRespondent -> {
-                    if (null != courtApplicationRespondent.getPartyDetails().getProsecutingAuthority()) {
+                    if (null != courtApplicationRespondent.getProsecutingAuthority()) {
                         final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds = CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
                                 .withCourtApplicationId(courtApplication.getId())
-                                .withCourtApplicationPartyId(courtApplicationRespondent.getPartyDetails().getId())
+                                .withCourtApplicationPartyId(courtApplicationRespondent.getId())
                                 .withHearingLanguageNeeds(HearingLanguageNeeds.valueOf(hearingLanguage.name()))
                                 .build();
                         courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);

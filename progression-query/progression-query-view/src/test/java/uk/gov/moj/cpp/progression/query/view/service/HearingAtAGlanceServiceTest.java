@@ -15,12 +15,7 @@ import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationOutcome;
-import uk.gov.justice.core.courts.CourtApplicationOutcomeType;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtApplicationResponse;
-import uk.gov.justice.core.courts.CourtApplicationResponseType;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceCounsel;
@@ -35,6 +30,7 @@ import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -56,13 +52,15 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
@@ -119,7 +117,7 @@ public class HearingAtAGlanceServiceTest {
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
     @Mock
-    private CourtApplicationRepository courtApplicationRepository;
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
 
     @Mock
     private HearingApplicationRepository hearingApplicationRepository;
@@ -344,13 +342,17 @@ public class HearingAtAGlanceServiceTest {
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         courtApplicationEntity.setPayload(courtApplication.toString());
 
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
         HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, CASE_HEARING_ID_1));
         hearingApplicationEntity.setHearing(caseHearingEntity);
 
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
-        when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(this.courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationCaseEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
@@ -385,8 +387,108 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse.getDefendants().get(0).getCourtApplications().size(), is(1));
 
         CourtApplications courtApplications = hearingResponse.getDefendants().get(0).getCourtApplications().get(0);
-        assertThat(courtApplications.getRespondents().get(0).getApplicationResponse(), is("Sentencing"));
-        assertThat(courtApplications.getRespondents().get(0).getResponseDate(), is(LocalDate.of(2018, 10, 11)));
+        // GPE-15039 Commented temporarily
+        //assertThat(courtApplications.getRespondents().get(0).getApplicationResponse(), is("Sentencing"));
+        //assertThat(courtApplications.getRespondents().get(0).getResponseDate(), is(LocalDate.of(2018, 10, 11)));
+
+        // Prosecution Case Identifier assertions
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifierResponse = response.getProsecutionCaseIdentifier();
+        assertThat(prosecutionCaseIdentifierResponse.getCaseURN(), is(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN()));
+        assertThat(prosecutionCaseIdentifierResponse.getProsecutionAuthorityCode(), is(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode()));
+        assertThat(prosecutionCaseIdentifierResponse.getProsecutionAuthorityId(), is(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId()));
+        assertThat(prosecutionCaseIdentifierResponse.getProsecutionAuthorityReference(), is(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference()));
+
+        // Court Centre assertions
+        final CourtCentre courtCentreResponse = hearingResponse.getCourtCentre();
+        assertThat(courtCentreResponse.getId(), is(caseHearing.getCourtCentre().getId()));
+        assertThat(courtCentreResponse.getRoomId(), is(caseHearing.getCourtCentre().getRoomId()));
+        assertThat(courtCentreResponse.getName(), is(caseHearing.getCourtCentre().getName()));
+        assertThat(courtCentreResponse.getRoomName(), is(caseHearing.getCourtCentre().getRoomName()));
+        assertThat(courtCentreResponse.getWelshName(), is(caseHearing.getCourtCentre().getWelshName()));
+        assertThat(courtCentreResponse.getWelshRoomName(), is(caseHearing.getCourtCentre().getWelshRoomName()));
+
+        final List<ProsecutionCounsel> prosecutionCounselsResponse = hearingResponse.getProsecutionCounsels();
+        assertThat(prosecutionCounselsResponse.get(0).getFirstName(), is(caseHearing.getProsecutionCounsels().get(0).getFirstName()));
+        assertThat(hearingResponse.getHasResultAmended(), is(true));
+    }
+
+    @Test
+    public void hearingAtAGlanceHearingWithCaseWithDefendantsAndNoProsecutionCase() {
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
+        CourtApplication courtApplication = createCourtApplicationWithDefendants(APPLICATION_ID, DEFENDANT_ID_1);
+        Hearing caseHearing = createCaseHearing(null, courtApplication, CASE_HEARING_ID_1);
+
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
+
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity2.setHearing(caseHearingEntity);
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+
+
+        //Hearing applicationHearing = createApplicationHearing(courtApplication, CASE_HEARING_ID_1);
+
+        CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(APPLICATION_ID);
+        courtApplicationEntity.setPayload(courtApplication.toString());
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
+        HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
+        hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, CASE_HEARING_ID_1));
+        hearingApplicationEntity.setHearing(caseHearingEntity);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+        when(this.courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationCaseEntity));
+        when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
+
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+        // Prosecution Case Id assertion
+        assertThat(response.getId(), is(CASE_ID));
+
+        // Defendant Hearing details
+        assertThat(response.getDefendantHearings().size(), is(2));
+        // Defendant 1
+        assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
+        assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
+
+        // Defendant 2
+        assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
+        assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
+        assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
+
+        // Hearing level assertions
+        assertThat(response.getHearings().size(), is(1));
+
+        final Hearings hearingResponse = response.getHearings().get(0);
+        assertThat(hearingResponse.getId(), is(caseHearing.getId()));
+        assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
+        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+
+        // Hearing level defendant details
+        assertThat(hearingResponse.getDefendants().size(), is(1));
+        assertThat(hearingResponse.getDefendants().get(0).getCourtApplications().size(), is(1));
+
+        CourtApplications courtApplications = hearingResponse.getDefendants().get(0).getCourtApplications().get(0);
+        // GPE-15039 Commented temporarily
+        //assertThat(courtApplications.getRespondents().get(0).getApplicationResponse(), is("Sentencing"));
+        //assertThat(courtApplications.getRespondents().get(0).getResponseDate(), is(LocalDate.of(2018, 10, 11)));
 
         // Prosecution Case Identifier assertions
         final ProsecutionCaseIdentifier prosecutionCaseIdentifierResponse = response.getProsecutionCaseIdentifier();
@@ -432,12 +534,16 @@ public class HearingAtAGlanceServiceTest {
         caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
 
         CourtApplication courtApplication = createCourtApplicationWithDefendants(APPLICATION_ID, DEFENDANT_ID_1);
-        Hearing applicationHearing = createApplicationHearing(courtApplication, APPLICATION_HEARING_ID);
+        Hearing applicationHearing = createApplicationHearing(courtApplication, prosecutionCase, APPLICATION_HEARING_ID);
         HearingEntity applicationHearingEntity = createHearingEntity(applicationHearing, APPLICATION_HEARING_ID, HEARING_INITIALISED);
 
         CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         courtApplicationEntity.setPayload(courtApplication.toString());
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, APPLICATION_HEARING_ID));
@@ -445,7 +551,7 @@ public class HearingAtAGlanceServiceTest {
 
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
-        when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(this.courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationCaseEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
@@ -510,7 +616,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse2.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
-        assertThat(hearingResponse2.getDefendants().size(), is(1));
+        assertThat(hearingResponse2.getDefendants().size(), is(2));
         assertEquals("16", hearingResponse2.getDefendants().get(0).getAge());
 
         assertThat(hearingResponse2.getDefendants().get(0).getCourtApplications().size(), is(1));
@@ -564,13 +670,17 @@ public class HearingAtAGlanceServiceTest {
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         courtApplicationEntity.setPayload(courtApplication.toString());
 
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
         HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, CASE_HEARING_ID_1));
         hearingApplicationEntity.setHearing(caseHearingEntity);
 
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
-        when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(this.courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationCaseEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
@@ -655,13 +765,17 @@ public class HearingAtAGlanceServiceTest {
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         courtApplicationEntity.setPayload(courtApplication.toString());
 
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
         HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, CASE_HEARING_ID_1));
         hearingApplicationEntity.setHearing(caseHearingEntity);
 
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
-        when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(this.courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationCaseEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
@@ -746,13 +860,17 @@ public class HearingAtAGlanceServiceTest {
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         courtApplicationEntity.setPayload(courtApplication.toString());
 
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
         HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, CASE_HEARING_ID_1));
         hearingApplicationEntity.setHearing(caseHearingEntity);
 
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
-        when(this.courtApplicationRepository.findByLinkedCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationEntity));
+        when(this.courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(Arrays.asList(courtApplicationCaseEntity));
         when(this.hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
@@ -835,7 +953,7 @@ public class HearingAtAGlanceServiceTest {
 
         List<Hearings> caseHearings = this.hearingAtAGlanceService.getCaseHearings(CASE_ID);
         assertThat(caseHearings.isEmpty(), is(false));
-        assertThat(caseHearings.get(0).getDefendants().get(0).getAge(), is (EMPTY_STRING));
+        assertThat(caseHearings.get(0).getDefendants().get(0).getAge(), is(EMPTY_STRING));
     }
 
     @Test
@@ -916,7 +1034,7 @@ public class HearingAtAGlanceServiceTest {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
-                        .withApplicationType("BREACH")
+                        .withType("BREACH")
                         .build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(randomUUID())
@@ -925,10 +1043,6 @@ public class HearingAtAGlanceServiceTest {
                                 .build())
                         .build())
                 .withRespondents(createDefendantRespondents(defendantId))
-                .withApplicationOutcome(CourtApplicationOutcome.courtApplicationOutcome()
-                        .withApplicationOutcomeDate(LocalDate.now())
-                        .withApplicationOutcomeType(CourtApplicationOutcomeType.courtApplicationOutcomeType().withDescription("OUT TYPE").build())
-                        .build())
                 .withApplicationStatus(ApplicationStatus.DRAFT)
                 .build();
     }
@@ -937,8 +1051,8 @@ public class HearingAtAGlanceServiceTest {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
-                        .withApplicationType("BREACH")
-                        .withIsAppealApplication(true)
+                        .withType("BREACH")
+                        .withAppealFlag(true)
                         .build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(randomUUID())
@@ -947,10 +1061,6 @@ public class HearingAtAGlanceServiceTest {
                                 .build())
                         .build())
                 .withRespondents(createIndividualRespondents(personId))
-                .withApplicationOutcome(CourtApplicationOutcome.courtApplicationOutcome()
-                        .withApplicationOutcomeType(CourtApplicationOutcomeType.courtApplicationOutcomeType().withDescription("OUT TYPE").build())
-                        .withApplicationOutcomeDate(LocalDate.now())
-                        .build())
                 .withApplicationStatus(ApplicationStatus.DRAFT)
                 .build();
     }
@@ -959,8 +1069,8 @@ public class HearingAtAGlanceServiceTest {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
-                        .withApplicationType("BREACH")
-                        .withIsAppealApplication(true)
+                        .withType("BREACH")
+                        .withAppealFlag(true)
                         .build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(randomUUID())
@@ -969,10 +1079,6 @@ public class HearingAtAGlanceServiceTest {
                                 .build())
                         .build())
                 .withRespondents(createOrganisationRespondents(organisationId))
-                .withApplicationOutcome(CourtApplicationOutcome.courtApplicationOutcome()
-                        .withApplicationOutcomeType(CourtApplicationOutcomeType.courtApplicationOutcomeType().withDescription("OUT TYPE").build())
-                        .withApplicationOutcomeDate(LocalDate.now())
-                        .build())
                 .withApplicationStatus(ApplicationStatus.DRAFT)
                 .build();
     }
@@ -981,8 +1087,8 @@ public class HearingAtAGlanceServiceTest {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
-                        .withApplicationType("BREACH")
-                        .withIsAppealApplication(true)
+                        .withType("BREACH")
+                        .withAppealFlag(true)
                         .build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withId(randomUUID())
@@ -991,60 +1097,42 @@ public class HearingAtAGlanceServiceTest {
                                 .build())
                         .build())
                 .withRespondents(createProsecutingAuthorityRespondents(organisationId))
-                .withApplicationOutcome(CourtApplicationOutcome.courtApplicationOutcome()
-                        .withApplicationOutcomeType(CourtApplicationOutcomeType.courtApplicationOutcomeType().withDescription("OUT TYPE").build())
-                        .withApplicationOutcomeDate(LocalDate.now())
-                        .build())
                 .withApplicationStatus(ApplicationStatus.DRAFT)
                 .build();
     }
 
-    private List<CourtApplicationRespondent> createDefendantRespondents(UUID defendantId) {
-        return Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withId(randomUUID())
-                        .withDefendant(createDefendant(DEFENDANT_ID_1))
-                        .build())
-                .withApplicationResponse(CourtApplicationResponse.courtApplicationResponse()
-                        .withApplicationResponseType(CourtApplicationResponseType.courtApplicationResponseType()
-                                .withDescription("Sentencing")
-                                .build())
-                        .withApplicationResponseDate(LocalDate.of(2018, 10, 11))
+    private List<CourtApplicationParty> createDefendantRespondents(UUID defendantId) {
+        return singletonList(CourtApplicationParty.courtApplicationParty()
+                .withId(randomUUID())
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(DEFENDANT_ID_1).build())
+                .build());
+    }
+
+    private List<CourtApplicationParty> createIndividualRespondents(UUID personId) {
+        return singletonList(CourtApplicationParty.courtApplicationParty()
+                .withId(personId)
+                .withPersonDetails(Person.person()
+                        .withFirstName("FIRST")
+                        .withMiddleName("MIDDLE")
+                        .withLastName("LAST")
                         .build())
                 .build());
     }
 
-    private List<CourtApplicationRespondent> createIndividualRespondents(UUID personId) {
-        return Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withId(personId)
-                        .withPersonDetails(Person.person()
-                                .withFirstName("FIRST")
-                                .withMiddleName("MIDDLE")
-                                .withLastName("LAST")
-                                .build())
+    private List<CourtApplicationParty> createOrganisationRespondents(UUID organisationId) {
+        return singletonList(CourtApplicationParty.courtApplicationParty()
+                .withId(organisationId)
+                .withOrganisation(Organisation.organisation()
+                        .withName("Lava Timber Limited")
                         .build())
                 .build());
     }
 
-    private List<CourtApplicationRespondent> createOrganisationRespondents(UUID organisationId) {
-        return Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withId(organisationId)
-                        .withOrganisation(Organisation.organisation()
-                                .withName("Lava Timber Limited")
-                                .build())
-                        .build())
-                .build());
-    }
-
-    private List<CourtApplicationRespondent> createProsecutingAuthorityRespondents(UUID organisationId) {
-        return Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withId(organisationId)
-                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                .withProsecutionAuthorityCode("TFL")
-                                .build())
+    private List<CourtApplicationParty> createProsecutingAuthorityRespondents(UUID organisationId) {
+        return singletonList(CourtApplicationParty.courtApplicationParty()
+                .withId(organisationId)
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                        .withProsecutionAuthorityCode("TFL")
                         .build())
                 .build());
     }
@@ -1085,20 +1173,20 @@ public class HearingAtAGlanceServiceTest {
                         .withWelshRoomName("welsh room name")
                         .build())
                 .withDefendantJudicialResults(singletonList(defendantJudicialResult))
-                .withProsecutionCounsels(Arrays.asList(ProsecutionCounsel.prosecutionCounsel()
+                .withProsecutionCounsels(singletonList(ProsecutionCounsel.prosecutionCounsel()
                         .withFirstName("first name")
                         .build()))
-                .withProsecutionCases(Arrays.asList(prosecutionCase))
+                .withProsecutionCases(prosecutionCase != null ? singletonList(prosecutionCase) : null)
                 .withDefenceCounsels(createDefenceCounsels())
-                .withDefendantAttendance(Arrays.asList(DefendantAttendance.defendantAttendance()
+                .withDefendantAttendance(singletonList(DefendantAttendance.defendantAttendance()
                         .withDefendantId(DEFENDANT_ID_1)
                         .build()))
                 .withJurisdictionType(JurisdictionType.CROWN)
-                .withCourtApplications(courtApplication != null ? Arrays.asList(courtApplication) : null)
+                .withCourtApplications(courtApplication != null ? singletonList(courtApplication) : null)
                 .build();
     }
 
-    private Hearing createApplicationHearing(CourtApplication courtApplication, UUID applicationHearingId) {
+    private Hearing createApplicationHearing(CourtApplication courtApplication, ProsecutionCase prosecutionCase, UUID applicationHearingId) {
         return Hearing.hearing()
                 .withId(applicationHearingId)
                 .withType(HearingType.hearingType()
@@ -1125,19 +1213,20 @@ public class HearingAtAGlanceServiceTest {
                         .withWelshName("welsh name")
                         .withWelshRoomName("welsh room name")
                         .build())
-                .withProsecutionCounsels(Arrays.asList(ProsecutionCounsel.prosecutionCounsel()
+                .withProsecutionCounsels(singletonList(ProsecutionCounsel.prosecutionCounsel()
                         .withFirstName("first name")
                         .build()))
-                .withCourtApplications(Arrays.asList(courtApplication))
+                .withCourtApplications(singletonList(courtApplication))
+                .withProsecutionCases(singletonList(prosecutionCase))
                 .withDefenceCounsels(createDefenceCounsels())
                 .withApplicantCounsels(createApplicantCounsel())
                 .withRespondentCounsels(createRespondentCounsel())
-                .withDefendantAttendance(Arrays.asList(DefendantAttendance.defendantAttendance()
+                .withDefendantAttendance(singletonList(DefendantAttendance.defendantAttendance()
                         .withDefendantId(DEFENDANT_ID_1)
                         .build()))
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withIsBoxHearing(true)
-                .withCourtApplications(courtApplication != null ? Arrays.asList(courtApplication) : null)
+                .withCourtApplications(courtApplication != null ? singletonList(courtApplication) : null)
                 .build();
     }
 
@@ -1154,9 +1243,9 @@ public class HearingAtAGlanceServiceTest {
     }
 
     private List<DefenceCounsel> createDefenceCounsels() {
-        return Arrays.asList(DefenceCounsel.defenceCounsel()
+        return singletonList(DefenceCounsel.defenceCounsel()
                 .withId(randomUUID())
-                .withDefendants(Arrays.asList(DEFENDANT_ID_1))
+                .withDefendants(singletonList(DEFENDANT_ID_1))
                 .build());
     }
 
@@ -1194,7 +1283,7 @@ public class HearingAtAGlanceServiceTest {
                 .withPersonDefendant(createPersonDefendant())
                 .withOffences(createOffences())
                 .withLegalAidStatus("Granted")
-                .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                .withDefendantCaseJudicialResults(singletonList(JudicialResult.judicialResult()
                         .withAmendmentDate(LocalDate.now())
                         .build()))
                 .build();
@@ -1223,7 +1312,7 @@ public class HearingAtAGlanceServiceTest {
                         .withApplicationReference(RandomGenerator.STRING.next())
                         .build())
                 .build();
-        return Arrays.asList(offence);
+        return singletonList(offence);
     }
 
     private PersonDefendant createPersonDefendant() {
@@ -1237,29 +1326,29 @@ public class HearingAtAGlanceServiceTest {
     }
 
     private List<ApplicantCounsel> createApplicantCounsel() {
-        return Arrays.asList(ApplicantCounsel.applicantCounsel()
+        return singletonList(ApplicantCounsel.applicantCounsel()
                 .withId(GENERIC_UUID)
                 .withTitle("Applicant Counsel Title")
                 .withFirstName("Applicant Counsel First Name")
                 .withMiddleName("Applicant Counsel Middle Name")
                 .withLastName("Applicant Counsel Last Name")
                 .withStatus("Applicant Counsel Status")
-                .withApplicants(Arrays.asList(DEFENDANT_ID_1))
-                .withAttendanceDays(Arrays.asList(LOCALDATE_NOW)
+                .withApplicants(singletonList(DEFENDANT_ID_1))
+                .withAttendanceDays(singletonList(LOCALDATE_NOW)
                 )
                 .build());
     }
 
     private List<RespondentCounsel> createRespondentCounsel() {
-        return Arrays.asList(RespondentCounsel.respondentCounsel()
+        return singletonList(RespondentCounsel.respondentCounsel()
                 .withId(GENERIC_UUID)
                 .withTitle("Respondent Counsel Title")
                 .withFirstName("Respondent Counsel First Name")
                 .withMiddleName("Respondent Counsel Middle Name")
                 .withLastName("Respondent Counsel Last Name")
                 .withStatus("Respondent Counsel Status")
-                .withRespondents(Arrays.asList(DEFENDANT_ID_1))
-                .withAttendanceDays(Arrays.asList(LOCALDATE_NOW)
+                .withRespondents(singletonList(DEFENDANT_ID_1))
+                .withAttendanceDays(singletonList(LOCALDATE_NOW)
                 )
                 .build());
     }

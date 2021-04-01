@@ -1,45 +1,52 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.Hearing;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.NextHearing;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
+import javax.inject.Inject;
 
 public class HearingBookingReferenceListExtractor {
+
+    @Inject
+    private HearingResultHelper hearingResultHelper;
 
     /**
      *  Returns distinct list of BookingReference.
      *  Collects all BookingReferences under ProsecutionCase->Defendant->Offences->JudicialResults(nullable)->NextHearing(nullable)
      */
     public List<UUID> extractBookingReferenceList(final Hearing hearing){
-        return hearing.getProsecutionCases().stream()
+        final List<UUID> caseUUIDs = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .flatMap(pc -> pc.getDefendants().stream()
-                        .flatMap(def-> def.getOffences().stream().filter(o -> nonNull(o.getJudicialResults()))
+                        .flatMap(def -> def.getOffences().stream().filter(o -> nonNull(o.getJudicialResults()))
                                 .flatMap(o -> o.getJudicialResults().stream().filter(jr -> nonNull(jr.getNextHearing()) && nonNull(jr.getNextHearing().getBookingReference())))))
                 .map(jr -> jr.getNextHearing().getBookingReference())
                 .distinct()
                 .collect(Collectors.toList());
 
-    }
+        final List<JudicialResult> judicialResults = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .flatMap(courtApplication -> hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication).stream())
+                .collect(Collectors.toList());
 
-    /**
-     *  Returns distinct list of BookingReference.
-     *  Collects all BookingReferences under CourtApplication -> JudicialResults(nullable) -> NextHearing(nullable)
-     */
-    public List<UUID> extractBookingReferences(final List<CourtApplication> courtApplications){
-        return courtApplications.stream()
-                .map(CourtApplication::getJudicialResults)
+        final List<UUID> applicationUUIDs = judicialResults.stream()
+                .map(JudicialResult::getNextHearing)
                 .filter(Objects::nonNull)
-                .flatMap(judicialResults -> judicialResults.stream()
-                        .filter(judicialResult -> nonNull(judicialResult.getNextHearing())
-                                && nonNull(judicialResult.getNextHearing().getBookingReference())))
-                .map(judicialResult -> judicialResult.getNextHearing().getBookingReference())
+                .map(NextHearing::getBookingReference)
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
+
+        return Stream.concat(caseUUIDs.stream(), applicationUUIDs.stream()).collect(Collectors.toList());
+
     }
 }

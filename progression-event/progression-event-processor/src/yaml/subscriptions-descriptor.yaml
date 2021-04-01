@@ -44,6 +44,9 @@ subscriptions_descriptor:
         - name: progression.event.court-application-created
           schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
 
+        - name: progression.event.court-application-proceedings-initiated
+          schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-initiated.json
+
         - name: progression.event.court-application-updated
           schema_uri: http://justice.gov.uk/core/courts/court-application-updated.json
 
@@ -160,6 +163,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
 
+        - name: progression.event.hearing-resulted-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
+
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
 
@@ -205,6 +211,35 @@ subscriptions_descriptor:
         - name: progression.event.prosecution-cases-resulted
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.prosecution-cases-resulted.json
 
+        - name: progression.event.applications-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.applications-resulted.json
+
+        - name: progression.event.application-referred-to-boxwork
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.application-referred-to-boxwork.json
+
+        - name: progression.event.application-referred-to-court-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.application-referred-to-court-hearing.json
+
+        - name: progression.event.initiate-sjp-case
+          schema_uri: http://justice.gov.uk/progression/events/initiate-sjp-case.json
+
+        - name: progression.event.application-referral-to-existing-hearing
+          schema_uri: http://justice.gov.uk/core/courts/application-referred-to-existing-hearing.json
+
+        - name: progression.event.court-application-proceedings-edited
+          schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-edited.json
+
+        - name: progression.event.breach-application-creation-requested
+          schema_uri: http://justice.gov.uk/core/courts/breach-application-creation-requested.json
+
+        - name: progression.event.initiate-court-hearing-after-summons-approved
+          schema_uri: http://justice.gov.uk/progression/courts/initiate-court-hearing-after-summons-approved.json
+
+        - name: progression.event.court-application-summons-approved
+          schema_uri: http://justice.gov.uk/core/courts/court-application-summons-approved.json
+
+        - name: progression.event.court-application-summons-rejected
+          schema_uri: http://justice.gov.uk/core/courts/court-application-summons-rejected.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
@@ -286,6 +321,9 @@ subscriptions_descriptor:
 
         - name: public.listing.hearing-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-updated.json
+
+        - name: public.listing.new-defendant-added-for-court-proceedings
+          schema_uri: http://justice.gov.uk/listing/events/public-listing-new-defendant-added-for-court-proceedings.json
 
         # Hearing start
         - name: public.hearing.adjourned

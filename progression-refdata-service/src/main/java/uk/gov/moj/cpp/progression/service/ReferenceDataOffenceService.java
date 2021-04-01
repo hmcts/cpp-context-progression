@@ -35,9 +35,11 @@ public class ReferenceDataOffenceService {
     public static final String MODE_OF_TRIAL = "modeOfTrial";
     public static final String MODEOFTRIAL_CODE = "code";
     public static final String DVLA_CODE = "dvlaCode";
+    public static final String ENDORSABLE_FLAG = "endorsableFlag";
     public static final String CJS_OFFENCE_CODE = "cjsOffenceCode";
     public static final String OFFENCE_ID = "offenceId";
     public static final String OFFENCES = "offences";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataOffenceService.class);
     private static final String DOCUMENT = "document";
     private static final String DETAILS = "details";
@@ -139,6 +141,8 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(OFFENCE_ID, nonNull(offencePayload.getString(OFFENCE_ID)) ? offencePayload.getString(OFFENCE_ID) : StringUtils.EMPTY);
         jsonObjectBuilder.add(MODE_OF_TRIAL, offencePayload.getString(MODEOFTRIAL_DERIVED));
         jsonObjectBuilder.add(REPORT_RESTRICT_RESULT_CODE, offencePayload.getString(REPORT_RESTRICT_RESULT_CODE, StringUtils.EMPTY));
+        jsonObjectBuilder.add(DVLA_CODE, offencePayload.getString(DVLA_CODE,null) != null ? offencePayload.getString(DVLA_CODE) : StringUtils.EMPTY);
+        jsonObjectBuilder.add(ENDORSABLE_FLAG, offencePayload.getBoolean(ENDORSABLE_FLAG,false) ? offencePayload.getBoolean(ENDORSABLE_FLAG) : Boolean.FALSE);
 
         return jsonObjectBuilder.build();
     }

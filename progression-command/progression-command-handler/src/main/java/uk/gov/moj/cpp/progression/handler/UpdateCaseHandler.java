@@ -44,7 +44,7 @@ public class UpdateCaseHandler {
         final EventStream eventStream = eventSource.getStreamById(hearingUpdate.getProsecutionCase().getId());
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase(), hearingUpdate.getCourtApplications());
+        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase());
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
     }

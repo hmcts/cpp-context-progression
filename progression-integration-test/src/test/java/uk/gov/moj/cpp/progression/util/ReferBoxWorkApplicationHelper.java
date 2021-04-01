@@ -7,6 +7,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -14,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_COMMAND;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_RESPONSE_TYPE;
 
+import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -39,10 +43,12 @@ import org.json.JSONObject;
 public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
 
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    public static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
 
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
+    private static final MessageConsumer publicEventsConsumerForHearingExtended = publicEvents.createConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
 
     final String userId = randomUUID().toString();
     final String hearingId = randomUUID().toString();
@@ -93,6 +99,12 @@ public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
         assertTrue(message.isPresent());
     }
 
+    public static JsonObject getHearingInMessagingQueueForBoxWorkReferred() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated);
+        assertTrue(message.isPresent());
+        return message.get().getJsonObject("hearing");
+    }
+
 
     public static void verifyPostBoxWorkApplicationReferredHearing(final String applicationId) {
         waitAtMost(Duration.TEN_SECONDS).until(() ->
@@ -113,6 +125,38 @@ public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
 
         );
 
+    }
+
+    public static String getPostBoxWorkApplicationReferredHearing(final String applicationId ) {
+        return waitAtMost(Duration.FIVE_MINUTES).until(() ->
+                {
+                    final Stream<JSONObject> boxWorkCourtHearingRequestsAsStream = getBoxWorkApplicationReferredToCourtHearingRequestsAsStream();
+                    return boxWorkCourtHearingRequestsAsStream
+                            .filter(
+                                    payload -> {
+                                        try {
+                                            JSONObject courtApplication = payload.getJSONObject("hearing").getJSONArray("courtApplications").getJSONObject(0);
+                                            return courtApplication.getString("id").equals(applicationId);
+                                        } catch (JSONException e) {
+                                            return false;
+                                        }
+                                    }
+                            ).findFirst().map(JSONObject::toString).orElse("{hearing:{}}");
+                }, JsonPathMatchers.hasJsonPath("$.hearing")
+        );
+
+    }
+
+
+    public static void verifyPublicEventForHearingExtended(final String sittingDate, final String courtCenterCode, final String jurisdictionType) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForHearingExtended);
+        assertTrue(message.isPresent());
+        final JsonObject publicHearingExtendedEvent = message.get();
+        assertThat(publicHearingExtendedEvent.getString("hearingId"), is(notNullValue()));
+        assertThat(publicHearingExtendedEvent.getJsonArray("hearingDays").size(), is(1));
+        assertThat(publicHearingExtendedEvent.getJsonObject("courtCentre").getString("code"), is(courtCenterCode));
+        assertThat(publicHearingExtendedEvent.getString("jurisdictionType"), is(jurisdictionType));
+        assertThat(((JsonObject)publicHearingExtendedEvent.getJsonArray("hearingDays").get(0)).getString("sittingDay"), is(sittingDate));
     }
 
     private static Stream<JSONObject> getBoxWorkApplicationReferredToCourtHearingRequestsAsStream() {

@@ -8,7 +8,6 @@ import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -34,11 +33,6 @@ import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.Cases;
-import uk.gov.justice.core.courts.Category;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationCreated;
-import uk.gov.justice.core.courts.CourtApplicationRejected;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
@@ -199,7 +193,6 @@ public class CaseAggregate implements Aggregate {
     private String caseStatus;
     private String courtCentreId;
     private String reference;
-    private int arnCount = 0;
     private UUID latestHearingId;
     private ProsecutionCase prosecutionCase;
 
@@ -289,9 +282,9 @@ public class CaseAggregate implements Aggregate {
                             }
                         }
                 ),
-                when(CourtApplicationCreated.class).apply(
+                /*when(CourtApplicationCreated.class).apply(
                         e -> arnCount = e.getCount()
-                ),
+                ),*/
                 when(DefendantsAddedToCourtProceedings.class).apply(
                         e ->
                         {
@@ -650,12 +643,11 @@ public class CaseAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> updateCase(final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications) {
+    public Stream<Object> updateCase(final ProsecutionCase prosecutionCase) {
         LOGGER.debug(" ProsecutionCase is being updated ");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
         final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
-        final boolean allApplicationsFinalised = isAllApplicationsFinalised(courtApplications);
 
         final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
@@ -672,8 +664,9 @@ public class CaseAggregate implements Aggregate {
                 .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
                 .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withCaseStatus(allDefendantProceedingConcluded && allApplicationsFinalised ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
+                .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
                 .build();
+
         streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(updatedProsecutionCase).build());
 
         return apply(streamBuilder.build());
@@ -764,8 +757,9 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> recordNotificationRequestSuccess(final UUID caseId,
                                                            final UUID notificationId,
-                                                           final ZonedDateTime sentTime) {
-        return apply(Stream.of(new NotificationRequestSucceeded(caseId, null, null, notificationId, sentTime)));
+                                                           final ZonedDateTime sentTime,
+                                                           final ZonedDateTime completedAt) {
+        return apply(Stream.of(new NotificationRequestSucceeded(caseId, null, null, notificationId, sentTime, completedAt)));
     }
 
     public Stream<Object> recordNotificationRequestAccepted(final UUID caseId,
@@ -776,33 +770,18 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> addConvictionDate(final UUID prosecutionCaseId, final UUID offenceId, final LocalDate convictionDate) {
-        return apply(Stream.of(new uk.gov.justice.core.courts.ConvictionDateAdded(prosecutionCaseId, convictionDate, offenceId)));
+        return apply(Stream.of(uk.gov.justice.core.courts.ConvictionDateAdded.convictionDateAdded()
+                .withCaseId(prosecutionCaseId)
+                .withConvictionDate(convictionDate)
+                .withOffenceId(offenceId)
+                .build()));
     }
 
     public Stream<Object> removeConvictionDate(final UUID prosecutionCaseId, final UUID offenceId) {
-        return apply(Stream.of(new uk.gov.justice.core.courts.ConvictionDateRemoved(prosecutionCaseId, offenceId)));
-    }
-
-    public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
-        if (courtApplication.getRespondents() != null && !courtApplication.getRespondents().isEmpty()) {
-            final Optional<CourtApplicationRespondent> respondent = courtApplication.getRespondents().stream()
-                    .filter(o -> o.getPartyDetails().getId().equals(courtApplication.getApplicant().getId()))
-                    .findFirst();
-            if (respondent.isPresent()) {
-                return apply(Stream.of(CourtApplicationRejected.courtApplicationRejected()
-                        .withApplicationId(courtApplication.getId().toString())
-                        .withCaseId(courtApplication.getLinkedCaseId().toString())
-                        .withDescription("Applicant cannot be respondent")
-                        .build()));
-            }
-        }
-        return apply(
-                Stream.of(
-                        CourtApplicationCreated.courtApplicationCreated()
-                                .withCourtApplication(courtApplication)
-                                .withCount(++arnCount)
-                                .withArn(reference + "-" + arnCount)
-                                .build()));
+        return apply(Stream.of(uk.gov.justice.core.courts.ConvictionDateRemoved.convictionDateRemoved()
+                .withCaseId(prosecutionCaseId)
+                .withOffenceId(offenceId)
+                .build()));
     }
 
     public Stream<Object> linkProsecutionCaseToHearing(final UUID hearingId, final UUID caseId) {
@@ -839,7 +818,7 @@ public class CaseAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (this.defendantCaseOffences.containsKey(defendantId)) {
             final List<uk.gov.justice.core.courts.Offence> offencesList = defendantCaseOffences.get(defendantId);
-            final List<uk.gov.justice.core.courts.Offence> updatedOffenceList = new ArrayList(offencesList);
+            final List<uk.gov.justice.core.courts.Offence> updatedOffenceList = new ArrayList<>(offencesList);
             final Optional<uk.gov.justice.core.courts.Offence> optionalOffence = offencesList.stream().filter(offence -> offence.getId().equals(offenceId)).findAny();
             if (optionalOffence.isPresent()) {
                 final uk.gov.justice.core.courts.Offence matchingOffence = optionalOffence.get();
@@ -932,7 +911,7 @@ public class CaseAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (this.defendantCaseOffences.containsKey(defendantId)) {
             final List<uk.gov.justice.core.courts.Offence> offencesList = defendantCaseOffences.get(defendantId);
-            final List<uk.gov.justice.core.courts.Offence> updatedOffenceList = new ArrayList(offencesList);
+            final List<uk.gov.justice.core.courts.Offence> updatedOffenceList = new ArrayList<>(offencesList);
             final Optional<uk.gov.justice.core.courts.Offence> optionalOffence = offencesList.stream().filter(offence -> offence.getId().equals(offenceId)).findAny();
             if (optionalOffence.isPresent()) {
                 final uk.gov.justice.core.courts.Offence matchingOffence = optionalOffence.get();
@@ -1533,22 +1512,6 @@ public class CaseAggregate implements Aggregate {
         this.caseStatus = hearingConfirmedCaseStatusUpdated.getProsecutionCase().getCaseStatus();
     }
 
-    private boolean isAllApplicationsFinalised(final List<CourtApplication> courtApplications) {
-        if (isNotEmpty(courtApplications)) {
-            return courtApplications.stream()
-                    .filter(courtApplication -> nonNull(courtApplication.getJudicialResults()))
-                    .map(courtApplication ->
-                            courtApplication.getJudicialResults() != null &&
-                                    courtApplication.getJudicialResults()
-                                            .stream()
-                                            .anyMatch(judicialResult -> Category.FINAL.equals(judicialResult.getCategory())))
-                    .collect(toList())
-                    .stream()
-                    .allMatch(finalCategory -> finalCategory.equals(Boolean.TRUE));
-        }
-        return true;
-    }
-
     private void removeDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationDisassociated defendantDefenceOrganisationDisassociated) {
         removeFromOrganisationMap(defendantDefenceOrganisationDisassociated.getDefendantId());
     }
@@ -1583,7 +1546,7 @@ public class CaseAggregate implements Aggregate {
 
     private void updateProsecutionCaseIdentifier(final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
         ProsecutionCaseIdentifier newProsecutionCaseIdentifier;
-        if(!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()){
+        if(!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && Boolean.TRUE.equals(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError())){
             newProsecutionCaseIdentifier = this.prosecutionCase.getProsecutionCaseIdentifier();
         }else{
             newProsecutionCaseIdentifier = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()

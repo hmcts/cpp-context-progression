@@ -33,6 +33,7 @@ import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
@@ -1055,7 +1056,8 @@ public class CaseAggregateTest {
     public void shouldUpdateCaseStatusWhenAllApplicationResultsAreFinalized() {
         final UUID caseId = randomUUID();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withLinkedCaseId(caseId)
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
                 .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
                 .build();
         final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
@@ -1075,7 +1077,7 @@ public class CaseAggregateTest {
                 .withDefendants(singletonList(defendant))
                 .withCpsOrganisation("A01")
                 .build();
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, singletonList(courtApplication)).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -1090,7 +1092,8 @@ public class CaseAggregateTest {
     public void shouldNotUpdateCaseStatusWhenAllApplicationResultsAreNotFinalized() {
         final UUID caseId = randomUUID();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withLinkedCaseId(caseId)
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
                 .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
                 .build();
         final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
@@ -1109,7 +1112,7 @@ public class CaseAggregateTest {
                 .withCaseStatus(SJP_REFERRAL.getDescription())
                 .withDefendants(singletonList(defendant))
                 .build();
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, singletonList(courtApplication)).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);

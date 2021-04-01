@@ -8,6 +8,7 @@ import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.addressLines;
 
 import java.util.logging.Logger;
@@ -68,27 +69,42 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
                                   final JsonObject outputCase,
                                   final int caseIndex,
                                   final String inputApplicationPath) {
+        verifyApplication(inputCourtApplication, outputCase, caseIndex, inputApplicationPath, 0);
+    }
+
+    public void verifyApplication(final DocumentContext inputCourtApplication,
+                                  final JsonObject outputCase, final int caseIndex, final String inputApplicationPath, final int inputApplicationIndex) {
         final String outputCaseDocumentsPath = format(OUTPUT_CASE_JSON_PATH, caseIndex);
 
         final String id = ((JsonString) inputCourtApplication.read(inputApplicationPath + "id")).getString();
         final String applicationReference = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationReference")).getString();
-        final String applicationType = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".type.applicationType")).getString();
+        final String applicationType = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".type.type")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationDecisionSoughtByDate")).getString();
-        final String dueDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".dueDate")).getString();
+        final boolean isLinkedApplication = inputCourtApplication.read(inputApplicationPath).toString().contains("courtApplicationCases");
 
         try {
-            with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
-                    .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
-                    .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"));
+            if(isLinkedApplication){
+                with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", not(equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString())))
+                        .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
+                        .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
+            }
+            else {
+                with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
+                        .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
+                        .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"));
+            }
             with(outputCase.toString())
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].applicationId", is(id))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].applicationReference", is(applicationReference))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].applicationType", is(applicationType))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].receivedDate", is(applicationReceivedDate))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].decisionDate", is(applicationDecisionSoughtByDate))
-                    .assertThat(outputCaseDocumentsPath + ".applications[0].dueDate", is(dueDate));
-            incrementCaseDocumentsCount();
+                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationId", is(id))
+                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationReference", is(applicationReference))
+                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationType", is(applicationType))
+                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].receivedDate", is(applicationReceivedDate))
+                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].decisionDate", is(applicationDecisionSoughtByDate));
+
+            if(!isLinkedApplication) {
+                incrementCaseDocumentsCount();
+            }
+
         } catch (final Exception e) {
             incrementExceptionCount();
             logger.log(WARNING, format("Exception validating ProsecutionCase ", e.getMessage()));

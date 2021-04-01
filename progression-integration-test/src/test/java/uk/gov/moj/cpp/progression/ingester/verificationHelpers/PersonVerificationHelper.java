@@ -46,22 +46,20 @@ public class PersonVerificationHelper {
 
     private static void assertPersonDetails(final JsonObject personDetails, final JsonObject party, final String organisationName) {
 
-        final String applicantFirstName = personDetails.getString("firstName");
-        final String applicantMiddleName = personDetails.getString("middleName");
-        final String applicantLastName = personDetails.getString("lastName");
-        final String applicantTitle = personDetails.getString("title");
-        final String applicantDateOfBirth = personDetails.getString("dateOfBirth");
-        final String applicantGender = personDetails.getString("gender");
+        final String applicantFirstName = personDetails.getString("firstName", null);
+        final String applicantMiddleName = personDetails.getString("middleName", null);
+        final String applicantLastName = personDetails.getString("lastName", null);
+        final String applicantTitle = personDetails.getString("title", null);
+        final String applicantDateOfBirth = personDetails.getString("dateOfBirth", null);
+        final String applicantGender = personDetails.getString("gender", null);
 
-        assertEquals(applicantFirstName, party.getString("firstName"));
-        assertEquals(applicantMiddleName, party.getString("middleName"));
-        assertEquals(applicantLastName, party.getString("lastName"));
+        assertEquals(applicantFirstName, party.getString("firstName", null));
+        assertEquals(applicantMiddleName, party.getString("middleName", null));
+        assertEquals(applicantLastName, party.getString("lastName", null));
 
-        assertEquals(applicantTitle, party.getString("title"));
-        assertEquals(applicantDateOfBirth, party.getString("dateOfBirth"));
-        assertEquals(applicantGender, party.getString("gender"));
-        assertEquals(organisationName, party.getString("organisationName"));
-
+        assertEquals(applicantTitle, party.getString("title", null));
+        assertEquals(applicantDateOfBirth, party.getString("dateOfBirth", null));
+        assertEquals(applicantGender, party.getString("gender", null));
     }
 
     private static void assertAddressDetailsForSpecificTypeOfPerson(final JsonObject personDetails, final JsonObject party) {

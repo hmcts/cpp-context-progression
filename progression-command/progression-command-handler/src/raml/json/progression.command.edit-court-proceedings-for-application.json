@@ -1,0 +1,38 @@
+{
+  "courtApplication": {
+    "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+    "type": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "applicationCode": "a",
+      "applicationType": "a",
+      "applicationTypeWelsh": "a",
+      "applicationLegislation": "a",
+      "applicationLegislationWelsh": "a",
+      "applicationCategory": "a",
+      "linkType": "STANDALONE",
+      "applicantSynonym": "a",
+      "respondentSynonym": "a",
+      "applicationJurisdictionType": "MAGISTRATES"
+    },
+    "applicationReceivedDate": "0000-01-01",
+    "applicationReference": "a",
+    "applicant": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+    },
+    "linkedCaseId": "a09ac0cb-e3ab-422e-91d3-0a5b34f68ae8",
+    "applicationStatus": "DRAFT",
+    "outOfTimeReasons": "a"
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06g",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "estimateMinutes": 20,
+    "courtCentre": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    }
+  },
+  "required": [
+    "courtApplication"
+  ],
+  "additionalProperties": false
+}
+

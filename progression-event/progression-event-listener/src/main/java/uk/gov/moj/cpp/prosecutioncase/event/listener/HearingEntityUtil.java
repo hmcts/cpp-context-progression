@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import com.google.common.collect.Iterables;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
@@ -9,6 +8,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.common.collect.Iterables;
 
 
 public class HearingEntityUtil {
@@ -43,25 +43,8 @@ public class HearingEntityUtil {
 
     private static CourtApplication updateCourtApplicationWithEjectStatus(final CourtApplication courtApplication) {
         return CourtApplication.courtApplication()
-                .withId(courtApplication.getId())
-                .withType(courtApplication.getType())
-                .withApplicant(courtApplication.getApplicant())
-                .withApplicationDecisionSoughtByDate(courtApplication.getApplicationDecisionSoughtByDate())
-                .withOrderingCourt(courtApplication.getOrderingCourt())
-                .withApplicationOutcome(courtApplication.getApplicationOutcome())
-                .withApplicationParticulars(courtApplication.getApplicationParticulars())
-                .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                .withApplicationReference(courtApplication.getApplicationReference())
+                .withValuesFrom(courtApplication)
                 .withApplicationStatus(ApplicationStatus.EJECTED)
-                .withRemovalReason(courtApplication.getRemovalReason())
-                .withCourtApplicationPayment(courtApplication.getCourtApplicationPayment())
-                .withJudicialResults(courtApplication.getJudicialResults())
-                .withParentApplicationId(courtApplication.getParentApplicationId())
-                .withLinkedCaseId(courtApplication.getLinkedCaseId())
-                .withBreachedOrder(courtApplication.getBreachedOrder())
-                .withBreachedOrderDate(courtApplication.getBreachedOrderDate())
-                .withRespondents(courtApplication.getRespondents())
-                .withOutOfTimeReasons(courtApplication.getOutOfTimeReasons())
                 .build();
     }
 

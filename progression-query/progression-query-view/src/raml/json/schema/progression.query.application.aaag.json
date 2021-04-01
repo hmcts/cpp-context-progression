@@ -20,6 +20,9 @@
         "appeal": {
           "type": "boolean"
         },
+        "applicantAppellantFlag": {
+          "type": "boolean"
+        },
         "applicationReceivedDate": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         },
@@ -31,6 +34,19 @@
         },
         "paymentReference": {
           "type": "string"
+        },
+        "aagResults": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/aagResult"
+          }
+        },
+        "plea": {
+          "$ref": "http://justice.gov.uk/core/courts/plea.json"
+        },
+        "verdict": {
+          "$ref": "http://justice.gov.uk/core/courts/verdict.json"
         }
       },
       "additionalProperties": false
@@ -55,6 +71,9 @@
         },
         "representation": {
           "type": "string"
+        },
+        "isSubject": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -71,6 +90,20 @@
       "minItems": 1,
       "items": {
         "$ref": "#/definitions/applicationSummary"
+      }
+    },
+    "linkedCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/caseSummary"
+      }
+    },
+    "thirdParties": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/thirdPartyDetail"
       }
     }
   },
@@ -117,9 +150,108 @@
       },
       "additionalProperties": false
     },
+    "caseSummary": {
+      "type": "object",
+      "properties": {
+        "prosecutionCaseId": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "prosecutionCaseIdentifier": {
+          "$ref": "http://justice.gov.uk/core/courts/prosecutionCaseIdentifier.json"
+        },
+        "isPrimaryCase": {
+          "type": "boolean"
+        },
+        "offences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/offence"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "offence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceCode": {
+          "type": "string"
+        },
+        "offenceTitle": {
+          "type": "string"
+        },
+        "offenceTitleWelsh": {
+          "type": "string"
+        },
+        "offenceLegislation": {
+          "type": "string"
+        },
+        "offenceLegislationWelsh": {
+          "type": "string"
+        },
+        "wording": {
+          "type": "string"
+        },
+        "wordingWelsh": {
+          "type": "string"
+        },
+        "startDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "endDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "count": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
+        },
+        "allocationDecision": {
+          "$ref": "http://justice.gov.uk/core/courts/allocationDecision.json"
+        },
+        "plea": {
+          "$ref": "http://justice.gov.uk/core/courts/plea.json"
+        },
+        "verdict": {
+          "$ref": "http://justice.gov.uk/core/courts/verdict.json"
+        },
+        "aagResults": {
+          "description": "offence level results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/aagResult"
+          }
+        },
+        "custodyTimeLimit": {
+          "$ref": "http://justice.gov.uk/core/courts/custodyTimeLimit.json"
+        },
+        "reportingRestrictions": {
+          "description": "Reporting restrictions",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/reportingRestriction.json"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "offenceCode",
+        "offenceTitle",
+        "wording",
+        "startDate"
+      ],
+      "additionalProperties": false
+    },
     "respondentDetail": {
       "type": "object",
       "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
         "name": {
           "type": "string"
         },
@@ -131,6 +263,9 @@
           "items": {
             "$ref": "#/definitions/respondentRepresentative"
           }
+        },
+        "isSubject": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -145,6 +280,93 @@
           "type": "string"
         }
       },
+      "additionalProperties": false
+    },
+    "thirdPartyDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "thirdPartyRepresentatives": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/respondentRepresentative"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "thirdPartyRepresentatives": {
+      "type": "object",
+      "properties": {
+        "representativeName": {
+          "type": "string"
+        },
+        "representativePosition": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "aagResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "label": {
+          "type": "string"
+        },
+        "aagResultPrompts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/aagResultPrompt"
+          }
+        },
+        "orderedDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "lastSharedDateTime": {
+          "type": "string"
+        },
+        "amendmentDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "amendmentReason": {
+          "type": "string"
+        },
+        "amendedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "aagResultPrompt": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
       "additionalProperties": false
     }
   }

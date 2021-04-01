@@ -7,7 +7,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
@@ -39,9 +39,8 @@ import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
@@ -74,8 +73,8 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         initializeIds();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
     }
@@ -91,13 +90,13 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
 
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
@@ -128,43 +127,64 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final Matcher[] caseMatchers = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),
                 withJsonPath("$.caseReference", equalTo(caseUrn)),
-                withJsonPath("$.parties.length()", equalTo(9)))};
+                withJsonPath("$.parties.length()", equalTo(5)))};
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = findBy(caseMatchers);
         assertThat(prosecutionCaseResponseJsonObject.isPresent(), is(true));
         final JsonObject transformedJson = prosecutionCaseResponseJsonObject.get();
 
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
-        verifyCaseCreated(9l, inputProsecutionCase, transformedJson);
-        final String linkedCaseId1 = ((JsonString) inputCourtApplication1.read("$.application.linkedCaseId")).getString();
-        final String linkedCaseId2 = ((JsonString) inputCourtApplication2.read("$.application.linkedCaseId")).getString();
+        verifyCaseCreated(5l, inputProsecutionCase, transformedJson);
+        final String linkedCaseId1 = ((JsonString) inputCourtApplication1.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
+        final String linkedCaseId2 = ((JsonString) inputCourtApplication2.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
         verifyEmbeddedApplication(linkedCaseId1, transformedJson);
         verifyEmbeddedApplication(linkedCaseId2, transformedJson);
         verifyAddCourtApplication(inputCourtApplication1, transformedJson, applicationId1);
         verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmationAndVerifyUpdate() throws Exception {
 
         final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-added-to-case")) {
+        final Matcher[] addApplication1Matcher = {allOf(
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.applications[*].applicationId", hasItem(applicationId1)),
+                withJsonPath("$.parties[?(@._party_type=='RESPONDENT')].firstName", hasItem(equalTo("a"))))};
+        Optional<JsonObject> addApplication1ResponseJsonObject = findBy(addApplication1Matcher);
+        assertThat(addApplication1ResponseJsonObject.isPresent(), is(true));
+
+
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-updated")) {
+        final Matcher[] addApplication2Matcher = {allOf(
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.applications[*].applicationId", hasItem(applicationId2)),
+                withJsonPath("$.parties[?(@._party_type=='RESPONDENT')].firstName", hasItem(equalTo("a"))))};
+        Optional<JsonObject> addApplication2ResponseJsonObject = findBy(addApplication2Matcher);
+        assertThat(addApplication2ResponseJsonObject.isPresent(), is(true));
+
+        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
             updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
+
+        final Matcher[] updateApplication1Matcher = {allOf(
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.applications[*].applicationId", hasItem(applicationId1)),
+                withJsonPath("$.parties[?(@._party_type=='RESPONDENT')].firstName", hasItem(equalTo("respondantA"))))};
+        Optional<JsonObject> updateApplication1ResponseJsonObject = findBy(updateApplication1Matcher);
+        assertThat(updateApplication1ResponseJsonObject.isPresent(), is(true));
 
         final String payloadStr1 = getStringFromResource(UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .replaceAll("RANDOM_CASE_ID", caseId)
@@ -191,17 +211,18 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final Matcher[] caseMatchers = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),
                 withJsonPath("$.caseReference", equalTo(caseUrn)),
-                withJsonPath("$.parties.length()", equalTo(9)),
+                withJsonPath("$.parties.length()", equalTo(5)),
                 withJsonPath("$.applications.length()", equalTo(2)),
                 withJsonPath("$.applications[*].applicationReference", hasItem(applicationReference)))};
 
         Optional<JsonObject> prosecutionCaseResponseJsonObject = findBy(caseMatchers);
+        assertThat(prosecutionCaseResponseJsonObject.isPresent(), is(true));
         final JsonObject transformedJson = prosecutionCaseResponseJsonObject.get();
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
 
-        verifyCaseCreated(9l, inputProsecutionCase, transformedJson);
-        final String linkedCaseId1 = ((JsonString) inputCourtApplication1.read("$.courtApplication.linkedCaseId")).getString();
-        final String linkedCaseId2 = ((JsonString) inputCourtApplication2.read("$.application.linkedCaseId")).getString();
+        verifyCaseCreated(5l, inputProsecutionCase, transformedJson);
+        final String linkedCaseId1 = ((JsonString) inputCourtApplication1.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
+        final String linkedCaseId2 = ((JsonString) inputCourtApplication2.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
         verifyEmbeddedApplication(linkedCaseId1, transformedJson);
         verifyEmbeddedApplication(linkedCaseId2, transformedJson);
         verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);

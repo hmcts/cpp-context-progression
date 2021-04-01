@@ -326,34 +326,6 @@ public class ListCourtHearingTransformer {
         return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
     }
 
-    public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
-                                      final List<ListHearingRequest> listHearingRequests) {
-        LOGGER.info("Transforming SPI cases to ListCourtHearing");
-        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
-
-        listHearingRequests.forEach(listHearingRequest -> {
-            final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCasesFromSpi(prosecutionCases, listHearingRequest.getListDefendantRequests());
-            final ZonedDateTime expectedListingStartDateTime = nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
-            final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, listHearingRequest.getListDefendantRequests());
-            final HearingListingNeeds hearing = HearingListingNeeds.hearingListingNeeds()
-                    .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
-                    .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
-                    .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
-                    .withId(UUID.randomUUID())
-                    .withJurisdictionType(listHearingRequest.getJurisdictionType())
-                    .withProsecutionCases(listOfProsecutionCase)
-                    .withProsecutorDatesToAvoid(listHearingRequest.getProsecutorDatesToAvoid())
-                    .withType(listHearingRequest.getHearingType())
-                    .withListingDirections(listHearingRequest.getListingDirections())
-                    .withReportingRestrictionReason(listHearingRequest.getReportingRestrictionReason())
-                    .withCourtCentre(listHearingRequest.getCourtCentre())
-                    .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
-                    .build();
-            hearingsList.add(hearing);
-        });
-        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
-    }
-
     private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {
 
         return listDefendantRequests.stream().map(listDefendantRequest ->

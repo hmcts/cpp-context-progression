@@ -57,18 +57,16 @@ public class CourtApplicationVerificationHelper {
                 .filter(application1 -> application1.getString("applicationId").equals(applicationId)).findFirst().get();
 
         final String id = ((JsonString) inputCourtApplication.read("$.courtApplication.id")).getString();
-        final String applicationType = ((JsonString) inputCourtApplication.read("$.courtApplication.type.applicationType")).getString();
+        final String applicationType = ((JsonString) inputCourtApplication.read("$.courtApplication.type.type")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
         final String applicationReference = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReference")).getString();
-        final String dueDate = ((JsonString) inputCourtApplication.read("$.courtApplication.dueDate")).getString();
 
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
         assertEquals(applicationReference, outputApplication.getString("applicationReference"));
-        assertEquals(dueDate, outputApplication.getString("dueDate"));
 
         final JsonObject inputApplication = inputCourtApplication.read("$.courtApplication");
         final JsonObject applicant = inputApplication.getJsonObject("applicant");
@@ -86,17 +84,17 @@ public class CourtApplicationVerificationHelper {
         final JsonObject outputApplication = outputCourtApplications.stream()
                 .map(JsonObject.class::cast)
                 .filter(application1 -> application1.getString("applicationId").equals(applicationId)).findFirst().get();
-        final String id = ((JsonString) inputCourtApplication.read("$.application.id")).getString();
-        final String applicationType = ((JsonString) inputCourtApplication.read("$.application.type.applicationType")).getString();
-        final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.application.applicationReceivedDate")).getString();
-        final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.application.applicationDecisionSoughtByDate")).getString();
+        final String id = ((JsonString) inputCourtApplication.read("$.courtApplication.id")).getString();
+        final String applicationType = ((JsonString) inputCourtApplication.read("$.courtApplication.type.type")).getString();
+        final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
+        final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
 
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
 
-        final JsonObject inputApplication = inputCourtApplication.read("$.application");
+        final JsonObject inputApplication = inputCourtApplication.read("$.courtApplication");
 
         final JsonObject applicant = inputApplication.getJsonObject("applicant");
         final JsonArray respondents = getRespondents(inputApplication);
@@ -113,11 +111,8 @@ public class CourtApplicationVerificationHelper {
     private static void verifyApplicationParties(
             final JsonObject transformedJson,
             final JsonObject applicant,
-            final JsonArray respondents
-    ) {
-
+            final JsonArray respondents) {
         final JsonArray parties = transformedJson.getJsonArray("parties");
-
 
         final JsonObject applicantParty = parties.stream()
                 .map(JsonObject.class::cast)
@@ -126,24 +121,10 @@ public class CourtApplicationVerificationHelper {
 
         verifyApplicant(applicant, applicantParty);
 
-        final JsonObject applicantDefendant = applicant.getJsonObject("defendant");
-
-        final JsonObject applicantDefendentParty = parties.stream()
-                .map(JsonObject.class::cast)
-                .filter(p -> p.getString("_party_type").equalsIgnoreCase("defendant"))
-                .filter(p -> p.getString("partyId").equals(applicantDefendant.getString("id"))).findFirst().get();
-
-        verifyDefendant(applicantDefendant, applicantDefendentParty);
-
         respondents.stream().
-
                 map(JsonObject.class::cast).
-
-                forEach(applicationRespondent ->
-
-                {
-                    final JsonObject partyDetails = applicationRespondent.getJsonObject("partyDetails");
-                    final String respondentId = partyDetails.getString("id");
+                forEach(applicationRespondent -> {
+                    final String respondentId = applicationRespondent.getString("id");
                     final JsonObject respondentParty = parties.stream()
                             .map(JsonObject.class::cast)
                             .filter(p -> p.getString("_party_type").equalsIgnoreCase("respondent"))
@@ -151,15 +132,6 @@ public class CourtApplicationVerificationHelper {
 
                     assertEquals(respondentId, respondentParty.getString("partyId"));
                     verifyRespondent(applicationRespondent, respondentParty);
-
-                    final JsonObject respondentDefendant = applicationRespondent.getJsonObject("partyDetails").getJsonObject("defendant");
-                    final JsonObject respondentDefendentParty = parties.stream()
-                            .map(JsonObject.class::cast)
-                            .filter(p -> p.getString("_party_type").equalsIgnoreCase("defendant"))
-                            .filter(p -> p.getString("partyId").equals(respondentDefendant.getString("id"))).findFirst().get();
-
-                    verifyDefendant(respondentDefendant, respondentDefendentParty);
-
                 });
     }
 
@@ -183,12 +155,15 @@ public class CourtApplicationVerificationHelper {
     }
 
     private static void verifyRespondent(final JsonObject respondent, final JsonObject respondentParty) {
-
-        final JsonObject partyDetails = respondent.getJsonObject("partyDetails");
-        final JsonObject organisation = partyDetails.getJsonObject("organisation");
+        final JsonObject organisation = respondent.getJsonObject("organisation");
         final String organisationName = organisation.getString("name");
-        final JsonObject personDetails = partyDetails.getJsonObject("personDetails");
-        assertRespondantDetails(personDetails, respondentParty, organisationName);
+        final JsonObject personDetails = respondent.getJsonObject("personDetails");
+        final String respondentPartyLastName = respondentParty.getString("lastName", null);
+        if (respondentPartyLastName != null) {
+            assertRespondantDetails(personDetails, respondentParty, organisationName);
+        } else {
+            assertOrganisationDetails(organisation, respondentParty);
+        }
     }
 
     private static void verifyDefendant(final JsonObject defendant,

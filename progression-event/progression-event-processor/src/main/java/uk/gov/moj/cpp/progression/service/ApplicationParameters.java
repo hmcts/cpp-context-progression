@@ -87,6 +87,18 @@ public class ApplicationParameters {
     @Value(key = "now_extradition_sla_email_template_id")
     private String nowExtraditionSlaEmailTemplateId;
 
+    @Inject
+    @Value(key = "summons_approved_and_suppressed_template_id")
+    private String summonsApprovedAndSuppressedTemplateId;
+
+    @Inject
+    @Value(key = "summons_approved_and_not_suppressed_template_id")
+    private String summonsApprovedAndNotSuppressedTemplateId;
+
+    @Inject
+    @Value(key = "summons_rejected_template_id")
+    private String summonsRejectedTemplateId;
+
     public String getNcesEmailTemplateId() {
 
         return ncesEmailTemplateId;
@@ -133,6 +145,18 @@ public class ApplicationParameters {
 
     public String getNotifyDefenceOfNewMaterialTemplateId() {
         return notifyDefenceOfNewMaterialTemplateId;
+    }
+
+    public String getSummonsApprovedAndSuppressedTemplateId() {
+        return summonsApprovedAndSuppressedTemplateId;
+    }
+
+    public String getSummonsApprovedAndNotSuppressedTemplateId() {
+        return summonsApprovedAndNotSuppressedTemplateId;
+    }
+
+    public String getSummonsRejectedTemplateId() {
+        return summonsRejectedTemplateId;
     }
 
     public String getEndClientHost() {

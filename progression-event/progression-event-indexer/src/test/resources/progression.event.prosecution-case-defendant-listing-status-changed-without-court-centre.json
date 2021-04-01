@@ -11,8 +11,8 @@
         "id": "bc55f521-cafc-4ab3-8a73-a51f6c93f153",
         "type": {
           "id": "edbeaf31-2129-48e5-b372-3a592bbacc13",
-          "applicationType": "THE APPLICATION TYPE",
-          "applicationCategory": "THE APPLICATION TYPE CATEGORY",
+          "type": "THE APPLICATION TYPE",
+          "categoryCode": "THE APPLICATION TYPE CATEGORY",
           "linkType": "LINKED",
           "applicationJurisdictionType": "MAGISTRATES"
         },
@@ -29,8 +29,8 @@
         "id": "864696dc-d5aa-4437-86a9-dd3eff3b3257",
         "type": {
           "id": "50c2e2c8-5c56-4d29-bb67-686511059a69",
-          "applicationType": "THE APPLICATION TYPE",
-          "applicationCategory": "THE APPLICATION TYPE CATEGORY",
+          "type": "THE APPLICATION TYPE",
+          "categoryCode": "THE APPLICATION TYPE CATEGORY",
           "linkType": "LINKED",
           "applicationJurisdictionType": "CROWN"
         },

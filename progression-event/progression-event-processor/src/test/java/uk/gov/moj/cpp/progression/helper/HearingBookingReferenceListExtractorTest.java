@@ -5,8 +5,10 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithCourtApplicationCases;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithCourtOrder;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCaseWithoutJudicialResult;
@@ -14,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCaseW
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
@@ -49,7 +52,10 @@ public class HearingBookingReferenceListExtractorTest {
     private static final ZonedDateTime LISTED_START_DATETIME = ZonedDateTime.now();
 
     @InjectMocks
-    HearingBookingReferenceListExtractor extractor;
+    private HearingBookingReferenceListExtractor extractor;
+
+    @Spy
+    private HearingResultHelper hearingResultHelper;
 
     @Test
     public void extractBookingReferenceList(){
@@ -106,10 +112,10 @@ public class HearingBookingReferenceListExtractorTest {
 
     @Test
     public void shouldReturnOneBookingReferenceWhenOneBookingReferenceExistsInResults(){
-        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(singletonList(
                 buildCourtApplication(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null))
         ));
-        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
         assertThat(result.size(), is(1));
         assertThat(result.get(0), equalTo(BOOKING_REFERENCE_1));
     }
@@ -120,7 +126,29 @@ public class HearingBookingReferenceListExtractorTest {
                 buildCourtApplication(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
                 buildCourtApplication(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
         ));
-        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
+        assertThat(result.size(), is(2));
+        assertThat(result, hasItems(BOOKING_REFERENCE_1, BOOKING_REFERENCE_2));
+    }
+
+    @Test
+    public void shouldReturnTwoBookingReferencesWhenTwoDistinctBookingReferencesExistInResultsWithCourtOrder(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplicationWithCourtOrder(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
+                buildCourtApplicationWithCourtOrder(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
+        ));
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
+        assertThat(result.size(), is(2));
+        assertThat(result, hasItems(BOOKING_REFERENCE_1, BOOKING_REFERENCE_2));
+    }
+
+    @Test
+    public void shouldReturnTwoBookingReferencesWhenTwoDistinctBookingReferencesExistInResultsWithCourtApplicationCase(){
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplicationWithCourtApplicationCases(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
+                buildCourtApplicationWithCourtApplicationCases(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
+        ));
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
         assertThat(result.size(), is(2));
         assertThat(result, hasItems(BOOKING_REFERENCE_1, BOOKING_REFERENCE_2));
     }
@@ -132,7 +160,7 @@ public class HearingBookingReferenceListExtractorTest {
                 buildCourtApplication(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null)),
                 buildCourtApplication(COURT_APPLICATION_ID_3, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
         ));
-        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
         assertThat(result.size(), is(2));
         assertThat(result, hasItems(BOOKING_REFERENCE_1, BOOKING_REFERENCE_2));
     }
@@ -144,7 +172,7 @@ public class HearingBookingReferenceListExtractorTest {
                 buildCourtApplication(COURT_APPLICATION_ID_2, buildNextHearing(null, null, null, null, null)),
                 buildCourtApplication(COURT_APPLICATION_ID_3, buildNextHearing(null, null, null, null, null))
         ));
-        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
         assertThat(result.size(), is(0));
     }
 
@@ -155,7 +183,7 @@ public class HearingBookingReferenceListExtractorTest {
                 buildCourtApplication(COURT_APPLICATION_ID_2, null),
                 buildCourtApplication(COURT_APPLICATION_ID_3, null)
         ));
-        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
         assertThat(result.size(), is(0));
     }
 
@@ -166,7 +194,7 @@ public class HearingBookingReferenceListExtractorTest {
                         .withId(randomUUID())
                         .build()
         ));
-        List<UUID> result = extractor.extractBookingReferences(hearing.getCourtApplications());
+        List<UUID> result = extractor.extractBookingReferenceList(hearing);
         assertThat(result.size(), is(0));
     }
 }

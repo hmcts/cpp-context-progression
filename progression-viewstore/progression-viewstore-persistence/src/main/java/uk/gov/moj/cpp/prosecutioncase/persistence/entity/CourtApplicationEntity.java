@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
+import java.io.Serializable;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.UUID;
 
 @Entity
 @Table(name = "court_application")
@@ -20,26 +21,27 @@ public class CourtApplicationEntity implements Serializable {
     @Column(name = "parent_application_id", nullable = true)
     private UUID parentApplicationId;
 
-    @Column(name = "linked_case_id", nullable = true)
-    private UUID linkedCaseId;
-
     @Column(name = "payload")
     private String payload;
 
     @Column(name = "assigned_user_id")
     private UUID assignedUserId;
 
-    public UUID getApplicationId() { return applicationId; }
+    public UUID getApplicationId() {
+        return applicationId;
+    }
 
-    public void setApplicationId(final UUID applicationId) { this.applicationId = applicationId; }
+    public void setApplicationId(final UUID applicationId) {
+        this.applicationId = applicationId;
+    }
 
-    public UUID getParentApplicationId() { return parentApplicationId; }
+    public UUID getParentApplicationId() {
+        return parentApplicationId;
+    }
 
-    public void setParentApplicationId(final UUID parentApplicationId) { this.parentApplicationId = parentApplicationId; }
-
-    public UUID getLinkedCaseId() { return linkedCaseId; }
-
-    public void setLinkedCaseId(final UUID linkedCaseId) { this.linkedCaseId = linkedCaseId; }
+    public void setParentApplicationId(final UUID parentApplicationId) {
+        this.parentApplicationId = parentApplicationId;
+    }
 
     public String getPayload() {
         return payload;

@@ -21,12 +21,7 @@ import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationOutcome;
-import uk.gov.justice.core.courts.CourtApplicationOutcomeType;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtApplicationResponse;
-import uk.gov.justice.core.courts.CourtApplicationResponseType;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DelegatedPowers;
@@ -222,10 +217,6 @@ public class ApplicationExtractTransformerTest {
     private void assertCourtApplications(List<CourtApplications> courtApplications, boolean isHearingExist) {
         courtApplications.forEach(ca -> {
             assertThat(ca.getApplicationType(), is(APPLICATION_TYPE));
-            assertThat(ca.getDecision(), is(APPLICATION_OUT_COME));
-            assertThat(ca.getDecisionDate(), is(OUTCOME_DATE));
-            assertThat(ca.getResponse(), is(RESPONSE_ADMITTED));
-            assertThat(ca.getResponseDate(), is(OUTCOME_DATE));
             assertApplicantRepresentation(ca.getRepresentation().getApplicantRepresentation(), isHearingExist);
             assertRespondentRepresentation(ca.getRepresentation().getRespondentRepresentation(), isHearingExist);
             assertResults(ca.getResults());
@@ -244,7 +235,6 @@ public class ApplicationExtractTransformerTest {
         }
 
         assertThat(applicantRepresentation.getName(), is(ORG_NAME));
-        assertThat(applicantRepresentation.getSynonym(), is(SYNONYM));
     }
 
     private void assertRespondentRepresentation(List<RespondentRepresentation> respondentRepresentation, boolean isHearingExist) {
@@ -259,7 +249,6 @@ public class ApplicationExtractTransformerTest {
                 assertThat(reportingRestriction.getRespondentCounsels(), empty());
             }
             assertThat(reportingRestriction.getName(), is(ORG_NAME));
-            assertThat(reportingRestriction.getSynonym(), is(SYNONYM + "R"));
         });
 
     }
@@ -301,14 +290,12 @@ public class ApplicationExtractTransformerTest {
     private void assertRespondents(List<Respondent> respondent) {
         respondent.stream().forEach(r -> {
             assertThat(r.getName(), is(ORG_NAME));
-            assertThat(r.getSynonym(), is(SYNONYM + "R"));
             assertExtractAddress(r.getAddress());
         });
     }
 
     private void assertApplicant(Applicant applicant) {
         assertThat(applicant.getName(), is(FULL_NAME));
-        assertThat(applicant.getSynonym(), is(SYNONYM));
         assertExtractAddress(applicant.getAddress());
     }
 
@@ -501,31 +488,22 @@ public class ApplicationExtractTransformerTest {
                 .withApplicant(createApplicationParty())
                 .withType(createCourtApplicationType())
                 .withApplicationReceivedDate(now())
-                .withApplicationOutcome(CourtApplicationOutcome.courtApplicationOutcome()
-                        .withApplicationOutcomeType(CourtApplicationOutcomeType.courtApplicationOutcomeType().withDescription(APPLICATION_OUT_COME).build())
-                        .withApplicationOutcomeDate(OUTCOME_DATE)
-                        .build())
                 .withJudicialResults(createResults())
                 .withRespondents(createRespondents())
                 .withApplicationReference(APPLICATION_REFERENCE)
                 .build();
     }
 
-    private List<CourtApplicationRespondent> createRespondents() {
-        return Arrays.asList(CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
+    private List<CourtApplicationParty> createRespondents() {
+        return Arrays.asList(CourtApplicationParty.courtApplicationParty()
                         .withId(UUID.randomUUID())
                         .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                                 .withProsecutionAuthorityId(UUID.randomUUID())
                                 .build())
                         .withRepresentationOrganisation(createOrganisation())
                         .withOrganisation(createOrganisation())
-                        .build())
-                .withApplicationResponse(CourtApplicationResponse.courtApplicationResponse()
-                        .withApplicationResponseType(CourtApplicationResponseType.courtApplicationResponseType().withDescription("Admitted").build())
-                        .withApplicationResponseDate(OUTCOME_DATE)
-                        .build())
-                .build());
+                        .build()
+                        );
     }
 
     private CourtApplicationParty createApplicationParty() {
@@ -538,10 +516,10 @@ public class ApplicationExtractTransformerTest {
 
     private CourtApplicationType createCourtApplicationType() {
         return CourtApplicationType.courtApplicationType()
-                .withApplicationType(APPLICATION_TYPE)
-                .withApplicantSynonym(SYNONYM)
-                .withIsAppealApplication(true)
-                .withRespondentSynonym(SYNONYM + "R")
+                .withType(APPLICATION_TYPE)
+                //.withApplicantSynonym(SYNONYM)
+                .withAppealFlag(true)
+                //.withRespondentSynonym(SYNONYM + "R")
                 .build();
     }
 

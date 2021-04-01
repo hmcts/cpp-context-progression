@@ -139,6 +139,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.tngtech.junit.dataprovider</groupId>
+            <artifactId>junit4-dataprovider</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- need this specific version to get the test working -->
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -201,7 +206,9 @@
                     <artifactItems>
                         <artifactItem>
                             <groupId>uk.gov.moj.cpp.progression</groupId>
-                            <artifactId>progression-domain-transformation-add-listings-status-for-missing-defendant-listing-status-changed</artifactId>
+                            <artifactId>
+                                progression-domain-transformation-add-listings-status-for-missing-defendant-listing-status-changed
+                            </artifactId>
                             <version>${project.version}</version>
                             <type>jar</type>
                             <overWrite>true</overWrite>
@@ -250,13 +257,23 @@
                         <id>pojo-generation</id>
                         <configuration>
                             <basePackageName>uk.gov.moj.cpp.progression.it</basePackageName>
-                            <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
-                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <sourceDirectory>${project.basedir}/src/raml/json/schema
+                            </sourceDirectory>
+                            <generatorProperties
+                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddAdditionalPropertiesToClassPlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.MakeClassSerializablePlugin</plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddAdditionalPropertiesToClassPlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.MakeClassSerializablePlugin
+                                    </plugin>
                                     <!--plugin>
                                         uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
                                     </plugin-->
@@ -377,9 +394,6 @@
                                     <discovery.type>single-node</discovery.type>
                                 </properties>
                             </instanceSettings>
-                            <!-- TODO: xpack security not implemented:
-                            https://github.com/alexcojocaru/elasticsearch-maven-plugin/issues/42
-                            -->
                         </configuration>
                         <executions>
                             <execution>

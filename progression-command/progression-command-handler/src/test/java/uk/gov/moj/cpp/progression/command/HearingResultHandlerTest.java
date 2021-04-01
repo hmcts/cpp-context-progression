@@ -3,11 +3,11 @@ package uk.gov.moj.cpp.progression.command;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Hearing.hearing;
@@ -26,10 +26,11 @@ import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHouseType;
+import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -61,7 +62,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -145,12 +145,12 @@ public class HearingResultHandlerTest {
         final JsonEnvelope  defendantListingStatusEnvelope = (JsonEnvelope)envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed")).findFirst().get();
 
 
-        MatcherAssert.assertThat(hearingResultedEnvelope.payloadAsJsonObject().getJsonObject("hearing")
+        assertThat(hearingResultedEnvelope.payloadAsJsonObject().getJsonObject("hearing")
                 , notNullValue());
-        MatcherAssert.assertThat(hearingResultedEnvelope.metadata().name(), is("progression.event.hearing-resulted"));
+        assertThat(hearingResultedEnvelope.metadata().name(), is("progression.event.hearing-resulted"));
 
-        MatcherAssert.assertThat(defendantListingStatusEnvelope.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed"));
-        MatcherAssert.assertThat(defendantListingStatusEnvelope.payloadAsJsonObject().getJsonObject("hearing")
+        assertThat(defendantListingStatusEnvelope.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed"));
+        assertThat(defendantListingStatusEnvelope.payloadAsJsonObject().getJsonObject("hearing")
                 , notNullValue());
 
     }
@@ -384,7 +384,9 @@ public class HearingResultHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.hearing", notNullValue()),
                                 withJsonPath("$.hearing.prosecutionCases", notNullValue()),
-                                withJsonPath("$.hearing.courtApplications", notNullValue())
+                                withJsonPath("$.hearing.courtApplications", notNullValue()),
+                                withJsonPath("$.hearing.courtApplications[0].courtOrder.orderingCourt", notNullValue()),
+                                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases", notNullValue())
                                 )
                         )
                 ));
@@ -451,7 +453,6 @@ public class HearingResultHandlerTest {
                                 )
                         )
                 ));
-
     }
 
     private Metadata getMetadata() {
@@ -467,9 +468,11 @@ public class HearingResultHandlerTest {
                 .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .withId(randomUUID())
                 .withApplicant(CourtApplicationParty.courtApplicationParty().build())
-                .withLinkedCaseId(randomUUID())
-                .withOrderingCourt(CourtCentre.courtCentre().build())
-                .withRespondents(singletonList(CourtApplicationRespondent.courtApplicationRespondent().build()))
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                            .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build()).build())
+                .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
                 .build());
     }
 

@@ -88,6 +88,15 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.create-court-application+json:
             example: !include json/progression.command.create-court-application.json
             schema: !include json/schema/progression.command.create-court-application.json
+        application/vnd.progression.command.initiate-court-proceedings-for-application+json:
+            example: !include json/progression.command.initiate-court-proceedings-for-application.json
+            schema: !include json/schema/progression.command.initiate-court-proceedings-for-application.json
+        application/vnd.progression.command.edit-court-proceedings-for-application+json:
+            example: !include json/progression.command.edit-court-proceedings-for-application.json
+            schema: !include json/schema/progression.command.edit-court-proceedings-for-application.json
+        application/vnd.progression.command.add-breach-application+json:
+            example: !include json/progression.command.add-breach-application.json
+            schema: !include json/schema/progression.command.add-breach-application.json
         application/vnd.progression.command.initiate-court-proceedings+json:
             example: !include json/progression.command.initiate-court-proceedings.json
             schema: !include json/schema/progression.command.initiate-court-proceedings.json
@@ -133,6 +142,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.refer-boxwork-application+json:
             example: !include json/progression.command.refer-boxwork-application.json
             schema: !include json/schema/progression.command.refer-boxwork-application.json
+        application/vnd.progression.command.list-or-refer-court-application+json:
+            example: !include json/progression.command.list-or-refer-court-application.json
+            schema: !include json/schema/progression.command.list-or-refer-court-application.json
         application/vnd.progression.command.delete-financial-means+json:
             example: !include json/progression.command.delete-financial-means.json
             schema: !include json/schema/progression.command.delete-financial-means.json
@@ -244,6 +256,10 @@ baseUri:  message://command/handler/message/progression
             example: !include json/progression.command.notify-court-register.json
             schema:  !include json/schema/progression.command.notify-court-register.json
 
+        application/vnd.progression.command.application-referred-to-court-hearing+json:
+            example: !include json/progression.command.application-referred-to-court-hearing.json
+            schema:  !include json/schema/progression.command.application-referred-to-court-hearing.json
+
         application/vnd.progression.command.correct-hearing-days-without-court-centre+json:
             example: !include json/progression.command.correct-hearing-days-without-court-centre.json
             schema: !include json/schema/progression.command.correct-hearing-days-without-court-centre.json
@@ -255,6 +271,26 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-case-for-cps-prosecutor+json:
             schema: !include json/schema/progression.command.update-case-for-cps-prosecutor.json
             example: !include json/progression.command.update-case-for-cps-prosecutor.json
+
+        application/vnd.progression.command.create-hearing-application-request+json:
+            example: !include json/progression.command.create-hearing-application-request.json
+            schema: !include json/schema/progression.command.create-hearing-application-request.json
+
+        application/vnd.progression.command.update-court-document-print-time+json:
+            schema: !include json/schema/progression.command.update-court-document-print-time.json
+            example: !include json/progression.command.update-court-document-print-time.json
+
+        application/vnd.progression.command.approve-application-summons+json:
+            example: !include json/progression.command.approve-application-summons.json
+            schema:  !include json/schema/progression.command.approve-application-summons.json
+
+        application/vnd.progression.command.reject-application-summons+json:
+            example: !include json/progression.command.reject-application-summons.json
+            schema:  !include json/schema/progression.command.reject-application-summons.json
+
+        application/vnd.progression.command.hearing-resulted-update-application+json:
+            example: !include json/progression.command.hearing-resulted-update-application.json
+            schema:  !include json/schema/progression.command.hearing-resulted-update-application.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

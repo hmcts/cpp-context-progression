@@ -10,17 +10,20 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtApplicationResponse;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -42,33 +45,27 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@SuppressWarnings({"squid:S3655", "squid:S1188", "squid:S1135", "squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S134", "squid:S4165", "pmd:NullAssignment"})
+@SuppressWarnings({"squid:S3655", "squid:S1188", "squid:S1135", "squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S134", "squid:S4165", "pmd:NullAssignment", "squid:CommentedOutCodeLine"})
 public class HearingAtAGlanceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAtAGlanceService.class.getCanonicalName());
@@ -86,7 +83,7 @@ public class HearingAtAGlanceService {
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
     @Inject
-    private CourtApplicationRepository courtApplicationRepository;
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
 
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -156,10 +153,9 @@ public class HearingAtAGlanceService {
     private void addApplicationHearingEntities(final UUID caseId, final List<HearingEntity> hearingEntities) {
         LOGGER.info("Retrieve application hearings for case {}", caseId);
         final List<UUID> hearingIds = hearingEntities.stream().map(HearingEntity::getHearingId).collect(toList());
-        final List<CourtApplicationEntity> applicationEntities = courtApplicationRepository.findByLinkedCaseId(caseId);
-
-        for (final CourtApplicationEntity courtApplicationEntity : applicationEntities) {
-            final List<HearingApplicationEntity> applicationHearingEntities = hearingApplicationRepository.findByApplicationId(courtApplicationEntity.getApplicationId());
+        final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId);
+        for (final CourtApplicationCaseEntity courtApplicationCaseEntity : courtApplicationCaseEntities) {
+            final List<HearingApplicationEntity> applicationHearingEntities = hearingApplicationRepository.findByApplicationId(courtApplicationCaseEntity.getId().getApplicationId());
 
             if (isNotEmpty(applicationHearingEntities)) {
                 for (final HearingApplicationEntity hearingApplicationEntity : applicationHearingEntities) {
@@ -181,7 +177,7 @@ public class HearingAtAGlanceService {
         prosecutionCase.getDefendants().forEach(defendant ->
                 defendantHearingsList.add(DefendantHearings.defendantHearings()
                         .withDefendantId(defendant.getId())
-                        .withDefendantName(getDefendantName(defendant))
+                        .withDefendantName(getDefendantName(defendant.getPersonDefendant(), defendant.getLegalEntityDefendant()))
                         .withHearingIds(getHearingIdsForDefendant(caseDefendantHearingEntities, defendant))
                         .build())
         );
@@ -311,7 +307,7 @@ public class HearingAtAGlanceService {
 
         if (isNotEmpty(prosecutionCases) && isNotEmpty(courtApplications)) {
             courtApplications.forEach(courtApplication -> {
-                final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
+                final List<CourtApplicationParty> respondents = courtApplication.getRespondents();
                 if (isNotEmpty(respondents)) {
                     addNonDefendantsToDefendantsView(courtApplications, defendantsList, respondents);
                 }
@@ -320,7 +316,7 @@ public class HearingAtAGlanceService {
 
         if (CollectionUtils.isEmpty(prosecutionCases) && isNotEmpty(courtApplications)) {
             courtApplications.forEach(courtApplication -> {
-                final List<CourtApplicationRespondent> respondents = courtApplication.getRespondents();
+                final List<CourtApplicationParty> respondents = courtApplication.getRespondents();
                 if (isNotEmpty(respondents)) {
                     addDefendantsAndNonDefendantsToDefendantsView(courtApplications, hearing, defendantsList, respondents);
                 }
@@ -329,12 +325,11 @@ public class HearingAtAGlanceService {
         return defendantsList;
     }
 
-    private static void addNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final List<Defendants> defendantsList, final List<CourtApplicationRespondent> respondents) {
-        respondents.forEach(courtApplicationRespondent -> {
-            final CourtApplicationParty courtApplicationParty = courtApplicationRespondent.getPartyDetails();
-            if (Objects.nonNull(courtApplicationParty.getPersonDetails()) ||
-                    Objects.nonNull(courtApplicationParty.getOrganisation()) ||
-                    Objects.nonNull(courtApplicationParty.getProsecutingAuthority())) {
+    private static void addNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final List<Defendants> defendantsList, final List<CourtApplicationParty> courtApplicationParties) {
+        courtApplicationParties.forEach(courtApplicationParty -> {
+            if (nonNull(courtApplicationParty.getPersonDetails()) ||
+                    nonNull(courtApplicationParty.getOrganisation()) ||
+                    nonNull(courtApplicationParty.getProsecutingAuthority())) {
                 defendantsList.add(getDefendantsView(courtApplications, courtApplicationParty));
             }
         });
@@ -345,9 +340,9 @@ public class HearingAtAGlanceService {
         defendants.forEach(defendant -> {
             final Defendants defendantView = Defendants.defendants()
                     .withId(defendant.getId())
-                    .withName(getDefendantName(defendant))
-                    .withAge(getDefendantAge(defendant, hearing.getHearingDays()))
-                    .withDateOfBirth(getDefendantDataOfBirth(defendant))
+                    .withName(getDefendantName(defendant.getPersonDefendant(), defendant.getLegalEntityDefendant()))
+                    .withAge(getDefendantAge(defendant.getPersonDefendant(), hearing.getHearingDays()))
+                    .withDateOfBirth(getDefendantDataOfBirth(defendant.getPersonDefendant()))
                     .withAddress(extractAddress(defendant))
                     .withDefenceOrganisation(getDefenceOrganisation(defendant, hearing))
                     .withOffences(getDefendantOffences(defendant))
@@ -370,29 +365,25 @@ public class HearingAtAGlanceService {
         }
     }
 
-    private static void addDefendantsAndNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final Hearing hearing, final List<Defendants> defendantsList, final List<CourtApplicationRespondent> respondents) {
-        respondents.forEach(courtApplicationRespondent -> {
-            final CourtApplicationParty courtApplicationParty = courtApplicationRespondent.getPartyDetails();
-            final Defendant defendant = courtApplicationParty.getDefendant();
-            if (Objects.nonNull(defendant)) {
+    private static void addDefendantsAndNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final Hearing hearing, final List<Defendants> defendantsList, final List<CourtApplicationParty> courtApplicationParties) {
+        courtApplicationParties.forEach(courtApplicationParty -> {
+            final MasterDefendant masterDefendant = courtApplicationParty.getMasterDefendant();
+            if (nonNull(masterDefendant)) {
                 final Defendants defendantView = Defendants.defendants()
-                        .withId(defendant.getId())
-                        .withName(getDefendantName(defendant))
-                        .withAge(getDefendantAge(defendant, hearing.getHearingDays()))
-                        .withDateOfBirth(getDefendantDataOfBirth(defendant))
-                        .withAddress(nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getPersonDetails().getAddress() : null)
-                        .withDefenceOrganisation(getDefenceOrganisation(defendant, hearing))
-                        .withOffences(getDefendantOffences(defendant))
-                        .withJudicialResults(getJudicialResults(defendant.getDefendantCaseJudicialResults()))
-                        .withCourtApplications(getCourtApplicationsForDefendant(courtApplications, defendant.getId()))
-                        .withLegalAidStatus(defendant.getLegalAidStatus())
-                        .withProceedingsConcluded(defendant.getProceedingsConcluded())
+                        .withId(masterDefendant.getMasterDefendantId())
+                        .withName(getDefendantName(masterDefendant.getPersonDefendant(), masterDefendant.getLegalEntityDefendant()))
+                        .withAge(getDefendantAge(masterDefendant.getPersonDefendant(), hearing.getHearingDays()))
+                        .withDateOfBirth(getDefendantDataOfBirth(masterDefendant.getPersonDefendant()))
+                        .withAddress(nonNull(masterDefendant.getPersonDefendant()) ? masterDefendant.getPersonDefendant().getPersonDetails().getAddress() : null)
+                        .withJudicialResults(getJudicialResults(null))
+                        .withCourtApplications(getCourtApplicationsForDefendant(courtApplications, masterDefendant.getMasterDefendantId()))
                         .build();
                 defendantsList.add(defendantView);
             }
-            if (Objects.nonNull(courtApplicationParty.getPersonDetails()) ||
-                    Objects.nonNull(courtApplicationParty.getOrganisation()) ||
-                    Objects.nonNull(courtApplicationParty.getProsecutingAuthority())) {
+
+            if (nonNull(courtApplicationParty.getPersonDetails()) ||
+                    nonNull(courtApplicationParty.getOrganisation()) ||
+                    nonNull(courtApplicationParty.getProsecutingAuthority())) {
                 defendantsList.add(getDefendantsView(courtApplications, courtApplicationParty));
             }
         });
@@ -413,19 +404,17 @@ public class HearingAtAGlanceService {
             courtApplicationsViewList = new ArrayList<>();
             for (final CourtApplication courtApplication : courtApplications) {
                 if (isNotEmpty(courtApplication.getRespondents())) {
-                    for (final CourtApplicationRespondent courtApplicationRespondent : courtApplication.getRespondents()) {
-                        final Defendant defendant = courtApplicationRespondent.getPartyDetails().getDefendant();
-                        if (nonNull(defendant) && defendant.getId().equals(defendantId)) {
+                    for (final CourtApplicationParty courtApplicationParty : courtApplication.getRespondents()) {
+                        final MasterDefendant masterDefendant = courtApplicationParty.getMasterDefendant();
+                        if (nonNull(masterDefendant) && masterDefendant.getMasterDefendantId().equals(defendantId)) {
                             courtApplicationsViewList.add(CourtApplications.courtApplications()
                                     .withApplicationId(courtApplication.getId())
                                     .withApplicant(getCourtApplicationPartyName(courtApplication.getApplicant()))
                                     .withRespondents(getRespondents(courtApplication.getRespondents()))
                                     .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                                    .withApplicationType(courtApplication.getType().getApplicationType())
-                                    .withIsAppeal(courtApplication.getType().getIsAppealApplication())
+                                    .withApplicationType(courtApplication.getType().getType())
+                                    .withIsAppeal(courtApplication.getType().getAppealFlag())
                                     .withJudicialResults(courtApplication.getJudicialResults())
-                                    .withOutcome(nonNull(courtApplication.getApplicationOutcome()) ? courtApplication.getApplicationOutcome().getApplicationOutcomeType().getDescription() : null)
-                                    .withOutcomeDate(nonNull(courtApplication.getApplicationOutcome()) ? courtApplication.getApplicationOutcome().getApplicationOutcomeDate() : null)
                                     .build());
                         }
                     }
@@ -440,17 +429,15 @@ public class HearingAtAGlanceService {
         courtApplications.forEach(courtApplication -> {
             if (isNotEmpty(courtApplication.getRespondents())) {
                 courtApplication.getRespondents().forEach(courtApplicationRespondent -> {
-                    if (partyDetailsId.equals(courtApplicationRespondent.getPartyDetails().getId())) {
+                    if (partyDetailsId.equals(courtApplicationRespondent.getId())) {
                         courtApplicationsViewList.add(CourtApplications.courtApplications()
                                 .withApplicationId(courtApplication.getId())
                                 .withApplicant(getCourtApplicationPartyName(courtApplication.getApplicant()))
                                 .withRespondents(getRespondents(courtApplication.getRespondents()))
                                 .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
-                                .withApplicationType(courtApplication.getType().getApplicationType())
-                                .withIsAppeal(courtApplication.getType().getIsAppealApplication())
+                                .withApplicationType(courtApplication.getType().getType())
+                                .withIsAppeal(courtApplication.getType().getAppealFlag())
                                 .withJudicialResults(getJudicialResults(courtApplication.getJudicialResults()))
-                                .withOutcome(nonNull(courtApplication.getApplicationOutcome()) ? courtApplication.getApplicationOutcome().getApplicationOutcomeType().getDescription() : null)
-                                .withOutcomeDate(nonNull(courtApplication.getApplicationOutcome()) ? courtApplication.getApplicationOutcome().getApplicationOutcomeDate() : null)
                                 .build());
                     }
                 });
@@ -459,37 +446,19 @@ public class HearingAtAGlanceService {
         return courtApplicationsViewList;
     }
 
-    private static List<Respondents> getRespondents(final List<CourtApplicationRespondent> courtApplicationRespondents) {
+    private static List<Respondents> getRespondents(final List<CourtApplicationParty> courtApplicationParties) {
         final List<Respondents> respondents = new ArrayList<>();
-        courtApplicationRespondents.forEach(courtApplicationRespondent ->
+        courtApplicationParties.forEach(courtApplicationParty ->
                 respondents.add(Respondents.respondents()
-                        .withName(getCourtApplicationPartyName(courtApplicationRespondent.getPartyDetails()))
-                        .withApplicationResponse(getApplicationResponse(courtApplicationRespondent.getApplicationResponse()))
-                        .withResponseDate(getResponseDate(courtApplicationRespondent.getApplicationResponse()))
+                        .withName(getCourtApplicationPartyName(courtApplicationParty))
                         .build()));
         return respondents;
     }
 
-    private static LocalDate getResponseDate(final CourtApplicationResponse applicationResponse) {
-        LocalDate responseDate = null;
-        if (Objects.nonNull(applicationResponse)) {
-            responseDate = applicationResponse.getApplicationResponseDate();
-        }
-        return responseDate;
-    }
-
-    private static String getApplicationResponse(final CourtApplicationResponse applicationResponse) {
-        String response = null;
-        if (Objects.nonNull(applicationResponse) && Objects.nonNull(applicationResponse.getApplicationResponseType())) {
-            response = applicationResponse.getApplicationResponseType().getDescription();
-        }
-        return response;
-    }
-
     private static String getCourtApplicationPartyName(final CourtApplicationParty courtApplicationParty) {
-        final Defendant defendant = courtApplicationParty.getDefendant();
-        if (nonNull(defendant) && nonNull(defendant.getPersonDefendant())) {
-            return getPersonName(defendant.getPersonDefendant().getPersonDetails());
+        final MasterDefendant masterDefendant = courtApplicationParty.getMasterDefendant();
+        if (nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant())) {
+            return getPersonName(masterDefendant.getPersonDefendant().getPersonDetails());
         }
         if (nonNull(courtApplicationParty.getPersonDetails())) {
             return getPersonName(courtApplicationParty.getPersonDetails());
@@ -559,16 +528,16 @@ public class HearingAtAGlanceService {
         return results;
     }
 
-    private static String getDefendantAge(final uk.gov.justice.core.courts.Defendant defendant, final List<HearingDay> hearingDays) {
-        LOGGER.info("Calculate defendant age for defendant {} ", defendant);
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth())
-                && nonNull(hearingDays) && !hearingDays.isEmpty()) {
+    private static String getDefendantAge(final PersonDefendant personDefendant, final List<HearingDay> hearingDays) {
+        LOGGER.info("Calculate defendant age for defendant {} ", personDefendant);
+        if (nonNull(personDefendant) && nonNull(personDefendant.getPersonDetails().getDateOfBirth())
+                && isNotEmpty(hearingDays)) {
             LOGGER.info("Count of hearing days provided {}", hearingDays.size());
-            final String dateOfBirthText = defendant.getPersonDefendant().getPersonDetails().getDateOfBirth().toString();
+            final String dateOfBirthText = personDefendant.getPersonDetails().getDateOfBirth().toString();
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DateTimeFormats.STANDARD.getValue());
             final LocalDate dateOfBirth = LocalDate.parse(dateOfBirthText, formatter);
             final ZonedDateTime earliestHearingDay = getEarliestHearingDate(hearingDays);
-            if (Objects.nonNull(earliestHearingDay)) {
+            if (nonNull(earliestHearingDay)) {
                 final Period period = Period.between(dateOfBirth, earliestHearingDay.toLocalDate());
                 LOGGER.info("Defendant age is calculated {}", period.getYears());
                 return Integer.toString(period.getYears());
@@ -583,9 +552,9 @@ public class HearingAtAGlanceService {
         return hearingDays.stream().sorted(comparing(HearingDay::getSittingDay)).findFirst().get().getSittingDay();
     }
 
-    private static LocalDate getDefendantDataOfBirth(final uk.gov.justice.core.courts.Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails())) {
-            return defendant.getPersonDefendant().getPersonDetails().getDateOfBirth();
+    private static LocalDate getDefendantDataOfBirth(final PersonDefendant personDefendant) {
+        if (nonNull(personDefendant) && nonNull(personDefendant.getPersonDetails())) {
+            return personDefendant.getPersonDetails().getDateOfBirth();
         }
         return null;
     }
@@ -607,13 +576,12 @@ public class HearingAtAGlanceService {
         return new ArrayList<>();
     }
 
-    private static String getDefendantName(final uk.gov.justice.core.courts.Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant())) {
-            final PersonDefendant personDefendant = defendant.getPersonDefendant();
+    private static String getDefendantName(final PersonDefendant personDefendant, final LegalEntityDefendant legalEntityDefendant) {
+        if (nonNull(personDefendant)) {
             return getPersonName(personDefendant.getPersonDetails());
         }
-        if (nonNull(defendant.getLegalEntityDefendant())) {
-            return defendant.getLegalEntityDefendant().getOrganisation().getName();
+        if (nonNull(legalEntityDefendant)) {
+            return legalEntityDefendant.getOrganisation().getName();
         }
         return EMPTY;
     }

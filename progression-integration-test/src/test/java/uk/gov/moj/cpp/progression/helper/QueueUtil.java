@@ -4,6 +4,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.OptionalPresent.ifPresent;
 
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -128,6 +129,14 @@ public class QueueUtil {
         ).orElse(Optional::empty);
     }
 
+    public static JsonEnvelope retrieveMessageAsEnvelope(final MessageConsumer consumer) {
+        return retrieveMessageAsString(consumer).map(new DefaultJsonObjectEnvelopeConverter()::asEnvelope).orElse(null);
+    }
+
+    public static Optional<String> retrieveMessageAsString(final MessageConsumer consumer) {
+        return retrieveMessageAsString(consumer, RETRIEVE_TIMEOUT);
+    }
+
     public static Optional<String> retrieveMessageAsString(final MessageConsumer consumer, final long customTimeOutInMillis) {
         try {
             final TextMessage message = (TextMessage) consumer.receive(customTimeOutInMillis);
@@ -145,7 +154,6 @@ public class QueueUtil {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
         final String json = jsonEnvelope.toDebugStringPrettyPrint();
-//        LOGGER.info(json);
         try {
             final TextMessage message = new ActiveMQTextMessage();
 

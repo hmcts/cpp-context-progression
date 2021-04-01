@@ -7,10 +7,10 @@ import static java.util.logging.Level.WARNING;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static uk.gov.justice.services.DomainToIndexMapper.ISO_8601_FORMATTER;
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.fromString;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
 import javax.json.JsonArray;
@@ -51,6 +51,10 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                                         final int caseIndex,
                                         final int outputHearingIndex) {
         try {
+            if(!inputHearing.jsonString().contains("judiciary")){
+                return;
+            }
+
             final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, caseIndex, outputHearingIndex);
 
             final JsonArray judiciaryInput = inputHearing.read(INPUT_JUDICIARY_JSON_PATH);
@@ -114,7 +118,7 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
             with(outputCases.toString())
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes")).intValue()))
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listingSequence", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listingSequence")).intValue()))
-                    .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].sittingDay", is(fromString(sittingDay).format(DateTimeFormatter.ISO_INSTANT)))
+                    .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].sittingDay", is(fromString(sittingDay).format(ISO_8601_FORMATTER)))
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtCentreId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].courtCentreId")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtRoomId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].courtRoomId")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingDates[" + hearingDayIndex + "]", is(date.toString()));
@@ -134,7 +138,7 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
             with(outputCases.toString())
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listedDurationMinutes")).intValue()))
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].listingSequence", equalTo(((JsonNumber) inputParties.read(INPUT_HEARING_JSON_PATH + ".hearingDays[" + hearingDayIndex + "].listingSequence")).intValue()))
-                    .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].sittingDay", is(fromString(sittingDay).format(DateTimeFormatter.ISO_INSTANT)))
+                    .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].sittingDay", is(fromString(sittingDay).format(ISO_8601_FORMATTER)))
                     .assertThat(hearingOutputIndexPath + ".hearingDays[" + hearingDayIndex + "].courtCentreId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".courtCentre.id")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingDates[" + hearingDayIndex + "]", is(date.toString()));
         } catch (Exception e) {
@@ -151,8 +155,6 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
             final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, caseIndex, outputHearingIndex);
 
             with(outputCases.toString())
-                    .assertThat(hearingOutputIndexPath + ".boxWorkAssignedUserId", equalTo(((JsonString) inputParties.read(ROOT + ".boxWorkAssignedUserId")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".boxWorkTaskStatus", equalTo(((JsonString) inputParties.read(ROOT + ".boxWorkTaskStatus")).getString()))
                     .assertThat(hearingOutputIndexPath + ".hearingId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".id")).getString()))
                     .assertThat(hearingOutputIndexPath + ".jurisdictionType", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".jurisdictionType")).getString()))
                     .assertThat(hearingOutputIndexPath + ".courtId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".courtCentre.id")).getString()))

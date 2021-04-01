@@ -1,16 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
+import java.time.LocalDate;
+import java.time.Period;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.hamcrest.core.Is;
 import org.junit.Test;
 
 public class CourtRegisterPdfPayloadGeneratorTest {
@@ -23,7 +25,8 @@ public class CourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-court-register-document-payload.json");
         final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = courtRegisterPdfPayloadGenerator.mapPayload(body);
-        assertThat(responseBody.toString(), Is.is(getPayload("courtRegisterPdfPayload.json").toString()));
+        final String expected = responseBody.toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2001,12,27),LocalDate.now()).getYears()));
+        assertThat(responseBody.toString(), is(expected));
     }
 
     @Test
@@ -31,7 +34,7 @@ public class CourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-court-register-document-min-payload.json");
         final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = courtRegisterPdfPayloadGenerator.mapPayload(body);
-        assertThat(responseBody.toString(), Is.is(getPayload("courtRegisterPdfPayload-min.json").toString()));
+        assertThat(responseBody.toString(), is(getPayload("courtRegisterPdfPayload-min.json").toString()));
     }
 
     public static JsonObject getPayload(final String path) {

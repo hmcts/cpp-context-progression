@@ -15,7 +15,5 @@ public interface CourtApplicationRepository extends EntityRepository<CourtApplic
 
     CourtApplicationEntity findByApplicationId(UUID id);
 
-    List<CourtApplicationEntity> findByLinkedCaseId(UUID id);
-
     List<CourtApplicationEntity> findByParentApplicationId(UUID id);
 }

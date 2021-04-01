@@ -38,6 +38,12 @@ subscriptions_descriptor:
         - name: public.progression.court-application-rejected
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-rejected.json
 
+        - name: public.progression.court-application-proceedings-initiate-ignored
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-proceedings-initiate-ignored.json
+
+        - name: public.progression.court-application-initiate-sjp-case-ignored
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.court-application-initiate-sjp-case-ignored.json
+
         - name: public.progression.events.hearing-extended
           schema_uri: http://justice.gov.uk/progression/courts/hearing-extended.json
 
@@ -56,6 +62,9 @@ subscriptions_descriptor:
         - name: public.progression.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
 
+        - name: public.progression.sjp-prosecution-case-created
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.sjp-prosecution-case-created.json
+
         - name: public.progression.court-document-added
           schema_uri: http://justice.gov.uk/core/courts/courts-document-added.json
 
@@ -64,6 +73,12 @@ subscriptions_descriptor:
 
         - name: public.progression.boxwork-application-referred
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.boxwork-application-referred.json
+
+        - name: public.progression.court-application-summons-approved
+          schema_uri: http://justice.gov.uk/core/courts/public-progression-court-application-summons-approved.json
+
+        - name: public.progression.court-application-summons-rejected
+          schema_uri: http://justice.gov.uk/progression/courts/public.progression.court-application-summons-rejected.json
 
         - name: public.progression.boxwork-assignment-changed
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.boxwork-assignment-changed.json
@@ -154,6 +169,9 @@ subscriptions_descriptor:
 
         - name: public.progression.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
+
+        - name: public.progression.hearing-resulted-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
 
         - name: public.progression.event.court-document-share-failed
           schema_uri: http://justice.gov.uk/core/courts/court-document-share-failed.json

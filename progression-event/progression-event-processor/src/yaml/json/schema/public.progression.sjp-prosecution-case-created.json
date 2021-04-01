@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.progression.sjp-prosecution-case-created.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    }
+  },
+  "additionalProperties":false
+}

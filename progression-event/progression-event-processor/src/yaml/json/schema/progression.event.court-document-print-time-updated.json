@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-document-print-time-updated.json",
+  "type": "object",
+  "properties": {
+    "courtDocumentId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "printedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "courtDocumentId",
+    "materialId",
+    "printedAt"
+  ],
+  "additionalProperties": false
+}

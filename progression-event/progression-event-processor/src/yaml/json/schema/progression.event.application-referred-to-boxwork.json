@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/application-referred-to-boxwork.json",
+  "type": "object",
+  "properties": {
+    "application": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+    },
+    "boxHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/boxHearingRequest.json"
+    }
+  },
+  "required": [
+    "application",
+    "boxHearing"
+  ],
+  "additionalProperties": false
+}

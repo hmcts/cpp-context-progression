@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-court-application-case" author="cpp.context.progression">
+
+        <createTable tableName="court_application_case">
+            <column name="id" type="UUID"/>
+            <column name="application_id" type="UUID"/>
+            <column name="case_id" type="UUID"/>
+            <column name="case_reference" type="TEXT"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="id"
+                       constraintName="court_application_case_primary_key"
+                       tableName="court_application_case"/>
+        <addUniqueConstraint columnNames="application_id, case_id"
+                             constraintName="court_application_case_unique_key" tableName="court_application_case" />
+    </changeSet>
+
+</databaseChangeLog>

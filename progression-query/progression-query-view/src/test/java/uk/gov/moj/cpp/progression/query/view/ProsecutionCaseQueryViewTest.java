@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import static com.jayway.jsonassert.JsonAssert.with;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,7 +28,6 @@ import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSea
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -32,7 +35,9 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
@@ -56,15 +61,19 @@ import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseCpsProsecutorRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
@@ -113,6 +122,23 @@ public class ProsecutionCaseQueryViewTest {
     private static final String LABEL2 = "label 2";
     private static final String LABEL3 = "label 3";
     private static final String LABEL4 = "label 4";
+
+    private static final UUID CASE_ID1 = UUID.fromString("ad778633-5df9-4f15-881b-9bdde7c71b8b");
+    private static final UUID CASE_ID2 = UUID.fromString("b4f8f8b3-6c3d-495c-ad01-c1b8a1349d5a");
+    private static final UUID CASE_ID3 = UUID.fromString("b4f8f8b3-6c3d-495c-ad01-c1b8a1349d5b");
+    private static final UUID MASTER_DEFENDANT_ID1 = UUID.fromString("2cb9ff20-9197-473f-a6c0-cfbea6a8480a");
+    private static final UUID MASTER_DEFENDANT_ID2 = UUID.fromString("2cb9ff20-9197-473f-a6c0-cfbea6a8480b");
+    private static final UUID MASTER_DEFENDANT_ID3 = UUID.fromString("2cb9ff20-9197-473f-a6c0-cfbea6a8480c");
+    private static final UUID OFFENCE_ID1 = UUID.fromString("31ef1687-98f2-4185-a8a0-2b46b198000b");
+    private static final UUID OFFENCE_ID2 = UUID.fromString("8fbfc6bb-55a3-45b6-a5a6-7a66de3e566f");
+    private static final UUID OFFENCE_ID3 = UUID.fromString("37adb016-747c-41ab-9217-b286e32bf7ad");
+    private static final UUID OFFENCE_ID4 = UUID.fromString("37adb016-747c-41ab-9217-b286e32bf7ae");
+    private static final UUID OFFENCE_ID5 = UUID.fromString("37adb016-747c-41ab-9217-b286e32bf7af");
+    private static final UUID OFFENCE_ID6 = UUID.fromString("1fee4471-34aa-4594-8759-77624fca1cad");
+
+
+
+
     private final Enveloper enveloper = createEnveloper();
     @Mock
     private CourtDocumentMaterialRepository courtDocumentMaterialRepository;
@@ -121,12 +147,20 @@ public class ProsecutionCaseQueryViewTest {
     @Mock
     private ProsecutionCaseRepository prosecutionCaseRepository;
     @Mock
+    private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
+    @Mock
     private CourtDocumentRepository courtDocumentRepository;
     @Mock
     private JsonObject jsonObject;
     @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    private JsonObject prosecutionCaseJson1;
     @Mock
+    private JsonObject prosecutionCaseJson2;
+    @Mock
+    private JsonObject prosecutionCaseJson3;
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -137,7 +171,7 @@ public class ProsecutionCaseQueryViewTest {
     @InjectMocks
     private ProsecutionCaseQuery prosecutionCaseQuery;
     @Mock
-    private CourtApplicationRepository courtApplicationRepository;
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
     @Mock
     private HearingAtAGlanceService hearingAtAGlanceService;
     @Mock
@@ -149,7 +183,7 @@ public class ProsecutionCaseQueryViewTest {
     @Before
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-
+        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.listToJsonArrayConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.listToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
         setField(this.hearingListToJsonArrayConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -157,8 +191,9 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldFindProsecutionCaseById() throws Exception {
+    public void shouldFindProsecutionCaseById() {
         final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("caseId", caseId.toString()).build();
 
@@ -166,8 +201,16 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                .withMasterDefendantId(masterDefendantId)
+                .build());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendants)
+                .build();
+
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        prosecutionCaseEntity.setPayload("{}");
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
 
         final GetHearingsAtAGlance getCaseAtAGlance = getHearingsAtAGlance()
                 .withHearings(asList(hearings().build()))
@@ -176,9 +219,61 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
 
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(CourtApplication.courtApplication().build());
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+    }
+
+    @Test
+    public void shouldNotReturnAnyRelatedCaseWhenThereIsNoRelatedCase() {
+        final UUID caseId = randomUUID();
+        final UUID relatedCaseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", caseId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                jsonObject);
+
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence()
+                .withId(offenceId)
+                .build());
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                .withMasterDefendantId(masterDefendantId)
+                .withOffences(offences)
+                .build());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendants)
+                .withCaseStatus("ACTIVE")
+                .withId(relatedCaseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("CaseURN").build())
+                .build();
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+
+        final GetHearingsAtAGlance getCaseAtAGlance = getHearingsAtAGlance()
+                .withHearings(asList(hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = new ArrayList<>();
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity= new MatchDefendantCaseHearingEntity();
+        matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
+        matchDefendantCaseHearingEntity.setProsecutionCase(prosecutionCaseEntity);
+        matchDefendantCaseHearingEntity.setProsecutionCaseId(caseId);
+        matchDefendantCaseHearingEntityList.add(matchDefendantCaseHearingEntity);
+
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
@@ -187,18 +282,27 @@ public class ProsecutionCaseQueryViewTest {
     @Test
     public void shouldAddOldProsecutionAuthorityCode() {
         final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("caseId", caseId.toString()).build();
 
-        final JsonObject prosecutionCase = Json.createObjectBuilder()
-                .add("prosecutionCaseIdentifier", Json.createObjectBuilder()).build();
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                .withMasterDefendantId(masterDefendantId)
+                .build());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendants)
+                .withProsecutionCaseIdentifier(new ProsecutionCaseIdentifier.Builder().build())
+                .build();
+
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        prosecutionCaseEntity.setPayload("{}");
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+
 
         final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withHearings(asList(Hearings.hearings().build()))
@@ -211,15 +315,95 @@ public class ProsecutionCaseQueryViewTest {
         caseCpsProsecutorEntity.setOldCpsProsecutor("OLDCPSPROSECUTOR");
 
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
         when(caseCpsProsecutorRepository.findBy(caseId)).thenReturn(caseCpsProsecutorEntity);
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(prosecutionCase);
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(CourtApplication.courtApplication().build());
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
         assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("oldProsecutionAuthorityCode"), is("OLDCPSPROSECUTOR"));
         assertThat(response.payloadAsJsonObject().getJsonObject("hearingsAtAGlance").getJsonObject("prosecutionCaseIdentifier").getString("oldProsecutionAuthorityCode"), is("OLDCPSPROSECUTOR"));
+    }
+
+    @Test
+    public void shouldFindProsecutionCaseAndRelatedCasesByIdWithMultipleDefendants() {
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", CASE_ID1.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                jsonObject);
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities();
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID2)).thenReturn(matchDefendantCaseHearingEntityList.get(1).getProsecutionCase());
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID3)).thenReturn(matchDefendantCaseHearingEntityList.get(2).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(2));
+
+        assertThat(relatedCases.getJsonObject(0).getJsonArray("cases").size(), is(1));
+        assertThat(relatedCases.getJsonObject(1).getJsonArray("cases").size(), is(1));
+
+        with(relatedCases.toString())
+                .assertThat("$.[*].masterDefendantId", hasItems(MASTER_DEFENDANT_ID1.toString(), MASTER_DEFENDANT_ID2.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[*].cases[*].caseId", hasItems(CASE_ID2.toString(), CASE_ID3.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[*].cases[*].prosecutionCaseIdentifier.caseURN", hasItems("CaseURN2", "CaseURN3"));
+        with(relatedCases.toString())
+                .assertThat("$.[*].cases[*].caseStatus", hasItems("ACTIVE2", "ACTIVE3"));
+        with(relatedCases.toString())
+                .assertThat("$.[*].cases[*].offences[*].id", hasItems(OFFENCE_ID2.toString(), OFFENCE_ID4.toString()));
+
+    }
+
+    @Test
+    public void shouldNotFindRelatedCaseIfThereIsNoOffenceForMasterDefendant() {
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", CASE_ID1.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                jsonObject);
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntitiesWithNoOffence();
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID2)).thenReturn(matchDefendantCaseHearingEntityList.get(1).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
     }
 
     @Test
@@ -231,8 +415,11 @@ public class ProsecutionCaseQueryViewTest {
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
         final Defendant defendant = defendant().withId(defendantId).withMasterDefendantId(masterDefendantId).build();
 
-        when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(new ProsecutionCaseEntity());
-        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any(Class.class))).thenReturn(getProsecutionCase(caseURN, defendant));
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(fromString(caseId));
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase(caseURN, defendant)).toString());
+
+        when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
         when(hearingAtAGlanceService.getCaseHearings(any(UUID.class))).thenReturn(getHearingsList(masterDefendantId));
 
@@ -252,27 +439,23 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(defendantJudicialResults.getJsonObject(3).getJsonString("label").getString(), is(LABEL4));
     }
 
-
     @Test
     public void shouldFindApplicationsLinkedToCaseAtAGlanceProsecutionCase() {
         final String caseURN = "05PP1000915";
         final JsonEnvelope jsonEnvelope = buildEnvelope(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, "progression.query.prosecutioncase.caag.with.urn.json");
-        final JsonObject prosecutionCaseEntityJson = jsonEnvelope.payloadAsJsonObject().getJsonObject(PROSECUTION_CASE);
 
         final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
-
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(fromString(caseId));
-        prosecutionCaseEntity.setPayload(prosecutionCaseEntityJson.toString());
-
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase(caseURN)).toString());
         final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
-
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
-        courtApplicationEntity.setPayload("{}");
-
-        final GetHearingsAtAGlance getCaseAtAGlance = getHearingsAtAGlance()
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), UUID.fromString(caseId)));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withHearings(asList(
                         hearings()
                                 .build()
@@ -282,19 +465,12 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
 
         when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
-        when(courtApplicationRepository.findByLinkedCaseId(fromString(caseId))).thenReturn(asList(courtApplicationEntity));
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(prosecutionCaseEntityJson);
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJson, ProsecutionCase.class))
-                .thenReturn(getProsecutionCase(caseURN));
+        when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(courtApplicationCaseEntity));
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
-
-        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert("{}"), CourtApplication.class))
-                .thenReturn(courtApplication);
         when(hearingAtAGlanceService.getHearingAtAGlance(fromString(caseId))).thenReturn(getCaseAtAGlance);
-
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
-
         assertThat(response.payloadAsJsonObject().get("linkedApplications"), notNullValue());
+
     }
 
     @Test
@@ -308,13 +484,16 @@ public class ProsecutionCaseQueryViewTest {
 
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(fromString(caseId));
-        prosecutionCaseEntity.setPayload(prosecutionCaseEntityJson.toString());
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase(prosecutionCaseEntityJson.getJsonObject("prosecutionCaseIdentifier").getString("caseURN"))).toString());
 
         final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
-        courtApplicationEntity.setPayload("{}");
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), UUID.fromString(caseId)));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
                 .withHearings(asList(
@@ -332,14 +511,9 @@ public class ProsecutionCaseQueryViewTest {
 
         when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
         when(caseCpsProsecutorRepository.findBy(fromString(caseId))).thenReturn(caseCpsProsecutorEntity);
-        when(courtApplicationRepository.findByLinkedCaseId(fromString(caseId))).thenReturn(asList(courtApplicationEntity));
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(prosecutionCaseEntityJson);
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJson, ProsecutionCase.class))
-                .thenReturn(getProsecutionCase(prosecutionCaseEntityJson.getJsonObject("prosecutionCaseIdentifier").getString("caseURN")));
+        when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(courtApplicationCaseEntity));
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
 
-        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert("{}"), CourtApplication.class))
-                .thenReturn(courtApplication);
         when(hearingAtAGlanceService.getHearingAtAGlance(fromString(caseId))).thenReturn(getCaseAtAGlance);
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
@@ -385,6 +559,7 @@ public class ProsecutionCaseQueryViewTest {
     @Test
     public void shouldFindApplicationsLinkedToProsecutionCase() {
         final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("caseId", caseId.toString()).build();
 
@@ -392,8 +567,16 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                .withMasterDefendantId(masterDefendantId)
+                .build());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendants)
+                .build();
+
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        prosecutionCaseEntity.setPayload("{}");
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
 
         final List<CourtApplication> courtApplications = new ArrayList<>();
         final CourtApplication courtApplication = getCourtApplication();
@@ -406,19 +589,18 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
 
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
-        final Material material = Material.material().withId(randomUUID()).build();
-        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
-        when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
-        when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
-        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
-        courtApplicationEntity.setPayload("{}");
-        when(courtApplicationRepository.findByLinkedCaseId(caseId)).thenReturn(asList(courtApplicationEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(courtApplication);
 
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
+        when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(asList(courtDocumentEntity));
+        when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), caseId));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
+        when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(asList(courtApplicationCaseEntity));
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("linkedApplicationsSummary"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
@@ -428,6 +610,7 @@ public class ProsecutionCaseQueryViewTest {
     @Test
     public void shouldFindApplicationsLinkedToProsecutionCaseWithLegalEntityDefendant() {
         final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("caseId", caseId.toString()).build();
 
@@ -435,8 +618,17 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
                 jsonObject);
 
+
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                .withMasterDefendantId(masterDefendantId)
+                .build());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendants)
+                .build();
+
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        prosecutionCaseEntity.setPayload("{}");
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
 
         final List<CourtApplication> courtApplications = new ArrayList<>();
         final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant();
@@ -449,19 +641,16 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
 
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
-        final Material material = Material.material().withId(randomUUID()).build();
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(this.jsonObject);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
         when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(asList(courtDocumentEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withIsRemoved(false).withMaterials(Collections.singletonList(material)).build());
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtDocument.class)).thenReturn(CourtDocument.courtDocument().withMaterials(Collections.singletonList(material)).build());
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setLinkedCaseId(LINKED_CASE_ID);
-        courtApplicationEntity.setPayload("{}");
-        when(courtApplicationRepository.findByLinkedCaseId(caseId)).thenReturn(asList(courtApplicationEntity));
-        when(jsonObjectToObjectConverter.convert(this.jsonObject, CourtApplication.class)).thenReturn(courtApplication);
-
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), caseId));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+        when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(asList(courtApplicationCaseEntity));
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("linkedApplicationsSummary"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
@@ -521,7 +710,6 @@ public class ProsecutionCaseQueryViewTest {
         searchCaseEntity.setStandaloneApplication(false);
         searchProsecutionCaseEntities.add(searchCaseEntity);
         when(searchCaseRepository.findBySearchCriteria(prepareSearch(searchCriteria))).thenReturn(searchProsecutionCaseEntities);
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
         final JsonEnvelope response = prosecutionCaseQuery.searchCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getJsonArray("searchResults").size(), is(1));
     }
@@ -540,11 +728,236 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(response.payloadAsJsonObject().getJsonArray("searchResults").size(), is(0));
     }
 
+    @Test
+    public void shouldReturnCaseStatusAsACTIVEWhenCaseStatusIsNull(){
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities(null, null);
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).getJsonArray("cases").size(), is(1));
+
+        with(relatedCases.toString())
+                .assertThat("$.[0].masterDefendantId", is(MASTER_DEFENDANT_ID1.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseId", is(CASE_ID2.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].prosecutionCaseIdentifier.caseURN", is("CaseURN2"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseStatus", is("ACTIVE"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].offences[0].id", is(OFFENCE_ID2.toString()));
+
+    }
+
+    @Test
+    public void shouldReturnOnlyActiveReleteCaseWhenPrimaryCaseStatusIsActive(){
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("ACTIVE", "ACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).getJsonArray("cases").size(), is(1));
+
+        with(relatedCases.toString())
+                .assertThat("$.[0].masterDefendantId", is(MASTER_DEFENDANT_ID1.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseId", is(CASE_ID2.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].prosecutionCaseIdentifier.caseURN", is("CaseURN2"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseStatus", is("ACTIVE"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].offences[0].id", is(OFFENCE_ID2.toString()));
+
+    }
+
+    @Test
+    public void shouldNotReturnInActiveReleteCaseWhenPrimaryCaseStatusIsActive(){
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("ACTIVE", "INACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
+    }
+
+    @Test
+    public void shouldNotReturnActiveReleteCaseWhenPrimaryCaseStatusIsInActive(){
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("INACTIVE", "ACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("INACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
+    }
+
+    @Test
+    public void shouldNotReturnActiveReleteCaseWhenPrimaryCaseStatusIsClosed(){
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("CLOSED", "ACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("CLOSED"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
+    }
+
+    @Test
+    public void shouldReturnActiveReleteCaseWhenPrimaryCaseStatusIsClosed(){
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("CLOSED", "INACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("CLOSED"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+
+        assertThat(relatedCases.getJsonObject(0).getJsonArray("cases").size(), is(1));
+
+        with(relatedCases.toString())
+                .assertThat("$.[0].masterDefendantId", is(MASTER_DEFENDANT_ID1.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseId", is(CASE_ID2.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].prosecutionCaseIdentifier.caseURN", is("CaseURN2"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseStatus", is("INACTIVE"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].offences[0].id", is(OFFENCE_ID2.toString()));
+
+    }
+
     private CourtApplication getCourtApplication() {
         return CourtApplication.courtApplication()
                 .withId(APPLICATION_ID)
                 .withApplicationStatus(ApplicationStatus.DRAFT)
-                .withType(CourtApplicationType.courtApplicationType().withApplicationType("Apil").build())
+                .withType(CourtApplicationType.courtApplicationType().withType("Apil").build())
                 .withApplicationReference(APPLICATION_ARN)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withPersonDetails(Person.person()
@@ -553,17 +966,13 @@ public class ProsecutionCaseQueryViewTest {
                                 .withMiddleName(APPLICANT_MIDDLE_NAME)
                                 .build())
                         .build())
-                .withRespondents(asList(CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withName(APPLICATION_PROSECUTOR_NAME)
-                                        .build())
+                .withRespondents(asList(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withName(APPLICATION_PROSECUTOR_NAME)
                                 .build())
-                        .build(), CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_ORG_NAME)
-                                        .build())
+                        .build(), CourtApplicationParty.courtApplicationParty()
+                        .withOrganisation(Organisation.organisation()
+                                .withName(RESPONDENTS_ORG_NAME)
                                 .build())
                         .build()))
                 .build();
@@ -621,29 +1030,25 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     private CourtApplication getCourtApplicationWithLegalEntityDefendant() {
-        final Defendant defendant = defendant().
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant().
                 withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation()
                                 .withName("ABC LTD").build()).build()).build();
         return CourtApplication.courtApplication()
                 .withId(APPLICATION_ID)
                 .withApplicationStatus(ApplicationStatus.DRAFT)
-                .withType(CourtApplicationType.courtApplicationType().withApplicationType("Apil").build())
+                .withType(CourtApplicationType.courtApplicationType().withType("Apil").build())
                 .withApplicationReference(APPLICATION_ARN)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withDefendant(defendant)
+                        .withMasterDefendant(masterDefendant)
                         .build())
-                .withRespondents(asList(CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withName(APPLICATION_PROSECUTOR_NAME)
-                                        .build())
+                .withRespondents(asList(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withName(APPLICATION_PROSECUTOR_NAME)
                                 .build())
-                        .build(), CourtApplicationRespondent.courtApplicationRespondent()
-                        .withPartyDetails(CourtApplicationParty.courtApplicationParty().withDefendant(defendant)
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_ORG_NAME)
-                                        .build())
+                        .build(), CourtApplicationParty.courtApplicationParty()
+                        .withOrganisation(Organisation.organisation()
+                                .withName(RESPONDENTS_ORG_NAME)
                                 .build())
                         .build()))
                 .build();
@@ -678,4 +1083,230 @@ public class ProsecutionCaseQueryViewTest {
                 .withDefendants(asList(defendants))
                 .build();
     }
+
+    private ProsecutionCase getProsecutionCase(final JsonObject prosecutionCaseEntityJson) {
+        return ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(UUID.randomUUID())
+                        .withCaseURN(prosecutionCaseEntityJson.getJsonObject("prosecutionCaseIdentifier").getString("caseURN"))
+                        .build())
+                .withDefendants(emptyList())
+                .build();
+    }
+
+    private List<Offence> buildOffences(UUID offenceId) {
+        List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence().withId(offenceId).build());
+        return offences;
+    }
+
+    static class ApplicationArbitraryValues {
+        final static UUID APPLICATION_ID = UUID.randomUUID();
+        final static UUID LINKED_CASE_ID = UUID.randomUUID();
+        final static String APPLICATION_ARN = new StringGenerator().next();
+        final static String APPLICANT_FIRST_NAME = new StringGenerator().next();
+        final static String APPLICANT_LAST_NAME = new StringGenerator().next();
+        final static String APPLICANT_MIDDLE_NAME = new StringGenerator().next();
+        final static String RESPONDENTS_ORG_NAME = new StringGenerator().next();
+        final static String APPLICATION_PROSECUTOR_NAME = new StringGenerator().next();
+    }
+
+    private List<MatchDefendantCaseHearingEntity> buildMatchDefendantCaseHearingEntitiesWithNoOffence() {
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", CASE_ID1.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                jsonObject);
+
+        final List<Offence> offences1 = buildOffences(OFFENCE_ID1);
+        final List<Offence> offences2 = buildOffences(OFFENCE_ID2);
+
+        final List<Defendant> defendantsForCase1 = new ArrayList<>();
+        defendantsForCase1.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID1)
+                .withOffences(offences1)
+                .build());
+
+        final List<Defendant> defendantsForCase2 = new ArrayList<>();
+        defendantsForCase2.add(Defendant.defendant()
+                .withMasterDefendantId(randomUUID())
+                .withOffences(offences2)
+                .build());
+
+        final ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase1)
+                .withCaseStatus("ACTIVE1")
+                .withId(CASE_ID1)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code1")
+                        .withCaseURN("CaseURN1")
+                        .build())
+                .build();
+
+        final ProsecutionCase prosecutionCase2 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase2)
+                .withCaseStatus("ACTIVE2")
+                .withId(CASE_ID2)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code2")
+                        .withCaseURN("CaseURN2")
+                        .build())
+                .build();
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = new ArrayList<>();
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID1, prosecutionCase1));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID2, prosecutionCase2));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID2, prosecutionCase2));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID2, CASE_ID1, prosecutionCase1));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID3, CASE_ID2, prosecutionCase2));
+        return matchDefendantCaseHearingEntities;
+
+    }
+    private List<MatchDefendantCaseHearingEntity> buildMatchDefendantCaseHearingEntities() {
+        final List<Offence> offences1 = buildOffences(OFFENCE_ID1);
+        final List<Offence> offences2 = buildOffences(OFFENCE_ID2);
+        final List<Offence> offences3 = buildOffences(OFFENCE_ID3);
+        final List<Offence> offences4 = buildOffences(OFFENCE_ID4);
+        final List<Offence> offences5 = buildOffences(OFFENCE_ID5);
+        final List<Offence> offences6 = buildOffences(OFFENCE_ID6);
+
+        final List<Defendant> defendantsForCase1 = new ArrayList<>();
+        defendantsForCase1.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID1)
+                .withOffences(offences1)
+                .build());
+        defendantsForCase1.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID2)
+                .withOffences(offences3)
+                .build());
+
+        final List<Defendant> defendantsForCase2 = new ArrayList<>();
+        defendantsForCase2.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID1)
+                .withOffences(offences2)
+                .build());
+        defendantsForCase2.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID3)
+                .withOffences(offences6)
+                .build());
+
+        final List<Defendant> defendantsForCase3 = new ArrayList<>();
+        defendantsForCase3.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID2)
+                .withOffences(offences4)
+                .build());
+        defendantsForCase3.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID3)
+                .withOffences(offences5)
+                .build());
+
+        final ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase1)
+                .withCaseStatus("ACTIVE1")
+                .withId(CASE_ID1)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code1")
+                        .withCaseURN("CaseURN1")
+                        .build())
+                .build();
+
+        final ProsecutionCase prosecutionCase2 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase2)
+                .withCaseStatus("ACTIVE2")
+                .withId(CASE_ID2)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code2")
+                        .withCaseURN("CaseURN2")
+                        .build())
+                .build();
+
+        final ProsecutionCase prosecutionCase3 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase3)
+                .withCaseStatus("ACTIVE3")
+                .withId(CASE_ID3)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code3")
+                        .withCaseURN("CaseURN3")
+                        .build())
+                .build();
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = new ArrayList<>();
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID1, prosecutionCase1));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID2, prosecutionCase2));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID2, prosecutionCase2));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID2, CASE_ID1, prosecutionCase1));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID2, CASE_ID3, prosecutionCase3));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID3, CASE_ID2, prosecutionCase2));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID3, CASE_ID3, prosecutionCase3));
+        return matchDefendantCaseHearingEntities;
+    }
+
+    private MatchDefendantCaseHearingEntity buildMatchDefendantCaseHearingEntity(UUID masterDefendantId, UUID caseId, ProsecutionCase prosecutionCase) {
+        final MatchDefendantCaseHearingEntity entity = new  MatchDefendantCaseHearingEntity();
+        entity.setId(randomUUID());
+        entity.setDefendantId(randomUUID());
+        entity.setMasterDefendantId(masterDefendantId);
+        entity.setProsecutionCaseId(caseId);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(caseId);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        entity.setProsecutionCase(prosecutionCaseEntity);
+        return entity;
+    }
+
+    private List<MatchDefendantCaseHearingEntity> buildMatchDefendantCaseHearingEntities(final String status1, final String status2){
+
+
+        final List<Offence> offences1 = buildOffences(OFFENCE_ID1);
+        final List<Offence> offences2 = buildOffences(OFFENCE_ID2);
+
+
+        final List<Defendant> defendantsForCase1 = new ArrayList<>();
+        defendantsForCase1.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID1)
+                .withOffences(offences1)
+                .build());
+
+        final List<Defendant> defendantsForCase2 = new ArrayList<>();
+        defendantsForCase2.add(Defendant.defendant()
+                .withMasterDefendantId(MASTER_DEFENDANT_ID1)
+                .withOffences(offences2)
+                .build());
+
+        final ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase1)
+                .withCaseStatus(status1)
+                .withId(CASE_ID1)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code1")
+                        .withCaseURN("CaseURN1")
+                        .build())
+                .build();
+
+        final ProsecutionCase prosecutionCase2 = ProsecutionCase.prosecutionCase()
+                .withDefendants(defendantsForCase2)
+                .withCaseStatus(status2)
+                .withId(CASE_ID2)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("Code2")
+                        .withCaseURN("CaseURN2")
+                        .build())
+                .build();
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = new ArrayList<>();
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID1, prosecutionCase1));
+        matchDefendantCaseHearingEntities.add(buildMatchDefendantCaseHearingEntity(MASTER_DEFENDANT_ID1, CASE_ID2, prosecutionCase2));
+
+        return matchDefendantCaseHearingEntities;
+    }
+
 }

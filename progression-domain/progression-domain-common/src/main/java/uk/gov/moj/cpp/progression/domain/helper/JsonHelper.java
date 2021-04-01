@@ -24,12 +24,17 @@ public class JsonHelper {
     }
 
     public static JsonObject addProperty(final JsonObject origin, final String key, final String value){
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
-        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
-                builder.add(entry.getKey(), entry.getValue());
-        }
+        final JsonObjectBuilder builder = createBuilder(origin);
         builder.add(key, value);
         return builder.build();
+    }
+
+    private static JsonObjectBuilder createBuilder(final JsonObject origin) {
+        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
+            builder.add(entry.getKey(), entry.getValue());
+        }
+        return builder;
     }
 
     public static JsonObject addProperty(final JsonObject origin, final String key, final boolean value){

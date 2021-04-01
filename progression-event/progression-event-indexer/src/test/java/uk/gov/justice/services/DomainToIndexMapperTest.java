@@ -1,8 +1,10 @@
 package uk.gov.justice.services;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.DomainToIndexMapper.addressLines;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.services.unifiedsearch.client.domain.Party;
 
@@ -56,6 +58,30 @@ public class DomainToIndexMapperTest {
         final Defendant defendant = createDefendant("2020-06-26T07:51Z");
         final Party party = domainToIndexMapper.party(defendant);
         assertThat(party.getCourtProceedingsInitiated(), is("2020-06-26T07:51:00.000Z"));
+    }
+
+    @Test
+    public void shouldFormatAddressLines() {
+        final String actualAddressLines = addressLines(Address.address().withAddress1("address1").withAddress3("address5").build());
+        assertThat(actualAddressLines, is("address1 address5"));
+    }
+
+    @Test
+    public void shouldFormatAddressLinesRemovingExtraSpace() {
+        final String actualAddressLines = addressLines(Address.address().withAddress1("  address1 ").withAddress3("  address5  ").build());
+        assertThat(actualAddressLines, is("address1 address5"));
+    }
+
+    @Test
+    public void shouldFormatAddressLinesWithoutBlankSpace() {
+        final String actualAddressLines = addressLines(Address.address().withAddress1("  ").withAddress3("  ").build());
+        assertThat(actualAddressLines, is(""));
+    }
+
+    @Test
+    public void shouldFormatAddressLinesToEmptyString() {
+        final String actualAddressLines = addressLines(Address.address().build());
+        assertThat(actualAddressLines, is(""));
     }
 
     private Defendant createDefendant(final String courtProceedingsInitiated) {

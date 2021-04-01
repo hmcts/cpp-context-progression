@@ -1,19 +1,20 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.junit.Assert.assertEquals;
+
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,17 +41,9 @@ public class CourtApplicationSummaryTest {
         CourtApplicationParty courtApplicationParty = getCourtApplicationPartyWithLegalEntityDefendant(RESPONDENT_NAME);
         CourtApplicationParty courtApplicationParty1 = getCourtApplicationPartyWithLegalEntityDefendant(LEGAL_ENTITY_DEFENDANTS_NAME);
 
-        CourtApplicationRespondent courtApplicationRespondent = CourtApplicationRespondent
-                .courtApplicationRespondent()
-                .withPartyDetails(courtApplicationParty).build();
-
-        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent
-                .courtApplicationRespondent()
-                .withPartyDetails(courtApplicationParty1).build();
-
-        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
-        courtApplicationRespondentList.add(courtApplicationRespondent);
-        courtApplicationRespondentList.add(courtApplicationRespondent1);
+        List<CourtApplicationParty> courtApplicationRespondentList = new ArrayList<>();
+        courtApplicationRespondentList.add(courtApplicationParty);
+        courtApplicationRespondentList.add(courtApplicationParty1);
 
         CourtApplicationSummary courtApplicationSummary = CourtApplicationSummary.applicationSummary()
                 .withApplicantDisplayName(courtApplicationParty)
@@ -63,7 +56,7 @@ public class CourtApplicationSummaryTest {
     private CourtApplicationParty getCourtApplicationPartyWithLegalEntityDefendant(String name){
         return  CourtApplicationParty
                 .courtApplicationParty()
-                .withDefendant(Defendant.defendant()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
                         .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                                 .withOrganisation(Organisation.organisation()
                                         .withName(name)

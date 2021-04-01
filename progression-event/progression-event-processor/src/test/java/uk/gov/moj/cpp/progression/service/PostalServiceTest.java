@@ -20,6 +20,8 @@ import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithLegal
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithPersonDefendant;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCompanyAddress;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCompanyName;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyCrownCourt;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyMagistratesCourt;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonAddress;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonName;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyProsecutionAuthorityAddress;
@@ -31,7 +33,8 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -43,6 +46,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
+import uk.gov.moj.cpp.progression.domain.PostalNotification;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -116,7 +120,7 @@ public class PostalServiceTest {
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withDefendant(Defendant.defendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
                                 Person.person()
                                         .withContact(
                                                 ContactNumber.contactNumber()
@@ -136,11 +140,12 @@ public class PostalServiceTest {
                 hearingTime,
                 courtApplication.getId(),
                 courtApplication.getApplicationReference(),
-                courtApplication.getType().getApplicationType(),
-                courtApplication.getType().getApplicationLegislation(),
-                courtApplication.getOrderingCourt(),
+                courtApplication.getType().getType(),
+                courtApplication.getType().getLegislation(),
+                null,
                 courtApplication.getApplicant(),
-                caseId);
+                caseId,
+                JurisdictionType.MAGISTRATES);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -153,6 +158,128 @@ public class PostalServiceTest {
                                 withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
                                 withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
                         )))));
+    }
+
+    @Test
+    public void buildPostalNotificationWithJurisdictionTypeMag() {
+
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("lja", "1234")
+                .build();
+
+        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+
+        final JsonObject ljaDetails = createObjectBuilder()
+                .add("localJusticeArea", createObjectBuilder()
+                        .add("nationalCourtCode", "008")
+                        .add("name", "Manchester Courts")
+                        .build())
+                .build();
+
+        JsonObject localJusticeArea = ljaDetails.getJsonObject("localJusticeArea");
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                                Person.person()
+                                        .withFirstName("John")
+                                        .withLastName("Edward")
+                                        .withDateOfBirth(LocalDate.of(1998, 8, 10))
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .withAddress(Address.address()
+                                                .withAddress1("22 Acacia Avenue")
+                                                .withAddress2("Acacia Town")
+                                                .withAddress3("Acacia City")
+                                                .withAddress4("Test")
+                                                .withPostcode("AC1 4AC")
+                                                .build()
+                                        )
+                                        .build()).build()).build())
+                        .build())
+                .build();
+
+        final String hearingDate = hearingDateTime.toLocalDate().toString();
+        final DateTimeFormatter dTF = DateTimeFormatter.ofPattern("HH:mm a");
+        final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
+
+       PostalNotification postalNotification=  postalService.buildPostalNotification(
+                hearingDate,
+                hearingTime,
+                courtApplication.getApplicationReference(),
+                courtApplication.getType().getType(),
+                courtApplication.getType().getLegislation(),
+                null,
+                localJusticeArea,
+                courtApplication.getApplicant(),
+                JurisdictionType.MAGISTRATES);
+
+       verifyMagistratesCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
+    }
+
+    @Test
+    public void buildPostalNotificationWithJurisdictionTypeCrown() {
+
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("lja", "1234")
+                .build();
+
+        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+
+        final JsonObject ljaDetails = createObjectBuilder()
+                .add("localJusticeArea", createObjectBuilder()
+                        .add("nationalCourtCode", "008")
+                        .add("name", "Manchester Courts")
+                        .build())
+                .build();
+
+        JsonObject localJusticeArea = ljaDetails.getJsonObject("localJusticeArea");
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                                Person.person()
+                                        .withFirstName("John")
+                                        .withLastName("Edward")
+                                        .withDateOfBirth(LocalDate.of(1998, 8, 10))
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .withAddress(Address.address()
+                                                .withAddress1("22 Acacia Avenue")
+                                                .withAddress2("Acacia Town")
+                                                .withAddress3("Acacia City")
+                                                .withAddress4("Test")
+                                                .withPostcode("AC1 4AC")
+                                                .build()
+                                        )
+                                        .build()).build()).build())
+                        .build())
+                .build();
+
+        final String hearingDate = hearingDateTime.toLocalDate().toString();
+        final DateTimeFormatter dTF = DateTimeFormatter.ofPattern("HH:mm a");
+        final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
+
+        PostalNotification postalNotification=  postalService.buildPostalNotification(
+                hearingDate,
+                hearingTime,
+                courtApplication.getApplicationReference(),
+                courtApplication.getType().getType(),
+                courtApplication.getType().getLegislation(),
+                null,
+                localJusticeArea,
+                courtApplication.getApplicant(),
+                JurisdictionType.CROWN);
+
+        verifyCrownCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
     }
 
     @Test
@@ -188,7 +315,7 @@ public class PostalServiceTest {
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withDefendant(Defendant.defendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
                                 Person.person()
                                         .withFirstName("John")
                                         .withLastName("Edward")
@@ -215,7 +342,6 @@ public class PostalServiceTest {
 
         final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
 
-        System.out.println(hearingTime);
         postalService.sendPostToCourtApplicationParty(
                 envelope,
                 hearingDate,
@@ -235,7 +361,8 @@ public class PostalServiceTest {
                                 .build())
                         .build(),
                 courtApplication.getApplicant(),
-                caseId);
+                caseId,
+                JurisdictionType.MAGISTRATES);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -252,35 +379,35 @@ public class PostalServiceTest {
 
     @Test
     public void getDefendantNameWithPersonDefendantTest() throws Exception {
-        final Defendant personDefendantMock = buildDefendantWithPersonDefendant();
+        final MasterDefendant personDefendantMock = buildDefendantWithPersonDefendant();
         final String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", personDefendantMock);
         verifyPersonName(resultName);
     }
 
     @Test
     public void getDefendantNameWithLegalEntityDefendantTest() throws Exception {
-        final Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        final MasterDefendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
         final String resultName = Whitebox.invokeMethod(postalService, "getDefendantName", legalEntityDefendantMock);
         verifyCompanyName(resultName);
     }
 
     @Test
     public void getDefendantPostalAddressWithPersonDefendantTest() throws Exception {
-        final Defendant personDefendantMock = buildDefendantWithPersonDefendant();
+        final MasterDefendant personDefendantMock = buildDefendantWithPersonDefendant();
         final PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", personDefendantMock);
         verifyPersonAddress(resultAddress);
     }
 
     @Test
     public void getDefendantPostalAddressWithLegalEntityDefendantTest() throws Exception {
-        final Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        final MasterDefendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
         final PostalAddress resultAddress = Whitebox.invokeMethod(postalService, "getDefendantPostalAddress", legalEntityDefendantMock);
         verifyCompanyAddress(resultAddress);
     }
 
     @Test
     public void buildDefendantWithLegalEntityTest() throws Exception {
-        final Defendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
+        final MasterDefendant legalEntityDefendantMock = buildDefendantWithLegalEntity();
         final PostalDefendant resultPostalDefendant = Whitebox.invokeMethod(postalService, "buildDefendant", legalEntityDefendantMock);
         verifyCompanyAddress(resultPostalDefendant.getAddress());
         verifyCompanyName(resultPostalDefendant.getName());

@@ -7,6 +7,8 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithCourtApplicationCases;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithCourtOrder;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 
 import org.junit.Test;
@@ -18,6 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
 import java.time.LocalDate;
@@ -55,6 +58,9 @@ public class HearingListingNeedsTransformerTest {
 
     @Spy
     private HearingBookingReferenceListExtractor hearingBookingReferenceListExtractor;
+
+    @Spy
+    private HearingResultHelper hearingResultHelper;
 
     @Mock
     private ProvisionalBookingServiceAdapter provisionalBookingServiceAdapter;
@@ -124,6 +130,30 @@ public class HearingListingNeedsTransformerTest {
     }
 
     @Test
+    public void shouldReturnTwoHearingNeedsWhenTwoHearingDatesNotMatchWithCourtApplicationCase() {
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplicationWithCourtApplicationCases(COURT_APPLICATION_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
+                buildCourtApplicationWithCourtApplicationCases(COURT_APPLICATION_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, null, LISTED_START_DATETIME_2))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
+        assertThat(hearingListingNeedsList.size(), is(2));
+    }
+
+    @Test
+    public void shouldReturnTwoHearingNeedsWhenTwoHearingDatesNotMatchWithWithCourtOrder() {
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplicationWithCourtOrder(COURT_APPLICATION_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
+                buildCourtApplicationWithCourtOrder(COURT_APPLICATION_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, null, LISTED_START_DATETIME_2))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
+        assertThat(hearingListingNeedsList.size(), is(2));
+    }
+
+    @Test
     public void shouldReturnOneHearingListingNeedsWhenSlotsAreSame() {
         Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
         slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(asList(COURT_SCHEDULE_ID_1)));
@@ -155,4 +185,35 @@ public class HearingListingNeedsTransformerTest {
         assertThat(hearingListingNeedsList.size(), is(2));
     }
 
+    @Test
+    public void shouldReturnTwoHearingListingNeedsWhenSlotsAreDifferentWithCourtApplicationCase() {
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(asList(COURT_SCHEDULE_ID_1)));
+        slotsMap.put(BOOKING_REFERENCE_2, new HashSet<>(asList(COURT_SCHEDULE_ID_2)));
+
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplicationWithCourtApplicationCases(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
+                buildCourtApplicationWithCourtApplicationCases(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
+        assertThat(hearingListingNeedsList.size(), is(2));
+    }
+
+    @Test
+    public void shouldReturnTwoHearingListingNeedsWhenSlotsAreDifferentWithCourtOrder() {
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(asList(COURT_SCHEDULE_ID_1)));
+        slotsMap.put(BOOKING_REFERENCE_2, new HashSet<>(asList(COURT_SCHEDULE_ID_2)));
+
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        final Hearing hearing = TestHelper.buildHearingWithCourtApplications(Arrays.asList(
+                buildCourtApplicationWithCourtOrder(COURT_APPLICATION_ID_1, buildNextHearing(null, BOOKING_REFERENCE_1, null, null, null)),
+                buildCourtApplicationWithCourtOrder(COURT_APPLICATION_ID_2, buildNextHearing(null, BOOKING_REFERENCE_2, null, null, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
+        assertThat(hearingListingNeedsList.size(), is(2));
+    }
 }

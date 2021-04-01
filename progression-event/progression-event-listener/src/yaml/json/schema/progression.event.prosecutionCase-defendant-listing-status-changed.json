@@ -9,15 +9,6 @@
     },
     "hearingListingStatus": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
-    },
-    "boxWorkTaskId": {
-      "type": "string"
-    },
-    "boxWorkAssignedUserId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-    },
-    "boxWorkTaskStatus": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/boxWorkTaskStatus"
     }
   },
   "required": [

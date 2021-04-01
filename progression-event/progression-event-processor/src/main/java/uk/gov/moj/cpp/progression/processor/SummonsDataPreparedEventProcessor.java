@@ -1,104 +1,77 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
+import static java.util.Optional.empty;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.justice.core.courts.InitiationCode.S;
+import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
 import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
 import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
-import static uk.gov.justice.core.courts.SummonsRequired.YOUTH;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractAddressee;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractCaseReference;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractDefendant;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractGuardianAddressee;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractOffences;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractReferralReason;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.extractYouth;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getCourtTime;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getDocumentTypeData;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateCourtCentreAddress;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.populateReferral;
+import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.generateSummons;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.getSummonsCode;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.populateSummonsAddressee;
 
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.DefendantDocument;
-import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
+import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.core.courts.summons.SummonsAddressee;
+import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
-import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
+import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
+import uk.gov.moj.cpp.progression.processor.summons.ApplicantEmailAddressUtil;
+import uk.gov.moj.cpp.progression.processor.summons.ApplicationSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.CaseDefendantSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.PublishSummonsDocumentService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsNotificationEmailPayloadService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsTemplateNameService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
-import uk.gov.moj.cpp.progression.service.dto.OffenceDetails;
-import uk.gov.moj.cpp.progression.service.dto.WelshFieldDetails;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1135", "squid:S2789", "squid:S1166", "squid:S1188", "squid:S3776"})
+@SuppressWarnings({"squid:S1188", "squid:S2250"})
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class SummonsDataPreparedEventProcessor {
 
-    public static final UUID SUMMONS_DOCUMENT_TYPE_ID = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
-    private static final String SUMMONS = "Summons";
-    private static final String BILINGUAL_SUMMONS = "BilingualSummons";
-    private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.STANDARD.getValue());
-
     private static final Logger LOGGER = LoggerFactory.getLogger(SummonsDataPreparedEventProcessor.class.getName());
 
-    private static final String SUB_TEMPLATE_NAME = "subTemplateName";
-    private static final String SUMMONS_TYPE = "type";
-    private static final String ISSUE_DATE = "issueDate";
-    private static final String LJA_CODE = "ljaCode";
-    private static final String LJA_NAME = "ljaName";
-    private static final String LJA_NAME_WELSH = "ljaNameWelsh";
-    private static final String COURT_CENTRE_NAME = "courtCentreName";
-    private static final String COURT_CENTRE_NAME_WELSH = "courtCentreNameWelsh";
-    private static final String DEFENDANT = "defendant";
-    private static final String OFFENCES = "offences";
-    private static final String HEARING_COURT_DETAILS = "hearingCourtDetails";
-    private static final String COURT_NAME = "courtName";
-    private static final String COURT_NAME_WELSH = "courtNameWelsh";
-    private static final String HEARING_DATE = "hearingDate";
-    private static final String HEARING_TIME = "hearingTime";
-    private static final String COURT_ADDRESS = "courtAddress";
-    private static final String CASE_REFERENCE = "caseReference";
-    private static final String REFERRAL_CONTENT = "referralContent";
-    private static final String ADDRESSEE = "addressee";
-    private static final String YOUTH_CONTENT = "youthContent";
-    private static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
-    private static final String NATIONAL_COURT_CODE = "nationalCourtCode";
-    private static final String L3_NAME = "oucodeL3Name";
-    private static final String L3_NAME_WELSH = "oucodeL3WelshName";
-    private static final String PROSECUTION_CASE_IDENTIFIER = "prosecutionCaseIdentifier";
-    private static final String NAME = "name";
+    private static final List<SummonsRequired> PARENT_TEMPLATE_APPLICABLE_FOR = newArrayList(FIRST_HEARING, BREACH);
 
     @Inject
-    ProgressionService progressionService;
+    private ProgressionService progressionService;
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -107,346 +80,228 @@ public class SummonsDataPreparedEventProcessor {
     private Requester requester;
 
     @Inject
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Inject
-    private Sender sender;
+    private CaseDefendantSummonsService caseDefendantSummonsService;
 
     @Inject
-    private DocumentGeneratorService documentGeneratorService;
+    private ApplicationSummonsService applicationSummonsService;
 
     @Inject
-    private Enveloper enveloper;
+    private ApplicantEmailAddressUtil applicantEmailAddressUtil;
 
-    private JsonObject createSummonsPayloadForSjpReferral(final SummonsDataPrepared summonsDataPrepared,
-                                                          final JsonObject prosecutionCaseJson,
-                                                          final JsonObject referralReasonsJson,
-                                                          final JsonObject defendantJson,
-                                                          final ListDefendantRequest defendantRequest,
-                                                          final JsonObject courtCentreJson,
-                                                          final JsonObject ljaDetails,
-                                                          final String ljaWelshName) {
+    @Inject
+    private SummonsService summonsService;
 
-        if (nonNull(courtCentreJson.getString(L3_NAME_WELSH, null)) &&
-                !courtCentreJson.getString(L3_NAME_WELSH).isEmpty() &&
-                courtCentreJson.getBoolean("isWelsh", false)) {
-            return buildDataForSummonsWithWelshData(summonsDataPrepared,
-                    prosecutionCaseJson, referralReasonsJson, defendantJson,
-                    defendantRequest, courtCentreJson, ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA),
-                    ljaWelshName);
-        }
-        return buildDataForSummons(summonsDataPrepared,
-                prosecutionCaseJson, referralReasonsJson, defendantJson,
-                defendantRequest, courtCentreJson, ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA));
-    }
+    @Inject
+    private SummonsTemplateNameService summonsTemplateNameService;
 
-    private static JsonObject createSummonsPayloadForFirstHearing(final SummonsDataPrepared summonsDataPrepared, final JsonObject prosecutionCaseJson,
-                                                                  final JsonObject defendantJson, final JsonObject courtCentreJson, final JsonObject ljaDetails) {
-        final JsonObject localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
-        return createObjectBuilder()
-                .add(SUB_TEMPLATE_NAME, FIRST_HEARING.toString())
-                .add(SUMMONS_TYPE, FIRST_HEARING.toString())
-                .add(ISSUE_DATE, DATE_FORMATTER.format(LocalDate.now()))
-                .add(LJA_CODE, localJusticeArea.getString(NATIONAL_COURT_CODE, EMPTY))
-                .add(LJA_NAME, localJusticeArea.getString(NAME, EMPTY))
-                .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
-                .add(DEFENDANT, extractDefendant(defendantJson))
-                .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSEE, extractAddressee(defendantJson))
-                .add(HEARING_COURT_DETAILS, createObjectBuilder()
-                        .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
-                        .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(HEARING_TIME, getCourtTime(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(COURT_ADDRESS, populateCourtCentreAddress(courtCentreJson))
-                        .build())
-                .add(CASE_REFERENCE, extractCaseReference(prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)))
-                .build();
-    }
+    @Inject
+    private PublishSummonsDocumentService publishSummonsDocumentService;
 
-    private static JsonObject createSummonsPayloadForYouth(final SummonsDataPrepared summonsDataPrepared, final JsonObject prosecutionCaseJson,
-                                                           final JsonObject defendantJson, final JsonObject courtCentreJson, final JsonObject ljaDetails) {
-        final JsonObject localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
-        return createObjectBuilder()
-                .add(SUB_TEMPLATE_NAME, FIRST_HEARING.toString())
-                .add(SUMMONS_TYPE, FIRST_HEARING.toString())
-                .add(ISSUE_DATE, DATE_FORMATTER.format(LocalDate.now()))
-                .add(LJA_CODE, localJusticeArea.getString(NATIONAL_COURT_CODE, EMPTY))
-                .add(LJA_NAME, localJusticeArea.getString(NAME, EMPTY))
-                .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
-                .add(YOUTH_CONTENT, extractYouth(defendantJson, false))
-                .add(DEFENDANT, extractDefendant(defendantJson))
-                .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSEE, extractAddressee(defendantJson))
-                .add(HEARING_COURT_DETAILS, createObjectBuilder()
-                        .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
-                        .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(HEARING_TIME, getCourtTime(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(COURT_ADDRESS, populateCourtCentreAddress(courtCentreJson))
-                        .build())
-                .add(CASE_REFERENCE, extractCaseReference(prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)))
-                .build();
-    }
+    @Inject
+    private SummonsNotificationEmailPayloadService summonsNotificationEmailPayloadService;
 
-    private static JsonObject createSummonsPayloadForYouthGuardian(final SummonsDataPrepared summonsDataPrepared, final JsonObject prosecutionCaseJson,
-                                                                   final JsonObject defendantJson, final JsonObject courtCentreJson, final JsonObject ljaDetails) {
-        final JsonObject localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
-        return createObjectBuilder()
-                .add(SUB_TEMPLATE_NAME, YOUTH.toString())
-                .add(SUMMONS_TYPE, YOUTH.toString())
-                .add(ISSUE_DATE, DATE_FORMATTER.format(LocalDate.now()))
-                .add(LJA_CODE, localJusticeArea.getString(NATIONAL_COURT_CODE, EMPTY))
-                .add(LJA_NAME, localJusticeArea.getString(NAME, EMPTY))
-                .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
-                .add(YOUTH_CONTENT, extractYouth(defendantJson, true))
-                .add(DEFENDANT, extractDefendant(defendantJson))
-                .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSEE, extractGuardianAddressee(defendantJson))
-                .add(HEARING_COURT_DETAILS, createObjectBuilder()
-                        .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
-                        .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(HEARING_TIME, getCourtTime(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(COURT_ADDRESS, populateCourtCentreAddress(courtCentreJson))
-                        .build())
-                .add(CASE_REFERENCE, extractCaseReference(prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)))
-                .build();
-    }
-
-    private static String getCourtDate(final ZonedDateTime hearingDateTime) {
-        return hearingDateTime.toLocalDate().toString();
-    }
-
+    /**
+     * The payload supports a collection of cases and application but summons will only be generated
+     * for either a case or an application at a time in a single transaction.
+     * <p>
+     * If case or application, the following sequence of steps take place
+     * <p>
+     * <ul>
+     *     <li>generate summons document content</li>
+     *     <li>generate template name</li>
+     *     <li>create court document object and add document to CDES</li>
+     *     <li>documentGeneratorService.generateSummonsDocument for case ID or application ID and initiate upload material flow</li>
+     * </ul>
+     *
+     * @param jsonEnvelope envelope with metadata and payload
+     */
     @Handles("progression.event.summons-data-prepared")
     public void requestSummons(final JsonEnvelope jsonEnvelope) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Summons Data Prepared Event received with metadata {} and payload {}", jsonEnvelope.metadata(), jsonEnvelope.toObfuscatedDebugString());
-        }
+
         final SummonsDataPrepared summonsDataPrepared = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SummonsDataPrepared.class);
+
+        final UUID courtCentreId = summonsDataPrepared.getSummonsData().getCourtCentre().getId();
+        final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtRoomById(courtCentreId, jsonEnvelope, requester);
+        final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", courtCentreId)));
+        final String ljaCode = courtCentreJson.getString("lja", EMPTY);
+        final Optional<LjaDetails> optionalLjaDetails = isNotBlank(ljaCode) ? summonsService.getLjaDetails(jsonEnvelope, ljaCode) : empty();
+
+        final boolean isWelsh = courtCentreJson.getBoolean("isWelsh", false);
+
         final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds = summonsDataPrepared.getSummonsData().getConfirmedProsecutionCaseIds();
-        final List<ListDefendantRequest> listDefendantRequests = summonsDataPrepared.getSummonsData().getListDefendantRequests();
-        final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasons(jsonEnvelope, requester);
-        final JsonObject referralReasonsJson = referralReasonsJsonOptional.orElseThrow(IllegalArgumentException::new);
-        final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(summonsDataPrepared.getSummonsData().getCourtCentre().getId(), jsonEnvelope, requester);
-        final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(IllegalArgumentException::new);
+        if (isNotEmpty(confirmedProsecutionCaseIds) && isNotEmpty(summonsDataPrepared.getSummonsData().getListDefendantRequests())) {
+            processCaseSummons(jsonEnvelope, summonsDataPrepared, courtCentreJson, optionalLjaDetails, isWelsh, confirmedProsecutionCaseIds);
+        }
 
+        final List<UUID> confirmedApplicationIds = summonsDataPrepared.getSummonsData().getConfirmedApplicationIds();
+        if (isNotEmpty(confirmedApplicationIds) && isNotEmpty(summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds())) {
+            processApplicationSummons(jsonEnvelope, summonsDataPrepared, courtCentreJson, optionalLjaDetails, isWelsh, confirmedApplicationIds);
+        }
+    }
+
+    private void processApplicationSummons(final JsonEnvelope jsonEnvelope, final SummonsDataPrepared summonsDataPrepared, final JsonObject courtCentreJson, final Optional<LjaDetails> optionalLjaDetails, final boolean isWelsh, final List<UUID> confirmedApplicationIds) {
+        for (final UUID applicationId : confirmedApplicationIds) {
+
+            final CourtApplication courtApplicationQueried = getCourtApplication(jsonEnvelope, applicationId);
+            final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds();
+            final Optional<CourtApplicationPartyListingNeeds> optionalSubjectNeeds = extractApplicationListingNeeds(courtApplicationPartyListingNeeds, courtApplicationQueried.getSubject().getId());
+
+            if (!optionalSubjectNeeds.isPresent() || !isValidApplicationScenario(optionalSubjectNeeds)) {
+                LOGGER.info("Not generating summons for subject on application with ID '{}'", applicationId);
+                return;
+            }
+
+            final CourtApplicationPartyListingNeeds subjectNeeds = optionalSubjectNeeds.get();
+            final String applicantEmailAddress = getProsecutorEmailAddress(subjectNeeds.getSummonsApprovedOutcome());
+            final SummonsRequired summonsRequired = subjectNeeds.getSummonsRequired();
+            final boolean sendForRemotePrinting = !(nonNull(subjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed()) && subjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed());
+            final String subjectTemplateName = summonsTemplateNameService.getApplicationTemplateName(summonsRequired, isWelsh);
+            final SummonsDocumentContent subjectSummonsDocumentContent = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplicationQueried, subjectNeeds, courtCentreJson, optionalLjaDetails);
+            final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), subjectSummonsDocumentContent.getDefendant().getDateOfBirth());
+            final UUID materialId = randomUUID();
+            final Optional<EmailChannel> emailChannel = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
+                    summonsDataPrepared, subjectSummonsDocumentContent, applicantEmailAddress, sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
+
+            LOGGER.info("Generating {} summons for subject on application '{}'", subjectTemplateName, applicationId);
+            publishSummonsDocumentService.generateApplicationSummonsCourtDocument(jsonEnvelope, applicationId, subjectSummonsDocumentContent, subjectTemplateName, sendForRemotePrinting, emailChannel.orElse(null), materialId);
+
+            if (PARENT_TEMPLATE_APPLICABLE_FOR.contains(summonsRequired) && addresseeIsYouth) {
+                final String parentGuardianTemplateName = summonsTemplateNameService.getBreachSummonsParentTemplateName(isWelsh);
+                final SummonsAddressee parentGuardianAddressee = populateSummonsAddressee(getApplicationSubjectParentGuardian(courtApplicationQueried.getSubject()));
+                final SummonsDocumentContent parentGuardianSummonsDocumentContent = summonsDocumentContent().withValuesFrom(subjectSummonsDocumentContent).withAddressee(parentGuardianAddressee).build();
+                final UUID materialIdForParentGuardian = randomUUID();
+                final Optional<EmailChannel> emailChannelForParentGuardian = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddresseeParent(
+                        summonsDataPrepared, parentGuardianSummonsDocumentContent, applicantEmailAddress, sendForRemotePrinting,
+                        materialIdForParentGuardian, summonsRequired);
+
+                LOGGER.info("Generating {} summons for parent/guardian of subject on application '{}'", parentGuardianTemplateName, applicationId);
+                publishSummonsDocumentService.generateApplicationSummonsCourtDocument(jsonEnvelope, applicationId, parentGuardianSummonsDocumentContent, parentGuardianTemplateName, sendForRemotePrinting, emailChannelForParentGuardian.orElse(null), materialIdForParentGuardian);
+            }
+        }
+    }
+
+    private CourtApplication getCourtApplication(final JsonEnvelope jsonEnvelope, final UUID applicationId) {
+        final Optional<JsonObject> applicationJsonOptional = progressionService.getCourtApplicationById(jsonEnvelope, applicationId.toString());
+        final JsonObject applicationJsonObject = applicationJsonOptional.orElseThrow(() -> new IllegalArgumentException("Unable to get application with ID : " + applicationId));
+        return jsonObjectToObjectConverter.convert(applicationJsonObject.getJsonObject("courtApplication"), CourtApplication.class);
+    }
+
+    private void processCaseSummons(final JsonEnvelope jsonEnvelope, final SummonsDataPrepared summonsDataPrepared, final JsonObject courtCentreJson, final Optional<LjaDetails> ljaDetails, final boolean isWelsh, final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds) {
         for (final ConfirmedProsecutionCaseId confirmedProsecutionCaseId : confirmedProsecutionCaseIds) {
-            final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, confirmedProsecutionCaseId.getId().toString());
-            final JsonObject prosecutionCaseJson = prosecutionCaseOptional.orElseThrow(IllegalArgumentException::new).getJsonObject("prosecutionCase");
+            final UUID caseId = confirmedProsecutionCaseId.getId();
+            final ProsecutionCase prosecutionCase = getProsecutionCase(jsonEnvelope, caseId);
+            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId());
+            final List<UUID> confirmedDefendantIds = confirmedProsecutionCaseId.getConfirmedDefendantIds();
+            final List<String> combinedDefendantDetailsForEmailChannel = newArrayList();
 
-            confirmedProsecutionCaseId.getConfirmedDefendantIds().forEach(defendantId -> {
-                final JsonObject defendantJson = extractDefendantJson(prosecutionCaseJson, defendantId);
-                final ListDefendantRequest defendantRequest = extractDefendantRequestJson(listDefendantRequests, defendantId);
+            confirmedDefendantIds.forEach(defendantId -> {
+                final Optional<ListDefendantRequest> optionalDefendantRequest = extractDefendantRequest(summonsDataPrepared.getSummonsData().getListDefendantRequests(), defendantId);
 
-                if (!confirmedProsecutionCaseId.getId().equals(defendantRequest.getProsecutionCaseId())) {
-                    throw new IllegalStateException();
+                if (!optionalDefendantRequest.isPresent() || !isValidCaseSummonsScenario(optionalDefendantRequest, prosecutionCase)) {
+                    LOGGER.info("Not generating summons for defendant with ID '{}' on case '{}' as its not a required scenario", defendantId, caseId);
+                    return;
                 }
-                final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(jsonEnvelope, courtCentreJson.getString("lja"), requester);
+                final ListDefendantRequest defendantRequest = optionalDefendantRequest.get();
+                final SummonsRequired summonsRequired = optionalDefendantRequest.get().getSummonsRequired();
+                final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
+                final boolean sendForRemotePrinting = !(FIRST_HEARING == summonsRequired
+                        && nonNull(summonsApprovedOutcome.getSummonsSuppressed()) && summonsApprovedOutcome.getSummonsSuppressed());
 
-                LOGGER.debug("Summons requested for case  {}", defendantRequest.getProsecutionCaseId());
-                JsonObject summonsRequestedJson = null;
-                if (defendantRequest.getSummonsRequired() != null && SJP_REFERRAL == defendantRequest.getSummonsRequired()) {
-                    final WelshFieldDetails.Builder welshFieldDetailsBuilder = WelshFieldDetails.newBuilder();
-                    final String ljaWelshName = getWelshCourtCentreName(jsonEnvelope, ljaDetails);
-                    summonsRequestedJson = createSummonsPayloadForSjpReferral(summonsDataPrepared,
-                            prosecutionCaseJson,
-                            referralReasonsJson,
-                            defendantJson,
-                            defendantRequest,
-                            courtCentreJson,
-                            ljaDetails,
-                            ljaWelshName);
-                    LOGGER.info("SJP_REFERRAL_PAYLOAD  {}", nonNull(summonsRequestedJson) ? summonsRequestedJson.toString() : "{}");
-                    invokeGenerateCourtDocument(jsonEnvelope,
-                            defendantId,
-                            defendantRequest,
-                            summonsRequestedJson,
-                            welshFieldDetailsBuilder,
-                            ljaWelshName,
-                            courtCentreJson.getBoolean("isWelsh", false));
-                }
-                if (defendantRequest.getSummonsRequired() != null && FIRST_HEARING == defendantRequest.getSummonsRequired()) {
-                    summonsRequestedJson = createSummonsPayloadForFirstHearing(summonsDataPrepared, prosecutionCaseJson, defendantJson, courtCentreJson, ljaDetails);
-                    LOGGER.info("FIRST_HEARING_PAYLOAD  {}", nonNull(summonsRequestedJson) ? summonsRequestedJson.toString() : "{}");
-                    generateCourtDocument(jsonEnvelope, defendantId, defendantRequest, summonsRequestedJson, SUMMONS);
-                }
-                if (defendantRequest.getSummonsRequired() != null && YOUTH == defendantRequest.getSummonsRequired()) {
-                    summonsRequestedJson = createSummonsPayloadForYouth(summonsDataPrepared, prosecutionCaseJson, defendantJson, courtCentreJson, ljaDetails);
-                    LOGGER.info("YOUTH_PAYLOAD  {}", nonNull(summonsRequestedJson) ? summonsRequestedJson.toString() : "{}");
-                    generateCourtDocument(jsonEnvelope, defendantId, defendantRequest, summonsRequestedJson, SUMMONS);
-                    summonsRequestedJson = createSummonsPayloadForYouthGuardian(summonsDataPrepared, prosecutionCaseJson, defendantJson, courtCentreJson, ljaDetails);
-                    LOGGER.info("GUARDIAN_PAYLOAD  {}", nonNull(summonsRequestedJson) ? summonsRequestedJson.toString() : "{}");
-                    generateCourtDocument(jsonEnvelope, defendantId, defendantRequest, summonsRequestedJson, SUMMONS);
+                final Defendant defendant = prosecutionCase.getDefendants().stream().filter(d -> d.getId().equals(defendantId)).findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException(String.format("Unable to locate defendant '%s' on case '%s'", defendantId, caseId)));
+
+                final String defendantTemplateName = summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, getSummonsCode(prosecutionCase.getSummonsCode()), isWelsh);
+                final SummonsDocumentContent defendantSummonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(jsonEnvelope, summonsDataPrepared, prosecutionCase, defendant, defendantRequest, courtCentreJson, ljaDetails, summonProsecutor);
+                final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), defendantSummonsDocumentContent.getDefendant().getDateOfBirth());
+                final UUID materialId = randomUUID();
+                final String prosecutorEmailAddress = getProsecutorEmailAddress(summonsApprovedOutcome);
+                final Optional<EmailChannel> emailChannel = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
+                        summonsDataPrepared, defendantSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant, combinedDefendantDetailsForEmailChannel,
+                        sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
+
+                LOGGER.info("Generating {} summons for for defendant '{}' on case '{}'", defendantTemplateName, defendantId, caseId);
+                publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, defendantSummonsDocumentContent,
+                        defendantTemplateName, sendForRemotePrinting, emailChannel.orElse(null), materialId);
+
+                // check if first hearing and defendant is youth requiring document generation for parent / guardian
+                if (PARENT_TEMPLATE_APPLICABLE_FOR.contains(summonsRequired) && addresseeIsYouth) {
+                    // only addressee is different for parent payload, rest of the payload is same as defendants
+                    final String parentGuardianTemplateName = summonsTemplateNameService.getCaseSummonsParentTemplateName(isWelsh);
+                    final SummonsDocumentContent parentGuardianSummonsDocumentContent = summonsDocumentContent().withValuesFrom(defendantSummonsDocumentContent).withAddressee(populateSummonsAddressee(getDefendantParentGuardian(defendant))).build();
+                    final UUID materialIdForParentGuardian = randomUUID();
+                    final Optional<EmailChannel> emailChannelForParentGuardian = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
+                            summonsDataPrepared, parentGuardianSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant,
+                            combinedDefendantDetailsForEmailChannel, sendForRemotePrinting, materialIdForParentGuardian, summonsRequired);
+
+                    LOGGER.info("Generating {} summons for parent / guardian of defendant '{}' on case '{}'", parentGuardianTemplateName, defendantId, caseId);
+                    publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, parentGuardianSummonsDocumentContent,
+                            parentGuardianTemplateName, sendForRemotePrinting, emailChannelForParentGuardian.orElse(null), materialIdForParentGuardian);
                 }
             });
         }
     }
 
-    private void invokeGenerateCourtDocument(final JsonEnvelope jsonEnvelope, final UUID defendantId,
-                                             final ListDefendantRequest defendantRequest, final JsonObject summonsRequestedJson,
-                                             final WelshFieldDetails.Builder welshFieldDetailsBuilder,
-                                             final String ljaWelshName,
-                                             final boolean isWelsh) {
-        final WelshFieldDetails welshFieldDetails = buildWelshFieldDetails(summonsRequestedJson, welshFieldDetailsBuilder, ljaWelshName);
-        if (isWelsh && welshFieldDetails.checkAllWelshValuesPresent()) {
-            generateCourtDocument(jsonEnvelope, defendantId, defendantRequest, summonsRequestedJson, BILINGUAL_SUMMONS);
-        } else {
-            generateCourtDocument(jsonEnvelope, defendantId, defendantRequest, summonsRequestedJson, SUMMONS);
-        }
+    private String getProsecutorEmailAddress(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        return nonNull(summonsApprovedOutcome) ? summonsApprovedOutcome.getProsecutorEmailAddress() : null;
     }
 
-    private WelshFieldDetails buildWelshFieldDetails(final JsonObject summonsRequestedJson, final WelshFieldDetails.Builder welshFieldDetailsBuilder, final String ljaWelshName) {
-
-        welshFieldDetailsBuilder.withCourtCentreName(summonsRequestedJson.getString(COURT_CENTRE_NAME_WELSH, null));
-        welshFieldDetailsBuilder.withLJAName(ljaWelshName);
-        welshFieldDetailsBuilder.withReferalReason(summonsRequestedJson.getJsonObject(REFERRAL_CONTENT).getString("referralReasonWelsh", null));
-        welshFieldDetailsBuilder.withReferalText(summonsRequestedJson.getJsonObject(REFERRAL_CONTENT).getString("referralTextWelsh", null));
-
-        welshFieldDetailsBuilder.withCourtAddressLine1(summonsRequestedJson.getJsonObject(HEARING_COURT_DETAILS).getJsonObject(COURT_ADDRESS).getString("line1Welsh", null));
-        welshFieldDetailsBuilder.withCourtAddressLine2(summonsRequestedJson.getJsonObject(HEARING_COURT_DETAILS).getJsonObject(COURT_ADDRESS).getString("line2Welsh", null));
-        welshFieldDetailsBuilder.withCourtAddressLine3(summonsRequestedJson.getJsonObject(HEARING_COURT_DETAILS).getJsonObject(COURT_ADDRESS).getString("line3Welsh", null));
-        welshFieldDetailsBuilder.withCourtAddressLine4(summonsRequestedJson.getJsonObject(HEARING_COURT_DETAILS).getJsonObject(COURT_ADDRESS).getString("line4Welsh", null));
-        welshFieldDetailsBuilder.withCourtAddressLine5(summonsRequestedJson.getJsonObject(HEARING_COURT_DETAILS).getJsonObject(COURT_ADDRESS).getString("line5Welsh", null));
-
-        final List<OffenceDetails> offencesDetails = new ArrayList<>();
-        summonsRequestedJson.getJsonArray(OFFENCES).getValuesAs(JsonObject.class).forEach(o -> {
-            final OffenceDetails offenceDetails = new OffenceDetails();
-            offenceDetails.setOffenceTitle(o.getJsonString("offenceTitleWelsh").getString());
-            offenceDetails.setOffenceLegislation(o.getJsonString("offenceLegislationWelsh").getString());
-            offencesDetails.add(offenceDetails);
-        });
-        welshFieldDetailsBuilder.withOffencesDetails(offencesDetails);
-        return welshFieldDetailsBuilder.build();
+    private ProsecutionCase getProsecutionCase(final JsonEnvelope jsonEnvelope, final UUID caseId) {
+        final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId.toString());
+        final JsonObject prosecutionCaseJson = prosecutionCaseOptional.orElseThrow(() -> new IllegalArgumentException("Unable to get case with ID : " + caseId));
+        return jsonObjectToObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
     }
 
-    private String getWelshCourtCentreName(final JsonEnvelope jsonEnvelope, final JsonObject ljaDetails) {
-        final JsonObject localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
-        return getWelshLJAName(jsonEnvelope, localJusticeArea.getString(NATIONAL_COURT_CODE, EMPTY));
-    }
-
-    private void generateCourtDocument(final JsonEnvelope jsonEnvelope,
-                                       final UUID defendantId,
-                                       final ListDefendantRequest defendantRequest,
-                                       final JsonObject summonsRequestedJson,
-                                       final String templateFormat) {
-        final UUID materialId = documentGeneratorService.generateDocument(jsonEnvelope,
-                summonsRequestedJson,
-                templateFormat,
-                sender,
-                defendantRequest.getProsecutionCaseId(),
-                null);
-        final CourtDocument courtDocument = courtDocument(defendantRequest.getProsecutionCaseId(), defendantId, materialId, jsonEnvelope);
-
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("courtDocument", objectToJsonObjectConverter
-                        .convert(courtDocument)).build();
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
-    }
-
-    private ListDefendantRequest extractDefendantRequestJson(final List<ListDefendantRequest> listDefendantRequests, final UUID defendantId) {
+    private Optional<ListDefendantRequest> extractDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, final UUID defendantId) {
         return listDefendantRequests.stream()
                 .filter(e -> defendantId.equals(nonNull(e.getReferralReason()) ? e.getReferralReason().getDefendantId() : e.getDefendantId()))
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+                .findFirst();
     }
 
-    private JsonObject extractDefendantJson(final JsonObject prosecutionCaseJson, final UUID defendantId) {
-        return prosecutionCaseJson.getJsonArray("defendants").getValuesAs(JsonObject.class).stream()
-                .filter(e -> defendantId.toString().equals(e.getString("id")))
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+    private Optional<CourtApplicationPartyListingNeeds> extractApplicationListingNeeds(final List<CourtApplicationPartyListingNeeds> listingNeeds, final UUID subjectId) {
+        return listingNeeds.stream()
+                .filter(e -> subjectId.equals(e.getCourtApplicationPartyId()))
+                .findFirst();
     }
 
-    private CourtDocument courtDocument(final UUID caseId, final UUID defendantId, final UUID materialId, final JsonEnvelope jsonEnvelope) {
-        final List<UUID> defendants = new ArrayList<>();
-        defendants.add(defendantId);
-        final DefendantDocument defendantDocument = DefendantDocument.defendantDocument()
-                .withDefendants(defendants)
-                .withProsecutionCaseId(caseId)
-                .build();
-
-        final DocumentCategory documentCategory = DocumentCategory.documentCategory()
-                .withDefendantDocument(defendantDocument)
-                .build();
-        return CourtDocument.courtDocument()
-                .withCourtDocumentId(UUID.randomUUID())
-                .withDocumentTypeId(SUMMONS_DOCUMENT_TYPE_ID)
-                .withDocumentTypeDescription(getDocumentTypeData(SUMMONS_DOCUMENT_TYPE_ID, referenceDataService, jsonEnvelope, requester).getString("section"))
-                .withMaterials(Collections.singletonList(Material.material()
-                                .withId(materialId)
-                                .withGenerationStatus(null)
-                                .withUploadDateTime(ZonedDateTime.now())
-                                .withName(SUMMONS)
-                                .build()
-                        )
-                )
-                .withDocumentCategory(documentCategory)
-                .withName(SUMMONS)
-                .withMimeType("application/pdf")
-                .build();
-    }
-
-    private String getWelshLJAName(final JsonEnvelope jsonEnvelope, String localJusticeAreaCode) {
-        final Optional<JsonObject> optionalLocalJusticeAreaResponse = referenceDataService.getLocalJusticeArea(jsonEnvelope, localJusticeAreaCode, requester);
-        final JsonObject localJusticeAreaResponsePayload = optionalLocalJusticeAreaResponse.orElseThrow(() -> new IllegalArgumentException("No Local Justice Area Details found for Local Justice Area Code"));
-        if (localJusticeAreaResponsePayload.equals(JsonValue.NULL)) {
-            throw new IllegalArgumentException("No Local Justice Area Details found for Local Justice Area Code");
+    private boolean addresseeIsYouth(final ZonedDateTime hearingDateTime, final String partyDateOfBirth) {
+        if (nonNull(hearingDateTime) && isNotBlank(partyDateOfBirth)) {
+            return LocalDateUtils.isYouth(LocalDate.parse(partyDateOfBirth), hearingDateTime.toLocalDate());
         }
-        return localJusticeAreaResponsePayload.getJsonArray("localJusticeAreas").getJsonObject(0).getString("welshName", null);
+
+        return false;
     }
 
-    private JsonObject buildDataForSummons(final SummonsDataPrepared summonsDataPrepared, final JsonObject prosecutionCaseJson, final JsonObject referralReasonsJson, final JsonObject defendantJson, final ListDefendantRequest defendantRequest, final JsonObject courtCentreJson, final JsonObject localJusticeArea) {
-        return createObjectBuilder()
-                .add(SUB_TEMPLATE_NAME, SJP_REFERRAL.toString())
-                .add(SUMMONS_TYPE, SJP_REFERRAL.toString())
-                .add(ISSUE_DATE, DATE_FORMATTER.format(LocalDate.now()))
-                .add(LJA_CODE, localJusticeArea.getString(NATIONAL_COURT_CODE, EMPTY))
-                .add(LJA_NAME, localJusticeArea.getString(NAME, EMPTY))
-                .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
-                .add(DEFENDANT, extractDefendant(defendantJson))
-                .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSEE, extractAddressee(defendantJson))
-                .add(HEARING_COURT_DETAILS, createObjectBuilder()
-                        .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
-                        .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(HEARING_TIME, getCourtTime(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(COURT_ADDRESS, populateCourtCentreAddress(courtCentreJson))
-                        .build())
-                .add(CASE_REFERENCE, extractCaseReference(prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)))
-                .add(REFERRAL_CONTENT, populateReferral(extractReferralReason(referralReasonsJson, defendantRequest.getReferralReason().getId().toString())))
-                .build();
+    private boolean isValidCaseSummonsScenario(final Optional<ListDefendantRequest> listDefendantRequest, final ProsecutionCase prosecutionCase) {
+        if (!listDefendantRequest.isPresent()) {
+            return false;
+        }
+
+        final SummonsRequired summonsRequired = listDefendantRequest.get().getSummonsRequired();
+        final boolean summonsInitiationCode = (S == prosecutionCase.getInitiationCode());
+        final boolean validFirstHearingSummonsScenario = FIRST_HEARING == summonsRequired && generateSummons(prosecutionCase.getSummonsCode()) && summonsInitiationCode;
+        final boolean validSjpReferralScenario = (SJP_REFERRAL == summonsRequired);
+        return validFirstHearingSummonsScenario || validSjpReferralScenario;
     }
 
-    private JsonObject buildDataForSummonsWithWelshData(final SummonsDataPrepared summonsDataPrepared,
-                                                        final JsonObject prosecutionCaseJson,
-                                                        final JsonObject referralReasonsJson,
-                                                        final JsonObject defendantJson,
-                                                        final ListDefendantRequest defendantRequest,
-                                                        final JsonObject courtCentreJson,
-                                                        final JsonObject localJusticeArea,
-                                                        final String welshLJAName) {
-        return createObjectBuilder()
-                .add(SUB_TEMPLATE_NAME, SJP_REFERRAL.toString())
-                .add(SUMMONS_TYPE, SJP_REFERRAL.toString())
-                .add(ISSUE_DATE, DATE_FORMATTER.format(LocalDate.now()))
-                .add(LJA_CODE, localJusticeArea.getString(NATIONAL_COURT_CODE, EMPTY))
-                .add(LJA_NAME, localJusticeArea.getString(NAME, EMPTY))
-                .add(LJA_NAME_WELSH, welshLJAName)
-                .add(COURT_CENTRE_NAME, courtCentreJson.getString(L3_NAME, EMPTY))
-                .add(COURT_CENTRE_NAME_WELSH, courtCentreJson.getString(L3_NAME_WELSH, EMPTY))
-                .add(DEFENDANT, extractDefendant(defendantJson))
-                .add(OFFENCES, extractOffences(defendantJson))
-                .add(ADDRESSEE, extractAddressee(defendantJson))
-                .add(HEARING_COURT_DETAILS, createObjectBuilder()
-                        .add(COURT_NAME, courtCentreJson.getString(L3_NAME))
-                        .add(COURT_NAME_WELSH, courtCentreJson.getString(L3_NAME_WELSH, EMPTY))
-                        .add(HEARING_DATE, getCourtDate(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(HEARING_TIME, getCourtTime(summonsDataPrepared.getSummonsData().getHearingDateTime()))
-                        .add(COURT_ADDRESS, populateCourtCentreAddress(courtCentreJson))
-                        .build())
-                .add(CASE_REFERENCE, extractCaseReference(prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)))
-                .add(REFERRAL_CONTENT, populateReferral(extractReferralReason(referralReasonsJson, defendantRequest.getReferralReason().getId().toString())))
-                .build();
+
+    private boolean isValidApplicationScenario(final Optional<CourtApplicationPartyListingNeeds> optionalCourtApplicationPartyListingNeeds) {
+        if (!optionalCourtApplicationPartyListingNeeds.isPresent()) {
+            return false;
+        }
+
+        final SummonsRequired summonsRequired = optionalCourtApplicationPartyListingNeeds.get().getSummonsRequired();
+        return APPLICATION == summonsRequired || BREACH == summonsRequired;
     }
+
+    private Person getDefendantParentGuardian(final Defendant defendantQueried) {
+        return isNotEmpty(defendantQueried.getAssociatedPersons()) ? defendantQueried.getAssociatedPersons().get(0).getPerson() : null;
+    }
+
+    private Person getApplicationSubjectParentGuardian(final CourtApplicationParty courtApplicationParty) {
+        return nonNull(courtApplicationParty.getMasterDefendant()) && isNotEmpty(courtApplicationParty.getMasterDefendant().getAssociatedPersons()) ? courtApplicationParty.getMasterDefendant().getAssociatedPersons().get(0).getPerson() : null;
+    }
+
 }

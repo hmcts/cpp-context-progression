@@ -1,11 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
-
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -22,6 +20,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.MessageService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -44,13 +43,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 @ServiceComponent(EVENT_PROCESSOR)
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:S1135"})
 public class CasesReferredToCourtProcessor {
 
     private static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
-    private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
     private static final String REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED = "public.progression.refer-prosecution-cases-to-court-accepted";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
@@ -77,6 +74,8 @@ public class CasesReferredToCourtProcessor {
     private ReferredCourtDocumentTransformer referredCourtDocumentTransformer;
     @Inject
     private ListCourtHearingTransformer listCourtHearingTransformer;
+    @Inject
+    private SummonsHearingRequestService summonsHearingRequestService;
 
     /**
      * The inbound progression.event.cases-referred-to-court should be enriched  before it is
@@ -151,13 +150,7 @@ public class CasesReferredToCourtProcessor {
         }
 
         final List<ListDefendantRequest> listDefendantRequests = sjpCourtReferral.getListHearingRequests().stream().map(ReferredListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
-        final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
-                .withHearingId(hearingId)
-                .withDefendantRequests(listDefendantRequests)
-                .build());
-        // Look at point 8 in the documentation about the usage of this command.
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
-
+        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, listDefendantRequests, hearingId);
 
         progressionService.createProsecutionCases(jsonEnvelope, prosecutionCases);
         progressionService.createCourtDocument(jsonEnvelope, courtDocuments);

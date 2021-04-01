@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/listing/events/public-listing-new-defendant-added-for-court-proceedings.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentre": {
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "hearingId",
+    "defendantId",
+    "courtCentre",
+    "hearingDateTime"
+
+  ],
+  "additionalProperties": false
+}

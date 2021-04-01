@@ -85,4 +85,10 @@ public class ApplicationQueryApi {
         return requester.request(query);
     }
 
+
+    @Handles("progression.query.court-proceedings-for-application")
+    public JsonEnvelope getCourtProceedingsForApplication(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

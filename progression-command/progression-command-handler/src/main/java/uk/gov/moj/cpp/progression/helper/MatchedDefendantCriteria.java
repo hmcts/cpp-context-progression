@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.StringUtils.substring;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Person;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class MatchedDefendantCriteria {
     private static final String PAGE_SIZE = "pageSize";
     private static final String PROCEEDINGS_CONCLUDED = "proceedingsConcluded";
     private static final String CROWN_OR_MAGISTRATES = "crownOrMagistrates";
+    private static final String COURT_ORDER_VALIDITY_DATE = "courtOrderValidityDate";
 
     private static final String PNC_ID = "pncId";
     private static final String CRO_NUMBER = "croNumber";
@@ -337,6 +339,7 @@ public class MatchedDefendantCriteria {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add(PAGE_SIZE, DEFAULT_PAGE_SIZE)
                 .add(PROCEEDINGS_CONCLUDED, DEFAULT_PROCEEDINGS_CONCLUDED)
+                .add(COURT_ORDER_VALIDITY_DATE, LocalDate.now().toString())
                 .add(CROWN_OR_MAGISTRATES, DEFAULT_CROWN_OR_MAGISTRATES);
 
         this.criteriaMap.entrySet().stream()

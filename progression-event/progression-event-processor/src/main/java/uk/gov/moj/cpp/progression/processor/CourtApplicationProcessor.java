@@ -1,95 +1,757 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
+import static uk.gov.justice.core.courts.CreateHearingApplicationRequest.createHearingApplicationRequest;
+import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.core.courts.Hearing.hearing;
+import static uk.gov.justice.core.courts.HearingDay.hearingDay;
+import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
+import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected.publicProgressionCourtApplicationSummonsRejected;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+
+import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
+import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
+import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
+import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.BoxHearingRequest;
+import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
+import uk.gov.justice.core.courts.BreachType;
+import uk.gov.justice.core.courts.BreachedApplications;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
-import uk.gov.justice.core.courts.CourtApplicationRejected;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
+import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
+import uk.gov.justice.core.courts.LinkType;
+import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsApproved;
+import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsTemplateType;
+import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
+import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.SjpService;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
-@SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:CallToDeprecatedMethod"})
+@SuppressWarnings({"squid:S2789", "squid:CallToDeprecatedMethod", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1192"})
 public class CourtApplicationProcessor {
 
-    static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
-    static final String COURT_APPLICATION_REJECTED = "public.progression.court-application-rejected";
-    static final String COURT_APPLICATION_CHANGED = "public.progression.court-application-changed";
-    static final String ADD_COURT_APPLICATION_TO_CASE = "progression.command.add-court-application-to-case";
-    private static final String COURT_APPLICATION_UPDATED = "public.progression.court-application-updated";
-
+    private static final String COURT_APPLICATION = "courtApplication";
+    private static final String PROSECUTION_CASE = "prosecutionCase";
+    private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED = "public.progression.court-application-created";
+    private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_CHANGED = "public.progression.court-application-changed";
+    private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_UPDATED = "public.progression.court-application-updated";
+    private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
+    private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION = "progression.command.create-court-application";
+    private static final String PUBLIC_PROGRESSION_EVENTS_SJP_PROSECUTION_CASE_CREATED = "public.progression.sjp-prosecution-case-created";
+    private static final String LIST_OR_REFER_COURT_APPLICATION = "progression.command.list-or-refer-court-application";
+    private static final String HEARING_INITIATE_COMMAND = "hearing.initiate";
+    private static final UUID APPLICATION_HEARING_TYPE_ID = UUID.fromString("3449743b-95d6-4836-8941-57f588b52068");
+    private static final String APPLICATION = "Application";
+    private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED = "public.progression.court-application-summons-approved";
+    private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED = "public.progression.court-application-summons-rejected";
+    private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED = "public.progression.hearing-resulted-application-updated";
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationProcessor.class.getCanonicalName());
+    public static final String HEARING_ID = "hearingId";
+
+    @Inject
+    private ListingService listingService;
+
+    @Inject
+    private SjpService sjpService;
+
+    @Inject
+    private ProgressionService progressionService;
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
 
     @Inject
-    private Enveloper enveloper;
-    @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
+    @Inject
+    private SummonsHearingRequestService summonsHearingRequestService;
+
+    @Inject
+    private SummonsRejectedService summonsRejectedService;
 
     @Handles("progression.event.court-application-created")
     public void processCourtApplicationCreated(final JsonEnvelope event) {
         final CourtApplicationCreated courtApplicationCreated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class);
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Raising public event for create court application caseId: {}", courtApplication.getLinkedCaseId());
-        }
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("applicationId", courtApplication.getId().toString())
-                .add("arn", courtApplicationCreated.getArn())
-                .build();
-        sender.send(enveloper.withMetadataFrom(event, COURT_APPLICATION_CREATED).apply(payload));
-        final JsonObject command = Json.createObjectBuilder()
-                .add("courtApplication", objectToJsonObjectConverter.convert(courtApplication))
-                .build();
-        sender.send(enveloper.withMetadataFrom(event, ADD_COURT_APPLICATION_TO_CASE).apply(command));
-    }
 
-    @Handles("progression.event.court-application-rejected")
-    public void processCourtApplicationRejected(final JsonEnvelope event) {
-        final CourtApplicationRejected courtApplicationRejected = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationRejected.class);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Raising public event for court application rejected caseId: {} with {}", courtApplicationRejected.getCaseId(),courtApplicationRejected.getDescription());
-        }
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("applicationId", courtApplicationRejected.getApplicationId())
+        final JsonObject publicEvent = createObjectBuilder()
+                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
                 .build();
-        sender.send(enveloper.withMetadataFrom(event, COURT_APPLICATION_REJECTED).apply(payload));
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED).build(), publicEvent));
+
+        final JsonObject command = createObjectBuilder()
+                .add("id", courtApplication.getId().toString())
+                .build();
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(LIST_OR_REFER_COURT_APPLICATION).build(), command));
     }
 
     @Handles("progression.event.listed-court-application-changed")
     public void processCourtApplicationChanged(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received '{}' event with payload {}", "progression.event.listed-court-application-changed" , event.toObfuscatedDebugString());
+            LOGGER.info("Received '{}' event with payload {}", "progression.event.listed-court-application-changed", event.toObfuscatedDebugString());
         }
-        sender.send(enveloper.withMetadataFrom(event, COURT_APPLICATION_CHANGED).apply(event.payloadAsJsonObject()));
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_CHANGED).build(),
+                event.payloadAsJsonObject()));
     }
 
     @Handles("progression.event.court-application-updated")
     public void processCourtApplicationUpdated(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received '{}' event with payload {}", "progression.event.court-application-updated" , event.toObfuscatedDebugString());
+            LOGGER.info("Received '{}' event with payload {}", "progression.event.court-application-updated", event.toObfuscatedDebugString());
         }
-        sender.send(enveloper.withMetadataFrom(event, COURT_APPLICATION_UPDATED).apply(event.payloadAsJsonObject()));
+
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_UPDATED).build(),
+                event.payloadAsJsonObject()));
     }
 
+    @Handles("progression.event.court-application-proceedings-initiated")
+    public void processCourtApplicationInitiated(final JsonEnvelope event) {
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
+
+        if (courtApplicationProceedingsInitiated.getIsSJP()) {
+            initiateSJPCase(event, courtApplicationProceedingsInitiated);
+        } else {
+            initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication());
+        }
+    }
+
+    @Handles("progression.event.court-application-proceedings-edited")
+    public void processCourtApplicationEdited(final JsonEnvelope event) {
+        final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class);
+        final BoxHearingRequest boxHearingRequest = courtApplicationProceedingsEdited.getBoxHearing();
+        final JsonObjectBuilder publicPayload = createObjectBuilder();
+        if (boxHearingRequest != null) {
+            final ZonedDateTime sittingDay = nonNull(boxHearingRequest.getVirtualAppointmentTime()) ?
+                    boxHearingRequest.getVirtualAppointmentTime() :
+                    boxHearingRequest.getApplicationDueDate().atStartOfDay(ZoneOffset.UTC);
+            final JsonObject hearingDay = createObjectBuilder().add("sittingDay", sittingDay.format(ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")))
+                    .add("listedDurationMinutes", 10).build();
+            final JsonArrayBuilder hearingDaysArrayBuilder = createArrayBuilder().add(hearingDay);
+            publicPayload.add(HEARING_ID, boxHearingRequest.getId().toString());
+            publicPayload.add("hearingDays", hearingDaysArrayBuilder.build());
+            publicPayload.add("courtCentre", objectToJsonObjectConverter.convert(boxHearingRequest.getCourtCentre()));
+            publicPayload.add("jurisdictionType", boxHearingRequest.getJurisdictionType().toString());
+            publicPayload.add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
+            publicPayload.add("isBoxWorkRequest", true);
+        } else if (courtApplicationProceedingsEdited.getCourtHearing() != null) {
+            publicPayload.add(HEARING_ID, courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
+            publicPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
+        }
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), publicPayload.build()));
+    }
+
+
+    @Handles("progression.event.application-referred-to-boxwork")
+    public void processBoxWorkApplication(final JsonEnvelope jsonEnvelope) {
+
+        final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
+
+        final ApplicationReferredToBoxwork applicationReferredToBoxwork = jsonObjectToObjectConverter.convert(payload, ApplicationReferredToBoxwork.class);
+
+        final BoxHearingRequest boxHearingRequest = applicationReferredToBoxwork.getBoxHearing();
+
+        final ZonedDateTime sittingDay = nonNull(boxHearingRequest.getVirtualAppointmentTime()) ?
+                boxHearingRequest.getVirtualAppointmentTime() :
+                boxHearingRequest.getApplicationDueDate().atStartOfDay(ZoneOffset.UTC);
+
+        final Hearing.Builder hearingBuilder = hearing()
+                .withId(boxHearingRequest.getId())
+                .withProsecutionCases(getProsecutionCases(jsonEnvelope, applicationReferredToBoxwork.getApplication()))
+                .withHearingDays(singletonList(hearingDay()
+                        .withListedDurationMinutes(10)
+                        .withSittingDay(sittingDay).build()))
+                .withCourtCentre(boxHearingRequest.getCourtCentre())
+                .withJurisdictionType(boxHearingRequest.getJurisdictionType())
+                .withIsBoxHearing(true)
+                .withType(HearingType.hearingType().withDescription(APPLICATION).withId(APPLICATION_HEARING_TYPE_ID).build())
+                .withCourtApplications(singletonList(applicationReferredToBoxwork.getApplication()));
+
+        if (nonNull(boxHearingRequest.getVirtualAppointmentTime())) {
+            hearingBuilder.withIsVirtualBoxHearing(true);
+        }
+
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearingBuilder.build()).build();
+
+        progressionService.linkApplicationToHearing(jsonEnvelope, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
+
+        final JsonObject hearingInitiateCommand = objectToJsonObjectConverter.convert(hearingInitiate);
+        sender.send(envelopeFrom(metadataFrom(jsonEnvelope.metadata()).withName(HEARING_INITIATE_COMMAND).build(), hearingInitiateCommand));
+
+        progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, hearingInitiate);
+
+        final List<CourtApplication> courtApplications = ofNullable(hearingInitiate.getHearing().getCourtApplications()).orElse(new ArrayList<>());
+        courtApplications.forEach(courtApplication -> progressionService.updateCourtApplicationStatus(jsonEnvelope, courtApplication.getId(), ApplicationStatus.IN_PROGRESS));
+
+        LOGGER.info(" Box work Referred with payload {}", hearingInitiateCommand);
+        sender.send(envelopeFrom(metadataFrom(jsonEnvelope.metadata()).withName(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED), hearingInitiateCommand));
+    }
+
+    @Handles("progression.event.application-referred-to-court-hearing")
+    public void processCourtApplicationReferredToCourtHearing(final JsonEnvelope event) {
+        final ApplicationReferredToCourtHearing applicationReferredToCourtHearing = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationReferredToCourtHearing.class);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Processing event for court application referred to new court hearing with application id: {}", applicationReferredToCourtHearing.getApplication().getId());
+        }
+
+        final CourtApplication application = applicationReferredToCourtHearing.getApplication();
+
+        final CourtHearingRequest courtHearing = applicationReferredToCourtHearing.getCourtHearing();
+
+        final ZonedDateTime earliestStartDateTime = isNull(courtHearing.getEarliestStartDateTime()) ? ZonedDateTime.now() : courtHearing.getEarliestStartDateTime();
+
+        final List<ProsecutionCase> prosecutionCases = getProsecutionCases(event, application);
+
+        final Hearing hearing = hearing()
+                .withProsecutionCases(prosecutionCases)
+                .withId(courtHearing.getId())
+                .withHearingDays(singletonList(hearingDay()
+                        .withListedDurationMinutes(10)
+                        .withSittingDay(earliestStartDateTime).build()))
+                .withCourtCentre(courtHearing.getCourtCentre())
+                .withJurisdictionType(courtHearing.getJurisdictionType())
+                .withIsBoxHearing(false)
+                .withType(courtHearing.getHearingType())
+                .withCourtApplications(singletonList(application))
+                .build();
+
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
+
+        progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
+
+        // then update application status and list hearing
+        progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
+
+        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(), application, prosecutionCases);
+        listingService.listCourtHearing(event, listCourtHearing);
+    }
+
+    @Handles("progression.event.court-application-summons-approved")
+    public void courtApplicationSummonsApproved(final JsonEnvelope event) {
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationSummonsApproved.class);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Processing event for court-application-summons-approved with application id: {} - Link Type: {}", courtApplicationSummonsApproved.getApplicationId(), courtApplicationSummonsApproved.getLinkType());
+        }
+
+        if (courtApplicationSummonsApproved.getLinkType() == LinkType.FIRST_HEARING) {
+            final PublicProgressionCourtApplicationSummonsApproved summonsApprovedPublicEventPayload = PublicProgressionCourtApplicationSummonsApproved.publicProgressionCourtApplicationSummonsApproved()
+                    .withSummonsApprovedOutcome(courtApplicationSummonsApproved.getSummonsApprovedOutcome())
+                    .withId(courtApplicationSummonsApproved.getApplicationId())
+                    .withProsecutionCaseId(courtApplicationSummonsApproved.getCaseIds().get(0))
+                    .build();
+
+
+            sender.send(envelop(summonsApprovedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).withMetadataFrom(event));
+        }
+
+    }
+
+    @Handles("progression.event.court-application-summons-rejected")
+    public void courtApplicationSummonsRejected(final JsonEnvelope jsonEnvelope) {
+
+        final CourtApplicationSummonsRejected courtApplicationSummonsRejected = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), CourtApplicationSummonsRejected.class);
+        final CourtApplication courtApplication = courtApplicationSummonsRejected.getCourtApplication();
+        final LinkType linkType = courtApplication.getType().getLinkType();
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Processing event for court-application-summons-rejected with application id: {} - Link Type: {}", courtApplication.getId(), linkType);
+        }
+
+        if (linkType == LinkType.FIRST_HEARING) {
+            final PublicProgressionCourtApplicationSummonsRejected summonsRejectedPublicEventPayload = publicProgressionCourtApplicationSummonsRejected()
+                    .withId(courtApplication.getId())
+                    .withProsecutionCaseId(courtApplicationSummonsRejected.getCaseIds().get(0))
+                    .withSummonsRejectedOutcome(courtApplicationSummonsRejected.getSummonsRejectedOutcome())
+                    .build();
+
+
+            sender.send(envelop(summonsRejectedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED).withMetadataFrom(jsonEnvelope));
+        }
+
+        // send summons rejection notification to prosecutor
+        summonsRejectedService.sendSummonsRejectionNotification(jsonEnvelope, courtApplication, courtApplicationSummonsRejected.getSummonsRejectedOutcome());
+    }
+
+    @Handles("progression.event.initiate-court-hearing-after-summons-approved")
+    public void initiateCourtHearingAfterSummonsApproved(final JsonEnvelope event) {
+        final InitiateCourtHearingAfterSummonsApproved initiateCourtHearingAfterSummonsApproved = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), InitiateCourtHearingAfterSummonsApproved.class);
+
+        LOGGER.info("Processing event for court application referred to new court hearing with application id: {}", initiateCourtHearingAfterSummonsApproved.getApplication().getId());
+        final CourtApplication application = initiateCourtHearingAfterSummonsApproved.getApplication();
+
+        final CourtHearingRequest courtHearing = initiateCourtHearingAfterSummonsApproved.getCourtHearing();
+
+        final ZonedDateTime earliestStartDateTime = isNull(courtHearing.getEarliestStartDateTime()) ? ZonedDateTime.now() : courtHearing.getEarliestStartDateTime();
+
+        final List<ProsecutionCase> prosecutionCases = getProsecutionCases(event, application);
+
+        final UUID courtHearingId = courtHearing.getId();
+        final Hearing hearing = hearing()
+                .withId(courtHearingId)
+                .withProsecutionCases(prosecutionCases)
+                .withHearingDays(singletonList(hearingDay()
+                        .withListedDurationMinutes(10)
+                        .withSittingDay(earliestStartDateTime).build()))
+                .withCourtCentre(courtHearing.getCourtCentre())
+                .withJurisdictionType(courtHearing.getJurisdictionType())
+                .withIsBoxHearing(false)
+                .withType(courtHearing.getHearingType())
+                .withCourtApplications(singletonList(application))
+                .build();
+
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
+
+        progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
+
+        // then update application status and list hearing
+        progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
+
+        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(courtHearing, application, prosecutionCases);
+        listingService.listCourtHearing(event, listCourtHearing);
+
+        final SummonsTemplateType summonsTemplateType = application.getType().getSummonsTemplateType();
+        if (summonsTemplateType == SummonsTemplateType.BREACH || summonsTemplateType == SummonsTemplateType.GENERIC_APPLICATION) {
+            final CreateHearingApplicationRequest createHearingApplicationRequest = buildApplicationHearingRequest(initiateCourtHearingAfterSummonsApproved, application, courtHearingId, summonsTemplateType);
+            summonsHearingRequestService.addApplicationRequestToHearing(event, createHearingApplicationRequest);
+        }
+    }
+
+    @Handles("progression.event.application-referral-to-existing-hearing")
+    public void processCourtApplicationReferredToExistingHearing(final JsonEnvelope event) {
+        final ApplicationReferredToExistingHearing applicationReferredToExistingHearing = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationReferredToExistingHearing.class);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Processing event for court application referred to existing court hearing with courtApplication id: {}", applicationReferredToExistingHearing.getApplication().getId());
+        }
+        final CourtApplication courtApplication = applicationReferredToExistingHearing.getApplication();
+        final CourtHearingRequest courtHearingRequest = applicationReferredToExistingHearing.getCourtHearing();
+        final UUID hearingId = courtHearingRequest.getId();
+
+        if (courtApplication.getType().getBreachType() == BreachType.COMMISSION_OF_NEW_OFFENCE_BREACH) {
+
+            sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).build(), createObjectBuilder()
+                    .add(HEARING_ID, hearingId.toString())
+                    .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                    .build()));
+        } else {
+
+            final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(event, hearingId.toString());
+
+            if (hearingIdFromQuery.isPresent()) {
+                progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), ApplicationStatus.LISTED);
+                final Hearing hearing = jsonObjectToObjectConverter.convert(hearingIdFromQuery.get().getJsonObject("hearing"), Hearing.class);
+                final Hearing updatedHearing = updateHearingWithApplication(event, hearing, courtApplication);
+                progressionService.linkApplicationsToHearing(event, updatedHearing, singletonList(courtApplication.getId()), SENT_FOR_LISTING);
+
+                final JsonArrayBuilder prosecutionCasesBuilder = Json.createArrayBuilder();
+                final Stream<ProsecutionCase> prosecutionCaseStream = ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty);
+                prosecutionCaseStream.map(prosecutionCase -> objectToJsonObjectConverter.convert(prosecutionCase)).forEach(prosecutionCasesBuilder::add);
+                final JsonObjectBuilder hearingExtendedPayloadBuilder = createObjectBuilder()
+                        .add(HEARING_ID, hearingId.toString())
+                        .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication));
+                ofNullable(updatedHearing.getProsecutionCases()).ifPresent(cases -> hearingExtendedPayloadBuilder.add("prosecutionCases", prosecutionCasesBuilder.build()));
+                sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).build(), hearingExtendedPayloadBuilder.build()));
+            } else {
+                LOGGER.info("Court Application not found for hearing: {}", hearingId);
+            }
+        }
+    }
+
+    @Handles("progression.event.hearing-resulted-application-updated")
+    public void processHearingResultedApplicationUpdated(final JsonEnvelope event) {
+        sender.send(envelop(event.payloadAsJsonObject()).withName(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED).withMetadataFrom(event));
+    }
+
+    @Handles("progression.event.breach-application-creation-requested")
+    public void processBreachApplicationCreationRequested(final JsonEnvelope event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Received '{}' event with payload {}", "progression.event.breach-application-creation-requested", event.toObfuscatedDebugString());
+        }
+
+        final BreachApplicationCreationRequested breachApplicationCreationRequested = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), BreachApplicationCreationRequested.class);
+        final UUID hearingId = breachApplicationCreationRequested.getHearingId();
+
+        final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(event, hearingId.toString());
+        if (hearingIdFromQuery.isPresent()) {
+
+            final Hearing hearing = jsonObjectToObjectConverter.convert(hearingIdFromQuery.get().getJsonObject("hearing"), Hearing.class);
+            final UUID masterDefendantId = breachApplicationCreationRequested.getMasterDefendantId();
+
+            final Optional<ProsecutionCase> prosecutionCaseFromQuery = findFirstProsecutionCaseForMasterDefendant(hearing, masterDefendantId);
+
+            if (prosecutionCaseFromQuery.isPresent()) {
+                final ProsecutionCase prosecutionCase = prosecutionCaseFromQuery.get();
+                final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                        .withId(UUID.randomUUID())
+                        .withSummonsRequired(false)
+                        .withNotificationRequired(false)
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId())
+                                .withProsecutionAuthorityCode(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode())
+                                .build())
+                        .build();
+
+
+                final Optional<Defendant> defendant = findDefendantInProsecutionCase(prosecutionCase, masterDefendantId);
+
+                if (defendant.isPresent()) {
+                    final CourtApplicationParty respondent = CourtApplicationParty.courtApplicationParty()
+                            .withId(UUID.randomUUID())
+                            .withSummonsRequired(false)
+                            .withNotificationRequired(false)
+                            .withMasterDefendant(MasterDefendant.masterDefendant()
+                                    .withMasterDefendantId(breachApplicationCreationRequested.getMasterDefendantId())
+                                    .withPersonDefendant(defendant.get().getPersonDefendant())
+                                    .withLegalEntityDefendant(defendant.get().getLegalEntityDefendant())
+                                    .withDefendantCase(singletonList(DefendantCase.defendantCase()
+                                            .withCaseId(defendant.get().getProsecutionCaseId())
+                                            .withDefendantId(defendant.get().getId())
+                                            .withCaseReference(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                                            .build()))
+                                    .build())
+                            .build();
+
+                    final BreachedApplications breachedApplication = breachApplicationCreationRequested.getBreachedApplications();
+                    final CourtApplication courtApplication = CourtApplication.courtApplication()
+                            .withId(UUID.randomUUID())
+                            .withType(breachedApplication.getApplicationType())
+                            .withCourtOrder(breachedApplication.getCourtOrder())
+                            .withApplicationStatus(ApplicationStatus.DRAFT)
+                            .withApplicationReceivedDate(LocalDate.now())
+                            .withApplicant(applicant)
+                            .withSubject(respondent)
+                            .withRespondents(singletonList(respondent))
+                            .build();
+
+                    final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                            .withId(hearing.getId())
+                            .build();
+
+                    final JsonObject command = createObjectBuilder()
+                            .add("courtApplication", objectToJsonObjectConverter.convert(courtApplication))
+                            .add("courtHearing", objectToJsonObjectConverter.convert(courtHearingRequest))
+                            .build();
+
+                    sender.send(
+                            envelop(command)
+                                    .withName("progression.command.initiate-court-proceedings-for-application")
+                                    .withMetadataFrom(event));
+                }
+            }
+        }
+    }
+
+
+    private List<ProsecutionCase> getProsecutionCases(JsonEnvelope event, CourtApplication application) {
+        final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
+        final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
+        final List<MasterDefendant> masterDefendantList = getDistinctMasterDefendants(application);
+        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(masterDefendantList)) {
+            ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(courtApplicationCase -> {
+                final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
+                if (prosecutionCaseDetailById.isPresent()) {
+                    final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseDetailById.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
+                    final ProsecutionCase updatedProsecutionCase = createProsecutionCase(prosecutionCase, masterDefendantList);
+                    if (isNotEmpty(updatedProsecutionCase.getDefendants())) {
+                        prosecutionCases.add(updatedProsecutionCase);
+                    }
+                }
+            });
+        }
+        return isNotEmpty(prosecutionCases) ? prosecutionCases : null;
+    }
+
+    private ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase, final List<MasterDefendant> masterDefendantList) {
+        final List<Defendant> defendants = prosecutionCase.getDefendants().stream().filter(defendant -> containsMasterDefendant(masterDefendantList, defendant))
+                .map(defendant -> defendant().withValuesFrom(defendant).withDefendantCaseJudicialResults(null).build())
+                .collect(toList());
+        final List<Defendant> defendantList = defendants.stream()
+                .map(this::updatedDefendant)
+                .filter(defendant -> isNotEmpty(defendant.getOffences()))
+                .collect(toList());
+        return prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendantList).build();
+    }
+
+    private Defendant updatedDefendant(Defendant defendant) {
+        final Predicate<Offence> offencePredicate = offence -> isNull(offence.getProceedingsConcluded()) || !offence.getProceedingsConcluded();
+        final List<Offence> offences = defendant.getOffences().stream().filter(offencePredicate)
+                .map(offence -> Offence.offence().withValuesFrom(offence).withJudicialResults(null).build())
+                .collect(toList());
+        return defendant().withValuesFrom(defendant).withOffences(offences).build();
+    }
+
+    public boolean containsMasterDefendant(final List<MasterDefendant> masterDefendantList, final Defendant defendant) {
+        return masterDefendantList.stream().anyMatch(masterDefendant -> masterDefendant.getMasterDefendantId().equals(defendant.getMasterDefendantId()));
+    }
+
+    public List<MasterDefendant> getDistinctMasterDefendants(CourtApplication application) {
+
+        final Optional<MasterDefendant> applicant = ofNullable(application.getApplicant().getMasterDefendant());
+
+        final Optional<MasterDefendant> subject = ofNullable(application.getSubject().getMasterDefendant());
+
+        final List<Optional<MasterDefendant>> respondents = ofNullable(application.getRespondents()).map(Collection::stream)
+                .orElseGet(Stream::empty).map(respondent -> ofNullable(respondent.getMasterDefendant())).collect(toList());
+
+        final List<MasterDefendant> masterDefendants = respondents.stream()
+                .filter(Optional::isPresent).map(Optional::get)
+                .collect(toList());
+
+        applicant.ifPresent(masterDefendants::add);
+
+        subject.ifPresent(masterDefendants::add);
+
+        return masterDefendants.stream().filter(distinctByKey(MasterDefendant::getMasterDefendantId)).collect(toList());
+    }
+
+    private <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+        final Map<Object, Boolean> map = new ConcurrentHashMap<>();
+        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    }
+
+    private boolean isAllActiveCases(Stream<CourtApplicationCase> courtApplicationCases) {
+        return courtApplicationCases
+                .allMatch(courtApplicationCase -> nonNull(courtApplicationCase.getCaseStatus())
+                        && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
+                        && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
+    }
+
+    private Optional<ProsecutionCase> findFirstProsecutionCaseForMasterDefendant(final Hearing hearing, final UUID masterDefendantId) {
+
+        return hearing.getProsecutionCases().stream()
+                .filter(prosecutionCase -> prosecutionCase.getDefendants().stream()
+                        .anyMatch(defendant -> defendant.getMasterDefendantId().equals(masterDefendantId)))
+                .findFirst();
+    }
+
+    private Optional<Defendant> findDefendantInProsecutionCase(final ProsecutionCase prosecutionCase, final UUID masterDefendantId) {
+        return prosecutionCase.getDefendants().stream()
+                .filter(d -> d.getMasterDefendantId().equals(masterDefendantId))
+                .findFirst();
+    }
+
+    private void initiateSJPCase(JsonEnvelope event, CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated) {
+
+        final CourtApplication courtApplication = courtApplicationProceedingsInitiated.getCourtApplication();
+
+        for (final CourtApplicationCase courtApplicationCase : courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases()) {
+
+            final ProsecutionCase prosecutionCase = sjpService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId());
+
+            if (nonNull(prosecutionCase)) {
+                if (isCaseNotFoundInCC(event, prosecutionCase.getProsecutionCaseIdentifier())) {
+                    progressionService.createProsecutionCases(event, singletonList(prosecutionCase));
+
+                    final JsonObject publicSjpProsecutionCaseCreated = createObjectBuilder()
+                            .add(PROSECUTION_CASE, objectToJsonObjectConverter.convert(prosecutionCase))
+                            .build();
+
+                    sender.send(envelop(publicSjpProsecutionCaseCreated).withName(PUBLIC_PROGRESSION_EVENTS_SJP_PROSECUTION_CASE_CREATED).withMetadataFrom(event));
+
+                } else {
+                    LOGGER.warn("prosecutionCase with id {} already exists in CC", courtApplicationCase.getProsecutionCaseId());
+                }
+            } else {
+                LOGGER.warn("prosecutionCase with id {} not found in SJP", courtApplicationCase.getProsecutionCaseId());
+            }
+        }
+
+        initiateCourtApplication(event, courtApplication);
+    }
+
+    private void initiateCourtApplication(JsonEnvelope event, final CourtApplication courtApplication) {
+        final JsonObject command = createObjectBuilder()
+                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                .build();
+
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION).build(), command));
+    }
+
+    private Hearing updateHearingWithApplication(final JsonEnvelope event, final Hearing hearing, final CourtApplication courtApplication) {
+        final MasterDefendant masterDefendant = courtApplication.getSubject().getMasterDefendant();
+
+        List<CourtApplication> courtApplications = hearing.getCourtApplications();
+        if (courtApplications == null) {
+            courtApplications = new ArrayList<>();
+        }
+        courtApplications.add(courtApplication);
+        final Hearing.Builder hearingBuilder = hearing();
+        final List<ProsecutionCase> prosecutionCaseList = new ArrayList<>();
+
+        final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
+
+        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
+            final List<CourtApplicationCase> courtApplicationCasesForWhichWeNeedToCreateHearing = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                    .filter(courtApplicationCase -> hearing.getProsecutionCases().stream().noneMatch(prosecutionCase -> courtApplicationCase.getProsecutionCaseId().equals(prosecutionCase.getId())))
+                    .collect(toList());
+
+            courtApplicationCasesForWhichWeNeedToCreateHearing.forEach(courtApplicationCase -> {
+                final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
+                final Optional<ProsecutionCase> prosecutionCase = prosecutionCaseDetailById.map(jsonObject -> jsonObjectToObjectConverter.convert(prosecutionCaseDetailById.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class));
+                prosecutionCase.ifPresent(p -> {
+                    if (nonNull(masterDefendant)) {
+                        final List<Defendant> defendants = p.getDefendants().stream()
+                                .filter(defendant -> defendant.getMasterDefendantId().equals(masterDefendant.getMasterDefendantId()))
+                                .map(defendant -> defendant().withValuesFrom(defendant).withDefendantCaseJudicialResults(null).build())
+                                .collect(toList());
+
+                        final List<Defendant> defendantList = defendants.stream()
+                                .map(this::updatedDefendant)
+                                .filter(defendant -> isNotEmpty(defendant.getOffences()))
+                                .collect(toList());
+
+                        prosecutionCaseList.add(prosecutionCase().withValuesFrom(p).withDefendants(defendantList).build());
+                    }
+                });
+            });
+
+            if (isNotEmpty(prosecutionCaseList)) {
+                hearingBuilder.withProsecutionCases(prosecutionCaseList);
+            }
+        }
+        return hearingBuilder
+                .withType(hearing.getType())
+                .withCourtApplications(courtApplications)
+                .withHearingCaseNotes(hearing.getHearingCaseNotes())
+                .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
+                .withJudiciary(hearing.getJudiciary())
+                .withDefenceCounsels(hearing.getDefenceCounsels())
+                .withHearingDays(hearing.getHearingDays())
+                .withCourtCentre(hearing.getCourtCentre())
+                .withProsecutionCounsels(hearing.getProsecutionCounsels())
+                .withDefendantAttendance(hearing.getDefendantAttendance())
+                .withJurisdictionType(hearing.getJurisdictionType())
+                .withId(hearing.getId())
+                .withApplicantCounsels(hearing.getApplicantCounsels())
+                .withApplicationPartyCounsels(hearing.getApplicationPartyCounsels())
+                .withCourtApplicationPartyAttendance(hearing.getCourtApplicationPartyAttendance())
+                .withCrackedIneffectiveTrial(hearing.getCrackedIneffectiveTrial())
+                .withHasSharedResults(hearing.getHasSharedResults())
+                .withHearingLanguage(hearing.getHearingLanguage())
+                .withIsBoxHearing(hearing.getIsBoxHearing())
+                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
+                .withRespondentCounsels(hearing.getRespondentCounsels())
+                .build();
+    }
+
+    private ListCourtHearing buildDefaultHearingNeeds(final CourtHearingRequest courtHearingRequest, final CourtApplication courtApplication, final List<ProsecutionCase> prosecutionCases) {
+        final HearingListingNeeds.Builder hearingListingNeedsBuilder = HearingListingNeeds.hearingListingNeeds()
+                .withBookedSlots(courtHearingRequest.getBookedSlots())
+                .withCourtApplications(singletonList(courtApplication))
+                .withCourtCentre(courtHearingRequest.getCourtCentre())
+                .withEarliestStartDateTime(courtHearingRequest.getEarliestStartDateTime())
+                .withEndDate(courtHearingRequest.getEndDate())
+                .withEstimatedMinutes(courtHearingRequest.getEstimatedMinutes())
+                .withId(courtHearingRequest.getId())
+                .withJurisdictionType(courtHearingRequest.getJurisdictionType())
+                .withListedStartDateTime(courtHearingRequest.getListedStartDateTime())
+                .withType(courtHearingRequest.getHearingType())
+                .withWeekCommencingDate(courtHearingRequest.getWeekCommencingDate())
+                .withJudiciary(courtHearingRequest.getJudiciary())
+                .withListingDirections(courtHearingRequest.getListingDirections());
+
+        if (isNotEmpty(prosecutionCases)) {
+            hearingListingNeedsBuilder.withProsecutionCases(prosecutionCases);
+        }
+        if (isNull(courtHearingRequest.getEstimatedMinutes())) {
+            hearingListingNeedsBuilder.withEstimatedMinutes(0);
+        }
+
+        final HearingListingNeeds hearingListingNeeds = hearingListingNeedsBuilder.build();
+
+        return ListCourtHearing.listCourtHearing()
+                .withHearings(singletonList(hearingListingNeeds))
+                .build();
+    }
+
+    private boolean isCaseNotFoundInCC(JsonEnvelope event, ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        final String reference = nonNull(prosecutionCaseIdentifier.getCaseURN()) ? prosecutionCaseIdentifier.getCaseURN() : prosecutionCaseIdentifier.getProsecutionAuthorityReference();
+        final Optional<JsonObject> jsonObject = progressionService.searchCaseDetailByReference(event, reference);
+        return jsonObject.isPresent() && jsonObject.get().getJsonArray("searchResults").isEmpty();
+    }
+
+    private CreateHearingApplicationRequest buildApplicationHearingRequest(final InitiateCourtHearingAfterSummonsApproved initiateCourtHearingAfterSummonsApproved, final CourtApplication application, final UUID courtHearingId, final SummonsTemplateType summonsTemplateType) {
+        return createHearingApplicationRequest()
+                .withHearingId(courtHearingId)
+                .withApplicationRequests(singletonList(courtApplicationPartyListingNeeds()
+                        .withCourtApplicationId(application.getId())
+                        .withSummonsRequired(summonsTemplateType == SummonsTemplateType.BREACH ? SummonsRequired.BREACH : SummonsRequired.APPLICATION)
+                        .withSummonsApprovedOutcome(initiateCourtHearingAfterSummonsApproved.getSummonsApprovedOutcome())
+                        .withCourtApplicationPartyId(application.getSubject().getId())
+                        .build())).build();
+    }
 }

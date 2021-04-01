@@ -8,11 +8,19 @@
     },
     "offenceId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtApplicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "additionalProperties": false,
-  "required": [
-    "caseId",
-    "offenceId"
-  ]
+  "oneOf": [{
+    "required": [
+      "caseId",
+      "offenceId"
+    ]},{
+    "required": [
+      "courtApplicationId"
+    ]
+  }]
 }

@@ -12,10 +12,10 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
@@ -25,13 +25,13 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
     public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
@@ -87,6 +87,14 @@ public class CaseAtAGlanceIT extends AbstractIT {
                         )));
     }
 
+    @Test
+    public void shouldReturnProsecutionCaseWithCourtOrders() throws Exception {
+        //given
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        verifyProsecutionCaseCourtOrders(caseId);
+    }
+
     private static void verifyCaseAtAGlance(final String caseId, final String defendantDOB) {
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
                 .withHeader(USER_ID, randomUUID()))
@@ -134,6 +142,19 @@ public class CaseAtAGlanceIT extends AbstractIT {
                         )));
     }
 
+    private void verifyProsecutionCaseCourtOrders(final String caseId) {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                                withJsonPath("$.activeCourtOrders[0].masterDefendantId", equalTo(this.defendantId)),
+                                withJsonPath("$.activeCourtOrders[0].courtOrders[0].id", equalTo("2fc69990-bf59-4c4a-9489-d766b9abde9a"))
+                        )));
+    }
+
     @Test
     public void shouldVerifyCaseAtAGlanceLinkedApplication() throws Exception {
         createApplicationLinkedToCase();
@@ -146,7 +167,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId)),
                                 withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
-                                withJsonPath("$.linkedApplications[0].applicationTitle", equalTo("Application for bad character")),
+                                withJsonPath("$.linkedApplications[0].applicationTitle", equalTo("Application for an order of reimbursement in relation to a closure order")),
                                 withJsonPath("$.linkedApplications[0].applicantDisplayName", equalTo("Applicant Organisation")),
                                 withJsonPath("$.linkedApplications[0].applicationStatus", equalTo("DRAFT")),
                                 withJsonPath("$.linkedApplications[0].respondentDisplayNames[0]", equalTo("Respondent Organisation"))
@@ -155,11 +176,11 @@ public class CaseAtAGlanceIT extends AbstractIT {
 
     public void createApplicationLinkedToCase() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        addCourtApplication(caseId, linkedApplicationId, "progression.command.create-court-application.json");
+        initiateCourtProceedingsForCourtApplication(linkedApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
 
         Matcher[] linkedApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(linkedApplicationId)),
-                withJsonPath("$.courtApplication.linkedCaseId", is(caseId))
+                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", is(caseId))
         };
 
         pollForApplication(linkedApplicationId, linkedApplicationMatchers);

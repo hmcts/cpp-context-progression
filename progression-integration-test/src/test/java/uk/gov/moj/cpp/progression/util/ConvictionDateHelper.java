@@ -41,23 +41,26 @@ public class ConvictionDateHelper extends AbstractTestHelper {
 
     private final String offenceId;
 
-    public ConvictionDateHelper(final String caseId, final String offenceId) {
+    private final String courtApplicationId;
+
+    public ConvictionDateHelper(final String caseId, final String offenceId, final String courtApplicationId) {
         this.caseId = caseId;
         this.offenceId = offenceId;
+        this.courtApplicationId = courtApplicationId;
 
         privateEventsConsumer = QueueUtil.privateEvents.createConsumerForMultipleSelectors("progression.event.conviction-date-added", "progression.event.conviction-date-removed");
     }
 
     public void addConvictionDate() {
         final Metadata metadata = generateMetadata(PUBLIC_HEARING_CONVICTION_DATE_CHANGED);
-        JsonObject convictionDateChangedPayload = generateConvictionDatePayload(caseId, offenceId, PUBLIC_HEARING_CONVICTION_DATE_CHANGED);
+        JsonObject convictionDateChangedPayload = generateConvictionDatePayload(caseId, offenceId, PUBLIC_HEARING_CONVICTION_DATE_CHANGED, courtApplicationId);
         addConvictionDateRequest = convictionDateChangedPayload.toString();
         sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONVICTION_DATE_CHANGED, convictionDateChangedPayload, metadata);
     }
 
     public void removeConvictionDate() {
         final Metadata metadata = generateMetadata(PUBLIC_HEARING_CONVICTION_DATE_REMOVED);
-        JsonObject convictionDateRemovedPayload = generateConvictionDatePayload(caseId, offenceId, PUBLIC_HEARING_CONVICTION_DATE_REMOVED);
+        JsonObject convictionDateRemovedPayload = generateConvictionDatePayload(caseId, offenceId, PUBLIC_HEARING_CONVICTION_DATE_REMOVED, courtApplicationId);
         removeConvictionDateRequest = convictionDateRemovedPayload.toString();
         sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONVICTION_DATE_REMOVED, convictionDateRemovedPayload, metadata);
     }
@@ -69,10 +72,21 @@ public class ConvictionDateHelper extends AbstractTestHelper {
                 .build();
     }
 
-    private JsonObject generateConvictionDatePayload(String caseId, String offenceId, String eventName) {
-        String payloadStr = getStringFromResource(eventName + ".json")
-                .replaceAll("CASE_ID", caseId)
-                .replaceAll("OFFENCE_ID", offenceId);
+    private JsonObject generateConvictionDatePayload(String caseId, String offenceId, String eventName, final String courtApplicationId) {
+        String payloadStr = getStringFromResource(eventName + ".json");
+        if(caseId == null){
+            payloadStr = payloadStr.replace("\"caseId\":\"CASE_ID\",", "");
+        }
+        if(courtApplicationId == null){
+            payloadStr = payloadStr.replace("\"courtApplicationId\" : \"APPLICATION_ID\",", "");
+        }
+        if(offenceId == null){
+            payloadStr = payloadStr.replace("\"offenceId\":\"OFFENCE_ID\",", "");
+            payloadStr = payloadStr.replace(",\"offenceId\":\"OFFENCE_ID\"", "");
+        }
+        payloadStr = payloadStr.replaceAll("CASE_ID", caseId)
+                .replaceAll("OFFENCE_ID", offenceId)
+                .replaceAll("APPLICATION_ID", courtApplicationId);
         return new StringToJsonObjectConverter().convert(payloadStr);
     }
 

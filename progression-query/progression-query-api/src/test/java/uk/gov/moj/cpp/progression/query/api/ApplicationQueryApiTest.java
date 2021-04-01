@@ -118,6 +118,12 @@ public class ApplicationQueryApiTest {
     }
 
     @Test
+    public void shouldGetCourtProceedingsForApplication() {
+        when(requester.request(query)).thenReturn(response);
+        assertThat(applicationQueryApi.getCourtProceedingsForApplication(query), equalTo(response));
+    }
+
+    @Test
     public void shouldGetApplicationHearings() {
         when(requester.request(query)).thenReturn(response);
         assertThat(applicationQueryApi.getApplicationHearings(query), equalTo(response));

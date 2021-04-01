@@ -1,5 +1,8 @@
 package uk.gov.justice.services;
 
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -7,9 +10,11 @@ import uk.gov.justice.core.courts.DefendantAlias;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.unifiedsearch.client.domain.Alias;
 import uk.gov.justice.services.unifiedsearch.client.domain.LaaReference;
 import uk.gov.justice.services.unifiedsearch.client.domain.Offence;
@@ -24,16 +29,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class DomainToIndexMapper {
     private static final String SPACE = " ";
-    private static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    public static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final String DEFENDANT = "DEFENDANT";
 
     public Party party(final DefendantUpdate defendant) {
         final Party party = new Party();
         party.setPartyId(defendant.getId().toString());
         party.setPncId(defendant.getPncId());
-        party.set_party_type("DEFENDANT");
+        party.set_party_type(DEFENDANT);
         party.setCroNumber(defendant.getCroNumber());
         final UUID masterDefendantId = defendant.getMasterDefendantId();
         if (null != masterDefendantId) {
@@ -65,7 +74,7 @@ public class DomainToIndexMapper {
         final Party party = new Party();
         party.setPartyId(defendant.getId().toString());
         party.setPncId(defendant.getPncId());
-        party.set_party_type("DEFENDANT");
+        party.set_party_type(DEFENDANT);
         party.setCroNumber(defendant.getCroNumber());
         if (defendant.getProceedingsConcluded() != null) {
             party.setProceedingsConcluded(defendant.getProceedingsConcluded());
@@ -85,20 +94,29 @@ public class DomainToIndexMapper {
         return party;
     }
 
+    public Party party(final MasterDefendant masterDefendant) {
+        final Party party = new Party();
+        final UUID masterDefendantId = masterDefendant.getMasterDefendantId();
+        if (null != masterDefendantId) {
+            party.setMasterPartyId(masterDefendantId.toString());
+        }
+        legalDefendant(masterDefendant.getLegalEntityDefendant(), party);
+        personDefendant(party, masterDefendant.getPersonDefendant());
+        return party;
+    }
+
     public Party person(final Person personDetails) {
         final Party party = new Party();
-        if (personDetails != null) {
-            party.setFirstName(personDetails.getFirstName());
-            party.setMiddleName(personDetails.getMiddleName());
-            party.setLastName(personDetails.getLastName());
-            party.setAddressLines(addressLines(personDetails.getAddress()));
-            party.setDefendantAddress(defendantAddress(personDetails.getAddress()));
-            setAddressPostCodeOfParty(party, personDetails);
-            party.setNationalInsuranceNumber(personDetails.getNationalInsuranceNumber());
-            setDateOfBirthOfParty(party, personDetails);
-            setGenderOfParty(party, personDetails);
-            setTitleOfParty(party, personDetails);
-        }
+        party.setFirstName(personDetails.getFirstName());
+        party.setMiddleName(personDetails.getMiddleName());
+        party.setLastName(personDetails.getLastName());
+        party.setAddressLines(addressLines(personDetails.getAddress()));
+        party.setDefendantAddress(defendantAddress(personDetails.getAddress()));
+        setAddressPostCodeOfParty(party, personDetails.getAddress());
+        party.setNationalInsuranceNumber(personDetails.getNationalInsuranceNumber());
+        setDateOfBirthOfParty(party, personDetails);
+        setGenderOfParty(party, personDetails);
+        setTitleOfParty(party, personDetails);
         return party;
     }
 
@@ -107,7 +125,16 @@ public class DomainToIndexMapper {
         party.setOrganisationName(organisation.getName());
         party.setAddressLines(addressLines(organisation.getAddress()));
         party.setDefendantAddress(defendantAddress(organisation.getAddress()));
-        party.setPostCode(organisation.getAddress().getPostcode());
+        setAddressPostCodeOfParty(party, organisation.getAddress());
+        return party;
+    }
+
+    public Party prosecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
+        final Party party = new Party();
+        party.setOrganisationName(prosecutingAuthority.getName());
+        party.setAddressLines(addressLines(prosecutingAuthority.getAddress()));
+        party.setDefendantAddress(defendantAddress(prosecutingAuthority.getAddress()));
+        setAddressPostCodeOfParty(party, prosecutingAuthority.getAddress());
         return party;
     }
 
@@ -133,7 +160,14 @@ public class DomainToIndexMapper {
 
     private Party legalDefendant(final LegalEntityDefendant legalEntityDefendant, final Party party) {
         if (legalEntityDefendant != null) {
-            party.setOrganisationName(legalEntityDefendant.getOrganisation().getName());
+            final Organisation organisation = legalEntityDefendant.getOrganisation();
+            ofNullable(organisation).ifPresent(org -> {
+                party.setOrganisationName(org.getName());
+                party.setAddressLines(addressLines(org.getAddress()));
+                party.setDefendantAddress(defendantAddress(org.getAddress()));
+                setAddressPostCodeOfParty(party, org.getAddress());
+            });
+
         }
         return party;
     }
@@ -238,14 +272,10 @@ public class DomainToIndexMapper {
             final String addressLineFour = address.getAddress4();
             final String addressLineFive = address.getAddress5();
 
-            return new StringBuilder(addressLineOne).append(SPACE)
-                    .append(addressLineTwo)
-                    .append(SPACE)
-                    .append(addressLineThree)
-                    .append(SPACE)
-                    .append(addressLineFour)
-                    .append(SPACE)
-                    .append(addressLineFive).toString();
+            return Stream.of(addressLineOne, addressLineTwo, addressLineThree, addressLineFour, addressLineFive).
+                    filter(StringUtils::isNotBlank).
+                    map(StringUtils::trim).
+                    collect(joining(SPACE));
         }
         return SPACE;
     }
@@ -259,7 +289,7 @@ public class DomainToIndexMapper {
             party.setLastName(personDetails.getLastName());
             party.setAddressLines(addressLines(personDetails.getAddress()));
             party.setDefendantAddress(defendantAddress(personDetails.getAddress()));
-            setAddressPostCodeOfParty(party, personDetails);
+            setAddressPostCodeOfParty(party, personDetails.getAddress());
             party.setNationalInsuranceNumber(personDetails.getNationalInsuranceNumber());
             setDateOfBirthOfParty(party, personDetails);
             setGenderOfParty(party, personDetails);
@@ -282,8 +312,7 @@ public class DomainToIndexMapper {
         return defendantAddress;
     }
 
-    private void setAddressPostCodeOfParty(final Party party, final Person personDetails) {
-        final Address address = personDetails.getAddress();
+    private void setAddressPostCodeOfParty(final Party party, final Address address) {
         if (address != null) {
             party.setPostCode(address.getPostcode());
         }

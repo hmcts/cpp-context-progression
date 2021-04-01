@@ -3,15 +3,15 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.moj.cpp.progression.helper.SummonsDataHelper.getDocumentTypeData;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -93,7 +93,8 @@ public class PostalService {
                                                 final String legislation,
                                                 final CourtCentre courtCentre,
                                                 final CourtApplicationParty courtApplicationParty,
-                                                final UUID linkedCaseId) {
+                                                final UUID linkedCaseId,
+                                                final JurisdictionType jurisdictionType) {
 
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
@@ -117,7 +118,8 @@ public class PostalService {
                 legislation,
                 courtCentre,
                 localJusticeArea,
-                courtApplicationParty);
+                courtApplicationParty,
+                jurisdictionType);
 
         sendPostalNotification(sender, envelope, applicationId, postalNotification, linkedCaseId);
 
@@ -142,26 +144,29 @@ public class PostalService {
     }
 
     @SuppressWarnings({"squid:S00107"})
-    private PostalNotification buildPostalNotification(final String hearingDate,
+    public PostalNotification buildPostalNotification(final String hearingDate,
                                                        final String hearingTime,
                                                        final String applicationReference,
                                                        final String applicationType,
                                                        final String legislation,
                                                        final CourtCentre courtCentre,
                                                        final JsonObject localJusticeArea,
-                                                       final CourtApplicationParty courtApplicationParty) {
+                                                       final CourtApplicationParty courtApplicationParty,
+                                                       final JurisdictionType jurisdictionType) {
 
         final PostalNotification.Builder builder = PostalNotification.builder()
                 .withReference(ofNullable(applicationReference).orElse(EMPTY))
-                .withLjaCode(ofNullable(localJusticeArea).map(area -> area.getString(NATIONAL_COURT_CODE, EMPTY)).orElse(EMPTY))
-                .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY))
                 .withIssueDate(LocalDate.now())
                 .withApplicationType(ofNullable(applicationType).orElse(EMPTY))
                 .withLegislationText(ofNullable(legislation).orElse(EMPTY))
                 .withCourtCentreName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY));
+        if(jurisdictionType.equals(JurisdictionType.MAGISTRATES)){
+            builder.withLjaCode(ofNullable(localJusticeArea).map(area -> area.getString(NATIONAL_COURT_CODE, EMPTY)).orElse(EMPTY))
+                    .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY));
+        }
 
         //Check if the applicant is a defendant
-        final Optional<Defendant> defendantOptional = ofNullable(courtApplicationParty.getDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
 
         defendantOptional.ifPresent(defendant -> builder.withDefendant(buildDefendant(defendant)));
 
@@ -186,7 +191,7 @@ public class PostalService {
         return builder.build();
     }
 
-    private PostalDefendant buildDefendant(final Defendant defendant) {
+    private PostalDefendant buildDefendant(final MasterDefendant defendant) {
         return PostalDefendant.builder()
                 .withName(getDefendantName(defendant))
                 .withDateOfBirth(nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getPersonDetails().getDateOfBirth() : null)
@@ -194,22 +199,22 @@ public class PostalService {
                 .build();
     }
 
-    private String getDefendantName(final Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant())) {
-            return defendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + defendant.getPersonDefendant().getPersonDetails().getLastName();
+    private String getDefendantName(final MasterDefendant masterDefendant) {
+        if (nonNull(masterDefendant.getPersonDefendant())) {
+            return masterDefendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + masterDefendant.getPersonDefendant().getPersonDetails().getLastName();
         }
-        if (nonNull(defendant.getLegalEntityDefendant())) {
-            return defendant.getLegalEntityDefendant().getOrganisation().getName();
+        if (nonNull(masterDefendant.getLegalEntityDefendant())) {
+            return masterDefendant.getLegalEntityDefendant().getOrganisation().getName();
         }
         return EMPTY;
     }
 
-    private PostalAddress getDefendantPostalAddress(final Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant())) {
-            return getPostalAddress(defendant.getPersonDefendant().getPersonDetails().getAddress());
+    private PostalAddress getDefendantPostalAddress(final MasterDefendant masterDefendant) {
+        if (nonNull(masterDefendant.getPersonDefendant())) {
+            return getPostalAddress(masterDefendant.getPersonDefendant().getPersonDetails().getAddress());
         }
-        if (nonNull(defendant.getLegalEntityDefendant())) {
-            return getPostalAddress(defendant.getLegalEntityDefendant().getOrganisation().getAddress());
+        if (nonNull(masterDefendant.getLegalEntityDefendant())) {
+            return getPostalAddress(masterDefendant.getLegalEntityDefendant().getOrganisation().getAddress());
         }
         return null;
     }
@@ -237,7 +242,7 @@ public class PostalService {
 
         final Optional<Organisation> organisationOptional = ofNullable(courtApplicationParty.getOrganisation());
 
-        final Optional<Defendant> defendantOptional = ofNullable(courtApplicationParty.getDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
 
         final Optional<ProsecutingAuthority> prosecutingAuthorityOptional = ofNullable(courtApplicationParty.getProsecutingAuthority());
 
@@ -270,7 +275,7 @@ public class PostalService {
 
         final Optional<Organisation> organisationOptional = ofNullable(courtApplicationParty.getOrganisation());
 
-        final Optional<Defendant> defendantOptional = ofNullable(courtApplicationParty.getDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
 
         final Optional<ProsecutingAuthority> prosecutingAuthorityOptional = ofNullable(courtApplicationParty.getProsecutingAuthority());
 
@@ -299,10 +304,12 @@ public class PostalService {
                 .withApplicationDocument(applicationDocument)
                 .build();
 
+        final JsonObject documentTypeData = referenceDataService.getDocumentTypeAccessData(APPLICATIONS_DOCUMENT_TYPE_ID, envelope, requester)
+                .orElseThrow(() -> new RuntimeException("Unable to retrieve document type details for '" + APPLICATIONS_DOCUMENT_TYPE_ID + "'"));
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(UUID.randomUUID())
                 .withDocumentTypeId(APPLICATIONS_DOCUMENT_TYPE_ID)
-                .withDocumentTypeDescription(getDocumentTypeData(APPLICATIONS_DOCUMENT_TYPE_ID, referenceDataService, envelope, requester).getString("section"))
+                .withDocumentTypeDescription(documentTypeData.getString("section"))
                 .withMaterials(Collections.singletonList(Material.material()
                                 .withId(materialId)
                                 .withGenerationStatus(null)

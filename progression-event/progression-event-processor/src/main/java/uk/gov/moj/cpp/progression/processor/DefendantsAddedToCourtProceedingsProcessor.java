@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
@@ -20,6 +23,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
@@ -27,17 +31,24 @@ import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class DefendantsAddedToCourtProceedingsProcessor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantsAddedToCourtProceedingsProcessor.class);
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -52,8 +63,10 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     private ListingService listingService;
 
     @Inject
-    @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
+
+    @Inject
+    private SummonsHearingRequestService summonsHearingRequestService;
 
     @Handles("progression.event.defendants-added-to-court-proceedings")
     public void process(final JsonEnvelope jsonEnvelope) {
@@ -91,20 +104,38 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                     separateAddDefendantsCourtProceedingsWithFutureHearings(futureHearings, defendantsAddedToCourtProceedings);
 
 
-            if (!listHearingRequestByFutureAndNewHearings.getNewDefendantsAddedToExistingHearings().getListHearingRequests().isEmpty()) {
+            final List<ListHearingRequest> listHearingRequestsForExistingHearing = listHearingRequestByFutureAndNewHearings.getNewDefendantsAddedToExistingHearings().getListHearingRequests();
+            if (isNotEmpty(listHearingRequestsForExistingHearing)) {
+                // find hearing ID
                 sender.send(envelopeFrom(
                         metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-court-proceedings"),
                         payload
                 ));
+
+                // find from future hearings the 1st matched hearing
+                final UUID hearingId = getMatchedHearingId(futureHearings, listHearingRequestsForExistingHearing.get(0));
+                LOGGER.info("Adding newly added defendants on case '{} to existing hearing '{}'", prosecutionCaseId, hearingId);
+                summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, getListDefendantRequests(listHearingRequestsForExistingHearing), hearingId);
             }
 
-            if (!listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests().isEmpty()) {
+            final List<ListHearingRequest> listHearingRequestsForNewHearing = listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests();
+            if (isNotEmpty(listHearingRequestsForNewHearing)) {
+                final UUID hearingId = randomUUID();
                 final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(jsonEnvelope,
-                        Collections.singletonList(prosecutionCase), listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests());
+                        Collections.singletonList(prosecutionCase), listHearingRequestsForNewHearing, hearingId);
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
                 progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+
+                // add requests to the new hearing being created
+                LOGGER.info("Adding newly added defendants on case '{} to new hearing '{}'", prosecutionCaseId, hearingId);
+                summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, getListDefendantRequests(listHearingRequestsForNewHearing), hearingId);
             }
+
         }
+    }
+
+    private List<ListDefendantRequest> getListDefendantRequests(final List<ListHearingRequest> listHearingRequestsForNewHearing) {
+        return listHearingRequestsForNewHearing.stream().map(ListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(toList());
     }
 
     public List<Hearing> getFutureHearings(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final JsonObject prosecutionCaseJsonObject) {
@@ -120,7 +151,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                             .noneMatch(hearings -> Objects.equals(futureHearing.getId(), hearings.getId())
                                     && hearings.getHearingListingStatus() == HearingListingStatus.HEARING_RESULTED)
 
-            ).collect(Collectors.toList());
+            ).collect(toList());
         }
     }
 
@@ -138,11 +169,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
             final ZonedDateTime startDateTime = nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
             if (startDateTime != null && startDateTime.toLocalDate().compareTo(LocalDate.now()) >= 0) {
-                final boolean anyMatchedHearing = futureHearings.stream()
-                        .anyMatch(hearing ->
-                                checkForSameCourtCentre(listHearingRequest, hearing)
-                                        && checkForSameHearingDateTime(listHearingRequest, hearing)
-                        );
+                final boolean anyMatchedHearing = futureHearings.stream().anyMatch(getHearingMatchedPredicate(listHearingRequest));
                 if (!anyMatchedHearing) {
                     newListHearingRequests.add(listHearingRequest);
                 } else {
@@ -162,12 +189,23 @@ public class DefendantsAddedToCourtProceedingsProcessor {
         return new ListHearingRequestByFutureAndNewHearings(newDefendantsAddedToExistingHearings, newDefendantsToCreateNewHearings);
     }
 
+    private UUID getMatchedHearingId(final List<Hearing> futureHearings, final ListHearingRequest listHearingRequest) {
+        // this will not be null as the method is invoked only when a hearing match is identified earlier
+        return futureHearings.stream().filter(getHearingMatchedPredicate(listHearingRequest)).map(Hearing::getId).findFirst().orElse(null);
+    }
+
+    private Predicate<Hearing> getHearingMatchedPredicate(final ListHearingRequest listHearingRequest) {
+        return hearing ->
+                checkForSameCourtCentre(listHearingRequest, hearing)
+                        && checkForSameHearingDateTime(listHearingRequest, hearing);
+    }
+
     private List<Defendant> getMatchingDefendants(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings, final ArrayList<ListHearingRequest> existingListHearingRequests) {
         return defendantsAddedToCourtProceedings.getDefendants().stream()
                 .filter(defendant -> existingListHearingRequests.stream()
                         .flatMap(listHearingRequest -> listHearingRequest.getListDefendantRequests().stream())
                         .anyMatch(listDefendantRequest -> Objects.equals(defendant.getId(), listDefendantRequest.getDefendantId()))
-                ).collect(Collectors.toList());
+                ).collect(toList());
     }
 
     private boolean checkForSameCourtCentre(final ListHearingRequest listHearingRequest, final Hearing hearing) {

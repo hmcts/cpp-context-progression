@@ -33,8 +33,10 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@SuppressWarnings("squid:S1607")
 public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";

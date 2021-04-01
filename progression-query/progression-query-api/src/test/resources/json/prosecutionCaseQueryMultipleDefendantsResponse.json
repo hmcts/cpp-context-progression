@@ -1,0 +1,256 @@
+{
+  "prosecutionCase": {
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2020-10-19T12:23:53.988Z",
+        "croNumber": "440847/45N",
+        "id": "96ec1814-cfcd-4ef4-ba18-315a6c48659e",
+        "isYouth": false,
+        "masterDefendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+        "offences": [
+          {
+            "arrestDate": "2020-10-17",
+            "chargeDate": "2020-10-18",
+            "count": 0,
+            "endDate": "2020-10-17",
+            "id": "ca438f25-e9a4-4a6b-a26d-467674755171",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+            "offenceTitle": "Use / install a television set without a licence",
+            "orderIndex": 1,
+            "startDate": "2020-09-19",
+            "wording": "From 19 September 2020, used a television receiver without a licence."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "efe7ij27",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "Address line 1",
+              "address2": "Address line 2",
+              "address3": "Address line 3",
+              "address4": "Address line 4",
+              "address5": "Klockoport",
+              "postcode": "TW14 9XD"
+            },
+            "contact": {
+              "mobile": "07890123456",
+              "primaryEmail": "Dudley.Rau41@example.com"
+            },
+            "dateOfBirth": "1984-08-03",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "4",
+              "observedEthnicityDescription": "4",
+              "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Alejandra",
+            "gender": "FEMALE",
+            "lastName": "Block",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Corporate Usability Developer",
+            "occupationCode": "1",
+            "title": "Mrs."
+          }
+        },
+        "pncId": "2020602766C",
+        "prosecutionAuthorityReference": "efe7ij27",
+        "prosecutionCaseId": "63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95"
+      },
+      {
+        "courtProceedingsInitiated": "2020-10-19T12:23:53.988Z",
+        "croNumber": "440847/45N",
+        "id": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+        "isYouth": false,
+        "masterDefendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+        "offences": [
+          {
+            "arrestDate": "2020-10-17",
+            "chargeDate": "2020-10-18",
+            "count": 0,
+            "endDate": "2020-10-17",
+            "id": "ca438f25-e9a4-4a6b-a26d-467674755171",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+            "offenceTitle": "Use / install a television set without a licence",
+            "orderIndex": 1,
+            "startDate": "2020-09-19",
+            "wording": "From 19 September 2020, used a television receiver without a licence."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "efe7ij27",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "Address line 1",
+              "address2": "Address line 2",
+              "address3": "Address line 3",
+              "address4": "Address line 4",
+              "address5": "Klockoport",
+              "postcode": "TW14 9XD"
+            },
+            "contact": {
+              "mobile": "07890123456",
+              "primaryEmail": "Dudley.Rau41@example.com"
+            },
+            "dateOfBirth": "1984-08-03",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "4",
+              "observedEthnicityDescription": "4",
+              "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Alejandra",
+            "gender": "FEMALE",
+            "lastName": "Block",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Corporate Usability Developer",
+            "occupationCode": "1",
+            "title": "Mrs."
+          }
+        },
+        "pncId": "2020602766C",
+        "prosecutionAuthorityReference": "efe7ij27",
+        "prosecutionCaseId": "63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95"
+      }
+    ],
+    "id": "63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95",
+    "initiationCode": "C",
+    "originatingOrganisation": "0480000",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "CPS-EM",
+      "prosecutionAuthorityId": "42880989-5d09-332e-a711-8797af06ecea",
+      "caseURN": "10GD7635820"
+    },
+    "statementOfFacts": "Prosecution facts"
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+        "defendantName": "Alejandra Block",
+        "hearingIds": [
+          "e7030c44-dc7e-41c4-afea-37151b1e673f"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "Address line 1",
+              "address2": "Address line 2",
+              "address3": "Address line 3",
+              "address4": "Address line 4",
+              "address5": "Klockoport",
+              "postcode": "TW14 9XD"
+            },
+            "age": "36",
+            "courtApplications": [],
+            "dateOfBirth": "1984-08-03",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f"
+            },
+            "id": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+            "judicialResults": [],
+            "name": "Alejandra Block",
+            "offences": [
+              {
+                "count": 0,
+                "endDate": "2020-10-17",
+                "id": "ca438f25-e9a4-4a6b-a26d-467674755171",
+                "judicialResults": [],
+                "offenceCode": "CA03010",
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "pleas": [],
+                "startDate": "2020-09-19",
+                "verdicts": [],
+                "wording": "From 19 September 2020, used a television receiver without a licence."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "isCancelled": false,
+            "listedDurationMinutes": 15,
+            "listingSequence": 0,
+            "sittingDay": "2020-10-20T13:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_INITIALISED",
+        "id": "e7030c44-dc7e-41c4-afea-37151b1e673f",
+        "judiciary": [
+          {
+            "firstName": "Vanessa Louise",
+            "judicialId": "1068c6e4-c805-3cfd-8e9e-a8072e3189e2",
+            "judicialRoleType": {
+              "judicialRoleTypeId": "1068c6e4-c805-3cfd-8e9e-a8072e3189e2",
+              "judiciaryType": "Magistrate"
+            },
+            "lastName": "Barnes",
+            "title": "Mrs"
+          }
+        ],
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "CPS-EM",
+      "prosecutionAuthorityId": "42880989-5d09-332e-a711-8797af06ecea",
+      "caseURN": "10GD7635820"
+    }
+  }
+}

@@ -52,10 +52,15 @@ public class NotificationNotifyService {
             notificationBuilder.add(FIELD_POSTAGE, POSTAGE_TYPE);
         }
 
+        final JsonObject letterNotification = notificationBuilder.build();
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("sending letter notification - {} ", letterNotification);
+        }
+
         sender.sendAsAdmin(
                 envelopeFrom(
                         metadataFrom(event.metadata()).withName(NOTIFICATION_NOTIFY_LETTER_COMMAND),
-                        notificationBuilder.build()
+                        letterNotification
                 )
         );
     }
@@ -63,7 +68,7 @@ public class NotificationNotifyService {
     public void sendEmailNotification(final JsonEnvelope event, final JsonObject emailNotification) {
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("sending - {} ", emailNotification);
+            LOGGER.info("sending email notification - {} ", emailNotification);
         }
 
         sender.sendAsAdmin(

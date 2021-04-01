@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
 import uk.gov.justice.core.courts.PrepareSummonsData;
@@ -18,11 +18,14 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.json.JsonValue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(Component.COMMAND_HANDLER)
@@ -45,8 +48,8 @@ public class PrepareSummonsDataHandler {
         final PrepareSummonsData requestSummons = prepareSummonsDataEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(requestSummons.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.createSummonsData(requestSummons.getCourtCentre(), requestSummons.getHearingDateTime(), requestSummons.getConfirmedProsecutionCaseIds());
-        if(events!=null) {
+        final Stream<Object> events = hearingAggregate.createSummonsData(requestSummons.getCourtCentre(), requestSummons.getHearingDateTime(), requestSummons.getConfirmedProsecutionCaseIds(), requestSummons.getConfirmedApplicationIds());
+        if (events != null) {
             appendEventsToStream(prepareSummonsDataEnvelope, eventStream, events);
         }
     }
@@ -65,7 +68,7 @@ public class PrepareSummonsDataHandler {
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.createListDefendantRequest(confirmedHearing);
 
-        if(Objects.nonNull(events)) {
+        if (nonNull(events)) {
             appendEventsToStream(envelope, eventStream, events);
         }
     }
@@ -87,7 +90,7 @@ public class PrepareSummonsDataHandler {
                 hearingAggregate.updateListDefendantRequest(extendHearingDefendantRequestUpdateRequested.getDefendantRequests(),
                         extendHearingDefendantRequestUpdateRequested.getConfirmedHearing());
 
-        if(Objects.nonNull(events)) {
+        if (nonNull(events)) {
             appendEventsToStream(envelope, eventStream, events);
         }
     }

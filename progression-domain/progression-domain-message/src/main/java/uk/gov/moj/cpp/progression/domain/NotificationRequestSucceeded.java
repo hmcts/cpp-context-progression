@@ -17,6 +17,7 @@ public class NotificationRequestSucceeded {
     private final UUID materialId;
     private final UUID notificationId;
     private final ZonedDateTime sentTime;
+    private final ZonedDateTime completedAt;
 
     @JsonCreator
     public NotificationRequestSucceeded(
@@ -24,12 +25,15 @@ public class NotificationRequestSucceeded {
             @JsonProperty("applicationId") final UUID applicationId,
             @JsonProperty("materialId") final UUID materialId,
             @JsonProperty("notificationId") final UUID notificationId,
-            @JsonProperty("sentTime") final ZonedDateTime sentTime) {
+            @JsonProperty("sentTime") final ZonedDateTime sentTime,
+            @JsonProperty("completedAt") final ZonedDateTime completedAt
+    ) {
         this.caseId = caseId;
         this.applicationId = applicationId;
         this.materialId = materialId;
         this.notificationId = notificationId;
         this.sentTime = sentTime;
+        this.completedAt = completedAt;
     }
 
     public UUID getCaseId() {
@@ -42,6 +46,10 @@ public class NotificationRequestSucceeded {
 
     public ZonedDateTime getSentTime() {
         return sentTime;
+    }
+
+    public ZonedDateTime getCompletedAt() {
+        return completedAt;
     }
 
     public UUID getApplicationId() {
@@ -66,12 +74,13 @@ public class NotificationRequestSucceeded {
                 Objects.equals(applicationId, that.applicationId) &&
                 Objects.equals(notificationId, that.notificationId) &&
                 Objects.equals(materialId, that.materialId) &&
-                Objects.equals(sentTime, that.sentTime);
+                Objects.equals(sentTime, that.sentTime) &&
+                Objects.equals(completedAt, that.completedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(caseId, applicationId, notificationId, materialId, sentTime);
+        return Objects.hash(caseId, applicationId, notificationId, materialId, sentTime, completedAt);
     }
 
     @Override
@@ -82,6 +91,7 @@ public class NotificationRequestSucceeded {
                 ", applicationId='" + applicationId +
                 ", materialId='" + materialId +
                 ", sentTime='" + sentTime + "'" +
+                ", completedAt='" + completedAt + "'" +
                 '}';
     }
 

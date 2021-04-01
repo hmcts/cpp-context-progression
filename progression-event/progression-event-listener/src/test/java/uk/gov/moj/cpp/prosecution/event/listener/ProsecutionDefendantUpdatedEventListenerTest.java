@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -16,11 +17,11 @@ import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -35,8 +36,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpdatedEventListener;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
@@ -82,6 +86,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private CourtApplicationRepository courtApplicationRepository;
 
     @Mock
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
+
+    @Mock
     private JsonEnvelope envelope;
 
     @Mock
@@ -101,7 +108,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private ProsecutionCaseEntity prosecutionCaseEntity;
 
     @Mock
-    private List<CourtApplicationEntity> applicationEntities;
+    private List<CourtApplicationCaseEntity> courtApplicationCaseEntities;
 
     @Captor
     private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
@@ -160,7 +167,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .thenReturn(prosecutionCase);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
         when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
-        when(courtApplicationRepository.findByLinkedCaseId(defendant.getProsecutionCaseId())).thenReturn(applicationEntities);
+        when(courtApplicationCaseRepository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(courtApplicationCaseEntities);
         when(objectToJsonObjectConverter.convert(prosecutionCase)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
         eventListener.processProsecutionCaseDefendantUpdated(envelope);
@@ -170,24 +177,24 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     @Test
     public void shouldUpdateMatchedRespondents() {
 
-        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
+        List<CourtApplicationParty> courtApplicationRespondentList = new ArrayList<>();
         UUID commonUUID = randomUUID();
         Defendant defendant1 = Defendant.defendant().withId(commonUUID).build();
         Defendant defendant2 = Defendant.defendant().withId(commonUUID).build();
         Defendant defendant3 = Defendant.defendant().withId(randomUUID()).build();
+
+        MasterDefendant masterDefendant1 = MasterDefendant.masterDefendant().withMasterDefendantId(commonUUID).build();
+        MasterDefendant masterDefendant2 = MasterDefendant.masterDefendant().withMasterDefendantId(commonUUID).build();
+        MasterDefendant masterDefendant3 = MasterDefendant.masterDefendant().withMasterDefendantId(randomUUID()).build();
 
         List<Defendant> defendantList = getDefendants(commonUUID, commonUUID, commonUUID, randomUUID(), Arrays.asList(randomUUID()));
         defendantList.add(defendant1);
         defendantList.add(defendant2);
         defendantList.add(defendant3);
 
-        CourtApplicationParty party1 = CourtApplicationParty.courtApplicationParty().withDefendant(defendant1).build();
-        CourtApplicationParty party2 = CourtApplicationParty.courtApplicationParty().withDefendant(defendant2).build();
-        CourtApplicationParty party3 = CourtApplicationParty.courtApplicationParty().withDefendant(defendant3).build();
-
-        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent.courtApplicationRespondent().withPartyDetails(party1).build();
-        CourtApplicationRespondent courtApplicationRespondent2 = CourtApplicationRespondent.courtApplicationRespondent().withPartyDetails(party2).build();
-        CourtApplicationRespondent courtApplicationRespondent3 = CourtApplicationRespondent.courtApplicationRespondent().withPartyDetails(party3).build();
+        CourtApplicationParty courtApplicationRespondent1 = CourtApplicationParty.courtApplicationParty().withMasterDefendant(masterDefendant1).build();
+        CourtApplicationParty courtApplicationRespondent2 = CourtApplicationParty.courtApplicationParty().withMasterDefendant(masterDefendant2).build();
+        CourtApplicationParty courtApplicationRespondent3 = CourtApplicationParty.courtApplicationParty().withMasterDefendant(masterDefendant3).build();
 
         courtApplicationRespondentList.add(courtApplicationRespondent1);
         courtApplicationRespondentList.add(courtApplicationRespondent2);
@@ -210,16 +217,18 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                         .build()).build();
 
         ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase().withDefendants(defendantList).build();
-        List<CourtApplicationEntity> courtApplicationEntityList = new ArrayList<>();
         CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntityList.add(courtApplicationEntity);
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), defendant1.getProsecutionCaseId()));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
         when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
         when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
-        when(courtApplicationRepository.findByLinkedCaseId(defendant1.getProsecutionCaseId())).thenReturn(courtApplicationEntityList);
+        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
         when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
@@ -239,11 +248,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final UUID observedEthnicityId = randomUUID();
         final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
 
-        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty().withDefendant(defendant1).build())
-                .build();
+        CourtApplicationParty courtApplicationRespondent1 = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId).build()).build();
 
-        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
+        List<CourtApplicationParty> courtApplicationRespondentList = new ArrayList<>();
         courtApplicationRespondentList.add(courtApplicationRespondent1);
         CourtApplication courtApplication = CourtApplication.courtApplication().withRespondents(courtApplicationRespondentList).build();
 
@@ -269,15 +277,17 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
         ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
-        List<CourtApplicationEntity> courtApplicationEntityList = new ArrayList<>();
         CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntityList.add(courtApplicationEntity);
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), defendant1.getProsecutionCaseId()));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
         when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(courtApplicationRepository.findByLinkedCaseId(defendant1.getProsecutionCaseId())).thenReturn(courtApplicationEntityList);
+        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
         when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
@@ -310,12 +320,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final Defendant defendant1 = prepareDefendant(defendantId, masterDefendantId, prosecutionCaseId, observedEthnicityId);
 
 
-        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withDefendant(defendant1).
-                                build())
-                .build();
-        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
+        CourtApplicationParty courtApplicationRespondent1 = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId).build()).
+                        build();
+        List<CourtApplicationParty> courtApplicationRespondentList = new ArrayList<>();
         courtApplicationRespondentList.add(courtApplicationRespondent1);
         CourtApplication courtApplication = CourtApplication.courtApplication().withRespondents(courtApplicationRespondentList).build();
 
@@ -340,15 +348,18 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
         ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
-        List<CourtApplicationEntity> courtApplicationEntityList = new ArrayList<>();
         CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntityList.add(courtApplicationEntity);
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), defendant1.getProsecutionCaseId()));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
         when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(courtApplicationRepository.findByLinkedCaseId(defendant1.getProsecutionCaseId())).thenReturn(courtApplicationEntityList);
+        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
         when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
@@ -382,12 +393,11 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final Defendant defendant1 = prepareDefendant(defendantId, masterDefendantId, prosecutionCaseId);
 
 
-        CourtApplicationRespondent courtApplicationRespondent1 = CourtApplicationRespondent.courtApplicationRespondent()
-                .withPartyDetails(CourtApplicationParty.courtApplicationParty()
-                        .withDefendant(defendant1).
-                                build())
-                .build();
-        List<CourtApplicationRespondent> courtApplicationRespondentList = new ArrayList<>();
+        CourtApplicationParty courtApplicationRespondent1 = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId).build()).
+                        build();
+
+        List<CourtApplicationParty> courtApplicationRespondentList = new ArrayList<>();
         courtApplicationRespondentList.add(courtApplicationRespondent1);
         CourtApplication courtApplication = CourtApplication.courtApplication().withRespondents(courtApplicationRespondentList).build();
 
@@ -412,15 +422,17 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
         ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase().withDefendants(defendants).build();
-        List<CourtApplicationEntity> courtApplicationEntityList = new ArrayList<>();
+
         CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntityList.add(courtApplicationEntity);
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), defendant1.getProsecutionCaseId()));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
         when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(courtApplicationRepository.findByLinkedCaseId(defendant1.getProsecutionCaseId())).thenReturn(courtApplicationEntityList);
+        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
         when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
@@ -457,7 +469,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final UUID prosecutionCaseId = randomUUID();
 
         final UUID of1 = randomUUID();
-        final UUID of2= randomUUID();
+        final UUID of2 = randomUUID();
 
         final List<Defendant> defsList = getDefendants(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1));
 
@@ -531,7 +543,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         return object;
     }
 
-    private Defendant prepareDefendantWithAssociatedPerson(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId , final UUID selfDefinedEthnicityId, final UUID observedEthnicityId){
+    private Defendant prepareDefendantWithAssociatedPerson(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId) {
         return Defendant.defendant()
                 .withPersonDefendant(PersonDefendant.personDefendant()
                         .withPersonDetails(Person.person()
@@ -621,7 +633,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     }
 
 
-    private DefendantUpdate prepareDefendantUpdate(final UUID selfDefinedEthnicityId, final LocalDate updatedDoB, final UUID defendantId){
+    private DefendantUpdate prepareDefendantUpdate(final UUID selfDefinedEthnicityId, final LocalDate updatedDoB, final UUID defendantId) {
 
         return DefendantUpdate.defendantUpdate()
                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -672,7 +684,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
     }
 
-    private DefendantUpdate prepareDefendantUpdateForAssociatedPerson(final UUID selfDefinedEthnicityId, final LocalDate updatedDoB, final UUID defendantId){
+    private DefendantUpdate prepareDefendantUpdateForAssociatedPerson(final UUID selfDefinedEthnicityId, final LocalDate updatedDoB, final UUID defendantId) {
 
         return DefendantUpdate.defendantUpdate()
                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -716,7 +728,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                         .build()).build();
     }
 
-    private void verifyProsecutionCaseHasBeenUpdated(ProsecutionCaseEntity value){
+    private void verifyProsecutionCaseHasBeenUpdated(ProsecutionCaseEntity value) {
         assertTrue(value.getPayload().contains("\"occupation\":\"Plumber\""));
         assertTrue(value.getPayload().contains("\"occupationCode\":\"PL01\""));
         assertTrue(value.getPayload().contains("\"lastName\":\"UpdatedLastName\""));
@@ -725,7 +737,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertTrue(value.getPayload().contains("\"bailConditions\":\"bailConditions\""));
     }
 
-    private void verifyProsecutionCaseAllValues(final ProsecutionCase allValues, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId,  final LocalDate updatedDoB){
+    private void verifyProsecutionCaseAllValues(final ProsecutionCase allValues, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId, final LocalDate updatedDoB) {
         assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getMasterDefendantId(), is(masterDefendantId));
         assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
         assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getPersonDefendant().getDriverNumber(), is("newDriverNumber"));
@@ -755,7 +767,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat("Associated person address was deleted so should be null.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getAddress(), is(nullValue()));
     }
 
-    private void verifyProsecutionCaseAllValuesWithoutExistingAssociatedPerson(final ProsecutionCase allValues, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId,  final LocalDate updatedDoB){
+    private void verifyProsecutionCaseAllValuesWithoutExistingAssociatedPerson(final ProsecutionCase allValues, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId, final LocalDate updatedDoB) {
         assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getMasterDefendantId(), is(masterDefendantId));
         assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
         assertThat("New driver number field should be set.", allValues.getDefendants().get(0).getPersonDefendant().getDriverNumber(), is("newDriverNumber"));
@@ -788,8 +800,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat("Original occupationCode should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupationCode(), is("PL01"));
         assertThat("Original associated person role should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getRole(), is("role"));
     }
-
-
 
 
 }

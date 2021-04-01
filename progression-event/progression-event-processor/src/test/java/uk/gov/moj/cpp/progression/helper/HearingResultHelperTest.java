@@ -2,8 +2,11 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResults;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResultsUnderCourtApplicationCases;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResultsUnderCourtOrders;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildDefendant;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildHearingWithCourtApplications;
@@ -12,15 +15,30 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildOffence;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.moj.cpp.progression.exception.DataValidationException;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.Hearing;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultHelperTest {
+
+    private static final UUID APPROVED_SUMMONS = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66");
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void shouldReturnTrueWhenNextHearingExistForProsecutionCases() {
@@ -29,7 +47,7 @@ public class HearingResultHelperTest {
                         asList(buildDefendant(randomUUID(),
                                 asList(buildOffence(randomUUID(),
                                         asList(buildJudicialResult(buildNextHearing(randomUUID()))))))))));
-        final boolean doesNextHearingExist = new HearingResultHelper().doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(true));
     }
 
@@ -41,7 +59,7 @@ public class HearingResultHelperTest {
                                 asList(buildOffence(randomUUID(),
                                         asList(buildJudicialResult(null)))))))));
 
-        final boolean doesNextHearingExist = new HearingResultHelper().doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(false));
     }
 
@@ -52,7 +70,7 @@ public class HearingResultHelperTest {
                         asList(buildDefendant(randomUUID(),
                                 asList(buildOffence(randomUUID(),null)))))));
 
-        final boolean doesNextHearingExist = new HearingResultHelper().doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(false));
     }
 
@@ -61,7 +79,25 @@ public class HearingResultHelperTest {
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildCourtApplicationWithJudicialResults(randomUUID(),
                         asList(buildJudicialResult(buildNextHearing(randomUUID()))))));
-        final boolean doesNextHearingExist = new HearingResultHelper().doCourtApplicationsContainNextHearingResults(hearing.getCourtApplications());
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
+        MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenNextHearingExistForCourtOrdersUnderCourtApplications() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildCourtApplicationWithJudicialResultsUnderCourtOrders(randomUUID(),
+                        asList(buildJudicialResult(buildNextHearing(randomUUID()))))));
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
+        MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenNextHearingExistForCourtApplicationCasesUnderCourtApplications() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildCourtApplicationWithJudicialResultsUnderCourtApplicationCases(randomUUID(),
+                        asList(buildJudicialResult(buildNextHearing(randomUUID()))))));
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(true));
     }
 
@@ -70,7 +106,7 @@ public class HearingResultHelperTest {
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildCourtApplicationWithJudicialResults(randomUUID(),
                         asList(buildJudicialResult(null)))));
-        final boolean doesNextHearingExist = new HearingResultHelper().doCourtApplicationsContainNextHearingResults(hearing.getCourtApplications());
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(false));
     }
 
@@ -78,7 +114,48 @@ public class HearingResultHelperTest {
     public void shouldReturnFalseWhenNoJudicialResultsExistForCourtApplications() {
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildCourtApplicationWithJudicialResults(randomUUID(),null)));
-        final boolean doesNextHearingExist = new HearingResultHelper().doCourtApplicationsContainNextHearingResults(hearing.getCourtApplications());
+        final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(false));
+    }
+
+    @Test
+    public void shouldReturnFalseWhenNoApprovedSummonsExistForCourtApplications() {
+        final boolean summonsApproved = new HearingResultHelper().isSummonsApproved(
+                buildCourtApplicationWithJudicialResults(randomUUID(),
+                        Arrays.asList(JudicialResult.judicialResult().withJudicialResultTypeId(randomUUID()).build())));
+        MatcherAssert.assertThat(summonsApproved, CoreMatchers.is(false));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenApprovedSummonsExistForCourtApplications() {
+        final boolean summonsApproved = new HearingResultHelper().isSummonsApproved(
+                buildCourtApplicationWithJudicialResults(randomUUID(),
+                        Arrays.asList(JudicialResult.judicialResult().withJudicialResultTypeId(APPROVED_SUMMONS).build())));
+        MatcherAssert.assertThat(summonsApproved, CoreMatchers.is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseIsSummonsRequiredForRespondents() {
+        List<CourtApplicationParty> respondents = Arrays.asList( CourtApplicationParty.courtApplicationParty().withSummonsRequired(false).build(),
+                CourtApplicationParty.courtApplicationParty().withSummonsRequired(false).build());
+        final boolean summonsApproved = new HearingResultHelper().isSummonsRequiredForRespondents(respondents);
+        MatcherAssert.assertThat(summonsApproved, CoreMatchers.is(false));
+    }
+
+    @Test
+    public void shouldReturnTrueIsSummonsRequiredForRespondents() {
+        List<CourtApplicationParty> respondents = Arrays.asList( CourtApplicationParty.courtApplicationParty().withSummonsRequired(true).build(),
+                CourtApplicationParty.courtApplicationParty().withSummonsRequired(true).build());
+        final boolean summonsApproved = new HearingResultHelper().isSummonsRequiredForRespondents(respondents);
+        MatcherAssert.assertThat(summonsApproved, CoreMatchers.is(true));
+    }
+
+    @Test
+    public void shouldTestExceptionForSummonsRequiredForRespondents() {
+        expectedException.expect(DataValidationException.class);
+        List<CourtApplicationParty> respondents = Arrays.asList( CourtApplicationParty.courtApplicationParty().withSummonsRequired(false).build(),
+                CourtApplicationParty.courtApplicationParty().withSummonsRequired(true).build(),
+                CourtApplicationParty.courtApplicationParty().withSummonsRequired(false).build());
+        new HearingResultHelper().isSummonsRequiredForRespondents(respondents);
     }
 }

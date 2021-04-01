@@ -43,7 +43,7 @@ public class HearingMapperTest {
                 .withHearing(hearing)
                 .build();
 
-        final uk.gov.justice.services.unifiedsearch.client.domain.Hearing actual = hearingMapper.hearing(prosecutionCaseDefendantListingStatusChanged, defaultDefendantIds);
+        final uk.gov.justice.services.unifiedsearch.client.domain.Hearing actual = hearingMapper.hearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), defaultDefendantIds);
 
         assertThat(actual, is(notNullValue()));
         assertThat(actual.isIsBoxHearing(), is(false));

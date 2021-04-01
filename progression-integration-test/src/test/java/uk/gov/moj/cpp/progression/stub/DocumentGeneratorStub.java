@@ -12,9 +12,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
 
+import java.io.StringReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
@@ -42,18 +49,29 @@ public class DocumentGeneratorStub {
 
 
     public static Optional<JSONObject> getCrownCourtExtractDocumentRequestByDefendant(final String defendantId) {
-        return getDocumentRequestsAsStream("CrownCourtExtract")
+        return getDocumentRequestsAsStream().stream()
+                .map(JSONObject::new)
+                .filter(json -> json.getString("templateName").equals("CrownCourtExtract"))
+                .map(json -> json.getJSONObject("templatePayload"))
                 .filter(request -> request.getJSONObject("defendant").getString("id").equals(defendantId))
                 .findFirst();
     }
 
-    private static Stream<JSONObject> getDocumentRequestsAsStream(String templateName) {
+    public static Optional<JsonObject> getSummonsTemplate(final String templateName, final String... contains) {
+        final List<String> documentRequests = getDocumentRequestsAsStream();
+        return documentRequests.stream()
+                .map(s -> Json.createReader(new StringReader(s)).readObject())
+                .filter(request -> Arrays.stream(contains).allMatch(request.toString()::contains))
+                .filter(json -> json.getString("templateName").equals(templateName))
+                .map(json -> json.getJsonObject("templatePayload"))
+                .findFirst();
+    }
+
+    private static List<String> getDocumentRequestsAsStream() {
         return findAll(postRequestedFor(urlPathMatching(PATH))
                 .withHeader(CONTENT_TYPE, equalTo("application/vnd.system.documentgenerator.render+json")))
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
-                .map(JSONObject::new)
-                .filter(json -> json.getString("templateName").equals(templateName))
-                .map(json -> json.getJSONObject("templatePayload"));
+                .collect(Collectors.toList());
     }
 }

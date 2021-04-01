@@ -15,9 +15,6 @@ import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadata
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationRespondent;
-import uk.gov.justice.core.courts.CourtApplicationResponse;
-import uk.gov.justice.core.courts.CourtApplicationResponseType;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialRole;
@@ -47,7 +44,7 @@ import javax.json.JsonObject;
 
 import com.google.common.base.CaseFormat;
 
-@SuppressWarnings({"squid:S3655", "squid:S1067"})
+@SuppressWarnings({"squid:S3655", "squid:S1067", "squid:CommentedOutCodeLine",})
 public class TransformationHelper {
 
     private static final String CHAIR = "Chair:";
@@ -121,9 +118,9 @@ public class TransformationHelper {
         final StringBuilder sb = new StringBuilder();
         int winger = 1;
         for (final JudicialRole judicialRole : judicialRoles) {
-            if (nonNull(judicialRole.getIsBenchChairman()) && judicialRole.getIsBenchChairman()) {
+            if (nonNull(judicialRole.getIsBenchChairman()) && Boolean.TRUE.equals(judicialRole.getIsBenchChairman())) {
                 sb.append(CHAIR + " ");
-            } else if (nonNull(judicialRole.getIsDeputy()) && judicialRole.getIsDeputy()) {
+            } else if (nonNull(judicialRole.getIsDeputy()) && Boolean.TRUE.equals(judicialRole.getIsDeputy())) {
                 sb.append(WINGER);
                 sb.append(winger++);
                 sb.append(": ");
@@ -139,35 +136,6 @@ public class TransformationHelper {
 
     public String getCamelCase(final String value) {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, value);
-    }
-
-    public String transformApplicationResponse(final List<CourtApplicationRespondent> respondents) {
-        return respondents.stream()
-                .filter(Objects::nonNull)
-                .filter(r -> nonNull(r.getApplicationResponse()))
-                .map(CourtApplicationRespondent::getApplicationResponse)
-                .map(CourtApplicationResponse::getApplicationResponseType)
-                .map(CourtApplicationResponseType::getDescription)
-                .findAny()
-                .orElse(null);
-
-    }
-
-    public boolean isApplicationResponseAvailable(final List<CourtApplicationRespondent> respondents) {
-        return nonNull(respondents) && respondents.stream().
-                anyMatch(r -> nonNull(r.getApplicationResponse()));
-    }
-
-    public LocalDate transformApplicationResponseDate(final List<CourtApplicationRespondent> respondents) {
-        return respondents.stream()
-                .filter(Objects::nonNull)
-                .filter(r -> nonNull(r.getApplicationResponse()))
-                .map(CourtApplicationRespondent::getApplicationResponse)
-                .map(CourtApplicationResponse::getApplicationResponseDate)
-                .filter(Objects::nonNull)
-                .findAny()
-                .orElse(null);
-
     }
 
     public uk.gov.justice.core.courts.Address getCourtAddress(final UUID userId, final UUID courtCentreId) {
@@ -260,8 +228,8 @@ public class TransformationHelper {
     boolean getAppealPendingFlag(final List<CourtApplication> courtApplications) {
         return courtApplications.stream()
                 .filter(Objects::nonNull)
-                .filter(ca -> ca.getType().getIsAppealApplication() != null)
-                .filter(ca -> ca.getType().getIsAppealApplication())
+                .filter(ca -> ca.getType().getAppealFlag() != null)
+                .filter(ca -> ca.getType().getAppealFlag())
                 .map(CourtApplication::getApplicationStatus)
                 .anyMatch(applicationStatus -> applicationStatus.equals(ApplicationStatus.DRAFT) || applicationStatus.equals(ApplicationStatus.LISTED)
                         || applicationStatus.equals(ApplicationStatus.EJECTED));

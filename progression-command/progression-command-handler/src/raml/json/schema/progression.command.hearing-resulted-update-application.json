@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-resulted-update-application.json",
+  "properties": {
+    "courtApplication": {
+      "description": "The details of the court application for which proceedings are required",
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    }
+  },
+  "required": [
+    "courtApplication"
+  ],
+  "additionalProperties": false
+}

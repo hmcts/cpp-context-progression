@@ -145,12 +145,13 @@ public class DefendantMatchingEventListener {
                 matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
                 matchDefendantCaseHearingEntity.setProsecutionCaseId(prosecutionCaseId);
                 matchDefendantCaseHearingEntity.setHearingId(hearingId);
-                matchDefendantCaseHearingEntity.setHearing(nonNull(hearingId) ? hearingRepository.findBy(hearingId) : null);
+                if(nonNull(hearingId)) {
+                    matchDefendantCaseHearingEntity.setHearing( hearingRepository.findBy(hearingId) );
+                }
                 matchDefendantCaseHearingEntity.setProsecutionCase(prosecutionCaseRepository.findByCaseId(prosecutionCaseId));
             }
             matchDefendantCaseHearingRepository.save(matchDefendantCaseHearingEntity);
         }
-
     }
 
     private void updateMasterDefendant(UUID defendantId, UUID masterDefendantId, ProsecutionCase prosecutionCase) {

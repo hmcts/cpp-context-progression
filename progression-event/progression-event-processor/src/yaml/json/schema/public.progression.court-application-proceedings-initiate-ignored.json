@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-proceedings-initiate-ignored.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "type": "string"
+    },
+    "description" :  {
+      "type": "string"
+    }
+  },
+  "additionalProperties":false
+}

@@ -3,15 +3,11 @@
   "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-created.json",
   "type": "object",
   "properties": {
-    "applicationId": {
-      "type": "string"
-    },
-    "arn": {
-      "type": "string"
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
     }
   },
   "required": [
-    "applicationId",
-    "arn"
+    "courtApplication"
   ]
 }
