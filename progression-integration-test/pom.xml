@@ -259,8 +259,7 @@
                             <basePackageName>uk.gov.moj.cpp.progression.it</basePackageName>
                             <sourceDirectory>${project.basedir}/src/raml/json/schema
                             </sourceDirectory>
-                            <generatorProperties
-                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
                                     <plugin>
                                         uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin
