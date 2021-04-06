@@ -86,7 +86,7 @@ public class CourtDocumentNotifiedProcessor {
         final List<UUID> caseIds = getLinkedCaseIds( courtDocument.getDocumentCategory());
         final UUID prosecutionCaseId = caseIds.get(0);
         final UUID materialId = courtDocument.getMaterials().get(0).getId();
-        final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
+        final String materialUrl = materialUrlGenerator.fileStreamUrlFor(materialId);
 
         final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(envelope, prosecutionCaseId.toString());
 

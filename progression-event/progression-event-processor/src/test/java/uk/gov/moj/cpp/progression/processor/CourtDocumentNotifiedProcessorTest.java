@@ -400,7 +400,7 @@ public class CourtDocumentNotifiedProcessorTest {
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtDocument")).thenReturn(courtDocumentJsonObject);
         when(jsonObjectConverter.convert(courtDocumentJsonObject, CourtDocument.class)).thenReturn(courtDocument);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(materialUrl);
+        when(materialUrlGenerator.fileStreamUrlFor(materialId)).thenReturn(materialUrl);
         when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, prosecutionCaseId)).thenReturn(prosecutionCaseJsonOptional);
 
         when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
