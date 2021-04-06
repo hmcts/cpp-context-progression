@@ -239,6 +239,23 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
+    public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenMaterialIsNotAvailable() throws FileServiceException {
+        final UUID notificationId = randomUUID();
+        final ZonedDateTime completedAt = now();
+        final UUID courtDocumentId = randomUUID();
+        final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf(completedAt.toString(), "completedAt")
+                .build();
+        when(systemIdMapperService.getDocumentIdForMaterialId(anyString())).thenReturn(of(this.systemIdMapping));
+        when(this.systemIdMapping.getTargetId()).thenReturn(courtDocumentId);
+        notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
+
+        verify(fileStorer).delete(notificationId);
+        verifyZeroInteractions(systemIdMapperService, systemIdMapping);
+    }
+
+    @Test
     public void shouldDeleteAssociatedFileWhenNotificationSendFailed() throws FileServiceException {
         final UUID notificationId = randomUUID();
         final JsonEnvelope notificationFailedEvent = envelope()

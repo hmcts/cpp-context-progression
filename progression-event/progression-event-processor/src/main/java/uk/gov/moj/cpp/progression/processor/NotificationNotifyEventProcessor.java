@@ -137,10 +137,10 @@ public class NotificationNotifyEventProcessor {
     public void handleNotificationRequestSucceeded(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final String notificationId = payload.getString(NOTIFICATION_ID);
-        final String materialId = payload.getString(MATERIAL_ID);
+        final String materialId = payload.getString(MATERIAL_ID, null);
         final String completedAt = payload.getString(COMPLETED_AT, null);
 
-        if(nonNull(completedAt)) {
+        if(nonNull(completedAt) && nonNull(materialId)) {
             final Optional<SystemIdMapping> optionalSystemIdMapping = systemIdMapperService.getDocumentIdForMaterialId(materialId);
 
             optionalSystemIdMapping.ifPresent(mapping -> {
