@@ -33,7 +33,6 @@ import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
-import uk.gov.justice.progression.courts.Respondents;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
 import uk.gov.justice.progression.courts.exract.AttendanceDayAndType;
 import uk.gov.justice.progression.courts.exract.AttendanceDays;
@@ -135,18 +134,25 @@ public class CourtExtractTransformer {
 
         if (caseDefendant.isPresent()) {
             defendantBuilder.withId(caseDefendant.get().getId());
-            defendantBuilder.withName(transformationHelper.getPersonName(caseDefendant.get().getPersonDefendant().getPersonDetails()));
+            if(nonNull(caseDefendant.get().getPersonDefendant())) {
+                defendantBuilder.withName(transformationHelper.getPersonName(caseDefendant.get().getPersonDefendant().getPersonDetails()));
+
+                if (Objects.nonNull(caseDefendant.get().getPersonDefendant().getCustodialEstablishment())) {
+                    defendantBuilder.withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                            .withCustody(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getCustody())
+                            .withId(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getId())
+                            .withName(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getName())
+                            .build());
+                }
+            }
+            else if(nonNull(caseDefendant.get().getLegalEntityDefendant())) {
+                defendantBuilder.withName(caseDefendant.get().getLegalEntityDefendant().getOrganisation().getName());
+                defendantBuilder.withAddress(caseDefendant.get().getLegalEntityDefendant().getOrganisation().getAddress());
+            }
 
             if (caseDefendant.get().getAssociatedPersons() != null && !caseDefendant.get().getAssociatedPersons().isEmpty()) {
                 ejectExtract.withParentGuardian(transformParentGuardian(caseDefendant.get().getAssociatedPersons()));
             }
-        }
-        if (Objects.nonNull(caseDefendant.get().getPersonDefendant().getCustodialEstablishment())) {
-            defendantBuilder.withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
-                    .withCustody(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getCustody())
-                    .withId(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getId())
-                    .withName(caseDefendant.get().getPersonDefendant().getCustodialEstablishment().getName())
-                    .build());
         }
 
         ejectExtract.withExtractType(COURT_EXTRACT);
@@ -507,20 +513,16 @@ public class CourtExtractTransformer {
 
     private Defendant transformDefendantWithoutHearingDetails(final uk.gov.justice.core.courts.Defendant caseDefendant, final Defendant.Builder defendantBuilder) {
         if (nonNull(caseDefendant)) {
-            final Person personDefendant = caseDefendant.getPersonDefendant().getPersonDetails();
+            if(nonNull(caseDefendant.getPersonDefendant())) {
+                final Person personDefendant = caseDefendant.getPersonDefendant().getPersonDetails();
+                defendantBuilder.withDateOfBirth(personDefendant.getDateOfBirth());
+                defendantBuilder.withAge(transformationHelper.getDefendantAge(caseDefendant));
+                defendantBuilder.withAddress(personDefendant.getAddress());
+            }
 
-            defendantBuilder.withDateOfBirth(personDefendant.getDateOfBirth());
-            defendantBuilder.withAge(transformationHelper.getDefendantAge(caseDefendant));
-            defendantBuilder.withAddress(
-                    Address.address()
-                            .withAddress1(personDefendant.getAddress().getAddress1())
-                            .withAddress2(personDefendant.getAddress().getAddress2())
-                            .withAddress3(personDefendant.getAddress().getAddress3())
-                            .withAddress4(personDefendant.getAddress().getAddress4())
-                            .withAddress5(personDefendant.getAddress().getAddress5())
-                            .withPostcode(personDefendant.getAddress().getPostcode())
-                            .build()
-            );
+            if(nonNull(caseDefendant.getLegalEntityDefendant()) && nonNull(caseDefendant.getLegalEntityDefendant().getOrganisation().getAddress())) {
+                defendantBuilder.withAddress(caseDefendant.getLegalEntityDefendant().getOrganisation().getAddress());
+            }
         }
         defendantBuilder.withOffences(transformDefendantOffences(caseDefendant.getOffences()));
         defendantBuilder.withDefenceOrganisations(nonNull(caseDefendant.getDefenceOrganisation()) ? getDefenceOrganisation(caseDefendant) : null);

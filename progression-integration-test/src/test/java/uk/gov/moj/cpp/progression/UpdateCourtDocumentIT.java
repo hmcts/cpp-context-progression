@@ -26,6 +26,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -72,8 +73,8 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         documentId = randomUUID();
         materialId = randomUUID();
         notificationId = randomUUID();
-        completedAt = now();
-        sentTime = now().minusMinutes(5);
+        completedAt = now(ZoneId.of("UTC"));
+        sentTime = now(ZoneId.of("UTC")).minusMinutes(5);
         stubForMaterialId(notificationId, materialId);
         stubForDocumentId(materialId, documentId);
     }

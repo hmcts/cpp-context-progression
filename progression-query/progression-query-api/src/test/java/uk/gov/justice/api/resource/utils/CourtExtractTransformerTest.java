@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.ApplicantCounsel;
@@ -238,6 +239,26 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    public void testEjectCaseWithUnResultedCase_ForLegalEntity() {
+        final String extractType = "CrownCourtExtract";
+        final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlanceWithoutHearings();
+        final CourtExtractRequested courtExtractRequested = target.ejectCase(getProsecutionCaseForLegalEntityDefendant(), hearingsAtAGlance, DEFENDANT_ID.toString(), randomUUID());
+
+        assertNotNull(courtExtractRequested.getProsecutingAuthority());
+        assertThat(courtExtractRequested.getCaseReference(), is(PAR));
+        assertThat(courtExtractRequested.getExtractType(), is(extractType));
+        assertThat(courtExtractRequested.getIsAppealPending(), is((true)));
+        assertThat(courtExtractRequested.getDefendant().getName(), is("ABC LTD"));
+        assertThat(courtExtractRequested.getDefendant().getAddress().getAddress1(), is(ADDRESS_1));
+        assertThat(courtExtractRequested.getDefendant().getAddress().getAddress2(), is(ADDRESS_2));
+        assertThat(courtExtractRequested.getDefendant().getAddress().getAddress3(), is(ADDRESS_3));
+        assertThat(courtExtractRequested.getDefendant().getAddress().getPostcode(), is(POST_CODE));
+        assertThat(courtExtractRequested.getCourtApplications().size(), is((1)));
+        assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().size(), is(1));
+        assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getApplicantRepresentation().getApplicantCounsels().size(), is(0));
+    }
+
+    @Test
     public void testEjectCase_shouldExtractAllResultedAndFutureHearings() {
         final String extractType = "CrownCourtExtract";
         final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlance();
@@ -375,6 +396,32 @@ public class CourtExtractTransformerTest {
             assertThat(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().get(0).getRespondentCounsels().get(0).getStatus(), is("Solicitor"));
         }
         assertNotNull(courtExtractRequested.getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().get(0));
+    }
+
+    private ProsecutionCase getProsecutionCaseForLegalEntityDefendant() {
+        final Defendant defendant = Defendant.defendant().withId(DEFENDANT_ID)
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation().withAddress(createAddress())
+                                .               withName("ABC LTD").build()).build())
+                .withOffences(Collections.emptyList())
+                .withMasterDefendantId(MASTER_DEFENDANT_ID)
+                .build();
+
+        final List<Defendant> defendants = new ArrayList<Defendant>() {{
+            add(defendant);
+        }};
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(CASE_ID)
+                .withDefendants(defendants)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("code")
+                        .withProsecutionAuthorityReference(PAR)
+                        .build())
+                .build();
+
+        return prosecutionCase;
     }
 
     private ProsecutionCase createProsecutionCase() {
