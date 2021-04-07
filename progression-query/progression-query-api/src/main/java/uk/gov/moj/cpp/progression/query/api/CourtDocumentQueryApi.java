@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -38,8 +39,6 @@ public class CourtDocumentQueryApi {
     private static final String HEARING_ID = "hearingId";
     private static final String CASE_ID = "caseId";
     private static final String DEFENDANT_ID = "defendantId";
-    private static final String HEARING_DETAIL_TYPE_TRIAL = "TIS";
-    private static final String HEARING_DETAIL_TYPE_TRIAL_ISSUE = "TRL";
 
     @Inject
     private Requester requester;
@@ -128,11 +127,16 @@ public class CourtDocumentQueryApi {
     private boolean isTrialHearing(final JsonEnvelope query, final HearingDetails hearingDetails) {
         final Map<UUID, ReferenceDataService.ReferenceHearingDetails> hearingTypes = referenceDataService.getHearingTypes(query);
 
-        if(!hearingTypes.containsKey(hearingDetails.getHearingTypeId())) {
+        if (!hearingTypes.containsKey(hearingDetails.getHearingTypeId())) {
             return false;
         }
         final ReferenceDataService.ReferenceHearingDetails referenceHearingDetails = hearingTypes.get(hearingDetails.getHearingTypeId());
-        return HEARING_DETAIL_TYPE_TRIAL.equals(referenceHearingDetails.getHearingTypeCode()) || HEARING_DETAIL_TYPE_TRIAL_ISSUE.equals(referenceHearingDetails.getHearingTypeCode()) ;
+
+        final List<ReferenceDataService.ReferenceHearingDetails> hearingsOfTypeTrial = hearingTypes.values().stream()
+                .filter(ReferenceDataService.ReferenceHearingDetails::getTrialTypeFlag)
+                .collect(Collectors.toList());
+
+        return hearingsOfTypeTrial.stream().anyMatch(type -> type.getHearingTypeCode().equals(referenceHearingDetails.getHearingTypeCode()));
     }
 
     private JsonEnvelope requestSharedCourtDocuments(final JsonEnvelope query, final String magsGroupId) {

@@ -94,16 +94,19 @@ public class DocumentQueryApiTest {
                                         .add("id", "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced")
                                         .add("hearingCode", "TIS")
                                         .add("hearingDescription", "Trial")
+                                        .add("trialTypeFlag", true)
                                         .build())
                                 .add(createObjectBuilder()
                                         .add("id", "9cc41e45-b594-4ba6-906e-1a4626b08fed")
                                         .add("hearingCode", "TRL")
                                         .add("hearingDescription", "Trial of Issue")
+                                        .add("trialTypeFlag", true)
                                         .build())
                                 .add(createObjectBuilder()
                                         .add("id", "39031052-42ff-4277-9f16-dfa30e9246b3")
                                         .add("hearingCode", "FPTP")
                                         .add("hearingDescription", "Further Plea & Trial Preparation")
+                                        .add("trialTypeFlag", false)
                                         .build())
                             .build()
                         ).build();
@@ -174,7 +177,7 @@ public class DocumentQueryApiTest {
     }
 
     private ReferenceDataService.ReferenceHearingDetails convertToHearingDetais(final JsonObject hearingType) {
-        return new ReferenceDataService.ReferenceHearingDetails(UUID.fromString(hearingType.getString("id")), hearingType.getString("hearingCode"), hearingType.getString("hearingDescription"));
+        return new ReferenceDataService.ReferenceHearingDetails(UUID.fromString(hearingType.getString("id")), hearingType.getString("hearingCode"), hearingType.getString("hearingDescription"), hearingType.getBoolean("trialTypeFlag"));
     }
 
     @Test
@@ -208,7 +211,6 @@ public class DocumentQueryApiTest {
         assertThat(jsonEnvelope.payloadAsJsonObject().containsKey("hearingId"), is(true));
         assertThat(jsonEnvelope.payloadAsJsonObject().getString("hearingId"), is(hearingId.toString()));
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.shared-court-documents"));
-
     }
 
     @Test

@@ -145,7 +145,7 @@ public class ReferenceDataService {
     }
 
     private ReferenceHearingDetails convertToHearingDetais(final JsonObject hearingType) {
-        return new ReferenceHearingDetails(UUID.fromString(hearingType.getString("id")), hearingType.getString("hearingCode"), hearingType.getString("hearingDescription"));
+        return new ReferenceHearingDetails(UUID.fromString(hearingType.getString("id")), hearingType.getString("hearingCode"), hearingType.getString("hearingDescription"), hearingType.getBoolean("trialTypeFlag"));
     }
 
     private Optional<JsonObject> getProsecutorById(final JsonEnvelope event, final String prosecutorId) {
@@ -177,11 +177,13 @@ public class ReferenceDataService {
         private final UUID hearingTypeId;
         private final String hearingTypeCode;
         private final String hearingTypeDescription;
+        private final Boolean trialTypeFlag;
 
-        public ReferenceHearingDetails(final UUID hearingTypeId, final String hearingTypeCode, final String hearingTypeDescription) {
+        public ReferenceHearingDetails(final UUID hearingTypeId, final String hearingTypeCode, final String hearingTypeDescription, final Boolean trialTypeFlag) {
             this.hearingTypeId = hearingTypeId;
             this.hearingTypeCode = hearingTypeCode;
             this.hearingTypeDescription = hearingTypeDescription;
+            this.trialTypeFlag = trialTypeFlag;
         }
 
         public UUID getHearingTypeId() {
@@ -194,6 +196,10 @@ public class ReferenceDataService {
 
         public String getHearingTypeDescription() {
             return hearingTypeDescription;
+        }
+
+        public Boolean getTrialTypeFlag() {
+            return trialTypeFlag;
         }
     }
 }

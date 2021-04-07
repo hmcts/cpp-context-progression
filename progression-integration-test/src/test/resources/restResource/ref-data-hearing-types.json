@@ -7,6 +7,7 @@
       "hearingDescription": "Plea & Trial Preparation",
       "welshHearingDescription": "Diffynnydd i fynychu i",
       "defaultDurationMin": 20,
+      "trialTypeFlag": false,
       "validFrom": null,
       "validTo": null
     },
@@ -17,6 +18,7 @@
       "hearingDescription": "Further Plea & Trial Preparation",
       "welshHearingDescription": "Diffynnydd i fynychu 2",
       "defaultDurationMin": 20,
+      "trialTypeFlag": false,
       "validFrom": null,
       "validTo": null
     },
@@ -27,6 +29,7 @@
       "hearingDescription": "Trial",
       "welshHearingDescription": "Diffynnydd i fynychu i",
       "defaultDurationMin": 20,
+      "trialTypeFlag": true,
       "validFrom": null,
       "validTo": null
     },
@@ -37,6 +40,7 @@
       "hearingDescription": "Trial of Issue",
       "welshHearingDescription": "Diffynnydd i fynychu 2",
       "defaultDurationMin": 20,
+      "trialTypeFlag": true,
       "validFrom": null,
       "validTo": null
     }
