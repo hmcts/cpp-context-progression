@@ -231,6 +231,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withJudicialResults(persistedOffence.getJudicialResults())
                 .withCommittingCourt(updatedOffence.getCommittingCourt())
                 .withReportingRestrictions(updatedOffence.getReportingRestrictions())
+                .withEndorsableFlag(persistedOffence.getEndorsableFlag())
                 .build();
     }
 

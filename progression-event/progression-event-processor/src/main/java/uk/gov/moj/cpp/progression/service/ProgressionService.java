@@ -334,6 +334,7 @@ public class ProgressionService {
                     .withWordingWelsh(offence.getWordingWelsh())
                     .withCommittingCourt(offence.getCommittingCourt())
                     .withOffenceDateCode(offence.getOffenceDateCode())
+                    .withEndorsableFlag(offence.getEndorsableFlag())
                     .build();
         } else {
             return offence;

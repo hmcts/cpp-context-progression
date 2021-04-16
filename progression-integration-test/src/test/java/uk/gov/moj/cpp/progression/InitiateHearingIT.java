@@ -85,7 +85,8 @@ public class InitiateHearingIT extends AbstractIT {
         verifyInMessagingQueueForCasesReferredToCourts();
 
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true)));
+                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].endorsableFlag", equalTo(true)));
     }
 
     private JsonObject getHearingJsonObject(final String caseId, final String hearingId,

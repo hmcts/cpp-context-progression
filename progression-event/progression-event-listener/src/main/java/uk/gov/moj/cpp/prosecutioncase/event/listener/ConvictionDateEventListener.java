@@ -125,44 +125,7 @@ public class ConvictionDateEventListener {
     }
 
     private Offence updateOffenceConvictionDate(Offence offence, LocalDate convictionDate) {
-        return new Offence(offence.getAllocationDecision(),
-                offence.getAquittalDate(),
-                offence.getArrestDate(),
-                offence.getChargeDate(),
-                offence.getCommittingCourt(),
-                convictionDate,
-                offence.getCount(),
-                offence.getCustodyTimeLimit(),
-                offence.getDateOfInformation(),
-                offence.getDvlaOffenceCode(),
-                offence.getEndDate(),
-                offence.getId(),
-                offence.getIndicatedPlea(),
-                offence.getIntroducedAfterInitialProceedings(),
-                offence.getIsDiscontinued(),
-                offence.getIsDisposed(),
-                offence.getJudicialResults(),
-                offence.getLaaApplnReference(),
-                offence.getLaidDate(),
-                offence.getModeOfTrial(),
-                offence.getNotifiedPlea(),
-                offence.getOffenceCode(),
-                offence.getOffenceDateCode(),
-                offence.getOffenceDefinitionId(),
-                offence.getOffenceFacts(),
-                offence.getOffenceLegislation(),
-                offence.getOffenceLegislationWelsh(),
-                offence.getOffenceTitle(),
-                offence.getOffenceTitleWelsh(),
-                offence.getOrderIndex(),
-                offence.getPlea(),
-                offence.getProceedingsConcluded(),
-                offence.getReportingRestrictions(),
-                offence.getStartDate(),
-                offence.getVerdict(),
-                offence.getVictims(),
-                offence.getWording(),
-                offence.getWordingWelsh());
+        return new Offence.Builder().withValuesFrom(offence).withConvictionDate(convictionDate).build();
     }
 
     private void updateDefendantOffences(UUID offenceIdToBeUpdated, Defendant defendant, Offence updatedOffence, boolean isConvictionDateUpdated) {

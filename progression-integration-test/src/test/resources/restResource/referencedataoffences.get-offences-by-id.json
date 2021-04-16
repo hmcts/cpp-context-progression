@@ -193,5 +193,6 @@
   "validTo": "3354!67b-07-30",
   "drugsOrAlcoholRelated": "N",
   "locationRequired": "Y",
-  "prosecutionTimeLimit": "ABCDEFGHIJKLM"
+  "prosecutionTimeLimit": "ABCDEFGHIJKLM",
+  "endorsableFlag" : true
 }

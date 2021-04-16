@@ -76,7 +76,7 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, offencePayload.getString(CJS_OFFENCE_CODE, null) != null ? offencePayload.getString(CJS_OFFENCE_CODE) : StringUtils.EMPTY);
         jsonObjectBuilder.add(MODEOFTRIAL_CODE, offencePayload.getString(MODEOFTRIAL_DERIVED, null) != null ? offencePayload.getString(MODEOFTRIAL_DERIVED) : StringUtils.EMPTY);
         jsonObjectBuilder.add(DVLA_CODE, offencePayload.getString(DVLA_CODE,null) != null ? offencePayload.getString(DVLA_CODE) : StringUtils.EMPTY);
-
+        jsonObjectBuilder.add(ENDORSABLE_FLAG, offencePayload.getBoolean(ENDORSABLE_FLAG, false));
         return Optional.of(jsonObjectBuilder.build());
     }
 

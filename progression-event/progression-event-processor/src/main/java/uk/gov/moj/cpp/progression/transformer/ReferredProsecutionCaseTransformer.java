@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.DVLA_CODE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.ENDORSABLE_FLAG;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
@@ -73,6 +74,14 @@ public class ReferredProsecutionCaseTransformer {
             throw new ReferenceDataNotFoundException(key, offenceId.toString());
         }
         return jsonObject.getString(key);
+    }
+
+    private Boolean fetchBooleanValueFromKey(final JsonObject jsonObject, final String key) {
+        Boolean value = false;
+        if (jsonObject.containsKey(key)) {
+            value = jsonObject.getBoolean(key);
+        }
+        return value;
     }
 
     public ProsecutionCase transform(final ReferredProsecutionCase referredProsecutionCase, final JsonEnvelope
@@ -213,6 +222,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withOffenceDateCode(referredOffence.getOffenceDateCode())
                 .withDvlaOffenceCode(fetchValueFromKey(offenceJson, DVLA_CODE))
                 .withReportingRestrictions(referredOffence.getReportingRestrictions())
+                .withEndorsableFlag(fetchBooleanValueFromKey(offenceJson, ENDORSABLE_FLAG))
                 .build();
         if ((initiationCode == InitiationCode.J || initiationCode == InitiationCode.Z)
                 && nonNull(offence.getModeOfTrial())
