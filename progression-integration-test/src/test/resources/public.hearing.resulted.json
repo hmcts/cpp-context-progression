@@ -448,7 +448,15 @@
         "noteType": "HMCTS",
         "note": "a"
       }
-    ]
+    ],
+    "youthCourtDefendantIds" : [
+      "DEFENDANT_ID"
+    ],
+    "youthCourt" : {
+      "name" :"Derby Youth Court",
+      "courtCode" :5647,
+      "youthCourtId" :"a4cd3c1d-be10-410d-a50d-e260cdbf6d19"
+    }
   },
   "sharedTime": "2016-06-01T10:00:00Z"
 }

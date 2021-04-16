@@ -282,6 +282,8 @@ public class HearingAggregate implements Aggregate {
                 .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
                 .withIntermediaries(hearing.getIntermediaries())
                 .withIsEffectiveTrial(hearing.getIsEffectiveTrial())
+                .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
+                .withYouthCourt(hearing.getYouthCourt())
                 .build();
 
         streamBuilder.add(hearingResulted().withHearing(updatedHearing).withSharedTime(sharedTime).build());

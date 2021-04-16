@@ -209,6 +209,16 @@
           "items": {
             "$ref": "http://justice.gov.uk/core/courts/companyRepresentative.json"
           }
+        },
+        "youthCourt": {
+          "$ref": "http://justice.gov.uk/core/courts/youthCourt.json"
+        },
+        "youthCourtDefendantIds": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
         }
       },
       "required": [

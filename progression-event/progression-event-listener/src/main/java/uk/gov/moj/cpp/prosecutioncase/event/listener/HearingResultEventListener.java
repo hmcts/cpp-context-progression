@@ -131,6 +131,8 @@ public class HearingResultEventListener {
                 .withCompanyRepresentatives(originalHearing.getCompanyRepresentatives())
                 .withIntermediaries(originalHearing.getIntermediaries())
                 .withIsEffectiveTrial(originalHearing.getIsEffectiveTrial())
+                .withYouthCourt(originalHearing.getYouthCourt())
+                .withYouthCourtDefendantIds(originalHearing.getYouthCourtDefendantIds())
                 .build();
     }
 
@@ -293,6 +295,8 @@ public class HearingResultEventListener {
                 .withCompanyRepresentatives(hearingFromPayload.getCompanyRepresentatives())
                 .withIntermediaries(hearingFromPayload.getIntermediaries())
                 .withIsEffectiveTrial(hearingFromPayload.getIsEffectiveTrial())
+                .withYouthCourt(hearingFromPayload.getYouthCourt())
+                .withYouthCourtDefendantIds(hearingFromPayload.getYouthCourtDefendantIds())
                 .build();
     }
 

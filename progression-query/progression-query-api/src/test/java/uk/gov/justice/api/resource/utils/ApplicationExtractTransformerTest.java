@@ -1,6 +1,7 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.time.LocalDate.now;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -24,6 +25,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -33,10 +35,12 @@ import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.RespondentCounsel;
+import uk.gov.justice.core.courts.YouthCourt;
 import uk.gov.justice.progression.courts.exract.Applicant;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
 import uk.gov.justice.progression.courts.exract.ApplicationCourtExtractRequested;
@@ -76,6 +80,7 @@ public class ApplicationExtractTransformerTest {
     private static final UUID HEARING_ID_1 = randomUUID();
     private static final UUID HEARING_ID_2 = randomUUID();
     private static final String FULL_NAME = "Jack Denial";
+    private static final UUID DEFANDANT_ID = randomUUID();
 
     private static final String APPLICATION_TYPE = "Appeal";
     private static final String APPLICATION_OUT_COME = "applicationOutCome";
@@ -162,16 +167,34 @@ public class ApplicationExtractTransformerTest {
     }
 
     @Test
+    public void shouldTransformApplicationWithHearingWhenHearingIsHeardInYouthCourt() {
+        //given
+        final CourtApplication courtApplication = createCourtApplictionWithDefendantApplicant();
+        List<Hearing> hearingsForApplication = createHearingsForApplicationWithHearingHeardInYouthCourt();
+
+        when(requestedNameMapper.getRequestedJudgeName(argThat(Matchers.any(JsonObject.class)))).thenReturn("Denial");
+        when(referenceDataService.getJudiciary(argThat(Matchers.any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
+
+        //when
+        final ApplicationCourtExtractRequested applicationCourtExtractRequested = applicationExtractTransformer
+                .getApplicationCourtExtractRequested(courtApplication, hearingsForApplication, STANDALONE_APPLICATION, randomUUID());
+        assertThat(applicationCourtExtractRequested.getPublishingCourt().getName(), is("Youth Court Name"));
+        assertThat(applicationCourtExtractRequested.getPublishingCourt().getWelshName(), is("Welsh Youth Court Name"));
+        assertThat(applicationCourtExtractRequested.getHearings().get(1).getCourtCentre().getName(), is("Youth Court Name"));
+        assertThat(applicationCourtExtractRequested.getHearings().get(1).getCourtCentre().getWelshName(), is("Welsh Youth Court Name"));
+    }
+
+    @Test
     public void shouldGetHearingsForApplications(){
 
         //when
         List<Hearing> hearings = applicationExtractTransformer
-                .getHearingsForApplication(createHearingsJsonArray(), Arrays.asList(HEARING_ID_1.toString(), HEARING_ID_2.toString()));
+                .getHearingsForApplication(createHearingsJsonArray(), asList(HEARING_ID_1.toString(), HEARING_ID_2.toString()));
         // then
         assertThat(hearings.size(), is(2));
         // when
         hearings = applicationExtractTransformer
-                .getHearingsForApplication(createHearingsJsonArray(), Arrays.asList(randomUUID().toString()));
+                .getHearingsForApplication(createHearingsJsonArray(), asList(randomUUID().toString()));
         // then
         assertThat(hearings.size(), is(0));
 
@@ -307,7 +330,7 @@ public class ApplicationExtractTransformerTest {
     }
 
     private List<Hearing> createHearingsForApplication() {
-        return Arrays.asList(
+        return asList(
                 Hearing.hearing()
                         .withId(HEARING_ID_1)
                         .withHearingDays(createHearingDays())
@@ -315,7 +338,7 @@ public class ApplicationExtractTransformerTest {
                         .withJudiciary(createJudiciary())
                         .withType(HearingType.hearingType().withDescription(HEARING_TYPE_APPLICATION).build())
                         .withApplicantCounsels(createApplicationCounsels())
-                        .withCourtApplications(Arrays.asList(createCourtApplication()))
+                        .withCourtApplications(asList(createCourtApplication()))
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withReportingRestrictionReason(REPORTING_RESTRICTION_REASON)
                         .build(),
@@ -327,22 +350,58 @@ public class ApplicationExtractTransformerTest {
                         .withType(HearingType.hearingType().withDescription(HEARING_TYPE_APPLICATION).build())
                         .withApplicantCounsels(createApplicationCounsels())
                         .withRespondentCounsels(createRespondentCounsel())
-                        .withCourtApplications(Arrays.asList(createCourtApplication()))
+                        .withCourtApplications(asList(createCourtApplication()))
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withReportingRestrictionReason(REPORTING_RESTRICTION_REASON)
                         .build()
         );
     }
 
+    private List<Hearing> createHearingsForApplicationWithHearingHeardInYouthCourt() {
+        return asList(
+                Hearing.hearing()
+                        .withId(HEARING_ID_1)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType().withDescription(HEARING_TYPE_APPLICATION).build())
+                        .withApplicantCounsels(createApplicationCounsels())
+                        .withCourtApplications(asList(createCourtApplication()))
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withReportingRestrictionReason(REPORTING_RESTRICTION_REASON)
+
+                        .build(),
+                Hearing.hearing()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType().withDescription(HEARING_TYPE_APPLICATION).build())
+                        .withApplicantCounsels(createApplicationCounsels())
+                        .withRespondentCounsels(createRespondentCounsel())
+                        .withCourtApplications(asList(createCourtApplication()))
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withReportingRestrictionReason(REPORTING_RESTRICTION_REASON)
+                        .withYouthCourtDefendantIds(asList(DEFANDANT_ID))
+                        .withYouthCourt(YouthCourt.youthCourt()
+                                .withCourtCode(1002)
+                                .withYouthCourtId(randomUUID())
+                                .withName("Youth Court Name")
+                                .withWelshName("Welsh Youth Court Name")
+                                .build())
+                        .build()
+        );
+    }
+
     private List<ApplicantCounsel> createApplicationCounsels() {
-        return Arrays.asList(ApplicantCounsel.applicantCounsel()
+        return asList(ApplicantCounsel.applicantCounsel()
                 .withFirstName(FIRST_NAME)
                 .withLastName(LAST_NAME)
                 .build());
     }
 
     private List<RespondentCounsel> createRespondentCounsel() {
-        return Arrays.asList(RespondentCounsel
+        return asList(RespondentCounsel
                 .respondentCounsel()
                 .withFirstName(FIRST_NAME)
                 .withLastName(LAST_NAME)
@@ -351,7 +410,7 @@ public class ApplicationExtractTransformerTest {
 
 
     private List<JudicialRole> createJudiciary() {
-        return Arrays.asList(
+        return asList(
                 JudicialRole.judicialRole()
                         .withIsDeputy(true)
                         .withFirstName(FIRST_NAME)
@@ -403,7 +462,7 @@ public class ApplicationExtractTransformerTest {
     }
 
     private List<JudicialResult> createResults() {
-        return Arrays.asList(
+        return asList(
                 JudicialResult.judicialResult()
                         .withIsAvailableForCourtExtract(true)
                         .withLabel(LABEL)
@@ -422,7 +481,7 @@ public class ApplicationExtractTransformerTest {
     }
 
     private List<JudicialResultPrompt> createPrompts() {
-        return Arrays.asList(
+        return asList(
                 JudicialResultPrompt.judicialResultPrompt()
                         .withLabel(LABEL)
                         .withCourtExtract(COURT_EXTRACT)
@@ -443,7 +502,7 @@ public class ApplicationExtractTransformerTest {
     }
 
     private List<HearingDay> createHearingDays() {
-        return Arrays.asList(
+        return asList(
                 HearingDay.hearingDay()
                         .withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_2))
                         .build(),
@@ -454,7 +513,7 @@ public class ApplicationExtractTransformerTest {
     }
 
     private List<HearingDay> createHearingDays2() {
-        return Arrays.asList(
+        return asList(
                 HearingDay.hearingDay()
                         .withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_1))
                         .build(),
@@ -514,6 +573,17 @@ public class ApplicationExtractTransformerTest {
                 .build();
     }
 
+    private CourtApplicationParty createApplicationPartyWithDefandant() {
+        return CourtApplicationParty.courtApplicationParty()
+                .withId(UUID.randomUUID())
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(DEFANDANT_ID)
+                        .build())
+                .withPersonDetails(createPerson())
+                .build();
+    }
+
+
     private CourtApplicationType createCourtApplicationType() {
         return CourtApplicationType.courtApplicationType()
                 .withType(APPLICATION_TYPE)
@@ -535,5 +605,18 @@ public class ApplicationExtractTransformerTest {
         final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
         judiciaryBuilder.add("value", "desc");
         return judiciaryBuilder.build();
+    }
+
+    private CourtApplication createCourtApplictionWithDefendantApplicant() {
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withApplicant(createApplicationPartyWithDefandant())
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(now())
+                .withJudicialResults(createResults())
+                .withRespondents(createRespondents())
+                .withApplicationReference(APPLICATION_REFERENCE)
+                .build();
     }
 }

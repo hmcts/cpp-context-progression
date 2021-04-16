@@ -15,7 +15,6 @@ import uk.gov.justice.core.courts.AttendanceType;
 import uk.gov.justice.core.courts.CompanyRepresentative;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -59,6 +58,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -74,6 +74,8 @@ public class CourtExtractTransformer {
     public static final String PRESENT_BY_POLICE_VIDEO_LINK = "Present - police video link";
     public static final String PRESENT_IN_PERSON = "Present - in person";
     public static final String PRESENT_BY_VIDEO_DEFAULT = "Present - by video";
+    private static final BiPredicate<Hearings, UUID> hearingsDefendantIdBiPredicate = (hearings, defendantId) -> nonNull(hearings.getYouthCourtDefendantIds()) && hearings.getYouthCourtDefendantIds().stream().anyMatch(youthDefendantId -> youthDefendantId.equals(defendantId));
+
     @Inject
     TransformationHelper transformationHelper;
 
@@ -183,7 +185,7 @@ public class CourtExtractTransformer {
 
         courtExtract.withDefendant(transformDefendants(latestHearing.getDefendants(), defendantId, masterDefendantId, defendantBuilder, hearingsList, caseDefendant));
 
-        courtExtract.withPublishingCourt(transformCourtCentre(latestHearing.getCourtCentre(), userId));
+        courtExtract.withPublishingCourt(transformCourtCentre(latestHearing, userId, defendantId));
 
         courtExtract.withProsecutingAuthority(transformationHelper.transformProsecutingAuthority(hearingsAtAGlance.getProsecutionCaseIdentifier(), userId));
 
@@ -384,11 +386,21 @@ public class CourtExtractTransformer {
                 .build()).collect(Collectors.toList());
     }
 
-    private PublishingCourt transformCourtCentre(final CourtCentre courtCentre, final UUID userId) {
-        return PublishingCourt.publishingCourt()
-                .withName(courtCentre.getName())
-                .withAddress(transformationHelper.getCourtAddress(userId, courtCentre.getId()))
-                .build();
+    private PublishingCourt transformCourtCentre(final Hearings latestHearing, final UUID userId, final UUID defendantId) {
+        if(hearingsDefendantIdBiPredicate.test(latestHearing, defendantId)) {
+            LOGGER.info("Latest hearing youth Court Name {} " , latestHearing.getYouthCourt().getName());
+            return PublishingCourt.publishingCourt()
+                    .withName(latestHearing.getYouthCourt().getName())
+                    .withWelshName(latestHearing.getYouthCourt().getWelshName())
+                    .withAddress(transformationHelper.getCourtAddress(userId, latestHearing.getCourtCentre().getId()))
+                    .build();
+        } else {
+            return PublishingCourt.publishingCourt()
+                    .withName(latestHearing.getCourtCentre().getName())
+                    .withWelshName(latestHearing.getCourtCentre().getWelshName())
+                    .withAddress(transformationHelper.getCourtAddress(userId, latestHearing.getCourtCentre().getId()))
+                    .build();
+        }
     }
 
     private Defendant transformDefendants(final List<Defendants> defendantsList, final UUID defendantId, final UUID masterDefendantId, final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Defendant caseDefendant) {
@@ -407,7 +419,7 @@ public class CourtExtractTransformer {
                             .withPostcode(defendant.getAddress().getPostcode())
                             .build()
             );
-            defendantBuilder.withHearings(transformHearing(hearingsList));
+            defendantBuilder.withHearings(transformHearing(hearingsList, defendant.getId()));
             defendantBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearingsList, defendant)));
             defendantBuilder.withResults(transformJudicialResults(hearingsList, masterDefendantId));
             final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearingsList, defendantId.toString());
@@ -641,23 +653,31 @@ public class CourtExtractTransformer {
         ).collect(Collectors.toList());
     }
 
-    private List<uk.gov.justice.progression.courts.exract.Hearings> transformHearing(final List<Hearings> hearingsList) {
+    private List<uk.gov.justice.progression.courts.exract.Hearings> transformHearing(final List<Hearings> hearingsList, final UUID defendantId) {
         return hearingsList.stream().map(h ->
                 uk.gov.justice.progression.courts.exract.Hearings.hearings()
                         .withHearingDays(transformationHelper.transformHearingDays(h.getHearingDays()))
                         .withId(h.getId())
                         .withJurisdictionType(h.getJurisdictionType() != null ? uk.gov.justice.progression.courts.exract.JurisdictionType.valueOf(h.getJurisdictionType().toString()) : null)
-                        .withCourtCentre(transformCourtCenter(h.getCourtCentre()))
+                        .withCourtCentre(transformCourtCenter(h, defendantId))
                         .withReportingRestrictionReason(h.getReportingRestrictionReason())
                         .withType(h.getType().getDescription()).build()
         ).collect(Collectors.toList());
     }
 
-    private uk.gov.justice.progression.courts.exract.CourtCentre transformCourtCenter(final CourtCentre courtCentre) {
+    private uk.gov.justice.progression.courts.exract.CourtCentre transformCourtCenter(final Hearings hearings, final UUID defendantId) {
+        if(hearingsDefendantIdBiPredicate.test(hearings,defendantId)) {
+            LOGGER.info("hearings Youth Court Name {}" , hearings.getYouthCourt().getName());
+            return  uk.gov.justice.progression.courts.exract.CourtCentre.courtCentre()
+                    .withName(hearings.getYouthCourt().getName())
+                    .withWelshName(hearings.getYouthCourt().getWelshName())
+                    .withId(hearings.getYouthCourt().getYouthCourtId())
+                    .build();
+        }
         return uk.gov.justice.progression.courts.exract.CourtCentre.courtCentre()
-                .withName(courtCentre.getName())
-                .withId(courtCentre.getId())
-                .withWelshName(courtCentre.getWelshName())
+                .withName(hearings.getCourtCentre().getName())
+                .withId(hearings.getCourtCentre().getId())
+                .withWelshName(hearings.getCourtCentre().getWelshName())
                 .build();
     }
 

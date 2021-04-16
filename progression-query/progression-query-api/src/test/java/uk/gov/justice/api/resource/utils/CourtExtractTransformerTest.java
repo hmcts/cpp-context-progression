@@ -56,6 +56,7 @@ import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.VerdictType;
+import uk.gov.justice.core.courts.YouthCourt;
 import uk.gov.justice.progression.courts.CourtApplications;
 import uk.gov.justice.progression.courts.CustodialEstablishment;
 import uk.gov.justice.progression.courts.DefenceOrganisation;
@@ -278,6 +279,20 @@ public class CourtExtractTransformerTest {
 */
     }
 
+    @Test
+    public void testTransformToCourtExtract_whenDefendantIsHeardInYouthCourt_expectYouthCourtNameInPublishingCourtAndCourtCenter() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = asList(HEARING_ID.toString(), HEARING_ID_2.toString());
+        final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlanceWithDefendantHeardInYouthCourt();
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance,DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        assertThat(courtExtractRequested.getPublishingCourt().getName(), is("Youth Court Name"));
+        assertThat(courtExtractRequested.getPublishingCourt().getWelshName(), is("Welsh Youth Court Name"));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtCentre().getName(), is("Youth Court Name"));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtCentre().getWelshName(), is("Welsh Youth Court Name"));
+
+
+    }
+
     private void assertGetCourtExtractRequested(final CourtExtractRequested courtExtractRequested, String extractType, int resultsCount) {
         assertThat(courtExtractRequested.getIsAppealPending(), is((true)));
         assertValues(courtExtractRequested, extractType, HEARING_DATE_2, HEARING_DATE_3, resultsCount, "resultWording", "Fine");
@@ -459,6 +474,15 @@ public class CourtExtractTransformerTest {
         return createCaseAtAGlance(null);
     }
 
+    private GetHearingsAtAGlance createCaseAtAGlanceWithDefendantHeardInYouthCourt() {
+        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
+        builder.withProsecutionCaseIdentifier(createPCIdentifier());
+        builder.withDefendantHearings(createDefendantHearing());
+        builder.withHearings( createHearingsWithYouthCourtDetails(DEFENDANT_ID));
+        builder.withCourtApplications(asList(createCourtApplication()));
+        return builder.build();
+    }
+
     private GetHearingsAtAGlance createCaseAtAGlance(final List<Hearings> hearingsList) {
         GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
         builder.withProsecutionCaseIdentifier(createPCIdentifier());
@@ -539,6 +563,50 @@ public class CourtExtractTransformerTest {
                         .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
                         .build()
         );
+    }
+
+    private List<Hearings> createHearingsWithYouthCourtDetails(final UUID defendandId) {
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1))
+                        .withDefendantAttendance(createDefendantAttendance(DEFENDANT_ID))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+                        .withYouthCourtDefendantIds(asList(defendandId))
+                        .withYouthCourt(YouthCourt.youthCourt()
+                                .withName("Youth Court Name")
+                                .withWelshName("Welsh Youth Court Name")
+                                .withCourtCode(2004)
+                                .withYouthCourtId(randomUUID())
+                                .build())
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .build());
     }
 
     private List<Hearings> createHearingsWithJudicialResults(final UUID masterDefendantId) {

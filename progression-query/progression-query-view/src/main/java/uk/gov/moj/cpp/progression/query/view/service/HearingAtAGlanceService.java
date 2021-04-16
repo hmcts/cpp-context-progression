@@ -225,6 +225,8 @@ public class HearingAtAGlanceService {
                     .withIsBoxHearing(hearing.getIsBoxHearing())
                     .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
                     .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
+                    .withYouthCourt(hearing.getYouthCourt())
+                    .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
                     .build();
             hearingsList.add(hearingsView);
         });

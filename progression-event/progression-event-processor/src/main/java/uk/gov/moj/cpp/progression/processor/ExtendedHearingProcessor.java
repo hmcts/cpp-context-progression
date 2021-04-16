@@ -129,6 +129,8 @@ public class ExtendedHearingProcessor {
                 .withIsBoxHearing(hearing.getIsBoxHearing())
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withRespondentCounsels(hearing.getRespondentCounsels())
+                .withYouthCourt(hearing.getYouthCourt())
+                .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
                 .build();
     }
 

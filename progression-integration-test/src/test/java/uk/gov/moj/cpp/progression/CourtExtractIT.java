@@ -229,6 +229,10 @@ public class CourtExtractIT extends AbstractIT {
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
                 withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].youthCourtDefendantIds[0]", hasItem(defendantId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].youthCourt.name", hasItem("Derby Youth Court")),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].youthCourt.courtCode", hasItem(5647)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].youthCourt.youthCourtId", hasItem("a4cd3c1d-be10-410d-a50d-e260cdbf6d19")),
 
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", CoreMatchers.is("2018-01-01")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-10")),

@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -52,6 +53,9 @@ public class ApplicationExtractTransformer {
 
     @Inject
     private TransformationHelper transformationHelper;
+
+    private static final BiPredicate<Hearing, UUID> hearingsDefendantIdBiPredicate = (hearings, defendantId) ->  nonNull(hearings.getYouthCourtDefendantIds()) &&  hearings.getYouthCourtDefendantIds().stream().anyMatch(youthDefendantId -> youthDefendantId.equals(defendantId));
+
 
     public ApplicationCourtExtractRequested getApplicationCourtExtractRequested(final CourtApplication courtApplication,
                                                                                 final List<Hearing> hearingsForApplication,
@@ -74,10 +78,10 @@ public class ApplicationExtractTransformer {
                 .withExtractType(extractType)
                 .withApplicant(getApplicant(courtApplication))
                 .withRespondent(getRespondents(courtApplication))
-                .withPublishingCourt(hearings.isEmpty() ? null : getPublishingCourt(hearings, userId))
+                .withPublishingCourt(hearings.isEmpty() ? null : getPublishingCourt(hearings, userId, courtApplication.getApplicant()))
                 .withCourtDecisions(hearings.isEmpty() ? null : getCourtDecisions(hearings))
                 .withReference(courtApplication.getApplicationReference())
-                .withHearings(getHearings(hearings))
+                .withHearings(getHearings(hearings, courtApplication.getApplicant()))
                 .withCourtApplications(getCourtApplications(hearings, courtApplication))
                 .withIsAppealPending((nonNull(courtApplication.getType().getAppealFlag()) && courtApplication.getType().getAppealFlag()) &&
                         (courtApplication.getApplicationStatus().equals(ApplicationStatus.DRAFT) || courtApplication.getApplicationStatus().equals(ApplicationStatus.LISTED))
@@ -103,13 +107,13 @@ public class ApplicationExtractTransformer {
                 .build();
     }
 
-    private List<Hearings> getHearings(final List<Hearing> hearings) {
-        return hearings.stream().map(this::mapHearing).collect(toList());
+    private List<Hearings> getHearings(final List<Hearing> hearings, final CourtApplicationParty applicant) {
+        return hearings.stream().map(hearing-> mapHearing(hearing, applicant)).collect(toList());
     }
 
-    private Hearings mapHearing(final Hearing hearing) {
+    private Hearings mapHearing(final Hearing hearing, final CourtApplicationParty applicant) {
         return Hearings.hearings()
-                .withCourtCentre(getCourtCentre(hearing.getCourtCentre()))
+                .withCourtCentre(getCourtCentre(hearing, applicant))
                 .withId(hearing.getId())
                 .withJurisdictionType(nonNull(hearing.getJurisdictionType())
                         ? JurisdictionType.valueFor(hearing.getJurisdictionType().toString()).orElse(null) : null)
@@ -163,22 +167,39 @@ public class ApplicationExtractTransformer {
         return courtDecisions;
     }
 
-    private CourtCentre getPublishingCourt(final List<Hearing> hearings, final UUID userId) {
+    private CourtCentre getPublishingCourt(final List<Hearing> hearings, final UUID userId, final CourtApplicationParty applicant) {
         final Hearing latestHearing = transformationHelper.getLatestHearing(hearings);
         final uk.gov.justice.core.courts.Address address = transformationHelper.getCourtAddress(userId, latestHearing.getCourtCentre().getId());
-        return CourtCentre.courtCentre()
-                .withName(latestHearing.getCourtCentre().getName())
-                .withAddress(getAddress(address))
-                .withWelshName(latestHearing.getCourtCentre().getWelshName())
-                .build();
+        if(nonNull(applicant.getMasterDefendant()) && hearingsDefendantIdBiPredicate.test(latestHearing, applicant.getMasterDefendant().getMasterDefendantId())) {
+            return CourtCentre.courtCentre()
+                    .withName(latestHearing.getYouthCourt().getName())
+                    .withWelshName(latestHearing.getYouthCourt().getWelshName())
+                    .withAddress(getAddress(address))
+                    .build();
+        } else {
+            return CourtCentre.courtCentre()
+                    .withName(latestHearing.getCourtCentre().getName())
+                    .withAddress(getAddress(address))
+                    .withWelshName(latestHearing.getCourtCentre().getWelshName())
+                    .build();
+        }
     }
 
-    private uk.gov.justice.progression.courts.exract.CourtCentre getCourtCentre(final CourtCentre courtCentre) {
-        return uk.gov.justice.progression.courts.exract.CourtCentre.courtCentre()
-                .withId(courtCentre.getId())
-                .withName(courtCentre.getName())
-                .withWelshName(courtCentre.getWelshName())
-                .build();
+    private uk.gov.justice.progression.courts.exract.CourtCentre getCourtCentre(final Hearing hearing, final CourtApplicationParty applicant) {
+
+        if(nonNull(applicant.getMasterDefendant()) && hearingsDefendantIdBiPredicate.test(hearing, applicant.getMasterDefendant().getMasterDefendantId())) {
+            return uk.gov.justice.progression.courts.exract.CourtCentre.courtCentre()
+                    .withId(hearing.getYouthCourt().getYouthCourtId())
+                    .withName(hearing.getYouthCourt().getName())
+                    .withWelshName(hearing.getYouthCourt().getWelshName())
+                    .build();
+        } else {
+            return uk.gov.justice.progression.courts.exract.CourtCentre.courtCentre()
+                    .withId(hearing.getCourtCentre().getId())
+                    .withName(hearing.getCourtCentre().getName())
+                    .withWelshName(hearing.getCourtCentre().getWelshName())
+                    .build();
+        }
     }
 
     private List<Respondent> getRespondents(final CourtApplication courtApplication) {
