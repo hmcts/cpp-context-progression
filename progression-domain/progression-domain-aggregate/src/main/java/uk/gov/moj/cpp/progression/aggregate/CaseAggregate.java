@@ -263,9 +263,10 @@ public class CaseAggregate implements Aggregate {
                                         reference = e.getProsecutionCase().getProsecutionCaseIdentifier().getCaseURN();
                                     }
                                     if (nonNull(e.getProsecutionCase()) && !e.getProsecutionCase().getDefendants().isEmpty()) {
-                                        e.getProsecutionCase().getDefendants().forEach(d -> {
-                                            this.defendantCaseOffences.put(d.getId(), d.getOffences());
-                                            this.defendantLegalAidStatus.put(d.getId(), NO_VALUE.getDescription());
+                                        e.getProsecutionCase().getDefendants().forEach(defendant -> {
+                                            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+                                            this.defendantLegalAidStatus.put(defendant.getId(), NO_VALUE.getDescription());
+                                            defendantProceedingConcluded.put(defendant.getId(), false);
                                         });
                                     }
                                 }
@@ -290,7 +291,10 @@ public class CaseAggregate implements Aggregate {
                         {
                             if (!e.getDefendants().isEmpty()) {
                                 e.getDefendants().forEach(
-                                        ed -> this.defendantCaseOffences.put(ed.getId(), ed.getOffences()));
+                                        defendant -> {
+                                            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+                                            defendantProceedingConcluded.put(defendant.getId(), false);
+                                        });
                             }
                             this.prosecutionCase.getDefendants().add(e.getDefendants().get(0));
                         }
@@ -647,7 +651,12 @@ public class CaseAggregate implements Aggregate {
         LOGGER.debug(" ProsecutionCase is being updated ");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
-        final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
+
+        isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
+        updatedDefendants.stream().forEach(defendant -> defendantProceedingConcluded.put(defendant.getId(), defendant.getProceedingsConcluded()));
+
+        final String updatedCaseStatus = defendantProceedingConcluded.values().stream().allMatch(s -> s.equals(TRUE)) ?
+                CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus();
 
         final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
@@ -664,7 +673,7 @@ public class CaseAggregate implements Aggregate {
                 .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
                 .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
+                .withCaseStatus(updatedCaseStatus)
                 .build();
 
         streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(updatedProsecutionCase).build());

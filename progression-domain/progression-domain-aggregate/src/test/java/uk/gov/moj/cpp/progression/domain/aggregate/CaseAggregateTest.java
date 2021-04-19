@@ -17,13 +17,13 @@ import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.READY_FOR_REVIEW;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.SJP_REFERRAL;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 
-import org.mockito.Spy;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseEjected;
@@ -105,6 +105,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -173,12 +174,10 @@ public class CaseAggregateTest {
     @Mock
 
     JsonObject jsonObj;
-    @InjectMocks
-    private CaseAggregate caseAggregate;
-
     @Spy
     ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
+    @InjectMocks
+    private CaseAggregate caseAggregate;
 
     private static LaaReference generateRecordLAAReferenceForOffence(final String statusCode, final String defendantLevelStatus) {
         return laaReference()
@@ -1123,6 +1122,115 @@ public class CaseAggregateTest {
     }
 
     @Test
+    public void shouldUpdateCaseStatusAsInactiveWhenAllApplicationResultsAreFinalized() {
+        final UUID caseId = randomUUID();
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(Category.FINAL)
+                                                .build())).build()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(caseId)
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .build();
+
+
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
+        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
+
+    }
+
+
+    @Test
+    public void shouldUpdateCaseStatusAsReadyForReviewWhenOneApplicationIsResultedAndAnotherApplicationIsNotResulted() {
+        final UUID caseId = randomUUID();
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(Category.FINAL)
+                                                .build())).build()))
+                .build();
+
+        final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(Category.FINAL)
+                                                .build())).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(defendant1, defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(caseId)
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .build();
+
+        // Resulted and Shared only one defendant
+        final ProsecutionCase prosecutionCaseUpdate = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus("READY_FOR_REVIEW")
+                .withDefendants(Arrays.asList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
+        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
+
+    }
+
+    @Test
     public void shouldEditCaseNote() {
         final List<Object> eventStream = caseAggregate.editNote(randomUUID(), randomUUID(), false).collect(toList());
         assertThat(eventStream.size(), is(1));
@@ -1179,7 +1287,7 @@ public class CaseAggregateTest {
                         .withPostcode("SE1Q AEW")
                         .build()).build();
 
-        final List<Object> eventStream = caseAggregate.updateCaseProsecutorDetails( prosecutionCaseIdentifier, "BL001").collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCaseProsecutorDetails(prosecutionCaseIdentifier, "BL001").collect(toList());
 
         assertThat(eventStream.size(), is(2));
 
@@ -1192,7 +1300,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateCpsProsecutorWhenCpsOrganisationIsValidAndOldCpsOrganisationIsNull(){
+    public void shouldUpdateCpsProsecutorWhenCpsOrganisationIsValidAndOldCpsOrganisationIsNull() {
         handleCpsOrganisationCasesWith(null);
     }
 
@@ -1202,7 +1310,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateCpsProsecutorWhenCpsOrganisationIsInValid(){
+    public void shouldUpdateCpsProsecutorWhenCpsOrganisationIsInValid() {
         final UUID defendantId = fromString(DEFENDANT_ID);
         final UUID offenceId1 = fromString(OFFENCE_ID);
         final UUID offenceId2 = randomUUID();
@@ -1251,7 +1359,7 @@ public class CaseAggregateTest {
 
     }
 
-    private void handleCpsOrganisationCasesWith(String oldCpsOrganisation){
+    private void handleCpsOrganisationCasesWith(String oldCpsOrganisation) {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
 
@@ -1271,8 +1379,8 @@ public class CaseAggregateTest {
         assertThat(eventStream.get(0).getClass(), is(equalTo(CaseCpsProsecutorUpdated.class)));
 
         JsonObject expectedProsecutionCaseIdentifier = objectToJsonObjectConverter.convert(prosecutionCaseIdentifier);
-        expectedProsecutionCaseIdentifier = JsonHelper.addProperty(expectedProsecutionCaseIdentifier,"caseURN", "caseUrn");
-        expectedProsecutionCaseIdentifier = JsonHelper.addProperty(expectedProsecutionCaseIdentifier,"prosecutionAuthorityReference", "reference");
+        expectedProsecutionCaseIdentifier = JsonHelper.addProperty(expectedProsecutionCaseIdentifier, "caseURN", "caseUrn");
+        expectedProsecutionCaseIdentifier = JsonHelper.addProperty(expectedProsecutionCaseIdentifier, "prosecutionAuthorityReference", "reference");
         assertThat(objectToJsonObjectConverter.convert(caseAggregate.getProsecutionCase().getProsecutionCaseIdentifier()), is(expectedProsecutionCaseIdentifier));
     }
 
