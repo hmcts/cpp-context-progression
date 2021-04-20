@@ -1,0 +1,216 @@
+package uk.gov.moj.cpp.progression.processor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.Personalisation;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.NotificationService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.StringUtils.SPACE;
+import static org.apache.commons.lang3.StringUtils.isNoneEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
+@ServiceComponent(EVENT_PROCESSOR)
+public class UnscheduledHearingAllocationNotifiedEventProcessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnscheduledHearingAllocationNotifiedEventProcessor.class);
+
+    private static final String EMAIL = "email";
+    public static final String EMAIL_SUBJECT_LINE = "Notification of Warrant moved into a hearing (Case URN : %s)";
+    public static final String SUBJECT = "subject";
+    public static final String DATE_OF_HEARING = "dateOfHearing";
+    public static final String COURT_CENTRE = "courtCentre";
+    public static final String SITTING_AT = "sittingAt";
+    public static final String URN = "urn";
+    public static final String CASE_NUMBER = "caseNumber";
+    public static final String ASN = "asn";
+    public static final String DEFENDANT_NAME = "defendantName";
+    public static final String DEFENDANT_ADDRESS = "defendantAddress";
+    public static final String DEFENDANT_DATE_OF_BIRTH = "defendantDateOfBirth";
+    private static final String LJA = "lja";
+    private static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
+    private static final String NATIONAL_COURT_CODE = "nationalCourtCode";
+    private static final String NAME = "name";
+    private static final String EMPTY = "";
+
+    @Inject
+    private NotificationService notificationService;
+
+    @Inject
+    private ReferenceDataService referenceDataService;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectConverter;
+
+    @Inject
+    private ApplicationParameters applicationParameters;
+
+    @Inject
+    @ServiceComponent(EVENT_PROCESSOR)
+    private Requester requester;
+
+    @Handles("progression.event.unscheduled-hearing-allocation-notified")
+    public void unscheduledHearingAllocationNotified(final JsonEnvelope event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Received '{}' event with payload {}", "unscheduled-hearing-allocation-notified", event.toObfuscatedDebugString());
+        }
+
+        final UnscheduledHearingAllocationNotified notificationEvent = jsonObjectConverter.convert(event.payloadAsJsonObject(), UnscheduledHearingAllocationNotified.class);
+        final Hearing hearing = notificationEvent.getHearing();
+        final JsonObject enforcementArea = getEnforcementAreaByCourtCentreId(event, hearing.getCourtCentre().getId());
+        final String enforcementAreaEmail = enforcementArea.getString(EMAIL);
+        final LjaDetails ljaDetails = buildLjaDetails(enforcementArea);
+
+        hearing.getProsecutionCases().forEach(
+            prosecutionCase -> {
+
+                final List<EmailChannel> emailChannels = prosecutionCase.getDefendants().stream()
+                        .map(defendant -> buildEmailChannel(hearing, prosecutionCase, defendant, ljaDetails, enforcementAreaEmail))
+                        .collect(Collectors.toList());
+
+                final UUID notificationId = randomUUID();
+                notificationService.sendEmail(event, notificationId, prosecutionCase.getId(), null, null, emailChannels);
+
+            }
+        );
+
+    }
+
+    private EmailChannel buildEmailChannel(final Hearing hearing, final ProsecutionCase prosecutionCase, final Defendant defendant, final LjaDetails ljaDetails, final String enforcementAreaEmail) {
+        final String defendantFullName;
+        final String defendantAddress;
+        final String defendantDateOfBirth;
+        final String asn;
+
+        if (nonNull(defendant.getPersonDefendant())) {
+            final Person person = defendant.getPersonDefendant().getPersonDetails();
+            defendantFullName = buildDefendantFullName(person);
+            defendantAddress = buildDefendantAddress(person.getAddress());
+            defendantDateOfBirth = person.getDateOfBirth().toString();
+            asn = defendant.getPersonDefendant().getArrestSummonsNumber();
+        } else {
+            final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
+            final Organisation organisation = legalEntityDefendant.getOrganisation();
+            defendantFullName = organisation.getName();
+            defendantAddress = buildDefendantAddress(organisation.getAddress());
+            defendantDateOfBirth = "";
+            asn = "";
+        }
+
+        final String caseURN = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
+        final ZonedDateTime hearingStartDateTime = getEarliestDate(hearing.getHearingDays());
+
+        final Map<String, Object> map = new HashMap<>();
+        map.put(DATE_OF_HEARING, hearingStartDateTime.toString());
+        map.put(COURT_CENTRE, buildCourtCentre(ljaDetails));
+        map.put(SITTING_AT, hearing.getCourtCentre().getName());
+        map.put(URN, caseURN);
+        map.put(CASE_NUMBER, prosecutionCase.getId().toString());
+        map.put(ASN, asn);
+        map.put(DEFENDANT_NAME, defendantFullName);
+        map.put(DEFENDANT_ADDRESS, defendantAddress);
+        map.put(DEFENDANT_DATE_OF_BIRTH, defendantDateOfBirth);
+
+        final Personalisation personalisation = new Personalisation(map);
+        personalisation.setAdditionalProperty(SUBJECT, format(EMAIL_SUBJECT_LINE, caseURN));
+
+        return EmailChannel.emailChannel()
+                .withTemplateId(UUID.fromString(applicationParameters.getUnscheduledHearingAllocationEmailTemplateId()))
+                .withSendToAddress(enforcementAreaEmail)
+                .withPersonalisation(personalisation)
+                .build();
+    }
+
+    private String buildCourtCentre(final LjaDetails ljaDetails){
+        return ljaDetails.getLjaCode() + SPACE + ljaDetails.getLjaName();
+    }
+
+    private String buildDefendantFullName(final Person personDetails) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(personDetails.getFirstName()).append(SPACE);
+
+        if (!isNullOrEmpty(personDetails.getMiddleName())) {
+           sb.append(personDetails.getMiddleName()).append(SPACE);
+        }
+
+        sb.append(personDetails.getLastName());
+        return sb.toString();
+    }
+
+    private String buildDefendantAddress(final Address address) {
+        if (isNull(address)) {
+            return SPACE;
+        }
+
+        return mergeAddressLines(address.getAddress1(), address.getAddress2(), address.getAddress3(), address.getAddress4(), address.getAddress5(), address.getPostcode());
+    }
+
+    private String mergeAddressLines(final String... addressesLines){
+        final StringBuilder sb = new StringBuilder();
+
+        for (final String addressLine: addressesLines){
+            if (isNoneEmpty(addressLine)){
+                if (sb.length() > 0){
+                    sb.append(", ");
+                }
+
+                sb.append(addressLine);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
+        return hearingDays.stream()
+                .map(HearingDay::getSittingDay)
+                .sorted()
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
+
+    private LjaDetails buildLjaDetails(final JsonObject enforcementArea){
+        final JsonObject localJusticeArea = enforcementArea.getJsonObject(LOCAL_JUSTICE_AREA);
+        return  LjaDetails.ljaDetails()
+                .withLjaCode(ofNullable(localJusticeArea).map(area -> area.getString(NATIONAL_COURT_CODE, EMPTY)).orElse(EMPTY))
+                .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY))
+                .build();
+    }
+
+    private JsonObject getEnforcementAreaByCourtCentreId(final JsonEnvelope event, final UUID courtCentreId){
+        final JsonObject courtCentreJson = referenceDataService.getOrganisationUnitById(courtCentreId, event, requester).orElseThrow(IllegalArgumentException::new);
+        return referenceDataService.getEnforcementAreaByLjaCode(event, courtCentreJson.getString(LJA), requester);
+    }
+
+}

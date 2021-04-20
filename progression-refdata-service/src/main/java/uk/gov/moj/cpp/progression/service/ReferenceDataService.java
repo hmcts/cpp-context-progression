@@ -111,23 +111,6 @@ public class ReferenceDataService {
         return Optional.of(jsonEnvelop.payloadAsJsonObject());
     }
 
-    public Optional<JsonObject> getCourtCentreById(final UUID courtCentreId, final JsonEnvelope event, final Requester requester) {
-        return getCourtCentreByIdAsText(courtCentreId.toString(), event, requester);
-    }
-
-    public Optional<JsonObject> getCourtCentreByIdAsText(final String courtCentreId, final JsonEnvelope event, final Requester requester) {
-        final JsonObject payload = createObjectBuilder().add(ID, courtCentreId).build();
-
-        final JsonEnvelope jsonEnvelop = requester.request(envelop(payload)
-                .withName(REFERENCEDATA_GET_COURT_CENTRE)
-                .withMetadataFrom(event));
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("'referencedata.get.court-center' {} received with payload {}", courtCentreId, jsonEnvelop.toObfuscatedDebugString());
-        }
-        return Optional.of(jsonEnvelop.payloadAsJsonObject());
-    }
-
     public Optional<JsonObject> getOrganisationUnitById(final UUID courtCentreId, final JsonEnvelope event, final Requester requester) {
         final JsonObject payload = createObjectBuilder().add(ID, courtCentreId.toString()).build();
         final Envelope<JsonObject> envelope = requester.requestAsAdmin(envelop(payload)

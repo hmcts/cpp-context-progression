@@ -9,6 +9,9 @@
     },
     "hearingListingStatus": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    },
+    "notifyNCES": {
+      "type": "boolean"
     }
   },
   "required": [

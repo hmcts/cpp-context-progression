@@ -44,5 +44,6 @@
     "isBoxHearing": true
   },
   "hearingListingStatus": "HEARING_RESULTED",
-  "boxWorkTaskStatus": "COMPLETE"
+  "boxWorkTaskStatus": "COMPLETE",
+  "notifyNCES":false
   }

@@ -13,7 +13,10 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import javax.inject.Inject;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
@@ -21,6 +24,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class HearingResultUnscheduledListingHelper {
+    private static final UUID WCPU = UUID.fromString("0d1b161b-d6b0-4b1b-ae08-535864e4f631");
+    private static final UUID WCPN = UUID.fromString("ed34136f-2a13-45a4-8d4f-27075ae3a8a9");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultUnscheduledListingHelper.class.getName());
 
     @Inject
@@ -50,9 +56,11 @@ public class HearingResultUnscheduledListingHelper {
                                                   .map(uln -> convertToHearing(uln, originalHearing.getHearingDays()))
                                                   .collect(Collectors.toList());
 
+        final Set<UUID> hearingsToBeSentNotification = getHearingIsToBeSentNotification(unscheduledListingNeeds);
+
         if (!hearingList.isEmpty()) {
             LOGGER.info("Unscheduled listing ,Posting {} sendUpdateDefendantListingStatusForUnscheduledListing for new hearings.", hearingList.size());
-            progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(event, hearingList);
+            progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(event, hearingList, hearingsToBeSentNotification);
             progressionService.recordUnlistedHearing(event,originalHearing.getId(),hearingList);
         }
 
@@ -105,6 +113,44 @@ public class HearingResultUnscheduledListingHelper {
                        .withProsecutionCases(unscheduledListingNeeds.getProsecutionCases())
                        .withHearingDays(hearingDays)
                        .build();
+    }
+
+    private Set<UUID> getHearingIsToBeSentNotification(final List<HearingUnscheduledListingNeeds> unscheduledListingNeeds){
+        final Set<UUID> hearingsToBeSentNotification = new HashSet<>();
+
+
+        unscheduledListingNeeds.stream().filter(unscheduledHearing -> nonNull(unscheduledHearing.getCourtApplications()))
+                .forEach(unscheduledHearing -> unscheduledHearing.getCourtApplications().stream()
+                .filter(application -> nonNull(application.getJudicialResults())).forEach(
+                        application -> application.getJudicialResults().forEach(
+                                judicialResult -> {
+                                    final UUID resultTypeId = judicialResult.getJudicialResultTypeId();
+                                    if (WCPU.equals(resultTypeId) || WCPN.equals(resultTypeId)) {
+                                        hearingsToBeSentNotification.add(unscheduledHearing.getId());
+                                    }
+                                }
+                        )
+
+                ));
+
+        unscheduledListingNeeds.stream().filter(unscheduledHearing -> nonNull(unscheduledHearing.getProsecutionCases()))
+                .forEach(unscheduledHearing -> unscheduledHearing.getProsecutionCases().stream().forEach(
+                pc -> pc.getDefendants().stream().forEach(
+                        defendant -> defendant.getOffences().stream()
+                                .filter(offence -> nonNull(offence.getJudicialResults())).forEach(
+                                        offence -> offence.getJudicialResults().stream().forEach(
+                                                judicialResult -> {
+                                                    final UUID resultTypeId = judicialResult.getJudicialResultTypeId();
+                                                    if (WCPU.equals(resultTypeId) || WCPN.equals(resultTypeId)) {
+                                                        hearingsToBeSentNotification.add(unscheduledHearing.getId());
+                                                    }
+                                                }
+                                        )
+                                )
+                )
+        ));
+
+        return hearingsToBeSentNotification;
     }
 
 }

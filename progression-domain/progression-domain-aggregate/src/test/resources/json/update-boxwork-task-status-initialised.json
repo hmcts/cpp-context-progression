@@ -40,5 +40,6 @@
     },
     "isBoxHearing": true
   },
-  "hearingListingStatus": "HEARING_INITIALISED"
+  "hearingListingStatus": "HEARING_INITIALISED",
+  "notifyNCES":false
 }

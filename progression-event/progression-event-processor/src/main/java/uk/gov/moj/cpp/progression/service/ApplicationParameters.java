@@ -88,6 +88,10 @@ public class ApplicationParameters {
     private String nowExtraditionSlaEmailTemplateId;
 
     @Inject
+    @Value(key = "unscheduled_hearing_allocation_email_templateId", defaultValue = "9e2c73eb-8434-459b-ba7d-bfa199b6c960")
+    private String unscheduledHearingAllocationEmailTemplateId;
+
+    @Inject
     @Value(key = "summons_approved_and_suppressed_template_id")
     private String summonsApprovedAndSuppressedTemplateId;
 
@@ -162,6 +166,11 @@ public class ApplicationParameters {
     public String getEndClientHost() {
         return endClientHost;
     }
+
+    public String getUnscheduledHearingAllocationEmailTemplateId() {
+        return unscheduledHearingAllocationEmailTemplateId;
+    }
+
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();

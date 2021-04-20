@@ -83,6 +83,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -314,7 +315,7 @@ public class ProgressionServiceTest {
     public void shouldSendUpdateDefendantListingStatusForUnscheduledListing(){
         final List<Hearing> hearings = Arrays.asList(Hearing.hearing().withId(UUID.randomUUID()).build());
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND);
-        progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings);
+        progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings, new HashSet<>());
         verify(sender).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND));
         JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();

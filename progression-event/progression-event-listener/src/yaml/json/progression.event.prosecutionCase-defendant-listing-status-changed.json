@@ -39,6 +39,7 @@
       "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
     }
   },
-  "hearingListingStatus": "SENT_FOR_LISTING"
+  "hearingListingStatus": "SENT_FOR_LISTING",
+  "notifyNCES": "false"
 }
 

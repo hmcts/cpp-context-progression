@@ -44,5 +44,6 @@
     "isBoxHearing": true
   },
   "hearingListingStatus": "HEARING_INITIALISED",
-  "boxWorkTaskStatus": "IN_PROGRESS"
+  "boxWorkTaskStatus": "IN_PROGRESS",
+  "notifyNCES":false
   }

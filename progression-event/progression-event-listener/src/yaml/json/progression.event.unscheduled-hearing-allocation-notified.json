@@ -6,7 +6,8 @@
       "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
       "roomName": "JK2Y7hu0Tc",
       "welshName": "3IpJDfdfhS",
-      "welshRoomName": "hm60SAXokc"
+      "welshRoomName": "hm60SAXokc",
+      "code": "CODE 1"
     },
     "hearingDays": [
       {
@@ -23,6 +24,10 @@
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
             "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+          },
+          {
+            "id": "2bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
           }
         ],
         "id": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
@@ -38,8 +43,6 @@
       "description": "qm1rJUZb0f",
       "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
     }
-  },
-  "hearingListingStatus": "SENT_FOR_LISTING",
-  "notifyNCES": false
+  }
 }
 

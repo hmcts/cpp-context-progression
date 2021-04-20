@@ -52,6 +52,7 @@ import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
+import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -80,6 +81,8 @@ public class HearingAggregate implements Aggregate {
     private Boolean unscheduledHearingListedFromThisHearing;
     private boolean duplicate;
     private CommittingCourt committingCourt;
+    private Boolean notifyNCES = false;
+
 
     @Override
     public Object apply(final Object event) {
@@ -88,6 +91,7 @@ public class HearingAggregate implements Aggregate {
                     this.hearing = e.getHearing();
                     this.committingCourt = findCommittingCourt(e.getHearing());
                     this.hearingListingStatus = e.getHearingListingStatus();
+                    this.notifyNCES = nonNull(e.getNotifyNCES()) ? e.getNotifyNCES(): Boolean.FALSE;
                 }),
                 when(HearingResulted.class).apply(e -> {
                     this.hearing = e.getHearing();
@@ -118,6 +122,9 @@ public class HearingAggregate implements Aggregate {
                 ),
                 when(DefendantRequestToExtendHearingCreated.class).apply(e ->
                         listDefendantRequests.addAll(e.getDefendantRequests())
+                ),
+                when(UnscheduledHearingAllocationNotified.class).apply(e ->
+                        this.notifyNCES = false
                 ),
                 otherwiseDoNothing());
     }
@@ -197,16 +204,32 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
     }
 
-    public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
-        LOGGER.debug("Hearing with id {} and the status: {} ", hearing.getId(), hearingListingStatus);
-        final ProsecutionCaseDefendantListingStatusChanged.Builder prosecutionCaseDefendantListingStatusChanged = prosecutionCaseDefendantListingStatusChanged();
+    public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES) {
+        LOGGER.info("Hearing with id {} and the status: {} notifyNCES: {}", hearing.getId(), hearingListingStatus, notifyNCES);
+        final ProsecutionCaseDefendantListingStatusChanged.Builder prosecutionCaseDefendantListingStatusChanged = ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (hearingListingStatus == HearingListingStatus.HEARING_INITIALISED && Boolean.TRUE.equals(this.notifyNCES)){
+
+            final UnscheduledHearingAllocationNotified unscheduledHearingAllocationNotified = UnscheduledHearingAllocationNotified.unscheduledHearingAllocationNotified()
+                    .withHearing(hearing)
+                    .build();
+
+            streamBuilder.add(unscheduledHearingAllocationNotified);
+        }
+
+        prosecutionCaseDefendantListingStatusChanged.withNotifyNCES(notifyNCES);
+
         if (HearingListingStatus.HEARING_RESULTED == this.hearingListingStatus) {
             prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(HearingListingStatus.HEARING_RESULTED);
         } else {
             prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(hearingListingStatus);
         }
+
         prosecutionCaseDefendantListingStatusChanged.withHearing(hearing);
-        return apply(Stream.of(prosecutionCaseDefendantListingStatusChanged.build()));
+
+        streamBuilder.add(prosecutionCaseDefendantListingStatusChanged.build());
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> boxworkComplete() {
@@ -310,7 +333,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     public ProsecutionCaseDefendantListingStatusChanged getSavedListingStatusChanged() {
-        return new ProsecutionCaseDefendantListingStatusChanged(hearing, hearingListingStatus);
+        return new ProsecutionCaseDefendantListingStatusChanged(hearing, hearingListingStatus, false);
     }
 
     public Stream<Object> updateListDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, ConfirmedHearing confirmedHearing) {

@@ -212,41 +212,6 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void shouldRequestForCourtCentreById() {
-        //given
-
-        final UUID courtCentreId = randomUUID();
-        final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(getCourtCentrePayload(courtCentreId).getBytes()))
-                .readObject();
-
-        when(requester.request(any()))
-                .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.court-centre"), payload));
-
-        //when
-
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.court-centre"), JsonValue.NULL);
-
-
-        final Optional<JsonObject> result = referenceDataService.getCourtCentreById(courtCentreId, envelope, requester);
-
-        //then
-        verify(requester).request(envelopeArgumentCaptor.capture());
-
-
-        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
-
-        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), Matchers.is("referencedata.get.court-centre"));
-
-        with(envelopeArgumentCaptor.getValue().payload().toString())
-                .assertThat("$.id", CoreMatchers.is(courtCentreId.toString()));
-
-        assertThat(result.get().getString("id"), is(courtCentreId.toString()));
-        assertThat(result.get().getString("name"), is("Liverpool Crown Court"));
-        verifyNoMoreInteractions(requester);
-    }
-
-    @Test
     public void shouldRequestForOrganisationByCourtCentreId() {
 
         final UUID courtCentreId = randomUUID();

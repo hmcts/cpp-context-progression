@@ -13,6 +13,10 @@
     "isUnscheduled" : {
       "description": "Indicates if a result cause Listing Unscheduled",
       "type": "boolean"
+    },
+    "notifyNCES" : {
+      "description": "Indicates if a notification email will be sent",
+      "type": "boolean"
     }
   },
   "required": [

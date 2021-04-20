@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.progression.helper;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -17,17 +19,24 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 
+import java.util.Set;
+import java.util.UUID;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingResultUnscheduledListingHelperTest {
+    private static final UUID WCPU = UUID.fromString("0d1b161b-d6b0-4b1b-ae08-535864e4f631");
+    private static final UUID WCPN = UUID.fromString("ed34136f-2a13-45a4-8d4f-27075ae3a8a9");
+
     @InjectMocks
     private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
 
@@ -43,20 +52,33 @@ public class HearingResultUnscheduledListingHelperTest {
     @Mock
     private  JsonEnvelope event;
 
+    @Captor
+    private ArgumentCaptor<Set<UUID>> hearingsToBeSendNotificationCaptor;
+
     @Test
     public void shouldProcessUnscheduledCourtHearingsWhenHasDefendant(){
-        Hearing hearing = Hearing.hearing().build();
+        final UUID hearing1 = UUID.randomUUID();
+        final UUID hearing2 = UUID.randomUUID();
+        final UUID hearing3 = UUID.randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearing1).build();
+
         when(unscheduledCourtHearingListTransformer.transformHearing(any()))
                 .thenReturn(asList(
-                        HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
-                                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase().build()))
-                        .build()));
+                        createUnscheduledListingNeeds(hearing1, WCPU),
+                        createUnscheduledListingNeeds(hearing2, UUID.randomUUID()),
+                        createUnscheduledListingNeeds(hearing3, WCPN)
+                ));
 
         hearingResultUnscheduledListingHelper.processUnscheduledCourtHearings(event, hearing);
 
         verify(unscheduledCourtHearingListTransformer, times(1)).transformHearing(any());
         verify(listingService, times(1)).listUnscheduledHearings(any(), any());
-        verify(progressionService, times(1)).sendUpdateDefendantListingStatusForUnscheduledListing(any(), anyList());
+        verify(progressionService, times(1)).sendUpdateDefendantListingStatusForUnscheduledListing(any(), anyList(), hearingsToBeSendNotificationCaptor.capture());
+
+        final Set<UUID> hearingsToNofify = hearingsToBeSendNotificationCaptor.getValue();
+        assertThat(hearingsToNofify.size(), is(2));
+        assertThat(hearingsToNofify.contains(hearing1), is(true));
+        assertThat(hearingsToNofify.contains(hearing3), is(true));
     }
 
 
@@ -73,7 +95,7 @@ public class HearingResultUnscheduledListingHelperTest {
 
         verify(unscheduledCourtHearingListTransformer, times(1)).transformHearing(any());
         verify(listingService, times(1)).listUnscheduledHearings(any(), any());
-        verify(progressionService, times(0)).sendUpdateDefendantListingStatusForUnscheduledListing(any(), anyList());
+        verify(progressionService, times(0)).sendUpdateDefendantListingStatusForUnscheduledListing(any(), anyList(), anySet());
     }
 
     @Test
@@ -127,5 +149,21 @@ public class HearingResultUnscheduledListingHelperTest {
                         .build()))
                     .build();
     }
+
+    private HearingUnscheduledListingNeeds createUnscheduledListingNeeds(final UUID hearingId, final UUID judicialResultTypeId){
+        return HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(asList(Defendant.defendant()
+                                .withOffences(asList(Offence.offence()
+                                        .withJudicialResults(asList(JudicialResult.judicialResult()
+                                                .withJudicialResultTypeId(judicialResultTypeId)
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+    }
+
 
 }

@@ -241,6 +241,10 @@ subscriptions_descriptor:
         - name: progression.event.court-application-summons-rejected
           schema_uri: http://justice.gov.uk/core/courts/court-application-summons-rejected.json
 
+        - name: progression.event.unscheduled-hearing-allocation-notified
+          schema_uri: http://justice.gov.uk/progression/courts/unscheduled-hearing-allocation-notified.json
+
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

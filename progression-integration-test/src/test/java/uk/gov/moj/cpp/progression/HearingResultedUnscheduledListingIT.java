@@ -1,13 +1,11 @@
 package uk.gov.moj.cpp.progression;
 
 import com.jayway.restassured.path.json.JsonPath;
-import java.time.LocalDate;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
@@ -28,11 +26,11 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
@@ -57,13 +55,16 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
+
+    private static final String PROGRESSION_EVENT_UNSCHEDULED_HEARING_ALLOCATION_NOTIFIED = "progression.event.unscheduled-hearing-allocation-notified";
+
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
             .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
 
     public static final String EXPECTED_OFFENCE_ID = "333bdd2a-6b7a-4002-bc8c-5c6f93844f41";
     public static final String EXPECTED_JUDICIAL_RESULT_ID = "94d6e18a-4114-11ea-b77f-2e728ce88125";
-    public static final String EXPECTED_JUDICIAL_RESULT_TYPEID = "93fbefd5-507c-470c-8fc5-cca4a5a7f128";
+    public static final String EXPECTED_JUDICIAL_RESULT_TYPEID = "ed34136f-2a13-45a4-8d4f-27075ae3a8a9";
     public static final String EXPECTED_JUDICIAL_RESULT_PROMPT_TYPEID = "e5d8792c-4114-11ea-b77f-2e728ce88125";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -98,7 +99,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
     }
 
     @Test
-    public void shouldListUnscheduledHearings() throws Exception {
+    public void shouldListUnscheduledHearingsWithWCPNAndRaiseNotificationEvent() throws Exception {
         final String existingHearingId = prepareHearingForTest();
         Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED)
                 .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
@@ -117,7 +118,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
         final String unscheduledHearingId =  defendantListingStatusChangedPayload.getString("hearing.id");
-
+        assertThat(defendantListingStatusChangedPayload.getString("notifyNCES").toLowerCase(), is("true"));
         eventListenerForDefendantListinStatusChanged.close();
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
@@ -137,6 +138,21 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         doVerifyEventIsNotRaised(messageConsumer, existingHearingId, unscheduledHearingId);
 
+        //Allocate Hearing to see Notification event is raised.
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                .withUserId(userId)
+                .build();
+
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, unscheduledHearingId, defendantId, courtCentreId, courtCentreName);
+
+        Utilities.EventListener eventListenerForNotificationEvent = listenForPrivateEvent(PROGRESSION_EVENT_UNSCHEDULED_HEARING_ALLOCATION_NOTIFIED)
+                .withFilter(isJson(withJsonPath("$.hearing.id", is(unscheduledHearingId))));
+
+        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+        eventListenerForNotificationEvent.waitFor();
+        eventListenerForNotificationEvent.close();
     }
 
     @Test

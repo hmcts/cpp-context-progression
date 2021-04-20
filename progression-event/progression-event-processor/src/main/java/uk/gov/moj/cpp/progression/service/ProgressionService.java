@@ -75,6 +75,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -133,6 +134,7 @@ public class ProgressionService {
     public static final String UNSCHEDULED_HEARING_IDS = "unscheduledHearingIds";
     private static final String PLEA_TYPE_GUILTY_NO = "No";
     private static final String PLEA_TYPE_GUILTY_FLAG_FIELD = "pleaTypeGuiltyFlag";
+    public static final String NOTIFY_NCES = "notifyNCES";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -670,10 +672,11 @@ public class ProgressionService {
         sender.send(Enveloper.envelop(payload).withName(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND).withMetadataFrom(jsonEnvelope));
     }
 
-    public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings) {
+    public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings, final Set<UUID> hearingsToBeSentNotification) {
         unscheduledHearings.forEach(unscheduledHearing -> {
             final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
                     .add(UNSCHEDULED, true)
+                    .add(NOTIFY_NCES, hearingsToBeSentNotification.contains(unscheduledHearing.getId()))
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                     .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
                     .build();

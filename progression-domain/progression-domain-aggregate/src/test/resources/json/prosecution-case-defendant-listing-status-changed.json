@@ -42,5 +42,6 @@
       "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
     }
   },
-  "hearingListingStatus": "HEARING_INITIALISED"
+  "hearingListingStatus": "HEARING_INITIALISED",
+  "notifyNCES":false
 }
