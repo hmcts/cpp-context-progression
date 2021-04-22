@@ -14,10 +14,6 @@ public class EventSelector {
     public static final String EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER = "progression.event.nows-request-with-account-number-ignored";
     public static final String EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR = "progression.event.enforcement-acknowledgment-error";
     public static final String EVENT_SELECTOR_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED = "progression.event.court-register-recorded";
-    public static final String EVENT_SELECTOR_INFORMANT_REGISTER_DOCUMENT_REQUEST_RECORDED = "progression.event.informant-register-recorded";
-    public static final String EVENT_SELECTOR_INFORMANT_REGISTER_DOCUMENT_REQUEST_NOTIFIED = "progression.event.informant-register-notified";
-    public static final String EVENT_SELECTOR_INFORMANT_REGISTER_DOCUMENT_REQUEST_NOTIFICATION_IGNORED = "progression.event.informant-register-notification-ignored";
-    public static final String EVENT_SELECTOR_INFORMANT_REGISTER_DOCUMENT_REQUEST_GENERATED = "progression.event.informant-register-generated";
     public static final String EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED = "progression.event.prison-court-register-recorded";
     public static final String EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED = "progression.event.prison-court-register-generated";
 }

@@ -589,50 +589,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-/informant-register:
-  post:
-    description: |
-      add informant register
-      ...
-      (mapping):
-          requestType: application/vnd.progression.add-informant-register+json
-          name: progression.add-informant-register
-      ...
-    body:
-      application/vnd.progression.add-informant-register+json:
-        example:
-          !include json/progression.add-informant-register.json
-        schema:
-          !include json/schema/progression.add-informant-register.json
-    responses:
-      202:
-        description: Accepted
-      500:
-        description: Internal Server Error
-
-/informant-register/generate:
-  post:
-      description: |
-        Request for generation of informant register by register date
-        ...
-        (mapping):
-            requestType: application/vnd.progression.generate-informant-register+json
-            name: progression.generate-informant-register
-        (mapping):
-            requestType: application/vnd.progression.generate-informant-register-by-date+json
-            name: progression.generate-informant-register-by-date
-        ...
-      body:
-        application/vnd.progression.generate-informant-register+json: !!null
-        application/vnd.progression.generate-informant-register-by-date+json:
-          example:
-            !include json/progression.generate-informant-register-by-date.json
-          schema:
-            !include json/schema/progression.generate-informant-register-by-date.json
-      responses:
-            202:
-                description: OK
-
 /court-register:
   post:
       description: |

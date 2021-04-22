@@ -130,12 +130,6 @@ subscriptions_descriptor:
         - name: progression.event.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/now-document-requested.json
 
-        - name: progression.event.informant-register-generated
-          schema_uri: http://justice.gov.uk/progression/courts/informant-register-generated.json
-
-        - name: progression.event.informant-register-notified
-          schema_uri: http://justice.gov.uk/progression/courts/informant-register-notified.json
-
         - name: progression.event.court-register-notified
           schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
 
