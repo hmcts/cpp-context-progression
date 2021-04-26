@@ -19,6 +19,7 @@ import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -455,6 +456,7 @@ public class CourtExtractTransformer {
                 .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
                 .map(DefendantJudicialResult::getJudicialResult)
                 .filter(Objects::nonNull)
+                .filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract())
                 .collect(toList());
         judicialResultsList.addAll(defendantLevelJudicialResults);
 
@@ -464,6 +466,7 @@ public class CourtExtractTransformer {
                 .map(Defendants::getJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
+                .filter(jr ->nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract())
                 .collect(toList());
 
         judicialResultsList.addAll(caseLevelJudicialResults);
@@ -496,7 +499,7 @@ public class CourtExtractTransformer {
                     .withIsDeleted(result.getIsDeleted())
                     .withIsFinancialResult(result.getIsFinancialResult())
                     .withJudicialResultId(result.getJudicialResultId())
-                    .withJudicialResultPrompts(result.getJudicialResultPrompts())
+                    .withJudicialResultPrompts(filterOutPromptsNotToBeShownInCourtExtract(result))
                     .withJudicialResultTypeId(result.getJudicialResultTypeId())
                     .withLabel(result.getLabel())
                     .withLastSharedDateTime(result.getLastSharedDateTime())
@@ -520,7 +523,14 @@ public class CourtExtractTransformer {
                     .withWelshResultWording(result.getWelshResultWording())
                     .build();
         }
-        return result;
+        return judicialResult()
+                .withValuesFrom(result)
+                .withJudicialResultPrompts(filterOutPromptsNotToBeShownInCourtExtract(result))
+                .build();
+    }
+
+    private List<JudicialResultPrompt> filterOutPromptsNotToBeShownInCourtExtract(final JudicialResult result) {
+        return isNotEmpty(result.getJudicialResultPrompts()) ? result.getJudicialResultPrompts().stream().filter(jrp -> "Y".equals(jrp.getCourtExtract())).collect(toList()) : result.getJudicialResultPrompts();
     }
 
     private Defendant transformDefendantWithoutHearingDetails(final uk.gov.justice.core.courts.Defendant caseDefendant, final Defendant.Builder defendantBuilder) {
@@ -609,7 +619,7 @@ public class CourtExtractTransformer {
                 .withOffenceCode(o.getOffenceCode())
                 .withOffenceTitle(o.getOffenceTitle())
                 .withOffenceTitleWelsh(o.getOffenceTitleWelsh())
-                .withResults(transformResults(o.getJudicialResults()))
+                .withResults(transformResults(filterOutResultDefinitionsNotToBeShownInCourtExtract(o)))
                 .withNotifiedPlea(o.getNotifiedPlea())
                 .withWording(o.getWording())
                 .withPleas(o.getPleas())
@@ -617,6 +627,12 @@ public class CourtExtractTransformer {
                 .withWordingWelsh(o.getWordingWelsh()).build()
 
         ).collect(toList());
+    }
+
+    private List<JudicialResult> filterOutResultDefinitionsNotToBeShownInCourtExtract(final Offences o) {
+        return isNotEmpty(o.getJudicialResults()) ?
+                o.getJudicialResults().stream().filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract()).collect(toList())
+                : o.getJudicialResults();
     }
 
     private List<JudicialResult> transformResults(final List<JudicialResult> judicialResults) {

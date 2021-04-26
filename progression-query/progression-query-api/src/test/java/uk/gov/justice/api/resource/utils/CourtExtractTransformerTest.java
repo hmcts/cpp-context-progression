@@ -135,12 +135,28 @@ public class CourtExtractTransformerTest {
     private static final String LAST_NAME_2 = " Last name 2";
     private static final String PROMPT_VALUE = "10";
     private static final String COURT_EXTRACT = "Y";
+    private static final String NO_COURT_EXTRACT = "N";
     private static final String PLEA_GUILTY = "GUILTY";
     private static final LocalDate CONVICTION_DATE = LocalDate.of(2018, 04, 04);
     private static final LocalDate PLEA_DATE = LocalDate.of(2018, 01, 01);
     private static final String DEFENDANT_AGE = "30";
     private static final LocalDate OUTCOME_DATE = LocalDate.of(2019, 07, 20);
     private static final LocalDate RESPONSE_DATE = LocalDate.of(2019, 07, 25);
+    public static final String LEGACY_COMPENSATION = "Legacy Compensation";
+    public static final String ORDERING = "Ordering";
+    public static final String COMPENSATION = "Compensation";
+    public static final String RESTRAINING_ORDER = "Restraining order";
+    public static final String LEGACY_NAME = "Legacy Name";
+    public static final String MINOR_CREDITOR_FIRST_NAME = "Minor creditor first name";
+    public static final String AMOUNT_OF_COMPENSATION = "Amount of compensation";
+    public static final String PROTECTED_PERSON_S_NAME = "Protected person's name";
+    public static final String PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1 = "Protected person's address address line 1";
+    public static final String THIS_ORDER_IS_MADE_ON = "this order is made on";
+    public static final String LEGACY_RESULT = "Legacy Result";
+    public static final String RESTRAINING_ORDER_DEFENDANT_LEVEL = "Restraining order Defendant Level";
+    public static final String COMPENSATION_DEFENDANT_LEVEL = "Compensation Defendant Level";
+    public static final String LEGACY_COMPENSATION_DEFENDANT_LEVEL = "Legacy Compensation Defendant Level";
+    public static final String ORDERING_DEFENDANT_LEVEL = "Ordering Defendant Level";
 
     private final ProsecutionCase prosecutionCase = createProsecutionCase();
     private CourtExtractTransformer target;
@@ -284,13 +300,115 @@ public class CourtExtractTransformerTest {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = asList(HEARING_ID.toString(), HEARING_ID_2.toString());
         final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlanceWithDefendantHeardInYouthCourt();
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance,DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
         assertThat(courtExtractRequested.getPublishingCourt().getName(), is("Youth Court Name"));
         assertThat(courtExtractRequested.getPublishingCourt().getWelshName(), is("Welsh Youth Court Name"));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtCentre().getName(), is("Youth Court Name"));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtCentre().getWelshName(), is("Welsh Youth Court Name"));
 
 
+    }
+
+
+    @Test
+    public void shouldGenerateACourtExtractAfterFilteringOutResultDefinitionsThatAreNotForTheCourtExtract() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = asList(HEARING_ID.toString());
+        final List<Hearings> judicialResultsByMasterDefendantId = createHearingsWithJudicialResultsWithCourtExtract(MASTER_DEFENDANT_ID);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlance(judicialResultsByMasterDefendantId), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        verifyDefendantLevelResults(courtExtractRequested);
+        verifyCaseLevelResult(courtExtractRequested);
+        verifyOffenceLevelResult(courtExtractRequested);
+
+    }
+
+    private void verifyOffenceLevelResult(final CourtExtractRequested courtExtractRequested) {
+        //Case Level Does Not Exist
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING)), is(true));
+
+        //Defendant Level Exist
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER)), is(true));
+
+
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
+
+        // Prompt Should not exist
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getOffences().get(0).getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
+    }
+
+    private void verifyCaseLevelResult(final CourtExtractRequested courtExtractRequested) {
+        //Case Level Does Not Exist
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING)), is(true));
+
+        //Defendant Level Exist
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER)), is(true));
+
+
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
+
+        // Prompt Should not exist
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
+    }
+
+    private void verifyDefendantLevelResults(final CourtExtractRequested courtExtractRequested) {
+        //Defendant Level Not Exist
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING_DEFENDANT_LEVEL)), is(true));
+
+        //Defendant Level Exist
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL)), is(true));
+
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
+
+
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
+
+        // Prompt Should not exist
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
     }
 
     private void assertGetCourtExtractRequested(final CourtExtractRequested courtExtractRequested, String extractType, int resultsCount) {
@@ -417,7 +535,7 @@ public class CourtExtractTransformerTest {
         final Defendant defendant = Defendant.defendant().withId(DEFENDANT_ID)
                 .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation().withAddress(createAddress())
-                                .               withName("ABC LTD").build()).build())
+                                .withName("ABC LTD").build()).build())
                 .withOffences(Collections.emptyList())
                 .withMasterDefendantId(MASTER_DEFENDANT_ID)
                 .build();
@@ -478,7 +596,7 @@ public class CourtExtractTransformerTest {
         GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
         builder.withProsecutionCaseIdentifier(createPCIdentifier());
         builder.withDefendantHearings(createDefendantHearing());
-        builder.withHearings( createHearingsWithYouthCourtDetails(DEFENDANT_ID));
+        builder.withHearings(createHearingsWithYouthCourtDetails(DEFENDANT_ID));
         builder.withCourtApplications(asList(createCourtApplication()));
         return builder.build();
     }
@@ -742,6 +860,185 @@ public class CourtExtractTransformerTest {
                 .withName(COURT_NAME)
                 .build();
     }
+
+
+
+    private List<Hearings> createHearingsWithJudicialResultsWithCourtExtract(final UUID masterDefendantId) {
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendantsWithCourtExtract(asList(DEFENDANT_ID), HEARING1))
+                        .withDefendantAttendance(createDefendantAttendance(DEFENDANT_ID))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+                        .withDefendantJudicialResults(createDefendantJudicialResultsWithCourtExtract(masterDefendantId))
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendantsWithCourtExtract(asList(DEFENDANT_ID), HEARING2))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .withDefendantJudicialResults(createDefendantJudicialResultsWithCourtExtract(masterDefendantId))
+                        .build()
+        );
+    }
+
+    private List<Offences> createOffenceCourtExtract(final UUID offenceId) {
+        final List<JudicialResultPrompt> prompts = asList(createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_NAME),
+                createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1),
+                createPrompt(COURT_EXTRACT, THIS_ORDER_IS_MADE_ON));
+
+        final List<JudicialResultPrompt> promptsForMinor = asList(createPrompt(NO_COURT_EXTRACT, MINOR_CREDITOR_FIRST_NAME),
+                createPrompt(COURT_EXTRACT, AMOUNT_OF_COMPENSATION));
+
+        final List<JudicialResultPrompt> legacyPrompts = asList(createLegacyPrompt(LEGACY_NAME));
+
+
+        final List<JudicialResult> results = asList(createJudicialResultWithCourtExtractFlag(true, prompts, RESTRAINING_ORDER),
+                createJudicialResultWithCourtExtractFlag(true, promptsForMinor, COMPENSATION),
+                createJudicialResultWithCourtExtractFlag(false, promptsForMinor, ORDERING),
+                createLegacyJudicialResultWithCourtExtractFlag(legacyPrompts, LEGACY_RESULT)
+        );
+        return asList(
+                Offences.offences()
+                        .withId(offenceId)
+                        .withConvictionDate(CONVICTION_DATE)
+                        .withJudicialResults(results)
+                        .withPleas(createPlea())
+                        .withIndicatedPlea(createIndicatedPlea())
+                        .withAllocationDecision(createAllocationDecision())
+                        .withVerdicts(createVerdicts())
+                        .build()
+        );
+    }
+
+
+
+    private List<DefendantJudicialResult> createDefendantJudicialResultsWithCourtExtract(final UUID masterDefendantId) {
+        final List<JudicialResultPrompt> prompts = asList(createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_NAME),
+                createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1),
+                createPrompt(COURT_EXTRACT, THIS_ORDER_IS_MADE_ON));
+
+        final List<JudicialResultPrompt> promptsForMinor = asList(createPrompt(NO_COURT_EXTRACT, MINOR_CREDITOR_FIRST_NAME),
+                createPrompt(COURT_EXTRACT, AMOUNT_OF_COMPENSATION));
+
+        final List<JudicialResultPrompt> legacyPrompts = asList(createLegacyPrompt(LEGACY_NAME));
+
+        return asList(
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createJudicialResultWithCourtExtractFlag(true, prompts, RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createJudicialResultWithCourtExtractFlag(true, promptsForMinor, COMPENSATION_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createLegacyJudicialResultWithCourtExtractFlag(legacyPrompts, LEGACY_COMPENSATION_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(                createJudicialResultWithCourtExtractFlag(false, promptsForMinor, ORDERING_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build()
+        );
+    }
+
+
+    private List<Defendants> createDefendantsWithCourtExtract(final List<UUID> defendantIdList, final String hearing) {
+        return defendantIdList.stream().map(id -> createDefendantWithCourtExtract(id, hearing)).collect(toList());
+    }
+
+    private Defendants createDefendantWithCourtExtract(final UUID defendantId, final String hearing) {
+        final List<JudicialResultPrompt> prompts = asList(createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_NAME),
+                createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1),
+                createPrompt(COURT_EXTRACT, THIS_ORDER_IS_MADE_ON));
+
+        final List<JudicialResultPrompt> promptsForMinor = asList(createPrompt(NO_COURT_EXTRACT, MINOR_CREDITOR_FIRST_NAME),
+                createPrompt(COURT_EXTRACT, AMOUNT_OF_COMPENSATION));
+
+        final List<JudicialResultPrompt> legacyPrompts = asList(createLegacyPrompt(LEGACY_NAME));
+
+
+        final List<JudicialResult> results = asList(createJudicialResultWithCourtExtractFlag(true, prompts, RESTRAINING_ORDER),
+                createJudicialResultWithCourtExtractFlag(true, promptsForMinor, COMPENSATION),
+                createJudicialResultWithCourtExtractFlag(false, promptsForMinor, ORDERING),
+                createLegacyJudicialResultWithCourtExtractFlag(legacyPrompts, LEGACY_RESULT)
+                );
+        return Defendants.defendants()
+                .withId(defendantId)
+                .withAddress(createAddress())
+                .withDateOfBirth(DOB)
+                .withAge(DEFENDANT_AGE)
+                .withJudicialResults(results)
+                .withOffences(createOffenceCourtExtract(OFFENCE_ID))
+                .withDefenceOrganisation(createDefenceOrganisation(hearing))
+                .withCourtApplications(asList(createCourtApplications()))
+                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                        .withCustody(CUSTODY_TYPE)
+                        .withId(CUSTODY_ESTABLISHMENT_UUID)
+                        .withName(CUSTODY_ESTABLISHMENT_NAME)
+                        .build())
+                .build();
+    }
+
+
+    private JudicialResult createJudicialResultWithCourtExtractFlag(final boolean isAvailableForCourtExtract, final List<JudicialResultPrompt> prompts, final String resultLabel) {
+        return JudicialResult.judicialResult()
+                .withIsAvailableForCourtExtract(isAvailableForCourtExtract)
+                .withLabel(resultLabel)
+                .withJudicialResultPrompts(prompts)
+                .withDelegatedPowers(createDelegatedPower())
+                .withResultText("resultText")
+                .build();
+    }
+
+    private JudicialResultPrompt createPrompt(final String courtExtract, final String label) {
+        return
+                JudicialResultPrompt.judicialResultPrompt()
+                        .withLabel(label)
+                        .withCourtExtract(courtExtract)
+                        .withValue(PROMPT_VALUE)
+                        .build();
+    }
+
+    private JudicialResult createLegacyJudicialResultWithCourtExtractFlag(final List<JudicialResultPrompt> prompts, final String resultLabel) {
+        return JudicialResult.judicialResult()
+                .withLabel(resultLabel)
+                .withJudicialResultPrompts(prompts)
+                .withDelegatedPowers(createDelegatedPower())
+                .withResultText("resultText")
+                .build();
+    }
+
+    private JudicialResultPrompt createLegacyPrompt(final String label) {
+        return
+                JudicialResultPrompt.judicialResultPrompt()
+                        .withLabel(label)
+                        .withValue(PROMPT_VALUE)
+                        .build();
+    }
+
 
     private List<Defendants> createDefendants(final List<UUID> defendantIdList, final String hearing) {
         return defendantIdList.stream().map(id -> createDefendant(id, hearing)).collect(toList());
