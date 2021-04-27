@@ -60,6 +60,7 @@ public class CourtProceedingsInitiatedProcessor {
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
     private static final String SEXUAL_OFFENCE_RR_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     private static final String SEXUAL_OFFENCE_RR_CODE = "YES";
+    public static final String ENDORSABLE_FLAG = "endorsableFlag";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -143,9 +144,13 @@ public class CourtProceedingsInitiatedProcessor {
                         .withOrderedDate(LocalDate.now())
                         .withLabel(YOUTH_RESTRICTION).build());
             }
+            final Offence.Builder builder = new Offence.Builder().withValuesFrom(offence);
             if (referenceDataOffencesJsonObjectOptional.isPresent()) {
                 final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
                 final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
+                if(nonNull(referenceDataOffenceInfo)){
+                    builder.withEndorsableFlag(referenceDataOffenceInfo.getBoolean(ENDORSABLE_FLAG, false));
+                }
                 if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {
                     reportingRestrictions.add(new ReportingRestriction.Builder()
                             .withId(randomUUID())
@@ -155,7 +160,6 @@ public class CourtProceedingsInitiatedProcessor {
                 }
             }
 
-            final Offence.Builder builder = new Offence.Builder().withValuesFrom(offence);
             if (isNotEmpty(reportingRestrictions)) {
                 builder.withReportingRestrictions(reportingRestrictions);
             }
