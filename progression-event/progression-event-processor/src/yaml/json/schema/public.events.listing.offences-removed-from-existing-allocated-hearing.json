@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-existing-allocated-hearing.json",
+  "description": "Remove all the offences related to hearing with hearing id - hearingId",
+  "type": "object",
+  "properties": {
+    "hearingId" : {
+      "description": "Hearing for which offences to be removed",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "offenceIds": {
+      "description": "Offences to be removed for hearingId",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "hearingId",
+    "offenceIds"
+  ],
+  "additionalProperties": false
+}

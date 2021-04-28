@@ -60,6 +60,7 @@ public class AbstractIT {
     protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_WITHOUT_POSTCODE_JSON = "/restResource/ref-data-get-organisation-without-postcode.json";
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
+    public static final String PROGRESSION_CONTEXT = "progression";
 
 
     /**

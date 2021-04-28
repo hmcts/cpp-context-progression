@@ -51,6 +51,7 @@ import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -350,6 +351,13 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> hearingResulted(CourtApplication courtApplication) {
         return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(courtApplication().withValuesFrom(courtApplication).withApplicationStatus(FINALISED).build()).build()));
+    }
+
+    public Stream<Object> deleteHearingRelatedToCourtApplication(final UUID hearingId, final UUID courtApplicationId) {
+        return apply(Stream.of(HearingDeletedForCourtApplication.hearingDeletedForCourtApplication()
+                .withCourtApplicationId(courtApplicationId)
+                .withHearingId(hearingId)
+                .build()));
     }
 
     public UUID getBoxHearingId() {

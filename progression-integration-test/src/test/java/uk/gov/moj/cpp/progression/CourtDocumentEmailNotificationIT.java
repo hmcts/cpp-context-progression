@@ -71,6 +71,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     private static final MessageConsumer consumerForProgressionCommandEmail = privateEvents.createConsumer("progression.event.email-requested");
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
@@ -109,7 +110,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         userId = randomUUID().toString();
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
+    @Ignore("Will be fixed as part of CPI-353, Needs to work with new public.event.hearing.hearing-resulted event from AmendAndReshare feature, see Jira for details")
     @Test
     public void shouldGenerateNotificationEventWhenCourtDocumentAdded() throws IOException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);

@@ -78,7 +78,10 @@
             <artifactId>common-core-domain</artifactId>
             <version>${coredomain.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.justice.framework-api</groupId>
+            <artifactId>framework-api-core</artifactId>
+        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>

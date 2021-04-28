@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static java.time.ZonedDateTime.now;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -23,10 +22,10 @@ import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForDocumentId;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForMaterialId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.io.IOException;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -47,6 +46,10 @@ public class UpdateCourtDocumentIT extends AbstractIT {
     private static final String PROGRESSION_EVENT_PRINT_REQUESTED = "progression.event.print-requested";
     private static final String PROGRESSION_EVENT_PRINT_TIME_UPDATED = "progression.event.court-document-print-time-updated";
 
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
+    private static final MessageConsumer PRINT_REQUESTED_CONSUMER = privateEvents.createConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
+    private static final MessageConsumer PRINT_TIME_UPDATED_CONSUMER = privateEvents.createConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
+
     private String caseId;
     private String defendantId;
     private ZonedDateTime completedAt;
@@ -55,9 +58,7 @@ public class UpdateCourtDocumentIT extends AbstractIT {
     private UUID materialId;
     private UUID notificationId;
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
-    private static final MessageConsumer PRINT_REQUESTED_CONSUMER = privateEvents.createConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
-    private static final MessageConsumer PRINT_TIME_UPDATED_CONSUMER = privateEvents.createConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
+    private UtcClock utcClock = new UtcClock();
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -73,8 +74,8 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         documentId = randomUUID();
         materialId = randomUUID();
         notificationId = randomUUID();
-        completedAt = now(ZoneId.of("UTC"));
-        sentTime = now(ZoneId.of("UTC")).minusMinutes(5);
+        completedAt = utcClock.now();
+        sentTime = utcClock.now().minusMinutes(5);
         stubForMaterialId(notificationId, materialId);
         stubForDocumentId(materialId, documentId);
     }

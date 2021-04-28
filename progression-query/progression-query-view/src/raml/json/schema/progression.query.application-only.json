@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.query.application-only",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "type": "object",
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+    }
+  },
+  "required": [
+    "courtApplication"
+  ],
+  "additionalProperties": false
+}

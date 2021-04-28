@@ -4,28 +4,35 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,34 +70,89 @@ public class HearingToHearingListingNeedsTransformer {
         final Map<String, HearingListingNeeds> hearingListingNeedsMap = new HashMap<>();
 
         ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
-                .forEach(prosecutionCase -> prosecutionCase.getDefendants()
-                        .forEach(defendant -> defendant.getOffences().stream().filter(o -> nonNull(o.getJudicialResults()))
-                                .forEach(offence -> offence.getJudicialResults()
-                                        .forEach(judicialResult ->
-                                                transform(
-                                                        prosecutionCase,
-                                                        defendant,
-                                                        offence,
-                                                        judicialResult,
-                                                        hearingListingNeedsMap,
-                                                        bookingReferenceCourtScheduleIdMap,
-                                                        hearing.getJudiciary(),
-                                                        hearing.getCourtCentre(),
-                                                        shouldPopulateCommittingCourt,
-                                                        committingCourt)))));
+                .forEach(prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
+                        defendant -> defendant.getOffences().stream().filter(o -> nonNull(o.getJudicialResults())).forEach(
+                                offence -> offence.getJudicialResults().stream().forEach(
+                                        judicialResult -> transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap,
+                                                bookingReferenceCourtScheduleIdMap, hearing, shouldPopulateCommittingCourt, committingCourt)
+                                )
+                        )
+                        )
+                );
 
-        ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
-                .forEach(courtApplication -> {
-                    final List<JudicialResult> judicialResults = hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication);
-                    judicialResults.forEach(judicialResult -> transform(courtApplication,
-                            judicialResult,
-                            hearingListingNeedsMap,
-                            bookingReferenceCourtScheduleIdMap,
-                            hearing.getJudiciary(),
-                            hearing.getProsecutionCases()));
-                });
+        transformForApplications(hearing, bookingReferenceCourtScheduleIdMap, hearingListingNeedsMap);
 
         return new ArrayList<>(hearingListingNeedsMap.values());
+    }
+
+    /**
+     * Transform the Hearing information with SeedHearing to List of hearing and If next hearing is
+     * not within the multi days hearing then create a new hearing record
+     */
+    public List<HearingListingNeeds> transformWithSeedHearing(final Hearing hearing, final Optional<CommittingCourt> committingCourt, final SeedingHearing seedingHearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIds) {
+        final Map<String, HearingListingNeeds> hearingListingNeedsMap = new HashMap<>();
+
+        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .forEach(
+                        prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
+                                defendant -> defendant.getOffences().stream().filter(o -> nonNull(o.getJudicialResults()))
+                                        .map(offence -> Offence.offence().withValuesFrom(offence).withSeedingHearing(seedingHearing).build())
+                                        .forEach(offence -> offence.getJudicialResults().stream()
+                                                .forEach(judicialResult -> {
+                                                            if (isNextHearingOutsideOfMultiDaysHearing(judicialResult.getNextHearing(), hearing)) {
+                                                                transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap, bookingReferenceCourtScheduleIds,
+                                                                        hearing, committingCourt.isPresent(), committingCourt);
+                                                            }
+                                                        }
+                                                )
+                                        )
+                        )
+                );
+
+        transformForApplications(hearing, bookingReferenceCourtScheduleIds, hearingListingNeedsMap);
+        setSeedingHearingForApplicationsOffences(hearing.getCourtApplications(), seedingHearing);
+
+        return new ArrayList<>(hearingListingNeedsMap.values());
+    }
+
+    private void setSeedingHearingForApplicationsOffences(final List<CourtApplication> courtApplications, final SeedingHearing seedingHearing) {
+        ofNullable(courtApplications).map(Collection::stream).orElseGet(Stream::empty)
+                .forEach(courtApplication -> {
+                            ofNullable(courtApplication.getCourtOrder())
+                                    .map(CourtOrder::getCourtOrderOffences)
+                                    .orElseGet(ArrayList::new)
+                                    .stream()
+                                    .map(CourtOrderOffence::getOffence)
+                                    .map(o -> Offence.offence().withValuesFrom(o).withSeedingHearing(seedingHearing).build());
+
+
+                            ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                                    .flatMap(cac -> ofNullable(cac.getOffences()).map(Collection::stream).orElseGet(Stream::empty))
+                                    .map(o -> Offence.offence().withValuesFrom(o).withSeedingHearing(seedingHearing).build());
+                        }
+                );
+    }
+
+    /**
+     * This method returns map of booking references and list of court schedule ids by combining
+     * both previous booking references and current booking references.
+     *
+     * @param hearing                                       has current booking references.
+     * @param previousBookingReferencesWithCourtScheduleIds previous booking references.
+     * @return
+     */
+    public Map<UUID, Set<UUID>> getCombinedBookingReferencesAndCourtScheduleIds(final Hearing hearing, final Map<UUID, List<UUID>> previousBookingReferencesWithCourtScheduleIds) {
+
+        final List<UUID> bookingReferences = hearingBookingReferenceListExtractor.extractBookingReferenceList(hearing);
+        final List<UUID> notBookedIds = bookingReferences.stream()
+                .filter(id -> !previousBookingReferencesWithCourtScheduleIds.keySet().contains(id))
+                .collect(toList());
+        final Map<UUID, Set<UUID>> currentBookingReferencesWithCourtScheduleIds = provisionalBookingServiceAdapter.getSlots(notBookedIds);
+        final Map<UUID, Set<UUID>> combinedBookingReferencesWithCourtScheduleIds = new HashMap<>(currentBookingReferencesWithCourtScheduleIds);
+        previousBookingReferencesWithCourtScheduleIds.forEach((k, v) -> combinedBookingReferencesWithCourtScheduleIds.put(k, new HashSet<>(v)));
+
+        return combinedBookingReferencesWithCourtScheduleIds;
+
     }
 
     public List<HearingListingNeeds> transform(final Hearing hearing) {
@@ -103,11 +165,9 @@ public class HearingToHearingListingNeedsTransformer {
                            final JudicialResult judicialResult,
                            final Map<String, HearingListingNeeds> hearingListingNeedsMap,
                            final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap,
-                           final List<JudicialRole> judiciaries,
-                           final CourtCentre courtCentre,
+                           final Hearing hearing,
                            final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
-
-        if (validateNextHearing(judicialResult)) {
+        if (isNull(judicialResult.getNextHearing()) || nonNull(judicialResult.getNextHearing().getExistingHearingId()) || nonNull(judicialResult.getNextHearing().getDateToBeFixed())) {
             return;
         }
 
@@ -115,16 +175,40 @@ public class HearingToHearingListingNeedsTransformer {
 
         final UUID bookingReference = nextHearing.getBookingReference();
 
-        if (nonNull(bookingReference) && !bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
-            logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
-            return;
+        final String key;
+        if (nonNull(bookingReference)) {
+            if (!bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
+                logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
+                return;
+            }
+            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference));
+        } else {
+            key = createMapKey(nextHearing);
         }
 
-        final String key = getKey(bookingReferenceCourtScheduleIdMap, nextHearing, bookingReference);
+        final HearingListingNeeds hearingListingNeeds;
 
-        final HearingListingNeeds hearingListingNeeds = hearingListingNeedsMap.computeIfAbsent(key, v -> createHearingListingNeeds(nextHearing, judiciaries));
+        if (hearingListingNeedsMap.containsKey(key)) {
+            hearingListingNeeds = hearingListingNeedsMap.get(key);
+        } else {
+            hearingListingNeeds = createHearingListingNeeds(nextHearing, hearing.getJudiciary());
+            hearingListingNeedsMap.put(key, hearingListingNeeds);
+        }
 
-        addProsecutionCase(hearingListingNeeds, prosecutionCase, defendant, offence, courtCentre, shouldPopulateCommittingCourt, committingCourt);
+        addProsecutionCase(hearingListingNeeds, prosecutionCase, defendant, offence, hearing, shouldPopulateCommittingCourt, committingCourt);
+    }
+
+    private void transformForApplications(final Hearing hearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap, final Map<String, HearingListingNeeds> hearingListingNeedsMap) {
+        ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .forEach(courtApplication -> {
+                    final List<JudicialResult> judicialResults = hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication);
+                    judicialResults.forEach(judicialResult -> transform(courtApplication,
+                            judicialResult,
+                            hearingListingNeedsMap,
+                            bookingReferenceCourtScheduleIdMap,
+                            hearing.getJudiciary(),
+                            hearing.getProsecutionCases()));
+                });
     }
 
     private void transform(final CourtApplication courtApplication,
@@ -181,11 +265,12 @@ public class HearingToHearingListingNeedsTransformer {
     }
 
     private void addProsecutionCase(final HearingListingNeeds hearingListingNeeds, final ProsecutionCase prosecutionCase, final Defendant defendant,
-                                    final Offence offence, final CourtCentre courtCentre, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
+                                    final Offence offence, final Hearing hearing, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
 
         final ProsecutionCase prosecutionCaseInNeeds = createProsecutionCase(hearingListingNeeds, prosecutionCase);
         final Defendant defendantInNeeds = createDefendant(prosecutionCaseInNeeds, defendant);
-        createOffence(defendantInNeeds, offence, courtCentre, shouldPopulateCommittingCourt, committingCourt);
+        createOffence(defendantInNeeds, offence, hearing, shouldPopulateCommittingCourt, committingCourt);
+
     }
 
     private ProsecutionCase createProsecutionCase(final HearingListingNeeds hearingListingNeeds, final ProsecutionCase prosecutionCase) {
@@ -215,13 +300,15 @@ public class HearingToHearingListingNeedsTransformer {
         return defendantInNeeds;
     }
 
-    private void createOffence(final Defendant defendantInNeeds, final Offence offence, final CourtCentre courtCentre, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> existingCommittingCourt) {
+    private Offence createOffence(final Defendant defendantInNeeds, final Offence offence, final Hearing hearing,
+                                  final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> existingCommittingCourt) {
         final Optional<Offence> offenceInNeedsOpt = defendantInNeeds.getOffences().stream().filter(d -> d.getId().equals(offence.getId())).findFirst();
         if (offenceInNeedsOpt.isPresent()) {
-            return;
+            return offenceInNeedsOpt.get();
         }
 
-        final CommittingCourt committingCourt = (nonNull(existingCommittingCourt) && existingCommittingCourt.isPresent()) ? existingCommittingCourt.get() : offenceToCommittingCourtConverter.convert(offence, courtCentre, shouldPopulateCommittingCourt).orElse(null);
+        final CommittingCourt committingCourt = (nonNull(existingCommittingCourt) && existingCommittingCourt.isPresent()) ?
+                existingCommittingCourt.get() : offenceToCommittingCourtConverter.convert(offence, hearing.getCourtCentre(), shouldPopulateCommittingCourt).orElse(null);
 
         final Offence offenceInNeeds = Offence.offence()
                 .withValuesFrom(offence)
@@ -229,6 +316,7 @@ public class HearingToHearingListingNeedsTransformer {
                 .build();
 
         defendantInNeeds.getOffences().add(offenceInNeeds);
+        return offenceInNeeds;
     }
 
     private HearingListingNeeds createHearingListingNeeds(final NextHearing nextHearing, final List<JudicialRole> judiciaries) {
@@ -274,5 +362,16 @@ public class HearingToHearingListingNeedsTransformer {
     private String createMapKey(final Set<UUID> courtScheduleIds) {
         final String mergedCourtScheduleIds = courtScheduleIds.stream().map(UUID::toString).sorted().collect(Collectors.joining(","));
         return "CourtScheduleId:" + mergedCourtScheduleIds;
+    }
+
+    private boolean isNextHearingOutsideOfMultiDaysHearing(final NextHearing nextHearing, final Hearing hearing) {
+        if (nonNull(nextHearing)) {
+            if (nonNull(hearing.getHearingDays()) && nonNull(nextHearing.getListedStartDateTime())) {
+                final List<LocalDate> hearingDays = hearing.getHearingDays().stream().map(HearingDay::getSittingDay).map(ZonedDateTime::toLocalDate).collect(toList());
+                return hearingDays.stream().noneMatch(localDate -> localDate.equals(nextHearing.getListedStartDateTime().toLocalDate()));
+            }
+            return true;
+        }
+        return false;
     }
 }

@@ -140,7 +140,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         setField(this.progressionService, "sender", this.sender);
         setField(this.listingService, "objectToJsonObjectConverter", this.objectToJsonObjectConverter);
         setField(this.listingService, "sender", this.sender);
-        setField(this.listingService, "enveloper", this.enveloper);
     }
 
     @Test

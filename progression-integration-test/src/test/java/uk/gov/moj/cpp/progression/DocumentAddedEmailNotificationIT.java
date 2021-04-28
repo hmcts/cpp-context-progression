@@ -64,10 +64,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
     private static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
     private static final MessageConsumer consumerForCourDocumentSendToCps = privateEvents.createConsumer("progression.event.court-document-send-to-cps");
     private static final MessageConsumer consumerForProgressionCommandEmail = privateEvents.createConsumer("progression.event.email-requested");
-    private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private final MessageConsumer publicEventConsumer = publicEvents
             .createConsumer("public.progression.court-document-added");
 

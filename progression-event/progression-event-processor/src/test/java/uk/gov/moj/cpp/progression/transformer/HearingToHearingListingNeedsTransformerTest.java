@@ -20,6 +20,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
@@ -93,7 +94,7 @@ public class HearingToHearingListingNeedsTransformerTest {
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
                 buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
-                ));
+        ));
 
         final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
         assertThat(hearingListingNeedsList.size(), is(1));
@@ -106,7 +107,7 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(defendant1.getOffences().size(), is(1));
         assertThat(defendant2.getOffences().size(), is(1));
 
-        if (defendant1.getId().equals(DEFENDANT_ID_1)){
+        if (defendant1.getId().equals(DEFENDANT_ID_1)) {
             assertThat(defendant2.getId(), equalTo(DEFENDANT_ID_2));
             assertThat(defendant1.getOffences().get(0).getId(), equalTo(OFFENCE_ID_1));
             assertThat(defendant2.getOffences().get(0).getId(), equalTo(OFFENCE_ID_2));
@@ -140,7 +141,7 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         final Defendant defendant1;
         final Defendant defendant2;
-        if (prosecutionCase1.getDefendants().get(0).getId().equals(DEFENDANT_ID_1)){
+        if (prosecutionCase1.getDefendants().get(0).getId().equals(DEFENDANT_ID_1)) {
             defendant1 = prosecutionCase1.getDefendants().get(0);
             defendant2 = prosecutionCase2.getDefendants().get(0);
         } else {
@@ -174,8 +175,8 @@ public class HearingToHearingListingNeedsTransformerTest {
         when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
-                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION,null,  LISTED_START_DATETIME_1)),
-                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION,null, LISTED_START_DATETIME_2))
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, null, LISTED_START_DATETIME_1)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION, null, LISTED_START_DATETIME_2))
         ));
 
         final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
@@ -189,7 +190,7 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
-                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION,null, LISTED_START_DATETIME_1))
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION, null, LISTED_START_DATETIME_1))
         ));
 
         final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
@@ -208,8 +209,8 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
-                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_1, COURT_LOCATION,null, LISTED_START_DATETIME_1)),
-                buildProsecutionCase(CASE_ID_3, DEFENDANT_ID_3, OFFENCE_ID_3, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_2, COURT_LOCATION,null, LISTED_START_DATETIME_1))
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1)),
+                buildProsecutionCase(CASE_ID_3, DEFENDANT_ID_3, OFFENCE_ID_3, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_2, COURT_LOCATION, null, LISTED_START_DATETIME_1))
         ));
 
         final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
@@ -237,8 +238,8 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
-                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_1, COURT_LOCATION,null, LISTED_START_DATETIME_1)),
-                buildProsecutionCase(CASE_ID_3, DEFENDANT_ID_3, OFFENCE_ID_3, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_2, COURT_LOCATION,null, LISTED_START_DATETIME_1))
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1)),
+                buildProsecutionCase(CASE_ID_3, DEFENDANT_ID_3, OFFENCE_ID_3, buildNextHearing(HEARING_TYPE_2, BOOKING_REFERENCE_2, COURT_LOCATION, null, LISTED_START_DATETIME_1))
         ));
 
         final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
@@ -332,4 +333,163 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(reportingRestriction1, is(notNullValue()));
         assertThat(reportingRestriction1.getId(), is(REPORTING_RESTRICTION_ID_1));
     }
+
+    @Test
+    public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenTwoHearingMatch() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        final Defendant defendant2 = hearingListingNeedsList.get(0).getProsecutionCases().get(1).getDefendants().get(0);
+        assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
+        assertThat(defendant2.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
+    }
+
+    @Test
+    public void shouldReturnNoHearingNeedsWithSeededHearingIdsOnOffencesWhenListingStartDateOutsideOfMultiDaysHearing() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenOneListingStartDateWithInMultiDaysHearingAndAnotherOutside() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime.plusDays(2)))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
+    }
+
+    @Test
+    public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenListingStartDateIsNull() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
+    }
+
+    @Test
+    public void shouldReturnOneAlreadyExistingBookingReferenceWithCourtScheduleIds() {
+
+        final UUID bookingReferenceId = randomUUID();
+        final Map<UUID, List<UUID>> alreadyExistingBookingReferenceAndCourtScheduleIds = new HashMap<>();
+        alreadyExistingBookingReferenceAndCourtScheduleIds.put(bookingReferenceId, Arrays.asList(randomUUID(), randomUUID()));
+
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final Map<UUID, Set<UUID>> combinedBookingReferencesAndCourtScheduleIds = transformer.getCombinedBookingReferencesAndCourtScheduleIds(hearing, alreadyExistingBookingReferenceAndCourtScheduleIds);
+
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.size(), is(1));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.containsKey(bookingReferenceId), is(true));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.get(bookingReferenceId).size(), is(2));
+
+    }
+
+    @Test
+    public void shouldReturnNewBookingReferenceWithCourtScheduleIds() {
+
+        final UUID bookingReferenceId = randomUUID();
+
+        final Map<UUID, List<UUID>> alreadyExistingBookingReferenceAndCourtScheduleIds = new HashMap<>();
+
+        final Map<UUID, Set<UUID>> newBookingReferenceAndCourtScheduleIds = new HashMap<>();
+        newBookingReferenceAndCourtScheduleIds.put(bookingReferenceId, new HashSet<>(Arrays.asList(randomUUID(), randomUUID())));
+
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(newBookingReferenceAndCourtScheduleIds);
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, bookingReferenceId, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final Map<UUID, Set<UUID>> combinedBookingReferencesAndCourtScheduleIds = transformer.getCombinedBookingReferencesAndCourtScheduleIds(hearing, alreadyExistingBookingReferenceAndCourtScheduleIds);
+
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.size(), is(1));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.containsKey(bookingReferenceId), is(true));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.get(bookingReferenceId).size(), is(2));
+
+    }
+
+    @Test
+    public void shouldReturnOneAlreadyExistingBookingReferenceAndNewBookingReferenceWithCourtScheduleIds() {
+
+        final UUID bookingReferenceId1 = randomUUID();
+        final UUID bookingReferenceId2 = randomUUID();
+
+        final Map<UUID, List<UUID>> alreadyExistingBookingReferenceAndCourtScheduleIds = new HashMap<>();
+        alreadyExistingBookingReferenceAndCourtScheduleIds.put(bookingReferenceId1, Arrays.asList(randomUUID(), randomUUID()));
+
+        final Map<UUID, Set<UUID>> newBookingReferenceAndCourtScheduleIds = new HashMap<>();
+        newBookingReferenceAndCourtScheduleIds.put(bookingReferenceId2, new HashSet<>(Arrays.asList(randomUUID(), randomUUID())));
+
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(newBookingReferenceAndCourtScheduleIds);
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, bookingReferenceId2, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final Map<UUID, Set<UUID>> combinedBookingReferencesAndCourtScheduleIds = transformer.getCombinedBookingReferencesAndCourtScheduleIds(hearing, alreadyExistingBookingReferenceAndCourtScheduleIds);
+
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.size(), is(2));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.containsKey(bookingReferenceId1), is(true));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.containsKey(bookingReferenceId2), is(true));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.get(bookingReferenceId1).size(), is(2));
+        assertThat(combinedBookingReferencesAndCourtScheduleIds.get(bookingReferenceId2).size(), is(2));
+
+    }
+
+
 }

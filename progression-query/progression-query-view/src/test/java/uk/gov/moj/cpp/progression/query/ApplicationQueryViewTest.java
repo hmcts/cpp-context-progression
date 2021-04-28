@@ -21,10 +21,8 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
-import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -68,10 +66,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -241,7 +237,34 @@ public class ApplicationQueryViewTest {
 
         final JsonObject assignedUserJson = response.payloadAsJsonObject().getJsonObject("assignedUser");
         assertThat(assignedUserJson.getString("userId"), is(courtApplicationEntity.getAssignedUserId().toString()));
+    }
 
+    @Test
+    public void shouldFindApplicationOnlyById() {
+        final UUID applicationId = randomUUID();
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("applicationId", applicationId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName("progression.query.application-only").build(),
+                jsonObject);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload("{}");
+        courtApplicationEntity.setAssignedUserId(UUID.randomUUID());
+
+        final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
+        hearingApplicationEntity.setId(new HearingApplicationKey());
+        hearingApplicationEntity.setHearing(new HearingEntity());
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(applicationJson);
+
+        when(hearingApplicationRepository.findByApplicationId(applicationId)).thenReturn(Arrays.asList(hearingApplicationEntity));
+
+        final JsonEnvelope response = applicationQueryView.getApplicationOnly(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("courtApplication"), notNullValue());
     }
 
     @Test

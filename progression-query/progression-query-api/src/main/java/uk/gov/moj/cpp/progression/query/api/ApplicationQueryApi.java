@@ -63,11 +63,14 @@ public class ApplicationQueryApi {
 
             response = enveloper.withMetadataFrom(appQueryResponse, "progression.query.application")
                     .apply(newPayload.build());
-
-
         }
 
         return response;
+    }
+
+    @Handles("progression.query.application-only")
+    public JsonEnvelope getApplicationOnly(final JsonEnvelope query) {
+        return requester.request(query);
     }
 
     @Handles("progression.query.application.summary")

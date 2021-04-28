@@ -11,6 +11,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -30,14 +31,16 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
+    private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 = "public.events.hearing.hearing-resulted-case-updated";
     private static final String PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE = "public.hearing.resulted-multiple-prosecution-cases";
+    private static final String PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE_V2 = "public.events.hearing.hearing-resulted-multiple-prosecution-cases";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
@@ -100,6 +103,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateHearingResultedCaseUpdated() throws Exception {
+        enableAmendReshareFeature(false);
+
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -119,7 +124,31 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     }
 
     @Test
+    public void shouldUpdateHearingResultedCaseUpdatedV2() throws Exception {
+        enableAmendReshareFeature(true);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED_V2, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
+                        hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED_V2)
+                        .withUserId(userId)
+                        .build());
+
+        pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
+        verifyInMessagingQueueForHearingResultedCaseUpdated();
+        verifyInMessagingQueueForHearingResulted();
+    }
+
+    @Test
     public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresent() throws Exception {
+        enableAmendReshareFeature(false);
+
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String caseId2 = randomUUID().toString();
         addProsecutionCaseToCrownCourt(caseId2, defendantId);
@@ -133,6 +162,29 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED)
+                        .withUserId(userId)
+                        .build());
+
+        pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
+    }
+
+    @Test
+    public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresentV2() throws Exception {
+        enableAmendReshareFeature(true);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String caseId2 = randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId2, defendantId);
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED_V2, getHearingWithMultipleCasesJsonObject(PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE_V2 + ".json", caseId, caseId2,
+                        hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED_V2)
                         .withUserId(userId)
                         .build());
 

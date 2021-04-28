@@ -37,4 +37,20 @@ public interface CaseDefendantHearingRepository extends EntityRepository<CaseDef
     void removeByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
                                                   @QueryParam("caseId") UUID caseId,
                                                   @QueryParam("defendantId") UUID defendantId);
+
+    @Modifying
+    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.caseId in (:caseId)")
+    void removeByHearingIdAndCaseId(@QueryParam("hearingId") UUID hearingId,
+                                    @QueryParam("caseId") UUID caseId);
+
+    @Modifying
+    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.defendantId in (:defendantId)")
+    void removeByHearingIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
+                                    @QueryParam("defendantId") UUID defendantId);
+
+    @Modifying
+    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId)" )
+    void removeByHearingId(@QueryParam("hearingId") UUID hearingId);
+
+
 }

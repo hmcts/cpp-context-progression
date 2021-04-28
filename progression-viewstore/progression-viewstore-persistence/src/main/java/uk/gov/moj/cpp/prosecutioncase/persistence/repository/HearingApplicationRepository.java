@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
@@ -18,5 +19,10 @@ public interface HearingApplicationRepository extends EntityRepository<HearingAp
 
     @Query("from HearingApplicationEntity entity where entity.id.hearingId in (:hearingId)")
     public abstract List<HearingApplicationEntity> findByHearingId(@QueryParam("hearingId") UUID hearingId);
+
+    @Modifying
+    @Query("delete from HearingApplicationEntity entity where entity.id.hearingId in (:hearingId) and entity.id.applicationId in (:applicationId)")
+    void removeByHearingIdAndCourtApplicationId(@QueryParam("hearingId") UUID hearingId,
+                                    @QueryParam("applicationId") UUID applicationId);
 
 }

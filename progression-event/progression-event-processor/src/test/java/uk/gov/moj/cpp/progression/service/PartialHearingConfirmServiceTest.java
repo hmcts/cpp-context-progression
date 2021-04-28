@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
@@ -25,7 +26,9 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
+import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -50,10 +53,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class PartialHearingConfirmServiceTest {
     private static final UUID HEARING_ID = randomUUID();
+    private static final UUID SEEDING_HEARING_ID = randomUUID();
     private static final UUID CASE1_ID = randomUUID();
     private static final UUID CASE1_DEFENDANT1_ID = randomUUID();
     private static final UUID CASE1_DEFENDANT1_OFFENCE1_ID = randomUUID();
     private static final UUID CASE1_DEFENDANT1_OFFENCE2_ID = randomUUID();
+    private static final UUID CASE1_DEFENDANT1_OFFENCE3_ID = randomUUID();
     private static final UUID CASE1_DEFENDANT2_ID = randomUUID();
     private static final UUID CASE1_DEFENDANT2_OFFENCE1_ID = randomUUID();
     private static final UUID CASE1_DEFENDANT2_OFFENCE2_ID = randomUUID();
@@ -308,6 +313,320 @@ public class PartialHearingConfirmServiceTest {
         assertThat(prosecutionCases.get(0).getId(), equalTo(CASE1_ID));
 
 
+    }
+
+    @Test
+    public void shouldTransformToListNextCourtHearing() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final UUID courtCentreIdInProgression = randomUUID();
+        final UUID hearingTypeId = randomUUID();
+        final String reportRestrictionReason = "reportRestrictionReason";
+        final String courtCentreName = "courtCentreName";
+        final String courtCentreNameInProgression = "Lavender Hill";
+        final ZonedDateTime sittingDay = ZonedDateTime.now();
+        final ZonedDateTime sittingDayInProgression = ZonedDateTime.now().plusDays(2);
+        final Hearing hearing = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(courtApplicationId).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).withName(courtCentreName).build())
+                .withType(HearingType.hearingType().withId(hearingTypeId).build())
+                .withJurisdictionType(CROWN)
+                .withReportingRestrictionReason(reportRestrictionReason)
+                .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .build();
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(courtApplicationId).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreIdInProgression).withName(courtCentreNameInProgression).build())
+                .withType(HearingType.hearingType().withId(hearingTypeId).build())
+                .withJurisdictionType(CROWN)
+                .withReportingRestrictionReason(reportRestrictionReason)
+                .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(sittingDayInProgression).build()))
+                .build();
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(SEEDING_HEARING_ID)
+                .build();
+        final ListNextHearings listNextHearings = partialHearingConfirmService.transformToListNextCourtHearing(buildDeltaProsecutionCases(), hearing, hearingInProgression, seedingHearing);
+
+        final HearingListingNeeds hearingListingNeeds = listNextHearings.getHearings().get(0);
+        assertThat(hearingListingNeeds.getId(), notNullValue());
+        assertThat(hearingListingNeeds.getCourtApplications().get(0).getId(), equalTo(courtApplicationId));
+        assertThat(hearingListingNeeds.getCourtCentre().getId(), equalTo(hearingInProgression.getCourtCentre().getId()));
+        assertThat(hearingListingNeeds.getCourtCentre().getName(), equalTo(hearingInProgression.getCourtCentre().getName()));
+        assertThat(hearingListingNeeds.getType().getId(), equalTo(hearingTypeId));
+        assertThat(hearingListingNeeds.getJurisdictionType(), equalTo(CROWN));
+        assertThat(hearingListingNeeds.getReportingRestrictionReason(), equalTo(reportRestrictionReason));
+        assertThat(hearingListingNeeds.getEstimatedMinutes(), equalTo(30));
+        assertThat(hearingListingNeeds.getEarliestStartDateTime(), equalTo(sittingDayInProgression));
+
+        final List<ProsecutionCase> prosecutionCases = hearingListingNeeds.getProsecutionCases();
+        assertThat(prosecutionCases.size(), equalTo(1));
+        assertThat(prosecutionCases.get(0).getId(), equalTo(CASE1_ID));
+
+        assertThat(listNextHearings.getHearingId(), is(SEEDING_HEARING_ID));
+    }
+
+    @Test
+    public void shouldTransformToListNextCourtHearingWhenHearingDaysNull() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final UUID courtCentreIdInProgression = randomUUID();
+        final UUID hearingTypeId = randomUUID();
+        final String reportRestrictionReason = "reportRestrictionReason";
+        final String courtCentreName = "courtCentreName";
+        final String courtCentreNameInProgression = "Lavender Hill";
+        final ZonedDateTime sittingDay = ZonedDateTime.now();
+        final ZonedDateTime sittingDayInProgression = ZonedDateTime.now().plusDays(2);
+        final Hearing hearing = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(courtApplicationId).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).withName(courtCentreName).build())
+                .withType(HearingType.hearingType().withId(hearingTypeId).build())
+                .withJurisdictionType(CROWN)
+                .withReportingRestrictionReason(reportRestrictionReason)
+                .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .build();
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(courtApplicationId).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreIdInProgression).withName(courtCentreNameInProgression).build())
+                .withType(HearingType.hearingType().withId(hearingTypeId).build())
+                .withJurisdictionType(CROWN)
+                .withReportingRestrictionReason(reportRestrictionReason)
+                .build();
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(SEEDING_HEARING_ID)
+                .build();
+        final ListNextHearings listNextHearings = partialHearingConfirmService.transformToListNextCourtHearing(buildDeltaProsecutionCases(), hearing, hearingInProgression, seedingHearing);
+
+        final HearingListingNeeds hearingListingNeeds = listNextHearings.getHearings().get(0);
+        assertThat(hearingListingNeeds.getId(), notNullValue());
+        assertThat(hearingListingNeeds.getCourtApplications().get(0).getId(), equalTo(courtApplicationId));
+        assertThat(hearingListingNeeds.getCourtCentre().getId(), equalTo(hearingInProgression.getCourtCentre().getId()));
+        assertThat(hearingListingNeeds.getCourtCentre().getName(), equalTo(hearingInProgression.getCourtCentre().getName()));
+        assertThat(hearingListingNeeds.getType().getId(), equalTo(hearingTypeId));
+        assertThat(hearingListingNeeds.getJurisdictionType(), equalTo(CROWN));
+        assertThat(hearingListingNeeds.getReportingRestrictionReason(), equalTo(reportRestrictionReason));
+        assertThat(hearingListingNeeds.getEstimatedMinutes(), equalTo(30));
+        assertThat(hearingListingNeeds.getEarliestStartDateTime(), nullValue());
+
+        final List<ProsecutionCase> prosecutionCases = hearingListingNeeds.getProsecutionCases();
+        assertThat(prosecutionCases.size(), equalTo(1));
+        assertThat(prosecutionCases.get(0).getId(), equalTo(CASE1_ID));
+
+        assertThat(listNextHearings.getHearingId(), is(SEEDING_HEARING_ID));
+
+
+    }
+
+
+    @Test
+    public void shouldGetDeltaSeededProsecutionCases() {
+        final UUID seedingHearingId = randomUUID();
+        final UUID seedingHearingId2 = randomUUID();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(seedingHearingId).withJurisdictionType(CROWN).build();
+        final SeedingHearing seedingHearing2 = SeedingHearing.seedingHearing().withSeedingHearingId(seedingHearingId2).withJurisdictionType(CROWN).build();
+
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases( new ArrayList<>(Arrays.asList(
+                        ConfirmedProsecutionCase.confirmedProsecutionCase()
+                                .withId(CASE1_ID)
+                                .withDefendants(new ArrayList<>(Arrays.asList(ConfirmedDefendant.confirmedDefendant()
+                                        .withId(CASE1_DEFENDANT1_ID)
+                                        .withOffences(new ArrayList<>(Arrays.asList(ConfirmedOffence.confirmedOffence()
+                                                .withId(CASE1_DEFENDANT1_OFFENCE3_ID)
+                                                .withSeedingHearing(seedingHearing)
+                                                .build()
+                                        )))
+                                        .build())))
+                                .build()
+                )))
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(CASE1_ID)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                                .withId(CASE1_DEFENDANT1_ID)
+                                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                                .withId(CASE1_DEFENDANT1_OFFENCE1_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(CASE1_DEFENDANT1_OFFENCE2_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(CASE1_DEFENDANT1_OFFENCE3_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build())))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(CASE1_DEFENDANT2_ID)
+                                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                                .withId(CASE1_DEFENDANT2_OFFENCE1_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(CASE1_DEFENDANT2_OFFENCE2_ID)
+                                                                .withSeedingHearing(seedingHearing2)
+                                                                .build())))
+                                                .build())))
+                                .build(),
+                        ProsecutionCase.prosecutionCase()
+                                .withId(CASE2_ID)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                        .withId(CASE2_DEFENDANT1_ID)
+                                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                .withId(CASE2_DEFENDANT1_OFFENCE1_ID)
+                                                .withSeedingHearing(seedingHearing2)
+                                                .build())))
+                                        .build())))
+                                .build()
+                )))
+                .build();
+
+        final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDeltaSeededProsecutionCases(confirmedHearing, hearingInProgression, seedingHearing);
+
+        assertThat(deltaProsecutionCases.size(), is(1));
+        final ProsecutionCase prosecutionCase = deltaProsecutionCases.get(0);
+        assertThat(prosecutionCase.getId(), is(CASE1_ID));
+        assertThat(prosecutionCase.getDefendants().size(), is(2));
+        final Defendant defendant1 = prosecutionCase.getDefendants().get(0);
+        assertThat(defendant1.getId(), is(CASE1_DEFENDANT1_ID));
+        assertThat(defendant1.getOffences().size(), is(2));
+        assertThat(defendant1.getOffences().get(0).getId(), is(CASE1_DEFENDANT1_OFFENCE1_ID));
+        assertThat(defendant1.getOffences().get(1).getId(), is(CASE1_DEFENDANT1_OFFENCE2_ID));
+        final Defendant defendant2 = prosecutionCase.getDefendants().get(1);
+        assertThat(defendant2.getId(), is(CASE1_DEFENDANT2_ID));
+        assertThat(defendant2.getOffences().size(), is(1));
+        assertThat(defendant2.getOffences().get(0).getId(), is(CASE1_DEFENDANT2_OFFENCE1_ID));
+    }
+
+    @Test
+    public void shouldGetRelatedSeedingHearingsProsecutionCasesMap(){
+        final UUID seedingHearingId = randomUUID();
+        final UUID seedingHearingId2 = randomUUID();
+        final UUID seedingHearingId3 = randomUUID();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .withJurisdictionType(CROWN)
+                .build();
+        final SeedingHearing seedingHearing2 = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId2)
+                .withJurisdictionType(CROWN)
+                .build();
+        final SeedingHearing seedingHearing3 = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId3)
+                .withJurisdictionType(CROWN)
+                .build();
+
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases( new ArrayList<>(Arrays.asList(
+                        ConfirmedProsecutionCase.confirmedProsecutionCase()
+                                .withId(CASE1_ID)
+                                .withDefendants(new ArrayList<>(Arrays.asList(ConfirmedDefendant.confirmedDefendant()
+                                        .withId(CASE1_DEFENDANT1_ID)
+                                        .withOffences(new ArrayList<>(Arrays.asList(ConfirmedOffence.confirmedOffence()
+                                                        .withId(CASE1_DEFENDANT1_OFFENCE3_ID)
+                                                        .withSeedingHearing(seedingHearing)
+                                                        .build()
+                                        )))
+                                        .build())))
+                                .build()
+                )))
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(CASE1_ID)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                                .withId(CASE1_DEFENDANT1_ID)
+                                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                                .withId(CASE1_DEFENDANT1_OFFENCE1_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(CASE1_DEFENDANT1_OFFENCE2_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(CASE1_DEFENDANT1_OFFENCE3_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build())))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(CASE1_DEFENDANT2_ID)
+                                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                                .withId(CASE1_DEFENDANT2_OFFENCE1_ID)
+                                                                .withSeedingHearing(seedingHearing)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(CASE1_DEFENDANT2_OFFENCE2_ID)
+                                                                .withSeedingHearing(seedingHearing2)
+                                                                .build())))
+                                                .build())))
+                                .build(),
+                        ProsecutionCase.prosecutionCase()
+                                .withId(CASE2_ID)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                        .withId(CASE2_DEFENDANT1_ID)
+                                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                        .withId(CASE2_DEFENDANT1_OFFENCE1_ID)
+                                                        .withSeedingHearing(seedingHearing2)
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(CASE2_DEFENDANT1_OFFENCE2_ID)
+                                                        .withSeedingHearing(seedingHearing3)
+                                                        .build()
+                                        )))
+                                        .build())))
+                                .build()
+                )))
+                .build();
+
+
+        final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap =
+                partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearingInProgression, seedingHearing);
+        assertThat(relatedSeedingHearingsProsecutionCasesMap.size(), is(2));
+
+        final List<ProsecutionCase> seedingHearing2sProsecutionCases = relatedSeedingHearingsProsecutionCasesMap.get(seedingHearing2);
+        assertThat(seedingHearing2sProsecutionCases.size(), is(2));
+        final ProsecutionCase seedingHearing2sProsecutionCase = seedingHearing2sProsecutionCases.get(0);
+        assertThat(seedingHearing2sProsecutionCase.getId(), is(CASE1_ID));
+        assertThat(seedingHearing2sProsecutionCase.getDefendants().size(), is(1));
+        final Defendant seedingHearing2sDefendant = seedingHearing2sProsecutionCase.getDefendants().get(0);
+        assertThat(seedingHearing2sDefendant.getId(), is(CASE1_DEFENDANT2_ID));
+        assertThat(seedingHearing2sDefendant.getOffences().size(), is(1));
+        assertThat(seedingHearing2sDefendant.getOffences().get(0).getId(), is(CASE1_DEFENDANT2_OFFENCE2_ID));
+
+        final ProsecutionCase seedingHearing2sProsecutionCase2 = seedingHearing2sProsecutionCases.get(1);
+        assertThat(seedingHearing2sProsecutionCase2.getId(), is(CASE2_ID));
+        assertThat(seedingHearing2sProsecutionCase2.getDefendants().size(), is(1));
+        final Defendant seedingHearings2Defendant = seedingHearing2sProsecutionCase2.getDefendants().get(0);
+        assertThat(seedingHearings2Defendant.getId(), is(CASE2_DEFENDANT1_ID));
+        assertThat(seedingHearings2Defendant.getOffences().size(), is(1));
+        assertThat(seedingHearings2Defendant.getOffences().get(0).getId(), is(CASE2_DEFENDANT1_OFFENCE1_ID));
+
+
+        final List<ProsecutionCase> seedingHearing3sProsecutionCases = relatedSeedingHearingsProsecutionCasesMap.get(seedingHearing3);
+        assertThat(seedingHearing3sProsecutionCases.size(), is(1));
+        final ProsecutionCase seeding3sProsecutionCase = seedingHearing3sProsecutionCases.get(0);
+        assertThat(seeding3sProsecutionCase.getId(), is(CASE2_ID));
+        assertThat(seeding3sProsecutionCase.getDefendants().size(), is(1));
+        final Defendant seedingHearing3sDefendant = seeding3sProsecutionCase.getDefendants().get(0);
+        assertThat(seedingHearing3sDefendant.getId(), is(CASE2_DEFENDANT1_ID));
+        assertThat(seedingHearing3sDefendant.getOffences().size(), is(1));
+        assertThat(seedingHearing3sDefendant.getOffences().get(0).getId(), is(CASE2_DEFENDANT1_OFFENCE2_ID));
     }
 
     private List<ProsecutionCase> buildDeltaProsecutionCases() {

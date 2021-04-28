@@ -267,6 +267,15 @@ rule "Query - Access control for  progression.query.application"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.application-only"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.application-only");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Second Line Support", "Court Associate", "Eject Case Group"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.application.aaag"
   when
     $outcome: Outcome();

@@ -95,3 +95,15 @@ Feature: CaseAggregate
     Given no previous events
     When you assignDefendantRequestToExtendHearing on a HearingAggregate with a assign defendant request to extend hearing
     Then defendant request to extend hearing created
+
+  Scenario: Remove a prosecution case association with hearing when a hearing is deleted
+
+    Given prosecution case created
+    When you deleteHearingRelatedToProsecutionCase on a CaseAggregate with a delete hearing related to case
+    Then hearing deleted for prosecution case
+
+  Scenario: Remove a hearing when a hearing is deleted
+
+    Given hearing is resulted
+    When you deleteHearing on a HearingAggregate with a delete hearing
+    Then hearing deleted

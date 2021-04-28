@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.TypeOfList;
 
 import java.util.ArrayList;
@@ -51,6 +52,30 @@ public class UnscheduledCourtHearingListTransformer {
             hearing.getProsecutionCases().stream().forEach(
                     prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
                             defendant -> hearingUnscheduledListingNeeds.addAll(transformDefendant(hearing, prosecutionCase, defendant))
+                    )
+            );
+
+        }
+
+        return hearingUnscheduledListingNeeds;
+    }
+
+    public List<HearingUnscheduledListingNeeds> transformWithSeedHearing(final Hearing hearing, final SeedingHearing seedingHearing) {
+        final List<HearingUnscheduledListingNeeds> hearingUnscheduledListingNeeds = new ArrayList<>();
+        if (hearing.getCourtApplications() != null) {
+            hearing.getCourtApplications().stream()
+                    .filter(ca -> nonNull(ca.getJudicialResults()))
+                    .forEach(courtApplication -> {
+                        final Optional<HearingUnscheduledListingNeeds> item = transformCourtApplication(hearing, courtApplication);
+                        if (item.isPresent()) {
+                            hearingUnscheduledListingNeeds.add(item.get());
+                        }
+                    });
+        } else if (hearing.getProsecutionCases() != null) {
+
+            hearing.getProsecutionCases().stream().forEach(
+                    prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
+                            defendant -> hearingUnscheduledListingNeeds.addAll(transformDefendantWithSeedHearing(hearing, prosecutionCase, defendant, seedingHearing))
                     )
             );
 
@@ -118,6 +143,35 @@ public class UnscheduledCourtHearingListTransformer {
                 defendant.getOffences().stream()
                         .filter(offence -> nonNull(offence.getJudicialResults()))
                         .map(offence -> transformDefendantOffence(originalHearing, prosecutionCase, defendant, offence))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.groupingBy(o -> o.getTypeOfList().getId()));
+
+        uuidListMap.forEach((key, value) -> {
+            if (value.size() > 1) {
+                final Optional<HearingUnscheduledListingNeeds> listingNeeds = mergeListingNeedsWithSameTypeOfList(originalHearing, prosecutionCase, defendant, value);
+                listingNeeds.ifPresent(hearingUnscheduledListingNeeds::add);
+
+            } else {
+                hearingUnscheduledListingNeeds.addAll(value);
+            }
+        });
+
+        return hearingUnscheduledListingNeeds;
+    }
+
+    private List<HearingUnscheduledListingNeeds> transformDefendantWithSeedHearing(final Hearing originalHearing,
+                                                                                   final ProsecutionCase prosecutionCase,
+                                                                                   final Defendant defendant,
+                                                                                   final SeedingHearing seedingHearing) {
+
+        final List<HearingUnscheduledListingNeeds> hearingUnscheduledListingNeeds = new ArrayList<>();
+
+        final Map<UUID, List<HearingUnscheduledListingNeeds>> uuidListMap =
+                defendant.getOffences().stream()
+                        .filter(offence -> nonNull(offence.getJudicialResults()))
+                        .map(offence -> Offence.offence().withValuesFrom(offence).withSeedingHearing(seedingHearing).build())
+                        .map(offenceWithSeedHearing -> transformDefendantOffence(originalHearing, prosecutionCase, defendant, offenceWithSeedHearing))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .collect(Collectors.groupingBy(o -> o.getTypeOfList().getId()));

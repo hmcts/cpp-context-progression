@@ -11,6 +11,8 @@ import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
+import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
+import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -40,23 +42,20 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class ListingService {
 
-    public static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
-    public static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
-    public static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
-    public static final String LISTING_ANY_ALLOCATION_SEARCH_HEARINGS = "listing.any-allocation.search.hearings";
+    private static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
+    private static final String LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS = "listing.list-next-hearings-v2";
+    private static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
+    private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
+    private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
+    private static final String LISTING_ANY_ALLOCATION_SEARCH_HEARINGS = "listing.any-allocation.search.hearings";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
-
-    @Inject
-    @ServiceComponent(EVENT_PROCESSOR)
-    private Enveloper enveloper;
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -70,14 +69,31 @@ public class ListingService {
 
     public void listCourtHearing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing) {
         final JsonObject listCourtHearingJson = objectToJsonObjectConverter.convert(listCourtHearing);
-        LOGGER.info(" Posting Send Case For Listing to listing '{}' ", listCourtHearingJson);
+        LOGGER.info("Posting Send Case For Listing to listing '{}' ", listCourtHearingJson);
         sender.send(Enveloper.envelop(listCourtHearingJson).withName(LISTING_COMMAND_SEND_CASE_FOR_LISTING).withMetadataFrom(jsonEnvelope));
+    }
+
+    public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearings listNextHearings) {
+        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Posting next hearings to listing for hearing '{}' ", listNextHearings.getHearingId());
+        }
+
+        sender.send(Enveloper.envelop(nextHearingsJson).withName(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
     }
 
     public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final ListUnscheduledCourtHearing listUnscheduledCourtHearing) {
         final JsonObject payloadJson = objectToJsonObjectConverter.convert(listUnscheduledCourtHearing);
-        LOGGER.info(" Posting UnscheduledCourtHearing to listing '{}' ", payloadJson);
+        LOGGER.info("Posting UnscheduledCourtHearing to listing '{}' ", payloadJson);
         sender.send(Enveloper.envelop(payloadJson).withName(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING).withMetadataFrom(jsonEnvelope));
+    }
+
+    public void listUnscheduledNextHearings(final JsonEnvelope jsonEnvelope, final ListUnscheduledNextHearings listUnscheduledNextHearings) {
+        LOGGER.info("Posting listUnscheduledNextHearings to listing for hearing '{}' ", listUnscheduledNextHearings.getHearingId());
+
+        final JsonObject payloadJson = objectToJsonObjectConverter.convert(listUnscheduledNextHearings);
+        sender.send(Enveloper.envelop(payloadJson).withName(LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS).withMetadataFrom(jsonEnvelope));
     }
 
     public List<UUID> getShadowListedOffenceIds(final JsonEnvelope jsonEnvelope, final UUID hearingId) {

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -9,12 +10,13 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -26,6 +28,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.StringReader;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,12 +51,16 @@ import org.slf4j.LoggerFactory;
 public class HearingResultEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultEventListener.class);
+
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
+
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
     @Inject
     private HearingRepository hearingRepository;
+
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
@@ -77,7 +84,7 @@ public class HearingResultEventListener {
         final HearingEntity currentHearingEntity = hearingRepository.findBy(hearingResulted.getHearing().getId());
         final JsonObject currentHearingJson = jsonFromString(currentHearingEntity.getPayload());
         final Hearing originalCurrentHearing = jsonObjectConverter.convert(currentHearingJson, Hearing.class);
-        final Hearing updatedHearing = getUpdatedHearingForResulted(hearingResulted.getHearing(), originalCurrentHearing);
+        final Hearing updatedHearing = getUpdatedHearingForResulted(hearingResulted.getHearing(), originalCurrentHearing, hearingResulted.getHearingDay());
         final String resultedHearingPayload = objectToJsonObjectConverter.convert(updatedHearing).toString();
         currentHearingEntity.setPayload(resultedHearingPayload);
         currentHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
@@ -231,11 +238,24 @@ public class HearingResultEventListener {
         }
     }
 
-    private Hearing getUpdatedHearingForResulted(final Hearing hearingFromPayload, final Hearing hearingFromDatabase) {
+    private Hearing getUpdatedHearingForResulted(final Hearing hearingFromPayload, final Hearing hearingFromDatabase, final LocalDate hearingDay) {
+
+        List<DefendantJudicialResult> resultsToBeAdded = null;
+
+        if (isNotEmpty(hearingFromDatabase.getDefendantJudicialResults())) {
+
+            resultsToBeAdded = getUpdatedDefendantJudicialResults(hearingFromPayload.getDefendantJudicialResults(), hearingFromDatabase.getDefendantJudicialResults(), hearingDay);
+
+        } else if (isNotEmpty(hearingFromPayload.getDefendantJudicialResults())) {
+
+            resultsToBeAdded = new ArrayList<>();
+            resultsToBeAdded.addAll(hearingFromPayload.getDefendantJudicialResults());
+
+        }
 
         final Hearing.Builder builder = Hearing.hearing();
-        if (isNotEmpty(hearingFromPayload.getProsecutionCases())) {
-            builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase));
+        if (nonNull(hearingFromPayload.getProsecutionCases()) && !hearingFromPayload.getProsecutionCases().isEmpty()) {
+            builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase, hearingDay));
         }
         return builder.withIsBoxHearing(hearingFromPayload.getIsBoxHearing())
                 .withId(hearingFromPayload.getId())
@@ -247,7 +267,7 @@ public class HearingResultEventListener {
                 .withCourtApplications(hearingFromPayload.getCourtApplications())
                 .withReportingRestrictionReason(hearingFromPayload.getReportingRestrictionReason())
                 .withJudiciary(hearingFromPayload.getJudiciary())
-                .withDefendantJudicialResults(hearingFromPayload.getDefendantJudicialResults())
+                .withDefendantJudicialResults(resultsToBeAdded)
                 .withDefendantAttendance(hearingFromPayload.getDefendantAttendance())
                 .withDefendantReferralReasons(hearingFromPayload.getDefendantReferralReasons())
                 .withHasSharedResults(hearingFromPayload.getHasSharedResults())
@@ -271,23 +291,23 @@ public class HearingResultEventListener {
         return list -> list.isEmpty() ? null : list;
     }
 
-    private List<ProsecutionCase> getUpdatedProsecutionCases(final Hearing hearingFromPayload, final Hearing hearingFromDatabase) {
+    private List<ProsecutionCase> getUpdatedProsecutionCases(final Hearing hearingFromPayload, final Hearing hearingFromDatabase, final LocalDate hearingDay) {
         return ofNullable(hearingFromPayload.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
-                .map(prosecutionCaseFromPayload -> getUpdatedProsecutionCase(prosecutionCaseFromPayload, hearingFromDatabase))
+                .map(prosecutionCaseFromPayload -> getUpdatedProsecutionCase(prosecutionCaseFromPayload, hearingFromDatabase, hearingDay))
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
     }
 
-    private ProsecutionCase getUpdatedProsecutionCase(final ProsecutionCase prosecutionCaseFromPayload, final Hearing hearingFromDatabase) {
+    private ProsecutionCase getUpdatedProsecutionCase(final ProsecutionCase prosecutionCaseFromPayload, final Hearing hearingFromDatabase, final LocalDate hearingDay) {
         final Optional<ProsecutionCase> optionalResultedCase = ofNullable(hearingFromDatabase.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .filter(resultedCase -> resultedCase.getId().equals(prosecutionCaseFromPayload.getId()))
                 .findFirst();
         if (optionalResultedCase.isPresent()) {
-            final ProsecutionCase originalProsecutionCase = optionalResultedCase.get();
+            final ProsecutionCase prosecutionCaseFromDatabase = optionalResultedCase.get();
             return ProsecutionCase.prosecutionCase()
                     .withPoliceOfficerInCase(prosecutionCaseFromPayload.getPoliceOfficerInCase())
                     .withProsecutionCaseIdentifier(prosecutionCaseFromPayload.getProsecutionCaseIdentifier())
                     .withId(prosecutionCaseFromPayload.getId())
-                    .withDefendants(getUpdatedDefendants(prosecutionCaseFromPayload))
+                    .withDefendants(getUpdatedDefendants(prosecutionCaseFromPayload, prosecutionCaseFromDatabase, hearingDay))
                     .withInitiationCode(prosecutionCaseFromPayload.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCaseFromPayload.getOriginatingOrganisation())
                     .withCpsOrganisation(prosecutionCaseFromPayload.getCpsOrganisation())
@@ -298,21 +318,32 @@ public class HearingResultEventListener {
                     .withAppealProceedingsPending(prosecutionCaseFromPayload.getAppealProceedingsPending())
                     .withBreachProceedingsPending(prosecutionCaseFromPayload.getBreachProceedingsPending())
                     .withRemovalReason(prosecutionCaseFromPayload.getRemovalReason())
-                    .withCaseStatus(originalProsecutionCase.getCaseStatus())
+                    .withCaseStatus(prosecutionCaseFromDatabase.getCaseStatus())
                     .build();
         } else {
             return prosecutionCaseFromPayload;
         }
     }
 
-    private List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCaseFromPayload) {
-        return prosecutionCaseFromPayload.getDefendants().stream().map(this::getUpdatedDefendant).collect(toList());
+    private List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCaseFromPayload, final ProsecutionCase prosecutionCaseFromDatabase, final LocalDate hearingDay) {
+        return prosecutionCaseFromPayload.getDefendants().stream()
+                .map(defendant -> getUpdatedDefendant(defendant, prosecutionCaseFromDatabase.getDefendants(), hearingDay))
+                .collect(toList());
     }
 
-    private Defendant getUpdatedDefendant(final Defendant defendantFromPayload) {
+    private Defendant getUpdatedDefendant(final Defendant defendantFromPayload, final List<Defendant> defendantsFromDatabase, final LocalDate hearingDay) {
 
+        final Optional<Defendant> defendantFromDatabaseOptional = defendantsFromDatabase.stream()
+                .filter(defendant -> defendant.getId().equals(defendantFromPayload.getId()))
+                .findFirst();
+
+        if (!defendantFromDatabaseOptional.isPresent()) {
+            return defendantFromPayload;
+        }
+
+        final Defendant defendantFromDatabase = defendantFromDatabaseOptional.get();
         return Defendant.defendant()
-                .withOffences(getUpdatedOffences(defendantFromPayload))
+                .withOffences(getUpdatedOffences(defendantFromPayload, defendantFromDatabase, hearingDay))
                 .withPersonDefendant(defendantFromPayload.getPersonDefendant())
                 .withLegalEntityDefendant(defendantFromPayload.getLegalEntityDefendant())
                 .withAssociatedPersons(defendantFromPayload.getAssociatedPersons())
@@ -338,14 +369,101 @@ public class HearingResultEventListener {
                 .build();
     }
 
-    private List<Offence> getUpdatedOffences(final Defendant defendant) {
-        return defendant.getOffences().stream().map(this::getUpdatedOffence).collect(toList());
+    private List<Offence> getUpdatedOffences(final Defendant defendantFromPayload, final Defendant defendantFromDatabase, final LocalDate hearingDay) {
+
+        return defendantFromPayload.getOffences().stream()
+                .map(offence -> getUpdatedOffence(offence, defendantFromDatabase.getOffences(), hearingDay))
+                .collect(toList());
     }
 
-    private Offence getUpdatedOffence(final Offence originOffence) {
-        return Offence.offence().withValuesFrom(originOffence)
-                .withJudicialResults(getNonNowsResults(originOffence.getJudicialResults()))
+    private Offence getUpdatedOffence(final Offence offenceFromPayload, final List<Offence> offencesFromDatabase, final LocalDate hearingDay) {
+
+        final Optional<Offence> offenceFromDatabaseOptional = offencesFromDatabase.stream()
+                .filter(offence -> offence.getId().equals(offenceFromPayload.getId()))
+                .findFirst();
+
+        if (!offenceFromDatabaseOptional.isPresent()) {
+            return offenceFromPayload;
+        }
+
+        final Offence offenceFromDatabase = offenceFromDatabaseOptional.get();
+
+        List<JudicialResult> resultsToBeAdded = null;
+
+        if (isNotEmpty(offenceFromDatabase.getJudicialResults())) {
+
+            resultsToBeAdded = getUpdatedJudicialResults(offenceFromPayload.getJudicialResults(), offenceFromDatabase.getJudicialResults(), hearingDay);
+
+        } else if (isNotEmpty(offenceFromPayload.getJudicialResults())) {
+
+            resultsToBeAdded = new ArrayList<>();
+            resultsToBeAdded.addAll(offenceFromPayload.getJudicialResults());
+        }
+        return Offence.offence().withValuesFrom(offenceFromPayload)
+                .withJudicialResults(getNonNowsResults(resultsToBeAdded))
                 .build();
+    }
+
+    /**
+     * Remove judicial results from the view store and add new judicial results from the payload for
+     * the given day.
+     *
+     * @param judicialResultsFromPayload  judicial results from the payload.
+     * @param judicialResultsFromDatabase judicial results from the view store.
+     * @param hearingDay                  for newer events the hearingDay will not be null and for
+     *                                    older events the hearingDay will be null. The below
+     *                                    filtering logic will be applicable only for newer events.
+     *                                    For older events, the entire list of judicial results from
+     *                                    the payload will be stored in view store.
+     * @return
+     */
+    private List<JudicialResult> getUpdatedJudicialResults(final List<JudicialResult> judicialResultsFromPayload, final List<JudicialResult> judicialResultsFromDatabase, final LocalDate hearingDay) {
+
+        if (isNull(hearingDay)) {
+            return judicialResultsFromPayload;
+        }
+
+        final List<JudicialResult> existingResultsFromOtherDays = judicialResultsFromDatabase.stream()
+                .filter(judicialResult -> !hearingDay.isEqual(judicialResult.getOrderedDate()))
+                .collect(toList());
+
+        if (isNotEmpty(judicialResultsFromPayload)) {
+            existingResultsFromOtherDays.addAll(judicialResultsFromPayload);
+        }
+
+        return isNotEmpty(existingResultsFromOtherDays) ? existingResultsFromOtherDays : null;
+
+    }
+
+    /**
+     * Remove defendant judicial results from the view store and add new defendant judicial results
+     * from the payload for the given day.
+     *
+     * @param resultsFromPayload  defendant judicial results from the payload.
+     * @param resultsFromDatabase defendant judicial results from the view store.
+     * @param hearingDay          for newer events the hearingDay will not be null and for older
+     *                            events the hearingDay will be null. The below filtering logic will
+     *                            be applicable only for newer events. For older events, the entire
+     *                            list of judicial results from the payload will be stored in view
+     *                            store.
+     * @return
+     */
+    private List<DefendantJudicialResult> getUpdatedDefendantJudicialResults(final List<DefendantJudicialResult> resultsFromPayload, final List<DefendantJudicialResult> resultsFromDatabase, final LocalDate hearingDay) {
+
+        if (isNull(hearingDay)) {
+            return resultsFromPayload;
+        }
+
+        final List<DefendantJudicialResult> existingResultsFromOtherDays = resultsFromDatabase.stream()
+                .filter(defendantJudicialResult -> !hearingDay.isEqual(defendantJudicialResult.getJudicialResult().getOrderedDate()))
+                .collect(toList());
+
+        if (isNotEmpty(resultsFromPayload)) {
+            existingResultsFromOtherDays.addAll(resultsFromPayload);
+        }
+
+        return isNotEmpty(existingResultsFromOtherDays) ? existingResultsFromOtherDays : null;
+
     }
 
     private List<JudicialResult> getNonNowsResults(final List<JudicialResult> judicialResults) {

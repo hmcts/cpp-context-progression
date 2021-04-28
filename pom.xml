@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>10.3.6</version>
+        <version>10.3.8</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -43,18 +43,18 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>7.0.44</referencedata.version>
-        <listing.version>7.0.59</listing.version>
-        <hearing.version>7.0.90</hearing.version>
-        <usersgroups.version>7.0.23</usersgroups.version>
+        <listing.version>7.0.65</listing.version>
+        <hearing.version>7.0.92</hearing.version>
+        <usersgroups.version>7.0.25</usersgroups.version>
         <defence.version>7.0.1</defence.version>
         <referencedata.offence.version>7.0.4</referencedata.offence.version>
-        <coredomain.version>1.0.148</coredomain.version>
+        <coredomain.version>1.0.152</coredomain.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
-        <results.version>7.0.41</results.version>
+        <results.version>7.0.51</results.version>
         <notification.notify.version>7.0.7</notification.notify.version>
-        <unifiedsearch.version>7.0.10</unifiedsearch.version>
+        <unifiedsearch.version>7.0.14</unifiedsearch.version>
         <systemdocgenerator.version>7.0.1</systemdocgenerator.version>
         <applicationscourtorders.version>7.0.1</applicationscourtorders.version>
         <sjp.version>7.0.22</sjp.version>

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -11,13 +12,13 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.HearingApplicationLinkCreatedListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
@@ -51,25 +52,16 @@ public class HearingApplicationLinkCreatedListenerTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
-
-    @Mock
     private HearingApplicationRepository repository;
 
     @Mock
     private JsonEnvelope envelope;
-
-    @Mock
-    private JsonObject jsonObject;
 
     @Captor
     private ArgumentCaptor<HearingApplicationEntity> argumentCaptor;
 
     @Mock
     private JsonObject payload;
-
-    @Mock
-    private Metadata metadata;
 
     @InjectMocks
     private HearingApplicationLinkCreatedListener eventListener;
@@ -146,6 +138,28 @@ public class HearingApplicationLinkCreatedListenerTest {
 
         assertThat(argumentCaptor.getValue().getHearing().getPayload().contains("PublishedForNowsTrue"), is(false));
         assertThat(argumentCaptor.getValue().getHearing().getPayload().contains("PublishedForNowsFalse"), is(true));
+    }
+
+    @Test
+    public void shouldDeleteHearingForCourtApplication() {
+
+        HearingDeletedForCourtApplication hearingDeletedForCourtApplication
+                = HearingDeletedForCourtApplication.hearingDeletedForCourtApplication()
+                .withCourtApplicationId(APPLICATION_ID)
+                .withHearingId(HEARING_ID)
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingDeletedForCourtApplication.class))
+                .thenReturn(hearingDeletedForCourtApplication);
+
+        eventListener.processHearingDeletedForCourtApplicationEvent(envelope);
+        ArgumentCaptor<UUID> hearingIdArgumentCaptor = ArgumentCaptor.forClass(UUID.class);
+        ArgumentCaptor<UUID> courtApplicationIdArgumentCaptor = ArgumentCaptor.forClass(UUID.class);
+        verify(repository, times(1)).removeByHearingIdAndCourtApplicationId(hearingIdArgumentCaptor.capture(), courtApplicationIdArgumentCaptor.capture());
+
+        assertThat(hearingIdArgumentCaptor.getValue(), is(HEARING_ID));
+        assertThat(courtApplicationIdArgumentCaptor.getValue(), is(APPLICATION_ID));
     }
 
     private List<CourtApplication> getCourtApplications(final List<JudicialResult> judicialResults) {

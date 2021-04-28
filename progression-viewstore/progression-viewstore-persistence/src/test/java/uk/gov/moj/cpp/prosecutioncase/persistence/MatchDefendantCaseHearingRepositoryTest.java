@@ -8,11 +8,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity;
@@ -21,13 +16,21 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-import javax.inject.Inject;
-import javax.json.Json;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.Json;
+
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
 public class MatchDefendantCaseHearingRepositoryTest {
@@ -49,16 +52,15 @@ public class MatchDefendantCaseHearingRepositoryTest {
     private HearingRepository hearingRepository;
 
     @Before
-    public void setup(){
+    public void setup() {
         saveEntity(DEFENDANT_ID, MASTER_DEFENDANT_ID, PROSECUTION_CASE_ID, HEARING_ID, RESULT_ID);
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         removeEntity(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
         removeEntity(NEW_HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
     }
-
 
 
     @Test
@@ -136,6 +138,20 @@ public class MatchDefendantCaseHearingRepositoryTest {
 
         assertTrue(actual1.isPresent());
         assertTrue(actual2.isPresent());
+    }
+
+    @Test
+    public void shouldRemoveByHearingIdAndCaseIdAndDefendantId() {
+        matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(PROSECUTION_CASE_ID, DEFENDANT_ID);
+        assertThat(matchDefendantCaseHearingEntities.size(), is(0));
+    }
+
+    @Test
+    public void shouldRemoveByHearingId() {
+        matchDefendantCaseHearingRepository.removeByHearingId(HEARING_ID);
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(PROSECUTION_CASE_ID, DEFENDANT_ID);
+        assertThat(matchDefendantCaseHearingEntities.size(), is(0));
     }
 
     private void saveEntity(UUID defendantId, UUID masterDefendantId, UUID prosecutionCaseId, UUID hearingId, UUID resultId) {

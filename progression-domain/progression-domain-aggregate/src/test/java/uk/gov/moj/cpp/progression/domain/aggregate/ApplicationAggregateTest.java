@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.domain.aggregate;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -33,13 +34,13 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,7 +65,7 @@ public class ApplicationAggregateTest {
         final List<Object> eventStream = aggregate.referApplicationToCourt(hearingListingNeeds).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(ApplicationReferredToCourt.class)));
+        assertThat(object.getClass(), is(equalTo(ApplicationReferredToCourt.class)));
     }
     
     /*@Test
@@ -86,7 +87,7 @@ public class ApplicationAggregateTest {
         final List<Object> eventStream = aggregate.updateApplicationStatus(UUID.randomUUID(), ApplicationStatus.LISTED).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(CourtApplicationStatusChanged.class)));
+        assertThat(object.getClass(), is(equalTo(CourtApplicationStatusChanged.class)));
     }
 
     @Test
@@ -95,7 +96,7 @@ public class ApplicationAggregateTest {
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(CourtApplicationCreated.class)));
+        assertThat(object.getClass(), is(equalTo(CourtApplicationCreated.class)));
     }
 
     @Test
@@ -106,7 +107,7 @@ public class ApplicationAggregateTest {
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(CourtApplicationAddedToCase.class)));
+        assertThat(object.getClass(), is(equalTo(CourtApplicationAddedToCase.class)));
     }
 
     @Test
@@ -115,7 +116,7 @@ public class ApplicationAggregateTest {
                 (Hearing.hearing().build(), UUID.randomUUID(), HearingListingStatus.HEARING_INITIALISED).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(HearingApplicationLinkCreated.class)));
+        assertThat(object.getClass(), is(equalTo(HearingApplicationLinkCreated.class)));
     }
 
     @Test
@@ -123,7 +124,7 @@ public class ApplicationAggregateTest {
         final List<Object> eventStream = aggregate.ejectApplication(randomUUID(), "Legal").collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(ApplicationEjected.class)));
+        assertThat(object.getClass(), is(equalTo(ApplicationEjected.class)));
     }
 
     @Test
@@ -144,7 +145,7 @@ public class ApplicationAggregateTest {
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
-        assertThat(courtApplicationProceedingsInitiated.getClass(), is(CoreMatchers.equalTo(CourtApplicationProceedingsInitiated.class)));
+        assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
     }
 
     @Test
@@ -159,7 +160,7 @@ public class ApplicationAggregateTest {
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
-        assertThat(courtApplicationProceedingsInitiated.getClass(), is(CoreMatchers.equalTo(CourtApplicationProceedingsInitiated.class)));
+        assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
     }
 
     @Test
@@ -173,7 +174,7 @@ public class ApplicationAggregateTest {
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.equalTo(CourtApplicationProceedingsEdited.class)));
+        assertThat(object.getClass(), is(equalTo(CourtApplicationProceedingsEdited.class)));
     }
 
     @Test
@@ -305,5 +306,23 @@ public class ApplicationAggregateTest {
         assertThat(convictionDateRemoved.getCourtApplicationId(), is(courtApplicationId));
 
         assertThat(aggregate.getCourtApplication().getConvictionDate(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldRaiseHearingDeletedForCourtApplication() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+
+        final List<Object> eventStream = aggregate.deleteHearingRelatedToCourtApplication(hearingId, courtApplicationId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(HearingDeletedForCourtApplication.class)));
+
+        final HearingDeletedForCourtApplication hearingDeletedForCourtApplication = (HearingDeletedForCourtApplication) object;
+        assertThat(hearingDeletedForCourtApplication.getHearingId(), is(equalTo(hearingId)));
+        assertThat(hearingDeletedForCourtApplication.getCourtApplicationId(), is(equalTo(courtApplicationId)));
     }
 }

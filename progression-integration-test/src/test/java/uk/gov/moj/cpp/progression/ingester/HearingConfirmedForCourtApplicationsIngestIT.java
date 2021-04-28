@@ -129,7 +129,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
+    @Ignore("Will be fixed as part of CPI-353, Needs to work with new public.event.hearing.hearing-resulted event from AmendAndReshare feature, see Jira for details")
     @Test
     public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearings() throws Exception {
 

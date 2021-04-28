@@ -28,7 +28,9 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
+import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -45,7 +47,9 @@ import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTra
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -115,24 +119,7 @@ public class HearingConfirmedEventProcessor {
                     .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing))
                     .build();
 
-            final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
-
-            if (isNotEmpty(deltaProsecutionCases)) {
-                final UpdateHearingForPartialAllocation updateHearingForPartialAllocation=partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(confirmedHearing.getId(), deltaProsecutionCases);
-                progressionService.updateHearingForPartialAllocation(jsonEnvelope, updateHearingForPartialAllocation);
-                final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
-                listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
-
-                for (final HearingListingNeeds hearingListingNeeds : listCourtHearing.getHearings()) {
-                    final JsonObject command = objectToJsonObjectConverter.convert(AssignDefendantRequestFromCurrentHearingToExtendHearing.assignDefendantRequestFromCurrentHearingToExtendHearing()
-                            .withCurrentHearingId(hearingInitiate.getHearing().getId())
-                            .withExtendHearingId(hearingListingNeeds.getId())
-                            .build());
-                    final JsonEnvelope payload = enveloper.withMetadataFrom(jsonEnvelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing").apply(command);
-                    sender.send(payload);
-                }
-                progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, seedingHearing);
-            }
+            final List<ProsecutionCase> deltaProsecutionCases = processDeltaProsecutionCases(jsonEnvelope, confirmedHearing, hearingInProgression, seedingHearing, hearingInitiate);
 
             final List<UUID> applicationIds = confirmedHearing.getCourtApplicationIds();
             final List<ConfirmedProsecutionCase> confirmedProsecutionCases = confirmedHearing.getProsecutionCases();
@@ -172,6 +159,83 @@ public class HearingConfirmedEventProcessor {
 
             progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate, deltaProsecutionCases);
         }
+    }
+
+
+    /**
+     * If partial allocation is happened in confirm process, a new list hearing request generated for the left over prosecutionCases.
+     * Regarding the hearing seeded or not, it calls listNextCourtHearings or listCourtHearing.
+     * And also if the hearing has related seededHearing , related seededHearingsProsecutionCases is removed from deltaProsecutionCases
+     *  and the related seed process raises for each related seedingHearing
+     *
+     * @param jsonEnvelope
+     * @param confirmedHearing
+     * @param hearingInProgression
+     * @param seedingHearing
+     * @param hearingInitiate
+     * */
+    private List<ProsecutionCase> processDeltaProsecutionCases(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression, final SeedingHearing seedingHearing, final Initiate hearingInitiate) {
+        final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
+
+        if (isNotEmpty(deltaProsecutionCases)) {
+            updateHearingForPartialAllocation(jsonEnvelope, confirmedHearing, deltaProsecutionCases);
+            HearingListingNeeds newHearingForRemainingUnallocatedOffences;
+            if (nonNull(seedingHearing)) {
+                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDeltaSeededProsecutionCases(confirmedHearing, hearingInProgression, seedingHearing);
+                final ListNextHearings listNextHearings = partialHearingConfirmService.transformToListNextCourtHearing(deltaSeededProsecutionCases, hearingInitiate.getHearing(), hearingInProgression, seedingHearing);
+                listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
+                newHearingForRemainingUnallocatedOffences = listNextHearings.getHearings().get(0);
+                final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap = partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearingInProgression, seedingHearing);
+                processCommandUpdateRelatedHearing(jsonEnvelope, newHearingForRemainingUnallocatedOffences, relatedSeedingHearingsProsecutionCasesMap);
+
+            } else {
+                final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
+                listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
+                newHearingForRemainingUnallocatedOffences = listCourtHearing.getHearings().get(0);
+            }
+
+            assignDefendantRequestFromCurrentHearingToExtendHearing(jsonEnvelope, hearingInitiate, newHearingForRemainingUnallocatedOffences);
+
+            progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, Collections.singletonList(newHearingForRemainingUnallocatedOffences), seedingHearing);
+        }
+
+        return deltaProsecutionCases;
+    }
+
+
+    /**
+     *
+     *  if partial allocation happened in  seededHearing exists , the method  calls "command.update-related-hearing" for each related seedingHearing.
+     *
+     * @param jsonEnvelope
+     * @param hearingListingNeed
+     * @param relatedSeedingHearingsProsecutionCasesMap
+     * */
+    private void processCommandUpdateRelatedHearing(final JsonEnvelope jsonEnvelope, final HearingListingNeeds hearingListingNeed, final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap) {
+        for (final Map.Entry<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearing : relatedSeedingHearingsProsecutionCasesMap.entrySet()) {
+            final UpdateRelatedHearingCommand updateRelatedHearingCommand = UpdateRelatedHearingCommand.updateRelatedHearingCommand()
+                    .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
+                            .withId(hearingListingNeed.getId())
+                            .withProsecutionCases(relatedSeedingHearing.getValue())
+                            .build())
+                    .withSeedingHearing(relatedSeedingHearing.getKey())
+                    .build();
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.update-related-hearing").apply(objectToJsonObjectConverter.convert(updateRelatedHearingCommand)));
+        }
+    }
+
+    private void assignDefendantRequestFromCurrentHearingToExtendHearing(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate, final HearingListingNeeds hearingListingNeeds) {
+        final JsonObject command = objectToJsonObjectConverter.convert(AssignDefendantRequestFromCurrentHearingToExtendHearing.assignDefendantRequestFromCurrentHearingToExtendHearing()
+                .withCurrentHearingId(hearingInitiate.getHearing().getId())
+                .withExtendHearingId(hearingListingNeeds.getId())
+                .build());
+        final JsonEnvelope payload = enveloper.withMetadataFrom(jsonEnvelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing").apply(command);
+        sender.send(payload);
+    }
+
+    private void updateHearingForPartialAllocation(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final List<ProsecutionCase> deltaProsecutionCases) {
+        final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(confirmedHearing.getId(), deltaProsecutionCases);
+        progressionService.updateHearingForPartialAllocation(jsonEnvelope, updateHearingForPartialAllocation);
     }
 
     @Handles("progression.hearing-initiate-enriched")

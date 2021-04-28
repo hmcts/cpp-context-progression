@@ -38,7 +38,7 @@ public class HearingResultHelper {
         return prosecutionCasesContainNextHearingResults || courtApplicationsContainNextHearingResults;
     }
 
-    public List<JudicialResult> getAllJudicialResultsFromApplication(CourtApplication courtApplication){
+    public List<JudicialResult> getAllJudicialResultsFromApplication(final CourtApplication courtApplication){
         final List<JudicialResult> judicialResults = ofNullable(courtApplication.getJudicialResults()).orElseGet(ArrayList::new);
 
         ofNullable(courtApplication.getCourtOrder())

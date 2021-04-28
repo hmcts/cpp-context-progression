@@ -7,6 +7,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -48,6 +49,16 @@ public class HearingApplicationLinkCreatedListener {
         repository.save(transformHearingApplicationEntity
                 (hearingApplicationLinkCreated.getHearing(), hearingApplicationLinkCreated.getApplicationId(),
                         hearingApplicationLinkCreated.getHearingListingStatus()));
+    }
+
+    @Handles("progression.event.hearing-deleted-for-court-application")
+    public void processHearingDeletedForCourtApplicationEvent(final JsonEnvelope event) {
+
+        final HearingDeletedForCourtApplication hearingDeletedForCourtApplication
+                = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingDeletedForCourtApplication.class);
+
+        repository.removeByHearingIdAndCourtApplicationId(hearingDeletedForCourtApplication.getHearingId(), hearingDeletedForCourtApplication.getCourtApplicationId());
+
     }
 
     private HearingApplicationEntity transformHearingApplicationEntity(final Hearing hearing, final UUID applicationId,

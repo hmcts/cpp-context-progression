@@ -1,15 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
+
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
 import org.apache.deltaspike.data.api.SingleResultType;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
-
-import java.util.List;
-import java.util.UUID;
 
 @Repository
 public interface MatchDefendantCaseHearingRepository extends EntityRepository<MatchDefendantCaseHearingEntity, UUID> {
@@ -28,8 +29,12 @@ public interface MatchDefendantCaseHearingRepository extends EntityRepository<Ma
     List<MatchDefendantCaseHearingEntity> findByMasterDefendantId(List<UUID> masterDefendantId);
 
     @Modifying
-    @Query("delete from MatchDefendantCaseHearingEntity entity where entity.hearingId in (:hearingId) and entity.prosecutionCaseId in (:caseId) and entity.defendantId in (:defendantId)")
-    void removeByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
-                                                  @QueryParam("caseId") UUID caseId,
-                                                  @QueryParam("defendantId") UUID defendantId);
+    @Query("delete from MatchDefendantCaseHearingEntity entity where entity.hearingId = :hearingId and entity.prosecutionCaseId = :caseId and entity.defendantId = :defendantId")
+    void removeByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId, @QueryParam("caseId") UUID caseId, @QueryParam("defendantId") UUID defendantId);
+
+
+    @Modifying
+    @Query("delete from MatchDefendantCaseHearingEntity entity where entity.hearingId = :hearingId ")
+    void removeByHearingId(@QueryParam("hearingId") UUID hearingId);
+
 }

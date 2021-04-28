@@ -82,6 +82,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.hearing-result+json:
             example: !include json/progression.command.hearing-result.json
             schema:  !include json/schema/progression.command.hearing-result.json
+        application/vnd.progression.command.process-hearing-results+json:
+            example: !include json/progression.command.process-hearing-results.json
+            schema:  !include json/schema/progression.command.process-hearing-results.json
         application/vnd.progression.command-enrich-hearing-initiate+json:
             example: !include json/progression.command-enrich-hearing-initiate.json
             schema: !include json/schema/progression.command-enrich-hearing-initiate.json
@@ -203,7 +206,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.assign-defendant-request-to-extend-hearing+json:
           example: !include json/progression.command.assign-defendant-request-to-extend-hearing.json
           schema: !include json/schema/progression.command.assign-defendant-request-to-extend-hearing.json
-
+        application/vnd.progression.command.update-related-hearing+json:
+          example: !include json/progression.command.update-related-hearing.json
+          schema: !include json/schema/progression.command.update-related-hearing.json
         application/vnd.progression.command.add-now-document-request+json:
           example:  !include json/progression.command.add-now-document-request.json
           schema: !include json/schema/progression.command.add-now-document-request.json
@@ -271,6 +276,18 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-case-for-cps-prosecutor+json:
             schema: !include json/schema/progression.command.update-case-for-cps-prosecutor.json
             example: !include json/progression.command.update-case-for-cps-prosecutor.json
+
+        application/vnd.progression.command.remove-offences-from-existing-hearing+json:
+            schema: !include json/schema/progression.command.remove-offences-from-existing-hearing.json
+            example: !include json/progression.command.remove-offences-from-existing-hearing.json
+
+        application/vnd.progression.command.add-cases-for-updated-related-hearing+json:
+            schema: !include json/schema/progression.command.add-cases-for-updated-related-hearing.json
+            example: !include json/progression.command.add-cases-for-updated-related-hearing.json
+
+        application/vnd.progression.command.store-booking-reference-court-schedule-ids+json:
+            schema: !include json/schema/progression.command.store-booking-reference-court-schedule-ids.json
+            example: !include json/progression.command.store-booking-reference-court-schedule-ids.json
 
         application/vnd.progression.command.create-hearing-application-request+json:
             example: !include json/progression.command.create-hearing-application-request.json
@@ -342,6 +359,18 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.mark-hearing-as-duplicate-for-case+json:
             example: !include json/progression.command.mark-hearing-as-duplicate-for-case.json
             schema:  !include json/schema/progression.command.mark-hearing-as-duplicate-for-case.json
+        application/vnd.progression.command.delete-hearing+json:
+            example: !include json/progression.command.delete-hearing.json
+            schema:  !include json/schema/progression.command.delete-hearing.json
+        application/vnd.progression.command.delete-hearing-for-prosecution-case+json:
+            example: !include json/progression.command.delete-hearing-for-prosecution-case.json
+            schema:  !include json/schema/progression.command.delete-hearing-for-prosecution-case.json
+        application/vnd.progression.command.delete-hearing-for-court-application+json:
+            example: !include json/progression.command.delete-hearing-for-court-application.json
+            schema:  !include json/schema/progression.command.delete-hearing-for-court-application.json
+        application/vnd.progression.command.remove-hearing-for-prosecution-case+json:
+            example: !include json/progression.command.remove-hearing-for-prosecution-case.json
+            schema:  !include json/schema/progression.command.remove-hearing-for-prosecution-case.json
 
 # Conviction Date
 

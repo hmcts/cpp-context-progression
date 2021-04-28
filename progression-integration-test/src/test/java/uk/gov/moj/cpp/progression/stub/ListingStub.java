@@ -9,11 +9,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -39,7 +41,12 @@ public class ListingStub {
     private static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
 
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE = "application/vnd.listing.command.list-unscheduled-court-hearing+json";
+
+    private static final String LISTING_HEARING_COMMAND_V2 = "/listing-service/command/api/rest/listing/hearings/";
+    public static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2 = "application/vnd.listing.list-unscheduled-next-hearings+json";
+
     private static final String LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
+    private static final String LISTING_NEXT_HEARING_V2_TYPE = "application/vnd.listing.next-hearings-v2+json";
 
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -53,6 +60,18 @@ public class ListingStub {
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader(CONTENT_TYPE, LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE)));
+
+        stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_NEXT_HEARING_V2_TYPE))
+                .willReturn(aResponse()
+                        .withStatus(ACCEPTED.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())));
+
+        stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2))
+                .willReturn(aResponse()
+                        .withStatus(ACCEPTED.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())));
 
         stubFor(get(urlPathEqualTo(LISTING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_OK)));
@@ -199,6 +218,27 @@ public class ListingStub {
         }
     }
 
+    public static void verifyPostListCourtHearingV2(final String applicationId) {
+        try {
+            waitAtMost(Duration.TEN_SECONDS).until(() ->
+                    getListCourtHearingRequestsAsStreamV2()
+                            .anyMatch(
+                                    payload -> {
+                                        if (payload.has("hearings") && payload.getJSONArray("hearings").getJSONObject(0).has("courtApplications")) {
+                                            JSONObject courtApplication = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplications").getJSONObject(0);
+                                            return courtApplication.getString("id").equals(applicationId);
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                            )
+            );
+        } catch (
+                Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
+        }
+    }
+
     public static String getPostListCourtHearing(final String applicationId) {
         try {
             return waitAtMost(Duration.TEN_SECONDS).until(() ->
@@ -232,6 +272,14 @@ public class ListingStub {
     private static Stream<JSONObject> getListCourtHearingRequestsAsStream() {
         return findAll(postRequestedFor(urlPathEqualTo(LISTING_COMMAND))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_COMMAND_TYPE)))
+                .stream()
+                .map(LoggedRequest::getBodyAsString)
+                .map(JSONObject::new);
+    }
+
+    private static Stream<JSONObject> getListCourtHearingRequestsAsStreamV2() {
+        return findAll(postRequestedFor(urlPathEqualTo(LISTING_HEARING_COMMAND_V2))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_NEXT_HEARING_V2_TYPE)))
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
                 .map(JSONObject::new);

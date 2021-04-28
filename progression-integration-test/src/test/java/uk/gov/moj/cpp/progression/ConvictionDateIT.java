@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -51,6 +52,7 @@ public class ConvictionDateIT extends AbstractIT {
     private static final String BAIL_STATUS_DESCRIPTION = "Remanded into Custody";
     private static final String BAIL_STATUS_ID = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -59,7 +61,7 @@ public class ConvictionDateIT extends AbstractIT {
     private ConvictionDateHelper helper;
     private String caseId;
     private String defendantId;
-    final String offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
+    private String offenceId;
 
     @BeforeClass
     public static void setUpClass() {
@@ -77,11 +79,14 @@ public class ConvictionDateIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         userId = randomUUID().toString();
+        offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
         helper = new ConvictionDateHelper(caseId, offenceId, null);
     }
 
     @Test
     public void shouldUpdateProsecutionCaseDefendant() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
@@ -108,6 +113,8 @@ public class ConvictionDateIT extends AbstractIT {
 
     @Test
     public void shouldUpdateOffenceUnderCourtApplicationCase() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
@@ -140,6 +147,8 @@ public class ConvictionDateIT extends AbstractIT {
 
     @Test
     public void shouldUpdateOffenceUnderCourtApplicationCourtOrder() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
@@ -171,6 +180,8 @@ public class ConvictionDateIT extends AbstractIT {
 
     @Test
     public void shouldUpdateCourtApplication() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         final String courtApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-standalone-application.json");
@@ -197,15 +208,46 @@ public class ConvictionDateIT extends AbstractIT {
 
     @Test
     public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdated() throws IOException {
+        enableAmendReshareFeature(false);
+
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
+                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED)
+                        .withUserId(userId)
+                        .build());
+
+        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
+
+        helper.addConvictionDate();
+        helper.verifyInActiveMQForConvictionDateChanged();
+        final Matcher[] convictionAddedMatchers = {
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].chargeDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate", is("2017-02-02"))
+        };
+        pollProsecutionCasesProgressionFor(caseId, convictionAddedMatchers);
+
+        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
+    }
+
+    @Test
+    public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdatedV2() throws IOException {
+        enableAmendReshareFeature(true);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED_V2, getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED_V2)
                         .withUserId(userId)
                         .build());
 
@@ -229,13 +271,14 @@ public class ConvictionDateIT extends AbstractIT {
     }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
-                                                          final String defendantId, final String courtCentreId, final String bailStatusCode,
-                                                          final String bailStatusDescription, final String bailStatusId) {
+                                                          final String defendantId, final String offenceId, final String courtCentreId,
+                                                          final String bailStatusCode, final String bailStatusDescription, final String bailStatusId) {
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("OFFENCE_ID", offenceId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("BAIL_STATUS_ID", bailStatusId)
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
@@ -252,4 +295,3 @@ public class ConvictionDateIT extends AbstractIT {
     }
 
 }
-

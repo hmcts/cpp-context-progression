@@ -15,7 +15,7 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 

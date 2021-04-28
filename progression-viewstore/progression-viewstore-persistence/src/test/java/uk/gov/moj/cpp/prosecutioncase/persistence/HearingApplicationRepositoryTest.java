@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.*;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 
 import javax.inject.Inject;
@@ -81,5 +80,16 @@ public class HearingApplicationRepositoryTest {
     public void shouldNotFailWhenHearingHasNoApplication() throws Exception {
         final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(UUID.randomUUID());
         assertThat(actual.size(), is(0));
+    }
+
+    @Test
+    public void shouldRemoveByHearingId() {
+
+        List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
+        assertThat(actual.size(), is(1));
+        hearingApplicationRepository.removeByHearingIdAndCourtApplicationId(HEARING_ID, APPLICATION_ID);
+        actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
+        assertThat(actual.size(), is(0));
+
     }
 }

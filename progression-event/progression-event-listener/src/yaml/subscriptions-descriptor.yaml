@@ -54,7 +54,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/progression.event.print-request-accepted.json
 
         - name: progression.event.hearing-resulted
-          schema_uri: http://justice.gov.uk/hearing/courts/hearing-resulted.json
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-resulted.json
 
         - name: progression.event.court-application-created
           schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
@@ -258,6 +258,17 @@ subscriptions_descriptor:
         - name: progression.event.hearing-marked-as-duplicate-for-case
           schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate-for-case.json
 
+        - name: progression.event.hearing-deleted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted.json
+
+        - name: progression.event.hearing-deleted-for-prosecution-case
+          schema_uri: http://justice.gov.uk/progression/courts/hearing-deleted-for-prosecution-case.json
+
+        - name: progression.event.hearing-deleted-for-court-application
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted-for-court-application.json
+
+        - name: progression.events.offences-removed-from-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
           # Deprecated API  - End
 
       event_source_name: progression

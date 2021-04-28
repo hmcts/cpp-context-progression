@@ -15,6 +15,9 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
       }
+    },
+    "hearingDay": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
     }
   },
   "required": [

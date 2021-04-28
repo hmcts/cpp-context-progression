@@ -5,10 +5,10 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.eq;
@@ -20,10 +20,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.listing.domain.CourtHouseType.MAGISTRATES;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_ANY_ALLOCATION_SEARCH_HEARINGS;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_CASE_FOR_LISTING;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING;
-import static uk.gov.moj.cpp.progression.service.ListingService.LISTING_SEARCH_HEARING;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CommittingCourt;
@@ -37,8 +33,10 @@ import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
+import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -47,7 +45,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.listing.domain.CourtHouseType;
 import uk.gov.moj.cpp.listing.domain.Defendant;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.HearingDay;
@@ -84,6 +81,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ListingServiceTest {
 
+    private static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
+    private static final String LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS = "listing.list-next-hearings-v2";
+    private static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
+    private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
+    private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
+    private static final String LISTING_ANY_ALLOCATION_SEARCH_HEARINGS = "listing.any-allocation.search.hearings";
+
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Mock
@@ -113,19 +117,19 @@ public class ListingServiceTest {
         //given
         ListCourtHearing listCourtHearing = getListCourtHearing();
 
-        final JsonObject ListCourtHearingJson = createObjectBuilder().build();
+        final JsonObject listcourthearingjson = createObjectBuilder().build();
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("referral").build(),
                 createObjectBuilder().build());
 
         final JsonEnvelope envelopeListCourtHearing = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_COMMAND_SEND_CASE_FOR_LISTING).build(),
-                ListCourtHearingJson);
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_COMMAND_SEND_CASE_FOR_LISTING).build(),
+                listcourthearingjson);
 
 
         when(objectToJsonObjectConverter.convert(any(ListCourtHearing.class)))
-                .thenReturn(ListCourtHearingJson);
+                .thenReturn(listcourthearingjson);
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
@@ -150,11 +154,11 @@ public class ListingServiceTest {
         final JsonObject listCourtHearingJson = Json.createObjectBuilder().build();
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
 
         final JsonEnvelope envelopeListCourtHearing = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING).build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING).build(),
                 listCourtHearingJson);
 
 
@@ -176,14 +180,32 @@ public class ListingServiceTest {
     }
 
     @Test
-    public void shouldGetShadowListedOffenceIds() {
-        final UUID hearingId = UUID.randomUUID();
-        final JsonEnvelope envelope = mock(JsonEnvelope.class);
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_SEARCH_HEARING).build();
+    public void shouldListUnscheduledNextHearings() {
+        final JsonObject unscheduledNextHearingsJson = createObjectBuilder().build();
+        when(objectToJsonObjectConverter.convert(any(ListUnscheduledNextHearings.class)))
+                .thenReturn(unscheduledNextHearingsJson);
 
-        final UUID offenceId1 = UUID.randomUUID();
-        final UUID offenceId2 = UUID.randomUUID();
-        final UUID offenceId3 = UUID.randomUUID();
+        final ListUnscheduledNextHearings unscheduledNextHearings = getListUnscheduledNextHearings();
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+        listingService.listUnscheduledNextHearings(jsonEnvelope, unscheduledNextHearings);
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
+        assertThat(metadata.name(), is(LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS));
+        assertThat(envelopeArgumentCaptor.getValue().payload(), is(unscheduledNextHearingsJson));
+
+        verifyNoMoreInteractions(sender);
+    }
+
+    @Test
+    public void shouldGetShadowListedOffenceIds() {
+        final UUID hearingId = randomUUID();
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING).build();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
 
         final Hearing hearing = Hearing.hearing()
                 .withListedCases(getListedCases(Stream.of(offenceId1, offenceId2, offenceId3).collect(toList()), null))
@@ -200,9 +222,9 @@ public class ListingServiceTest {
 
     @Test
     public void shouldGetFutureHearingsForCaseUrn() {
-        final UUID hearingId = UUID.randomUUID();
+        final UUID hearingId = randomUUID();
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
 
         final Hearing hearing1 = Hearing.hearing()
                 .withHearingDays(Arrays.asList(
@@ -238,9 +260,9 @@ public class ListingServiceTest {
 
     @Test
     public void shouldGetFutureHearingsForCaseUrnWithNoResults() {
-        final UUID hearingId = UUID.randomUUID();
+        final UUID hearingId = randomUUID();
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
 
         when(envelope.metadata()).thenReturn(metadata);
         when(requester.requestAsAdmin(any(Envelope.class), eq(HearingList.class))).thenReturn(Envelope.envelopeFrom(metadata, new HearingList()));
@@ -248,6 +270,25 @@ public class ListingServiceTest {
 
         verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(HearingList.class));
         assertThat(futureHearings.size(), is(0));
+    }
+
+    @Test
+    public void shouldListNextHearings() {
+        final JsonObject listNextHearingsJson = createObjectBuilder().build();
+        when(objectToJsonObjectConverter.convert(any(ListNextHearings.class)))
+                .thenReturn(listNextHearingsJson);
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+        final ListNextHearings listNextHearings = getListNextHearings();
+        listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
+
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
+        assertThat(metadata.name(), is(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS));
+        assertThat(envelopeArgumentCaptor.getValue().payload(), is(listNextHearingsJson));
+
+        verifyNoMoreInteractions(sender);
     }
 
     private List<ListedCase> getListedCases(List<UUID> offenceIds, uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt) {
@@ -282,18 +323,63 @@ public class ListingServiceTest {
     private ListCourtHearing getListCourtHearing() {
         return ListCourtHearing.listCourtHearing()
                 .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withCourtCentre(createCourtCenter())
                         .withCourtApplications(createCourtApplications())
                         .withEstimatedMinutes(15)
                         .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
-                                .withJudicialId(UUID.randomUUID())
+                                .withJudicialId(randomUUID())
                                 .build()))
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
-                                .withId(UUID.randomUUID())
+                                .withId(randomUUID())
                                 .build()))
                         .withType(HearingType.hearingType()
-                                .withId(UUID.randomUUID())
+                                .withId(randomUUID())
+                                .withDescription("SENTENCING")
+                                .build())
+
+                        .build()))
+                .build();
+    }
+
+    private ListNextHearings getListNextHearings() {
+        return ListNextHearings.listNextHearings()
+                .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                        .withId(randomUUID())
+                        .withCourtCentre(createCourtCenter())
+                        .withCourtApplications(createCourtApplications())
+                        .withEstimatedMinutes(15)
+                        .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
+                                .withJudicialId(randomUUID())
+                                .build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(randomUUID())
+                                .build()))
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription("SENTENCING")
+                                .build())
+
+                        .build()))
+                .build();
+    }
+
+    private ListUnscheduledNextHearings getListUnscheduledNextHearings() {
+        return ListUnscheduledNextHearings.listUnscheduledNextHearings()
+                .withHearingId(randomUUID())
+                .withHearings(Arrays.asList(HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
+                        .withId(randomUUID())
+                        .withCourtCentre(createCourtCenter())
+                        .withCourtApplications(createCourtApplications())
+                        .withEstimatedMinutes(15)
+                        .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
+                                .withJudicialId(randomUUID())
+                                .build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(randomUUID())
+                                .build()))
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
                                 .withDescription("SENTENCING")
                                 .build())
 
@@ -304,19 +390,19 @@ public class ListingServiceTest {
     private List<CourtApplication> createCourtApplications() {
         List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .withCourtApplicationCases(
                         singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withMasterDefendant(uk.gov.justice.core.courts.MasterDefendant.masterDefendant()
                                 .withMasterDefendantId(UUID.randomUUID())
                                 .build())
                         .build())
                 .withRespondents(Arrays.asList(CourtApplicationParty.courtApplicationParty()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                .withProsecutionAuthorityId(UUID.randomUUID())
+                                .withProsecutionAuthorityId(randomUUID())
 
                                 .build())
                         .build()))
@@ -326,9 +412,9 @@ public class ListingServiceTest {
 
     private CourtCentre createCourtCenter() {
         return CourtCentre.courtCentre()
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .withName("Court Name")
-                .withRoomId(UUID.randomUUID())
+                .withRoomId(randomUUID())
                 .withRoomName("Court Room Name")
                 .withWelshName("Welsh Name")
                 .withWelshRoomName("Welsh Room Name")
@@ -346,18 +432,18 @@ public class ListingServiceTest {
     private ListUnscheduledCourtHearing getListUnscheduledCourtHearing() {
         return ListUnscheduledCourtHearing.listUnscheduledCourtHearing()
                 .withHearings(Arrays.asList(HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
-                        .withId(UUID.randomUUID())
+                        .withId(randomUUID())
                         .withCourtCentre(createCourtCenter())
                         .withCourtApplications(createCourtApplications())
                         .withEstimatedMinutes(15)
                         .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
-                                .withJudicialId(UUID.randomUUID())
+                                .withJudicialId(randomUUID())
                                 .build()))
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
-                                .withId(UUID.randomUUID())
+                                .withId(randomUUID())
                                 .build()))
                         .withType(HearingType.hearingType()
-                                .withId(UUID.randomUUID())
+                                .withId(randomUUID())
                                 .withDescription("SENTENCING")
                                 .build())
 
@@ -367,13 +453,13 @@ public class ListingServiceTest {
 
     @Test
     public void shouldNotReturnACommittingCourtIfNotAvailableInPreviousHearing() {
-        final UUID hearingId = UUID.randomUUID();
+        final UUID hearingId = randomUUID();
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_SEARCH_HEARING).build();
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING).build();
 
-        final UUID offenceId1 = UUID.randomUUID();
-        final UUID offenceId2 = UUID.randomUUID();
-        final UUID offenceId3 = UUID.randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
 
         final Hearing hearing = Hearing.hearing()
                 .withListedCases(getListedCases(Stream.of(offenceId1, offenceId2, offenceId3).collect(toList()), null))
@@ -389,16 +475,16 @@ public class ListingServiceTest {
 
     @Test
     public void shouldReturnACommittingCourtIfAvailableInPreviousHearing() {
-        final UUID hearingId = UUID.randomUUID();
+        final UUID hearingId = randomUUID();
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName(LISTING_SEARCH_HEARING).build();
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING).build();
 
-        final UUID offenceId1 = UUID.randomUUID();
-        final UUID offenceId2 = UUID.randomUUID();
-        final UUID offenceId3 = UUID.randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
 
         final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = uk.gov.moj.cpp.listing.domain.CommittingCourt.committingCourt()
-                .withCourtCentreId(UUID.randomUUID())
+                .withCourtCentreId(randomUUID())
                 .withCourtHouseName("CourtHouseName")
                 .withCourtHouseType(MAGISTRATES)
                 .withCourtHouseShortName("CourtHouseShortName")

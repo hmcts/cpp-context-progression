@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
 import java.util.List;
@@ -29,6 +30,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -56,6 +58,9 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateHearingResultedCaseUpdated() throws Exception {
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
+
         final String hearingId;
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents

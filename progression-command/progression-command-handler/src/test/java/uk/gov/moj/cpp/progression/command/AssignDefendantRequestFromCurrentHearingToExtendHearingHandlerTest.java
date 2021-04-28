@@ -29,6 +29,8 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.AssignDefendantRequestFromCurrentHearingToExtendHearing;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
+import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
+import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -42,6 +44,9 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.AssignDefendantRequestFromCurrentHearingToExtendHearingHandler;
+
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -51,6 +56,8 @@ public class AssignDefendantRequestFromCurrentHearingToExtendHearingHandlerTest 
     private static final String ASSIGN_DEFENDANT_REQUEST_FROM_CURRENT_HEARING_TO_EXTEND_HEARING = "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing";
     private static final UUID CURRENT_HEARING_ID = randomUUID();
     private static final UUID EXTEND_HEARING_ID = randomUUID();
+
+    private HearingAggregate aggregate;
 
     @Mock
     private EventSource eventSource;
@@ -75,7 +82,7 @@ public class AssignDefendantRequestFromCurrentHearingToExtendHearingHandlerTest 
 
     @Before
     public void setup() {
-        final HearingAggregate aggregate = new HearingAggregate();
+        aggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
         setField(this.jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
@@ -91,6 +98,12 @@ public class AssignDefendantRequestFromCurrentHearingToExtendHearingHandlerTest 
 
     @Test
     public void shouldProcessCommand() throws Exception {
+        final UUID defendantId = randomUUID();
+        aggregate.apply(HearingDefendantRequestCreated.hearingDefendantRequestCreated()
+                .withDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .build());
         assignDefendantRequestFromCurrentHearingToExtendHearingHandler.assignDefendantRequestFromCurrentHearingToExtendHearing(buildEnvelope());
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
@@ -100,11 +113,20 @@ public class AssignDefendantRequestFromCurrentHearingToExtendHearingHandlerTest 
                                 .withName("progression.event.defendant-request-from-current-hearing-to-extend-hearing-created"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.currentHearingId", is(CURRENT_HEARING_ID.toString())),
-                                withJsonPath("$.extendHearingId", is(EXTEND_HEARING_ID.toString()))
+                                withJsonPath("$.extendHearingId", is(EXTEND_HEARING_ID.toString())),
+                                withJsonPath("$.defendantRequests[0].defendantId", is(defendantId.toString()))
                                 )
                         ))
                 )
         );
+    }
+
+    @Test
+    public void shouldProcessCommandWhenDefendantRequestsIsNullInAggregate() throws Exception {
+        assignDefendantRequestFromCurrentHearingToExtendHearingHandler.assignDefendantRequestFromCurrentHearingToExtendHearing(buildEnvelope());
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream.findFirst(), is(Optional.empty()));
     }
 
     private Envelope<AssignDefendantRequestFromCurrentHearingToExtendHearing> buildEnvelope() {

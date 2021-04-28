@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -19,13 +21,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.lang.Boolean.TRUE;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HearingResultUnscheduledListingHelper {
-    private static final UUID WCPU = UUID.fromString("0d1b161b-d6b0-4b1b-ae08-535864e4f631");
-    private static final UUID WCPN = UUID.fromString("ed34136f-2a13-45a4-8d4f-27075ae3a8a9");
+    public static final UUID WCPU = UUID.fromString("0d1b161b-d6b0-4b1b-ae08-535864e4f631");
+    public static final UUID WCPN = UUID.fromString("ed34136f-2a13-45a4-8d4f-27075ae3a8a9");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultUnscheduledListingHelper.class.getName());
 
@@ -46,19 +47,18 @@ public class HearingResultUnscheduledListingHelper {
 
         LOGGER.info("Unscheduled listing , Posting {} listUnscheduledHearings for new hearings .", unscheduledListingNeeds.size());
         final ListUnscheduledCourtHearing listUnscheduledCourtHearing = ListUnscheduledCourtHearing.listUnscheduledCourtHearing()
-                                                                                .withHearings(unscheduledListingNeeds)
-                                                                                .build();
+                .withHearings(unscheduledListingNeeds)
+                .build();
 
         listingService.listUnscheduledHearings(event, listUnscheduledCourtHearing);
 
         final List<Hearing> hearingList = unscheduledListingNeeds.stream()
-                                                  .filter(uln -> nonNull(uln.getProsecutionCases()))
-                                                  .map(uln -> convertToHearing(uln, originalHearing.getHearingDays()))
-                                                  .collect(Collectors.toList());
-
-        final Set<UUID> hearingsToBeSentNotification = getHearingIsToBeSentNotification(unscheduledListingNeeds);
+                .filter(uln -> nonNull(uln.getProsecutionCases()))
+                .map(uln -> convertToHearing(uln, originalHearing.getHearingDays()))
+                .collect(Collectors.toList());
 
         if (!hearingList.isEmpty()) {
+            final Set<UUID> hearingsToBeSentNotification = getHearingIsToBeSentNotification(unscheduledListingNeeds);
             LOGGER.info("Unscheduled listing ,Posting {} sendUpdateDefendantListingStatusForUnscheduledListing for new hearings.", hearingList.size());
             progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(event, hearingList, hearingsToBeSentNotification);
             progressionService.recordUnlistedHearing(event,originalHearing.getId(),hearingList);
@@ -68,7 +68,7 @@ public class HearingResultUnscheduledListingHelper {
 
     public boolean checksIfUnscheduledHearingNeedsToBeCreated(final Hearing hearing) {
         final boolean createUnscheduledHearing = nonNull(hearing.getCourtApplications()) && hearing.getCourtApplications().stream()
-                                                                                                    .anyMatch(this::checksIfUnscheduledHearingNeedsToBeCreated);
+                .anyMatch(this::checksIfUnscheduledHearingNeedsToBeCreated);
 
         if (createUnscheduledHearing) {
             return true;
@@ -79,43 +79,25 @@ public class HearingResultUnscheduledListingHelper {
         }
 
         return hearing.getProsecutionCases().stream()
-                       .anyMatch(pc -> pc.getDefendants().stream()
-                                               .anyMatch(d -> d.getOffences().stream()
-                                                                      .anyMatch(this::checksIfUnscheduledHearingNeedsToBeCreated)));
+                .anyMatch(pc -> pc.getDefendants().stream()
+                        .anyMatch(d -> d.getOffences().stream()
+                                .anyMatch(this::checksIfUnscheduledHearingNeedsToBeCreated)));
     }
 
-    private boolean checksIfUnscheduledHearingNeedsToBeCreated(final CourtApplication courtApplication) {
-        if (isNull(courtApplication.getJudicialResults())) {
-            return false;
-        }
-
-        return courtApplication.getJudicialResults().stream()
-                                            .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || unscheduledCourtHearingListTransformer.hasNextHearingWithDateToBeFixed(jr));
-    }
-
-    private boolean checksIfUnscheduledHearingNeedsToBeCreated(final Offence offence) {
-        if (isNull(offence.getJudicialResults())) {
-            return false;
-        }
-
-        return offence.getJudicialResults().stream()
-                                            .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || unscheduledCourtHearingListTransformer.hasNextHearingWithDateToBeFixed(jr));
-    }
-
-    private Hearing convertToHearing(final HearingUnscheduledListingNeeds unscheduledListingNeeds, final List<HearingDay> hearingDays) {
+    public Hearing convertToHearing(final HearingUnscheduledListingNeeds unscheduledListingNeeds, final List<HearingDay> hearingDays) {
         return Hearing.hearing()
-                       .withCourtCentre(unscheduledListingNeeds.getCourtCentre())
-                       .withJurisdictionType(unscheduledListingNeeds.getJurisdictionType())
-                       .withId(unscheduledListingNeeds.getId())
-                       .withJudiciary(unscheduledListingNeeds.getJudiciary())
-                       .withReportingRestrictionReason(unscheduledListingNeeds.getReportingRestrictionReason())
-                       .withType(unscheduledListingNeeds.getType())
-                       .withProsecutionCases(unscheduledListingNeeds.getProsecutionCases())
-                       .withHearingDays(hearingDays)
-                       .build();
+                .withCourtCentre(unscheduledListingNeeds.getCourtCentre())
+                .withJurisdictionType(unscheduledListingNeeds.getJurisdictionType())
+                .withId(unscheduledListingNeeds.getId())
+                .withJudiciary(unscheduledListingNeeds.getJudiciary())
+                .withReportingRestrictionReason(unscheduledListingNeeds.getReportingRestrictionReason())
+                .withType(unscheduledListingNeeds.getType())
+                .withProsecutionCases(unscheduledListingNeeds.getProsecutionCases())
+                .withHearingDays(hearingDays)
+                .build();
     }
 
-    private Set<UUID> getHearingIsToBeSentNotification(final List<HearingUnscheduledListingNeeds> unscheduledListingNeeds){
+    public Set<UUID> getHearingIsToBeSentNotification(final List<HearingUnscheduledListingNeeds> unscheduledListingNeeds){
         final Set<UUID> hearingsToBeSentNotification = new HashSet<>();
 
 
@@ -153,4 +135,21 @@ public class HearingResultUnscheduledListingHelper {
         return hearingsToBeSentNotification;
     }
 
+    private boolean checksIfUnscheduledHearingNeedsToBeCreated(final CourtApplication courtApplication) {
+        if (isNull(courtApplication.getJudicialResults())) {
+            return false;
+        }
+
+        return courtApplication.getJudicialResults().stream()
+                .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || unscheduledCourtHearingListTransformer.hasNextHearingWithDateToBeFixed(jr));
+    }
+
+    private boolean checksIfUnscheduledHearingNeedsToBeCreated(final Offence offence) {
+        if (isNull(offence.getJudicialResults())) {
+            return false;
+        }
+
+        return offence.getJudicialResults().stream()
+                .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || unscheduledCourtHearingListTransformer.hasNextHearingWithDateToBeFixed(jr));
+    }
 }

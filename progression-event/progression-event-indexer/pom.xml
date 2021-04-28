@@ -66,7 +66,6 @@
         <dependency>
             <groupId>uk.gov.justice.framework-api</groupId>
             <artifactId>framework-api-event-listener-interceptors</artifactId>
-            <version>${cpp.framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.ejb3</groupId>

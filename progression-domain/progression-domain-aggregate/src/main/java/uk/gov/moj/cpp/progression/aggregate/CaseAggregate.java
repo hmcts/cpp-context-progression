@@ -68,7 +68,9 @@ import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
+import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
@@ -158,7 +160,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 6644269354919757994L;
+    private static final long serialVersionUID = -6156253758176051929L;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
@@ -318,6 +320,7 @@ public class CaseAggregate implements Aggregate {
                 when(DefenceOrganisationDissociatedByDefenceContext.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
                 when(DefenceOrganisationAssociatedByDefenceContext.class).apply(this::updateDefendantAssociatedDefenceOrganisation),
                 when(HearingMarkedAsDuplicateForCase.class).apply(this::onHearingMarkedAsDuplicateForCase),
+                when(HearingDeletedForProsecutionCase.class).apply(this::onHearingDeletedForProsecutionCase),
                 when(DefendantMatched.class).apply(
                         e -> this.matchedDefendantIds.add(e.getDefendantId())
                 ),
@@ -334,6 +337,7 @@ public class CaseAggregate implements Aggregate {
                         e -> this.partialMatchedDefendants.remove(e.getDefendantId())
                 ),
                 when(CaseCpsProsecutorUpdated.class).apply(this::updateProsecutionCaseIdentifier),
+                when(HearingRemovedForProsecutionCase.class).apply(this::onHearingRemovedForProsecutionCase),
                 otherwiseDoNothing());
 
     }
@@ -1093,7 +1097,7 @@ public class CaseAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> addNote(final UUID caseId, final String note,final boolean isPinned, final String firstName, final String lastName) {
+    public Stream<Object> addNote(final UUID caseId, final String note, final boolean isPinned, final String firstName, final String lastName) {
         return apply(Stream.of(CaseNoteAdded.caseNoteAdded()
                 .withCaseId(caseId)
                 .withNote(note)
@@ -1363,6 +1367,14 @@ public class CaseAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> deleteHearingRelatedToProsecutionCase(final UUID hearingId, final UUID prosecutionCaseId) {
+        return apply(Stream.of(HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withHearingId(hearingId)
+                .withDefendantIds(prosecutionCase.getDefendants().stream().map(defendant -> defendant.getId()).collect(toList()))
+                .build()));
+    }
+
     public Stream<Object> updateCaseProsecutorDetails(final ProsecutionCaseIdentifier prosecutionCaseIdentifier,
                                                       final String oldCpsProsecutor) {
         LOGGER.debug("update case Prosecution details for caseId");
@@ -1383,7 +1395,7 @@ public class CaseAggregate implements Aggregate {
                 .withIsCpsOrgVerifyError(false)// this method is called for valid cps organisation so we should set the error flag as false.
                 .build());
 
-        if(oldCpsProsecutor != null && !oldCpsProsecutor.isEmpty()) {
+        if (oldCpsProsecutor != null && !oldCpsProsecutor.isEmpty()) {
             streamBuilder.add(CpsProsecutorUpdated.cpsProsecutorUpdated()
                     .withProsecutionCaseId(caseId)
                     .withOldCpsProsecutor(oldCpsProsecutor)
@@ -1394,8 +1406,15 @@ public class CaseAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public ProsecutionCase getProsecutionCase(){
+    public ProsecutionCase getProsecutionCase() {
         return this.prosecutionCase;
+    }
+
+    public Stream<Object> removeHearingRelatedToProsecutionCase(final UUID hearingId, final UUID prosecutionCaseId) {
+        return apply(Stream.of(HearingRemovedForProsecutionCase.hearingRemovedForProsecutionCase()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withHearingId(hearingId)
+                .build()));
     }
 
     private List<MatchedDefendants> transform(final List<MatchedDefendant> matchedDefendants) {
@@ -1457,7 +1476,7 @@ public class CaseAggregate implements Aggregate {
                         .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
                         .build());
             } else {
-                if(!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
+                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
                     // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
                     streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                             .withDefendantId(defendantId)
@@ -1466,8 +1485,7 @@ public class CaseAggregate implements Aggregate {
                             .withOrganisationName(organisationName)
                             .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
                             .build());
-                }
-                else {
+                } else {
                     LOGGER.info("Organisation for LAA Contract Number {} is already associated", laaContractNumber);
                 }
 
@@ -1475,7 +1493,7 @@ public class CaseAggregate implements Aggregate {
         } else {
             if (organisationId != null) {
                 // Associate the one which is linked with one from payload
-                if(!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
+                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
                     streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                             .withDefendantId(defendantId)
                             .withLaaContractNumber(laaContractNumber)
@@ -1545,6 +1563,14 @@ public class CaseAggregate implements Aggregate {
         this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
     }
 
+    private void onHearingDeletedForProsecutionCase(final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase) {
+        this.hearingIds.remove(hearingDeletedForProsecutionCase.getHearingId());
+    }
+
+    private void onHearingRemovedForProsecutionCase(final HearingRemovedForProsecutionCase hearingRemovedForProsecutionCase) {
+        this.hearingIds.remove(hearingRemovedForProsecutionCase.getHearingId());
+    }
+
     private boolean isAlreadyAssociated(final UUID defendantId) {
         return !isNull(this.defendantAssociatedDefenceOrganisation.get(defendantId));
     }
@@ -1555,9 +1581,9 @@ public class CaseAggregate implements Aggregate {
 
     private void updateProsecutionCaseIdentifier(final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
         ProsecutionCaseIdentifier newProsecutionCaseIdentifier;
-        if(!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && Boolean.TRUE.equals(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError())){
+        if (!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) {
             newProsecutionCaseIdentifier = this.prosecutionCase.getProsecutionCaseIdentifier();
-        }else{
+        } else {
             newProsecutionCaseIdentifier = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                     .withProsecutionAuthorityCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
                     .withCaseURN(caseCpsProsecutorUpdated.getCaseURN())
@@ -1601,7 +1627,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateCpsOrganisationInvalid() {
         final UUID caseId = this.prosecutionCase.getId();
-       final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
         streamBuilder.add(CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
                 .withProsecutionCaseId(caseId)
                 .withProsecutionAuthorityCode(this.prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode())

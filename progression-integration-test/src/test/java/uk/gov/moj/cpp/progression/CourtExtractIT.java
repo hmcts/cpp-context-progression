@@ -31,12 +31,14 @@ import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getCrownCour
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubPleaTypes;
+import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.util.FeatureToggleUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +58,8 @@ import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class CourtExtractIT extends AbstractIT {
+    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
 
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
@@ -102,6 +106,8 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
@@ -127,6 +133,7 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCertificateOfConviction() throws Exception {
+        enableAmendReshareFeature(false);
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
@@ -151,6 +158,8 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenLinkedApplicationAdded() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
@@ -177,6 +186,8 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenUnresultedCaseWithLikedApplicationIsEjected() throws Exception {
+        enableAmendReshareFeature(false);
+
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         doAddCourtApplicationAndVerify(false);
@@ -190,9 +201,9 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldExtractCrownCourtFromResultedHearingWithPlea() throws Exception {
-        final String publicHearingResulted = "public.hearing.resulted";
-        final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
+        enableAmendReshareFeature(false);
 
+        final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
                 .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
@@ -215,10 +226,71 @@ public class CourtExtractIT extends AbstractIT {
         verifyInMessagingQueueForCasesReferredToCourts();
 
         sendMessage(messageProducerClientPublic,
-                publicHearingResulted, getHearingJsonObject(publicHearingResulted + ".json", caseId,
+                PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED + ".json", caseId,
                         hearingId, defendantId, newCourtCentreId, reportingRestrictionId), metadataBuilder()
                         .withId(randomUUID())
-                        .withName(publicHearingResulted)
+                        .withName(PUBLIC_HEARING_RESULTED)
+                        .withUserId(userId)
+                        .build());
+
+
+        Matcher[] personDefendantOffenceUpdatedMatchers = {
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)),
+
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
+
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", CoreMatchers.is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-10")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent", CoreMatchers.is(44)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-14")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", CoreMatchers.is(55)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", CoreMatchers.is(reportingRestrictionId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].judicialResultId", CoreMatchers.is("0f5b8757-e588-4b7f-806a-44dc0eb0e75e")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", CoreMatchers.is("Reporting Restriction Label")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", CoreMatchers.is("2020-10-20"))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
+
+        final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
+        assertThat(documentContentResponse, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldExtractCrownCourtFromResultedHearingWithPleaV2() throws Exception {
+        enableAmendReshareFeature(true);
+
+        final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
+
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+
+            addProsecutionCaseToCrownCourt(caseId, defendantId);
+            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+
+
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                .withUserId(userId)
+                .build();
+
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId);
+        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+
+        verifyInMessagingQueueForCasesReferredToCourts();
+
+        final JsonObject payload = getHearingJsonObject(PUBLIC_HEARING_RESULTED_V2 + ".json", caseId,
+                hearingId, defendantId, newCourtCentreId, reportingRestrictionId, "2021-03-29");
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED_V2, payload, metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED_V2)
                         .withUserId(userId)
                         .build());
 
@@ -284,6 +356,19 @@ public class CourtExtractIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
+        return stringToJsonObjectConverter.convert(strPayload);
+    }
+
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId,
+                                            final String reportingRestrictionId, final String orderedDate) {
+        final String strPayload = getPayload(path)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("ORDERED_DATE", orderedDate)
                 .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
         return stringToJsonObjectConverter.convert(strPayload);
     }

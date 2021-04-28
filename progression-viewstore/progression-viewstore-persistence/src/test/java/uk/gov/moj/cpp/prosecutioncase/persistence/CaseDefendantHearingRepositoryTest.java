@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -9,6 +10,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +22,6 @@ import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 /**
  * DB integration tests for {@link CaseDefendantHearingRepository} class
@@ -30,10 +31,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 @RunWith(CdiTestRunner.class)
 public class CaseDefendantHearingRepositoryTest {
 
-    private static final UUID CASE_ID = UUID.randomUUID();
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
-    private static final UUID HEARING_ID = UUID.randomUUID();
-    private static final UUID RESULT_ID = UUID.randomUUID();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
+    private static final UUID HEARING_ID = randomUUID();
+    private static final UUID RESULT_ID = randomUUID();
 
     @Inject
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
@@ -42,24 +43,9 @@ public class CaseDefendantHearingRepositoryTest {
     private HearingRepository hearingRepository;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         //given
-        final HearingResultLineEntity hearingResultLineEntity= new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
-        hearingResultLineEntity.setId(RESULT_ID);
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
-        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
-        hearingEntity.addResultLine(hearingResultLineEntity);
-        hearingRepository.save(hearingEntity);
-
-        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
-        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID, HEARING_ID));
-        caseDefendantHearingEntity.setHearing(hearingEntity);
-
-        caseDefendantHearingRepository.save(caseDefendantHearingEntity);
+        saveEntity(HEARING_ID, CASE_ID, DEFENDANT_ID, RESULT_ID);
     }
 
     @Test
@@ -116,6 +102,41 @@ public class CaseDefendantHearingRepositoryTest {
         assertThat(actual.get(0).getHearing().getListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
         assertThat(actual.get(0).getHearing().getResultLines().size(), is(1));
         assertThat(actual.get(0).getHearing().getResultLines().iterator().next().getId(), is(RESULT_ID));
+    }
+
+    @Test
+    public void shouldRemoveByHearingIdAndCaseIdAndDefendantId() {
+        caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(HEARING_ID, CASE_ID, DEFENDANT_ID);
+        final List<CaseDefendantHearingEntity> actual = caseDefendantHearingRepository.findByCaseIdAndDefendantId(CASE_ID, DEFENDANT_ID);
+        assertThat(actual.size(), is(0));
+    }
+
+    @Test
+    public void shouldRemoveByHearingId() {
+        final UUID hearingId = randomUUID();
+        saveEntity(hearingId, randomUUID(), randomUUID(), randomUUID());
+        caseDefendantHearingRepository.removeByHearingId(hearingId);
+        final List<CaseDefendantHearingEntity> actual = caseDefendantHearingRepository.findByHearingId(hearingId);
+        assertThat(actual.size(), is(0));
+    }
+
+    private void saveEntity(final UUID hearingId, final UUID caseId, final UUID defendantId, final UUID resultId) {
+        final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
+        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setId(resultId);
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.addResultLine(hearingResultLineEntity);
+        hearingRepository.save(hearingEntity);
+
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(caseId, defendantId, hearingId));
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+
+        caseDefendantHearingRepository.save(caseDefendantHearingEntity);
     }
 
 

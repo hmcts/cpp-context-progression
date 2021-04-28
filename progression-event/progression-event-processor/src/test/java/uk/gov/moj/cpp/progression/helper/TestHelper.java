@@ -15,6 +15,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -72,17 +73,33 @@ public class TestHelper {
                 .build();
     }
 
-    public static Hearing buildHearingWithCourtApplications(final List<CourtApplication> courtApplications){
+    public static Hearing buildHearingWithCourtApplications(final List<CourtApplication> courtApplications) {
         return Hearing.hearing()
                 .withId(UUID.randomUUID())
                 .withCourtApplications(courtApplications)
                 .build();
     }
 
-    public static Hearing buildHearing(final List<ProsecutionCase> prosecutionCases){
+    public static Hearing buildHearing(final List<ProsecutionCase> prosecutionCases) {
+
+        HearingDay hearingDay0 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                .withCourtCentreId(UUID.randomUUID()).build();
+        HearingDay hearingDay1 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1))
+                .withCourtCentreId(UUID.randomUUID()).build();
         return Hearing.hearing()
                 .withId(UUID.randomUUID())
                 .withProsecutionCases(prosecutionCases)
+                .withHearingDays(Arrays.asList(hearingDay0, hearingDay1))
+                .build();
+    }
+
+    public static Hearing buildHearingWithNextDayAsHearingDays(final List<ProsecutionCase> prosecutionCases) {
+        HearingDay hearingDay0 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1))
+                .withCourtCentreId(UUID.randomUUID()).build();
+        return Hearing.hearing()
+                .withId(UUID.randomUUID())
+                .withProsecutionCases(prosecutionCases)
+                .withHearingDays(Arrays.asList(hearingDay0))
                 .build();
     }
 
@@ -172,7 +189,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing){
+    public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
                 .withCpsOrganisation("A01")
@@ -188,7 +205,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final UUID reportingRestrictionId, final NextHearing nextHearing){
+    public static ProsecutionCase buildProsecutionCase(final UUID caseId, final UUID defendantId, final UUID offenceId, final UUID reportingRestrictionId, final NextHearing nextHearing) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
                 .withDefendants(Arrays.asList(Defendant.defendant()
@@ -206,7 +223,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static ProsecutionCase buildProsecutionCaseWithCommittingCourt(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing){
+    public static ProsecutionCase buildProsecutionCaseWithCommittingCourt(final UUID caseId, final UUID defendantId, final UUID offenceId, final NextHearing nextHearing) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
                 .withDefendants(Arrays.asList(Defendant.defendant()
@@ -228,7 +245,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static ProsecutionCase buildProsecutionCaseWithoutJudicialResult(final UUID caseId, final UUID defendantId, final UUID offenceId){
+    public static ProsecutionCase buildProsecutionCaseWithoutJudicialResult(final UUID caseId, final UUID defendantId, final UUID offenceId) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
                 .withDefendants(Arrays.asList(Defendant.defendant()
@@ -240,7 +257,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static NextHearing buildNextHearing(UUID type, UUID bookingReference, String courtLocation, LocalDate weekCommencingDate, ZonedDateTime listedStartDateTime){
+    public static NextHearing buildNextHearing(UUID type, UUID bookingReference, String courtLocation, LocalDate weekCommencingDate, ZonedDateTime listedStartDateTime) {
         return NextHearing.nextHearing()
                 .withType(HearingType.hearingType()
                         .withId(type)

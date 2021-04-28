@@ -25,8 +25,8 @@ import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
 import static uk.gov.justice.progression.courts.ApplicationsResulted.applicationsResulted;
-import static uk.gov.justice.progression.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -53,12 +53,13 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
-import uk.gov.justice.progression.courts.ProsecutionCasesResulted;
+import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -67,6 +68,7 @@ import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
+import uk.gov.moj.cpp.progression.helper.SummonsHelper;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
@@ -111,56 +113,86 @@ public class HearingResultEventProcessorTest {
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
     @Spy
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+
     @Spy
     @InjectMocks
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+
     @Rule
     public ExpectedException expectedException = none();
+
     @InjectMocks
     private HearingResultEventProcessor eventProcessor;
+
     @Mock
     private Sender sender;
+
+    @Mock
+    private SummonsHelper summonsHelper;
+
     @Captor
     private ArgumentCaptor<Envelope<?>> envelopeArgumentCaptor2;
+
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<List<UUID>> applicationIdsArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<List<CourtApplication>> courtApplicationsArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<Hearing> hearingArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<ApplicationStatus> applicationStatusArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<HearingListingStatus> hearingListingStatusArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<ListCourtHearing> listCourtHearingArgumentCaptor;
+
     @Mock
     private ProgressionService progressionService;
+
     @Mock
     private ListingService listingService;
+
     @Mock
     private ReferenceDataService referenceDataService;
+
     @Mock
     private NextHearingService nextHearingService;
+
     @Mock
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
+
     @Mock
     private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
+
     @Mock
     private HearingResultHelper hearingResultHelper;
+
     @Mock
     private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
+
     @Mock
     private SeedingHearingConverter seedingHearingConverter;
+
     @Mock
     private HearingListingNeedsTransformer hearingListingNeedsTransformer;
+
+    @Mock
+    private FeatureControlGuard featureControlGuard;
 
     @Before
     public void initMocks() {
@@ -350,12 +382,32 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void shouldProcessHandleApplicationsResulted() throws IOException {
+    public void shouldProcessHandleApplicationsResulted() {
+        final Hearing hearing = hearing().withCourtApplications(singletonList(courtApplication().build())).build();
+        final ApplicationsResulted applicationsResulted = applicationsResulted().withHearing(hearing).build();
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
+                objectToJsonObjectConverter.convert(applicationsResulted));
+        when(featureControlGuard.isFeatureEnabled("amendReshare")).thenReturn(false);
+
+        eventProcessor.processHandleApplicationsResulted(event);
+
+        verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
+        final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
+        assertThat(allValues.size(), is(1));
+        assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
+    }
+
+    @Test
+    public void shouldNotProcessHandleApplicationsResultedIfAmendReshareFeatureEnabled() {
         final ApplicationsResulted applicationsResulted = applicationsResulted().withHearing(hearing().withCourtApplications(singletonList(courtApplication().build())).build()).build();
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
                 objectToJsonObjectConverter.convert(applicationsResulted));
+        when(featureControlGuard.isFeatureEnabled("amendReshare")).thenReturn(true);
+
         eventProcessor.processHandleApplicationsResulted(event);
+
         verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
         final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
         assertThat(allValues.size(), is(1));

@@ -140,7 +140,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
 
         - name: progression.event.hearing-resulted
-          schema_uri: http://justice.gov.uk/hearing/courts/hearing-resulted.json
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-resulted.json
 
           ############  Association Start ############
         - name: progression.event.defence-organisation-associated
@@ -202,6 +202,9 @@ subscriptions_descriptor:
         - name: progression.event.unscheduled-hearing-listing-requested
           schema_uri: http://justice.gov.uk/core/courts/progression.event.unscheduled-hearing-listing-requested.json
 
+        - name: progression.event.unscheduled-next-hearings-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.unscheduled-next-hearings-requested.json
+
         - name: progression.event.hearing-marked-as-duplicate
           schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate.json
 
@@ -209,7 +212,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
 
         - name: progression.event.prosecution-cases-resulted
-          schema_uri: http://justice.gov.uk/progression/courts/progression.event.prosecution-cases-resulted.json
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-cases-resulted.json
 
         - name: progression.event.applications-resulted
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.applications-resulted.json
@@ -244,6 +247,21 @@ subscriptions_descriptor:
         - name: progression.event.unscheduled-hearing-allocation-notified
           schema_uri: http://justice.gov.uk/progression/courts/unscheduled-hearing-allocation-notified.json
 
+
+        - name: progression.event.prosecution-cases-resulted-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-cases-resulted-v2.json
+
+        - name: progression.event.next-hearings-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.next-hearings-requested.json
+
+        - name: progression.event.related-hearing-requested
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested.json
+
+        - name: progression.event.related-hearing-updated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated.json
+
+        - name: progression.event.delete-next-hearings-requested
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.delete-next-hearings-requested.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
@@ -305,6 +323,12 @@ subscriptions_descriptor:
         - name: progression.event.notification-request-succeeded
           schema_uri: http://justice.gov.uk/core/courts/progression.event.notification-request-succeeded.json
 
+        - name: progression.event.hearing-deleted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted.json
+
+        - name: progression.event.cases-added-for-updated-related-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.cases-added-for-updated-related-hearing.json
+
           # Deprecated API  - End
       event_source_name: progression
 
@@ -342,6 +366,9 @@ subscriptions_descriptor:
         - name: public.hearing.resulted
           schema_uri: http://justice.gov.uk/hearing/courts/public.hearing-resulted.json
 
+        - name: public.events.hearing.hearing-resulted
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.hearing-resulted.json
+
         - name: public.hearing.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/nowdocument/now-document-requested.json
 
@@ -375,5 +402,34 @@ subscriptions_descriptor:
         #System doc generator
         - name: public.systemdocgenerator.events.document-available
           schema_uri: http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/document-available.json
+
+        # Allocated Hearing Deleted
+        - name: public.events.listing.allocated-hearing-deleted
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.allocated-hearing-deleted.json
+
+        # Unallocated Hearing Deleted
+        - name: public.events.listing.unallocated-hearing-deleted
+          schema_uri: http://justice.gov.uk/listingcourts/public.events.listing.unallocated-hearing-deleted.json
+
+        # Hearing Unallocated
+        - name: public.events.listing.hearing-unallocated
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-unallocated.json
+
+        # Offence removed from unallocated hearing
+        - name: public.events.listing.offences-removed-from-unallocated-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-unallocated-hearing.json
+
+        # Remove Offences from existing unallocated hearing
+        - name: public.events.listing.offences-removed-from-existing-unallocated-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-existing-unallocated-hearing.json
+
+        # Remove Offences from existing allocated hearing
+        - name: public.events.listing.offences-removed-from-existing-allocated-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-existing-allocated-hearing.json
+
+        - name: public.events.listing.cases-added-for-updated-related-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.cases-added-for-updated-related-hearing.json
+
+
 
       event_source_name: public.event.source

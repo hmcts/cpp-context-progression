@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/hearing/courts/hearing-resulted.json",
+  "id": "http://justice.gov.uk/progression/courts/progression.event.hearing-resulted.json",
   "type": "object",
   "properties": {
     "hearing": {
@@ -15,6 +15,9 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
       }
+    },
+    "hearingDay": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
     }
   },
   "required": [

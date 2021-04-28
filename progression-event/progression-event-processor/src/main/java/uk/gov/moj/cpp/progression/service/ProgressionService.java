@@ -53,6 +53,7 @@ import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings;
+import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -122,6 +123,7 @@ public class ProgressionService {
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
     private static final String EMPTY_STRING = "";
     private static final String PROGRESSION_QUERY_COURT_APPLICATION = "progression.query.application";
+    private static final String PROGRESSION_QUERY_COURT_APPLICATION_ONLY = "progression.query.application-only";
     private static final String PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_STATUS = "progression.command.update-court-application-status";
     private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK = "progression.command-link-prosecution-cases-to-hearing";
@@ -641,13 +643,13 @@ public class ProgressionService {
 
     /**
      * @param jsonEnvelope
-     * @param listCourtHearing
-     * @param seedingHearing   - The originating hearing details
+     * @param hearings       - the hearings to update the status for
+     * @param seedingHearing - The originating hearing details
      */
-    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing, final SeedingHearing seedingHearing) {
-        listCourtHearing.getHearings().forEach(hearingListingNeeds -> {
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing) {
+        hearings.forEach(hearingListingNeeds -> {
             final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing);
-            if(isNotEmpty(hearing.getProsecutionCases())) {
+            if (isNotEmpty(hearing.getProsecutionCases())) {
                 final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                         .add(HEARING, objectToJsonObjectConverter.convert(hearing)).build();
@@ -660,7 +662,7 @@ public class ProgressionService {
     }
 
     public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing) {
-        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, null);
+        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null);
     }
 
 
@@ -732,6 +734,39 @@ public class ProgressionService {
 
         final JsonEnvelope courtApplication = requester.requestAsAdmin(enveloper
                 .withMetadataFrom(envelope, PROGRESSION_QUERY_COURT_APPLICATION)
+                .apply(requestParameter));
+
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("courtApplicationId {} ,   get court application {}", courtApplicationId, courtApplication.toObfuscatedDebugString());
+        }
+
+        if (!courtApplication.payloadAsJsonObject().isEmpty()) {
+            result = Optional.of(courtApplication.payloadAsJsonObject());
+        }
+        return result;
+    }
+
+    /**
+     * Retrieves the court application by id. But only retrieves the {@link CourtApplication}, not
+     * the additional information that {@link #getCourtApplicationById(JsonEnvelope, String)}
+     * returns.
+     *
+     * @param envelope           - the requesting envelope
+     * @param courtApplicationId - the id of the application to retrieve
+     * @return the court application for the id provided.
+     */
+    public Optional<JsonObject> getCourtApplicationOnlyById(final JsonEnvelope envelope, final String courtApplicationId) {
+
+        Optional<JsonObject> result = Optional.empty();
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(APPLICATION_ID, courtApplicationId)
+                .build();
+
+        LOGGER.info("courtApplicationId {} ,   get court application {}", courtApplicationId, requestParameter);
+
+        final JsonEnvelope courtApplication = requester.requestAsAdmin(enveloper
+                .withMetadataFrom(envelope, PROGRESSION_QUERY_COURT_APPLICATION_ONLY)
                 .apply(requestParameter));
 
 
@@ -866,7 +901,7 @@ public class ProgressionService {
         if (courtApplicationIds != null) {
             final List<CourtApplication> applicationDetails = new ArrayList<>();
             for (final UUID applicationId : courtApplicationIds) {
-                getCourtApplicationById(jsonEnvelope, applicationId.toString()).ifPresent(
+                getCourtApplicationOnlyById(jsonEnvelope, applicationId.toString()).ifPresent(
                         application -> {
                             final CourtApplication courtApplication = jsonObjectConverter.convert(application.getJsonObject("courtApplication"), CourtApplication.class);
                             final CourtApplication.Builder builder = CourtApplication.courtApplication().withValuesFrom(courtApplication)
@@ -884,7 +919,7 @@ public class ProgressionService {
     }
 
     private void updateCourtOrder(CourtApplication courtApplication, CourtApplication.Builder builder) {
-        if(nonNull(courtApplication.getCourtOrder())) {
+        if (nonNull(courtApplication.getCourtOrder())) {
             final CourtOrder courtOrder = ofNullable(courtApplication.getCourtOrder())
                     .map(order -> CourtOrder.courtOrder().withValuesFrom(order)
                             .withCourtOrderOffences(order.getCourtOrderOffences().stream()
@@ -899,7 +934,7 @@ public class ProgressionService {
     }
 
     private void updateCourtApplicationCases(CourtApplication courtApplication, CourtApplication.Builder builder) {
-        if(isNotEmpty(courtApplication.getCourtApplicationCases())) {
+        if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases().stream()
                     .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
                             .withValuesFrom(courtApplicationCase)
@@ -1157,6 +1192,16 @@ public class ProgressionService {
                 .apply(updateHearingForPartialAllocation);
 
         sender.send(updateHearingForPartialAllocationEnvelope);
+    }
+
+    public void storeBookingReferencesWithCourtScheduleIds(final JsonEnvelope jsonEnvelope, final StoreBookingReferenceCourtScheduleIds storeBookingReferenceCourtScheduleIds) {
+
+        LOGGER.info("Store booking references with court schedule ids for hearing '{}' ", storeBookingReferenceCourtScheduleIds.getHearingId());
+
+        this.sender.send(Enveloper.envelop(objectToJsonObjectConverter.convert(storeBookingReferenceCourtScheduleIds))
+                .withName("progression.command.store-booking-reference-court-schedule-ids")
+                .withMetadataFrom(jsonEnvelope));
+
     }
 
     private Optional<CourtApplication> getCourtApplication(final Hearing hearing, final UUID applicationId) {

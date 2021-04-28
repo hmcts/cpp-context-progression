@@ -121,7 +121,7 @@
             ],
             "offences": [
               {
-                "id": "DEFENDANT_ID",
+                "id": "OFFENCE_ID",
                 "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
                 "offenceCode": "a",
                 "offenceTitle": "a",
@@ -205,7 +205,7 @@
                     "amendmentReason": "a",
                     "cjsCode": "a",
                     "rank": 0.1,
-                    "orderedDate": "0000-01-01",
+                    "orderedDate": "2020-01-01",
                     "lastSharedDateTime": "a",
                     "courtClerk": {
                       "userId": "00000000-0000-0000-0000-000000000000",

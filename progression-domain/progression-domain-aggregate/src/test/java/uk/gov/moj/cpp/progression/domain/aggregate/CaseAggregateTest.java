@@ -10,8 +10,11 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -55,7 +58,9 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
+import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -1382,6 +1387,33 @@ public class CaseAggregateTest {
         expectedProsecutionCaseIdentifier = JsonHelper.addProperty(expectedProsecutionCaseIdentifier, "caseURN", "caseUrn");
         expectedProsecutionCaseIdentifier = JsonHelper.addProperty(expectedProsecutionCaseIdentifier, "prosecutionAuthorityReference", "reference");
         assertThat(objectToJsonObjectConverter.convert(caseAggregate.getProsecutionCase().getProsecutionCaseIdentifier()), is(expectedProsecutionCaseIdentifier));
+    }
+
+    @Test
+    public void shouldDeleteProsecutionCaseRelatedToHearing() {
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final List<Object> eventStream = caseAggregate.deleteHearingRelatedToProsecutionCase(hearingId, prosecutionCaseId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase = (HearingDeletedForProsecutionCase) eventStream.get(0);
+        assertThat(hearingDeletedForProsecutionCase.getHearingId(), is(hearingId));
+        assertThat(hearingDeletedForProsecutionCase.getProsecutionCaseId(), is(prosecutionCaseId));
+        assertThat(hearingDeletedForProsecutionCase.getDefendantIds(), hasItems(defendant.getId()));
+    }
+
+    @Test
+    public void shouldRemovedProsecutionCaseRelatedToHearing() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final List<Object> eventStream = caseAggregate.removeHearingRelatedToProsecutionCase(hearingId, prosecutionCaseId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final HearingRemovedForProsecutionCase hearingDeletedForProsecutionCase = (HearingRemovedForProsecutionCase) eventStream.get(0);
+        assertThat(hearingDeletedForProsecutionCase.getHearingId(), is(hearingId));
+        assertThat(hearingDeletedForProsecutionCase.getProsecutionCaseId(), is(prosecutionCaseId));
     }
 
 }
