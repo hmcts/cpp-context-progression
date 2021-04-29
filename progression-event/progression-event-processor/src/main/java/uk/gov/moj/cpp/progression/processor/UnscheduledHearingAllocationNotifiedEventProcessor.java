@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,22 +49,18 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnscheduledHearingAllocationNotifiedEventProcessor.class);
 
     private static final String EMAIL = "email";
-    public static final String EMAIL_SUBJECT_LINE = "Notification of Warrant moved into a hearing (Case URN : %s)";
-    public static final String SUBJECT = "subject";
     public static final String DATE_OF_HEARING = "dateOfHearing";
     public static final String COURT_CENTRE = "courtCentre";
     public static final String SITTING_AT = "sittingAt";
     public static final String URN = "urn";
     public static final String CASE_NUMBER = "caseNumber";
-    public static final String ASN = "asn";
     public static final String DEFENDANT_NAME = "defendantName";
-    public static final String DEFENDANT_ADDRESS = "defendantAddress";
-    public static final String DEFENDANT_DATE_OF_BIRTH = "defendantDateOfBirth";
     private static final String LJA = "lja";
     private static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
     private static final String NATIONAL_COURT_CODE = "nationalCourtCode";
     private static final String NAME = "name";
     private static final String EMPTY = "";
+    private static final String CASE_AT_A_GLANCE_LINK = "caseAtAGlanceLink";
 
     @Inject
     private NotificationService notificationService;
@@ -110,41 +107,29 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
 
     private EmailChannel buildEmailChannel(final Hearing hearing, final ProsecutionCase prosecutionCase, final Defendant defendant, final LjaDetails ljaDetails, final String enforcementAreaEmail) {
         final String defendantFullName;
-        final String defendantAddress;
-        final String defendantDateOfBirth;
-        final String asn;
 
         if (nonNull(defendant.getPersonDefendant())) {
             final Person person = defendant.getPersonDefendant().getPersonDetails();
             defendantFullName = buildDefendantFullName(person);
-            defendantAddress = buildDefendantAddress(person.getAddress());
-            defendantDateOfBirth = person.getDateOfBirth().toString();
-            asn = defendant.getPersonDefendant().getArrestSummonsNumber();
         } else {
             final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
             final Organisation organisation = legalEntityDefendant.getOrganisation();
             defendantFullName = organisation.getName();
-            defendantAddress = buildDefendantAddress(organisation.getAddress());
-            defendantDateOfBirth = "";
-            asn = "";
         }
 
         final String caseURN = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
         final ZonedDateTime hearingStartDateTime = getEarliestDate(hearing.getHearingDays());
 
         final Map<String, Object> map = new HashMap<>();
-        map.put(DATE_OF_HEARING, hearingStartDateTime.toString());
+        map.put(DATE_OF_HEARING, hearingStartDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyy HH:mm a")).toString());
         map.put(COURT_CENTRE, buildCourtCentre(ljaDetails));
         map.put(SITTING_AT, hearing.getCourtCentre().getName());
         map.put(URN, caseURN);
         map.put(CASE_NUMBER, prosecutionCase.getId().toString());
-        map.put(ASN, asn);
         map.put(DEFENDANT_NAME, defendantFullName);
-        map.put(DEFENDANT_ADDRESS, defendantAddress);
-        map.put(DEFENDANT_DATE_OF_BIRTH, defendantDateOfBirth);
+        map.put(CASE_AT_A_GLANCE_LINK, applicationParameters.getEndClientHost()+applicationParameters.getCaseAtaGlanceURI()+prosecutionCase.getId().toString());
 
         final Personalisation personalisation = new Personalisation(map);
-        personalisation.setAdditionalProperty(SUBJECT, format(EMAIL_SUBJECT_LINE, caseURN));
 
         return EmailChannel.emailChannel()
                 .withTemplateId(UUID.fromString(applicationParameters.getUnscheduledHearingAllocationEmailTemplateId()))
@@ -169,28 +154,9 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
         return sb.toString();
     }
 
-    private String buildDefendantAddress(final Address address) {
-        if (isNull(address)) {
-            return SPACE;
-        }
 
-        return mergeAddressLines(address.getAddress1(), address.getAddress2(), address.getAddress3(), address.getAddress4(), address.getAddress5(), address.getPostcode());
-    }
 
-    private String mergeAddressLines(final String... addressesLines){
-        final StringBuilder sb = new StringBuilder();
 
-        for (final String addressLine: addressesLines){
-            if (isNoneEmpty(addressLine)){
-                if (sb.length() > 0){
-                    sb.append(", ");
-                }
-
-                sb.append(addressLine);
-            }
-        }
-        return sb.toString();
-    }
 
     private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
         return hearingDays.stream()

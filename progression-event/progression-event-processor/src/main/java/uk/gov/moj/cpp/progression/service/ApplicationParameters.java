@@ -88,8 +88,12 @@ public class ApplicationParameters {
     private String nowExtraditionSlaEmailTemplateId;
 
     @Inject
-    @Value(key = "unscheduled_hearing_allocation_email_templateId", defaultValue = "9e2c73eb-8434-459b-ba7d-bfa199b6c960")
+    @Value(key = "unscheduled_hearing_allocation_email_templateId", defaultValue = "326a74e0-5e1c-49fe-880e-834a7b58a864")
     private String unscheduledHearingAllocationEmailTemplateId;
+
+    @Inject
+    @Value(key = "caseAtaGlanceURI", defaultValue = "prosecution-casefile/case-at-a-glance/")
+    private String caseAtaGlanceURI;
 
     @Inject
     @Value(key = "summons_approved_and_suppressed_template_id")
@@ -169,6 +173,10 @@ public class ApplicationParameters {
 
     public String getUnscheduledHearingAllocationEmailTemplateId() {
         return unscheduledHearingAllocationEmailTemplateId;
+    }
+
+    public String getCaseAtaGlanceURI() {
+        return caseAtaGlanceURI;
     }
 
 

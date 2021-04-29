@@ -97,14 +97,11 @@ public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
         assertThat(emailChannels.get(0).getTemplateId(), is(fromString(TEMPLATE_ID)));
         final Map<String, Object> additionalProperties = emailChannels.get(0).getPersonalisation().getAdditionalProperties();
         assertThat(additionalProperties.get("urn"), is("85GD7524721"));
-        assertThat(additionalProperties.get("dateOfHearing").toString(), startsWith("2021-02-22T10:00"));
+        assertThat(additionalProperties.get("dateOfHearing").toString(), startsWith("22/02/2021 10:00 AM"));
         assertThat(additionalProperties.get("courtCentre"), is("1800 East Hampshire Magistrates' Court"));
         assertThat(additionalProperties.get("sittingAt"), is("Wimbledon Magistrates' Court"));
         assertThat(additionalProperties.get("caseNumber"), is("d36ba5f5-f19a-482d-8b71-c06771a41af1"));
-        assertThat(additionalProperties.get("asn"), is("12345"));
         assertThat(additionalProperties.get("defendantName"), is("Luke Skywalker"));
-        assertThat(additionalProperties.get("defendantAddress"), is("175 Wandsworth Street, London, SW11 5TQ"));
-        assertThat(additionalProperties.get("defendantDateOfBirth"), is("1988-08-17"));
     }
 
     public JsonObject getPayload(final String path) {
