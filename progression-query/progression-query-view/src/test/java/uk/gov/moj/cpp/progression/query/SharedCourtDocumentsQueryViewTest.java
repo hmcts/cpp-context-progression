@@ -7,6 +7,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
@@ -23,6 +24,7 @@ import uk.gov.justice.core.courts.NowDocument;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -30,14 +32,14 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEnti
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocumentRepository;
 
-import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +67,9 @@ public class SharedCourtDocumentsQueryViewTest {
 
     @Mock
     private CourtDocumentTransform courtDocumentTransform;
+
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @InjectMocks
     private SharedCourtDocumentsQueryView sharedCourtDocumentsQueryView;
@@ -117,15 +122,15 @@ public class SharedCourtDocumentsQueryViewTest {
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId);
         final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList(mockCourtDocumentEntity));
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(courtDocument(courtDocumentId));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(courtDocument(courtDocumentId));
 
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
                 .withCaseIds(asList(caseId))
                 .withCategory("Defendant level")
                 .withDefendantIds(asList(defendantId))
-                .withHearingIds(asList(UUID.randomUUID()))
+                .withHearingIds(asList(randomUUID()))
                 .withDocument(courtDocument(courtDocumentId))
                 .withType("Defendant profile notes");
 
@@ -140,7 +145,6 @@ public class SharedCourtDocumentsQueryViewTest {
         assertThat(((JsonObject) sharedCourtDocumentsEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").get(0)).getJsonObject("document").getString("courtDocumentId"), is(courtDocumentId.toString()));
     }
 
-
     @Test
     public void shouldReturnCourtDocumentPayloadsForCaseLevel() {
         final UUID hearingId = randomUUID();
@@ -151,9 +155,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId, caseId, defendantId);
         final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList(mockCourtDocumentEntity));
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateCaseLevelDocument(courtDocumentId));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateCaseLevelDocument(courtDocumentId));
 
         when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
 
@@ -176,9 +180,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId, caseId, defendantId);
         final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList(mockCourtDocumentEntity));
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId,defendantId));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId, defendantId));
 
         when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
 
@@ -203,7 +207,7 @@ public class SharedCourtDocumentsQueryViewTest {
 
         when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId,randomUUID()));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId, randomUUID()));
 
         when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
 
@@ -225,9 +229,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId, caseId, defendantId);
         final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList(mockCourtDocumentEntity));
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId,defendantId));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId, defendantId));
 
         when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
 
@@ -252,7 +256,7 @@ public class SharedCourtDocumentsQueryViewTest {
 
         when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId,randomUUID()));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId, randomUUID()));
 
         when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
 
@@ -274,9 +278,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId, caseId, defendantId);
         final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList(mockCourtDocumentEntity));
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(jsonFromString(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateApplicationDocument(courtDocumentId));
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateApplicationDocument(courtDocumentId));
 
         when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
 
@@ -305,21 +309,82 @@ public class SharedCourtDocumentsQueryViewTest {
         assertThat(sharedCourtDocumentsEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(0));
     }
 
+    @Test
+    public void shouldReturnEmptySharedCourtDocumentsOnBatchWhenCourtDocumentsReturnsEmpty() {
+        final UUID hearingId = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID courtDocumentId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId);
+        final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList());
+        when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(courtDocument(courtDocumentId));
 
-    private static JsonObject jsonFromString(final String jsonObjectStr) {
-        try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
-            return jsonReader.readObject();
-        }
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(asList(caseId))
+                .withCategory("Defendant level")
+                .withDefendantIds(asList(defendantId))
+                .withHearingIds(asList(randomUUID()))
+                .withDocument(courtDocument(courtDocumentId))
+                .withType("Defendant profile notes");
+
+        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+
+        final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), body);
+        final JsonEnvelope sharedCourtDocumentsEnvelope = sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope);
+
+        assertThat(sharedCourtDocumentsEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(0));
+
+    }
+
+    @Test
+    public void shouldReturnFourSharedCourtDocumentsOnBatchWiseWhenCourtDocumentsRepositoryMockReturnsTwoRecordsForEachBatch() {
+        final UUID hearingId = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID courtDocumentId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
+
+        final List<SharedCourtDocumentEntity> sharedCourtDocumentEntities = new ArrayList<>();
+        IntStream.range(0, 51).forEach(operand -> sharedCourtDocumentEntities.add(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, randomUUID(), null, null, null, null)));
+        when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(sharedCourtDocumentEntities);
+
+        final List<CourtDocumentEntity> courtDocumentEntities = new ArrayList<>();
+        IntStream.range(0, 2).forEach(operand -> courtDocumentEntities.add(mockCourtDocumentEntity));
+        when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(any())).thenReturn(courtDocumentEntities);
+
+        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(courtDocument(courtDocumentId));
+
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(asList(caseId))
+                .withCategory("Defendant level")
+                .withDefendantIds(asList(defendantId))
+                .withHearingIds(asList(randomUUID()))
+                .withDocument(courtDocument(courtDocumentId))
+                .withType("Defendant profile notes");
+
+        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+
+        final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), body);
+
+        final JsonEnvelope sharedCourtDocumentsEnvelope = sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope);
+        assertThat(sharedCourtDocumentsEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(4));
+
     }
 
     private CourtDocument courtDocument(final UUID id) {
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(id)
-                .withDocumentTypeId(UUID.randomUUID())
+                .withDocumentTypeId(randomUUID())
                 .withMaterials(asList(
                         Material.material()
-                                .withId(UUID.randomUUID())
+                                .withId(randomUUID())
                                 .withUserGroups(asList("Court Clerks"))
                                 .build()
                 ))
@@ -392,13 +457,12 @@ public class SharedCourtDocumentsQueryViewTest {
     }
 
 
-
     private List<SharedCourtDocumentEntity> getMockSharedCourtDocumentEntities(final UUID courtDocumentId, final UUID hearingId, final UUID groupId) {
-        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, null, null,null));
+        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, null, null, null));
     }
 
-    private List<SharedCourtDocumentEntity> getMockSharedCourtDocumentEntities(final UUID courtDocumentId, final UUID hearingId, final UUID groupId, final UUID caseId, final UUID  defendantId) {
-        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, caseId, defendantId,null));
+    private List<SharedCourtDocumentEntity> getMockSharedCourtDocumentEntities(final UUID courtDocumentId, final UUID hearingId, final UUID groupId, final UUID caseId, final UUID defendantId) {
+        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, caseId, defendantId, null));
     }
 
 

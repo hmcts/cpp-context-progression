@@ -16,7 +16,7 @@ public interface CourtDocumentRepository extends EntityRepository<CourtDocumentE
     @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id=:caseId ORDER BY cdi.courtDocument.seqNum ASC")
     List<CourtDocumentEntity> findByProsecutionCaseId(@QueryParam("caseId") final UUID caseId);
 
-    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where defendant_id=:defendantId ORDER BY cdi.courtDocument.seqNum ASC")
+    @Query("FROM CourtDocumentEntity cde join fetch cde.indices cdi where cdi.defendantId=:defendantId ORDER BY cde.seqNum ASC")
     List<CourtDocumentEntity> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
 
     @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where application_id=:applicationId ORDER BY cdi.courtDocument.seqNum ASC")
@@ -28,10 +28,12 @@ public interface CourtDocumentRepository extends EntityRepository<CourtDocumentE
     @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id=:caseId and defendant_id=:defendantId ORDER BY cdi.courtDocument.seqNum ASC")
     List<CourtDocumentEntity> findByProsecutionCaseIdAndDefendantId(@QueryParam("caseId") final UUID caseId,
                                                                     @QueryParam("defendantId") final UUID defendantId);
-    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id in (:caseIds) ORDER BY cdi.courtDocument.seqNum ASC")
+    @Query("FROM CourtDocumentEntity cde join fetch cde.indices cdi where cdi.prosecutionCaseId in (:caseIds) ORDER BY cde.seqNum ASC")
     List<CourtDocumentEntity> findByProsecutionCaseIds(@QueryParam("caseIds") final List<UUID> caseIds);
 
-    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where application_id in(:applicationIds) ORDER BY cdi.courtDocument.seqNum ASC")
+    @Query("FROM CourtDocumentEntity cde join fetch cde.indices cdi where cdi.applicationId in(:applicationIds) ORDER BY cde.seqNum ASC")
     List<CourtDocumentEntity> findByApplicationIds(@QueryParam("applicationIds") final List<UUID> applicationIds);
 
+    @Query("FROM CourtDocumentEntity cde where cde.courtDocumentId in(:ids) AND cde.isRemoved is false")
+    List<CourtDocumentEntity> findByCourtDocumentIdsAndAreNotRemoved(@QueryParam("ids") final List<UUID> courtDocumentIds);
 }

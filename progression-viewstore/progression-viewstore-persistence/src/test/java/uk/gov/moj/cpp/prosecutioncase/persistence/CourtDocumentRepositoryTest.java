@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -15,6 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntit
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -86,6 +86,15 @@ public class CourtDocumentRepositoryTest {
     }
 
     @Test
+    public void shouldTestFindByDefendantId() {
+        repository.save(getProsecutioncaseForDefendantDocument(CASE_ID_1, DEFENDANT_ID_1));
+        List<CourtDocumentEntity> actual = repository.findByDefendantId(DEFENDANT_ID_1);
+        assertEquals(CASE_ID_1, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
+        assertEquals(DEFENDANT_ID_1, actual.get(0).getIndices().iterator().next().getDefendantId());
+
+    }
+
+    @Test
     public void testFindByApplicationIds() {
         repository.save(getProsecutionCaseForApplication(null));
 
@@ -100,9 +109,9 @@ public class CourtDocumentRepositoryTest {
     @Test
     public void testFindByApplicationIdOrderingSeqNumASC() {
 
-        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_1,20));
-        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_2,10));
-        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_2,30));
+        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_1, 20));
+        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_2, 10));
+        repository.save(getProsecutionCaseForApplicationWithSeqNum(CASE_ID_3, DEFENDANT_ID_2, 30));
 
         final List<CourtDocumentEntity> actual = repository.findByProsecutionCaseId(CASE_ID_3);
         assertEquals(10, actual.get(0).getSeqNum().intValue());
@@ -169,6 +178,24 @@ public class CourtDocumentRepositoryTest {
                 nullValue());
     }
 
+
+    @Test
+    public void shouldTestFindByCourtDocumentsWhenOneOfTheRecordIsNotRemoved() {
+        final UUID caseId5 = UUID.randomUUID();
+        final UUID defendantId5 = UUID.randomUUID();
+        final UUID courtDocumentId1 = UUID.randomUUID();
+        final UUID courtDocumentId5 = UUID.randomUUID();
+        repository.save(getCourtDocument(courtDocumentId1, CASE_ID_1, DEFENDANT_ID_1, false));
+        repository.save(getCourtDocument(courtDocumentId5, caseId5, defendantId5, true));
+
+        final List<UUID> uuidList = Arrays.asList(courtDocumentId1, courtDocumentId5);
+        List<CourtDocumentEntity> actual = repository.findByCourtDocumentIdsAndAreNotRemoved(uuidList);
+        assertEquals(1, actual.size());
+        assertEquals(1, actual.get(0).getIndices().size());
+        assertEquals(CASE_ID_1, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
+        assertEquals(DEFENDANT_ID_1, actual.get(0).getIndices().iterator().next().getDefendantId());
+    }
+
     private CourtDocumentEntity getProsecutionCase(Boolean financialMeansFlag) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(COURT_DOCUMENT_ID);
@@ -222,7 +249,6 @@ public class CourtDocumentRepositoryTest {
     }
 
 
-
     private CourtDocumentEntity getProsecutionCaseForNowDocument(Boolean financialMeansFlag) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(COURT_DOCUMENT_ID);
@@ -240,6 +266,23 @@ public class CourtDocumentRepositoryTest {
         return courtDocumentEntity;
     }
 
+    private CourtDocumentEntity getCourtDocument(UUID courtDocumentId, UUID caseId, UUID defendantId, boolean removed) {
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setIsRemoved(removed);
+        courtDocumentEntity.setPayload(PAYLOAD);
+        courtDocumentEntity.setContainsFinancialMeans(true);
+
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity.setId(UUID.randomUUID());
+        courtDocumentIndexEntity.setDocumentCategory(DocumentCategoryEnum.DEFENDANT_DOCUMENT.toString());
+        courtDocumentIndexEntity.setDefendantId(defendantId);
+        courtDocumentIndexEntity.setProsecutionCaseId(caseId);
+        courtDocumentIndexEntity.setCourtDocument(courtDocumentEntity);
+        courtDocumentEntity.setIndices(new HashSet<>());
+        courtDocumentEntity.getIndices().add(courtDocumentIndexEntity);
+        return courtDocumentEntity;
+    }
 
     private CourtDocumentEntity getProsecutioncaseForDefendantDocument(UUID caseId, UUID defendantId) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
@@ -272,10 +315,6 @@ public class CourtDocumentRepositoryTest {
             this.description = description;
         }
 
-        public String getDescription() {
-            return description;
-        }
-
         public static DocumentCategoryEnum getCaseStatus(final String value) {
             final DocumentCategoryEnum[] caseStatusArray = DocumentCategoryEnum.values();
             for (final DocumentCategoryEnum caseStatus : caseStatusArray) {
@@ -284,6 +323,10 @@ public class CourtDocumentRepositoryTest {
                 }
             }
             return null;
+        }
+
+        public String getDescription() {
+            return description;
         }
 
     }
